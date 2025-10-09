@@ -1,0 +1,7 @@
+export const APP_NAME = 'Grails Market'
+export const APP_DESCRIPTION = 'Find your next Grail on the Grails ENS Market'
+export const APP_URL = 'https://grails.app'
+export const APP_ICON = '/logo.png'
+export const APP_LOGO = '/logo-w-text.png'
+export const APP_FAVICON = 'src/app/favicon.ico'
+export const APP_THEME_COLOR = '#ffdfc0'

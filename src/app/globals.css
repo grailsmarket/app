@@ -1,26 +1,100 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #222222;
+  --foreground: #ffffff;
+  --primary: #ffdfc0;
+  --secondary: #333333;
+  --tertiary: #444444;
+  --padding-sm: 4px;
+  --padding-md: 8px;
+  --padding-lg: 16px;
+  --padding-xl: 24px;
+  --padding-2xl: 32px;
+  --vertical-padding-home-desktop: 196px;
+  --vertical-padding-home-mobile: 104px;
+  --vertical-padding-dashboard-desktop: 196px;
+  --vertical-padding-dashboard-mobile: 104px;
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-md: 12px;
+  --font-size-lg: 14px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 32px;
+  --font-size-5xl: 40px;
+  --font-size-6xl: 48px;
+  --font-size-7xl: 56px;
+  --font-size-8xl: 64px;
+  --font-size-9xl: 72px;
+  --font-size-10xl: 80px;
+  --shadow-color: #8885;
+  --shadow-small: 1px 1px 2px 0px var(--shadow-color);
+  --shadow-medium: 2px 2px 4px 0px var(--shadow-color);
+  --shadow-large: 4px 4px 8px 0px var(--shadow-color);
+  --shadow-xl: 4px 8px 16px 0px var(--shadow-color);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --font-inter: var(--font-inter);
+  --font-sedan-sc: var(--font-sedan-sc);
+  --padding-sm: var(--padding-sm);
+  --padding-md: var(--padding-md);
+  --padding-lg: var(--padding-lg);
+  --padding-xl: var(--padding-xl);
+  --padding-2xl: var(--padding-2xl);
+  --padding-homeDesktop: var(--vertical-padding-home-desktop);
+  --padding-homeMobile: var(--vertical-padding-home-mobile);
+  --padding-dashboardDesktop: var(--vertical-padding-dashboard-desktop);
+  --padding-dashboardMobile: var(--vertical-padding-dashboard-mobile);
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-md: var(--font-size-md);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
+  --text-4xl: var(--font-size-4xl);
+  --text-5xl: var(--font-size-5xl);
+  --text-6xl: var(--font-size-6xl);
+  --text-7xl: var(--font-size-7xl);
+  --text-8xl: var(--font-size-8xl);
+  --text-9xl: var(--font-size-9xl);
+  --text-10xl: var(--font-size-10xl);
+  --shadow-sm: var(--shadow-small);
+  --shadow-md: var(--shadow-medium);
+  --shadow-lg: var(--shadow-large);
+  --shadow-xl: var(--shadow-xl);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 }

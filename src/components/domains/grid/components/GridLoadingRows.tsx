@@ -1,5 +1,5 @@
 import React from 'react'
-import LoadingCard from './LoadingCard'
+import LoadingCard from './loadingCard'
 
 interface GridLoadingRowsProps {
   count?: number

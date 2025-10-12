@@ -1,30 +1,34 @@
 import { useWalletClient } from 'wagmi'
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { getPublicClient, getBulkRegistrarContract } from '@/app/utils/web3/web3'
-import { getDomainStringId } from '@/app/utils/web3/getDomainId'
+import { getDomainStringId } from '@/utils/web3/getDomainId'
 
-import { MarketplaceDomainType, RegistrationDomainCommitType } from '@/app/types/domains'
-import { CartRegisteredDomainType, CartUnregisteredDomainType } from '@/app/state/reducers/domains/marketplaceDomains'
-import { DomainsToRegisterType } from '@/app/types/web3'
+import { MarketplaceDomainType } from '@/types/domains'
+import { CartRegisteredDomainType, CartUnregisteredDomainType } from '@/state/reducers/domains/marketplaceDomains'
 
-import { baseRegistrarContractParams, registrarControllerContractParams } from '@/app/constants/web3/contracts'
-import { YEAR_IN_SECONDS } from '@/app/constants/time'
+import { YEAR_IN_SECONDS } from '@/constants/time'
+import { createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
+import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
+import { ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_CONTROLLER_ADDRESS } from '@/constants/web3/contracts'
+import { RegistrarControllerAbi } from '@/constants/abi/RegistrarControllerAbi'
 
 const useRegisterDomain = () => {
-  const { data: wallet } = useWalletClient()
-
-  const bulkRegistrarContract = getBulkRegistrarContract(wallet)
-  const publicClient = getPublicClient()
+  const walletClient = useWalletClient()
+  const publicClient = createPublicClient({
+    chain: mainnet,
+    transport: http(),
+  })
 
   const checkOnChainDomainExpirations = async (
     domains: CartUnregisteredDomainType[] | CartRegisteredDomainType[] | MarketplaceDomainType[]
   ) => {
     const expirations = await publicClient.multicall({
       contracts: domains.map((domain, i) => ({
-        ...baseRegistrarContractParams,
+        abi: BaseRegistrarAbi,
+        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
         functionName: 'nameExpires',
-        args: [getDomainStringId(domain.name_ens)],
+        args: [getDomainStringId(domain.name)],
       })),
     })
 
@@ -37,9 +41,10 @@ const useRegisterDomain = () => {
 
     const results = await publicClient.multicall({
       contracts: domains.map((domain) => ({
-        ...registrarControllerContractParams,
+        abi: RegistrarControllerAbi,
+        address: ENS_REGISTRAR_CONTROLLER_ADDRESS as `0x${string}`,
         functionName: 'rentPrice',
-        args: [domain.name_ens, (domain.registrationPeriod || 1) * YEAR_IN_SECONDS],
+        args: [domain.name, (domain.registrationPeriod || 1) * YEAR_IN_SECONDS],
       })),
     })
 
@@ -59,7 +64,8 @@ const useRegisterDomain = () => {
   const checkCommitments = async (secrets: string[]) => {
     const commitments = await publicClient.multicall({
       contracts: secrets.map((secret) => ({
-        ...registrarControllerContractParams,
+        abi: RegistrarControllerAbi,
+        address: ENS_REGISTRAR_CONTROLLER_ADDRESS as `0x${string}`,
         functionName: 'commitments',
         args: [secret],
       })),
@@ -70,30 +76,28 @@ const useRegisterDomain = () => {
     return results
   }
 
-  const commit = async (domains: CartUnregisteredDomainType[], account: `0x${string}`, secret: `0x${string}`) => {
-    const domainsToCommit: RegistrationDomainCommitType[] = domains?.map((domain) => ({
-      secret,
-      owner: account,
-      name: domain.name_ens,
-    }))
-
-    const commitments = await bulkRegistrarContract?.read.bulkMakeCommitment([domainsToCommit])
-
-    if (!commitments) return
-
-    const commitment = await bulkRegistrarContract?.write.bulkCommit([commitments])
+  const commit = async (domain: CartUnregisteredDomainType, account: `0x${string}`, secret: `0x${string}`) => {
+    const commitment = await walletClient.data?.writeContract({
+      address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+      abi: BaseRegistrarAbi,
+      functionName: 'approve',
+      args: [walletClient.data?.account.address, BigInt(domain.token_id)],
+    })
 
     return commitment
   }
 
-  const register = async (domains: CartUnregisteredDomainType[], domainsToRegister: DomainsToRegisterType[]) => {
-    const registrationPrice = await getRegistrationPriceEstimate(domains)
+  const register = async (domain: CartUnregisteredDomainType) => {
+    const registrationPrice = await getRegistrationPriceEstimate([domain])
 
     if (!registrationPrice) return
 
     try {
-      const registration = await bulkRegistrarContract?.write.bulkRegister([domainsToRegister], {
-        value: registrationPrice.toBigInt(),
+      const registration = await walletClient.data?.writeContract({
+        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+        abi: BaseRegistrarAbi,
+        functionName: 'register',
+        args: [],
       })
 
       return registration

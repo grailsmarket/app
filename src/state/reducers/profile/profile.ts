@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from '../../index'
-import { MarketplaceDomainType } from '@/types/domains'
 import { portfolioTabs } from '@/constants/domains/portfolio/tabs'
+import { RootState } from '../../index'
+import { WatchlistItemType } from '@/types/domains'
 
 // Types --------------------------------------------
 type TabType = (typeof portfolioTabs)[number]
@@ -14,7 +14,7 @@ type EnsProfileType = {
 
 type profileState = {
   ensProfile: EnsProfileType
-  watchlist: MarketplaceDomainType[]
+  watchlist: WatchlistItemType[]
   selectedTab: TabType
 }
 
@@ -43,14 +43,14 @@ export const profileSlice = createSlice({
     setUserEnsProfile(state, { payload }: PayloadAction<EnsProfileType>) {
       state.ensProfile = payload
     },
-    setUserLikedDomains(state, { payload }: PayloadAction<MarketplaceDomainType[]>) {
+    setWatchlistDomains(state, { payload }: PayloadAction<WatchlistItemType[]>) {
       state.watchlist = payload
     },
-    addUserWatchlistDomain(state, { payload }: PayloadAction<MarketplaceDomainType>) {
+    addUserWatchlistDomain(state, { payload }: PayloadAction<WatchlistItemType>) {
       state.watchlist.push(payload)
     },
-    removeUserWatchlistDomain(state, { payload }: PayloadAction<string>) {
-      state.watchlist = state.watchlist.filter((domain) => domain.name !== payload)
+    removeUserWatchlistDomain(state, { payload }: PayloadAction<number>) {
+      state.watchlist = state.watchlist.filter((item) => item.id !== payload)
     },
     changeTab(state, { payload }: PayloadAction<TabType>) {
       state.selectedTab = payload
@@ -59,7 +59,7 @@ export const profileSlice = createSlice({
 })
 
 // Actions --------------------------------------------
-export const { setUserEnsProfile, setUserLikedDomains, addUserWatchlistDomain, removeUserWatchlistDomain, changeTab } =
+export const { setUserEnsProfile, setWatchlistDomains, addUserWatchlistDomain, removeUserWatchlistDomain, changeTab } =
   profileSlice.actions
 
 // Selectors ------------------------------------------

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import LoadingCell from '@/app/ui/LoadingCell'
+import LoadingCell from '@/components/ui/loadingCell'
+
 
 interface TableLoadingRowsProps {
   count?: number
@@ -7,7 +8,7 @@ interface TableLoadingRowsProps {
 }
 
 const TableLoadingRows: React.FC<TableLoadingRowsProps> = ({
-  count = 16,
+  count = 20,
   showLimitedDetails,
 }) => {
   const headerDisplayStyle = useMemo(
@@ -28,13 +29,12 @@ const TableLoadingRows: React.FC<TableLoadingRowsProps> = ({
         return (
           <div
             key={index}
-            className={`${
-              index === 3
+            className={`${index === 3
                 ? 'hidden md:flex'
                 : index >= 4
-                ? 'hidden lg:flex'
-                : 'flex'
-            }  min-h-[60px] w-full items-center border-t border-t-dark-900 bg-dark-700 px-4 py-3`}
+                  ? 'hidden lg:flex'
+                  : 'flex'
+              }  min-h-[60px] w-full items-center border-t border-t-dark-900 bg-dark-700 px-4 py-3`}
           >
             {headerDisplayStyle.map((style, index) => (
               <div

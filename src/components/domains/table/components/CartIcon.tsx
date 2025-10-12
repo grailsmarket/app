@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
-import useCartDomains from '@/app/hooks/useCartDomains'
-import inCart from '@/public/svg/domains/inCart.svg'
-import addToCart from '@/public/svg/domains/addToCart.svg'
-import addToCartHovered from '@/public/svg/domains/addToCart-purple.svg'
+import useCartDomains from '@/hooks/useCartDomains'
+import inCart from 'public/icons/cart-added.svg'
+import addToCart from 'public/icons/cart-add.svg'
 
 interface CartIconProps {
   name: string
@@ -11,26 +10,15 @@ interface CartIconProps {
 }
 
 const CartIcon: React.FC<CartIconProps> = ({ name, size }) => {
-  const [hovered, setHovered] = useState(false)
   const { isAddedToCart } = useCartDomains()
 
   return (
     <div
-      className={`ph-no-capture flex items-center justify-center rounded-[4px] p-1.5 ${
-        hovered && !addToCart ? 'bg-white' : 'bg-purple'
-      } ${
-        isAddedToCart(name)
-          ? ' bg-opacity-20'
-          : hovered
-          ? 'bg-opacity-5'
-          : 'bg-opacity-0'
-      }`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className={` flex items-center justify-center rounded-[4px] p-1.5 ${!addToCart ? 'bg-white' : 'bg-purple'}`}
     >
       <Image
         src={
-          isAddedToCart(name) ? inCart : hovered ? addToCartHovered : addToCart
+          isAddedToCart(name) ? inCart : addToCart
         }
         alt="Add to cart"
         style={size ? { width: size, height: size } : {}}

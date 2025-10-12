@@ -1,5 +1,5 @@
-export const formatExpiryDate = (expire_time: number) => {
-  const expiryDate = new Date(expire_time * 1000)
+export const formatExpiryDate = (expiry_date: string) => {
+  const expiryDate = new Date(expiry_date)
 
   const formatted = expiryDate.toLocaleDateString('default', {
     dateStyle: 'medium',

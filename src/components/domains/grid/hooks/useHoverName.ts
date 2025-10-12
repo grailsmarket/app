@@ -1,10 +1,8 @@
-import { MarketplaceDomainNameType } from '@/app/state/reducers/domains/marketplaceDomains'
+import { MarketplaceDomainNameType } from '@/state/reducers/domains/marketplaceDomains'
 import { useState } from 'react'
 
 export const useHoverName = () => {
-  const [hoverName, setHoverName] = useState<MarketplaceDomainNameType | null>(
-    null,
-  )
+  const [hoverName, setHoverName] = useState<MarketplaceDomainNameType | null>(null)
 
   const generateOnEnter = (name: MarketplaceDomainNameType) => {
     return () => {

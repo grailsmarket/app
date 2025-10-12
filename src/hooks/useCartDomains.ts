@@ -8,10 +8,8 @@ import useModifyCart from './useModifyCart'
 import { getRegistrationStatus } from '../utils/getRegistrationStatus'
 
 import {
-  MarketplaceCheckoutType,
   selectMarketplaceDomains,
   MarketplaceDomainNameType,
-  setDomainsCartCheckoutType,
   removeFromMarketplaceDomainsCart,
 } from '../state/reducers/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '../types/domains'
@@ -21,13 +19,12 @@ import { GRACE_PERIOD, REGISTERED } from '../constants/domains/registrationStatu
 const useCartDomains = () => {
   const dispatch = useDispatch()
 
-  const { cartRegisteredDomains, cartUnregisteredDomains, checkoutType, offerDuration } =
-    useAppSelector(selectMarketplaceDomains)
+  const { cartRegisteredDomains, cartUnregisteredDomains, offerDuration } = useAppSelector(selectMarketplaceDomains)
 
   const { checkOnChainDomainExpirations } = useRegisterDomain()
   const { clearCart, clearCartLoading, modifyCart } = useModifyCart()
 
-  const offerableDomains = cartRegisteredDomains.filter((domain) => !domain.listing_price || domain.offerValue)
+  const offerableDomains = cartRegisteredDomains.filter((domain) => !domain.price || domain.offerValue)
 
   const cartIsEmpty = cartRegisteredDomains.length === 0 && cartUnregisteredDomains.length === 0
 
@@ -47,7 +44,7 @@ const useCartDomains = () => {
     const inCart = isAddedToCart(domain.name)
 
     if (registered) {
-      const basket = domain.listing_price ? 'PURCHASE' : 'OFFER'
+      const basket = domain.price ? 'PURCHASE' : 'OFFER'
       return modifyCart({ domain, inCart, basket })
     }
 
@@ -56,7 +53,7 @@ const useCartDomains = () => {
 
   const toggleCart = async (domain: MarketplaceDomainType, checkExpireTime = true) => {
     if (!checkExpireTime) {
-      toggleDomainInCart(domain, domain.expire_time || 0)
+      toggleDomainInCart(domain, domain.expiry_date || 0)
       return
     }
 
@@ -66,22 +63,6 @@ const useCartDomains = () => {
 
     const expiration = (await checkOnChainDomainExpirations([domain]))[0]
     toggleDomainInCart(domain, expiration)
-  }
-
-  const setCheckoutType = (type: MarketplaceCheckoutType) => {
-    if (type === checkoutType) return
-
-    if (type === 'Purchase') {
-      const areOfferableDomains =
-        cartRegisteredDomains.filter((domain) => !domain.listing_price && !domain.offerValue).length > 0
-
-      if (areOfferableDomains) {
-        dispatch(setDomainsCartCheckoutType('Offer'))
-        return
-      }
-    }
-
-    dispatch(setDomainsCartCheckoutType(type))
   }
 
   const onSelect = (e: MouseEvent, domain: MarketplaceDomainType) => {
@@ -96,8 +77,6 @@ const useCartDomains = () => {
     isRegisteredEmpty: cartRegisteredDomains.length === 0,
     isUnregisteredEmpty: cartUnregisteredDomains.length === 0,
     cartIsEmpty,
-    checkoutType,
-    setCheckoutType,
     toggleCart,
     offerDuration,
     onSelect,

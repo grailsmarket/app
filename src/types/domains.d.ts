@@ -1,10 +1,11 @@
 import { Address } from 'viem'
 import { SortFilterType } from '../state/reducers/filters/marketplaceFilters'
+import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
 
 export type MarketplaceDomainType = {
   name: string
   token_id: number
-  expiry_date: number | null
+  expiry_date: string | null
   owner: Address | null
   price: string | null
   registration_date: number | null
@@ -198,7 +199,7 @@ export type WatchlistDomainType = {
   expire_time: number
 }
 
-export type DomainBasketType = 'PURCHASE' | 'LIST' | 'OFFER' | 'REGISTER' | 'SNIPE' | 'EXTEND'
+export type DomainBasketType = 'PURCHASE' | 'OFFER' | 'REGISTER'
 
 export type CartDomainAPIType = {
   basket: DomainBasketType
@@ -213,20 +214,6 @@ export type CategoriesResponseType = {
 export type ExpiryDateResponseType = {
   domain: string
   expires: number
-}
-
-export type FeedAggregateAPIType = {
-  aggregations: AggregationType[]
-}
-
-export type AggregationType = {
-  epoch_part: number
-  event_type: 'sale' | 'purchase' | 'offer' | 'listing' | 'registration' | 'transfer'
-  price_avg: string
-  price_cnt: number
-  price_sum: string
-  price_max: string
-  timestamp: number
 }
 
 export type TotalStatsType = {
@@ -260,6 +247,15 @@ export type RegistrationDomainCommitType = {
   name: string
 }
 
+export type MarketplaceHeaderColumn =
+  | 'domain'
+  | 'listed_price'
+  | 'registry_price'
+  | 'last_sale'
+  | 'highest_offer'
+  | 'expires'
+  | 'actions'
+
 export type MarketplaceHeaderItem = {
   label: string
   sort: 'asc' | 'desc' | 'none' | null
@@ -267,4 +263,26 @@ export type MarketplaceHeaderItem = {
     asc?: SortFilterType
     desc?: SortFilterType
   }
+  getWidth: (columnsLength: number) => string
 }
+
+export type WatchlistItemType = {
+  id: number
+  userId: number
+  ensNameId: number
+  ensName: string
+  notifyOnSale: boolean
+  notifyOnOffer: boolean
+  notifyOnListing: boolean
+  notifyOnPriceChange: boolean
+  addedAt: string
+  nameData: {
+    name: string
+    tokenId: number
+    ownerAddress: Address | null
+    hasActiveListing: boolean
+    listingPrice: string | null
+  }
+}
+
+export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]

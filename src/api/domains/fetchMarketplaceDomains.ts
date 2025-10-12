@@ -8,6 +8,7 @@ import {
   MARKETPLACE_OFFERS_PARAM_OPTIONS,
   MARKETPLACE_STATUS_PARAM_OPTIONS,
 } from '@/constants/filters/marketplaceFilters'
+import { APIResponseType } from '@/types/api'
 
 interface FetchMarketplaceDomainsOptions {
   limit: number
@@ -24,26 +25,27 @@ export const fetchMarketplaceDomains = async ({
 }: FetchMarketplaceDomainsOptions) => {
   const paramString = buildQueryParamString({
     limit,
-    offset: limit * pageParam,
-    order_type: filters.sort && MARKETPLACE_SORT_FILTERS.includes(filters.sort) ? filters.sort : 'default',
-    name: searchTerm.replace('.eth', ''),
-    max_domain_length: filters.length.max.replace('10+', ''),
-    min_domain_length: filters.length.min.replace('10+', '10'),
-    max_listing_price: filters.priceRange.max ? Number(filters.priceRange.max) * 10 ** 18 : filters.priceRange.max,
-    min_listing_price: filters.priceRange.min ? Number(filters.priceRange.min) * 10 ** 18 : filters.priceRange.max,
-    search_terms: filters.categoryObjects.map((f) => f.subcategory).join(','),
-    name_symbols_type: filters.type.join(',').toLowerCase(),
-    has_offers_selector: filters.status
-      .map((statusValue) => MARKETPLACE_OFFERS_PARAM_OPTIONS[statusValue])
-      .filter((e) => e)
-      .join(','),
-    status_type:
-      filters.status.map((statusValue) => MARKETPLACE_STATUS_PARAM_OPTIONS[statusValue]).filter((e) => e)[0] || '',
+    page: pageParam + 1,
+    // q: searchTerm.replace('.eth', ''),
+    // 'filters[maxLength]': filters.length.max.replace('10+', ''),
+    // 'filters[minLength]': filters.length.min.replace('10+', '10'),
+    // 'filters[maxPrice]': filters.priceRange.max ? Number(filters.priceRange.max) * 10 ** 18 : filters.priceRange.max,
+    // 'filters[minPrice]': filters.priceRange.min ? Number(filters.priceRange.min) * 10 ** 18 : filters.priceRange.max,
+    // search_terms: filters.categoryObjects.map((f) => f.subcategory).join(','),
+    // name_symbols_type: filters.type.join(',').toLowerCase(),
+    // has_offers_selector: filters.status
+    //   .map((statusValue) => MARKETPLACE_OFFERS_PARAM_OPTIONS[statusValue])
+    //   .filter((e) => e)
+    //   .join(','),
+    // status_type:
+    //   filters.status.map((statusValue) => MARKETPLACE_STATUS_PARAM_OPTIONS[statusValue]).filter((e) => e)[0] || '',
   })
+
+  const endpoint = searchTerm.length > 0 ? `names/search` : `names`
 
   console.log(paramString)
 
-  const res = await fetch(`${API_URL}/names/search?${paramString}`, {
+  const res = await fetch(`${API_URL}/${endpoint}?${paramString}`, {
     method: 'GET',
     mode: 'cors',
     headers: {
@@ -52,10 +54,10 @@ export const fetchMarketplaceDomains = async ({
     },
   })
 
-  const json = await res.json()
+  const json = (await res.json()) as APIResponseType<{ names: MarketplaceDomainType[] }>
 
   return {
-    domains: json.domains as MarketplaceDomainType[],
+    domains: json.data.names,
     nextPageParam: pageParam + 1,
   }
 }

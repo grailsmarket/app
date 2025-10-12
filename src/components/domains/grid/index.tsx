@@ -1,14 +1,11 @@
 import { Dispatch, RefObject, SetStateAction, useEffect } from 'react'
-
-import useIntersectionObserver from '@/app/hooks/useIntersectionObserver'
-
-import LoadingCard from './components/LoadingCard'
-import GridLoadingRows from './components/GridLoadingRows'
-
-import { MarketplaceDomainType } from '@/app/types/domains'
-
-import Card from './components/Card'
-import Loading from '@/app/portfolio/components/Loading'
+import useIntersectionObserver from '@/hooks/useIntersectionObserver'
+import LoadingCard from './components/loadingCard'
+import GridLoadingRows from './components/gridLoadingRows'
+import { MarketplaceDomainType } from '@/types/domains'
+import Card from './components/card'
+import NoResults from '@/components/ui/NoResults'
+import { usePathname } from 'next/navigation'
 
 interface DomainsGridProps {
   domains: MarketplaceDomainType[]
@@ -31,6 +28,7 @@ const DomainsGrid: React.FC<DomainsGridProps> = ({
   isBottomMargin,
   setIsRefIntersecting,
 }) => {
+  const pathname = usePathname()
   const { ref: loadMoreRef, isIntersecting: isLoadMoreRefIntersecting } =
     useIntersectionObserver()
 
@@ -44,7 +42,7 @@ const DomainsGrid: React.FC<DomainsGridProps> = ({
     gridRef.current?.scrollTo({
       top: gridScrollTop,
     })
-  }, [gridRef])
+  }, [gridRef, gridScrollTop])
 
   return (
     <div
@@ -55,25 +53,24 @@ const DomainsGrid: React.FC<DomainsGridProps> = ({
         gridAutoRows: noResults ? undefined : 'minmax(293px,325px)',
         height: isBottomMargin ? 'calc(100vh - 150px)' : 'calc(100vh - 192px)',
       }}
-      className={` ${
-        noResults ? 'flex' : 'grid'
-      } hide-scrollbar h-full gap-x-px overflow-y-auto`}
+      className={` ${noResults ? 'flex' : 'grid'
+        } hide-scrollbar h-full gap-x-px overflow-y-auto`}
       ref={gridRef}
     >
       {domains?.map((domain) => (
-        <Card key={domain.name_ens} domain={domain} />
+        <Card key={domain.name} domain={domain} />
       ))}
+      {isLoading && (
+        <GridLoadingRows />
+      )}
       {!noResults && hasNextPage && (
         <div ref={loadMoreRef} className="flex h-full w-full flex-1">
           <LoadingCard />
         </div>
       )}
-      <Loading
-        noResults={noResults}
-        noResultsLabel={'No results, try clearing your filters.'}
-        LoadingComponent={GridLoadingRows}
-        isLoading={isLoading}
-        requiresAuth={false}
+      <NoResults
+        label={'No results, try clearing your filters or change your search term.'}
+        requiresAuth={pathname.split('?')[0] === '/portfolio'}
       />
     </div>
   )

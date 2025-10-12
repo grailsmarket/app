@@ -27,7 +27,6 @@ type MarketplaceDomainsState = {
   cartUnregisteredDomains: CartUnregisteredDomainType[]
   cartRegisteredDomains: CartRegisteredDomainType[]
   offerDuration: DurationType
-  checkoutType: MarketplaceCheckoutType
   changedPurchaseDomains: string[]
   isCheckingOut: boolean
 }
@@ -40,7 +39,6 @@ const initialState: MarketplaceDomainsState = {
     value: undefined,
     units: 'Month',
   },
-  checkoutType: '',
   changedPurchaseDomains: [],
   isCheckingOut: false,
 }
@@ -63,7 +61,6 @@ export const marketplaceDomainsSlice = createSlice({
     // Adds multiple (not only one)
     addToCartUnregisteredDomains(state, { payload }: PayloadAction<CartUnregisteredDomainType[]>) {
       state.cartUnregisteredDomains = state.cartUnregisteredDomains.concat(payload)
-      state.checkoutType = 'Registration'
     },
     removeFromMarketplaceDomainsCart(state, { payload }: PayloadAction<MarketplaceDomainNameType[]>) {
       state.cartUnregisteredDomains = state.cartUnregisteredDomains.filter((domain) => !payload.includes(domain.name))
@@ -79,8 +76,6 @@ export const marketplaceDomainsSlice = createSlice({
       if (relevantDomain) {
         relevantDomain.registrationPeriod = payload.newPeriod
       }
-
-      state.checkoutType = 'Registration'
     },
     updateOfferValue(
       state,
@@ -96,15 +91,9 @@ export const marketplaceDomainsSlice = createSlice({
       if (relevantDomain) {
         relevantDomain.offerValue = payload.newOfferValue
       }
-
-      state.checkoutType = 'Offer'
     },
     updateOfferDuration(state, { payload }: PayloadAction<DurationType>) {
       state.offerDuration = payload
-      state.checkoutType = 'Offer'
-    },
-    setDomainsCartCheckoutType(state, { payload }: PayloadAction<MarketplaceCheckoutType>) {
-      state.checkoutType = payload
     },
     addPurchaseDomainChanged(state, { payload }: PayloadAction<string>) {
       state.changedPurchaseDomains = state.changedPurchaseDomains.concat([payload])
@@ -136,7 +125,6 @@ export const {
   updateRegistrationPeriod,
   updateOfferValue,
   updateOfferDuration,
-  setDomainsCartCheckoutType,
   addPurchaseDomainChanged,
   removePurchaseDomainsChanged,
   clearMarketplaceDomainsCart,

@@ -7,7 +7,7 @@ export const getEtherPrice = async (short?: boolean) => {
   try {
     const client = createPublicClient({
       chain: mainnet,
-      transport: http('https://rpc.kodex.io/rpc'),
+      transport: http(),
     })
 
     const price = await client.readContract({

@@ -1,9 +1,5 @@
-import {
-  PREMIUM,
-  REGISTERED,
-  UNREGISTERED,
-} from '@/app/constants/domains/registrationStatuses'
-import { getRegistrationStatus } from '@/app/utils/getRegistrationStatus'
+import { PREMIUM, REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 
 // expire time must be in seconds
 export const generateGradient = (expireTime: number) => {

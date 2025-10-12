@@ -3,27 +3,21 @@ import Image from 'next/image'
 import { useAccount } from 'wagmi'
 import { formatEther } from 'viem'
 
-import useDomainsGrid from '../hooks/useDomainsGrid'
-import useCartDomains from '@/app/hooks/useCartDomains'
-import { useSelectedDomain } from '@/app/hooks/useSelectedDomain'
-
+import useCartDomains from '@/hooks/useCartDomains'
 import { generateGradient } from '../utils/generateGradient'
-import { formatEtherPrice } from '@/app/utils/formatEtherPrice'
-import { checkNameValidity } from '@/app/utils/checkNameValidity'
-import { getRegistrationStatus } from '@/app/utils/getRegistrationStatus'
-
-import Like from '../../Like'
-import Tooltip from '../../Tooltip'
-import SaleAsset from '../../SaleAsset'
-import CartIcon from '../../DomainsTable/components/CartIcon'
-
-import { MarketplaceDomainType } from '@/app/types/domains'
+import { formatEtherPrice } from '@/utils/formatEtherPrice'
+import { checkNameValidity } from '@/utils/checkNameValidity'
+import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
+import Tooltip from '@/components/ui/tooltip'
+import SaleAsset from '@/components/ui/asset'
+import CartIcon from '../../table/components/CartIcon'
+import Watchlist from '@/components/ui/watchlist'
+import { MarketplaceDomainType } from '@/types/domains'
 import {
   REGISTERED,
   GRACE_PERIOD,
   REGISTERABLE_STATUSES,
-} from '@/app/constants/domains/registrationStatuses'
-
+} from '@/constants/domains/registrationStatuses'
 import ens from '@/public/svg/crypto/ens.svg'
 
 interface CardProps {
@@ -31,13 +25,11 @@ interface CardProps {
 }
 
 const Card: React.FC<CardProps> = ({ domain }) => {
-  const { selectedDomain, generateOnClick } = useSelectedDomain()
   const { onSelect } = useCartDomains()
   const { address } = useAccount()
-  const { onCheckout } = useDomainsGrid()
 
-  const domainIsValid = checkNameValidity(domain.name_ens)
-  const registrationStatus = getRegistrationStatus(domain.expire_time)
+  const domainIsValid = checkNameValidity(domain.name)
+  const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart =
     registrationStatus === GRACE_PERIOD ||
     address?.toLowerCase() === domain.owner?.toLowerCase()
@@ -45,14 +37,11 @@ const Card: React.FC<CardProps> = ({ domain }) => {
 
   return (
     <div
-      className={`ph-no-capture group flex flex-1 cursor-pointer flex-col gap-y-px transition ${
-        selectedDomain?.name === domain.name ? 'opacity-100' : 'opacity-70'
-      } hover:opacity-100`}
-      onClick={generateOnClick(domain)}
+      className={`opacity-70 group flex flex-1 cursor-pointer bg-secondary flex-col gap-y-px transition hover:opacity-100`}
     >
       <div
         className={`${generateGradient(
-          domain.expire_time || 0,
+          domain.expiry_date || 0,
         )} flex h-[170px] w-full flex-col justify-between p-[21px]`}
       >
         <Image src={ens} alt="ENS symbol" />
@@ -61,9 +50,8 @@ const Card: React.FC<CardProps> = ({ domain }) => {
             style={{
               textShadow: '0px 0px 4px rgba(0, 0, 0, 0.15)',
             }}
-            className={`overflow-y-visible truncate text-[${
-              domainFontSize > 21 ? 21 : domainFontSize
-            }px] font-bold leading-[120%] text-white`}
+            className={`overflow-y-visible truncate text-[${domainFontSize > 21 ? 21 : domainFontSize
+              }px] font-bold leading-[120%] text-white`}
           >
             {domain.name}
           </h5>
@@ -82,12 +70,12 @@ const Card: React.FC<CardProps> = ({ domain }) => {
         <div className="flex w-full flex-col bg-dark-700 pl-4 pt-4 ">
           {registrationStatus !== GRACE_PERIOD &&
             (registrationStatus === REGISTERED ? (
-              domain.listing_price ? (
+              domain.price ? (
                 <div className="flex items-center gap-1">
                   <SaleAsset asset="ETH" ethSize="12px" />
                   <p className="truncate text-xs font-bold leading-[18px]  text-light-100">
-                    {domain.listing_price &&
-                      formatEther(BigInt(domain.listing_price))}
+                    {domain.price &&
+                      formatEther(BigInt(domain.price))}
                   </p>
                 </div>
               ) : (
@@ -132,30 +120,30 @@ const Card: React.FC<CardProps> = ({ domain }) => {
             </div>
           ) : (
             <p className="min-w-px h-[18px] truncate text-xs font-medium leading-[18px] text-light-400">
-              {domain.taxonomies?.map((tax: string, index: number) =>
+              {/* {domain.taxonomies?.map((tax: string, index: number) =>
                 index + 1 === domain.taxonomies?.length ? tax : tax + ', ',
-              ) || registrationStatus}
+              ) || registrationStatus} */}
             </p>
           )}
         </div>
         <div className="flex justify-between p-2 pl-4 pt-0">
           <button
             disabled={canAddToCart}
-            onClick={(e) => onCheckout(e, domain)}
+          // onClick={(e) => onCheckout(e, domain)}
           >
             {!canAddToCart && (
               <p className="text-xs font-bold text-purple transition-colors hover:text-purple-hover">
                 {REGISTERABLE_STATUSES.includes(registrationStatus as string)
                   ? 'Register'
-                  : !domain.listing_price && registrationStatus === 'Registered'
-                  ? 'Make Offer'
-                  : 'Buy now'}
+                  : !domain.price && registrationStatus === 'Registered'
+                    ? 'Make Offer'
+                    : 'Buy now'}
               </p>
             )}
           </button>
           <div className="flex items-center gap-x-2">
             <div className="flex h-8 w-8 items-center justify-center">
-              <Like domain={domain} />
+              <Watchlist domain={domain} />
             </div>
 
             <button
@@ -164,9 +152,8 @@ const Card: React.FC<CardProps> = ({ domain }) => {
                 onSelect(e, domain)
               }}
               disabled={canAddToCart}
-              className={`ph-no-capture  ${
-                canAddToCart ? 'opacity-0' : 'opacity-100'
-              }`}
+              className={`  ${canAddToCart ? 'opacity-0' : 'opacity-100'
+                }`}
             >
               <CartIcon name={domain.name} size={20} />
             </button>

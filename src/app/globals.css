@@ -79,6 +79,9 @@ body {
   font-family: var(--font-inter), Arial, sans-serif;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
 @layer base {
   *,
   *::before,

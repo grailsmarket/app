@@ -2,7 +2,7 @@ export const MARKETPLACE_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price 
 
 export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 
-export const MARKETPLACE_STATUS_FILTER_LABELS = ['Listed', 'Premium', 'Available', 'Unlisted'] as const
+export const MARKETPLACE_STATUS_FILTER_LABELS = ['Listed', 'Premium', 'Available', 'Unlisted', 'Unregistered'] as const
 
 export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
   'Buy Now': 'buy_now',
@@ -38,6 +38,8 @@ export const ALL_SORT_FILTERS = [
   'lowest_last_sale',
   'price_low_to_high',
   'price_high_to_low',
+  'highest_offer',
+  'highest_offer_desc',
 ] as const
 
 export const MARKETPLACE_CATEGORY_OBJECTS = [

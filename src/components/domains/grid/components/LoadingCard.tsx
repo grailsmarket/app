@@ -1,10 +1,10 @@
+import LoadingCell from '@/components/ui/loadingCell'
 import React, { RefObject } from 'react'
-import LoadingCell from '@/app/ui/LoadingCell'
 
 const LoadingCard = ({ ref }: { ref?: RefObject<HTMLDivElement> }) => {
   return (
     <div
-      className={`ph-no-capture group flex flex-1 cursor-pointer flex-col gap-y-px`}
+      className={` group flex flex-1 cursor-pointer flex-col gap-y-px`}
       ref={ref}
     >
       <div

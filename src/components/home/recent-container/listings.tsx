@@ -4,22 +4,18 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchMarketplaceDomains } from '@/api/domains/fetchMarketplaceDomains'
 import DomainsTable from '@/components/domains/table'
+import { useAppSelector } from '@/state/hooks'
+import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 
 const RecentListings = () => {
+  const filters = useAppSelector(selectMarketplaceFilters)
+  console.log('filters', filters)
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
     queryFn: () => fetchMarketplaceDomains({
       limit: 7,
       pageParam: 0,
-      filters: {
-        status: ['Listed'],
-        type: ['Letters'],
-        priceRange: { min: 0, max: 1000000000000000000000000000000000000000 },
-        length: { min: '3', max: '10+' },
-        denomination: 'ETH',
-        categoryObjects: [],
-        sort: null,
-      },
+      filters,
       searchTerm: '',
     }),
   })

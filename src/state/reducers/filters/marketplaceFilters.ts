@@ -1,9 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-
 import { RootState } from '../../index'
 import {
   ALL_SORT_FILTERS,
-  MARKETPLACE_LENGTH_VALUES,
   YOUR_DOMAINS_FILTER_LABELS,
   OFFERS_STATUS_FILTER_LABELS,
   MARKETPLACE_CATEGORY_OBJECTS,
@@ -26,13 +24,13 @@ export type ProfileDomainsStatusFilterType = (typeof YOUR_DOMAINS_FILTER_LABELS)
 export type MarketplaceTypeFilterType = (typeof MARKETPLACE_TYPE_FILTER_LABELS)[number]
 
 type MarketplaceLengthType = {
-  min: (typeof MARKETPLACE_LENGTH_VALUES)[number]
-  max: (typeof MARKETPLACE_LENGTH_VALUES)[number]
+  min: number | null
+  max: number | null
 }
 
 type MarketplacePriceType = {
-  min: number | string
-  max: number | string
+  min: number | null
+  max: number | null
 }
 
 export type PriceDenominationType = (typeof PRICE_DENOMINATIONS)[number]
@@ -48,6 +46,7 @@ export type MarketplaceOpenableFilterType = (typeof MARKETPLACE_OPENABLE_FILTERS
 export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type MarketplaceFiltersState = {
+  open: boolean
   status: MarketplaceStatusFilterType[]
   type: MarketplaceTypeFilterType[]
   length: MarketplaceLengthType
@@ -62,16 +61,17 @@ export type MarketplaceFiltersOpenedState = MarketplaceFiltersState & {
 }
 
 export const emptyFilterState: MarketplaceFiltersState = {
+  open: false,
   status: [],
   type: [...MARKETPLACE_TYPE_FILTER_LABELS],
   length: {
-    min: MARKETPLACE_LENGTH_VALUES[0],
-    max: MARKETPLACE_LENGTH_VALUES[MARKETPLACE_LENGTH_VALUES.length - 1],
+    min: null,
+    max: null,
   },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
-    min: '',
-    max: '',
+    min: null,
+    max: null,
   },
   categoryObjects: [],
   sort: null,
@@ -79,17 +79,18 @@ export const emptyFilterState: MarketplaceFiltersState = {
 
 // Initial State ------------------------------------
 export const initialState: MarketplaceFiltersOpenedState = {
-  status: ['Premium'],
-  // status: [MARKETPLACE_STATUS_FILTER_LABELS[0]],
+  // Filters are only expandable on mobile and tablet, so this value will get ignored on desktop
+  open: false,
+  status: ['Listed'],
   type: [MARKETPLACE_TYPE_FILTER_LABELS[0]],
   length: {
-    min: MARKETPLACE_LENGTH_VALUES[0],
-    max: MARKETPLACE_LENGTH_VALUES[MARKETPLACE_LENGTH_VALUES.length - 1],
+    min: null,
+    max: null,
   },
-  denomination: PRICE_DENOMINATIONS[1],
+  denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
-    min: '',
-    max: '',
+    min: null,
+    max: null,
   },
   categoryObjects: [],
   openFilters: ['Status'],
@@ -105,10 +106,10 @@ export const marketplaceFiltersSlice = createSlice({
   name: 'marketplaceFilters',
   initialState,
   reducers: {
-    toggleMarketplaceFiltersStatus(
-      state,
-      { payload }: PayloadAction<MarketplaceStatusFilterType> // { payload }: PayloadAction<MarketplaceStatusFilterType>,
-    ) {
+    setMarketplaceFiltersOpen(state, { payload }: PayloadAction<boolean>) {
+      state.open = payload
+    },
+    toggleMarketplaceFiltersStatus(state, { payload }: PayloadAction<MarketplaceStatusFilterType>) {
       const index = state.status.findIndex((_status) => _status === payload)
       if (index > -1) {
         state.status.splice(index, 1)
@@ -134,7 +135,7 @@ export const marketplaceFiltersSlice = createSlice({
       state.length = payload
     },
     setMarketplacePriceDenomination(state, { payload }: PayloadAction<PriceDenominationType>) {
-      state.priceRange = { min: '', max: '' }
+      state.priceRange = { min: null, max: null }
       state.denomination = payload
     },
     setMarketplacePriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
@@ -194,17 +195,17 @@ export const marketplaceFiltersSlice = createSlice({
       }
     },
     clearMarketplaceFilters(state) {
-      // state.status = [...MARKETPLACE_STATUS_FILTER_LABELS]
+      state.open = false
       state.status = []
       state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]
       state.length = {
-        min: MARKETPLACE_LENGTH_VALUES[0],
-        max: MARKETPLACE_LENGTH_VALUES[MARKETPLACE_LENGTH_VALUES.length - 1],
+        min: null,
+        max: null,
       }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = {
-        min: '',
-        max: '',
+        min: null,
+        max: null,
       }
       state.categoryObjects = []
       state.sort = null
@@ -214,6 +215,7 @@ export const marketplaceFiltersSlice = createSlice({
 
 // Actions --------------------------------------------
 export const {
+  setMarketplaceFiltersOpen,
   toggleMarketplaceFiltersStatus,
   setMarketplaceFiltersStatus,
   toggleMarketplaceFiltersType,

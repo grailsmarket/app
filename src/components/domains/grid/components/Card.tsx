@@ -66,8 +66,8 @@ const Card: React.FC<CardProps> = ({ domain }) => {
           )}
         </div>
       </div>
-      <div className="flex w-full flex-1 flex-col justify-between gap-1 bg-dark-700 ">
-        <div className="flex w-full flex-col bg-dark-700 pl-4 pt-4 ">
+      <div className="flex w-full flex-1 flex-col justify-between gap-1 ">
+        <div className="flex w-full flex-col pl-4 pt-4 ">
           {registrationStatus !== GRACE_PERIOD &&
             (registrationStatus === REGISTERED ? (
               domain.price ? (

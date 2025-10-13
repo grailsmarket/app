@@ -1,81 +1,61 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
-
-import useCartDomains from '@/hooks/useCartDomains'
-
 import Tooltip from './tooltip'
 import BinocularsEmpty from 'public/icons/watchlist.svg'
 import BinocularsFilled from 'public/icons/watchlist-fill.svg'
-
 import { TooltipPositionType } from '@/types/ui'
 import { MarketplaceDomainType } from '@/types/domains'
-import { MarketplaceDomainNameType } from '@/state/reducers/domains/marketplaceDomains'
-import { useAuth } from '@/hooks/useAuthStatus'
 import useWatchlist from '@/hooks/useWatchlist'
 import { cn } from '@/utils/tailwind'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useUserContext } from '@/context/user-context'
 
 interface LikeProps {
   domain: MarketplaceDomainType
   tooltipPosition?: TooltipPositionType
-  likeIsShown?: boolean
+  showWatchlist?: boolean
 }
 
 const Like: React.FC<LikeProps> = ({
   domain,
-  likeIsShown,
+  showWatchlist = true,
   tooltipPosition,
 }) => {
-  const [showErrorTooltip, setShowErrorTooltip] = useState(false)
-
-  const { isAddedToCart } = useCartDomains()
-  const { authStatus } = useAuth()
+  const { authStatus, handleSignIn, userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
   const {
     watchlistNames,
     toggleWatchlist,
-    isLoading: isToggleLikeLoading,
+    isLoading,
   } = useWatchlist()
-
-  const showLike = (name: MarketplaceDomainNameType) => {
-    return (
-      isAddedToCart(name) ||
-      watchlistNames?.includes(name)
-    )
-  }
+  const isWatchlisted = watchlistNames?.includes(domain.name)
 
   return (
     <Tooltip
-      label="Connect a wallet"
+      label={isWatchlisted ? "Remove from watchlist" : "Add to watchlist"}
       position={tooltipPosition || 'top'}
-      showTooltip={showErrorTooltip}
       showOnMobile
     >
       <button
-        className={`  ${likeIsShown || showLike(domain.name)
-          ? 'block'
-          : 'hidden group-hover:block'
-          }`}
+        className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
         onClick={(e) => {
           e.stopPropagation()
           if (authStatus !== 'authenticated') {
-            setShowErrorTooltip(true)
-            setTimeout(() => {
-              setShowErrorTooltip(false)
-            }, 2000)
-          }
-          toggleWatchlist(domain)
+            if (!userAddress) openConnectModal?.()
+            else handleSignIn()
+          } else toggleWatchlist(domain)
         }}
       >
         <Image
           src={
-            (watchlistNames?.includes(domain.name) || isToggleLikeLoading) &&
-              !showErrorTooltip
+            (watchlistNames?.includes(domain.name) || isLoading)
               ? BinocularsFilled
               : BinocularsEmpty
           }
           height={20}
           width={20}
           alt="Like heart"
-          className={cn(isToggleLikeLoading ? 'opacity-50' : 'opacity-100')}
+          className={cn(watchlistNames?.includes(domain.name) || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100', 'transition-opacity')}
         />
       </button>
     </Tooltip>

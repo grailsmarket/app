@@ -21,6 +21,7 @@ const ListPrice: React.FC<ListPriceProps> = ({ domain, registrationStatus, colum
           <Image src={ethGray} alt="ETH" className="h-[14px] w-auto" />
         )}
         <p className="ml-1 truncate text-xs font-medium text-light-600">
+          price
           {registrationStatus === REGISTERED &&
             domain.price &&
             formatEtherPrice(domain.price)}

@@ -19,7 +19,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
       <div className="flex h-[36px] flex-col justify-center">
-        <div className="flex w-full flex-row items-center justify-start gap-2 lg:w-[13vw]">
+        <div className="flex w-full flex-row items-center justify-start gap-2 max-w-5/6">
           <Image src={`https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/${numberToHex(domain.token_id)}/image`} unoptimized alt="icon" width={30} height={30} className="w-8 h-8 rounded-sm" onError={(e) => e.currentTarget.style.display = 'none'} />
           <p
             className={`truncate text-xs font-bold leading-[18px] ${registrationStatus === PREMIUM

@@ -29,25 +29,26 @@ const TableRow: React.FC<TableRowProps> = ({
 
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const cantAddToCart =
-    registrationStatus === GRACE_PERIOD ||
-    address?.toLowerCase() === domain.owner?.toLowerCase()
+  const canAddToCart =
+    !(registrationStatus === GRACE_PERIOD ||
+      address?.toLowerCase() === domain.owner?.toLowerCase())
 
   const columnCount = displayedColumns.length
 
   const columns: Record<MarketplaceHeaderColumn, React.ReactNode> = {
     domain: <Name
+      key={`${domain.name}-domain`}
       domain={domain}
       registrationStatus={registrationStatus}
       domainIsValid={domainIsValid}
       columnCount={columnCount}
     />,
-    listed_price: <ListPrice domain={domain} registrationStatus={registrationStatus} columnCount={columnCount} />,
-    registry_price: <RegistryPrice domain={domain} columnCount={columnCount} />,
-    last_sale: <LastSale domain={domain} columnCount={columnCount} />,
-    highest_offer: <HighestOffer domain={domain} columnCount={columnCount} />,
-    expires: <Expiration domain={domain} columnCount={columnCount} registrationStatus={registrationStatus} />,
-    actions: <Actions domain={domain} index={index} columnCount={columnCount} canAddToCart={cantAddToCart} />,
+    listed_price: <ListPrice key={`${domain.name}-listed_price`} domain={domain} registrationStatus={registrationStatus} columnCount={columnCount} />,
+    registry_price: <RegistryPrice key={`${domain.name}-registry_price`} domain={domain} columnCount={columnCount} />,
+    last_sale: <LastSale key={`${domain.name}-last_sale`} domain={domain} columnCount={columnCount} />,
+    highest_offer: <HighestOffer key={`${domain.name}-highest_offer`} domain={domain} columnCount={columnCount} />,
+    expires: <Expiration key={`${domain.name}-expires`} domain={domain} columnCount={columnCount} registrationStatus={registrationStatus} />,
+    actions: <Actions key={`${domain.name}-actions`} domain={domain} index={index} columnCount={columnCount} canAddToCart={canAddToCart} />,
   }
 
   return (

@@ -1,10 +1,9 @@
-import { useAccount, useDisconnect } from 'wagmi'
 import React, { useState } from 'react'
 import { truncateAddress, Avatar, HeaderImage, ShortArrow } from 'ethereum-identity-kit'
-import { useAuth } from '@/hooks/useAuthStatus'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import { useUserProfile } from '@/hooks/useUserProfile'
+import { useUserContext } from '@/context/user-context'
 
 const Connected = () => {
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false)
@@ -12,9 +11,7 @@ const Connected = () => {
     setWalletDropdownOpen(false)
   })
 
-  const { address } = useAccount()
-  const { disconnect } = useDisconnect()
-  const { disconnect: disconnectAuth } = useAuth()
+  const { userAddress, handleSignOut } = useUserContext()
   const { profile, profileIsLoading } = useUserProfile()
 
   return (
@@ -33,7 +30,7 @@ const Connected = () => {
           <p>Loading...</p>
         ) : (
           <p className='z-10 max-w-[160px] truncate text-xl font-semibold text-nowrap overflow-ellipsis'>
-            {profile?.ens?.name || truncateAddress(address!)}
+            {profile?.ens?.name || truncateAddress(userAddress!)}
           </p>
         )}
         <ShortArrow className={cn('h-5 w-5 rotate-180 transition-transform', walletDropdownOpen && 'rotate-0')} />
@@ -52,10 +49,7 @@ const Connected = () => {
       >
         <button
           className='flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2.5 transition-opacity hover:opacity-80'
-          onClick={() => {
-            disconnectAuth()
-            disconnect()
-          }}
+          onClick={handleSignOut}
         >
           <p>Sign out</p>
         </button>

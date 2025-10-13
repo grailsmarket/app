@@ -1,51 +1,26 @@
-import { useAppSelector, useAppDispatch } from '@/app/state/hooks'
-import usePosthogEvents from '@/app/hooks/usePosthogEvents'
-
-import {
-  selectMarketplaceFilters,
-  setMarketplaceFiltersLength,
-} from '@/app/state/reducers/filters/marketplaceFilters'
-
-import { MARKETPLACE_LENGTH_VALUES } from '@/app/constants/filters/marketplaceFilters'
+import { selectMarketplaceFilters, setMarketplaceFiltersLength } from '@/state/reducers/filters/marketplaceFilters'
+import { useAppSelector, useAppDispatch } from '@/state/hooks'
 
 export const useLengthFilter = () => {
   const dispatch = useAppDispatch()
-  const { capturePosthogEvent } = usePosthogEvents()
   const { length: lengthFilter } = useAppSelector(selectMarketplaceFilters)
 
   const minVal = lengthFilter.min
   const maxVal = lengthFilter.max
 
-  const onChange = ({
-    newMinIndex,
-    newMaxIndex,
-  }: {
-    newMinIndex?: number
-    newMaxIndex?: number
-  }) => {
-    const minOrMax = {
-      min: typeof newMinIndex === 'number',
-      max: typeof newMaxIndex === 'number',
-    }
-
-    const newValues = {
-      min:
-        newMinIndex !== undefined && minOrMax.min
-          ? MARKETPLACE_LENGTH_VALUES[newMinIndex]
-          : minVal,
-      max:
-        newMaxIndex !== undefined && minOrMax.max
-          ? MARKETPLACE_LENGTH_VALUES[newMaxIndex]
-          : maxVal,
-    }
-
-    dispatch(setMarketplaceFiltersLength(newValues))
-    capturePosthogEvent('Set Length Filter', newValues)
+  const setMinLength = (min: number) => {
+    const newMin = maxVal && min >= maxVal ? maxVal : min
+    dispatch(setMarketplaceFiltersLength({ min: newMin, max: lengthFilter.max }))
+  }
+  const setMaxLength = (max: number) => {
+    const newMax = minVal && max <= minVal ? minVal : max
+    dispatch(setMarketplaceFiltersLength({ min: lengthFilter.min, max: newMax }))
   }
 
   return {
     minVal,
     maxVal,
-    onChange,
+    setMinLength,
+    setMaxLength,
   }
 }

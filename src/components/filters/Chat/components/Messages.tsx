@@ -10,7 +10,7 @@ const Messages = () => {
   return (
     <div
       ref={scrollableMessagesRef}
-      className="flex flex-1 flex-col gap-8 overflow-y-auto bg-dark-700 p-4 pt-8"
+      className="flex flex-1 flex-col gap-8 overflow-y-auto p-4 pt-8"
     >
       {messages.map(({ time, user, message }, index: number) => {
         return (

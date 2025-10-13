@@ -3,6 +3,7 @@ import Image from 'next/image'
 import useCartDomains from '@/hooks/useCartDomains'
 import inCart from 'public/icons/cart-added.svg'
 import addToCart from 'public/icons/cart-add.svg'
+import { cn } from '@/utils/tailwind'
 
 interface CartIconProps {
   name: string
@@ -14,7 +15,7 @@ const CartIcon: React.FC<CartIconProps> = ({ name, size }) => {
 
   return (
     <div
-      className={` flex items-center justify-center rounded-[4px] p-1.5 ${!addToCart ? 'bg-white' : 'bg-purple'}`}
+      className={cn('flex items-center justify-center rounded-[4px] p-1.5', isAddedToCart(name) ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100', 'transition-opacity')}
     >
       <Image
         src={

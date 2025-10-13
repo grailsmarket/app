@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { logout } from '@/api/siwe/logout'
@@ -40,16 +40,18 @@ export const useAuth = () => {
     return
   }
 
-  const disconnect = async () => {
-    const success = await logout()
-    if (!success) return
-
+  const { disconnect } = useDisconnect()
+  const signOut = async () => {
+    disconnect()
+    logout()
     document.cookie = `token=; path=/; max-age=0;`
     await refetchAuthStatus()
   }
 
   return {
+    address,
     verify,
+    signOut,
     disconnect,
     authStatus,
     authStatusIsLoading,

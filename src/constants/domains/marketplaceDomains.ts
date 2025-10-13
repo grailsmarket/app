@@ -66,7 +66,7 @@ export const EXTEND_DOMAIN_DURATION_UNITS_VALUES: ExtendDurationUnitsType[] = ['
 export const MARKETPLACE_DOMAIN_COLUMN_WIDTHS: Record<number, string> = {
   1: 'w-[100%]',
   2: 'w-[80%]',
-  3: 'w-[45%]',
+  3: 'w-[50%]',
   4: 'w-[30%]',
   5: 'w-[25%]',
   6: 'w-[25%]',
@@ -75,7 +75,7 @@ export const MARKETPLACE_DOMAIN_COLUMN_WIDTHS: Record<number, string> = {
 }
 
 export const MARKETPLACE_DETAILS_COLUMN_WIDTHS: Record<number, string> = {
-  3: 'w-[40%]',
+  3: 'w-[35%]',
   4: 'w-[27.5%]',
   5: 'w-[20%]',
   6: 'w-[15%]',

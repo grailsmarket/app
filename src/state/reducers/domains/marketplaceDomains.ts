@@ -26,7 +26,6 @@ export type MarketplaceCheckoutType = '' | 'Registration' | 'Purchase' | 'Offer'
 type MarketplaceDomainsState = {
   cartUnregisteredDomains: CartUnregisteredDomainType[]
   cartRegisteredDomains: CartRegisteredDomainType[]
-  offerDuration: DurationType
   changedPurchaseDomains: string[]
   isCheckingOut: boolean
 }
@@ -35,10 +34,6 @@ type MarketplaceDomainsState = {
 const initialState: MarketplaceDomainsState = {
   cartUnregisteredDomains: [],
   cartRegisteredDomains: [],
-  offerDuration: {
-    value: undefined,
-    units: 'Month',
-  },
   changedPurchaseDomains: [],
   isCheckingOut: false,
 }
@@ -64,7 +59,6 @@ export const marketplaceDomainsSlice = createSlice({
     },
     removeFromMarketplaceDomainsCart(state, { payload }: PayloadAction<MarketplaceDomainNameType[]>) {
       state.cartUnregisteredDomains = state.cartUnregisteredDomains.filter((domain) => !payload.includes(domain.name))
-
       state.cartRegisteredDomains = state.cartRegisteredDomains.filter((domain) => !payload.includes(domain.name))
     },
     updateRegistrationPeriod(
@@ -76,24 +70,6 @@ export const marketplaceDomainsSlice = createSlice({
       if (relevantDomain) {
         relevantDomain.registrationPeriod = payload.newPeriod
       }
-    },
-    updateOfferValue(
-      state,
-      {
-        payload,
-      }: PayloadAction<{
-        name: MarketplaceDomainNameType
-        newOfferValue: number | undefined
-      }>
-    ) {
-      const relevantDomain = state.cartRegisteredDomains.find(({ name }) => name === payload.name)
-
-      if (relevantDomain) {
-        relevantDomain.offerValue = payload.newOfferValue
-      }
-    },
-    updateOfferDuration(state, { payload }: PayloadAction<DurationType>) {
-      state.offerDuration = payload
     },
     addPurchaseDomainChanged(state, { payload }: PayloadAction<string>) {
       state.changedPurchaseDomains = state.changedPurchaseDomains.concat([payload])
@@ -107,10 +83,6 @@ export const marketplaceDomainsSlice = createSlice({
     clearMarketplaceDomainsCart(state) {
       state.cartUnregisteredDomains = []
       state.cartRegisteredDomains = []
-      state.offerDuration = {
-        value: undefined,
-        units: 'Month',
-      }
     },
   },
 })
@@ -123,8 +95,6 @@ export const {
   setCartUnregisteredDomains,
   addToCartUnregisteredDomains,
   updateRegistrationPeriod,
-  updateOfferValue,
-  updateOfferDuration,
   addPurchaseDomainChanged,
   removePurchaseDomainsChanged,
   clearMarketplaceDomainsCart,

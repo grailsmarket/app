@@ -2,19 +2,16 @@
 
 import { PersistGate } from 'redux-persist/integration/react'
 
-import { persistor } from '../../../../../state/index'
 import { useLengthFilter } from './hooks/useLengthFilter'
 import { useFilterOpen } from '../../hooks/useFilterOpen'
 
-import RangeSelect from '@/app/ui/RangeSelect'
 import UnexpandedFilter from '../UnexpandedFilter'
-import ExpandableTab from '@/app/ui/ExpandableTab'
-
-import { MARKETPLACE_LENGTH_VALUES } from '@/app/constants/filters/marketplaceFilters'
+import ExpandableTab from '@/components/ui/expandableTab'
+import { persistor } from '@/state'
 
 const LengthFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Length')
-  const { minVal, maxVal, onChange } = useLengthFilter()
+  const { minVal, maxVal, setMinLength, setMaxLength } = useLengthFilter()
 
   return (
     <PersistGate
@@ -25,14 +22,22 @@ const LengthFilter = () => {
         open={open}
         toggleOpen={toggleOpen}
         label="Length"
-        expandedHeight={72}
+        expandedHeight={84}
       >
-        <div className="flex flex-col gap-y-4">
-          <RangeSelect
-            values={[...MARKETPLACE_LENGTH_VALUES]}
-            minVal={minVal}
-            maxVal={maxVal}
-            onChange={onChange}
+        <div className="flex flex-row gap-x-2">
+          <input
+            type="number"
+            placeholder="Min"
+            value={minVal || ''}
+            onChange={(e) => setMinLength(Number(e.target.value))}
+            className='w-1/2 outline-none border-primary/20 border-2 p-md rounded-sm text-md'
+          />
+          <input
+            type="number"
+            placeholder="Max"
+            value={maxVal || ''}
+            onChange={(e) => setMaxLength(Number(e.target.value))}
+            className='w-1/2 outline-none border-primary/20 border-2 p-md rounded-sm text-md'
           />
         </div>
       </ExpandableTab>

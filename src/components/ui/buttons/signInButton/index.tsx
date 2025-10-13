@@ -1,55 +1,16 @@
 'use client'
 
-import { useAccount, useDisconnect } from 'wagmi'
+import React from 'react'
+import { useAccount } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import React, { useCallback, useEffect, useState } from 'react'
-import { EthereumIcon, useSiwe, LoadingCell } from 'ethereum-identity-kit'
-import { useAuth } from '@/hooks/useAuthStatus'
-import { fetchNonce } from '@/api/siwe/fetchNonce'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { EthereumIcon, LoadingCell } from 'ethereum-identity-kit'
 import Connected from './connected'
-import { queryClient } from '@/lib/queryClient'
+import { useUserContext } from '@/context/user-context'
 
 const SignInButton = () => {
-  const [isSigningIn, setIsSigningIn] = useState(false)
   const { address } = useAccount()
   const { openConnectModal } = useConnectModal()
-  const { disconnect } = useDisconnect()
-  const { authStatus, verify, refetchAuthStatus } = useAuth()
-
-  const handleGetNonce = useCallback(async () => {
-    if (!address) throw new Error('No address found')
-    return await fetchNonce(address)
-  }, [address])
-
-  const handleSignInSuccess = async () => {
-    queryClient.invalidateQueries({ queryKey: ['auth', 'status'] })
-    setIsSigningIn(false)
-    refetchAuthStatus()
-  }
-
-  const handleSignInError = (error: Error) => {
-    console.error('Sign in error:', error)
-    setIsSigningIn(false)
-    disconnect()
-  }
-
-  const { handleSignIn } = useSiwe({
-    verifySignature: verify,
-    onSignInSuccess: handleSignInSuccess,
-    onSignInError: handleSignInError,
-    message: 'Grails Market wants you to sign in',
-    getNonce: handleGetNonce,
-    expirationTime: DAY_IN_SECONDS * 1000, // day in milliseconds
-  })
-
-  useEffect(() => {
-    if (address && authStatus === 'unauthenticated') {
-      setIsSigningIn(true)
-      handleSignIn()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, authStatus])
+  const { authStatus, isSigningIn } = useUserContext()
 
   if (authStatus === 'authenticated' && address) return <Connected />
 

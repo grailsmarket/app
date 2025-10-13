@@ -1,13 +1,12 @@
 import { useAccount } from 'wagmi'
 import { useMutation } from '@tanstack/react-query'
 
-import { useAppDispatch, useAppSelector } from '../state/hooks'
+import { useAppDispatch } from '../state/hooks'
 
 import { clearCart } from '@/api/cart/clearCart'
 import { ModifyCartsVariables, modifyCart } from '@/api/cart/modifyCart'
 
 import {
-  selectMarketplaceDomains,
   addToCartRegisteredDomains,
   clearMarketplaceDomainsCart,
   addToCartUnregisteredDomains,
@@ -21,6 +20,7 @@ const useModifyCart = () => {
   const modifyCartLocal = ({ domain, inCart, basket }: ModifyCartsVariables) => {
     if (inCart) {
       dispatch(removeFromMarketplaceDomainsCart([domain.name]))
+      return
     }
 
     if (basket === 'REGISTER') {
@@ -32,9 +32,7 @@ const useModifyCart = () => {
           },
         ])
       )
-    }
-
-    if (basket === 'PURCHASE') {
+    } else {
       dispatch(addToCartRegisteredDomains([domain]))
     }
   }
@@ -51,9 +49,6 @@ const useModifyCart = () => {
 
   const modifyCartMutation = useMutation({
     mutationFn: modifyCart,
-    // onSuccess: (data) => {
-
-    // },
     onError: (error) => {
       console.error(error)
     },

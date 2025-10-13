@@ -2,14 +2,20 @@
 
 import { useAccount } from 'wagmi'
 import type { Address } from 'viem'
-import { useQuery } from '@tanstack/react-query'
-import { useContext, createContext } from 'react'
-import { AccountResponseType, fetchAccount } from 'ethereum-identity-kit'
+import { useContext, createContext, useEffect, useCallback, useState } from 'react'
+import { useSiwe } from 'ethereum-identity-kit'
+import { DAY_IN_SECONDS } from '@/constants/time'
+import { queryClient } from '@/lib/queryClient'
+import { fetchNonce } from '@/api/siwe/fetchNonce'
+import { useAuth } from '@/hooks/useAuthStatus'
+import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 
 type userContextType = {
   userAddress: Address | undefined
-  userAccount?: AccountResponseType | null
-  userAccountIsLoading: boolean
+  authStatus: AuthenticationStatus
+  isSigningIn: boolean
+  handleSignIn: () => void
+  handleSignOut: () => void
 }
 
 type Props = {
@@ -18,28 +24,58 @@ type Props = {
 
 const userContext = createContext<userContextType | undefined>(undefined)
 
-export const EFPProfileProvider: React.FC<Props> = ({ children }) => {
-  const { address: userAddress } = useAccount()
+export const UserProvider: React.FC<Props> = ({ children }) => {
+  const [isSigningIn, setIsSigningIn] = useState(false)
 
-  const { data: account, isLoading: accountIsLoading } = useQuery({
-    queryKey: ['account', userAddress],
-    queryFn: async () => {
-      if (!userAddress) return null
+  const { address } = useAccount()
+  const { authStatus, verify, refetchAuthStatus, signOut, disconnect } = useAuth()
 
-      const fetchedAccount = await fetchAccount(userAddress)
-      return fetchedAccount
-    },
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    enabled: !!userAddress,
+  const handleGetNonce = useCallback(async () => {
+    if (!address) throw new Error('No address found')
+    return await fetchNonce(address)
+  }, [address])
+
+  const handleSignInSuccess = async () => {
+    queryClient.invalidateQueries({ queryKey: ['auth', 'status'] })
+    setIsSigningIn(false)
+    refetchAuthStatus()
+  }
+
+  const handleSignInError = (error: Error) => {
+    console.error('Sign in error:', error)
+    setIsSigningIn(false)
+    disconnect()
+  }
+
+  const { handleSignIn } = useSiwe({
+    verifySignature: verify,
+    onSignInSuccess: handleSignInSuccess,
+    onSignInError: handleSignInError,
+    message: 'Grails Market wants you to sign in',
+    getNonce: handleGetNonce,
+    expirationTime: DAY_IN_SECONDS * 1000, // day in milliseconds
   })
+
+  useEffect(() => {
+    if (address && authStatus === 'unauthenticated') {
+      setIsSigningIn(true)
+      handleSignIn()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, authStatus])
+
+  const handleSignOut = () => {
+    signOut()
+  }
 
   return (
     <userContext.Provider
       value={{
-        userAddress,
-        userAccount: account,
-        userAccountIsLoading: accountIsLoading,
+        userAddress: address,
+        authStatus,
+        isSigningIn,
+        handleSignIn,
+        handleSignOut,
       }}
     >
       {children}
@@ -47,10 +83,10 @@ export const EFPProfileProvider: React.FC<Props> = ({ children }) => {
   )
 }
 
-export const useEFPProfile = (): userContextType => {
+export const useUserContext = (): userContextType => {
   const context = useContext(userContext)
   if (context === undefined) {
-    throw new Error('useEFPProfile must be used within an EFPProfileProvider')
+    throw new Error('useUserContext must be used within an UserContextProvider')
   }
   return context
 }

@@ -10,8 +10,8 @@ const LoadingCard = ({ ref }: { ref?: RefObject<HTMLDivElement> }) => {
       <div
         className={`gradient-gray flex h-[170px] w-full flex-col justify-between p-[21px]`}
       />
-      <div className="flex w-full flex-1 flex-col justify-between bg-dark-700 ">
-        <div className="flex w-full flex-col gap-2 bg-dark-700 pl-4 pt-4 ">
+      <div className="flex w-full flex-1 flex-col justify-between ">
+        <div className="flex w-full flex-col gap-2 pl-4 pt-4 ">
           <LoadingCell width="55%" />
           <LoadingCell width="35%" />
         </div>

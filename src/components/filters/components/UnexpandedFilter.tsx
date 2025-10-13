@@ -1,6 +1,6 @@
 import Image from 'next/image'
-import { MarketplaceOpenableFilterType } from '@/app/state/reducers/filters/marketplaceFilters'
-import chevronUp from '../../../../../public/svg/navigation/chevron-up.svg'
+import { MarketplaceOpenableFilterType } from '@/state/reducers/filters/marketplaceFilters'
+import arrowDown from 'public/icons/arrow-down.svg'
 
 interface UnexpandedFilterProps {
   label: MarketplaceOpenableFilterType
@@ -8,14 +8,13 @@ interface UnexpandedFilterProps {
 
 const UnexpandedFilter: React.FC<UnexpandedFilterProps> = ({ label }) => {
   return (
-    <div className="w-full bg-dark-700 p-4">
+    <div className="w-full p-4">
       <div className="h-4 overflow-y-hidden transition-all">
         <div className="mb-4 flex cursor-pointer items-center justify-between">
           <p className="text-xs font-medium leading-[18px]">{label}</p>
           <Image
-            src={chevronUp}
+            src={arrowDown}
             alt="chevron up"
-            className="rotate-180 transition-all"
           />
         </div>
       </div>

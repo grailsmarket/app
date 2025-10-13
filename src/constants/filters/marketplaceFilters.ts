@@ -2,19 +2,18 @@ export const MARKETPLACE_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price 
 
 export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 
-export const MARKETPLACE_STATUS_FILTER_LABELS = ['Listed', 'Premium', 'Available', 'Unlisted', 'Unregistered'] as const
+export const MARKETPLACE_STATUS_FILTER_LABELS = ['Listed', 'Premium', 'Available', 'Unlisted', 'Expiring Soon'] as const
 
 export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
-  'Buy Now': 'buy_now',
+  Listed: 'listed',
   'Has Offers': 'has_offers',
 }
 
 export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
-  Unregistered: 'previously_owned',
+  Available: 'available',
   Premium: 'premium',
+  'Expiring Soon': 'expiring',
 }
-
-export const MARKETPLACE_LENGTH_VALUES = ['3', '4', '5', '6', '7', '8', '9', '10+'] as const
 
 export const MARKETPLACE_SORT_FILTERS = [
   'alphabetical',
@@ -24,9 +23,9 @@ export const MARKETPLACE_SORT_FILTERS = [
   'price_high_to_low',
 ]
 
-export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Has Offers'] as const
+export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Has Offers'] as const
 
-export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Expiring Soon'] as const
 
 export const PORTFOLIO_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
 

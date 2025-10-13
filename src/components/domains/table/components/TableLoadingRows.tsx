@@ -30,11 +30,11 @@ const TableLoadingRows: React.FC<TableLoadingRowsProps> = ({
           <div
             key={index}
             className={`${index === 3
-                ? 'hidden md:flex'
-                : index >= 4
-                  ? 'hidden lg:flex'
-                  : 'flex'
-              }  min-h-[60px] w-full items-center border-t border-t-dark-900 bg-dark-700 px-4 py-3`}
+              ? 'hidden md:flex'
+              : index >= 4
+                ? 'hidden lg:flex'
+                : 'flex'
+              }  min-h-[60px] w-full items-center border-t border-t-dark-900 px-4 py-3`}
           >
             {headerDisplayStyle.map((style, index) => (
               <div

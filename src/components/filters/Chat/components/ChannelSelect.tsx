@@ -17,7 +17,7 @@ const ChannelSelect: React.FC<ChannelSelectProps> = ({
   }))
 
   return (
-    <div className="z-20 bg-dark-700 px-4 pt-4">
+    <div className="z-20 px-4 pt-4">
       <Dropdown
         searchable
         options={[

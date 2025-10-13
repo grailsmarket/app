@@ -1,4 +1,4 @@
-import { ChangeEventHandler } from 'react'
+import { MouseEventHandler } from 'react'
 
 import { useAppSelector, useAppDispatch } from '@/state/hooks'
 
@@ -19,7 +19,7 @@ export const useStatusFilters = () => {
 
   const toggleActive = (
     status: MarketplaceStatusFilterType,
-  ): ChangeEventHandler<HTMLInputElement> => {
+  ): MouseEventHandler<HTMLButtonElement> => {
     return () => {
       dispatch(toggleMarketplaceFiltersStatus(status))
     }

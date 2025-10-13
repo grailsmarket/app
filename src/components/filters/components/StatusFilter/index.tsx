@@ -1,30 +1,16 @@
 'use client'
 
 import { PersistGate } from 'redux-persist/integration/react'
-
 import { useFilterOpen } from '../../hooks/useFilterOpen'
 import { useStatusFilters } from './hooks/useStatusFilters'
-
-import { persistor } from '@/app/state'
-
-import Switch from '@/app/ui/Switch'
-import ExpandableTab from '@/app/ui/ExpandableTab'
+import { persistor } from '@/state'
+import FilterSelector from '../FilterSelector'
+import ExpandableTab from '@/components/ui/expandableTab'
 import UnexpandedFilter from '../UnexpandedFilter'
+import { MARKETPLACE_STATUS_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
 
-import {
-  ExclusiveStatusFilterType,
-  MARKETPLACE_STATUS_FILTER_LABELS,
-  OFFERS_STATUS_FILTER_LABELS,
-  YOUR_DOMAINS_FILTER_LABELS,
-} from '@/app/constants/filters/marketplaceFilters'
 
-interface StatusFilterProps {
-  exclusiveStatusFilter?: ExclusiveStatusFilterType
-}
-
-const StatusFilter: React.FC<StatusFilterProps> = ({
-  exclusiveStatusFilter,
-}) => {
+const StatusFilter: React.FC = () => {
   const { open, toggleOpen } = useFilterOpen('Status')
   const { isActive, toggleActive } = useStatusFilters()
 
@@ -36,22 +22,16 @@ const StatusFilter: React.FC<StatusFilterProps> = ({
       <ExpandableTab
         open={open}
         toggleOpen={toggleOpen}
-        expandedHeight={!exclusiveStatusFilter ? 227 : 150}
+        expandedHeight={227}
         label="Status"
       >
-        <div className="mb-4 h-px w-full bg-dark-500" />
-        <div className="flex flex-col gap-y-4 overflow-x-hidden">
-          {(exclusiveStatusFilter
-            ? exclusiveStatusFilter === 'domains'
-              ? YOUR_DOMAINS_FILTER_LABELS
-              : OFFERS_STATUS_FILTER_LABELS
-            : MARKETPLACE_STATUS_FILTER_LABELS
-          ).map((label, index) => (
-            <div key={index} className="flex justify-between">
-              <p className="text-xs font-medium text-light-200">{label}</p>
-              <Switch
+        <div className="flex flex-col pt-sm gap-y-4 overflow-x-hidden">
+          {MARKETPLACE_STATUS_FILTER_LABELS.map((label, index) => (
+            <div key={index} className="flex justify-between cursor-pointer" onClick={() => toggleActive(label)}>
+              <p className="text-md font-medium text-light-200">{label}</p>
+              <FilterSelector
                 isActive={isActive(label)}
-                onChange={toggleActive(label)}
+                onClick={toggleActive(label)}
               />
             </div>
           ))}

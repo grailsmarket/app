@@ -3,16 +3,16 @@
 import { PersistGate } from 'redux-persist/integration/react'
 
 import { useFilterOpen } from '../../hooks/useFilterOpen'
-import { MinOrMax, usePriceRangeFilter } from './hooks/usePriceRangeFilter'
+import { usePriceRangeFilter } from './hooks/usePriceRangeFilter'
 
-import { persistor } from '../../../../../state/index'
+import { persistor } from '@/state'
 import UnexpandedFilter from '../UnexpandedFilter'
-import ExpandableTab from '@/app/ui/ExpandableTab'
+import ExpandableTab from '@/components/ui/expandableTab'
 import PriceDenominatorSwitch from './components/PriceDenominatorSwitch'
 
 const PriceRangeFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Price Range')
-  const { priceRange, onChangeGenerator } = usePriceRangeFilter()
+  const { priceRange, setMaxPrice, setMinPrice } = usePriceRangeFilter()
 
   return (
     <PersistGate
@@ -30,17 +30,17 @@ const PriceRangeFilter = () => {
           <div className="flex gap-x-2">
             <input
               type="number"
-              className=" w-[121px] rounded border-none bg-dark-300  py-[11px] pl-4 pr-3 text-xs  font-medium leading-[18px] outline-none placeholder:text-light-500"
+              className="w-1/2 outline-none border-primary/20 border-2 p-md rounded-sm text-md"
               placeholder="Min"
-              value={priceRange.min}
-              onChange={onChangeGenerator(MinOrMax.min)}
+              value={priceRange.min || ''}
+              onChange={(e) => setMinPrice(e.target.value)}
             />
             <input
               type="number"
-              className=" w-[121px] rounded border-none bg-dark-300  py-[11px] pl-4 pr-3 text-xs font-medium leading-[18px] outline-none placeholder:text-light-500"
+              className="w-1/2 outline-none border-primary/20 border-2 p-md rounded-sm text-md"
               placeholder="Max"
-              value={priceRange.max}
-              onChange={onChangeGenerator(MinOrMax.max)}
+              value={priceRange.max || ''}
+              onChange={(e) => setMaxPrice(e.target.value)}
             />
           </div>
         </div>

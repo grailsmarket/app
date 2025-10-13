@@ -4,27 +4,20 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchMarketplaceDomains } from '@/api/domains/fetchMarketplaceDomains'
 import DomainsTable from '@/components/domains/table'
+import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
+import { useAppSelector } from '@/state/hooks'
 
 const SalesAndRegs = () => {
+  const filters = useAppSelector(selectMarketplaceFilters)
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
     queryFn: () => fetchMarketplaceDomains({
       limit: 7,
       pageParam: 0,
-      filters: {
-        status: ['Listed'],
-        type: ['Letters'],
-        priceRange: { min: 0, max: 1000000000000000000000000000000000000000 },
-        length: { min: '3', max: '10+' },
-        denomination: 'ETH',
-        categoryObjects: [],
-        sort: null,
-      },
-      searchTerm: '',
+      filters,
+      searchTerm: 'hey',
     }),
   })
-
-  console.log(listings?.domains)
 
   return (
     <div className='flex flex-col gap-4'>
@@ -36,6 +29,7 @@ const SalesAndRegs = () => {
         noResults={!isLoading && listings?.domains?.length === 0}
         listScrollTop={0}
         showHeaders={false}
+        displayedDetails={['listed_price']}
       />
     </div>
   )

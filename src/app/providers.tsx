@@ -10,6 +10,7 @@ import store from '@/state'
 import Navigation from '@/components/navigation'
 import { DAY_IN_SECONDS, ONE_MINUTE } from '@/constants/time'
 import config from '@/lib/wagmi'
+import { UserProvider } from '@/context/user-context'
 
 type ProviderProps = {
   children: React.ReactNode
@@ -30,10 +31,12 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
           <RainbowKitProvider coolMode={false} theme={darkTheme()}>
             <TransactionProvider batchTransactions={true}>
               <ReduxProvider store={store}>
-                <Navigation />
-                {children}
-                <TransactionModal />
-                <div id='modal-root' />
+                <UserProvider>
+                  <Navigation />
+                  {children}
+                  <TransactionModal />
+                  <div id='modal-root' />
+                </UserProvider>
               </ReduxProvider>
             </TransactionProvider>
           </RainbowKitProvider>

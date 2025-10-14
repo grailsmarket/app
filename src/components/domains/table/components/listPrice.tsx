@@ -16,15 +16,13 @@ interface ListPriceProps {
 const ListPrice: React.FC<ListPriceProps> = ({ domain, registrationStatus, columnCount }) => {
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['listed_price'].getWidth(columnCount))}>
-      <div className="flex">
+      <div className='flex'>
         {registrationStatus === REGISTERED && domain.price && (
-          <Image src={ethGray} alt="ETH" className="h-[14px] w-auto" />
+          <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
         )}
-        <p className="ml-1 truncate text-xs font-medium text-light-600">
+        <p className='text-light-600 truncate text-xs font-medium'>
           price
-          {registrationStatus === REGISTERED &&
-            domain.price &&
-            formatEtherPrice(domain.price)}
+          {registrationStatus === REGISTERED && domain.price && formatEtherPrice(domain.price)}
         </p>
       </div>
     </div>

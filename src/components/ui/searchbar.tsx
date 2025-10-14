@@ -32,7 +32,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
   return (
     <div
       className={cn(
-        'bg-secondary border-foreground/10 focus-within:bg-tertiary focus-within:shadow-md focus-within:scale-[1.01] hover:bg-tertiary active:bg-tertiary p-lg group relative flex items-center gap-2 rounded-md border-[1px] transition-all',
+        'bg-secondary border-foreground/10 focus-within:bg-tertiary hover:bg-tertiary active:bg-tertiary p-lg group relative flex items-center gap-2 rounded-md border-[1px] transition-all focus-within:scale-[1.01] focus-within:shadow-md',
         className
       )}
     >
@@ -42,7 +42,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
         value={search}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        className='bg-transparent outline-none w-full'
+        className='w-full bg-transparent outline-none'
       />
       {showSearchIcon && (
         <MagnifyingGlass className='text-primary/50 group-focus-within:text-primary group-hover:text-primary h-6 w-6 cursor-pointer transition-colors' />

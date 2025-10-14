@@ -1,4 +1,3 @@
-import { MouseEventHandler } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   MarketplaceCategoryType,
@@ -20,8 +19,7 @@ export const useCategoryFilter = (category: MarketplaceCategoryType) => {
 
   const isCategoryActive = categoryObjects.some(({ category: _category }) => _category === category)
 
-  const toggleCategory: MouseEventHandler<HTMLButtonElement> = (e) => {
-    e.stopPropagation()
+  const toggleCategory = () => {
     dispatch(toggleMarketplaceCategory(category))
   }
 

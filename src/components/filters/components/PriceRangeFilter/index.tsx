@@ -15,30 +15,22 @@ const PriceRangeFilter = () => {
   const { priceRange, setMaxPrice, setMinPrice } = usePriceRangeFilter()
 
   return (
-    <PersistGate
-      persistor={persistor}
-      loading={<UnexpandedFilter label="Price Range" />}
-    >
-      <ExpandableTab
-        open={open}
-        toggleOpen={toggleOpen}
-        expandedHeight={112}
-        label="Price Range"
-      >
-        <div className="flex flex-col items-start gap-y-4">
+    <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Price Range' />}>
+      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={112} label='Price Range'>
+        <div className='flex flex-col items-start gap-y-4'>
           <PriceDenominatorSwitch />
-          <div className="flex gap-x-2">
+          <div className='flex gap-x-2'>
             <input
-              type="number"
-              className="w-1/2 outline-none border-primary/20 border-2 p-md rounded-sm text-md"
-              placeholder="Min"
+              type='number'
+              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+              placeholder='Min'
               value={priceRange.min || ''}
               onChange={(e) => setMinPrice(e.target.value)}
             />
             <input
-              type="number"
-              className="w-1/2 outline-none border-primary/20 border-2 p-md rounded-sm text-md"
-              placeholder="Max"
+              type='number'
+              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+              placeholder='Max'
               value={priceRange.max || ''}
               onChange={(e) => setMaxPrice(e.target.value)}
             />

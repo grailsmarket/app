@@ -15,25 +15,14 @@ const TypeFilter = () => {
   const { isActive, toggleActiveGenerator } = useTypeFilters()
 
   return (
-    <PersistGate
-      persistor={persistor}
-      loading={<UnexpandedFilter label="Type" />}
-    >
-      <ExpandableTab
-        open={open}
-        toggleOpen={toggleOpen}
-        expandedHeight={105}
-        label="Type"
-      >
-        <div className="mb-4 h-px w-full bg-dark-500" />
-        <div className="flex flex-col gap-y-3">
+    <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Type' />}>
+      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={132} label='Type'>
+        <div className='bg-dark-500 mb-4 h-px w-full' />
+        <div className='flex flex-col gap-y-3'>
           {MARKETPLACE_TYPE_FILTER_LABELS.map((label, index) => (
-            <div key={index} className="flex justify-between">
-              <p className="text-xs font-medium text-light-200">{label}</p>
-              <FilterSelector
-                isActive={isActive(label)}
-                onClick={toggleActiveGenerator(label)}
-              />
+            <div key={index} className='flex justify-between'>
+              <p className='text-light-200 text-md font-medium'>{label}</p>
+              <FilterSelector isActive={isActive(label)} onClick={() => toggleActiveGenerator(label)} />
             </div>
           ))}
         </div>

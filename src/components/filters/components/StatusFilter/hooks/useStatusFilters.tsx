@@ -17,9 +17,7 @@ export const useStatusFilters = () => {
     return statusFilter.includes(status)
   }
 
-  const toggleActive = (
-    status: MarketplaceStatusFilterType,
-  ): MouseEventHandler<HTMLButtonElement> => {
+  const toggleActive = (status: MarketplaceStatusFilterType) => {
     return () => {
       dispatch(toggleMarketplaceFiltersStatus(status))
     }

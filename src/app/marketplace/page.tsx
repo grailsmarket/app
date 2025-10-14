@@ -3,18 +3,26 @@ import Image from 'next/image'
 import heroBackground from 'public/art/wallpapper-left.svg'
 import heroBackgroundRight from 'public/art/wallpapper-right.svg'
 import DomainPanel from './components/domainPanel'
+import ActionButtons from './components/actionButtons'
 
 const Marketplace = () => {
   return (
-    <main className='relative px-4'>
-      <div className='absolute z-0 top-0 left-0 w-screen h-full flex items-center justify-between -translate-y-56'>
-        <Image src={heroBackground} alt='hero-background' className='object-cover -translate-x-12' width={400} height={900} />
+    <main className='relative md:px-4'>
+      <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
+        <Image
+          src={heroBackground}
+          alt='hero-background'
+          className='-translate-x-12 object-cover'
+          width={400}
+          height={900}
+        />
         <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
       </div>
-      <div className='mx-auto pt-24 relative z-10 flex flex-col gap-32 w-full'>
-        <div className='flex flex-row gap-4 p-lg max-h-[90vh] w-full overflow-hidden rounded-lg bg-background border-2 border-primary'>
+      <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-24'>
+        <div className='px-lg lg:p-lg bg-background border-primary flex h-[calc(100vh-96px)] md:h-[90vh] w-full flex-row gap-4 overflow-hidden rounded-t-sm md:rounded-lg border-t-2 md:border-2 relative'>
           <FilterPanel />
           <DomainPanel />
+          <ActionButtons />
         </div>
       </div>
     </main>

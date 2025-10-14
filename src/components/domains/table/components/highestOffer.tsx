@@ -17,11 +17,9 @@ const HighestOffer: React.FC<HighestOfferProps> = ({ domain, columnCount }) => {
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['highest_offer'].getWidth(columnCount))}>
       {highestOffer && (
-        <div className="flex">
-          <Image src={ethGray} alt="ETH" className="h-[14px] w-auto" />
-          <p className="ml-1 text-xs font-medium text-light-600">
-            {formatEtherPrice(highestOffer || '0') || null}
-          </p>
+        <div className='flex'>
+          <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
+          <p className='text-light-600 ml-1 text-xs font-medium'>{formatEtherPrice(highestOffer || '0') || null}</p>
         </div>
       )}
     </div>

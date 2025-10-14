@@ -20,10 +20,12 @@ const Navigation = () => {
               className='min-h-[40px] min-w-[130px] cursor-pointer transition-all hover:opacity-80'
             />
           </Link>
-          <Searchbar onSearch={() => { }} className='h-10 min-w-60' />
+          <Searchbar onSearch={() => {}} className='h-10 min-w-60' />
           <Pages />
         </div>
-        <div className='flex items-center gap-4 justify-end'><SignInButton /></div>
+        <div className='flex items-center justify-end gap-4'>
+          <SignInButton />
+        </div>
       </nav>
     </header>
   )

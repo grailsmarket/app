@@ -12,10 +12,10 @@ const GifSelect: React.FC<GifSelectProps> = ({ onGifSelect = () => {} }) => {
   const { showGifModal, onToggleGifPanel, clickHandleRef } = useGifControls()
 
   return (
-    <div className="relative flex items-center" ref={clickHandleRef}>
+    <div className='relative flex items-center' ref={clickHandleRef}>
       {/* <button onClick={onToggleGifPanel}> */}
       <button>
-        <Image src={Gif} alt="emoji icon" />
+        <Image src={Gif} alt='emoji icon' />
       </button>
       {showGifModal && <GifSelectPanel onGifSelect={onGifSelect} />}
     </div>

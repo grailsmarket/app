@@ -6,17 +6,22 @@ const PriceDenominatorSwitch = () => {
   const { denomination, setDenominationGenerator } = usePriceRangeFilter()
 
   return (
-    <div className="rounded bg-tertiary p-sm text-md font-medium relative leading-[18px] flex gap-x-2">
+    <div className='bg-tertiary p-sm text-md relative flex gap-x-2 rounded leading-[18px] font-medium'>
       {PRICE_DENOMINATIONS.map((value, index) => (
         <button
           key={index}
           onClick={setDenominationGenerator(value)}
-          className='rounded-sm px-2 cursor-pointer z-10 text-md w-1/2'
+          className='text-md z-10 w-1/2 cursor-pointer rounded-sm px-2'
         >
           {value}
         </button>
       ))}
-      <div className={cn('w-[47%] left-0.5 top-0.5 transition-all duration-200 absolute h-[22px] bg-background rounded-sm', denomination === PRICE_DENOMINATIONS[1] && 'left-1/2')} />
+      <div
+        className={cn(
+          'bg-background absolute top-0.5 left-0.5 h-[22px] w-[47%] rounded-sm transition-all duration-200',
+          denomination === PRICE_DENOMINATIONS[1] && 'left-1/2'
+        )}
+      />
     </div>
   )
 }

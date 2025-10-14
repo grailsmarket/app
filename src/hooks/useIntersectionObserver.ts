@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-const useIntersectionObserver = () => {
+const useIntersectionObserver = ({
+  rootMargin = '300px 0px 0px 0px ',
+  threshold = 0,
+}: { rootMargin?: string; threshold?: number } = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -10,12 +13,12 @@ const useIntersectionObserver = () => {
       ([entry]) => {
         setIsIntersecting(entry.isIntersecting)
       },
-      { rootMargin: '300px 0px 0px 0px ', threshold: 0 },
+      { rootMargin, threshold }
     )
     observer.observe(ref.current)
 
     return () => observer.disconnect()
-  }, [isIntersecting, ref])
+  }, [isIntersecting, ref, rootMargin, threshold])
 
   return {
     ref,

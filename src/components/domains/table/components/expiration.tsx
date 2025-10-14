@@ -17,11 +17,9 @@ const Expiration: React.FC<ExpirationProps> = ({ domain, columnCount, registrati
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['expires'].getWidth(columnCount))}>
       {REGISTERABLE_STATUSES.includes(registrationStatus) && domain.expiry_date && (
-        <div className="flex">
-          <Image src={ethGray} alt="ETH" className="h-[14px] w-auto" />
-          <p className="ml-1 text-xs font-medium text-light-600">
-            {formatExpiryDate(domain.expiry_date)}
-          </p>
+        <div className='flex'>
+          <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
+          <p className='text-light-600 ml-1 text-xs font-medium'>{formatExpiryDate(domain.expiry_date)}</p>
         </div>
       )}
     </div>

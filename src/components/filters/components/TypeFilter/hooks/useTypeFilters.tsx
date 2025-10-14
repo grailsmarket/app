@@ -14,9 +14,7 @@ export const useTypeFilters = () => {
     return typeFilters.includes(type)
   }
 
-  const toggleActiveGenerator = (
-    type: MarketplaceTypeFilterType,
-  ): MouseEventHandler<HTMLButtonElement> => {
+  const toggleActiveGenerator = (type: MarketplaceTypeFilterType): MouseEventHandler<HTMLButtonElement> => {
     return () => {
       dispatch(toggleMarketplaceFiltersType(type))
     }

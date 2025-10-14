@@ -15,13 +15,15 @@ const CartIcon: React.FC<CartIconProps> = ({ name, size }) => {
 
   return (
     <div
-      className={cn('flex items-center justify-center rounded-[4px] p-1.5', isAddedToCart(name) ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100', 'transition-opacity')}
+      className={cn(
+        'flex items-center justify-center rounded-[4px] p-1.5',
+        isAddedToCart(name) ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
+        'transition-opacity'
+      )}
     >
       <Image
-        src={
-          isAddedToCart(name) ? inCart : addToCart
-        }
-        alt="Add to cart"
+        src={isAddedToCart(name) ? inCart : addToCart}
+        alt='Add to cart'
         style={size ? { width: size, height: size } : {}}
       />
     </div>

@@ -65,31 +65,42 @@ export const EXTEND_DOMAIN_DURATION_UNITS_VALUES: ExtendDurationUnitsType[] = ['
 
 export const MARKETPLACE_DOMAIN_COLUMN_WIDTHS: Record<number, string> = {
   1: 'w-[100%]',
-  2: 'w-[80%]',
-  3: 'w-[50%]',
-  4: 'w-[30%]',
-  5: 'w-[25%]',
+  2: 'w-[70%]',
+  3: 'w-[55%]',
+  4: 'w-[40%]',
+  5: 'w-[32.5%]',
   6: 'w-[25%]',
   7: 'w-[17.5%]',
   8: 'w-[16%]',
 }
 
 export const MARKETPLACE_DETAILS_COLUMN_WIDTHS: Record<number, string> = {
-  3: 'w-[35%]',
-  4: 'w-[27.5%]',
-  5: 'w-[20%]',
+  3: 'w-[25%]',
+  4: 'w-[22.5%]',
+  5: 'w-[17.5%]',
   6: 'w-[15%]',
   7: 'w-[13.3%]',
   8: 'w-[12%]',
 }
 
 export const MARKETPLACE_ACTIONS_COLUMN_WIDTHS: Record<number, string> = {
-  1: 'w-[20%]',
-  2: 'w-[20%]',
-  3: 'w-[15%]',
+  1: 'w-[30%]',
+  2: 'w-[30%]',
+  3: 'w-[20%]',
   4: 'w-[15%]',
   5: 'w-[15%]',
   6: 'w-[15%]',
   7: 'w-[15%]',
   8: 'w-[12%]',
+}
+
+export const MARKETPLACE_GRID_ROW_COUNT_WIDTHS: Record<number, number> = {
+  400: 1,
+  80: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
+  7: 7,
+  1: 8,
 }

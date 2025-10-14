@@ -29,8 +29,7 @@ const DomainsGrid: React.FC<DomainsGridProps> = ({
   setIsRefIntersecting,
 }) => {
   const pathname = usePathname()
-  const { ref: loadMoreRef, isIntersecting: isLoadMoreRefIntersecting } =
-    useIntersectionObserver()
+  const { ref: loadMoreRef, isIntersecting: isLoadMoreRefIntersecting } = useIntersectionObserver()
 
   useEffect(() => {
     if (setIsRefIntersecting) setIsRefIntersecting(isLoadMoreRefIntersecting)
@@ -47,24 +46,19 @@ const DomainsGrid: React.FC<DomainsGridProps> = ({
   return (
     <div
       style={{
-        gridTemplateColumns: noResults
-          ? undefined
-          : 'repeat(auto-fill, minmax(177px, 1fr))',
+        gridTemplateColumns: noResults ? undefined : 'repeat(auto-fill, minmax(177px, 1fr))',
         gridAutoRows: noResults ? undefined : 'minmax(293px,325px)',
         height: isBottomMargin ? 'calc(100vh - 150px)' : 'calc(100vh - 192px)',
       }}
-      className={` ${noResults ? 'flex' : 'grid'
-        } hide-scrollbar h-full gap-x-px overflow-y-auto`}
+      className={` ${noResults ? 'flex' : 'grid'} hide-scrollbar h-full gap-x-px overflow-y-auto`}
       ref={gridRef}
     >
       {domains?.map((domain) => (
         <Card key={domain.name} domain={domain} />
       ))}
-      {isLoading && (
-        <GridLoadingRows />
-      )}
+      {isLoading && <GridLoadingRows />}
       {!noResults && hasNextPage && (
-        <div ref={loadMoreRef} className="flex h-full w-full flex-1">
+        <div ref={loadMoreRef} className='flex h-full w-full flex-1'>
           <LoadingCard />
         </div>
       )}

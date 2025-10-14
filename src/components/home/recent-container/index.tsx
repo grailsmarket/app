@@ -4,9 +4,13 @@ import SalesAndRegs from './salesAndRegs'
 
 const RecentContainer = () => {
   return (
-    <div className='bg-background rounded-md p-xl border-primary border-2 shadow-medium h-fit w-full flex flex-row gap-4'>
-      <div className='w-1/2'><RecentListings /></div>
-      <div className='w-1/2'><SalesAndRegs /></div>
+    <div className='bg-background p-xl border-primary shadow-medium flex h-fit w-full flex-row gap-4 rounded-md border-2'>
+      <div className='w-1/2'>
+        <RecentListings />
+      </div>
+      <div className='w-1/2'>
+        <SalesAndRegs />
+      </div>
     </div>
   )
 }

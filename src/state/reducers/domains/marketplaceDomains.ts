@@ -28,6 +28,7 @@ type MarketplaceDomainsState = {
   cartRegisteredDomains: CartRegisteredDomainType[]
   changedPurchaseDomains: string[]
   isCheckingOut: boolean
+  viewType: 'list' | 'grid'
 }
 
 // Initial State ------------------------------------
@@ -36,6 +37,7 @@ const initialState: MarketplaceDomainsState = {
   cartRegisteredDomains: [],
   changedPurchaseDomains: [],
   isCheckingOut: false,
+  viewType: 'list',
 }
 
 // Slice -------------------------------------------
@@ -80,6 +82,9 @@ export const marketplaceDomainsSlice = createSlice({
     setDomainsIsCheckingOut(state, { payload }: PayloadAction<boolean>) {
       state.isCheckingOut = payload
     },
+    setViewType(state, { payload }: PayloadAction<'list' | 'grid'>) {
+      state.viewType = payload
+    },
     clearMarketplaceDomainsCart(state) {
       state.cartUnregisteredDomains = []
       state.cartRegisteredDomains = []
@@ -99,6 +104,7 @@ export const {
   removePurchaseDomainsChanged,
   clearMarketplaceDomainsCart,
   setDomainsIsCheckingOut,
+  setViewType,
 } = marketplaceDomainsSlice.actions
 
 // Selectors ------------------------------------------

@@ -3,9 +3,7 @@ import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import {
-  GRACE_PERIOD,
-} from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
 import Name from './name'
 import ListPrice from './listPrice'
 import RegistryPrice from './RegistryPrice'
@@ -20,41 +18,57 @@ interface TableRowProps {
   displayedColumns: MarketplaceHeaderColumn[]
 }
 
-const TableRow: React.FC<TableRowProps> = ({
-  domain,
-  index,
-  displayedColumns,
-}) => {
+const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) => {
   const { address } = useAccount()
 
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart =
-    !(registrationStatus === GRACE_PERIOD ||
-      address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
 
   const columnCount = displayedColumns.length
 
   const columns: Record<MarketplaceHeaderColumn, React.ReactNode> = {
-    domain: <Name
-      key={`${domain.name}-domain`}
-      domain={domain}
-      registrationStatus={registrationStatus}
-      domainIsValid={domainIsValid}
-      columnCount={columnCount}
-    />,
-    listed_price: <ListPrice key={`${domain.name}-listed_price`} domain={domain} registrationStatus={registrationStatus} columnCount={columnCount} />,
+    domain: (
+      <Name
+        key={`${domain.name}-domain`}
+        domain={domain}
+        registrationStatus={registrationStatus}
+        domainIsValid={domainIsValid}
+        columnCount={columnCount}
+      />
+    ),
+    listed_price: (
+      <ListPrice
+        key={`${domain.name}-listed_price`}
+        domain={domain}
+        registrationStatus={registrationStatus}
+        columnCount={columnCount}
+      />
+    ),
     registry_price: <RegistryPrice key={`${domain.name}-registry_price`} domain={domain} columnCount={columnCount} />,
     last_sale: <LastSale key={`${domain.name}-last_sale`} domain={domain} columnCount={columnCount} />,
     highest_offer: <HighestOffer key={`${domain.name}-highest_offer`} domain={domain} columnCount={columnCount} />,
-    expires: <Expiration key={`${domain.name}-expires`} domain={domain} columnCount={columnCount} registrationStatus={registrationStatus} />,
-    actions: <Actions key={`${domain.name}-actions`} domain={domain} index={index} columnCount={columnCount} canAddToCart={canAddToCart} />,
+    expires: (
+      <Expiration
+        key={`${domain.name}-expires`}
+        domain={domain}
+        columnCount={columnCount}
+        registrationStatus={registrationStatus}
+      />
+    ),
+    actions: (
+      <Actions
+        key={`${domain.name}-actions`}
+        domain={domain}
+        index={index}
+        columnCount={columnCount}
+        canAddToCart={canAddToCart}
+      />
+    ),
   }
 
   return (
-    <div
-      className='group flex flex-row justify-start h-[60px] w-full cursor-pointer items-center rounded-sm py-3 pl-4 pr-[14px] transition bg-background hover:bg-secondary'
-    >
+    <div className='group bg-background hover:bg-secondary flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm md:p-md lg:p-lg transition'>
       {displayedColumns.map((column) => columns[column])}
     </div>
   )

@@ -15,10 +15,10 @@ const LastSale: React.FC<LastSaleProps> = ({ domain, columnCount }) => {
   const lastPrice =
     domain.last_price && domain.last_sale_asset
       ? {
-        ETH: formatEtherPrice(domain.last_price),
-        USDC: formatRegisterPrice(parseFloat(domain.last_price)),
-        DAI: formatRegisterPrice(parseFloat(domain.last_price)),
-      }[domain.last_sale_asset]
+          ETH: formatEtherPrice(domain.last_price),
+          USDC: formatRegisterPrice(parseFloat(domain.last_price)),
+          DAI: formatRegisterPrice(parseFloat(domain.last_price)),
+        }[domain.last_sale_asset]
       : domain.premium_reg_price
         ? formatRegisterPrice(parseFloat(domain.premium_reg_price))
         : null
@@ -26,20 +26,9 @@ const LastSale: React.FC<LastSaleProps> = ({ domain, columnCount }) => {
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['last_sale'].getWidth(columnCount))}>
-      <div
-        className={`flex items-center ${lastPriceAsset === 'USDC'
-          ? 'gap-[2px]'
-          : 'gap-1'
-          }`}
-      >
-        {lastPrice && lastPriceAsset && (
-          <SaleAsset
-            asset={lastPriceAsset}
-            fontSize="text-xs"
-            ethSize="13px"
-          />
-        )}
-        <p className="text-xs font-medium text-light-600">{lastPrice}</p>
+      <div className={`flex items-center ${lastPriceAsset === 'USDC' ? 'gap-[2px]' : 'gap-1'}`}>
+        {lastPrice && lastPriceAsset && <SaleAsset asset={lastPriceAsset} fontSize='text-xs' ethSize='13px' />}
+        <p className='text-light-600 text-xs font-medium'>{lastPrice}</p>
       </div>
     </div>
   )

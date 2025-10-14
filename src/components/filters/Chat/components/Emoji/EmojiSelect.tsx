@@ -13,19 +13,14 @@ interface EmojiSelectProps {
 }
 
 const EmojiSelect: React.FC<EmojiSelectProps> = ({ emojis, onEmojiSelect }) => {
-  const { onToggleEmojiPanel, showEmojiModal, clickHandleRef } =
-    useEmojiControls()
+  const { onToggleEmojiPanel, showEmojiModal, clickHandleRef } = useEmojiControls()
 
   return (
-    <div className="relative flex items-center" ref={clickHandleRef}>
+    <div className='relative flex items-center' ref={clickHandleRef}>
       <button onClick={onToggleEmojiPanel}>
-        <Image src={Emoji} alt="emoji icon" />
+        <Image src={Emoji} alt='emoji icon' />
       </button>
-      <EmojiSelectPanel
-        show={showEmojiModal}
-        onEmojiSelect={onEmojiSelect}
-        emojis={emojis}
-      />
+      <EmojiSelectPanel show={showEmojiModal} onEmojiSelect={onEmojiSelect} emojis={emojis} />
     </div>
   )
 }

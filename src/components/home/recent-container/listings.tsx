@@ -12,17 +12,18 @@ const RecentListings = () => {
   console.log('filters', filters)
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
-    queryFn: () => fetchMarketplaceDomains({
-      limit: 7,
-      pageParam: 0,
-      filters,
-      searchTerm: '',
-    }),
+    queryFn: () =>
+      fetchMarketplaceDomains({
+        limit: 7,
+        pageParam: 0,
+        filters,
+        searchTerm: '',
+      }),
   })
 
   return (
     <div className='flex flex-col gap-4'>
-      <h2 className='text-2xl font-bold px-lg'>Recent Listings</h2>
+      <h2 className='px-lg text-2xl font-bold'>Recent Listings</h2>
       <DomainsTable
         domains={listings?.domains || []}
         loadingRowCount={7}

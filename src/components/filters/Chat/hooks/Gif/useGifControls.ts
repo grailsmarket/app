@@ -13,10 +13,7 @@ export const useGifControls = () => {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (!clickHandleRef) return
-      if (
-        clickHandleRef.current &&
-        !clickHandleRef.current.contains(e.target)
-      ) {
+      if (clickHandleRef.current && !clickHandleRef.current.contains(e.target)) {
         setShowGifModal(false)
       }
     }

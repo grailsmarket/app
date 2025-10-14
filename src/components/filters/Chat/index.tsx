@@ -11,17 +11,16 @@ interface ChatProps {
 }
 
 const Chat: React.FC<ChatProps> = ({ emojis }) => {
-  const { handleDropdownChange, selectedOption, selectedCategories } =
-    useChannelSelect()
+  const { handleDropdownChange, selectedOption, selectedCategories } = useChannelSelect()
 
   return (
-    <div className="flex flex-1 flex-col justify-between overflow-y-hidden bg-[#111218]">
+    <div className='flex flex-1 flex-col justify-between overflow-y-hidden bg-[#111218]'>
       <ChannelSelect
         handleDropdownChange={handleDropdownChange}
         selectedOption={selectedOption}
         filterCategories={selectedCategories}
       />
-      <div className="flex h-full w-full flex-col gap-px overflow-y-hidden">
+      <div className='flex h-full w-full flex-col gap-px overflow-y-hidden'>
         <Messages />
         <ChatTextBox placeholderTab={selectedOption.value} emojis={emojis} />
       </div>

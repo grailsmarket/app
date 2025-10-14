@@ -16,23 +16,15 @@ interface LikeProps {
   showWatchlist?: boolean
 }
 
-const Like: React.FC<LikeProps> = ({
-  domain,
-  showWatchlist = true,
-  tooltipPosition,
-}) => {
+const Like: React.FC<LikeProps> = ({ domain, showWatchlist = true, tooltipPosition }) => {
   const { authStatus, handleSignIn, userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const {
-    watchlistNames,
-    toggleWatchlist,
-    isLoading,
-  } = useWatchlist()
+  const { watchlistNames, toggleWatchlist, isLoading } = useWatchlist()
   const isWatchlisted = watchlistNames?.includes(domain.name)
 
   return (
     <Tooltip
-      label={isWatchlisted ? "Remove from watchlist" : "Add to watchlist"}
+      label={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
       position={tooltipPosition || 'top'}
       showOnMobile
     >
@@ -47,15 +39,16 @@ const Like: React.FC<LikeProps> = ({
         }}
       >
         <Image
-          src={
-            (watchlistNames?.includes(domain.name) || isLoading)
-              ? BinocularsFilled
-              : BinocularsEmpty
-          }
-          height={20}
-          width={20}
-          alt="Like heart"
-          className={cn(watchlistNames?.includes(domain.name) || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100', 'transition-opacity')}
+          src={watchlistNames?.includes(domain.name) || isLoading ? BinocularsFilled : BinocularsEmpty}
+          height={22}
+          width={22}
+          alt='Like heart'
+          className={cn(
+            watchlistNames?.includes(domain.name) || isLoading
+              ? 'opacity-100 hover:opacity-80'
+              : 'opacity-70 hover:opacity-100',
+            'transition-opacity'
+          )}
         />
       </button>
     </Tooltip>

@@ -18,7 +18,7 @@ const Connected = () => {
     <div ref={dropdownWalletRef} className='group relative'>
       <button
         onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
-        className='bg-background border-primary border-2 p-sm relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-sm transition-opacity hover:opacity-80'
+        className='bg-background border-primary p-sm relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-sm border-2 transition-opacity hover:opacity-80'
       >
         <Avatar
           key={profile?.ens?.avatar}

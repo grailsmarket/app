@@ -16,7 +16,7 @@ const GifSelectPanel: React.FC<GifSelectPanelProps> = ({ onGifSelect }) => {
   }, [])
 
   return (
-    <div className="absolute bottom-full right-0 h-64 w-60 -translate-y-2 translate-x-9 gap-1 bg-dark-600 p-4"></div>
+    <div className='bg-dark-600 absolute right-0 bottom-full h-64 w-60 translate-x-9 -translate-y-2 gap-1 p-4'></div>
   )
 }
 

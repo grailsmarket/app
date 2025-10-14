@@ -1,104 +1,67 @@
 'use client'
 
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
 import { usePanels } from './hooks/usePanels'
 import Filters from './components/Filters'
 import backArrow from 'public/icons/arrow-back.svg'
 import FilterIcon from 'public/icons/filter.svg'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
-import { useWindowSize } from 'ethereum-identity-kit'
-import { useAppSelector } from '@/state/hooks'
+import { selectMarketplaceFilters, setMarketplaceFiltersOpen } from '@/state/reducers/filters/marketplaceFilters'
+import { useOutsideClick, useWindowSize } from 'ethereum-identity-kit'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { cn } from '@/utils/tailwind'
+import { RefObject } from 'react'
+import CloseIcon from 'public/icons/cross.svg'
 
-interface FilterPanelProps {
-  mobileButtonOffset?: string
-}
 
-const FilterPanel: React.FC<FilterPanelProps> = ({
-  mobileButtonOffset,
-}) => {
+const FilterPanel: React.FC = () => {
   const { width: windowWidth } = useWindowSize()
   const { isPanelCategories, setPanelCategories, setPanelAll } = usePanels()
-  const pathname = usePathname()
 
+  const dispatch = useAppDispatch()
   const { open: filtersOpen } = useAppSelector(selectMarketplaceFilters)
-  const isExpandable = windowWidth && windowWidth < 768
+  const isExpandable = windowWidth && windowWidth < 1024
   const isOpen = isExpandable ? filtersOpen : true
 
+  const outsideClickRef = useOutsideClick(() => {
+    dispatch(setMarketplaceFiltersOpen(false))
+  })
+
   return (
-    <div className='relative w-72 h-full overflow-y-auto'>
+    <div ref={outsideClickRef as RefObject<HTMLDivElement>} className={cn('transition-transform duration-300 absolute z-20 left-0 top-0 bg-background -translate-x-full lg:relative h-[90vh] shadow-md lg:shadow-none lg:h-full w-full sm:w-72 overflow-y-auto', isOpen ? 'translate-x-0' : '-translate-x-full')}>
       <div
-        className={cn('absolute left-0 z-30 pl-4 pt-[7px] lg:hidden', mobileButtonOffset || 'top-[122px]')}
-      >
-        <div className="rounded-sm bg-dark-400 p-[9px]">
-          <Image
-            src={FilterIcon}
-            alt="Filters"
-            width={20}
-            height={20}
-            className="h-5 w-5 cursor-pointer"
-          />
-          <p className="text-lg font-bold leading-6 text-light-800">Filters</p>
-        </div>
-      </div>
-      <div
-        className={cn('fixed left-0 z-40 flex lg:relative flex-col gap-y-px bg-dark-900 transition-[width] duration-[0.4s] lg:duration-100',
-          pathname.includes('/portfolio')
-            ? 'h-[calc(100vh-3rem)] lg:h-full'
-            : 'h-[calc(100vh-3.5rem)] lg:h-full',
-          isOpen
-            ? 'w-full overflow-x-hidden lg:w-[282px]'
-            : 'w-0 lg:z-0 lg:w-[56px]'
+        className={cn(
+          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
+          isOpen ? 'w-full overflow-x-hidden lg:w-[282px]' : 'w-0 lg:z-0 lg:w-[56px]'
         )}
       >
         {/* Top div */}
-        <div
-          className='relative flex items-center justify-between p-4 pr-0 lg:pr-4'
-        >
+        <div className='relative flex items-center justify-between p-4 pr-0 lg:pr-4'>
           <div
-            className={`flex w-full min-w-full justify-between transition-transform lg:min-w-[300px] ${isPanelCategories &&
-              '-translate-x-[100%] lg:-translate-x-[300px] '
+            className={`flex w-full min-w-full justify-between transition-transform pr-lg lg:min-w-[300px] ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]'
               }`}
           >
-            <div className="flex max-w-full gap-1.5 items-center text-sm font-bold leading-6">
-              <Image
-                src={FilterIcon}
-                alt="back arrow"
-                height={14}
-                width={14}
-              />
-              <p className="text-lg font-bold leading-6 text-light-800">Filters</p>
+            <div className='flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
+              <Image src={FilterIcon} alt='back arrow' height={14} width={14} />
+              <p className='text-light-800 text-lg leading-6 font-bold'>Filters</p>
             </div>
+            <button onClick={() => dispatch(setMarketplaceFiltersOpen(false))} className='hover:opacity-80 cursor-pointer transition-opacity'><Image src={CloseIcon} alt='Close' width={16} height={16} /></button>
           </div>
           <div
-            className={cn('flex min-w-full transition-transform lg:min-w-[300px]', isPanelCategories &&
-              '-translate-x-[100%] lg:-translate-x-[300px]'
+            className={cn(
+              'flex min-w-full transition-transform lg:min-w-[300px]',
+              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]'
             )}
           >
-            <button onClick={setPanelAll} className="flex items-center gap-1 cursor-pointer">
-              <Image
-                src={backArrow}
-                alt="back arrow"
-                height={13}
-                width={13}
-                className="mr-[9px] rotate-180"
-              />
-              <p className="h-[22px] text-lg font-bold leading-6 text-light-800">
-                Categories
-              </p>
+            <button onClick={setPanelAll} className='flex cursor-pointer items-center gap-1'>
+              <Image src={backArrow} alt='back arrow' height={13} width={13} className='mr-[9px] rotate-180' />
+              <p className='text-light-800 h-[22px] text-lg leading-6 font-bold'>Categories</p>
             </button>
           </div>
         </div>
       </div>
 
       {/* Middle div */}
-      {isOpen && (
-        <Filters
-          isPanelCategories={isPanelCategories}
-          setPanelCategories={setPanelCategories}
-        />
-      )}
+      {isOpen && <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />}
     </div>
   )
 }

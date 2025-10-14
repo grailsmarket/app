@@ -13,14 +13,12 @@ interface RegistryPriceProps {
 const RegistryPrice: React.FC<RegistryPriceProps> = ({ domain, columnCount }) => {
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['registry_price'].getWidth(columnCount))}>
-      <div className="flex flex-col">
-        <div className="flex text-xs font-medium leading-[18px]">
+      <div className='flex flex-col'>
+        <div className='flex text-xs leading-[18px] font-medium'>
           {hasRegistrationPrice(domain.expiry_date) && (
             <>
-              <p className="text-light-600 opacity-60">$</p>
-              <p className="ml-1 text-light-600">
-                {formatRegisterPrice(domain.registration_price || 0)}
-              </p>
+              <p className='text-light-600 opacity-60'>$</p>
+              <p className='text-light-600 ml-1'>{formatRegisterPrice(domain.registration_price || 0)}</p>
             </>
           )}
         </div>

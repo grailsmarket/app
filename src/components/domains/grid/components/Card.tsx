@@ -4,7 +4,6 @@ import { useAccount } from 'wagmi'
 import { formatEther } from 'viem'
 
 import useCartDomains from '@/hooks/useCartDomains'
-import { generateGradient } from '../utils/generateGradient'
 import { formatEtherPrice } from '@/utils/formatEtherPrice'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
@@ -13,126 +12,89 @@ import SaleAsset from '@/components/ui/asset'
 import CartIcon from '../../table/components/CartIcon'
 import Watchlist from '@/components/ui/watchlist'
 import { MarketplaceDomainType } from '@/types/domains'
-import {
-  REGISTERED,
-  GRACE_PERIOD,
-  REGISTERABLE_STATUSES,
-} from '@/constants/domains/registrationStatuses'
-import ens from '@/public/svg/crypto/ens.svg'
+import { REGISTERED, GRACE_PERIOD, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
+import { getDomainImage } from '@/utils/getDomainImage'
+import { cn } from '@/utils/tailwind'
 
 interface CardProps {
   domain: MarketplaceDomainType
+  className?: string
+  isLastInRow?: boolean
 }
 
-const Card: React.FC<CardProps> = ({ domain }) => {
+const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
   const { onSelect } = useCartDomains()
   const { address } = useAccount()
 
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart =
-    registrationStatus === GRACE_PERIOD ||
-    address?.toLowerCase() === domain.owner?.toLowerCase()
-  const domainFontSize = Math.floor((1 / domain.name.length) * 290)
+  const canAddToCart = registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase()
 
   return (
     <div
-      className={`opacity-70 group flex flex-1 cursor-pointer bg-secondary flex-col gap-y-px transition hover:opacity-100`}
+      className={cn('group rounded-sm bg-secondary h-[400px] sm:h-[340px] w-full flex cursor-pointer flex-col gap-y-px opacity-70 transition hover:opacity-100', className)}
     >
       <div
-        className={`${generateGradient(
-          domain.expiry_date || 0,
-        )} flex h-[170px] w-full flex-col justify-between p-[21px]`}
+        className='flex w-full max-h-[300px] sm:max-h-[230px] flex-col justify-between relative'
       >
-        <Image src={ens} alt="ENS symbol" />
-        <div className="flex flex-row items-center justify-start">
-          <h5
-            style={{
-              textShadow: '0px 0px 4px rgba(0, 0, 0, 0.15)',
-            }}
-            className={`overflow-y-visible truncate text-[${domainFontSize > 21 ? 21 : domainFontSize
-              }px] font-bold leading-[120%] text-white`}
-          >
-            {domain.name}
-          </h5>
-          {!domainIsValid && (
-            <Tooltip
-              position="top"
-              label="Name contains invalid character(s)"
-              align="left"
-            >
-              <p className="pl-[6px]">⚠️</p>
+        <Image src={getDomainImage(domain.token_id)} alt='Domain image' unoptimized width={200} height={200} className='w-full h-full object-cover' />
+        {!domainIsValid && (
+          <div className='absolute top-4 right-4 z-10'>
+            <Tooltip position='bottom' label='Name contains invalid character(s)' align={isLastInRow ? 'left' : 'right'}>
+              <p className='pl-[6px]'>⚠️</p>
             </Tooltip>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-      <div className="flex w-full flex-1 flex-col justify-between gap-1 ">
-        <div className="flex w-full flex-col pl-4 pt-4 ">
+      <div className='flex w-full flex-1 flex-col justify-between gap-1'>
+        <div className='flex w-full flex-col pt-4 pl-4'>
           {registrationStatus !== GRACE_PERIOD &&
             (registrationStatus === REGISTERED ? (
               domain.price ? (
-                <div className="flex items-center gap-1">
-                  <SaleAsset asset="ETH" ethSize="12px" />
-                  <p className="truncate text-xs font-bold leading-[18px]  text-light-100">
-                    {domain.price &&
-                      formatEther(BigInt(domain.price))}
+                <div className='flex items-center gap-1'>
+                  <SaleAsset asset='ETH' ethSize='12px' />
+                  <p className='text-light-100 truncate text-xs leading-[18px] font-bold'>
+                    {domain.price && formatEther(BigInt(domain.price))}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs font-bold leading-[18px] text-light-150">
-                  Unlisted
-                </p>
+                <p className='text-light-150 text-xs leading-[18px] font-bold'>Unlisted</p>
               )
             ) : (
-              <div className="flex items-center gap-1">
-                <SaleAsset asset="USDC" fontSize="text-xs" />
-                <p
-                  className={
-                    'truncate text-xs font-bold leading-[18px] text-light-100'
-                  }
-                >
-                  {domain.registration_price?.toLocaleString(
-                    navigator.language,
-                    {
-                      maximumFractionDigits: 0,
-                    },
-                  )}
+              <div className='flex items-center gap-1'>
+                <SaleAsset asset='USDC' fontSize='text-xs' />
+                <p className={'text-light-100 truncate text-xs leading-[18px] font-bold'}>
+                  {domain.registration_price?.toLocaleString(navigator.language, {
+                    maximumFractionDigits: 0,
+                  })}
                 </p>
               </div>
             ))}
           {domain.last_price ? (
-            <div className="flex items-center gap-[6px]">
-              <p className="truncate text-xs font-medium leading-[18px] text-light-400">
-                Last sale:
-              </p>
-              <div className="flex items-center gap-1">
-                <SaleAsset
-                  asset={domain.last_sale_asset || 'ETH'}
-                  ethSize="11px"
-                  fontSize="text-xs"
-                />
-                <p className="text-xs text-light-150">
-                  {domain.last_price
-                    ? formatEtherPrice(domain.last_price)
-                    : null}
+            <div className='flex items-center gap-[6px]'>
+              <p className='text-light-400 truncate text-xs leading-[18px] font-medium'>Last sale:</p>
+              <div className='flex items-center gap-1'>
+                <SaleAsset asset={domain.last_sale_asset || 'ETH'} ethSize='11px' fontSize='text-xs' />
+                <p className='text-light-150 text-xs'>
+                  {domain.last_price ? formatEtherPrice(domain.last_price) : null}
                 </p>
               </div>
             </div>
           ) : (
-            <p className="min-w-px h-[18px] truncate text-xs font-medium leading-[18px] text-light-400">
+            <p className='text-light-400 h-[18px] min-w-px truncate text-xs leading-[18px] font-medium'>
               {/* {domain.taxonomies?.map((tax: string, index: number) =>
                 index + 1 === domain.taxonomies?.length ? tax : tax + ', ',
               ) || registrationStatus} */}
             </p>
           )}
         </div>
-        <div className="flex justify-between p-2 pl-4 pt-0">
+        <div className='flex justify-between p-2 pt-0 pl-4'>
           <button
             disabled={canAddToCart}
           // onClick={(e) => onCheckout(e, domain)}
           >
             {!canAddToCart && (
-              <p className="text-xs font-bold text-purple transition-colors hover:text-purple-hover">
+              <p className='text-purple hover:text-purple-hover text-xs font-bold transition-colors'>
                 {REGISTERABLE_STATUSES.includes(registrationStatus as string)
                   ? 'Register'
                   : !domain.price && registrationStatus === 'Registered'
@@ -141,8 +103,8 @@ const Card: React.FC<CardProps> = ({ domain }) => {
               </p>
             )}
           </button>
-          <div className="flex items-center gap-x-2">
-            <div className="flex h-8 w-8 items-center justify-center">
+          <div className='flex items-center gap-x-2'>
+            <div className='flex h-8 w-8 items-center justify-center'>
               <Watchlist domain={domain} />
             </div>
 
@@ -152,8 +114,7 @@ const Card: React.FC<CardProps> = ({ domain }) => {
                 onSelect(e, domain)
               }}
               disabled={canAddToCart}
-              className={`  ${canAddToCart ? 'opacity-0' : 'opacity-100'
-                }`}
+              className={` ${canAddToCart ? 'opacity-0' : 'opacity-100'}`}
             >
               <CartIcon name={domain.name} size={20} />
             </button>

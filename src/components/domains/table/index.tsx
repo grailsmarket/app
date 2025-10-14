@@ -1,14 +1,18 @@
 import Image from 'next/image'
-import { RefObject, useEffect, useMemo } from 'react'
+import { RefObject, useCallback, useMemo } from 'react'
+import { useWindowSize } from 'ethereum-identity-kit'
 import useSortFilter from '@/hooks/useSortFilter'
-import useIntersectionObserver from '@/hooks/useIntersectionObserver'
-import TableLoadingRows from './components/TableLoadingRows'
-import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import TableRow from './components/TableRow'
 import SortArrow from 'public/icons/arrow-down.svg'
 import NoResults from '@/components/ui/noResults'
+import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { ALL_MARKETPLACE_COLUMNS, DEFAULT_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { useWindowSize } from 'ethereum-identity-kit'
+import TableLoadingRow from './components/TableLoadingRow'
+import VirtualList from '@/components/ui/virtuallist'
+import VirtualGrid from '@/components/ui/virtualgrid'
+import { useAppSelector } from '@/state/hooks'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
+import Card from '../grid/components/card'
 
 interface DomainsTableProps {
   maxHeight?: string
@@ -17,7 +21,6 @@ interface DomainsTableProps {
   loadingRowCount?: number
   noResults: boolean
   listRef?: RefObject<HTMLDivElement>
-  listScrollTop: number
   hasMoreDomains?: boolean
   fetchMoreDomains?: () => void
   showHeaders?: boolean
@@ -28,135 +31,167 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
   maxHeight,
   domains,
   isLoading,
-  loadingRowCount,
+  loadingRowCount = 10,
   noResults,
   listRef,
-  listScrollTop,
   hasMoreDomains,
   fetchMoreDomains,
   showHeaders = true,
   displayedDetails = DEFAULT_DISPLAYED_COLUMNS,
 }) => {
-  const { width } = useWindowSize()
+  const { viewType } = useAppSelector(selectMarketplaceDomains)
+  const { width, height } = useWindowSize()
   const { sort, setSortFilter } = useSortFilter()
-  const { ref: loadMoreRef, isIntersecting: isLoadMoreRefIntersecting } =
-    useIntersectionObserver()
 
-  useEffect(() => {
-    if (fetchMoreDomains && isLoadMoreRefIntersecting) fetchMoreDomains()
-  }, [isLoadMoreRefIntersecting, fetchMoreDomains])
+  const handleScrollNearBottom = useCallback(() => {
+    console.log('handleScrollNearBottom')
+    if (fetchMoreDomains && hasMoreDomains && !isLoading) {
+      fetchMoreDomains()
+    }
+  }, [fetchMoreDomains, hasMoreDomains, isLoading])
 
   const displayedColumns = useMemo(() => {
     const allColumns = ['domain', ...displayedDetails, 'actions'] as MarketplaceHeaderColumn[]
     if (!width) return allColumns
 
     const maxColumns = () => {
-      if (width < 640) return 3
-      if (width < 768) return 4
-      if (width < 1024) return 5
-      if (width < 1280) return 6
-      if (width < 1536) return 7
+      if (width < 400) return 0
+      if (width < 640) return 1
+      if (width < 768) return 2
+      if (width < 1024) return 3
+      if (width < 1280) return 4
+      if (width < 1536) return 5
       return allColumns.length
     }
 
-    return allColumns.slice(0, maxColumns())
+    return [allColumns[0], ...displayedDetails.slice(0, maxColumns()), allColumns[allColumns.length - 1]]
   }, [displayedDetails, width])
 
+  const visibleCount = useMemo(() => {
+    if (!height) return 30
+    return Math.floor(height / 60)
+  }, [height])
+
+  const containerWidth = useMemo(() => {
+    if (!width) return 1200
+    if (width < 786) return width - 8
+    if (width < 1024) return width - 48
+    // Account for sidebar (280px) and padding
+    return width - (width < 1024 ? 48 : 344)
+  }, [width])
+
   return (
-    <div className="hide-scrollbar overflow-y-auto flex w-full flex-1 flex-col lg:overflow-hidden" style={{ maxHeight }}>
-      {showHeaders && <div className="flex w-full items-center justify-start bg-dark-800 px-4 py-3">
-        {displayedColumns.map((header, index) => {
-          const item = ALL_MARKETPLACE_COLUMNS[header]
-          return (
-            <div
-              key={index}
-              className={`flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}
-            >
-              <p
-                onClick={() => {
-                  if (item.sort === 'none') return
+    <div
+      className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
+      style={{ maxHeight }}
+    >
+      {showHeaders && viewType !== 'grid' && (
+        <div className='bg-dark-800 w-full flex sm:flex items-center justify-start md:px-md lg:px-lg py-md'>
+          {displayedColumns.map((header, index) => {
+            const item = ALL_MARKETPLACE_COLUMNS[header]
+            return (
+              <div key={index} className={`flex-row flex items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
+                <p
+                  onClick={() => {
+                    if (item.sort === 'none') return
 
-                  if (item.value?.desc && sort === item.value?.asc) {
-                    setSortFilter(item.value?.desc)
-                    return
-                  }
-
-                  if (sort === item.value?.desc) {
-                    setSortFilter(null)
-                    return
-                  }
-
-                  setSortFilter(item.value?.asc || item.value?.desc || null)
-                }}
-                className={`w-fit text-left text-xs font-medium text-light-200 ${item.sort !== 'none' &&
-                  'cursor-pointer transition-colors hover:text-light-100'
-                  }`}
-              >
-                {item.label === 'Actions' ? '' : item.label}
-              </p>
-              {item.sort !== 'none' && (
-                <div className="w-fit">
-                  <Image
-                    src={SortArrow}
-                    alt="sort ascending"
-                    className={`rotate-180 ${sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
-                    onClick={() => {
-                      if (!item.value?.asc) return
-
-                      if (sort?.includes(item.value?.asc)) {
-                        setSortFilter(null)
-                        return
-                      }
-
-                      setSortFilter(item.value?.asc)
-                    }}
-                  />
-                  <Image
-                    src={SortArrow}
-                    alt="sort descending"
-                    className={`${sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
-                    onClick={() => {
-                      if (!item.value?.desc) return
-
-                      if (sort?.includes(item.value?.desc)) {
-                        setSortFilter(null)
-                        return
-                      }
-
+                    if (item.value?.desc && sort === item.value?.asc) {
                       setSortFilter(item.value?.desc)
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+                      return
+                    }
+
+                    if (sort === item.value?.desc) {
+                      setSortFilter(null)
+                      return
+                    }
+
+                    setSortFilter(item.value?.asc || item.value?.desc || null)
+                  }}
+                  className={`text-light-200 w-fit text-left text-xs font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
+                    }`}
+                >
+                  {item.label === 'Actions' ? '' : item.label}
+                </p>
+                {item.sort !== 'none' && (
+                  <div className='w-fit'>
+                    <Image
+                      src={SortArrow}
+                      alt='sort ascending'
+                      className={`rotate-180 ${sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
+                        } cursor-pointer transition-opacity hover:opacity-100`}
+                      onClick={() => {
+                        if (!item.value?.asc) return
+
+                        if (sort?.includes(item.value?.asc)) {
+                          setSortFilter(null)
+                          return
+                        }
+
+                        setSortFilter(item.value?.asc)
+                      }}
+                    />
+                    <Image
+                      src={SortArrow}
+                      alt='sort descending'
+                      className={`${sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
+                        } cursor-pointer transition-opacity hover:opacity-100`}
+                      onClick={() => {
+                        if (!item.value?.desc) return
+
+                        if (sort?.includes(item.value?.desc)) {
+                          setSortFilter(null)
+                          return
+                        }
+
+                        setSortFilter(item.value?.desc)
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+      <div className='h-full' ref={listRef}>
+        {!noResults ? (
+          viewType === 'grid' ? (
+            <VirtualGrid<MarketplaceDomainType>
+              ref={listRef}
+              items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
+              cardWidth={220}
+              cardHeight={width && width < 640 ? 400 : 340}
+              gap={4}
+              containerWidth={containerWidth}
+              overscanCount={2}
+              gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
+              onScrollNearBottom={handleScrollNearBottom}
+              scrollThreshold={300}
+              renderItem={(item, index, columnsCount) => {
+                if (!item) return <div className='w-[220px] h-[340px] bg-secondary animate-pulse rounded-lg' />
+                return <Card key={item.token_id} domain={item} isLastInRow={index % columnsCount === 0} />
+              }}
+            />
+          ) : (
+            <VirtualList<MarketplaceDomainType>
+              ref={listRef}
+              items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
+              visibleCount={visibleCount}
+              rowHeight={60}
+              overscanCount={5}
+              listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
+              gap={0}
+              onScrollNearBottom={handleScrollNearBottom}
+              scrollThreshold={200}
+              renderItem={(item, index) => {
+                if (!item) return <div className='px-lg h-[60px] flex items-center w-full'><TableLoadingRow displayedColumns={displayedColumns} /></div>
+                return <TableRow key={item.token_id} domain={item} index={index} displayedColumns={displayedColumns} />
+              }}
+            />
           )
-        })}
-      </div>}
-      <div
-        className="hide-scrollbar flex flex-col overflow-y-scroll"
-        ref={listRef}
-      >
-        {domains?.map((domain, index) => (
-          <TableRow
-            key={domain.token_id}
-            domain={domain}
-            index={index}
-            displayedColumns={displayedColumns}
-          />
-        ))}
-        {isLoading && (
-          <TableLoadingRows count={loadingRowCount} />
+        ) : (
+          <NoResults label={'No results, try clearing your filters.'} requiresAuth={false} />
         )}
-        {!noResults && !isLoading && hasMoreDomains && (
-          <div ref={loadMoreRef} className="h-px w-full pb-px"></div>
-        )}
-        <div ref={loadMoreRef} className="h-px w-full pb-px"></div>
-        {noResults && !isLoading && <NoResults
-          label={'No results, try clearing your filters.'}
-          requiresAuth={false}
-        />}
       </div>
     </div>
   )

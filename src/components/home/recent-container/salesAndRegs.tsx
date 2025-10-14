@@ -11,17 +11,18 @@ const SalesAndRegs = () => {
   const filters = useAppSelector(selectMarketplaceFilters)
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
-    queryFn: () => fetchMarketplaceDomains({
-      limit: 7,
-      pageParam: 0,
-      filters,
-      searchTerm: 'hey',
-    }),
+    queryFn: () =>
+      fetchMarketplaceDomains({
+        limit: 7,
+        pageParam: 0,
+        filters,
+        searchTerm: 'hey',
+      }),
   })
 
   return (
     <div className='flex flex-col gap-4'>
-      <h2 className='text-2xl font-bold px-lg'>Recent Sales & Registrations</h2>
+      <h2 className='px-lg text-2xl font-bold'>Recent Sales & Registrations</h2>
       <DomainsTable
         domains={listings?.domains || []}
         loadingRowCount={7}

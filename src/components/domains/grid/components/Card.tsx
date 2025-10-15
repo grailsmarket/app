@@ -32,12 +32,12 @@ const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
 
   return (
     <div
-      className={cn('group rounded-sm bg-secondary h-[400px] sm:h-[340px] w-full flex cursor-pointer flex-col gap-y-px opacity-70 transition hover:opacity-100', className)}
+      className={cn('group rounded-sm bg-secondary h-[440px] sm:h-[340px] w-full flex cursor-pointer flex-col gap-y-px opacity-70 transition hover:opacity-100', className)}
     >
       <div
-        className='flex w-full max-h-[300px] sm:max-h-[230px] flex-col justify-between relative'
+        className='flex w-full max-h-[340px] sm:max-h-[230px] flex-col justify-between relative'
       >
-        <Image src={getDomainImage(domain.token_id)} alt='Domain image' unoptimized width={200} height={200} className='w-full h-full object-cover' />
+        <Image src={getDomainImage(domain.token_id)} alt='Domain image' unoptimized width={200} height={200} className='w-full rounded-t-sm h-full object-cover' />
         {!domainIsValid && (
           <div className='absolute top-4 right-4 z-10'>
             <Tooltip position='bottom' label='Name contains invalid character(s)' align={isLastInRow ? 'left' : 'right'}>
@@ -88,13 +88,13 @@ const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
             </p>
           )}
         </div>
-        <div className='flex justify-between p-2 pt-0 pl-4'>
+        <div className='flex justify-between p-2 pt-0 pl-lg'>
           <button
             disabled={canAddToCart}
           // onClick={(e) => onCheckout(e, domain)}
           >
             {!canAddToCart && (
-              <p className='text-purple hover:text-purple-hover text-xs font-bold transition-colors'>
+              <p className='text-primary/80 hover:text-primary text-md font-bold cursor-pointer transition-colors'>
                 {REGISTERABLE_STATUSES.includes(registrationStatus as string)
                   ? 'Register'
                   : !domain.price && registrationStatus === 'Registered'
@@ -103,18 +103,15 @@ const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
               </p>
             )}
           </button>
-          <div className='flex items-center gap-x-2'>
-            <div className='flex h-8 w-8 items-center justify-center'>
-              <Watchlist domain={domain} />
-            </div>
-
+          <div className='flex items-center gap-x-1'>
+            <Watchlist domain={domain} />
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onSelect(e, domain)
               }}
               disabled={canAddToCart}
-              className={` ${canAddToCart ? 'opacity-0' : 'opacity-100'}`}
+              className={cn('cursor-pointer rounded-sm p-1.5 transition-opacity', canAddToCart ? 'opacity-0' : 'opacity-100')}
             >
               <CartIcon name={domain.name} size={20} />
             </button>

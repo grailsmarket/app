@@ -1,6 +1,4 @@
-import { MouseEventHandler } from 'react'
 import Image from 'next/image'
-
 import tick from 'public/icons/tick.svg'
 import { cn } from '@/utils/tailwind'
 

@@ -27,7 +27,7 @@ const FilterPanel: React.FC = () => {
   })
 
   return (
-    <div ref={outsideClickRef as RefObject<HTMLDivElement>} className={cn('transition-transform duration-300 absolute z-20 left-0 top-0 bg-background -translate-x-full lg:relative h-[90vh] shadow-md lg:shadow-none lg:h-full w-full sm:w-72 overflow-y-auto', isOpen ? 'translate-x-0' : '-translate-x-full')}>
+    <div ref={outsideClickRef as RefObject<HTMLDivElement>} className={cn('transition-transform duration-300 absolute z-20 left-0 top-0 bg-background lg:relative h-[90vh] shadow-md lg:shadow-none lg:h-full w-full sm:w-72 overflow-y-auto', isOpen ? 'translate-x-0' : '-translate-x-[110%]')}>
       <div
         className={cn(
           'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
@@ -35,28 +35,26 @@ const FilterPanel: React.FC = () => {
         )}
       >
         {/* Top div */}
-        <div className='relative flex items-center justify-between p-4 pr-0 lg:pr-4'>
+        <div className='relative flex items-center justify-between'>
           <div
-            className={`flex w-full min-w-full justify-between transition-transform pr-lg lg:min-w-[300px] ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]'
-              }`}
+            className={cn('flex w-full min-w-full justify-between transition-transform pr-lg lg:min-w-[300px]', isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]')}
           >
-            <div className='flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
+            <div className='flex max-w-full items-center p-lg gap-1.5 text-sm leading-6 font-bold'>
               <Image src={FilterIcon} alt='back arrow' height={14} width={14} />
               <p className='text-light-800 text-lg leading-6 font-bold'>Filters</p>
             </div>
-            <button onClick={() => dispatch(setMarketplaceFiltersOpen(false))} className='hover:opacity-80 cursor-pointer transition-opacity'><Image src={CloseIcon} alt='Close' width={16} height={16} /></button>
+            <button onClick={() => dispatch(setMarketplaceFiltersOpen(false))} className='hover:opacity-80 lg:hidden cursor-pointer transition-opacity'><Image src={CloseIcon} alt='Close' width={16} height={16} /></button>
           </div>
-          <div
+          <button
+            onClick={setPanelAll}
             className={cn(
-              'flex min-w-full transition-transform lg:min-w-[300px]',
+              'flex cursor-pointer items-center rounded-sm gap-2 min-w-full sm:min-w-[290px] lg:min-w-[282px] transition-transform p-lg hover:bg-secondary',
               isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]'
             )}
           >
-            <button onClick={setPanelAll} className='flex cursor-pointer items-center gap-1'>
-              <Image src={backArrow} alt='back arrow' height={13} width={13} className='mr-[9px] rotate-180' />
-              <p className='text-light-800 h-[22px] text-lg leading-6 font-bold'>Categories</p>
-            </button>
-          </div>
+            <Image src={backArrow} alt='back arrow' height={12} width={12} className='rotate-180' />
+            <p className='text-lg leading-6 font-bold'>Categories</p>
+          </button>
         </div>
       </div>
 

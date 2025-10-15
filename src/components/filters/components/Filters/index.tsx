@@ -16,14 +16,14 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   return (
     <div className='flex h-full w-full overflow-x-hidden'>
       <div
-        className={`hide-scrollbar flex min-w-full flex-col gap-y-px overflow-y-scroll transition-transform lg:min-w-[280px] lg:flex-1 ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+        className={`hide-scrollbar flex min-w-full flex-col gap-y-2 overflow-y-scroll transition-transform lg:min-w-[280px] lg:flex-1 ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
           }`}
       >
         <StatusFilter />
         <TypeFilter />
-        <CategoryFilterTab setPanelCategories={setPanelCategories} />
         <LengthFilter />
         <PriceRangeFilter />
+        <CategoryFilterTab setPanelCategories={setPanelCategories} />
         <div className='flex-1' />
       </div>
       <div

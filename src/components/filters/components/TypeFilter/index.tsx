@@ -16,11 +16,10 @@ const TypeFilter = () => {
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Type' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={132} label='Type'>
-        <div className='bg-dark-500 mb-4 h-px w-full' />
-        <div className='flex flex-col gap-y-3'>
+      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={156} label='Type'>
+        <div className='flex flex-col'>
           {MARKETPLACE_TYPE_FILTER_LABELS.map((label, index) => (
-            <div key={index} className='flex justify-between'>
+            <div key={index} onClick={() => toggleActiveGenerator(label)} className='flex px-lg py-md justify-between cursor-pointer hover:bg-secondary'>
               <p className='text-light-200 text-md font-medium'>{label}</p>
               <FilterSelector isActive={isActive(label)} onClick={() => toggleActiveGenerator(label)} />
             </div>

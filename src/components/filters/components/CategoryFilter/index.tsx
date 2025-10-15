@@ -13,7 +13,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ category }) => {
 
   return (
     <PersistGate persistor={persistor}>
-      <div className='w-full p-lg hover:bg-secondary cursor-pointer' onClick={toggleCategory}>
+      <div className='w-full p-lg rounded-sm hover:bg-secondary cursor-pointer' onClick={toggleCategory}>
         <div className='flex cursor-pointer items-center justify-between'>
           <p className='text-light-100 text-lg leading-[18px] font-medium'>{category}</p>
           <FilterSelector onClick={() => toggleCategory()} isActive={isCategoryActive} />

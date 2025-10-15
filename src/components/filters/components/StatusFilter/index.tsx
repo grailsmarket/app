@@ -15,10 +15,10 @@ const StatusFilter: React.FC = () => {
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Status' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={200} label='Status'>
-        <div className='pt-sm flex flex-col gap-y-4 overflow-x-hidden'>
+      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={236} label='Status'>
+        <div className='pt-sm flex flex-col overflow-x-hidden'>
           {MARKETPLACE_STATUS_FILTER_LABELS.map((label, index) => (
-            <div key={index} className='flex cursor-pointer justify-between' onClick={toggleActive(label)}>
+            <div key={index} className='flex px-lg py-md cursor-pointer rounded-sm hover:bg-secondary justify-between' onClick={toggleActive(label)}>
               <p className='text-md text-light-200 font-medium'>{label}</p>
               <FilterSelector isActive={isActive(label)} onClick={toggleActive(label)} />
             </div>

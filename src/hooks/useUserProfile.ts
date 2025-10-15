@@ -1,15 +1,22 @@
-import { useAccount } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
-import { fetchAccount } from 'ethereum-identity-kit'
+import { Address, fetchAccount } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
-import { setUserEnsProfile } from '@/state/reducers/profile/profile'
+import { setUserEnsProfile, setWatchlistDomains } from '@/state/reducers/profile/profile'
 import { useEffect } from 'react'
+import { getWatchlist } from '@/api/watchlist/getWatchlist'
 
-export const useUserProfile = () => {
-  const { address } = useAccount()
+interface UseUserProfileProps {
+  address?: Address | null
+}
+
+export const useUserProfile = ({ address }: UseUserProfileProps) => {
   const dispatch = useAppDispatch()
 
-  const { data: profile, isLoading: profileIsLoading } = useQuery({
+  const {
+    data: profile,
+    isLoading: profileIsLoading,
+    refetch: refetchProfile,
+  } = useQuery({
     queryKey: ['profile', address],
     queryFn: async () => {
       if (!address) return null
@@ -33,8 +40,33 @@ export const useUserProfile = () => {
     }
   }, [address, profile, dispatch])
 
+  const {
+    data: watchlist,
+    isLoading: watchlistIsLoading,
+    refetch: refetchWatchlist,
+  } = useQuery({
+    queryKey: ['watchlist', address],
+    queryFn: async () => {
+      if (!address) return null
+
+      const watchlist = await getWatchlist()
+      return watchlist.response.watchlist
+    },
+    enabled: !!address,
+  })
+
+  useEffect(() => {
+    if (address) {
+      dispatch(setWatchlistDomains(watchlist || []))
+    }
+  }, [address, watchlist, dispatch])
+
   return {
     profile,
     profileIsLoading,
+    watchlist,
+    watchlistIsLoading,
+    refetchProfile,
+    refetchWatchlist,
   }
 }

@@ -17,7 +17,7 @@ interface ExpandableTabProps {
 const ExpandableTab: React.FC<ExpandableTabProps> = ({
   open,
   expandedHeight,
-  headerHeight = 16,
+  headerHeight = 50,
   toggleOpen,
   label,
   CustomComponent,
@@ -25,7 +25,7 @@ const ExpandableTab: React.FC<ExpandableTabProps> = ({
   labelColor,
 }) => {
   return (
-    <div className='p-lg w-full'>
+    <div className='w-full'>
       <div
         className={`flex w-full flex-col overflow-hidden transition-all`}
         style={{
@@ -33,7 +33,7 @@ const ExpandableTab: React.FC<ExpandableTabProps> = ({
         }}
       >
         <div
-          className='mb-4 flex cursor-pointer items-center justify-between select-none'
+          className='p-lg rounded-sm flex cursor-pointer hover:bg-secondary items-center justify-between select-none'
           style={{ height: headerHeight }}
           onClick={toggleOpen}
         >

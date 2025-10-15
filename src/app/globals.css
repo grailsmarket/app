@@ -6,6 +6,7 @@
   --primary: #ffdfc0;
   --secondary: #333333;
   --tertiary: #444444;
+  --max-width-domain-panel: 1700px;
   --padding-sm: 4px;
   --padding-md: 8px;
   --padding-lg: 16px;
@@ -49,6 +50,7 @@
   --padding-lg: var(--padding-lg);
   --padding-xl: var(--padding-xl);
   --padding-2xl: var(--padding-2xl);
+  --max-width-domain-panel: var(--max-width-domain-panel);
   --padding-homeDesktop: var(--vertical-padding-home-desktop);
   --padding-homeMobile: var(--vertical-padding-home-mobile);
   --padding-dashboardDesktop: var(--vertical-padding-dashboard-desktop);

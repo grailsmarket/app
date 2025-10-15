@@ -9,6 +9,7 @@ import { queryClient } from '@/lib/queryClient'
 import { fetchNonce } from '@/api/siwe/fetchNonce'
 import { useAuth } from '@/hooks/useAuthStatus'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
+import { useUserProfile } from '@/hooks/useUserProfile'
 
 type userContextType = {
   userAddress: Address | undefined
@@ -16,6 +17,10 @@ type userContextType = {
   isSigningIn: boolean
   handleSignIn: () => void
   handleSignOut: () => void
+  profileIsLoading: boolean
+  watchlistIsLoading: boolean
+  refetchProfile: () => void
+  refetchWatchlist: () => void
 }
 
 type Props = {
@@ -28,6 +33,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   const [isSigningIn, setIsSigningIn] = useState(false)
 
   const { address } = useAccount()
+  const { profileIsLoading, refetchProfile, watchlistIsLoading, refetchWatchlist } = useUserProfile({ address })
   const { authStatus, verify, refetchAuthStatus, signOut, disconnect } = useAuth()
 
   const handleGetNonce = useCallback(async () => {
@@ -76,6 +82,10 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         isSigningIn,
         handleSignIn,
         handleSignOut,
+        profileIsLoading,
+        watchlistIsLoading,
+        refetchProfile,
+        refetchWatchlist,
       }}
     >
       {children}

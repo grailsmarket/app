@@ -1,4 +1,3 @@
-import { MouseEventHandler } from 'react'
 import { useAppSelector, useAppDispatch } from '@/state/hooks'
 import {
   selectMarketplaceFilters,
@@ -14,10 +13,8 @@ export const useTypeFilters = () => {
     return typeFilters.includes(type)
   }
 
-  const toggleActiveGenerator = (type: MarketplaceTypeFilterType): MouseEventHandler<HTMLButtonElement> => {
-    return () => {
-      dispatch(toggleMarketplaceFiltersType(type))
-    }
+  const toggleActiveGenerator = (type: MarketplaceTypeFilterType) => {
+    dispatch(toggleMarketplaceFiltersType(type))
   }
 
   return {

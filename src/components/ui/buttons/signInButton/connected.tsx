@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import { truncateAddress, Avatar, HeaderImage, ShortArrow } from 'ethereum-identity-kit'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
-import { useUserProfile } from '@/hooks/useUserProfile'
 import { useUserContext } from '@/context/user-context'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/profile/profile'
 
 const Connected = () => {
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false)
@@ -11,8 +12,9 @@ const Connected = () => {
     setWalletDropdownOpen(false)
   })
 
+  const { ensProfile } = useAppSelector(selectUserProfile)
+  const { profileIsLoading } = useUserContext()
   const { userAddress, handleSignOut } = useUserContext()
-  const { profile, profileIsLoading } = useUserProfile()
 
   return (
     <div ref={dropdownWalletRef} className='group relative'>
@@ -20,35 +22,36 @@ const Connected = () => {
         onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
         className='bg-background border-primary p-sm relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-sm border-2 transition-opacity hover:opacity-80'
       >
-        <Avatar
-          key={profile?.ens?.avatar}
-          src={profile?.ens?.avatar}
-          name={profile?.ens?.name}
-          className='z-10 h-9 w-9 overflow-hidden rounded-sm'
-        />
-        {profileIsLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <p className='z-10 max-w-[160px] truncate text-xl font-semibold text-nowrap overflow-ellipsis'>
-            {profile?.ens?.name || truncateAddress(userAddress!)}
-          </p>
-        )}
-        <ShortArrow className={cn('h-5 w-5 rotate-180 transition-transform', walletDropdownOpen && 'rotate-0')} />
         <HeaderImage
-          // @ts-expect-error the records do exist
-          src={profile?.ens?.records?.header}
+          src={ensProfile?.header || ''}
           isLoading={profileIsLoading}
           style={{ position: 'absolute', opacity: 0.2, top: 0, left: 0, width: '100%', height: '100%' }}
         />
+        <Avatar
+          key={ensProfile?.avatar}
+          src={ensProfile?.avatar}
+          name={ensProfile?.name}
+          className='z-10 h-9 w-9 overflow-hidden rounded-sm'
+        />
+        <div className='sm:block hidden z-10'>
+          {profileIsLoading ? (
+            <p>Loading...</p>
+          ) : (
+            <p className='max-w-[160px] truncate text-xl font-semibold text-nowrap overflow-ellipsis'>
+              {ensProfile?.name || truncateAddress(userAddress!)}
+            </p>
+          )}
+        </div>
+        <ShortArrow className={cn('h-5 w-5 z-10 rotate-180 transition-transform', walletDropdownOpen && 'rotate-0')} />
       </button>
       <div
         className={cn(
-          'bg-secondary p-sm absolute right-0 mt-2 hidden w-full cursor-pointer items-center gap-2 rounded-sm shadow-md',
-          walletDropdownOpen && 'flex opacity-100'
+          'bg-secondary p-sm absolute flex-col right-0 mt-2 hidden cursor-pointer font-semibold w-40 sm:w-full sm:items-start gap-2 items-end rounded-sm shadow-md',
+          walletDropdownOpen && 'flex'
         )}
       >
         <button
-          className='flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2.5 transition-opacity hover:opacity-80'
+          className='flex cursor-pointer items-center text-red-400 gap-2 rounded-sm px-4 py-2.5 transition-opacity hover:opacity-80'
           onClick={handleSignOut}
         >
           <p>Sign out</p>

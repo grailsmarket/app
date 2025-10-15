@@ -2,19 +2,21 @@ import Image from 'next/image'
 import { RefObject, useCallback, useMemo } from 'react'
 import { useWindowSize } from 'ethereum-identity-kit'
 import useSortFilter from '@/hooks/useSortFilter'
-import TableRow from './components/TableRow'
+import TableRow from './table/components/TableRow'
 import SortArrow from 'public/icons/arrow-down.svg'
 import NoResults from '@/components/ui/noResults'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { ALL_MARKETPLACE_COLUMNS, DEFAULT_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import TableLoadingRow from './components/TableLoadingRow'
+import TableLoadingRow from './table/components/TableLoadingRow'
 import VirtualList from '@/components/ui/virtuallist'
 import VirtualGrid from '@/components/ui/virtualgrid'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import Card from '../grid/components/card'
+import Card from './grid/components/card'
+import LoadingCard from './grid/components/loadingCard'
+import { cn } from '@/utils/tailwind'
 
-interface DomainsTableProps {
+interface DomainsProps {
   maxHeight?: string
   domains: MarketplaceDomainType[]
   isLoading: boolean
@@ -25,10 +27,11 @@ interface DomainsTableProps {
   fetchMoreDomains?: () => void
   showHeaders?: boolean
   displayedDetails?: MarketplaceHeaderColumn[]
+  forceViewType?: 'grid' | 'list'
 }
 
-const DomainsTable: React.FC<DomainsTableProps> = ({
-  maxHeight,
+const Domains: React.FC<DomainsProps> = ({
+  maxHeight = 'calc(100vh - 160px)',
   domains,
   isLoading,
   loadingRowCount = 10,
@@ -38,8 +41,10 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
   fetchMoreDomains,
   showHeaders = true,
   displayedDetails = DEFAULT_DISPLAYED_COLUMNS,
+  forceViewType,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
+  const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
   const { sort, setSortFilter } = useSortFilter()
 
@@ -74,7 +79,10 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
 
   const containerWidth = useMemo(() => {
     if (!width) return 1200
-    if (width < 786) return width - 8
+
+    if (width >= 1728) return 1728 - 344
+
+    if (width < 768) return width - 8
     if (width < 1024) return width - 48
     // Account for sidebar (280px) and padding
     return width - (width < 1024 ? 48 : 344)
@@ -85,8 +93,8 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
       className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
       style={{ maxHeight }}
     >
-      {showHeaders && viewType !== 'grid' && (
-        <div className='bg-dark-800 w-full flex sm:flex items-center justify-start md:px-md lg:px-lg py-md'>
+      {showHeaders && viewTypeToUse !== 'grid' && (
+        <div className='w-full flex sm:flex items-center justify-start md:px-md lg:px-lg py-md'>
           {displayedColumns.map((header, index) => {
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
@@ -107,7 +115,7 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
 
                     setSortFilter(item.value?.asc || item.value?.desc || null)
                   }}
-                  className={`text-light-200 w-fit text-left text-xs font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
+                  className={`w-fit text-left text-sm font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
                     }`}
                 >
                   {item.label === 'Actions' ? '' : item.label}
@@ -153,22 +161,22 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
           })}
         </div>
       )}
-      <div className='h-full' ref={listRef}>
+      <div className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg' : 'px-0')} ref={listRef}>
         {!noResults ? (
-          viewType === 'grid' ? (
+          viewTypeToUse === 'grid' ? (
             <VirtualGrid<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
               cardWidth={220}
-              cardHeight={width && width < 640 ? 400 : 340}
+              cardHeight={width && width < 640 ? 440 : 340}
               gap={4}
-              containerWidth={containerWidth}
+              containerWidth={containerWidth - (width && width < 1024 ? width < 768 ? 0 : 16 : 32)}
               overscanCount={2}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}
               renderItem={(item, index, columnsCount) => {
-                if (!item) return <div className='w-[220px] h-[340px] bg-secondary animate-pulse rounded-lg' />
+                if (!item) return <LoadingCard key={index} />
                 return <Card key={item.token_id} domain={item} isLastInRow={index % columnsCount === 0} />
               }}
             />
@@ -190,11 +198,11 @@ const DomainsTable: React.FC<DomainsTableProps> = ({
             />
           )
         ) : (
-          <NoResults label={'No results, try clearing your filters.'} requiresAuth={false} />
+          <NoResults label={'No results, try changing your filters.'} requiresAuth={false} />
         )}
       </div>
     </div>
   )
 }
 
-export default DomainsTable
+export default Domains

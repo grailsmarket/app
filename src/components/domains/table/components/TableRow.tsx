@@ -68,7 +68,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
   }
 
   return (
-    <div className='group bg-background hover:bg-secondary flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm md:p-md lg:p-lg transition'>
+    <div className='group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm transition'>
       {displayedColumns.map((column) => columns[column])}
     </div>
   )

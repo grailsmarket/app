@@ -33,7 +33,7 @@ const Connected = () => {
           name={ensProfile?.name}
           className='z-10 h-9 w-9 overflow-hidden rounded-sm'
         />
-        <div className='sm:block hidden z-10'>
+        <div className='z-10 hidden sm:block'>
           {profileIsLoading ? (
             <p>Loading...</p>
           ) : (
@@ -42,16 +42,16 @@ const Connected = () => {
             </p>
           )}
         </div>
-        <ShortArrow className={cn('h-5 w-5 z-10 rotate-180 transition-transform', walletDropdownOpen && 'rotate-0')} />
+        <ShortArrow className={cn('z-10 h-5 w-5 rotate-180 transition-transform', walletDropdownOpen && 'rotate-0')} />
       </button>
       <div
         className={cn(
-          'bg-secondary p-sm absolute flex-col right-0 mt-2 hidden cursor-pointer font-semibold w-40 sm:w-full sm:items-start gap-2 items-end rounded-sm shadow-md',
+          'bg-secondary p-sm absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-2 rounded-sm font-semibold shadow-md sm:w-full sm:items-start',
           walletDropdownOpen && 'flex'
         )}
       >
         <button
-          className='flex cursor-pointer items-center text-red-400 gap-2 rounded-sm px-4 py-2.5 transition-opacity hover:opacity-80'
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2.5 text-red-400 transition-opacity hover:opacity-80'
           onClick={handleSignOut}
         >
           <p>Sign out</p>

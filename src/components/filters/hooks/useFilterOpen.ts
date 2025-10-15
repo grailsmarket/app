@@ -1,21 +1,20 @@
 import { useState } from 'react'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import {
-  selectMarketplaceFilters,
-  toggleMarketplaceFilterOpen,
-  MarketplaceOpenableFilterType,
-} from '@/state/reducers/filters/marketplaceFilters'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { MarketplaceOpenableFilterType } from '@/state/reducers/filters/marketplaceFilters'
 
 export const useFilterOpen = (filter?: MarketplaceOpenableFilterType) => {
   const dispatch = useAppDispatch()
-  const { openFilters } = useAppSelector(selectMarketplaceFilters)
+  const { selectors, actions } = useFilterRouter()
 
-  const [open, setOpen] = useState(filter ? openFilters.includes(filter) : false)
+  const openFilters = selectors.filters.openFilters
+
+  const [open, setOpen] = useState(filter ? openFilters.includes(filter as any) : false)
 
   const toggleOpen = () => {
     setOpen((prev) => !prev)
     if (filter) {
-      dispatch(toggleMarketplaceFilterOpen(filter))
+      dispatch(actions.toggleFilterOpen(filter as any))
     }
   }
 

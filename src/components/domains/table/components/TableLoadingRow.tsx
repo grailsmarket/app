@@ -12,7 +12,11 @@ const TableLoadingRow: React.FC<TableLoadingRowsProps> = ({ displayedColumns }) 
     const item = ALL_MARKETPLACE_COLUMNS[header]
     return (
       <div
-        className={cn('flex', item.getWidth(displayedColumns.length), index === displayedColumns.length - 1 && 'justify-end')}
+        className={cn(
+          'flex',
+          item.getWidth(displayedColumns.length),
+          index === displayedColumns.length - 1 && 'justify-end'
+        )}
         key={index}
       >
         <LoadingCell height='24px' width='90px' />

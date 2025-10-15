@@ -3,7 +3,9 @@ import LoadingCell from '@/components/ui/loadingCell'
 
 const LoadingCard = () => {
   return (
-    <div className={`group flex w-full h-full bg-secondary animate-pulse rounded-lg flex-1 cursor-pointer flex-col gap-y-px`}>
+    <div
+      className={`group bg-secondary flex h-full w-full flex-1 animate-pulse cursor-pointer flex-col gap-y-px rounded-lg`}
+    >
       <LoadingCell height='auto' width='100%' radius='0px' className='aspect-square' />
       <div className='flex w-full flex-1 flex-col justify-between'>
         <div className='flex w-full flex-col gap-2 pt-4 pl-4'>

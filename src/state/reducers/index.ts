@@ -2,7 +2,6 @@ import { combineReducers } from 'redux'
 import { persistReducer } from 'redux-persist'
 
 import storage from '../storage'
-import tabsReducer from './tabs'
 import cacheReducer from './cache'
 import modalReducer from './modals'
 import searchReducer from './search'
@@ -29,7 +28,6 @@ const reducer = combineReducers({
   notifications: notificationsReducer,
   modals: modalReducer,
   user: profileReducer,
-  tabs: tabsReducer,
   transactions: transactionReducer,
   cache: cacheReducer,
   scroll: scrollPosition,

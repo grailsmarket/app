@@ -7,33 +7,54 @@ import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
-import { setMarketplaceFiltersOpen } from '@/state/reducers/filters/marketplaceFilters'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
+import TabSwitcher from './tabSwitcher'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
+  const { actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, search, setSearch } = useDomains()
 
   return (
     <div
-      className='flex flex-col gap-4 pt-lg'
+      className='pt-lg flex flex-col gap-4'
       style={{
         width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
       }}
     >
-      <div className='flex items-center gap-2 w-full justify-between md:px-md lg:px-lg'>
-        <div className='flex items-center gap-2 w-auto'>
-          <button className='lg:hidden h-10 w-10 border-[1px] border-foreground rounded-sm flex items-center justify-center opacity-70 hover:opacity-100 cursor-pointer transition-opacity' onClick={() => dispatch(setMarketplaceFiltersOpen(true))}><Image src={FilterIcon} alt='Filter' width={16} height={16} /></button>
-          <div className='w-ful flex items-center justify-between group focus-within:border-primary/100! hover:border-primary/70 transition-all bg-transparent outline-none border-[2px] border-primary/40 rounded-sm p-md px-3'><input type='text' placeholder='Search' value={search} onChange={(e) => setSearch(e.target.value)} className='bg-transparent text-lg outline-none w-[200px] lg:w-[260px]' />
-            <Image src={MagnifyingGlass} alt='Search' width={16} height={16} className='opacity-40 group-focus-within:opacity-100! group-hover:opacity-70 transition-opacity' />
+      <TabSwitcher />
+      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+        <div className='flex w-auto items-center gap-2'>
+          <button
+            className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border-[1px] opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+            onClick={() => dispatch(actions.setFiltersOpen(true))}
+          >
+            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+          </button>
+          <div className='w-ful group focus-within:border-primary/100! hover:border-primary/70 border-primary/40 p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+            <input
+              type='text'
+              placeholder='Search'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
+            />
+            <Image
+              src={MagnifyingGlass}
+              alt='Search'
+              width={16}
+              height={16}
+              className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+            />
           </div>
         </div>
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100vh - 160px)'
+        maxHeight='calc(100vh - 220px)'
         domains={domains}
         loadingRowCount={20}
         noResults={!domainsLoading && domains?.length === 0}

@@ -54,19 +54,22 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
 
   const containerHeight = visibleCount * (rowHeight + gap)!
 
-  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const currentScrollTop = e.currentTarget.scrollTop
-    setScrollTop(currentScrollTop)
-    
-    if (onScrollNearBottom) {
-      const scrollHeight = e.currentTarget.scrollHeight
-      const clientHeight = e.currentTarget.clientHeight
-      
-      if (scrollHeight - currentScrollTop - clientHeight < scrollThreshold) {
-        onScrollNearBottom()
+  const onScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const currentScrollTop = e.currentTarget.scrollTop
+      setScrollTop(currentScrollTop)
+
+      if (onScrollNearBottom) {
+        const scrollHeight = e.currentTarget.scrollHeight
+        const clientHeight = e.currentTarget.clientHeight
+
+        if (scrollHeight - currentScrollTop - clientHeight < scrollThreshold) {
+          onScrollNearBottom()
+        }
       }
-    }
-  }, [onScrollNearBottom, scrollThreshold])
+    },
+    [onScrollNearBottom, scrollThreshold]
+  )
 
   // Calculate startIndex and endIndex for the items to be rendered.
   let startIndex = 0

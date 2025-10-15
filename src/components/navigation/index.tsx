@@ -13,7 +13,7 @@ import Hamburger from './hamburger'
 
 const Navigation = () => {
   return (
-    <header className='fixed top-0 left-0 px-lg z-50 h-20 bg-background sm:bg-transparent w-full'>
+    <header className='px-lg bg-background fixed top-0 left-0 z-50 h-20 w-full sm:bg-transparent'>
       <nav className='mx-auto flex h-full max-w-7xl items-center justify-between'>
         <div className='flex items-center gap-8'>
           <Link href='/'>
@@ -22,17 +22,19 @@ const Navigation = () => {
               alt='Grails Market'
               width={40}
               height={40}
-              className=' cursor-pointer transition-all hover:opacity-80 sm:hidden'
+              className='cursor-pointer transition-all hover:opacity-80 sm:hidden'
             />
             <Image
               src={logo}
               alt='Grails Market'
               width={130}
               height={40}
-              className='min-h-[40px] min-w-[130px] cursor-pointer transition-all hover:opacity-80 sm:block hidden'
+              className='hidden min-h-[40px] min-w-[130px] cursor-pointer transition-all hover:opacity-80 sm:block'
             />
           </Link>
-          <div className='lg:block hidden'><Searchbar onSearch={() => { }} className='h-10 min-w-60' /></div>
+          <div className='hidden lg:block'>
+            <Searchbar onSearch={() => {}} className='h-10 min-w-60' />
+          </div>
           <Pages className='hidden md:flex' />
         </div>
         <div className='flex items-center justify-end gap-6'>
@@ -41,7 +43,7 @@ const Navigation = () => {
             alt='Search'
             width={24}
             height={24}
-            className='cursor-pointer transition-all lg:hidden hover:opacity-80'
+            className='cursor-pointer transition-all hover:opacity-80 lg:hidden'
           />
           <Cart />
           <Notifications />

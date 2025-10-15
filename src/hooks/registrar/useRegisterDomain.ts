@@ -92,19 +92,19 @@ const useRegisterDomain = () => {
 
     if (!registrationPrice) return
 
-    try {
-      const registration = await walletClient.data?.writeContract({
-        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-        abi: BaseRegistrarAbi,
-        functionName: 'register',
-        args: [],
-      })
+    // try {
+    //   const registration = await walletClient.data?.writeContract({
+    //     address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+    //     abi: BaseRegistrarAbi,
+    //     functionName: 'register',
+    //     args: [],
+    //   })
 
-      return registration
-    } catch (e: any) {
-      console.error(e)
-      return false
-    }
+    //   return registration
+    // } catch (e: any) {
+    //   console.error(e)
+    //   return false
+    // }
   }
 
   return {

@@ -32,15 +32,27 @@ const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
 
   return (
     <div
-      className={cn('group rounded-sm bg-secondary h-[440px] sm:h-[340px] w-full flex cursor-pointer flex-col gap-y-px opacity-70 transition hover:opacity-100', className)}
+      className={cn(
+        'group bg-secondary flex h-[440px] w-full cursor-pointer flex-col gap-y-px rounded-sm opacity-70 transition hover:opacity-100 sm:h-[340px]',
+        className
+      )}
     >
-      <div
-        className='flex w-full max-h-[340px] sm:max-h-[230px] flex-col justify-between relative'
-      >
-        <Image src={getDomainImage(domain.token_id)} alt='Domain image' unoptimized width={200} height={200} className='w-full rounded-t-sm h-full object-cover' />
+      <div className='relative flex max-h-[340px] w-full flex-col justify-between sm:max-h-[230px]'>
+        <Image
+          src={getDomainImage(domain.token_id)}
+          alt='Domain image'
+          unoptimized
+          width={200}
+          height={200}
+          className='h-full w-full rounded-t-sm object-cover'
+        />
         {!domainIsValid && (
           <div className='absolute top-4 right-4 z-10'>
-            <Tooltip position='bottom' label='Name contains invalid character(s)' align={isLastInRow ? 'left' : 'right'}>
+            <Tooltip
+              position='bottom'
+              label='Name contains invalid character(s)'
+              align={isLastInRow ? 'left' : 'right'}
+            >
               <p className='pl-[6px]'>⚠️</p>
             </Tooltip>
           </div>
@@ -88,13 +100,13 @@ const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
             </p>
           )}
         </div>
-        <div className='flex justify-between p-2 pt-0 pl-lg'>
+        <div className='pl-lg flex justify-between p-2 pt-0'>
           <button
             disabled={canAddToCart}
-          // onClick={(e) => onCheckout(e, domain)}
+            // onClick={(e) => onCheckout(e, domain)}
           >
             {!canAddToCart && (
-              <p className='text-primary/80 hover:text-primary text-md font-bold cursor-pointer transition-colors'>
+              <p className='text-primary/80 hover:text-primary text-md cursor-pointer font-bold transition-colors'>
                 {REGISTERABLE_STATUSES.includes(registrationStatus as string)
                   ? 'Register'
                   : !domain.price && registrationStatus === 'Registered'
@@ -111,7 +123,10 @@ const Card: React.FC<CardProps> = ({ domain, className, isLastInRow }) => {
                 onSelect(e, domain)
               }}
               disabled={canAddToCart}
-              className={cn('cursor-pointer rounded-sm p-1.5 transition-opacity', canAddToCart ? 'opacity-0' : 'opacity-100')}
+              className={cn(
+                'cursor-pointer rounded-sm p-1.5 transition-opacity',
+                canAddToCart ? 'opacity-0' : 'opacity-100'
+              )}
             >
               <CartIcon name={domain.name} size={20} />
             </button>

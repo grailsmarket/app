@@ -17,7 +17,7 @@ const PriceRangeFilter = () => {
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Price Range' />}>
       <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={142} label='Price Range'>
-        <div className='flex flex-col items-start gap-y-4 px-lg py-md'>
+        <div className='px-lg py-md flex flex-col items-start gap-y-4'>
           <PriceDenominatorSwitch />
           <div className='flex gap-x-2'>
             <input

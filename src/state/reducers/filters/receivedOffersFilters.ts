@@ -3,16 +3,16 @@ import { RootState } from '../../index'
 import { MY_DOMAINS_TYPE_FILTER_LABELS, MY_DOMAINS_CATEGORIES } from '@/constants/filters/portfolioFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
-  PortfolioFiltersState,
+  LengthType,
+  PortfolioCategoryType,
   PortfolioFiltersOpenedState,
+  PortfolioFiltersState,
+  PortfolioOpenableFilterType,
   PortfolioStatusFilterType,
   PortfolioTypeFilterType,
-  PortfolioCategoryType,
-  PortfolioOpenableFilterType,
-  SortFilterType,
   PriceDenominationType,
   PriceType,
-  LengthType,
+  SortFilterType,
 } from '@/types/filters'
 
 export const emptyFilterState: PortfolioFiltersState = {
@@ -52,19 +52,15 @@ export const initialState: PortfolioFiltersOpenedState = {
   sort: 'price_high_to_low',
 }
 
-export type MyDomainsFiltersType = PortfolioFiltersState & {
-  name: string
-}
-
 // Slice -------------------------------------------
-export const myDomainsFiltersSlice = createSlice({
-  name: 'myDomainsFilters',
+export const receivedOffersFiltersSlice = createSlice({
+  name: 'receivedOffersFilters',
   initialState,
   reducers: {
-    setMyDomainsFiltersOpen(state, { payload }: PayloadAction<boolean>) {
+    setReceivedOffersFiltersOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    toggleMyDomainsFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
+    toggleReceivedOffersFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       const index = state.status.findIndex((_status) => _status === payload)
       if (index > -1) {
         state.status.splice(index, 1)
@@ -72,10 +68,10 @@ export const myDomainsFiltersSlice = createSlice({
         state.status.push(payload)
       }
     },
-    setMyDomainsFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
+    setReceivedOffersFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       state.status = [payload]
     },
-    toggleMyDomainsFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
+    toggleReceivedOffersFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
       const index = state.type.findIndex((type) => type === payload)
       if (index > -1) {
         state.type.splice(index, 1)
@@ -83,20 +79,20 @@ export const myDomainsFiltersSlice = createSlice({
         state.type.push(payload)
       }
     },
-    setMyDomainsFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
+    setReceivedOffersFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
       state.type = [payload]
     },
-    setMyDomainsFiltersLength(state, { payload }: PayloadAction<LengthType>) {
+    setReceivedOffersFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
     },
-    setMyDomainsPriceDenomination(state, { payload }: PayloadAction<PriceDenominationType>) {
+    setReceivedOffersPriceDenomination(state, { payload }: PayloadAction<PriceDenominationType>) {
       state.priceRange = { min: null, max: null }
       state.denomination = payload
     },
-    setMyDomainsPriceRange(state, { payload }: PayloadAction<PriceType>) {
+    setReceivedOffersPriceRange(state, { payload }: PayloadAction<PriceType>) {
       state.priceRange = payload
     },
-    toggleMyDomainsCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
+    toggleReceivedOffersCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
       const isFilterIncludesPayload = state.categoryObjects.includes(payload)
 
       if (isFilterIncludesPayload) {
@@ -105,13 +101,13 @@ export const myDomainsFiltersSlice = createSlice({
         state.categoryObjects.push(...MY_DOMAINS_CATEGORIES.filter((category) => category === payload))
       }
     },
-    setMyDomainsFiltersCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
+    setReceivedOffersFiltersCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
       state.categoryObjects = MY_DOMAINS_CATEGORIES.filter((category) => category === payload)
     },
-    setMyDomainsSort(state, { payload }: PayloadAction<SortFilterType | null>) {
+    setReceivedOffersSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
-    toggleMyDomainsFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
+    toggleReceivedOffersFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
         state.openFilters.splice(index, 1)
@@ -119,7 +115,7 @@ export const myDomainsFiltersSlice = createSlice({
         state.openFilters.push(payload)
       }
     },
-    clearMyDomainsFilters(state) {
+    clearReceivedOffersFilters(state) {
       state.open = false
       state.status = []
       state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
@@ -140,23 +136,23 @@ export const myDomainsFiltersSlice = createSlice({
 
 // Actions --------------------------------------------
 export const {
-  setMyDomainsFiltersOpen,
-  toggleMyDomainsFiltersStatus,
-  setMyDomainsFiltersStatus,
-  toggleMyDomainsFiltersType,
-  setMyDomainsFiltersType,
-  setMyDomainsFiltersLength,
-  setMyDomainsPriceDenomination,
-  setMyDomainsPriceRange,
-  toggleMyDomainsCategory,
-  setMyDomainsFiltersCategory,
-  setMyDomainsSort,
-  toggleMyDomainsFilterOpen,
-  clearMyDomainsFilters,
-} = myDomainsFiltersSlice.actions
+  setReceivedOffersFiltersOpen,
+  toggleReceivedOffersFiltersStatus,
+  setReceivedOffersFiltersStatus,
+  toggleReceivedOffersFiltersType,
+  setReceivedOffersFiltersType,
+  setReceivedOffersFiltersLength,
+  setReceivedOffersPriceDenomination,
+  setReceivedOffersPriceRange,
+  toggleReceivedOffersCategory,
+  setReceivedOffersFiltersCategory,
+  setReceivedOffersSort,
+  toggleReceivedOffersFilterOpen,
+  clearReceivedOffersFilters,
+} = receivedOffersFiltersSlice.actions
 
 // Selectors ------------------------------------------
-export const selectMyDomainsFilters = (state: RootState) => state.filters.myDomainsFilters
+export const selectReceivedOffersFilters = (state: RootState) => state.filters.receivedOffersFilters
 
 // Reducer --------------------------------------------
-export default myDomainsFiltersSlice.reducer
+export default receivedOffersFiltersSlice.reducer

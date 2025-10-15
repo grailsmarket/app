@@ -11,10 +11,37 @@ interface PagesProps {
 const Pages = ({ className, onClick }: PagesProps) => {
   const pathname = usePathname()
   return (
-    <div className={cn('flex md:flex-row flex-col md:items-center gap-4', className)}>
-      <Link href='/' className={cn('text-lg transition-all font-semibold', pathname === '/' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100')} onClick={onClick}>Home</Link>
-      <Link href='/marketplace' className={cn('text-lg transition-all font-semibold', pathname === '/marketplace' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100')} onClick={onClick}>Explore</Link>
-      <Link href='/portfolio' className={cn('text-lg transition-all font-semibold', pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100')} onClick={onClick}>Portfolio</Link>
+    <div className={cn('flex flex-col gap-4 md:flex-row md:items-center', className)}>
+      <Link
+        href='/'
+        className={cn(
+          'text-lg font-semibold transition-all',
+          pathname === '/' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Home
+      </Link>
+      <Link
+        href='/marketplace'
+        className={cn(
+          'text-lg font-semibold transition-all',
+          pathname === '/marketplace' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Explore
+      </Link>
+      <Link
+        href='/portfolio'
+        className={cn(
+          'text-lg font-semibold transition-all',
+          pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Portfolio
+      </Link>
     </div>
   )
 }

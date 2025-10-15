@@ -1,32 +1,47 @@
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import {
-  MarketplaceCategoryType,
-  selectMarketplaceFilters,
-  MarketplaceSubcategoryType,
-} from '@/state/reducers/filters/marketplaceFilters'
-import { toggleMarketplaceCategory } from '@/state/reducers/filters/marketplaceFilters'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { MarketplaceCategoryType, MarketplaceSubcategoryType } from '@/state/reducers/filters/marketplaceFilters'
 import { MARKETPLACE_CATEGORY_OBJECTS } from '@/constants/filters/marketplaceFilters'
+import { PortfolioCategoryType } from '@/types/filters'
 
 export const useCategoryFilter = (category: MarketplaceCategoryType) => {
   const dispatch = useAppDispatch()
-  const { categoryObjects } = useAppSelector(selectMarketplaceFilters)
+  const { selectors, actions, context } = useFilterRouter()
 
-  const relevantSubcategories: MarketplaceSubcategoryType[] = MARKETPLACE_CATEGORY_OBJECTS.filter(
-    ({ category: _category }) => _category === category
-  ).map(({ subcategory }) => subcategory)
+  const { categoryObjects } = selectors.filters
 
-  const subcategoryFilterHeight = relevantSubcategories.length * 38 + 32 + 'px'
+  if (context === 'marketplace') {
+    const relevantSubcategories: MarketplaceSubcategoryType[] = MARKETPLACE_CATEGORY_OBJECTS.filter(
+      ({ category: _category }) => _category === category
+    ).map(({ subcategory }) => subcategory)
 
-  const isCategoryActive = categoryObjects.some(({ category: _category }) => _category === category)
+    const subcategoryFilterHeight = relevantSubcategories.length * 38 + 32 + 'px'
 
-  const toggleCategory = () => {
-    dispatch(toggleMarketplaceCategory(category))
-  }
+    const isCategoryActive = (categoryObjects as any[]).some(({ category: _category }) => _category === category)
 
-  return {
-    relevantSubcategories,
-    subcategoryFilterHeight,
-    isCategoryActive,
-    toggleCategory,
+    const toggleCategory = () => {
+      dispatch(actions.toggleCategory(category as any))
+    }
+
+    return {
+      relevantSubcategories,
+      subcategoryFilterHeight,
+      isCategoryActive,
+      toggleCategory,
+    }
+  } else {
+    // For myDomains, we have simpler category structure
+    const isCategoryActive = (categoryObjects as PortfolioCategoryType[]).includes(category as PortfolioCategoryType)
+
+    const toggleCategory = () => {
+      dispatch(actions.toggleCategory(category as any))
+    }
+
+    return {
+      relevantSubcategories: [],
+      subcategoryFilterHeight: '0px',
+      isCategoryActive,
+      toggleCategory,
+    }
   }
 }

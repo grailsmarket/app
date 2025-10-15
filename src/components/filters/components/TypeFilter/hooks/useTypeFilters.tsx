@@ -1,20 +1,19 @@
-import { useAppSelector, useAppDispatch } from '@/state/hooks'
-import {
-  selectMarketplaceFilters,
-  MarketplaceTypeFilterType,
-  toggleMarketplaceFiltersType,
-} from '@/state/reducers/filters/marketplaceFilters'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { MarketplaceTypeFilterType } from '@/state/reducers/filters/marketplaceFilters'
 
 export const useTypeFilters = () => {
   const dispatch = useAppDispatch()
-  const { type: typeFilters } = useAppSelector(selectMarketplaceFilters)
+  const { selectors, actions } = useFilterRouter()
+
+  const typeFilters = selectors.filters.type
 
   const isActive = (type: MarketplaceTypeFilterType) => {
-    return typeFilters.includes(type)
+    return typeFilters.includes(type as any)
   }
 
   const toggleActiveGenerator = (type: MarketplaceTypeFilterType) => {
-    dispatch(toggleMarketplaceFiltersType(type))
+    dispatch(actions.toggleFiltersType(type as any))
   }
 
   return {

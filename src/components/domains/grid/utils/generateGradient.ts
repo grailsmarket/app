@@ -2,7 +2,7 @@ import { PREMIUM, REGISTERED, UNREGISTERED } from '@/constants/domains/registrat
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 
 // expire time must be in seconds
-export const generateGradient = (expireTime: number) => {
+export const generateGradient = (expireTime: string) => {
   const registrationStatus = getRegistrationStatus(expireTime)
 
   if (registrationStatus === REGISTERED) return 'gradient-blue'

@@ -1,20 +1,23 @@
-import { selectMarketplaceFilters, setMarketplaceFiltersLength } from '@/state/reducers/filters/marketplaceFilters'
-import { useAppSelector, useAppDispatch } from '@/state/hooks'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 export const useLengthFilter = () => {
   const dispatch = useAppDispatch()
-  const { length: lengthFilter } = useAppSelector(selectMarketplaceFilters)
+  const { selectors, actions } = useFilterRouter()
+
+  const lengthFilter = selectors.filters.length
 
   const minVal = lengthFilter.min
   const maxVal = lengthFilter.max
 
   const setMinLength = (min: number) => {
     const newMin = maxVal && min >= maxVal ? maxVal : min
-    dispatch(setMarketplaceFiltersLength({ min: newMin, max: lengthFilter.max }))
+    dispatch(actions.setFiltersLength({ min: newMin, max: lengthFilter.max }))
   }
+
   const setMaxLength = (max: number) => {
     const newMax = minVal && max <= minVal ? minVal : max
-    dispatch(setMarketplaceFiltersLength({ min: lengthFilter.min, max: newMax }))
+    dispatch(actions.setFiltersLength({ min: lengthFilter.min, max: newMax }))
   }
 
   return {

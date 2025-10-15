@@ -13,13 +13,21 @@ import { MARKETPLACE_TYPE_FILTER_LABELS } from '@/constants/filters/marketplaceF
 const TypeFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Type')
   const { isActive, toggleActiveGenerator } = useTypeFilters()
+  const filterLabels = MARKETPLACE_TYPE_FILTER_LABELS
+
+  // Calculate expanded height based on number of labels
+  const expandedHeight = 56 + filterLabels.length * 36
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Type' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={156} label='Type'>
+      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={expandedHeight} label='Type'>
         <div className='flex flex-col'>
-          {MARKETPLACE_TYPE_FILTER_LABELS.map((label, index) => (
-            <div key={index} onClick={() => toggleActiveGenerator(label)} className='flex px-lg py-md justify-between cursor-pointer hover:bg-secondary'>
+          {filterLabels.map((label, index) => (
+            <div
+              key={index}
+              onClick={() => toggleActiveGenerator(label)}
+              className='px-lg py-md hover:bg-secondary flex cursor-pointer justify-between'
+            >
               <p className='text-light-200 text-md font-medium'>{label}</p>
               <FilterSelector isActive={isActive(label)} onClick={() => toggleActiveGenerator(label)} />
             </div>

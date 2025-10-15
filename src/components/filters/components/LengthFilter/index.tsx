@@ -16,7 +16,7 @@ const LengthFilter = () => {
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Length' />}>
       <ExpandableTab open={open} toggleOpen={toggleOpen} label='Length' expandedHeight={102}>
-        <div className='flex px-lg py-md flex-row gap-x-2'>
+        <div className='px-lg py-md flex flex-row gap-x-2'>
           <input
             type='number'
             placeholder='Min'

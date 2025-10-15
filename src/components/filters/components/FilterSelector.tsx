@@ -9,10 +9,12 @@ interface FilterSelectorProps {
 
 const FilterSelector: React.FC<FilterSelectorProps> = ({ onClick, isActive }) => {
   return (
-    <button onClick={(e) => {
-      e.stopPropagation()
-      onClick()
-    }}>
+    <button
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+    >
       <div
         className={cn(
           'relative h-5 w-5 cursor-pointer rounded-sm border-2 transition duration-75',

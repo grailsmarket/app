@@ -3,6 +3,8 @@ export const MY_DOMAINS_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price R
 export const MY_DOMAINS_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 
 export const MY_DOMAINS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const RECEIVED_OFFERS_STATUS_FILTER_LABELS = ['Expiring Soon'] as const
+export const MY_OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
 
 export const MY_DOMAINS_OFFERS_PARAM_OPTIONS: Record<string, string> = {
   Listed: 'listed',
@@ -21,9 +23,7 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'price_high_to_low',
 ]
 
-export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Has Offers'] as const
-
-export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Expiring Soon'] as const
+export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
 
 export const ALL_SORT_FILTERS = [
   'alphabetical',

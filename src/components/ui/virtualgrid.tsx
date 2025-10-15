@@ -90,7 +90,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   const endRow = Math.min(totalRows, Math.ceil((scrollTop + containerHeight) / rowHeight) + overscanCount)
 
   // Get items for visible rows
-  const visibleItems: Array<{ item: typeof items[0]; index: number; row: number; col: number }> = []
+  const visibleItems: Array<{ item: (typeof items)[0]; index: number; row: number; col: number }> = []
   for (let row = startRow; row < endRow; row++) {
     for (let col = 0; col < columnsCount; col++) {
       const index = row * columnsCount + col

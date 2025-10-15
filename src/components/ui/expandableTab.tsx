@@ -33,7 +33,7 @@ const ExpandableTab: React.FC<ExpandableTabProps> = ({
         }}
       >
         <div
-          className='p-lg rounded-sm flex cursor-pointer hover:bg-secondary items-center justify-between select-none'
+          className='p-lg hover:bg-secondary flex cursor-pointer items-center justify-between rounded-sm select-none'
           style={{ height: headerHeight }}
           onClick={toggleOpen}
         >

@@ -94,11 +94,11 @@ const Domains: React.FC<DomainsProps> = ({
       style={{ maxHeight }}
     >
       {showHeaders && viewTypeToUse !== 'grid' && (
-        <div className='w-full flex sm:flex items-center justify-start md:px-md lg:px-lg py-md'>
+        <div className='md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
-              <div key={index} className={`flex-row flex items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
+              <div key={index} className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
                 <p
                   onClick={() => {
                     if (item.sort === 'none') return
@@ -115,8 +115,9 @@ const Domains: React.FC<DomainsProps> = ({
 
                     setSortFilter(item.value?.asc || item.value?.desc || null)
                   }}
-                  className={`w-fit text-left text-sm font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
-                    }`}
+                  className={`w-fit text-left text-sm font-medium ${
+                    item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
+                  }`}
                 >
                   {item.label === 'Actions' ? '' : item.label}
                 </p>
@@ -125,8 +126,9 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort ascending'
-                      className={`rotate-180 ${sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
-                        } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`rotate-180 ${
+                        sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
+                      } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.asc) return
 
@@ -141,8 +143,9 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort descending'
-                      className={`${sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
-                        } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`${
+                        sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
+                      } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.desc) return
 
@@ -161,7 +164,10 @@ const Domains: React.FC<DomainsProps> = ({
           })}
         </div>
       )}
-      <div className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg' : 'px-0')} ref={listRef}>
+      <div
+        className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg' : 'px-0')}
+        ref={listRef}
+      >
         {!noResults ? (
           viewTypeToUse === 'grid' ? (
             <VirtualGrid<MarketplaceDomainType>
@@ -170,7 +176,7 @@ const Domains: React.FC<DomainsProps> = ({
               cardWidth={220}
               cardHeight={width && width < 640 ? 440 : 340}
               gap={4}
-              containerWidth={containerWidth - (width && width < 1024 ? width < 768 ? 0 : 16 : 32)}
+              containerWidth={containerWidth - (width && width < 1024 ? (width < 768 ? 0 : 16) : 32)}
               overscanCount={2}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               onScrollNearBottom={handleScrollNearBottom}
@@ -192,7 +198,12 @@ const Domains: React.FC<DomainsProps> = ({
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={200}
               renderItem={(item, index) => {
-                if (!item) return <div className='px-lg h-[60px] flex items-center w-full'><TableLoadingRow displayedColumns={displayedColumns} /></div>
+                if (!item)
+                  return (
+                    <div className='px-lg flex h-[60px] w-full items-center'>
+                      <TableLoadingRow displayedColumns={displayedColumns} />
+                    </div>
+                  )
                 return <TableRow key={item.token_id} domain={item} index={index} displayedColumns={displayedColumns} />
               }}
             />

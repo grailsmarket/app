@@ -13,8 +13,8 @@ const ActionButtons = () => {
   const { isFiltersClear, clearFilters } = useFilterButtons()
 
   return (
-    <div className='flex z-20 flex-row lg:justify-between justify-end absolute bottom-0 border-t-2 border-primary rounded-b-lg right-0 bg-background w-full p-lg'>
-      <div className={cn('lg:w-[270px]', open ? 'block' : 'hidden lg:flex flex-row justify-end')}>
+    <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
+      <div className={cn('lg:w-[270px]', open ? 'block' : 'hidden flex-row justify-end lg:flex')}>
         <PersistGate persistor={persistor}>
           <button
             disabled={isFiltersClear}
@@ -26,8 +26,12 @@ const ActionButtons = () => {
         </PersistGate>
       </div>
       <div className={cn('flex flex-row gap-x-2', open ? 'hidden lg:flex' : 'flex')}>
-        <button className='bg-tertiary rounded-sm px-lg py-md text-lg cursor-pointer font-semibold hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 transition-all'>Clear Cart</button>
-        <button className='bg-primary text-background rounded-sm px-lg py-md text-lg cursor-pointer font-semibold hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 transition-all'>Open Cart</button>
+        <button className='bg-tertiary px-lg py-md cursor-pointer rounded-sm text-lg font-semibold transition-all hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100'>
+          Clear Cart
+        </button>
+        <button className='bg-primary text-background px-lg py-md cursor-pointer rounded-sm text-lg font-semibold transition-all hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100'>
+          Open Cart
+        </button>
       </div>
     </div>
   )

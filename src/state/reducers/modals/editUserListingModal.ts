@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { DomainsToListType } from '../tabs/manager'
 import { DurationType } from '../domains/marketplaceDomains'
+import { MarketplaceDomainType } from '@/types/domains'
 
 // Types --------------------------------------------
 type EditUserListingModalState = {
   open: boolean
-  listing: DomainsToListType | null
+  listing: MarketplaceDomainType | null
   duration: DurationType
 }
 
@@ -28,13 +28,11 @@ export const EditUserListingModalSlice = createSlice({
     setEditUserListingModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    setEditUserListingModalUserListing(state, { payload }: PayloadAction<DomainsToListType | null>) {
+    setEditUserListingModalUserListing(state, { payload }: PayloadAction<MarketplaceDomainType | null>) {
       state.listing = payload
     },
     setEditUserListingModalPrice(state, { payload }: PayloadAction<number | undefined>) {
       if (!state.listing) return
-
-      state.listing.price = payload
     },
     setEditUserListingModalDuration(state, { payload }: PayloadAction<DurationType>) {
       state.duration = payload

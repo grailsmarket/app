@@ -5,7 +5,7 @@ export const toUtf8Bytes = (str: string, form?: UnicodeNormalizationForm): Uint8
     str = str.normalize(form)
   }
 
-  let result: Array<number> = []
+  const result: Array<number> = []
   for (let i = 0; i < str.length; i++) {
     const c = str.charCodeAt(i)
 

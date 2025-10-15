@@ -1,7 +1,7 @@
 const generateRelativeTimeStatement = (timestamp: number, short?: boolean) => {
   const difference = Date.now() / 1000 - timestamp
 
-  for (let [maxDifference, timeFormat, scaleFactor] of [
+  for (const [maxDifference, timeFormat, scaleFactor] of [
     [60, 's', 1],
     [3600, short ? 'm' : ' min', 60],
     [86400, short ? 'h' : ' h', 3600],

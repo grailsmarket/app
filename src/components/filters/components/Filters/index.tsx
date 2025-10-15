@@ -8,7 +8,6 @@ import { MARKETPLACE_CATEGORIES } from '@/constants/filters/marketplaceFilters'
 import { MY_DOMAINS_CATEGORIES } from '@/constants/filters/portfolioFilters'
 import { MarketplaceCategoryType } from '@/state/reducers/filters/marketplaceFilters'
 import { useFilterContext } from '@/contexts/FilterContext'
-import { PortfolioCategoryType } from '@/types/filters'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -25,9 +24,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   return (
     <div className='flex w-full overflow-x-hidden pb-10'>
       <div
-        className={`hide-scrollbar flex min-w-full flex-col gap-y-2 overflow-y-scroll transition-transform lg:min-w-[280px] lg:flex-1 ${
-          isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
-        }`}
+        className={`hide-scrollbar flex min-w-full flex-col gap-y-2 overflow-y-scroll transition-transform lg:min-w-[280px] lg:flex-1 ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+          }`}
       >
         <StatusFilter />
         <TypeFilter />
@@ -38,9 +36,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       </div>
       {showCategoryTab && (
         <div
-          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-scroll transition-transform lg:min-w-[282px] ${
-            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
-          }`}
+          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-scroll transition-transform lg:min-w-[282px] ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+            }`}
         >
           {categories.map((category, index) => (
             <CategoryFilter key={index} category={category as MarketplaceCategoryType} />

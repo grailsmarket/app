@@ -24,7 +24,7 @@ const useRegisterDomain = () => {
     domains: CartUnregisteredDomainType[] | CartRegisteredDomainType[] | MarketplaceDomainType[]
   ) => {
     const expirations = await publicClient.multicall({
-      contracts: domains.map((domain, i) => ({
+      contracts: domains.map((domain) => ({
         abi: BaseRegistrarAbi,
         address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
         functionName: 'nameExpires',
@@ -76,7 +76,8 @@ const useRegisterDomain = () => {
     return results
   }
 
-  const commit = async (domain: CartUnregisteredDomainType, account: `0x${string}`, secret: `0x${string}`) => {
+  // const commit = async (domain: CartUnregisteredDomainType, account: `0x${string}`, secret: `0x${string}`) => {
+  const commit = async (domain: CartUnregisteredDomainType) => {
     const commitment = await walletClient.data?.writeContract({
       address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
       abi: BaseRegistrarAbi,

@@ -63,7 +63,7 @@ const useSufficientBalance = () => {
     }
 
     updateIsSufficientBalance()
-  }, [sufficientBalance, cartRegisteredDomains, cartUnregisteredDomains, ethBalance])
+  }, [cartRegisteredDomains, cartUnregisteredDomains, ethBalance])
 
   const calculateIsSufficientEthBalance = (price: string | number, isWei?: boolean) => {
     if (isWei)

@@ -4,7 +4,6 @@ import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFil
 
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import {
-  MARKETPLACE_SORT_FILTERS,
   MARKETPLACE_OFFERS_PARAM_OPTIONS,
   MARKETPLACE_STATUS_PARAM_OPTIONS,
 } from '@/constants/filters/marketplaceFilters'

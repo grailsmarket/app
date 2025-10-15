@@ -84,7 +84,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   // Calculate visible rows
   const containerHeight = typeof gridHeight === 'number' ? gridHeight : 600
-  const visibleRows = Math.ceil(containerHeight / rowHeight)
+  // const visibleRows = Math.ceil(containerHeight / rowHeight)
 
   const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - overscanCount)
   const endRow = Math.min(totalRows, Math.ceil((scrollTop + containerHeight) / rowHeight) + overscanCount)

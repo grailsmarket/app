@@ -31,7 +31,7 @@ export const EditUserListingModalSlice = createSlice({
     setEditUserListingModalUserListing(state, { payload }: PayloadAction<MarketplaceDomainType | null>) {
       state.listing = payload
     },
-    setEditUserListingModalPrice(state, { payload }: PayloadAction<number | undefined>) {
+    setEditUserListingModalPrice(state, {}: PayloadAction<number | undefined>) {
       if (!state.listing) return
     },
     setEditUserListingModalDuration(state, { payload }: PayloadAction<DurationType>) {

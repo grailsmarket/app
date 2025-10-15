@@ -5,6 +5,7 @@ export const checkNameValidity = (name: string) => {
     const isValid = ens_normalize(name) === name
     return isValid
   } catch (e) {
+    console.error(e)
     return false
   }
 }

@@ -3,25 +3,22 @@ import { SortFilterType } from '../state/reducers/filters/marketplaceFilters'
 import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
 
 export type MarketplaceDomainType = {
+  id: number
   name: string
   token_id: number
   expiry_date: string | null
-  owner: Address | null
+  owner_address: Address | null
+  registrant: Address | null
   price: string | null
   registration_date: number | null
-  character_count: number
   has_numbers: boolean
   has_emoji: boolean
-  status: string
-  tags: string[]
+  clubs: string[]
   listing_created_at: null | string | number
-  active_offers_count: string
   highest_offer: string | null
-  last_price: string | null
+  offer: string | null
+  last_sale_price: string | null
   last_sale_asset: string | null
-  registration_price: number | null
-  premium_reg_price: string | null
-  score: number
 }
 
 // Names API item
@@ -282,6 +279,7 @@ export type WatchlistItemType = {
     ownerAddress: Address | null
     hasActiveListing: boolean
     listingPrice: string | null
+    expiryDate: string | null
   }
 }
 

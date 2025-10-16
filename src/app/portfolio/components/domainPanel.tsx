@@ -16,7 +16,7 @@ const DomainPanel = () => {
   const dispatch = useAppDispatch()
   const { actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, search, setSearch } = useDomains()
+  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, search, setSearch, displayedDetails } = useDomains()
 
   return (
     <div
@@ -65,6 +65,7 @@ const DomainPanel = () => {
             fetchMoreDomains()
           }
         }}
+        displayedDetails={displayedDetails}
       />
     </div>
   )

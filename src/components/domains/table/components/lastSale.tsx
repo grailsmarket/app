@@ -5,6 +5,7 @@ import React from 'react'
 import SaleAsset from '@/components/ui/asset'
 import { formatRegisterPrice } from '@/utils/formatPremiumPrice'
 import { formatEtherPrice } from '@/utils/formatEtherPrice'
+import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 
 interface LastSaleProps {
   domain: MarketplaceDomainType
@@ -13,16 +14,16 @@ interface LastSaleProps {
 
 const LastSale: React.FC<LastSaleProps> = ({ domain, columnCount }) => {
   const lastPrice =
-    domain.last_price && domain.last_sale_asset
+    domain.last_sale_price && domain.last_sale_asset
       ? {
-          ETH: formatEtherPrice(domain.last_price),
-          USDC: formatRegisterPrice(parseFloat(domain.last_price)),
-          DAI: formatRegisterPrice(parseFloat(domain.last_price)),
-        }[domain.last_sale_asset]
-      : domain.premium_reg_price
-        ? formatRegisterPrice(parseFloat(domain.premium_reg_price))
+        ETH: formatEtherPrice(domain.last_sale_price),
+        USDC: formatRegisterPrice(parseFloat(domain.last_sale_price)),
+        DAI: formatRegisterPrice(parseFloat(domain.last_sale_price)),
+      }[domain.last_sale_asset]
+      : calculateRegistrationPrice(domain.name).usd
+        ? formatRegisterPrice(calculateRegistrationPrice(domain.name).usd)
         : null
-  const lastPriceAsset = domain.last_sale_asset
+  const lastPriceAsset = domain.last_sale_asset || 'ETH'
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['last_sale'].getWidth(columnCount))}>

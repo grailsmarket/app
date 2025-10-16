@@ -104,8 +104,6 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   // Determine which tab is active in portfolio
   const activePortfolioTab = portfolioTab || profileState.selectedTab?.value || 'domains'
 
-  console.log('activePortfolioTab', activePortfolioTab)
-
   // Select the appropriate filters based on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'portfolio') {
@@ -124,8 +122,6 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
     return selectMarketplaceFilters(state)
   })
-
-  console.log('filters', filters)
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {

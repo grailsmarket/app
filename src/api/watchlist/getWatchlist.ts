@@ -10,7 +10,7 @@ export const getWatchlist = async () => {
   })
 
   const data = (await response.json()) as APIResponseType<{ watchlist: WatchlistItemType[] }>
-  console.log('data', data)
+
   return {
     response: data.data,
   }

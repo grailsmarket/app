@@ -1,12 +1,12 @@
 import Image from 'next/image'
 import { RefObject, useCallback, useMemo } from 'react'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import useSortFilter from '@/hooks/useSortFilter'
 import TableRow from './table/components/TableRow'
 import SortArrow from 'public/icons/arrow-down.svg'
 import NoResults from '@/components/ui/noResults'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
-import { ALL_MARKETPLACE_COLUMNS, DEFAULT_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
+import { ALL_MARKETPLACE_COLUMNS, MARKETPLACE_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import TableLoadingRow from './table/components/TableLoadingRow'
 import VirtualList from '@/components/ui/virtuallist'
 import VirtualGrid from '@/components/ui/virtualgrid'
@@ -40,7 +40,7 @@ const Domains: React.FC<DomainsProps> = ({
   hasMoreDomains,
   fetchMoreDomains,
   showHeaders = true,
-  displayedDetails = DEFAULT_DISPLAYED_COLUMNS,
+  displayedDetails = MARKETPLACE_DISPLAYED_COLUMNS,
   forceViewType,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
@@ -49,7 +49,6 @@ const Domains: React.FC<DomainsProps> = ({
   const { sort, setSortFilter } = useSortFilter()
 
   const handleScrollNearBottom = useCallback(() => {
-    console.log('handleScrollNearBottom')
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {
       fetchMoreDomains()
     }
@@ -88,6 +87,9 @@ const Domains: React.FC<DomainsProps> = ({
     return width - (width < 1024 ? 48 : 344)
   }, [width])
 
+  const isClient = useIsClient()
+  if (!isClient) return null
+
   return (
     <div
       className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
@@ -115,9 +117,8 @@ const Domains: React.FC<DomainsProps> = ({
 
                     setSortFilter(item.value?.asc || item.value?.desc || null)
                   }}
-                  className={`w-fit text-left text-sm font-medium ${
-                    item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
-                  }`}
+                  className={`w-fit text-left text-sm font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
+                    }`}
                 >
                   {item.label === 'Actions' ? '' : item.label}
                 </p>
@@ -126,9 +127,8 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort ascending'
-                      className={`rotate-180 ${
-                        sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`rotate-180 ${sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
+                        } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.asc) return
 
@@ -143,9 +143,8 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort descending'
-                      className={`${
-                        sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`${sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
+                        } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.desc) return
 
@@ -183,7 +182,7 @@ const Domains: React.FC<DomainsProps> = ({
               scrollThreshold={300}
               renderItem={(item, index, columnsCount) => {
                 if (!item) return <LoadingCard key={index} />
-                return <Card key={item.token_id} domain={item} isLastInRow={index % columnsCount === 0} />
+                return <Card key={item.token_id} domain={item} isFirstInRow={index % columnsCount === 0} />
               }}
             />
           ) : (

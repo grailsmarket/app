@@ -88,14 +88,14 @@ export const POINT_STYLES = {
 
 export const DEFAULT_TOOLTIP_STYLE = {
   zIndex: 100,
-  background: 'var(--color-secondary)',
+  background: 'var(--color-tertiary)',
   borderRadius: '2px',
   boxShadow: '0 4px 4px rgba(0,0,0,0.2)',
   padding: '12px',
 } as const
 
 export const DEFAULT_POINT_STYLE = {
-  background: 'var(--color-secondary)',
+  background: 'var(--color-tertiary)',
   zIndex: '-10',
   width: '12px',
   height: '12px',

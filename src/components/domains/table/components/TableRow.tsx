@@ -23,7 +23,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
 
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner_address?.toLowerCase())
 
   const columnCount = displayedColumns.length
 

@@ -4,6 +4,7 @@ import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { hasRegistrationPrice } from '@/utils/listStatus'
 import { formatRegisterPrice } from '@/utils/formatPremiumPrice'
+import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 
 interface RegistryPriceProps {
   domain: MarketplaceDomainType
@@ -18,7 +19,7 @@ const RegistryPrice: React.FC<RegistryPriceProps> = ({ domain, columnCount }) =>
           {hasRegistrationPrice(domain.expiry_date) && (
             <>
               <p className='text-light-600 opacity-60'>$</p>
-              <p className='text-light-600 ml-1'>{formatRegisterPrice(domain.registration_price || 0)}</p>
+              <p className='text-light-600 ml-1'>{formatRegisterPrice(calculateRegistrationPrice(domain.name).usd)}</p>
             </>
           )}
         </div>

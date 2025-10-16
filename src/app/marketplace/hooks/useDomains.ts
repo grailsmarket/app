@@ -44,7 +44,7 @@ export const useDomains = () => {
         hasNextPage: domains.hasNextPage,
       }
     },
-    getNextPageParam: (lastPage) => lastPage.nextPageParam,
+    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 0,
   })
 

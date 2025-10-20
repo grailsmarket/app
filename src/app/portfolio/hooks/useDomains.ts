@@ -24,8 +24,6 @@ export const useDomains = () => {
     isMyDomainsFetchingNextPage,
     fetchMoreMyDomains,
     hasMoreMyDomains,
-    search: myDomainsSearch,
-    setSearch: setMyDomainsSearch,
   } = useMyDomains()
 
   const {
@@ -34,8 +32,6 @@ export const useDomains = () => {
     isReceivedOffersFetchingNextPage,
     fetchMoreReceivedOffers,
     hasMoreReceivedOffers,
-    search: receivedOffersSearch,
-    setSearch: setReceivedOffersSearch,
   } = useReceivedOffers()
 
   const {
@@ -44,8 +40,6 @@ export const useDomains = () => {
     isMyOffersFetchingNextPage,
     fetchMoreMyOffers,
     hasMoreMyOffers,
-    search: myOffersSearch,
-    setSearch: setMyOffersSearch,
   } = useMyOffers()
 
   const {
@@ -54,8 +48,6 @@ export const useDomains = () => {
     isWatchlistDomainsFetchingNextPage,
     fetchMoreWatchlistDomains,
     hasMoreWatchlistDomains,
-    search: watchlistDomainsSearch,
-    setSearch: setWatchlistDomainsSearch,
   } = useWatchlistDomains()
 
   const displayedDetails = useMemo(() => {
@@ -151,35 +143,6 @@ export const useDomains = () => {
     }
   }, [selectedTab.value, hasMoreMyDomains, hasMoreReceivedOffers, hasMoreMyOffers, hasMoreWatchlistDomains])
 
-  const search = useMemo(() => {
-    switch (selectedTab.value) {
-      case 'domains':
-        return myDomainsSearch
-      case 'received_offers':
-        return receivedOffersSearch
-      case 'my_offers':
-        return myOffersSearch
-      case 'watchlist':
-        return watchlistDomainsSearch
-      default:
-        return myDomainsSearch
-    }
-  }, [selectedTab.value, myDomainsSearch, receivedOffersSearch, myOffersSearch, watchlistDomainsSearch])
-
-  const setSearch = useMemo(() => {
-    switch (selectedTab.value) {
-      case 'domains':
-        return setMyDomainsSearch
-      case 'received_offers':
-        return setReceivedOffersSearch
-      case 'my_offers':
-        return setMyOffersSearch
-      case 'watchlist':
-        return setWatchlistDomainsSearch
-      default:
-        return setMyDomainsSearch
-    }
-  }, [selectedTab.value, setMyDomainsSearch, setMyOffersSearch, setReceivedOffersSearch, setWatchlistDomainsSearch])
 
   return {
     displayedDetails,
@@ -187,7 +150,5 @@ export const useDomains = () => {
     domainsLoading,
     fetchMoreDomains,
     hasMoreDomains,
-    search,
-    setSearch,
   }
 }

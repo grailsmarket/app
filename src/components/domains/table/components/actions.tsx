@@ -23,10 +23,11 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
+  const domainListing = domain.listings[0]
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
-      if (domain.price) {
+      if (domainListing?.price) {
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
             <SecondaryButton>

@@ -18,6 +18,7 @@ import {
 
 export const emptyFilterState: MarketplaceFiltersState = {
   open: false,
+  search: '',
   status: [],
   type: [...MARKETPLACE_TYPE_FILTER_LABELS],
   length: {
@@ -37,6 +38,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
 export const initialState: MarketplaceFiltersOpenedState = {
   // Filters are only expandable on mobile and tablet, so this value will get ignored on desktop
   open: false,
+  search: '',
   status: ['Listed'],
   type: [MARKETPLACE_TYPE_FILTER_LABELS[0]],
   length: {
@@ -142,6 +144,9 @@ export const watchlistFiltersSlice = createSlice({
     setWatchlistSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
+    setWatchlistSearch(state, { payload }: PayloadAction<string>) {
+      state.search = payload
+    },
     toggleWatchlistFilterOpen(state, { payload }: PayloadAction<MarketplaceOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -152,6 +157,7 @@ export const watchlistFiltersSlice = createSlice({
     },
     clearWatchlistFilters(state) {
       state.open = false
+      state.search = ''
       state.status = []
       state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]
       state.length = {
@@ -184,6 +190,7 @@ export const {
   setWatchlistFiltersCategory,
   setWatchlistFiltersSubcategory,
   setWatchlistSort,
+  setWatchlistSearch,
   toggleWatchlistFilterOpen,
   clearWatchlistFilters,
 } = watchlistFiltersSlice.actions

@@ -19,10 +19,11 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
   const { onSelect } = useCartDomains()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
+  const domainListing = domain.listings[0]
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
-      if (domain.price) {
+      if (domainListing?.price) {
         return (
           <div className='flex flex-row justify-end gap-2 opacity-100 py-md'>
             <p className='text-foreground/70 hover:text-foreground text-lg cursor-pointer font-bold transition-colors'>
@@ -80,7 +81,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
           <p className='text-primary/80 hover:text-primary text-lg cursor-pointer font-bold transition-colors'>
             {REGISTERABLE_STATUSES.includes(registrationStatus as string)
               ? 'Register'
-              : domain.price && registrationStatus === 'Registered'
+              : domainListing.price && registrationStatus === 'Registered'
                 ? 'Buy now'
                 : 'Make Offer'}
           </p>

@@ -25,7 +25,8 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
 
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner_address?.toLowerCase())
+  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const domainListing = domain.listings[0]
 
   return (
     <div
@@ -59,11 +60,11 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
         <div className='flex w-full flex-col pt-4 pl-4'>
           {registrationStatus !== GRACE_PERIOD &&
             (registrationStatus === REGISTERED ? (
-              domain.price ? (
+              domainListing?.price ? (
                 <div className='flex items-center gap-1'>
                   <SaleAsset asset='ETH' ethSize='12px' />
                   <p className='text-light-100 truncate text-xs leading-[18px] font-bold'>
-                    {domain.price && formatEther(BigInt(domain.price))}
+                    {domainListing.price && formatEther(BigInt(domainListing.price))}
                   </p>
                 </div>
               ) : (

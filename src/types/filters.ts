@@ -31,6 +31,7 @@ export interface FilterRouterSelectors<T extends FilterContextType> {
 
 export interface FilterRouterActions {
   setFiltersOpen: (payload: boolean) => PayloadAction<boolean>
+  setSearch: (payload: string) => PayloadAction<string>
   toggleFiltersStatus: (payload: any) => PayloadAction<any>
   setFiltersStatus: (payload: any) => PayloadAction<any>
   toggleFiltersType: (payload: any) => PayloadAction<any>
@@ -71,6 +72,7 @@ export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type PortfolioFiltersState = {
   open: boolean
+  search: string
   status: PortfolioStatusFilterType[]
   type: PortfolioTypeFilterType[]
   length: LengthType

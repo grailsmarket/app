@@ -3,18 +3,11 @@ import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
-import { PortfolioTabType } from '@/types/filters'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useParams } from 'next/navigation'
-import { useState } from 'react'
 
 export const useMyDomains = () => {
-  const queryParams = useParams()
-  const selectedTab = queryParams.tab as PortfolioTabType
-  const defaultSearch = selectedTab === 'domains' ? (queryParams.search as string) || '' : ''
-  const [search, setSearch] = useState(defaultSearch)
-  const debouncedSearch = useDebounce(search, 500)
   const filters = useAppSelector(selectMyDomainsFilters)
+  const debouncedSearch = useDebounce(filters.search, 500)
 
   const {
     data: myDomains,
@@ -39,7 +32,7 @@ export const useMyDomains = () => {
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
         filters: filters as any, // TODO: Create separate portfolio API or adapter
-        searchTerm: '',
+        searchTerm: debouncedSearch,
       })
 
       return response
@@ -49,8 +42,6 @@ export const useMyDomains = () => {
   })
 
   return {
-    search,
-    setSearch,
     myDomains,
     isMyDomainsLoading,
     isMyDomainsFetchingNextPage,

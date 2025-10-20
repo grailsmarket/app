@@ -17,6 +17,7 @@ import {
 
 export const emptyFilterState: PortfolioFiltersState = {
   open: false,
+  search: '',
   status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
   length: {
@@ -36,6 +37,7 @@ export const emptyFilterState: PortfolioFiltersState = {
 export const initialState: PortfolioFiltersOpenedState = {
   // Filters are only expandable on mobile and tablet, so this value will get ignored on desktop
   open: false,
+  search: '',
   status: [],
   type: [MY_DOMAINS_TYPE_FILTER_LABELS[0]],
   length: {
@@ -107,6 +109,9 @@ export const receivedOffersFiltersSlice = createSlice({
     setReceivedOffersSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
+    setReceivedOffersSearch(state, { payload }: PayloadAction<string>) {
+      state.search = payload
+    },
     toggleReceivedOffersFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -117,6 +122,7 @@ export const receivedOffersFiltersSlice = createSlice({
     },
     clearReceivedOffersFilters(state) {
       state.open = false
+      state.search = ''
       state.status = []
       state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
       state.length = {
@@ -147,6 +153,7 @@ export const {
   toggleReceivedOffersCategory,
   setReceivedOffersFiltersCategory,
   setReceivedOffersSort,
+  setReceivedOffersSearch,
   toggleReceivedOffersFilterOpen,
   clearReceivedOffersFilters,
 } = receivedOffersFiltersSlice.actions

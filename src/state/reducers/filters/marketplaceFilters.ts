@@ -47,6 +47,7 @@ export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type MarketplaceFiltersState = {
   open: boolean
+  search: string
   status: MarketplaceStatusFilterType[]
   type: MarketplaceTypeFilterType[]
   length: MarketplaceLengthType
@@ -62,6 +63,7 @@ export type MarketplaceFiltersOpenedState = MarketplaceFiltersState & {
 
 export const emptyFilterState: MarketplaceFiltersState = {
   open: false,
+  search: '',
   status: [],
   type: [...MARKETPLACE_TYPE_FILTER_LABELS],
   length: {
@@ -81,6 +83,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
 export const initialState: MarketplaceFiltersOpenedState = {
   // Filters are only expandable on mobile and tablet, so this value will get ignored on desktop
   open: false,
+  search: '',
   status: ['Listed'],
   type: [MARKETPLACE_TYPE_FILTER_LABELS[0]],
   length: {
@@ -186,6 +189,9 @@ export const marketplaceFiltersSlice = createSlice({
     setMarketplaceSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
+    setMarketplaceSearch(state, { payload }: PayloadAction<string>) {
+      state.search = payload
+    },
     toggleMarketplaceFilterOpen(state, { payload }: PayloadAction<MarketplaceOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -196,6 +202,7 @@ export const marketplaceFiltersSlice = createSlice({
     },
     clearMarketplaceFilters(state) {
       state.open = false
+      state.search = ''
       state.status = []
       state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]
       state.length = {
@@ -228,6 +235,7 @@ export const {
   setMarketplaceFiltersCategory,
   setMarketplaceFiltersSubcategory,
   setMarketplaceSort,
+  setMarketplaceSearch,
   toggleMarketplaceFilterOpen,
   clearMarketplaceFilters,
 } = marketplaceFiltersSlice.actions

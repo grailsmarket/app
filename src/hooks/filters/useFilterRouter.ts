@@ -17,6 +17,7 @@ import {
   toggleMarketplaceCategory,
   setMarketplaceFiltersCategory,
   setMarketplaceSort,
+  setMarketplaceSearch,
   toggleMarketplaceFilterOpen,
   clearMarketplaceFilters,
 } from '@/state/reducers/filters/marketplaceFilters'
@@ -35,6 +36,7 @@ import {
   toggleMyDomainsCategory,
   setMyDomainsFiltersCategory,
   setMyDomainsSort,
+  setMyDomainsSearch,
   toggleMyDomainsFilterOpen,
   clearMyDomainsFilters,
 } from '@/state/reducers/filters/myDomainsFilters'
@@ -53,6 +55,7 @@ import {
   toggleMyOffersCategory,
   setMyOffersFiltersCategory,
   setMyOffersSort,
+  setMyOffersSearch,
   toggleMyOffersFilterOpen,
   clearMyOffersFilters,
 } from '@/state/reducers/filters/myOffersFilters'
@@ -71,6 +74,7 @@ import {
   toggleReceivedOffersCategory,
   setReceivedOffersFiltersCategory,
   setReceivedOffersSort,
+  setReceivedOffersSearch,
   toggleReceivedOffersFilterOpen,
   clearReceivedOffersFilters,
 } from '@/state/reducers/filters/receivedOffersFilters'
@@ -89,6 +93,7 @@ import {
   toggleWatchlistCategory,
   setWatchlistFiltersCategory,
   setWatchlistSort,
+  setWatchlistSearch,
   toggleWatchlistFilterOpen,
   clearWatchlistFilters,
 } from '@/state/reducers/filters/watchlistFilters'
@@ -139,6 +144,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleCategory: toggleMyDomainsCategory,
           setFiltersCategory: setMyDomainsFiltersCategory,
           setSort: setMyDomainsSort,
+          setSearch: setMyDomainsSearch,
           toggleFilterOpen: toggleMyDomainsFilterOpen,
           clearFilters: clearMyDomainsFilters,
         }
@@ -155,6 +161,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleCategory: toggleMyOffersCategory,
           setFiltersCategory: setMyOffersFiltersCategory,
           setSort: setMyOffersSort,
+          setSearch: setMyOffersSearch,
           toggleFilterOpen: toggleMyOffersFilterOpen,
           clearFilters: clearMyOffersFilters,
         }
@@ -171,6 +178,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleCategory: toggleReceivedOffersCategory,
           setFiltersCategory: setReceivedOffersFiltersCategory,
           setSort: setReceivedOffersSort,
+          setSearch: setReceivedOffersSearch,
           toggleFilterOpen: toggleReceivedOffersFilterOpen,
           clearFilters: clearReceivedOffersFilters,
         }
@@ -187,6 +195,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleCategory: toggleWatchlistCategory,
           setFiltersCategory: setWatchlistFiltersCategory,
           setSort: setWatchlistSort,
+          setSearch: setWatchlistSearch,
           toggleFilterOpen: toggleWatchlistFilterOpen,
           clearFilters: clearWatchlistFilters,
         }
@@ -205,6 +214,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleCategory: toggleMarketplaceCategory,
       setFiltersCategory: setMarketplaceFiltersCategory,
       setSort: setMarketplaceSort,
+      setSearch: setMarketplaceSearch,
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }

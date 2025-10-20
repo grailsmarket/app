@@ -16,7 +16,7 @@ const ActionButtons = () => {
 
   return (
     <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
-      <div className={cn('lg:w-[270px]', open ? 'block' : 'hidden flex-row justify-end lg:flex')}>
+      <div className={cn('lg:w-[262px]', open ? 'block' : 'hidden flex-row justify-end lg:flex')}>
         <PersistGate persistor={persistor}>
           <SecondaryButton
             disabled={isFiltersClear}

@@ -43,6 +43,7 @@ export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type MyDomainsFiltersState = {
   open: boolean
+  search: string
   status: MyDomainsStatusFilterType[]
   type: MyDomainsTypeFilterType[]
   length: MyDomainsLengthType
@@ -58,6 +59,7 @@ export type MyDomainsFiltersOpenedState = MyDomainsFiltersState & {
 
 export const emptyFilterState: MyDomainsFiltersState = {
   open: false,
+  search: '',
   status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
   length: {
@@ -77,6 +79,7 @@ export const emptyFilterState: MyDomainsFiltersState = {
 export const initialState: MyDomainsFiltersOpenedState = {
   // Filters are only expandable on mobile and tablet, so this value will get ignored on desktop
   open: false,
+  search: '',
   status: [],
   type: [MY_DOMAINS_TYPE_FILTER_LABELS[0]],
   length: {
@@ -152,6 +155,9 @@ export const myOffersFiltersSlice = createSlice({
     setMyOffersSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
+    setMyOffersSearch(state, { payload }: PayloadAction<string>) {
+      state.search = payload
+    },
     toggleMyOffersFilterOpen(state, { payload }: PayloadAction<MyDomainsOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -162,6 +168,7 @@ export const myOffersFiltersSlice = createSlice({
     },
     clearMyOffersFilters(state) {
       state.open = false
+      state.search = ''
       state.status = []
       state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
       state.length = {
@@ -192,6 +199,7 @@ export const {
   toggleMyOffersCategory,
   setMyOffersFiltersCategory,
   setMyOffersSort,
+  setMyOffersSearch,
   toggleMyOffersFilterOpen,
   clearMyOffersFilters,
 } = myOffersFiltersSlice.actions

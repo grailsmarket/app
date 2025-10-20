@@ -7,14 +7,15 @@ import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
-import { setMarketplaceFiltersOpen } from '@/state/reducers/filters/marketplaceFilters'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
+  const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, search, setSearch } = useDomains()
+  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
 
   return (
     <div
@@ -27,7 +28,7 @@ const DomainPanel = () => {
         <div className='flex w-auto items-center gap-2'>
           <button
             className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border-[1px] opacity-70 transition-opacity hover:opacity-100 lg:hidden'
-            onClick={() => dispatch(setMarketplaceFiltersOpen(true))}
+            onClick={() => dispatch(actions.setFiltersOpen(true))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
@@ -35,8 +36,8 @@ const DomainPanel = () => {
             <input
               type='text'
               placeholder='Search'
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={selectors.filters.search || ''}
+              onChange={(e) => dispatch(actions.setSearch(e.target.value))}
               className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
             />
             <Image

@@ -56,7 +56,7 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
     },
   },
   last_sale: {
-    label: 'Last Sale',
+    label: 'Last Price',
     sort: null,
     value: { asc: 'lowest_last_sale', desc: 'highest_last_sale' },
     getWidth: (columnsLength: number) => {

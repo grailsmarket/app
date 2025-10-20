@@ -21,12 +21,12 @@ interface TableRowProps {
 const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) => {
   const { address } = useAccount()
 
+  const domainListing = domain.listings[0]
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner_address?.toLowerCase())
+  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
 
   const columnCount = displayedColumns.length
-
   const columns: Record<MarketplaceHeaderColumn, React.ReactNode> = {
     domain: (
       <Name
@@ -40,7 +40,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
     listed_price: (
       <ListPrice
         key={`${domain.name}-listed_price`}
-        domain={domain}
+        listing={domainListing}
         registrationStatus={registrationStatus}
         columnCount={columnCount}
       />

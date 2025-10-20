@@ -3,18 +3,11 @@ import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
-import { PortfolioTabType } from '@/types/filters'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useParams } from 'next/navigation'
-import { useState } from 'react'
 
 export const useMyOffers = () => {
-  const queryParams = useParams()
-  const selectedTab = queryParams.tab as PortfolioTabType
-  const defaultSearch = selectedTab === 'my_offers' ? (queryParams.search as string) || '' : ''
-  const [search, setSearch] = useState(defaultSearch)
-  const debouncedSearch = useDebounce(search, 500)
   const filters = useAppSelector(selectMyDomainsFilters)
+  const debouncedSearch = useDebounce(filters.search, 500)
 
   const {
     data: myOffers,
@@ -49,8 +42,6 @@ export const useMyOffers = () => {
   })
 
   return {
-    search,
-    setSearch,
     myOffers,
     isMyOffersLoading,
     isMyOffersFetchingNextPage,

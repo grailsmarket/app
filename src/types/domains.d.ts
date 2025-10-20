@@ -3,22 +3,33 @@ import { SortFilterType } from '../state/reducers/filters/marketplaceFilters'
 import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
 
 export type MarketplaceDomainType = {
-  id: number
   name: string
   token_id: number
+  owner: Address | null
   expiry_date: string | null
-  owner_address: Address | null
-  registrant: Address | null
-  price: string | null
   registration_date: number | null
+  metadata: Record<string, string>
   has_numbers: boolean
   has_emoji: boolean
   clubs: string[]
-  listing_created_at: null | string | number
+  listings: DomainListingType[]
   highest_offer: string | null
   offer: string | null
   last_sale_price: string | null
   last_sale_asset: string | null
+}
+
+export type DomainListingType = {
+  id: number
+  price: string
+  currency_address: string
+  status: string
+  seller_address: string
+  order_hash: string
+  order_data: Record<string, unknown>
+  expires_at: string
+  created_at: string
+  source: string
 }
 
 // Names API item

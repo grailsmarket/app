@@ -84,6 +84,7 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
 @layer base {
   *,
   *::before,

@@ -5,9 +5,8 @@ import CategoryFilter from '../CategoryFilter'
 import PriceRangeFilter from '../PriceRangeFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { MARKETPLACE_CATEGORIES } from '@/constants/filters/marketplaceFilters'
-import { MY_DOMAINS_CATEGORIES } from '@/constants/filters/portfolioFilters'
 import { MarketplaceCategoryType } from '@/state/reducers/filters/marketplaceFilters'
-import { useFilterContext } from '@/contexts/FilterContext'
+import { useFilterContext } from '@/context/filters'
 import { cn } from '@/utils/tailwind'
 import { useIsClient } from 'ethereum-identity-kit'
 
@@ -17,14 +16,14 @@ interface FiltersProps {
 }
 
 const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories }) => {
-  const { filterType, portfolioTab } = useFilterContext()
+  const { filterType, portfolioTab, profileTab } = useFilterContext()
   const isClient = useIsClient()
 
   if (!isClient) return null
 
   // Use appropriate categories based on filter context
-  const categories = filterType === 'marketplace' ? MARKETPLACE_CATEGORIES : MY_DOMAINS_CATEGORIES
-  const showCategoryTab = filterType === 'marketplace' || portfolioTab === 'domains' || portfolioTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
+  const categories = MARKETPLACE_CATEGORIES
+  const showCategoryTab = filterType === 'marketplace' || portfolioTab === 'domains' || portfolioTab === 'watchlist' || profileTab === 'domains' // Only show category tab for marketplace and portfolio domains tab
 
   return (
     <div className='flex w-full overflow-x-hidden pb-10'>

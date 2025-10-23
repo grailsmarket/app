@@ -13,7 +13,7 @@ import Hamburger from './hamburger'
 
 const Navigation = () => {
   return (
-    <header className='px-lg bg-background fixed top-0 left-0 z-50 h-20 w-full sm:bg-transparent'>
+    <header className='px-lg bg-background fixed top-0 left-0 z-50 h-20 w-full'>
       <nav className='mx-auto flex h-full max-w-7xl items-center justify-between'>
         <div className='flex items-center gap-8'>
           <Link href='/'>
@@ -33,7 +33,7 @@ const Navigation = () => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 min-w-60' />
+            <Searchbar onSearch={() => { }} className='h-10 min-w-60' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

@@ -1,6 +1,6 @@
 import { RootState } from '@/state'
 import { useAppSelector } from '@/state/hooks'
-import { useFilterContext } from '@/contexts/FilterContext'
+import { useFilterContext } from '@/context/filters'
 import { FilterRouter, FilterContextType } from '@/types/filters'
 
 // Import marketplace selectors and actions
@@ -99,18 +99,57 @@ import {
 } from '@/state/reducers/filters/watchlistFilters'
 
 // Import profile selector for portfolio tabs
-import { selectUserProfile } from '@/state/reducers/profile/profile'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useMemo } from 'react'
 
+// Import profile filters selectors and actions
+import {
+  selectProfileDomainsFilters,
+  setFiltersOpen as setProfileDomainsFiltersOpen,
+  toggleFiltersStatus as toggleProfileDomainsFiltersStatus,
+  setFiltersStatus as setProfileDomainsFiltersStatus,
+  toggleFiltersType as toggleProfileDomainsFiltersType,
+  setFiltersType as setProfileDomainsFiltersType,
+  setFiltersLength as setProfileDomainsFiltersLength,
+  setPriceDenomination as setProfileDomainsPriceDenomination,
+  setPriceRange as setProfileDomainsPriceRange,
+  toggleCategory as toggleProfileDomainsCategory,
+  setFiltersCategory as setProfileDomainsFiltersCategory,
+  setSort as setProfileDomainsSort,
+  setSearch as setProfileDomainsSearch,
+  toggleFilterOpen as toggleProfileDomainsFilterOpen,
+  clearFilters as clearProfileDomainsFilters,
+} from '@/state/reducers/filters/profileDomainsFilters'
+
+import {
+  selectProfileActivityFilters,
+  toggleActivityFiltersType,
+  setActivityFiltersType,
+  toggleFilterOpen as toggleProfileActivityFilterOpen,
+  setFiltersOpen as setProfileActivityFilterOpen,
+  setSearch as setProfileActivitySearch,
+  clearActivityFilters,
+} from '@/state/reducers/filters/profileActivityFilters'
+
 export function useFilterRouter(): FilterRouter<FilterContextType> {
-  const { filterType, portfolioTab } = useFilterContext()
+  const { filterType, portfolioTab, profileTab } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
 
-  // Determine which tab is active in portfolio
+  // Determine which tab is active in portfolio or profile
   const activePortfolioTab = portfolioTab || profileState.selectedTab?.value || 'domains'
 
-  // Select the appropriate filters based on context
+  // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
+    if (filterType === 'profile') {
+      if (profileTab === 'domains') {
+        return selectProfileDomainsFilters(state)
+      } else if (profileTab === 'activity') {
+        return selectProfileActivityFilters(state)
+      }
+
+      return selectProfileDomainsFilters(state)
+    }
+
     if (filterType === 'portfolio') {
       if (activePortfolioTab === 'domains') {
         return selectMyDomainsFilters(state)
@@ -130,6 +169,53 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
+    if (filterType === 'profile') {
+      if (profileTab === 'domains') {
+        return {
+          setFiltersOpen: setProfileDomainsFiltersOpen,
+          toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
+          setFiltersStatus: setProfileDomainsFiltersStatus,
+          toggleFiltersType: toggleProfileDomainsFiltersType,
+          setFiltersType: setProfileDomainsFiltersType,
+          setFiltersLength: setProfileDomainsFiltersLength,
+          setPriceDenomination: setProfileDomainsPriceDenomination,
+          setPriceRange: setProfileDomainsPriceRange,
+          toggleCategory: toggleProfileDomainsCategory,
+          setFiltersCategory: setProfileDomainsFiltersCategory,
+          setSort: setProfileDomainsSort,
+          setSearch: setProfileDomainsSearch,
+          toggleFilterOpen: toggleProfileDomainsFilterOpen,
+          clearFilters: clearProfileDomainsFilters,
+        }
+      } else if (profileTab === 'activity') {
+        return {
+          toggleFilterOpen: toggleProfileActivityFilterOpen,
+          toggleFiltersType: toggleActivityFiltersType,
+          setFiltersOpen: setProfileActivityFilterOpen,
+          setFiltersType: setActivityFiltersType,
+          setSearch: setProfileActivitySearch,
+          clearFilters: clearActivityFilters,
+        } as any
+      }
+
+      return {
+        setFiltersOpen: setProfileDomainsFiltersOpen,
+        toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
+        setFiltersStatus: setProfileDomainsFiltersStatus,
+        toggleFiltersType: toggleProfileDomainsFiltersType,
+        setFiltersType: setProfileDomainsFiltersType,
+        setFiltersLength: setProfileDomainsFiltersLength,
+        setPriceDenomination: setProfileDomainsPriceDenomination,
+        setPriceRange: setProfileDomainsPriceRange,
+        toggleCategory: toggleProfileDomainsCategory,
+        setFiltersCategory: setProfileDomainsFiltersCategory,
+        setSort: setProfileDomainsSort,
+        setSearch: setProfileDomainsSearch,
+        toggleFilterOpen: toggleProfileDomainsFilterOpen,
+        clearFilters: clearProfileDomainsFilters,
+      }
+    }
+
     if (filterType === 'portfolio') {
       if (portfolioTab === 'domains') {
         return {
@@ -218,7 +304,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
-  }, [filterType, portfolioTab])
+  }, [filterType, portfolioTab, profileTab])
 
   return {
     selectors: {

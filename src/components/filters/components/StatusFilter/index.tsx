@@ -12,17 +12,28 @@ import {
   MY_DOMAINS_FILTER_LABELS,
   RECEIVED_OFFERS_STATUS_FILTER_LABELS,
   MY_OFFERS_STATUS_FILTER_LABELS,
+  PROFILE_DOMAINS_FILTER_LABELS,
+  PROFILE_ACTIVITY_FILTER_LABELS,
 } from '@/constants/filters/portfolioFilters'
-import { useFilterContext } from '@/contexts/FilterContext'
+import { useFilterContext } from '@/context/filters'
 import { useMemo } from 'react'
 
 const StatusFilter: React.FC = () => {
   const { open, toggleOpen } = useFilterOpen('Status')
   const { isActive, toggleActive } = useStatusFilters()
-  const { filterType, portfolioTab } = useFilterContext()
+  const { filterType, portfolioTab, profileTab } = useFilterContext()
 
   // Determine which labels to use based on context
   const filterLabels = useMemo(() => {
+    if (filterType === 'profile') {
+      if (profileTab === 'domains') {
+        return PROFILE_DOMAINS_FILTER_LABELS
+      } else if (profileTab === 'activity') {
+        return PROFILE_ACTIVITY_FILTER_LABELS
+      }
+      return MY_DOMAINS_FILTER_LABELS
+    }
+
     if (filterType === 'portfolio') {
       if (portfolioTab === 'domains') {
         return MY_DOMAINS_FILTER_LABELS
@@ -38,7 +49,7 @@ const StatusFilter: React.FC = () => {
     }
 
     return MARKETPLACE_STATUS_FILTER_LABELS
-  }, [filterType, portfolioTab])
+  }, [filterType, portfolioTab, profileTab])
 
   // Calculate expanded height based on number of labels
   const expandedHeight = 56 + filterLabels.length * 36

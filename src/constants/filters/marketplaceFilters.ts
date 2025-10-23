@@ -10,7 +10,9 @@ export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
 }
 
 export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
+  Listed: 'listed',
   Available: 'available',
+  Unlisted: 'unlisted',
   Premium: 'premium',
   'Expiring Soon': 'expiring',
 }

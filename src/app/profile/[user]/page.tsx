@@ -5,7 +5,6 @@ import { fetchAccount, fetchProfileDetails, fetchProfileStats, isLinkValid, trun
 import { isAddress, isHex } from 'viem'
 import { ONE_MINUTE } from '@/constants/time'
 import Profile from './components/profile'
-import DomainPanel from './components/domainPanel'
 
 interface Props {
   params: Promise<{ user: string }>
@@ -81,23 +80,22 @@ const UserPage = async (props: Props) => {
   // Skip prefetching if ssr is false
   if (ssr) {
     await queryClient.prefetchQuery({
-      queryKey: ['profile', user, false],
+      queryKey: ['profile', user],
       queryFn: () => (user ? fetchProfileDetails(user, listNum) : null),
       staleTime: 3 * ONE_MINUTE * 1000,
     })
 
     await queryClient.prefetchQuery({
-      queryKey: ['stats', user, false],
+      queryKey: ['stats', user],
       queryFn: () => (user ? fetchProfileStats(user, listNum) : null),
       staleTime: 3 * ONE_MINUTE * 1000,
     })
   }
 
   return (
-    <main className='h-screen w-full xl:overflow-hidden'>
+    <main className='min-h-screen w-full' style={{ minHeight: 'calc(100vh - 360px)' }}>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Profile user={user} />
-        <DomainPanel user={user} />
       </HydrationBoundary>
     </main>
   )

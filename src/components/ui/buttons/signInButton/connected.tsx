@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { truncateAddress, Avatar, HeaderImage, ShortArrow } from 'ethereum-identity-kit'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
-import { useUserContext } from '@/context/user-context'
+import { useUserContext } from '@/context/user'
 import { useAppSelector } from '@/state/hooks'
-import { selectUserProfile } from '@/state/reducers/profile/profile'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 const Connected = () => {
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false)

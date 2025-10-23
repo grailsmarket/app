@@ -1,8 +1,9 @@
 'use client'
 
-import { FullWidthProfile } from 'ethereum-identity-kit'
 import React from 'react'
 import { Address } from 'viem'
+import { FullWidthProfile } from 'ethereum-identity-kit'
+import MainPanel from './main-panel'
 
 interface Props {
   user: Address | string
@@ -11,8 +12,9 @@ interface Props {
 const Profile: React.FC<Props> = ({ user }) => {
 
   return (
-    <div>
-      <FullWidthProfile addressOrName={user} />
+    <div className='dark'>
+      <FullWidthProfile addressOrName={user} style={{ paddingBottom: '80px', transform: 'translateY(80px)', position: 'relative' }} />
+      <MainPanel user={user} />
     </div>
   )
 }

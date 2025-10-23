@@ -8,7 +8,7 @@ import searchReducer from './search'
 import scrollPosition from './scroll'
 import domainsReducer from './domains'
 import filtersReducer from './filters'
-import profileReducer from './profile'
+import profileReducer from './portfolio'
 import transactionReducer from './transactions'
 import notificationsReducer from './notifications'
 

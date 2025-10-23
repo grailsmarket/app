@@ -2,7 +2,11 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../state/hooks'
-import { addUserWatchlistDomain, removeUserWatchlistDomain, selectUserProfile } from '../state/reducers/profile/profile'
+import {
+  addUserWatchlistDomain,
+  removeUserWatchlistDomain,
+  selectUserProfile,
+} from '../state/reducers/portfolio/profile'
 import type { MarketplaceDomainType, WatchlistItemType } from '../types/domains'
 import { addToWatchlist } from '@/api/watchlist/addToWatchlist'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'

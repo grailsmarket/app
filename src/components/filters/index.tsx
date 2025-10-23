@@ -11,6 +11,8 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
 import { RefObject } from 'react'
 import CloseIcon from 'public/icons/cross.svg'
+import { useFilterContext } from '@/context/filters'
+import ActivityTypeFilter from './ActivityFilter/TypeFilter'
 
 const FilterPanel: React.FC = () => {
   const { width: windowWidth } = useWindowSize()
@@ -18,7 +20,7 @@ const FilterPanel: React.FC = () => {
 
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-
+  const { profileTab, filterType } = useFilterContext()
   const filtersOpen = selectors.filters.open
 
   const isExpandable = windowWidth && windowWidth < 1024
@@ -77,7 +79,7 @@ const FilterPanel: React.FC = () => {
       </div>
 
       {/* Middle div */}
-      {isOpen && <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />}
+      {isOpen && ((filterType === 'profile' && profileTab === 'activity') ? <ActivityTypeFilter /> : <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />)}
     </div>
   )
 }

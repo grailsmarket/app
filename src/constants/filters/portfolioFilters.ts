@@ -2,7 +2,7 @@ export const MY_DOMAINS_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price R
 
 export const MY_DOMAINS_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 
-export const MY_DOMAINS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const MY_DOMAINS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
 export const RECEIVED_OFFERS_STATUS_FILTER_LABELS = ['Expiring Soon'] as const
 export const MY_OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
 
@@ -48,3 +48,6 @@ export const MY_DOMAINS_CATEGORIES = [
   'Web',
   'Places',
 ]
+
+export const PROFILE_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const PROFILE_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const

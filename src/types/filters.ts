@@ -9,6 +9,10 @@ import {
   MY_OFFERS_STATUS_FILTER_LABELS,
 } from '@/constants/filters/portfolioFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
+import {
+  ActivityFiltersOpenedState,
+  ProfileActivityOpenableFilterType,
+} from '@/state/reducers/filters/profileActivityFilters'
 
 // Internal types for common structures
 export type LengthType = {
@@ -21,12 +25,12 @@ export type PriceType = {
   max: number | null
 }
 
-export type FilterContextType = 'marketplace' | 'portfolio'
-
+export type FilterContextType = 'marketplace' | 'portfolio' | 'profile'
 export type PortfolioTabType = 'domains' | 'received_offers' | 'my_offers' | 'watchlist'
+export type ProfileTabType = 'domains' | 'activity'
 
 export interface FilterRouterSelectors<T extends FilterContextType> {
-  filters: T extends 'marketplace' ? MarketplaceFiltersOpenedState : PortfolioFiltersOpenedState
+  filters: T extends 'marketplace' ? MarketplaceFiltersOpenedState : ProfileFiltersOpenedState
 }
 
 export interface FilterRouterActions {
@@ -84,4 +88,8 @@ export type PortfolioFiltersState = {
 
 export type PortfolioFiltersOpenedState = PortfolioFiltersState & {
   openFilters: PortfolioOpenableFilterType[]
+}
+
+export type ProfileFiltersOpenedState = ActivityFiltersOpenedState & {
+  openFilters: ProfileActivityOpenableFilterType[]
 }

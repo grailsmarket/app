@@ -1,33 +1,27 @@
 'use client'
 
 import React from 'react'
-import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { Address, useWindowSize } from 'ethereum-identity-kit'
+import { Address } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
-import { useDomains } from '@/app/marketplace/hooks/useDomains'
+import { useProfileActivity } from '../hooks/useActivity'
+import Activity from '@/components/activity'
 
 interface Props {
   user: Address | string
 }
 
-const DomainPanel: React.FC<Props> = ({ user }) => {
+const ActivityPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const { width: windowWidth } = useWindowSize()
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
+  const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
 
   return (
-    <div
-      className='pt-lg flex flex-col gap-4'
-      style={{
-        width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
-      }}
-    >
+    <>
       <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
@@ -55,21 +49,17 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         </div>
         <ViewSelector />
       </div>
-      <Domains
-        maxHeight='calc(100vh - 240px)'
-        domains={domains}
+      <Activity
+        maxHeight='calc(100vh - 200px)'
+        activity={activity}
         loadingRowCount={20}
-        noResults={!domainsLoading && domains?.length === 0}
-        isLoading={domainsLoading}
-        hasMoreDomains={hasMoreDomains}
-        fetchMoreDomains={() => {
-          if (hasMoreDomains && !domainsLoading) {
-            fetchMoreDomains()
-          }
-        }}
+        noResults={!activityLoading && activity?.length === 0}
+        isLoading={activityLoading}
+        hasMoreActivity={hasMoreActivity}
+        fetchMoreActivity={fetchMoreActivity}
       />
-    </div>
+    </>
   )
 }
 
-export default DomainPanel
+export default ActivityPanel

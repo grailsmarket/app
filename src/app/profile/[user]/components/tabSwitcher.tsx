@@ -1,14 +1,20 @@
 'use client'
 
-import { portfolioTabs } from '@/constants/domains/portfolio/tabs'
+import { profileTabs } from '@/constants/domains/profile/tabs'
+import { useFilterContext } from '@/context/filters'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeTab, selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { ProfileTabType } from '@/types/filters'
 import { cn } from '@/utils/tailwind'
 import React, { useEffect, useState } from 'react'
 
-const TabSwitcher = () => {
+interface TabSwitcherProps {
+  profileTab: ProfileTabType
+  setProfileTab: (tab: ProfileTabType) => void
+}
+
+const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) => {
   const dispatch = useAppDispatch()
-  const { selectedTab } = useAppSelector(selectUserProfile)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -19,10 +25,10 @@ const TabSwitcher = () => {
   if (!mounted) {
     return (
       <div className='px-lg flex gap-4'>
-        {portfolioTabs.map((tab) => (
+        {profileTabs.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => dispatch(changeTab(tab))}
+            onClick={() => setProfileTab(tab.value)}
             className='py-md cursor-pointer font-medium opacity-50 transition-colors hover:opacity-80'
           >
             {tab.label}
@@ -35,13 +41,13 @@ const TabSwitcher = () => {
   // After mount, render with proper active state
   return (
     <div className='px-lg flex gap-4'>
-      {portfolioTabs.map((tab) => (
+      {profileTabs.map((tab) => (
         <button
           key={tab.value}
-          onClick={() => dispatch(changeTab(tab))}
+          onClick={() => setProfileTab(tab.value)}
           className={cn(
             'py-md cursor-pointer',
-            selectedTab.value === tab.value
+            profileTab === tab.value
               ? 'border-primary border-b-[1px] font-bold opacity-100'
               : 'font-medium opacity-50 transition-colors hover:opacity-80'
           )}

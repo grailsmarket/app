@@ -9,7 +9,8 @@ export const useTypeFilters = () => {
   const typeFilters = selectors.filters.type
 
   const isActive = (type: MarketplaceTypeFilterType) => {
-    return typeFilters.includes(type as any)
+    // @ts-expect-error type doesn't come through from the filter router
+    return typeFilters.includes(type)
   }
 
   const toggleActiveGenerator = (type: MarketplaceTypeFilterType) => {

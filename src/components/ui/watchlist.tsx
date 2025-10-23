@@ -8,7 +8,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 import useWatchlist from '@/hooks/useWatchlist'
 import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useUserContext } from '@/context/user-context'
+import { useUserContext } from '@/context/user'
 
 interface WatchlistProps {
   domain: MarketplaceDomainType

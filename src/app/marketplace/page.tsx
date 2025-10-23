@@ -4,7 +4,7 @@ import heroBackground from 'public/art/wallpapper-left.svg'
 import heroBackgroundRight from 'public/art/wallpapper-right.svg'
 import DomainPanel from './components/domainPanel'
 import ActionButtons from './components/actionButtons'
-import { FilterProvider } from '@/contexts/FilterContext'
+import { FilterProvider } from '@/context/filters'
 
 const Marketplace = () => {
   return (

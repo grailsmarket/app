@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 import Logo from 'public/logo.png'
 import SignInButton from './buttons/signInButton'
-import { useUserContext } from '@/context/user-context'
+import { useUserContext } from '@/context/user'
 
 interface NoResultsProps {
   label?: string

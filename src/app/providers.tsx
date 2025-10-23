@@ -10,7 +10,7 @@ import store from '@/state'
 import Navigation from '@/components/navigation'
 import { DAY_IN_SECONDS, ONE_MINUTE } from '@/constants/time'
 import config from '@/lib/wagmi'
-import { UserProvider } from '@/context/user-context'
+import { UserProvider } from '@/context/user'
 
 type ProviderProps = {
   children: React.ReactNode

@@ -9,7 +9,7 @@ import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFi
 
 const RecentListings = () => {
   const filters = useAppSelector(selectMarketplaceFilters)
-  console.log('filters', filters)
+
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
     queryFn: () =>

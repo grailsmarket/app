@@ -1,15 +1,23 @@
 import { fetchMarketplaceDomains } from '@/api/domains/fetchMarketplaceDomains'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useAppSelector } from '@/state/hooks'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { MarketplaceDomainType } from '@/types/domains'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { Address } from 'viem'
 import { useMemo } from 'react'
+import { fetchAccount } from 'ethereum-identity-kit'
 
-export const useDomains = () => {
-  const filters = useAppSelector(selectMarketplaceFilters)
-  const debouncedSearch = useDebounce(filters.search, 500)
+export const useProfileDomains = (user: Address | string) => {
+  const { selectors } = useFilterRouter()
+  const filters = selectors.filters
+  const debouncedSearch = useDebounce(selectors.filters.search, 500)
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user],
+    queryFn: () => fetchAccount(user),
+    enabled: !!user,
+  })
 
   const {
     data: domains,
@@ -19,8 +27,9 @@ export const useDomains = () => {
     hasNextPage: hasMoreDomains,
   } = useInfiniteQuery({
     queryKey: [
-      'marketplace',
+      'profile',
       'domains',
+      profile?.address || user,
       debouncedSearch,
       filters.length,
       filters.priceRange,
@@ -30,11 +39,19 @@ export const useDomains = () => {
       filters.sort,
     ],
     queryFn: async ({ pageParam = 0 }) => {
+      if (!profile?.address)
+        return {
+          domains: [],
+          nextPageParam: pageParam,
+          hasNextPage: false,
+        }
+
       const domains = await fetchMarketplaceDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
         filters,
         searchTerm: debouncedSearch,
+        ownerAddress: profile?.address,
       })
 
       return {

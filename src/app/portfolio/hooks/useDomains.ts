@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/state/hooks'
-import { selectUserProfile } from '@/state/reducers/profile/profile'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useMyDomains } from './useMyDomains'
 import { useMemo } from 'react'
 import { useMyOffers } from './useMyOffers'
@@ -18,13 +18,8 @@ import {
 export const useDomains = () => {
   const { selectedTab } = useAppSelector(selectUserProfile)
 
-  const {
-    myDomains,
-    isMyDomainsLoading,
-    isMyDomainsFetchingNextPage,
-    fetchMoreMyDomains,
-    hasMoreMyDomains,
-  } = useMyDomains()
+  const { myDomains, isMyDomainsLoading, isMyDomainsFetchingNextPage, fetchMoreMyDomains, hasMoreMyDomains } =
+    useMyDomains()
 
   const {
     receivedOffers,
@@ -34,13 +29,7 @@ export const useDomains = () => {
     hasMoreReceivedOffers,
   } = useReceivedOffers()
 
-  const {
-    myOffers,
-    isMyOffersLoading,
-    isMyOffersFetchingNextPage,
-    fetchMoreMyOffers,
-    hasMoreMyOffers,
-  } = useMyOffers()
+  const { myOffers, isMyOffersLoading, isMyOffersFetchingNextPage, fetchMoreMyOffers, hasMoreMyOffers } = useMyOffers()
 
   const {
     watchlistDomains,
@@ -142,7 +131,6 @@ export const useDomains = () => {
         return hasMoreMyDomains
     }
   }, [selectedTab.value, hasMoreMyDomains, hasMoreReceivedOffers, hasMoreMyOffers, hasMoreWatchlistDomains])
-
 
   return {
     displayedDetails,

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Address, fetchAccount } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
-import { setUserEnsProfile, setWatchlistDomains } from '@/state/reducers/profile/profile'
+import { setUserEnsProfile, setWatchlistDomains } from '@/state/reducers/portfolio/profile'
 import { useEffect } from 'react'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
 

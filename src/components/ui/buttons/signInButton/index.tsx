@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { EthereumIcon, LoadingCell } from 'ethereum-identity-kit'
 import Connected from './connected'
-import { useUserContext } from '@/context/user-context'
+import { useUserContext } from '@/context/user'
 
 const SignInButton = () => {
   const { address } = useAccount()

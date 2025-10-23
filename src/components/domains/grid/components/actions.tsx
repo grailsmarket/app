@@ -2,9 +2,9 @@ import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import React from 'react'
 import Watchlist from '@/components/ui/watchlist'
 import useCartDomains from '@/hooks/useCartDomains'
-import { selectUserProfile } from '@/state/reducers/profile/profile'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppSelector } from '@/state/hooks'
-import { useFilterContext } from '@/contexts/FilterContext'
+import { useFilterContext } from '@/context/filters'
 import CartIcon from '../../table/components/CartIcon'
 import { REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 
@@ -81,7 +81,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
           <p className='text-primary/80 hover:text-primary text-lg cursor-pointer font-bold transition-colors'>
             {REGISTERABLE_STATUSES.includes(registrationStatus as string)
               ? 'Register'
-              : domainListing.price && registrationStatus === 'Registered'
+              : domainListing?.price && registrationStatus === 'Registered'
                 ? 'Buy now'
                 : 'Make Offer'}
           </p>

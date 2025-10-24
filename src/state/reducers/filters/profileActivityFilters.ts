@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
+import { LengthType, PriceDenominationType, PriceType, SortFilterType } from '@/types/filters'
 
 const PROFILE_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
 
@@ -8,10 +9,16 @@ export type ActivityTypeFilterType = (typeof PROFILE_ACTIVITY_FILTER_LABELS)[num
 
 export type ProfileActivityOpenableFilterType = 'Type'
 
-type ActivityFiltersState = {
+export type ActivityFiltersState = {
   open: boolean
   type: ActivityTypeFilterType[]
   search: string
+  categories: string[]
+  sort: SortFilterType | null
+  denomination: PriceDenominationType[]
+  priceRange: PriceType
+  length: LengthType
+  status: string[]
 }
 
 export type ActivityFiltersOpenedState = ActivityFiltersState & {
@@ -24,6 +31,18 @@ export const initialState: ActivityFiltersOpenedState = {
   type: [...PROFILE_ACTIVITY_FILTER_LABELS],
   openFilters: ['Type'],
   search: '',
+  categories: [],
+  sort: null,
+  denomination: [],
+  priceRange: {
+    min: null,
+    max: null,
+  },
+  length: {
+    min: null,
+    max: null,
+  },
+  status: [],
 }
 
 // Slice
@@ -33,14 +52,22 @@ export const profileActivityFiltersSlice = createSlice({
   reducers: {
     toggleActivityFiltersType(state, { payload }: PayloadAction<ActivityTypeFilterType>) {
       const index = state.type.findIndex((type) => type === payload)
-      index > -1 ? state.type.splice(index, 1) : state.type.push(payload)
+      if (index > -1) {
+        state.type.splice(index, 1)
+      } else {
+        state.type.push(payload)
+      }
     },
     setActivityFiltersType(state, { payload }: PayloadAction<ActivityTypeFilterType>) {
       state.type = [payload]
     },
     toggleFilterOpen(state, { payload }: PayloadAction<ProfileActivityOpenableFilterType>) {
       const index = state.openFilters.findIndex((filter) => filter === payload)
-      index > -1 ? state.openFilters.splice(index, 1) : state.openFilters.push(payload)
+      if (index > -1) {
+        state.openFilters.splice(index, 1)
+      } else {
+        state.openFilters.push(payload)
+      }
     },
     setFiltersOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload

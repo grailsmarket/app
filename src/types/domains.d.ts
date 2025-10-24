@@ -32,6 +32,16 @@ export type DomainListingType = {
   source: string
 }
 
+export type DomainOfferType = {
+  id: number
+  ens_name_id: number
+  buyer_address: string
+  offer_amount_wei: string
+  currency_address: string
+  status: string
+  created_at: string
+  expires_at: string
+}
 // Names API item
 // "name": "_vitalik.eth",
 // "token_id": "114908560202028942467862703253656492567899290430658454902987364571129807569325",
@@ -295,3 +305,11 @@ export type WatchlistItemType = {
 }
 
 export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]
+
+export type ClubType = {
+  name: string
+  description: string
+  member_count: number
+  created_at: string
+  updated_at: string
+}

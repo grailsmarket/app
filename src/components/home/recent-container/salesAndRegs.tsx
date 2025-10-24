@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fetchMarketplaceDomains } from '@/api/domains/fetchMarketplaceDomains'
+import { fetchDomains } from '@/api/domains/fetchDomains'
 import Domains from '@/components/domains'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { useAppSelector } from '@/state/hooks'
@@ -12,7 +12,7 @@ const SalesAndRegs = () => {
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
     queryFn: () =>
-      fetchMarketplaceDomains({
+      fetchDomains({
         limit: 7,
         pageParam: 0,
         filters,

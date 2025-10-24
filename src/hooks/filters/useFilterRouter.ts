@@ -308,7 +308,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   return {
     selectors: {
-      filters: filters as any,
+      filters: filters,
     },
     actions: actions as any,
     context: filterType,

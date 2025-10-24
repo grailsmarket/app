@@ -12,20 +12,18 @@ interface LastSaleProps {
   columnCount: number
 }
 
-
 // Last price of the domain (shows last sale if present, otherwise we fall back on the registration price)
 const LastSale: React.FC<LastSaleProps> = ({ domain, columnCount }) => {
   const lastPrice =
     domain.last_sale_price && domain.last_sale_asset
       ? {
-        ETH: formatEtherPrice(domain.last_sale_price),
-        USDC: formatRegisterPrice(parseFloat(domain.last_sale_price)),
-        DAI: formatRegisterPrice(parseFloat(domain.last_sale_price)),
-      }[domain.last_sale_asset]
+          ETH: formatEtherPrice(domain.last_sale_price),
+          USDC: formatRegisterPrice(parseFloat(domain.last_sale_price)),
+          DAI: formatRegisterPrice(parseFloat(domain.last_sale_price)),
+        }[domain.last_sale_asset]
       : calculateRegistrationPrice(domain.name).usd
         ? formatRegisterPrice(calculateRegistrationPrice(domain.name).usd)
         : null
-
 
   const lastPriceAsset = domain.last_sale_asset || 'USDC'
 

@@ -30,20 +30,14 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
       if (domainListing?.price) {
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-            <SecondaryButton>
-              Edit
-            </SecondaryButton>
-            <SecondaryButton>
-              Cancel
-            </SecondaryButton>
+            <SecondaryButton>Edit</SecondaryButton>
+            <SecondaryButton>Cancel</SecondaryButton>
           </div>
         )
       }
       return (
         <div className={cn('flex flex-row justify-end opacity-100', width)}>
-          <PrimaryButton>
-            List
-          </PrimaryButton>
+          <PrimaryButton>List</PrimaryButton>
         </div>
       )
     }
@@ -51,10 +45,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
     if (selectedTab.value === 'received_offers') {
       return (
         <div className={cn('flex flex-row justify-end opacity-100', width)}>
-          <PrimaryButton
-            disabled={!canAddToCart}
-            onClick={(e) => onSelect(e, domain)}
-          >
+          <PrimaryButton disabled={!canAddToCart} onClick={(e) => onSelect(e, domain)}>
             Accept
           </PrimaryButton>
         </div>
@@ -64,21 +55,15 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
     if (selectedTab.value === 'my_offers') {
       return (
         <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-          <SecondaryButton>
-            Edit
-          </SecondaryButton>
-          <SecondaryButton>
-            Cancel
-          </SecondaryButton>
+          <SecondaryButton>Edit</SecondaryButton>
+          <SecondaryButton>Cancel</SecondaryButton>
         </div>
       )
     }
   }
 
   return (
-    <div
-      className={cn('flex flex-row justify-end opacity-100', width)}
-    >
+    <div className={cn('flex flex-row justify-end opacity-100', width)}>
       <div className='flex items-center lg:gap-x-2'>
         <div className=''>
           <Watchlist domain={domain} tooltipPosition={index === 0 ? 'bottom' : 'top'} />

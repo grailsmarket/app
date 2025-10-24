@@ -4,7 +4,6 @@ import {
   ALL_SORT_FILTERS,
   YOUR_DOMAINS_FILTER_LABELS,
   OFFERS_STATUS_FILTER_LABELS,
-  MARKETPLACE_CATEGORY_OBJECTS,
   MARKETPLACE_OPENABLE_FILTERS,
   MARKETPLACE_TYPE_FILTER_LABELS,
   MARKETPLACE_STATUS_FILTER_LABELS,
@@ -35,11 +34,7 @@ export type MarketplacePriceType = {
 
 export type PriceDenominationType = (typeof PRICE_DENOMINATIONS)[number]
 
-type MarketplaceCategoryObjectType = (typeof MARKETPLACE_CATEGORY_OBJECTS)[number]
-
-export type MarketplaceCategoryType = MarketplaceCategoryObjectType['category']
-
-export type MarketplaceSubcategoryType = MarketplaceCategoryObjectType['subcategory']
+export type MarketplaceCategoryType = string
 
 export type MarketplaceOpenableFilterType = (typeof MARKETPLACE_OPENABLE_FILTERS)[number]
 
@@ -53,7 +48,7 @@ export type MarketplaceFiltersState = {
   length: MarketplaceLengthType
   denomination: PriceDenominationType
   priceRange: MarketplacePriceType
-  categoryObjects: MarketplaceCategoryObjectType[]
+  categories: string[]
   sort: SortFilterType | null
 }
 
@@ -75,7 +70,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   sort: null,
 }
 
@@ -95,7 +90,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   openFilters: ['Status'],
   sort: null,
 }
@@ -144,47 +139,17 @@ export const marketplaceFiltersSlice = createSlice({
     setMarketplacePriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
       state.priceRange = payload
     },
-    toggleMarketplaceCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
-      const isFilterIncludesPayload = state.categoryObjects.map(({ category }) => category).includes(payload)
+    toggleMarketplaceCategory(state, { payload }: PayloadAction<string>) {
+      const isFilterIncludesPayload = state.categories.includes(payload)
 
       if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter(({ category }) => category !== payload)
+        state.categories = state.categories.filter((category) => category !== payload)
       } else {
-        state.categoryObjects.push(...MARKETPLACE_CATEGORY_OBJECTS.filter(({ category }) => category === payload))
+        state.categories.push(payload)
       }
     },
-    setMarketplaceFiltersCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
-      state.categoryObjects = MARKETPLACE_CATEGORY_OBJECTS.filter(({ category }) => category === payload)
-    },
-    setMarketplaceFiltersSubcategory(state, { payload }: PayloadAction<string>) {
-      state.categoryObjects = MARKETPLACE_CATEGORY_OBJECTS.filter(({ subcategory }) => subcategory === payload)
-    },
-    toggleMarketplaceSubcategory(
-      state,
-      {
-        payload: { subcategory, category },
-      }: PayloadAction<{
-        subcategory: MarketplaceSubcategoryType
-        category: MarketplaceCategoryType
-      }>
-    ) {
-      const isFilterIncludesPayload = state.categoryObjects.some(
-        ({ category: _category, subcategory: _subcategory }) => _subcategory === subcategory && _category === category
-      )
-
-      if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter(
-          ({ category: _category, subcategory: _subcategory }) => _category !== category || _subcategory !== subcategory
-        )
-      } else {
-        const categoryObject = MARKETPLACE_CATEGORY_OBJECTS.find(
-          ({ category: _category, subcategory: _subcategory }) => _category === category && _subcategory === subcategory
-        )
-
-        if (categoryObject) {
-          state.categoryObjects.push(categoryObject)
-        }
-      }
+    setMarketplaceFiltersCategory(state, { payload }: PayloadAction<string>) {
+      state.categories = [payload]
     },
     setMarketplaceSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
@@ -214,7 +179,7 @@ export const marketplaceFiltersSlice = createSlice({
         min: null,
         max: null,
       }
-      state.categoryObjects = []
+      state.categories = []
       state.sort = null
     },
   },
@@ -231,9 +196,7 @@ export const {
   setMarketplacePriceDenomination,
   setMarketplacePriceRange,
   toggleMarketplaceCategory,
-  toggleMarketplaceSubcategory,
   setMarketplaceFiltersCategory,
-  setMarketplaceFiltersSubcategory,
   setMarketplaceSort,
   setMarketplaceSearch,
   toggleMarketplaceFilterOpen,

@@ -1,12 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
-import { MY_DOMAINS_CATEGORIES, MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
+import { MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
 import {
   PortfolioFiltersOpenedState,
   PortfolioStatusFilterType,
   PortfolioTypeFilterType,
-  PortfolioCategoryType,
   PortfolioOpenableFilterType,
   SortFilterType,
   PriceDenominationType,
@@ -29,7 +28,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   openFilters: ['Status'],
   sort: 'price_high_to_low',
 }
@@ -47,14 +46,22 @@ export const profileDomainsFiltersSlice = createSlice({
     },
     toggleFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       const index = state.status.findIndex((status) => status === payload)
-      index > -1 ? state.status.splice(index, 1) : state.status.push(payload)
+      if (index > -1) {
+        state.status.splice(index, 1)
+      } else {
+        state.status.push(payload)
+      }
     },
     setFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       state.status = [payload]
     },
     toggleFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
       const index = state.type.findIndex((type) => type === payload)
-      index > -1 ? state.type.splice(index, 1) : state.type.push(payload)
+      if (index > -1) {
+        state.type.splice(index, 1)
+      } else {
+        state.type.push(payload)
+      }
     },
     setFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
       state.type = [payload]
@@ -69,24 +76,28 @@ export const profileDomainsFiltersSlice = createSlice({
     setPriceRange(state, { payload }: PayloadAction<PriceType>) {
       state.priceRange = payload
     },
-    toggleCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
-      const isFilterIncludesPayload = state.categoryObjects.includes(payload)
-      
+    toggleCategory(state, { payload }: PayloadAction<string>) {
+      const isFilterIncludesPayload = state.categories.includes(payload)
+
       if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter((cat) => cat !== payload)
+        state.categories = state.categories.filter((category) => category !== payload)
       } else {
-        state.categoryObjects = [...state.categoryObjects, ...MY_DOMAINS_CATEGORIES.filter((cat) => cat === payload)]
+        state.categories.push(payload)
       }
     },
-    setFiltersCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
-      state.categoryObjects = MY_DOMAINS_CATEGORIES.filter((cat) => cat === payload)
+    setFiltersCategory(state, { payload }: PayloadAction<string>) {
+      state.categories = [payload]
     },
     setSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
     toggleFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
       const index = state.openFilters.findIndex((filter) => filter === payload)
-      index > -1 ? state.openFilters.splice(index, 1) : state.openFilters.push(payload)
+      if (index > -1) {
+        state.openFilters.splice(index, 1)
+      } else {
+        state.openFilters.push(payload)
+      }
     },
     clearFilters(state) {
       state.open = false
@@ -96,7 +107,7 @@ export const profileDomainsFiltersSlice = createSlice({
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
-      state.categoryObjects = []
+      state.categories = []
       state.openFilters = ['Status']
       state.sort = null
     },

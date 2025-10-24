@@ -1,4 +1,4 @@
-import { fetchMarketplaceDomains } from '@/api/domains/fetchMarketplaceDomains'
+import { fetchDomains } from '@/api/domains/fetchDomains'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -33,7 +33,7 @@ export const useProfileDomains = (user: Address | string) => {
       debouncedSearch,
       filters.length,
       filters.priceRange,
-      filters.categoryObjects,
+      filters.categories,
       filters.type,
       filters.status,
       filters.sort,
@@ -46,9 +46,10 @@ export const useProfileDomains = (user: Address | string) => {
           hasNextPage: false,
         }
 
-      const domains = await fetchMarketplaceDomains({
+      const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
+        // @ts-expect-error the activity filter state will not be used for domains
         filters,
         searchTerm: debouncedSearch,
         ownerAddress: profile?.address,

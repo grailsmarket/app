@@ -5,3 +5,5 @@ export const APP_ICON = '/logo.png'
 export const APP_LOGO = '/logo-w-text.png'
 export const APP_FAVICON = 'src/app/favicon.ico'
 export const APP_THEME_COLOR = '#ffdfc0'
+export const APP_ENS_ADDRESS = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'
+export const DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`

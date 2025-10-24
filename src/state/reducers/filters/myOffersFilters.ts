@@ -49,7 +49,7 @@ export type MyDomainsFiltersState = {
   length: MyDomainsLengthType
   denomination: PriceDenominationType
   priceRange: MyDomainsPriceType
-  categoryObjects: MyDomainsCategoryType[]
+  categories: string[]
   sort: SortFilterType | null
 }
 
@@ -71,7 +71,7 @@ export const emptyFilterState: MyDomainsFiltersState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   sort: null,
 }
 
@@ -91,7 +91,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   openFilters: ['Status'],
   sort: 'price_high_to_low',
 }
@@ -140,17 +140,17 @@ export const myOffersFiltersSlice = createSlice({
     setMyOffersPriceRange(state, { payload }: PayloadAction<MyDomainsPriceType>) {
       state.priceRange = payload
     },
-    toggleMyOffersCategory(state, { payload }: PayloadAction<MyDomainsCategoryType>) {
-      const isFilterIncludesPayload = state.categoryObjects.includes(payload)
+    toggleMyOffersCategory(state, { payload }: PayloadAction<string>) {
+      const isFilterIncludesPayload = state.categories.includes(payload)
 
       if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter((category) => category !== payload)
+        state.categories = state.categories.filter((category) => category !== payload)
       } else {
-        state.categoryObjects.push(...MY_DOMAINS_CATEGORIES.filter((category) => category === payload))
+        state.categories.push(payload)
       }
     },
-    setMyOffersFiltersCategory(state, { payload }: PayloadAction<MyDomainsCategoryType>) {
-      state.categoryObjects = MY_DOMAINS_CATEGORIES.filter((category) => category === payload)
+    setMyOffersFiltersCategory(state, { payload }: PayloadAction<string>) {
+      state.categories = [payload]
     },
     setMyOffersSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
@@ -180,7 +180,7 @@ export const myOffersFiltersSlice = createSlice({
         min: null,
         max: null,
       }
-      state.categoryObjects = []
+      state.categories = []
       state.sort = null
     },
   },

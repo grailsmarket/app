@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { MARKETPLACE_CATEGORY_OBJECTS, MARKETPLACE_TYPE_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
+import { MARKETPLACE_TYPE_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   MarketplaceCategoryType,
@@ -10,7 +10,6 @@ import {
   MarketplaceOpenableFilterType,
   MarketplacePriceType,
   MarketplaceStatusFilterType,
-  MarketplaceSubcategoryType,
   MarketplaceTypeFilterType,
   PriceDenominationType,
   SortFilterType,
@@ -30,7 +29,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   sort: null,
 }
 
@@ -50,7 +49,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   openFilters: ['Status'],
   sort: null,
 }
@@ -100,45 +99,27 @@ export const watchlistFiltersSlice = createSlice({
       state.priceRange = payload
     },
     toggleWatchlistCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
-      const isFilterIncludesPayload = state.categoryObjects.map(({ category }) => category).includes(payload)
+      const isFilterIncludesPayload = state.categories.includes(payload)
 
       if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter(({ category }) => category !== payload)
+        state.categories = state.categories.filter((category) => category !== payload)
       } else {
-        state.categoryObjects.push(...MARKETPLACE_CATEGORY_OBJECTS.filter(({ category }) => category === payload))
+        state.categories.push(payload)
       }
     },
     setWatchlistFiltersCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
-      state.categoryObjects = MARKETPLACE_CATEGORY_OBJECTS.filter(({ category }) => category === payload)
+      state.categories = [payload]
     },
     setWatchlistFiltersSubcategory(state, { payload }: PayloadAction<string>) {
-      state.categoryObjects = MARKETPLACE_CATEGORY_OBJECTS.filter(({ subcategory }) => subcategory === payload)
+      state.categories = state.categories.filter((category) => category === payload)
     },
-    toggleWatchlistSubcategory(
-      state,
-      {
-        payload: { subcategory, category },
-      }: PayloadAction<{
-        subcategory: MarketplaceSubcategoryType
-        category: MarketplaceCategoryType
-      }>
-    ) {
-      const isFilterIncludesPayload = state.categoryObjects.some(
-        ({ category: _category, subcategory: _subcategory }) => _subcategory === subcategory && _category === category
-      )
+    toggleWatchlistSubcategory(state, { payload }: PayloadAction<string>) {
+      const isFilterIncludesPayload = state.categories.includes(payload)
 
       if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter(
-          ({ category: _category, subcategory: _subcategory }) => _category !== category || _subcategory !== subcategory
-        )
+        state.categories = state.categories.filter((category) => category !== payload)
       } else {
-        const categoryObject = MARKETPLACE_CATEGORY_OBJECTS.find(
-          ({ category: _category, subcategory: _subcategory }) => _category === category && _subcategory === subcategory
-        )
-
-        if (categoryObject) {
-          state.categoryObjects.push(categoryObject)
-        }
+        state.categories.push(payload)
       }
     },
     setWatchlistSort(state, { payload }: PayloadAction<SortFilterType | null>) {
@@ -169,7 +150,7 @@ export const watchlistFiltersSlice = createSlice({
         min: null,
         max: null,
       }
-      state.categoryObjects = []
+      state.categories = []
       state.sort = null
     },
   },

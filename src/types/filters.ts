@@ -2,7 +2,6 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { MarketplaceFiltersOpenedState } from '@/state/reducers/filters/marketplaceFilters'
 import {
   ALL_SORT_FILTERS,
-  MY_DOMAINS_CATEGORIES,
   MY_DOMAINS_FILTER_LABELS,
   MY_DOMAINS_OPENABLE_FILTERS,
   MY_DOMAINS_TYPE_FILTER_LABELS,
@@ -25,12 +24,16 @@ export type PriceType = {
   max: number | null
 }
 
-export type FilterContextType = 'marketplace' | 'portfolio' | 'profile'
+export type FilterContextType = 'marketplace' | 'portfolio' | 'profile' | 'club'
 export type PortfolioTabType = 'domains' | 'received_offers' | 'my_offers' | 'watchlist'
 export type ProfileTabType = 'domains' | 'activity'
 
 export interface FilterRouterSelectors<T extends FilterContextType> {
-  filters: T extends 'marketplace' ? MarketplaceFiltersOpenedState : ProfileFiltersOpenedState
+  filters: T extends 'marketplace'
+    ? MarketplaceFiltersOpenedState
+    : T extends 'profile'
+      ? ProfileFiltersOpenedState
+      : PortfolioFiltersOpenedState
 }
 
 export interface FilterRouterActions {
@@ -62,8 +65,6 @@ export type PortfolioStatusFilterType = (typeof MY_DOMAINS_FILTER_LABELS)[number
 
 export type PortfolioTypeFilterType = (typeof MY_DOMAINS_TYPE_FILTER_LABELS)[number]
 
-export type PortfolioCategoryType = (typeof MY_DOMAINS_CATEGORIES)[number]
-
 export type PortfolioOpenableFilterType = (typeof MY_DOMAINS_OPENABLE_FILTERS)[number]
 
 export type ProfileOffersStatusFilterType = (typeof MY_OFFERS_STATUS_FILTER_LABELS)[number]
@@ -82,7 +83,7 @@ export type PortfolioFiltersState = {
   length: LengthType
   denomination: PriceDenominationType
   priceRange: PriceType
-  categoryObjects: PortfolioCategoryType[]
+  categories: string[]
   sort: SortFilterType | null
 }
 

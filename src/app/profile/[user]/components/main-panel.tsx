@@ -22,12 +22,14 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   return (
     <FilterProvider filterType='profile' profileTab={profileTab}>
       <div className='p-lg z-50'>
-        <div className='flex gap-4 z-10 p-lg bg-background border-2 border-primary rounded-lg relative'>
+        <div className='p-lg bg-background border-primary relative z-10 flex gap-4 rounded-lg border-2'>
           <FilterPanel />
-          <div className='pt-lg flex flex-col gap-4'
+          <div
+            className='pt-lg flex flex-col gap-4'
             style={{
               width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
-            }}>
+            }}
+          >
             <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
             {profileTab === 'domains' && <DomainPanel user={user} />}
             {profileTab === 'activity' && <ActivityPanel user={user} />}

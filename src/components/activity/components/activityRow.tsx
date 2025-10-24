@@ -35,35 +35,22 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns })
 
   return (
     <div className='group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm transition'>
-      <div className='flex flex-row items-center gap-2'
-        style={{ width: columnWidth }}
-      >
-        {icon && <Image
-          src={icon}
-          alt={activity.event_type}
-          width={26}
-          height={26}
-        />}
-        <div><p className='text-lg font-medium capitalize'>{activity.event_type}</p></div>
+      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
+        {icon && <Image src={icon} alt={activity.event_type} width={26} height={26} />}
+        <div>
+          <p className='text-lg font-medium capitalize'>{activity.event_type}</p>
+        </div>
       </div>
-      <div className='flex flex-row items-center gap-2'
-        style={{ width: columnWidth }}
-      >
+      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
         <p>{activity.price ? formatPrice(activity.price) : 'N/A'}</p>
       </div>
-      <div className='flex flex-row items-center gap-2'
-        style={{ width: columnWidth }}
-      >
+      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
         <p>{activity.actor_address ? truncateAddress(activity.actor_address) : 'N/A'}</p>
       </div>
-      <div className='flex flex-row items-center gap-2'
-        style={{ width: columnWidth }}
-      >
+      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
         <p>{activity.counterparty_address ? truncateAddress(activity.counterparty_address) : 'N/A'}</p>
       </div>
-      <div className='flex flex-row items-center gap-2'
-        style={{ width: columnWidth }}
-      >
+      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
         <p>{activity.created_at ? formatDate(new Date(activity.created_at).getTime()) : 'N/A'}</p>
       </div>
     </div>

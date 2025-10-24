@@ -1,7 +1,13 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
-import { fetchAccount, fetchProfileDetails, fetchProfileStats, isLinkValid, truncateAddress } from 'ethereum-identity-kit/utils'
+import {
+  fetchAccount,
+  fetchProfileDetails,
+  fetchProfileStats,
+  isLinkValid,
+  truncateAddress,
+} from 'ethereum-identity-kit/utils'
 import { isAddress, isHex } from 'viem'
 import { ONE_MINUTE } from '@/constants/time'
 import Profile from './components/profile'
@@ -102,4 +108,3 @@ const UserPage = async (props: Props) => {
 }
 
 export default UserPage
-

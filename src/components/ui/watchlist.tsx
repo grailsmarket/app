@@ -46,9 +46,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ domain, showWatchlist = true, too
           width={22}
           alt='Like heart'
           className={cn(
-            isWatchlisted || isLoading
-              ? 'opacity-100 hover:opacity-80'
-              : 'opacity-70 hover:opacity-100',
+            isWatchlisted || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
             'transition-opacity'
           )}
         />

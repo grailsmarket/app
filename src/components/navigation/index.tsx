@@ -33,7 +33,7 @@ const Navigation = () => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => { }} className='h-10 min-w-60' />
+            <Searchbar onSearch={() => {}} className='h-10 min-w-60' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

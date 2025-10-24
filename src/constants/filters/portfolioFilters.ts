@@ -23,7 +23,7 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'price_high_to_low',
 ]
 
-export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
 
 export const ALL_SORT_FILTERS = [
   'alphabetical',

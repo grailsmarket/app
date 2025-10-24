@@ -71,14 +71,14 @@ const Activity: React.FC<ActivityProps> = ({
         <div className='md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             return (
-              <div key={index} className='flex flex-row items-center gap-1'
+              <div
+                key={index}
+                className='flex flex-row items-center gap-1'
                 style={{
                   width: `${100 / displayedColumns.length}%`,
                 }}
               >
-                <p
-                  className='w-fit text-left text-sm font-medium hover:text-light-100 cursor-pointer transition-colors'
-                >
+                <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium transition-colors'>
                   {header}
                 </p>
               </div>
@@ -86,10 +86,7 @@ const Activity: React.FC<ActivityProps> = ({
           })}
         </div>
       )}
-      <div
-        className='h-full w-full rounded-sm px-0'
-        ref={listRef}
-      >
+      <div className='h-full w-full rounded-sm px-0' ref={listRef}>
         {!noResults ? (
           <VirtualList<ProfileActivityType>
             ref={listRef}
@@ -111,10 +108,9 @@ const Activity: React.FC<ActivityProps> = ({
               return <ActivityRow key={item.id} activity={item} displayedColumns={displayedColumns} />
             }}
           />
-        )
-          : (
-            <NoResults label={'No results, try changing your filters.'} requiresAuth={false} />
-          )}
+        ) : (
+          <NoResults label={'No results, try changing your filters.'} requiresAuth={false} />
+        )}
       </div>
     </div>
   )

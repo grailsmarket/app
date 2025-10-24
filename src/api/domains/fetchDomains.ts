@@ -1,55 +1,56 @@
+import { Address } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
-
+import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import {
-  MARKETPLACE_OFFERS_PARAM_OPTIONS,
-  MARKETPLACE_STATUS_PARAM_OPTIONS,
-} from '@/constants/filters/marketplaceFilters'
+import { MARKETPLACE_STATUS_PARAM_OPTIONS } from '@/constants/filters/marketplaceFilters'
 import { APIResponseType, PaginationType } from '@/types/api'
-import { Address } from 'viem'
-import { PortfolioFiltersState } from '@/types/filters'
+import { PortfolioFiltersState, PortfolioStatusFilterType } from '@/types/filters'
 
-interface FetchMarketplaceDomainsOptions {
+interface FetchDomainsOptions {
   limit: number
   pageParam: number
-  filters: MarketplaceFiltersState
+  filters: MarketplaceFiltersState | PortfolioFiltersState
   searchTerm: string
   ownerAddress?: Address
+  club?: string
 }
 
-export const fetchMarketplaceDomains = async ({
+export const fetchDomains = async ({
   limit = DEFAULT_FETCH_LIMIT,
   pageParam,
   filters,
   searchTerm,
   ownerAddress,
-}: FetchMarketplaceDomainsOptions) => {
+  club,
+}: FetchDomainsOptions) => {
   try {
+    console.log('filters', filters)
+    const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
     const paramString = buildQueryParamString({
       limit,
       page: pageParam + 1,
-      q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : null,
+      q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : '',
       owner: ownerAddress || null,
+      'filters[showAll]': true,
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max ? Number(filters.priceRange.max) * 10 ** 18 : filters.priceRange.max,
       'filters[minPrice]': filters.priceRange.min ? Number(filters.priceRange.min) * 10 ** 18 : filters.priceRange.max,
       'filters[hasNumbers]': filters.type.includes('Numbers') ? true : false,
       'filters[hasEmojis]': filters.type.includes('Emojis') ? true : false,
-      'filters[clubs]': filters.categoryObjects.map((f) => f.category).join(','),
-      'filters[isExpired]': filters.status.includes('Available') ? true : false,
-      'filters[isGracePeriod]': filters.status.includes('Grace Period') ? true : false,
-      'filters[isPremiumPeriod]': filters.status.includes('Premium') ? true : false,
-      'filters[expiringWithinDays]': filters.status.includes('Expires Soon') ? true : false,
-      status: filters.status
+      'filters[clubs][]': club || filters.categories?.join(','),
+      'filters[isExpired]': statusFilter.includes('Available') ? true : false,
+      'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : false,
+      'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : false,
+      'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? true : false,
+      status: statusFilter
         .map((statusValue) => MARKETPLACE_STATUS_PARAM_OPTIONS[statusValue])
         .filter((e) => e)
         .join(','),
     })
 
-    const endpoint = searchTerm?.length > 0 ? `names/search` : `names`
+    const endpoint = 'listings/search'
 
     const res = await fetch(`${API_URL}/${endpoint}?${paramString}`, {
       method: 'GET',

@@ -1,4 +1,5 @@
 import Tooltip from '@/components/ui/tooltip'
+import { DOMAIN_IMAGE_URL } from '@/constants'
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { PREMIUM } from '@/constants/domains/registrationStatuses'
 import { MarketplaceDomainType } from '@/types/domains'
@@ -21,7 +22,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
       <div className='flex h-[36px] flex-col justify-center'>
         <div className='flex w-full max-w-5/6 flex-row items-center justify-start gap-2'>
           <Image
-            src={`https://metadata.ens.domains/mainnet/0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85/${numberToHex(domain.token_id)}/image`}
+            src={`${DOMAIN_IMAGE_URL}/${numberToHex(domain.token_id)}/image`}
             unoptimized
             alt='icon'
             width={30}

@@ -34,7 +34,7 @@ const TabSwitcher = () => {
 
   // After mount, render with proper active state
   return (
-    <div className='px-lg flex gap-4'>
+    <div className='md:px-md lg:px-lg px-sm flex gap-4'>
       {portfolioTabs.map((tab) => (
         <button
           key={tab.value}

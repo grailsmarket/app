@@ -18,21 +18,14 @@ const ActionButtons = () => {
     <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
       <div className={cn('lg:w-[262px]', open ? 'block' : 'hidden flex-row justify-end lg:flex')}>
         <PersistGate persistor={persistor}>
-          <SecondaryButton
-            disabled={isFiltersClear}
-            onClick={clearFilters}
-          >
+          <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
             Clear Filters
           </SecondaryButton>
         </PersistGate>
       </div>
-      <div className={cn('flex flex-row w-fit gap-x-2', open ? 'hidden lg:flex' : 'flex')}>
-        <SecondaryButton>
-          Clear Cart
-        </SecondaryButton>
-        <PrimaryButton>
-          Open Cart
-        </PrimaryButton>
+      <div className={cn('flex w-fit flex-row gap-x-2', open ? 'hidden lg:flex' : 'flex')}>
+        <SecondaryButton>Clear Cart</SecondaryButton>
+        <PrimaryButton>Open Cart</PrimaryButton>
       </div>
     </div>
   )

@@ -10,10 +10,12 @@ interface Props {
 }
 
 const Profile: React.FC<Props> = ({ user }) => {
-
   return (
     <div className='dark'>
-      <FullWidthProfile addressOrName={user} style={{ paddingBottom: '80px', transform: 'translateY(80px)', position: 'relative' }} />
+      <FullWidthProfile
+        addressOrName={user}
+        style={{ paddingBottom: '80px', transform: 'translateY(80px)', position: 'relative' }}
+      />
       <MainPanel user={user} />
     </div>
   )

@@ -25,11 +25,11 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
     if (selectedTab.value === 'domains') {
       if (domainListing?.price) {
         return (
-          <div className='flex flex-row justify-end gap-2 opacity-100 py-md'>
-            <p className='text-foreground/70 hover:text-foreground text-lg cursor-pointer font-bold transition-colors'>
+          <div className='py-md flex flex-row justify-end gap-2 opacity-100'>
+            <p className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'>
               Edit
             </p>
-            <p className='text-foreground/70 hover:text-foreground text-lg cursor-pointer font-bold transition-colors'>
+            <p className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'>
               Cancel
             </p>
           </div>
@@ -37,18 +37,16 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
       }
 
       return (
-        <div className='flex flex-row justify-end opacity-100 py-md'>
-          <p className='text-primary/80 hover:text-primary text-lg cursor-pointer font-bold transition-colors'>
-            List
-          </p>
+        <div className='py-md flex flex-row justify-end opacity-100'>
+          <p className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'>List</p>
         </div>
       )
     }
 
     if (selectedTab.value === 'received_offers') {
       return (
-        <div className='flex flex-row justify-end opacity-100 py-md'>
-          <p className='text-primary/80 hover:text-primary text-lg cursor-pointer font-bold transition-colors'>
+        <div className='py-md flex flex-row justify-end opacity-100'>
+          <p className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'>
             Accept Offer
           </p>
         </div>
@@ -57,11 +55,11 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
 
     if (selectedTab.value === 'my_offers') {
       return (
-        <div className='flex py-md flex-row justify-end gap-4 opacity-100'>
-          <p className='text-foreground/70 hover:text-foreground text-lg cursor-pointer font-bold transition-colors'>
+        <div className='py-md flex flex-row justify-end gap-4 opacity-100'>
+          <p className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'>
             Edit
           </p>
-          <p className='text-foreground/70 hover:text-foreground text-lg cursor-pointer font-bold transition-colors'>
+          <p className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'>
             Cancel
           </p>
         </div>
@@ -70,15 +68,13 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
   }
 
   return (
-    <div
-      className='flex w-full justify-between flex-row opacity-100'
-    >
+    <div className='flex w-full flex-row justify-between opacity-100'>
       <button
         disabled={canAddToCart}
-      // onClick={(e) => onCheckout(e, domain)}
+        // onClick={(e) => onCheckout(e, domain)}
       >
         {!canAddToCart && (
-          <p className='text-primary/80 hover:text-primary text-lg cursor-pointer font-bold transition-colors'>
+          <p className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'>
             {REGISTERABLE_STATUSES.includes(registrationStatus as string)
               ? 'Register'
               : domainListing?.price && registrationStatus === 'Registered'

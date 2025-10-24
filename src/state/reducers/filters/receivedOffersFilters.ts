@@ -1,10 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { MY_DOMAINS_TYPE_FILTER_LABELS, MY_DOMAINS_CATEGORIES } from '@/constants/filters/portfolioFilters'
+import { MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   LengthType,
-  PortfolioCategoryType,
   PortfolioFiltersOpenedState,
   PortfolioFiltersState,
   PortfolioOpenableFilterType,
@@ -29,7 +28,7 @@ export const emptyFilterState: PortfolioFiltersState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   sort: null,
 }
 
@@ -49,7 +48,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     min: null,
     max: null,
   },
-  categoryObjects: [],
+  categories: [],
   openFilters: ['Status'],
   sort: 'price_high_to_low',
 }
@@ -94,17 +93,17 @@ export const receivedOffersFiltersSlice = createSlice({
     setReceivedOffersPriceRange(state, { payload }: PayloadAction<PriceType>) {
       state.priceRange = payload
     },
-    toggleReceivedOffersCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
-      const isFilterIncludesPayload = state.categoryObjects.includes(payload)
+    toggleReceivedOffersCategory(state, { payload }: PayloadAction<string>) {
+      const isFilterIncludesPayload = state.categories.includes(payload)
 
       if (isFilterIncludesPayload) {
-        state.categoryObjects = state.categoryObjects.filter((category) => category !== payload)
+        state.categories = state.categories.filter((category) => category !== payload)
       } else {
-        state.categoryObjects.push(...MY_DOMAINS_CATEGORIES.filter((category) => category === payload))
+        state.categories.push(payload)
       }
     },
-    setReceivedOffersFiltersCategory(state, { payload }: PayloadAction<PortfolioCategoryType>) {
-      state.categoryObjects = MY_DOMAINS_CATEGORIES.filter((category) => category === payload)
+    setReceivedOffersFiltersCategory(state, { payload }: PayloadAction<string>) {
+      state.categories = [payload]
     },
     setReceivedOffersSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
@@ -134,7 +133,7 @@ export const receivedOffersFiltersSlice = createSlice({
         min: null,
         max: null,
       }
-      state.categoryObjects = []
+      state.categories = []
       state.sort = null
     },
   },

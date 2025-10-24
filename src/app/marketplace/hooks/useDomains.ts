@@ -1,4 +1,4 @@
-import { fetchMarketplaceDomains } from '@/api/domains/fetchMarketplaceDomains'
+import { fetchDomains } from '@/api/domains/fetchDomains'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
@@ -24,13 +24,13 @@ export const useDomains = () => {
       debouncedSearch,
       filters.length,
       filters.priceRange,
-      filters.categoryObjects,
+      filters.categories,
       filters.type,
       filters.status,
       filters.sort,
     ],
     queryFn: async ({ pageParam = 0 }) => {
-      const domains = await fetchMarketplaceDomains({
+      const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
         filters,

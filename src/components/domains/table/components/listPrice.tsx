@@ -16,14 +16,16 @@ interface ListPriceProps {
 const ListPrice: React.FC<ListPriceProps> = ({ listing, registrationStatus, columnCount }) => {
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['listed_price'].getWidth(columnCount))}>
-      {listing && <div className='flex flex-row items-center gap-0.5!'>
-        {registrationStatus === REGISTERED && listing.price && (
-          <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
-        )}
-        <p className='text-light-600 truncate text-xs font-medium'>
-          {registrationStatus === REGISTERED && listing.price && formatEtherPrice(listing.price)}
-        </p>
-      </div>}
+      {listing && (
+        <div className='flex flex-row items-center gap-0.5!'>
+          {registrationStatus === REGISTERED && listing.price && (
+            <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
+          )}
+          <p className='text-light-600 truncate text-xs font-medium'>
+            {registrationStatus === REGISTERED && listing.price && formatEtherPrice(listing.price)}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

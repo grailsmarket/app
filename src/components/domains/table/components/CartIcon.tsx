@@ -8,9 +8,10 @@ import { cn } from '@/utils/tailwind'
 interface CartIconProps {
   name: string
   size?: string | number
+  className?: string
 }
 
-const CartIcon: React.FC<CartIconProps> = ({ name, size }) => {
+const CartIcon: React.FC<CartIconProps> = ({ name, size, className }) => {
   const { isAddedToCart } = useCartDomains()
 
   return (
@@ -18,7 +19,8 @@ const CartIcon: React.FC<CartIconProps> = ({ name, size }) => {
       className={cn(
         'flex items-center justify-center rounded-[4px] p-1.5',
         isAddedToCart(name) ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
-        'transition-opacity'
+        'transition-opacity',
+        className
       )}
     >
       <Image

@@ -44,6 +44,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
         listing={domainListing}
         registrationStatus={registrationStatus}
         columnCount={columnCount}
+        index={index}
       />
     ),
     registry_price: <RegistryPrice key={`${domain.name}-registry_price`} domain={domain} columnCount={columnCount} />,
@@ -70,7 +71,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
 
   return (
     <Link
-      href={`/names/${domain.name}`}
+      href={`/${domain.name}`}
       className='group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm transition'
     >
       {displayedColumns.map((column) => columns[column])}

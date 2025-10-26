@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
@@ -47,10 +46,9 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
             />
           </div>
         </div>
-        <ViewSelector />
       </div>
       <Activity
-        maxHeight='calc(100vh - 200px)'
+        maxHeight='calc(100vh - 260px)'
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}

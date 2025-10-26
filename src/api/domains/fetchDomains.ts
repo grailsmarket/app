@@ -3,7 +3,6 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import { MARKETPLACE_STATUS_PARAM_OPTIONS } from '@/constants/filters/marketplaceFilters'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { PortfolioFiltersState, PortfolioStatusFilterType } from '@/types/filters'
 
@@ -32,7 +31,7 @@ export const fetchDomains = async ({
       page: pageParam + 1,
       q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : '',
       owner: ownerAddress || null,
-      'filters[showAll]': true,
+      'filters[showListings]': filters.status.includes('Listed') ? true : false,
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max ? Number(filters.priceRange.max) * 10 ** 18 : filters.priceRange.max,
@@ -44,15 +43,11 @@ export const fetchDomains = async ({
       'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : false,
       'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : false,
       'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? true : false,
-      status: statusFilter
-        .map((statusValue) => MARKETPLACE_STATUS_PARAM_OPTIONS[statusValue])
-        .filter((e) => e)
-        .join(','),
+      sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
+      sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
     })
 
-    const endpoint = 'listings/search'
-
-    const res = await fetch(`${API_URL}/${endpoint}?${paramString}`, {
+    const res = await fetch(`${API_URL}/search?${paramString}`, {
       method: 'GET',
       mode: 'cors',
       headers: {

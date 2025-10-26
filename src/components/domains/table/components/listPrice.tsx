@@ -1,30 +1,21 @@
-import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { REGISTERED } from '@/constants/domains/registrationStatuses'
-import { DomainListingType, RegistrationStatus } from '@/types/domains'
-import { formatEtherPrice } from '@/utils/formatEtherPrice'
-import { cn } from '@/utils/tailwind'
-import Image from 'next/image'
 import React from 'react'
-import ethGray from 'public/icons/eth-gray.svg'
+import { cn } from '@/utils/tailwind'
+import Price from '@/components/ui/price'
+import { DomainListingType, RegistrationStatus } from '@/types/domains'
+import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 
 interface ListPriceProps {
   listing: DomainListingType
   registrationStatus: RegistrationStatus
   columnCount: number
+  index: number
 }
 
-const ListPrice: React.FC<ListPriceProps> = ({ listing, registrationStatus, columnCount }) => {
+const ListPrice: React.FC<ListPriceProps> = ({ listing, columnCount, index }) => {
   return (
-    <div className={cn(ALL_MARKETPLACE_COLUMNS['listed_price'].getWidth(columnCount))}>
+    <div className={cn(ALL_MARKETPLACE_COLUMNS['listed_price'].getWidth(columnCount), 'text-md')}>
       {listing && (
-        <div className='flex flex-row items-center gap-0.5!'>
-          {registrationStatus === REGISTERED && listing.price && (
-            <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
-          )}
-          <p className='text-light-600 truncate text-xs font-medium'>
-            {registrationStatus === REGISTERED && listing.price && formatEtherPrice(listing.price)}
-          </p>
-        </div>
+        <Price price={listing.price} asset='ETH' tooltipPosition={index === 0 ? 'bottom' : 'top'} />
       )}
     </div>
   )

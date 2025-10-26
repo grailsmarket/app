@@ -27,6 +27,7 @@ export const formatEtherPrice = (price: string | number, returnNumber?: boolean,
     return (
       transformedPrice.toLocaleString(locale, {
         maximumFractionDigits: 1,
+        minimumFractionDigits: 2,
       }) + sizeIdentificator
     )
 
@@ -35,19 +36,23 @@ export const formatEtherPrice = (price: string | number, returnNumber?: boolean,
   if (transformedPrice < 0.001)
     return transformedPrice.toLocaleString(locale, {
       maximumFractionDigits: 4,
+      minimumFractionDigits: 2,
     })
 
   if (transformedPrice < 0.01)
     return transformedPrice.toLocaleString(locale, {
       maximumFractionDigits: 3,
+      minimumFractionDigits: 2,
     })
 
   if (transformedPrice < 1)
     return transformedPrice.toLocaleString(locale, {
       maximumFractionDigits: maximumFractionDigits ?? 2,
+      minimumFractionDigits: 2,
     })
 
   return transformedPrice.toLocaleString(locale, {
-    maximumFractionDigits: maximumFractionDigits ?? 1,
+    maximumFractionDigits: maximumFractionDigits ?? 2,
+    minimumFractionDigits: 2,
   })
 }

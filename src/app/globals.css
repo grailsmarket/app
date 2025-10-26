@@ -6,6 +6,7 @@
   --primary: #ffdfc0;
   --secondary: #333333;
   --tertiary: #444444;
+  --neutral: #aaaaaa;
   --max-width-domain-panel: 1700px;
   --padding-sm: 4px;
   --padding-md: 8px;
@@ -43,6 +44,7 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-tertiary: var(--tertiary);
+  --color-neutral: var(--neutral);
   --font-inter: var(--font-inter);
   --font-sedan-sc: var(--font-sedan-sc);
   --padding-sm: var(--padding-sm);

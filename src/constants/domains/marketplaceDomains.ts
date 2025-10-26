@@ -27,7 +27,7 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
   domain: {
     label: 'Name',
     sort: null,
-    value: { asc: 'alphabetical', desc: 'alphabetical_desc' },
+    value: { asc: 'alphabetical_asc', desc: 'alphabetical_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DOMAIN_COLUMN_WIDTHS[columnsLength]
     },
@@ -35,7 +35,7 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
   listed_price: {
     label: 'Listed Price',
     sort: null,
-    value: { asc: 'price_low_to_high', desc: 'price_high_to_low' },
+    value: { asc: 'price_asc', desc: 'price_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
@@ -43,7 +43,7 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
   highest_offer: {
     label: 'Highest Offer',
     sort: null,
-    value: { asc: 'highest_offer', desc: 'highest_offer_desc' },
+    value: { asc: 'offer_asc', desc: 'offer_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
@@ -58,7 +58,7 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
   last_sale: {
     label: 'Last Price',
     sort: null,
-    value: { asc: 'lowest_last_sale', desc: 'highest_last_sale' },
+    value: { asc: 'last_sale_asc', desc: 'last_sale_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },

@@ -15,6 +15,7 @@ export type ProfileActivityEventType =
 export type ProfileActivityType = {
   id: number
   name: string
+  ens_name_id: number
   event_type: ProfileActivityEventType
   actor_address: Address | null
   counterparty_address: Address | null
@@ -27,4 +28,5 @@ export type ProfileActivityType = {
   created_at: string
   price: string | null
   token_id: string | null
+  metadata: Record<string, unknown>
 }

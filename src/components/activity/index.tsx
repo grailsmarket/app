@@ -5,13 +5,15 @@ import VirtualList from '@/components/ui/virtuallist'
 import { ProfileActivityType } from '@/types/profile'
 import LoadingRow from './components/loadingRow'
 import ActivityRow from './components/activityRow'
+import { NameActivityType } from '@/types/domains'
 
 interface ActivityProps {
   maxHeight?: string
-  activity: ProfileActivityType[]
+  activity: ProfileActivityType[] | NameActivityType[]
   isLoading: boolean
   loadingRowCount?: number
   noResults: boolean
+  noResultsLabel?: string
   listRef?: RefObject<HTMLDivElement>
   hasMoreActivity?: boolean
   fetchMoreActivity?: () => void
@@ -24,6 +26,7 @@ const Activity: React.FC<ActivityProps> = ({
   isLoading,
   loadingRowCount = 10,
   noResults,
+  noResultsLabel = 'No results, try changing your filters.',
   listRef,
   hasMoreActivity,
   fetchMoreActivity,
@@ -109,7 +112,7 @@ const Activity: React.FC<ActivityProps> = ({
             }}
           />
         ) : (
-          <NoResults label={'No results, try changing your filters.'} requiresAuth={false} />
+          <NoResults label={noResultsLabel} requiresAuth={false} />
         )}
       </div>
     </div>

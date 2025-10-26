@@ -3,7 +3,7 @@ import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 
 export const fetchNameOffers = async (name: string) => {
-  const response = await fetch(`${API_URL}/offers/${name}`)
+  const response = await fetch(`${API_URL}/offers/name/${name}`)
   const data = (await response.json()) as APIResponseType<{
     offers: DomainOfferType[]
   }>

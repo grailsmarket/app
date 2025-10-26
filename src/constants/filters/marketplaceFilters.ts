@@ -32,13 +32,14 @@ export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Expiring Soon'] as const
 export const PORTFOLIO_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
 
 export const ALL_SORT_FILTERS = [
-  'alphabetical',
+  'alphabetical_asc',
   'alphabetical_desc',
-  'most_favorited',
-  'highest_last_sale',
-  'lowest_last_sale',
-  'price_low_to_high',
-  'price_high_to_low',
-  'highest_offer',
-  'highest_offer_desc',
+  'last_sale_asc',
+  'last_sale_desc',
+  'last_sale_date_asc',
+  'last_sale_date_desc',
+  'price_desc',
+  'price_asc',
+  'offer_asc',
+  'offer_desc',
 ] as const

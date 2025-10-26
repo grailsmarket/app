@@ -1,4 +1,4 @@
-import { Address } from 'viem'
+import { Address, Hex } from 'viem'
 import { SortFilterType } from '../state/reducers/filters/marketplaceFilters'
 import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
 
@@ -35,13 +35,81 @@ export type DomainListingType = {
 export type DomainOfferType = {
   id: number
   ens_name_id: number
-  buyer_address: string
+  buyer_address: Address
   offer_amount_wei: string
-  currency_address: string
+  currency_address: Address
   status: string
   created_at: string
   expires_at: string
+  source: string
+  order_data: DomainOfferOrderDataType
+  order_hash: Hex
 }
+
+export type DomainOfferOrderDataType = {
+  item: {
+    chain: {
+      name: string
+    }
+    nft_id: string
+    metadata: {
+      name: string
+      traits: {
+        value: string
+        trait_type: string
+      }[]
+      image_url: string
+      description: string
+      metadata_url: string | null
+      animation_url: string | null
+      background_color: string | null
+    }
+    permalink: string
+  }
+  chain: string
+  maker: {
+    address: Address
+  }
+  taker: {
+    address: Address
+  }
+  quantity: number
+  base_price: string
+  collection: {
+    slug: string
+  }
+  order_hash: string
+  created_date: string
+  payment_token: {
+    name: string
+    symbol: string
+    address: Address
+    decimals: number
+    eth_price: string
+    usd_price: string
+  }
+  protocol_data: {
+    signature: string
+    parameters: {
+      salt: string
+      zone: Address
+      offer: {
+        token: Address
+        itemType: number
+        endAmount: string
+        startAmount: string
+        identifierOrCriteria: string
+      }[]
+      counter: Address
+      endTime: string
+      offerer: Address
+    }
+  }
+  event_timestamp: string
+  expiration_date: string
+  protocol_address: Address
+}
+
 // Names API item
 // "name": "_vitalik.eth",
 // "token_id": "114908560202028942467862703253656492567899290430658454902987364571129807569325",
@@ -312,4 +380,21 @@ export type ClubType = {
   member_count: number
   created_at: string
   updated_at: string
+}
+
+export type NameActivityType = {
+  id: number
+  name: string
+  event_type: ProfileActivityEventType
+  actor_address: Address | null
+  counterparty_address: Address | null
+  platform: string
+  chain_id: number
+  price_wei: string
+  currency_address: Address | null
+  transaction_hash: string | null
+  block_number: number | null
+  created_at: string
+  price: string | null
+  token_id: string | null
 }

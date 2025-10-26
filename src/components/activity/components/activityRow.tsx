@@ -8,10 +8,11 @@ import Transfer from 'public/icons/transfer.svg'
 // import OfferMade from 'public/icons/offer-made.svg'
 import Sold from 'public/icons/sold.svg'
 import Listed from 'public/icons/listed.svg'
-import { formatPrice } from '@/utils/formatPrice'
-import { truncateAddress } from 'ethereum-identity-kit'
-import { formatDate } from '@/utils/time/formatDate'
-
+import { formatEtherPrice } from '@/utils/formatEtherPrice'
+import ethGray from 'public/icons/eth-gray.svg'
+import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import User from '@/components/ui/user'
+import { cn } from '@/utils/tailwind'
 interface ActivityRowProps {
   activity: ProfileActivityType
   displayedColumns: string[]
@@ -31,27 +32,41 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns })
     received: Transfer,
   }[activity.event_type]
 
+  const eventName = {
+    listed: 'Listed',
+    offer_made: 'Offer Made',
+    bought: 'Bought',
+    sold: 'Sold',
+    offer_accepted: 'Offer Accepted',
+    cancelled: 'Cancelled',
+    mint: 'Minted',
+    burn: 'Burned',
+    sent: 'Sent',
+    received: 'Received',
+  }[activity.event_type]
+
   const columnWidth = `${100 / displayedColumns.length}%`
 
   return (
-    <div className='group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm transition'>
+    <div className='group bg-transparent hover:bg-white/10 gap-1 md:p-md lg:p-lg flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm transition'>
       <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
         {icon && <Image src={icon} alt={activity.event_type} width={26} height={26} />}
         <div>
-          <p className='text-lg font-medium capitalize'>{activity.event_type}</p>
+          <p className='text-lg font-medium capitalize'>{eventName}</p>
         </div>
       </div>
-      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
-        <p>{activity.price ? formatPrice(activity.price) : 'N/A'}</p>
+      <div className='flex flex-row items-center gap-1' style={{ width: columnWidth }}>
+        <Image src={ethGray} alt='ETH' className={cn('h-[14px] w-auto', activity.price_wei ? 'opacity-100' : 'opacity-0')} />
+        <p>{activity.price_wei ? formatEtherPrice(activity.price_wei, false, 3) : null}</p>
       </div>
       <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
-        <p>{activity.actor_address ? truncateAddress(activity.actor_address) : 'N/A'}</p>
+        {activity.actor_address ? <User address={activity.actor_address as `0x${string}`} /> : null}
       </div>
       <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
-        <p>{activity.counterparty_address ? truncateAddress(activity.counterparty_address) : 'N/A'}</p>
+        {activity.counterparty_address ? <User address={activity.counterparty_address as `0x${string}`} /> : null}
       </div>
-      <div className='flex flex-row items-center gap-2' style={{ width: columnWidth }}>
-        <p>{activity.created_at ? formatDate(new Date(activity.created_at).getTime()) : 'N/A'}</p>
+      <div className='flex flex-row items-center justify-end gap-2' style={{ width: columnWidth }}>
+        <p>{activity.created_at ? formatExpiryDate(activity.created_at) : 'N/A'}</p>
       </div>
     </div>
   )

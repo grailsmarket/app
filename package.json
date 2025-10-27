@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.8.0",
+    "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@reduxjs/toolkit": "^2.9.0",
     "@tanstack/react-query": "^5.90.2",

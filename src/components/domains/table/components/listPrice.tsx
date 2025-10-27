@@ -15,7 +15,7 @@ const ListPrice: React.FC<ListPriceProps> = ({ listing, columnCount, index }) =>
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['listed_price'].getWidth(columnCount), 'text-md')}>
       {listing && (
-        <Price price={listing.price} asset='ETH' tooltipPosition={index === 0 ? 'bottom' : 'top'} />
+        <Price price={listing.price} currencyAddress={listing.currency_address} tooltipPosition={index === 0 ? 'bottom' : 'top'} />
       )}
     </div>
   )

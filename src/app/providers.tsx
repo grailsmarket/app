@@ -11,6 +11,7 @@ import Navigation from '@/components/navigation'
 import { DAY_IN_SECONDS, ONE_MINUTE } from '@/constants/time'
 import config from '@/lib/wagmi'
 import { UserProvider } from '@/context/user'
+import Modals from './modals'
 
 type ProviderProps = {
   children: React.ReactNode
@@ -35,6 +36,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                   <Navigation />
                   {children}
                   <TransactionModal />
+                  <Modals />
                   <div id='modal-root' />
                 </UserProvider>
               </ReduxProvider>

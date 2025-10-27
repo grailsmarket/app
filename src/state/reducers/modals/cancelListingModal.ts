@@ -10,37 +10,36 @@ type CancelListingListing = {
   expires: number
 }
 
-type CancelUserListingModalState = {
+type CancelListingModalState = {
   open: boolean
   listing: CancelListingListing | null
 }
 
 // Initial State ------------------------------------
-const initialState: CancelUserListingModalState = {
+const initialState: CancelListingModalState = {
   open: false,
   listing: null,
 }
 
 // Slice -------------------------------------------
-export const CancelUserListingModalSlice = createSlice({
-  name: 'CancelUserListingModal',
+export const CancelListingModalSlice = createSlice({
+  name: 'CancelListingModal',
   initialState,
   reducers: {
-    setCancelUserListingModalOpen(state, { payload }: PayloadAction<boolean>) {
+    setCancelListingModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    setCancelUserListingModalUserListing(state, { payload }: PayloadAction<CancelListingListing | null>) {
+    setCancelListingModalListing(state, { payload }: PayloadAction<CancelListingListing | null>) {
       state.listing = payload
     },
   },
 })
 
 // Actions --------------------------------------------
-export const { setCancelUserListingModalOpen, setCancelUserListingModalUserListing } =
-  CancelUserListingModalSlice.actions
+export const { setCancelListingModalOpen, setCancelListingModalListing } = CancelListingModalSlice.actions
 
 // Selectors ------------------------------------------
-export const selectCancelUserListingModal = (state: RootState) => state.modals.cancelUserListingReducer
+export const selectCancelListingModal = (state: RootState) => state.modals.cancelListingReducer
 
 // Reducer --------------------------------------------
-export default CancelUserListingModalSlice.reducer
+export default CancelListingModalSlice.reducer

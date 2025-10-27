@@ -28,7 +28,7 @@ const Listings: React.FC<ListingsProps> = ({ name, listings, listingsLoading }) 
           <div className='flex flex-row items-center gap-4'>
             <Image src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]} width={32} height={32} alt={listing.source} />
             <div className='flex flex-row items-center gap-2'>
-              <Price price={listing.price} asset='ETH' ethSize='24px' />
+              <Price price={listing.price} currencyAddress={listing.currency_address} />
             </div>
           </div>
           <div>{formatExpiryDate(listing.expires_at)}</div>

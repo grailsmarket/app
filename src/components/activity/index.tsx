@@ -6,6 +6,7 @@ import { ProfileActivityType } from '@/types/profile'
 import LoadingRow from './components/loadingRow'
 import ActivityRow from './components/activityRow'
 import { NameActivityType } from '@/types/domains'
+import { cn } from '@/utils/tailwind'
 
 interface ActivityProps {
   maxHeight?: string
@@ -41,7 +42,7 @@ const Activity: React.FC<ActivityProps> = ({
   }, [fetchMoreActivity, hasMoreActivity, isLoading])
 
   const displayedColumns = useMemo(() => {
-    const allColumns = ['event', 'price', 'from', 'to', 'timestamp'] as string[]
+    const allColumns = ['event', 'name', 'price', 'counterparty', 'timestamp'] as string[]
     if (!width) return allColumns
 
     const maxColumns = () => {
@@ -76,7 +77,7 @@ const Activity: React.FC<ActivityProps> = ({
             return (
               <div
                 key={index}
-                className='flex flex-row items-center gap-1'
+                className={cn('flex flex-row items-center gap-1', (index + 1) === displayedColumns.length && 'justify-end')}
                 style={{
                   width: `${100 / displayedColumns.length}%`,
                 }}
@@ -96,7 +97,7 @@ const Activity: React.FC<ActivityProps> = ({
             items={[...activity, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
             visibleCount={visibleCount}
             rowHeight={60}
-            overscanCount={5}
+            overscanCount={visibleCount}
             listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}

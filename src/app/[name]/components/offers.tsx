@@ -1,25 +1,36 @@
 import React, { useState } from 'react'
-import { DomainOfferType } from '@/types/domains'
+import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import Image from 'next/image'
 import { LoadingCell } from 'ethereum-identity-kit'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import Price from '@/components/ui/price'
 import User from '@/components/ui/user'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { useAppDispatch } from '@/state/hooks'
+import PrimaryButton from '@/components/ui/buttons/primary'
+import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 
 interface OffersProps {
+  domain?: MarketplaceDomainType
   offers: DomainOfferType[]
   offersLoading: boolean
 }
 
-const Offers: React.FC<OffersProps> = ({ offers, offersLoading }) => {
+const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
+  const dispatch = useAppDispatch()
   const [viewAll, setViewAll] = useState(false)
   const showViewAllButton = offers.length > 2
   const displayedOffers = viewAll ? offers : offers.slice(0, 2)
 
+  const openOfferModal = () => {
+    if (!domain) return
+    dispatch(setMakeOfferModalOpen(true))
+    dispatch(setMakeOfferModalDomain(domain))
+  }
+
   return (
     <div className='flex w-full flex-col gap-4 p-xl rounded-lg border-2 border-primary bg-secondary'>
-      <h3 className='text-3xl font-sedan-sc'>Offers</h3>
+      <div className='w-full flex items-center justify-between'><h3 className='text-3xl font-sedan-sc'>Offers</h3><PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton></div>
       {offersLoading ? <LoadingCell height='60px' width='100%' /> : displayedOffers.sort((a, b) => Number(b.offer_amount_wei) - Number(a.offer_amount_wei)).map((offer) => (
         <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
           <div className='flex flex-row items-center gap-4'>
@@ -28,7 +39,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading }) => {
               {/* <p>{SOURCE_LABELS[offer.source as keyof typeof SOURCE_LABELS]}</p> */}
             </div>
             <div className='flex flex-row items-center gap-2'>
-              <Price price={offer.offer_amount_wei} asset='ETH' ethSize='24px' />
+              <Price price={offer.offer_amount_wei} currencyAddress={offer.currency_address} />
             </div>
           </div>
           <div className='flex flex-row items-center gap-2'>

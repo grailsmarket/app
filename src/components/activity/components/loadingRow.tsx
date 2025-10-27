@@ -6,11 +6,11 @@ interface LoadingRowsProps {
 }
 
 const LoadingRow: React.FC<LoadingRowsProps> = ({ displayedColumns }) => {
-  return displayedColumns.map((header, index) => {
+  return displayedColumns.map((_, index) => {
     const width = `w-[${100 / displayedColumns.length}%]`
 
     return (
-      <div className={cn('flex', width)} key={index}>
+      <div className={cn('flex', index === displayedColumns.length - 1 && 'justify-end', width)} key={index}>
         <LoadingCell height='24px' width='90px' />
       </div>
     )

@@ -22,7 +22,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
         </div>
         <div className='w-3/5 flex flex-col gap-4'>
           <Listings name={name} listings={nameDetails?.listings || []} listingsLoading={nameDetailsIsLoading} />
-          <Offers offers={nameOffers ?? []} offersLoading={nameOffersIsLoading} />
+          <Offers offers={nameOffers ?? []} offersLoading={nameOffersIsLoading} domain={nameDetails} />
           <ActivityPanel name={name} />
         </div>
       </div>

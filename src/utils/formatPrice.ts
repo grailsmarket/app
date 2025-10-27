@@ -1,23 +1,25 @@
-import { formatEther } from 'viem'
 import { AssetType } from '../types/assets'
+import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { formatEtherPrice } from './formatEtherPrice'
 
-export const formatPrice = (price: string | null, asset: 'wei' | AssetType = 'ETH') => {
+export const formatPrice = (price: string | number | null, asset: AssetType = 'ETH', returnNumber?: boolean) => {
   if (!price) return null
 
+  const decimalPlaces = TOKEN_DECIMALS[asset]
+
   try {
-    if (asset === 'wei')
-      return parseFloat(formatEther(BigInt(price))).toLocaleString('default', {
-        maximumFractionDigits: 3,
-      })
+    if (asset === 'USDC') {
+      const transformedPrice = (typeof price === 'string' ? parseFloat(price) : price) / 10 ** decimalPlaces
 
-    if (asset === 'ETH' || asset === 'WETH')
-      return parseFloat(price).toLocaleString('default', {
-        maximumFractionDigits: 3,
-      })
+      if (returnNumber) return transformedPrice
 
-    return parseFloat(price).toLocaleString('default', {
-      maximumFractionDigits: 2,
-    })
+      return transformedPrice.toLocaleString('default', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: returnNumber ? 0 : 2,
+      })
+    }
+
+    return formatEtherPrice(price, returnNumber)
   } catch (e) {
     console.error('Invalid format', e)
     return price

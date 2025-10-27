@@ -27,6 +27,6 @@ export type ProfileActivityType = {
   block_number: number | null
   created_at: string
   price: string | null
-  token_id: string | null
+  token_id: string
   metadata: Record<string, unknown>
 }

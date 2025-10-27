@@ -1,20 +1,30 @@
 import React from 'react'
 import Image from 'next/image'
 
-import ethGray from 'public/icons/eth-gray.svg'
+import ethGray from 'public/tokens/eth.svg'
+import usdc from 'public/tokens/usdc.svg'
+import weth from 'public/tokens/weth.svg'
+
+import { Address } from 'viem'
+import { TOKENS } from '@/constants/web3/tokens'
 
 interface AssetProps {
-  asset: string
+  currencyAddress: Address
   fontSize?: string
-  ethSize?: string
+  iconSize?: string
 }
 
-const Asset: React.FC<AssetProps> = ({ asset, fontSize, ethSize = '14px' }) => {
+const Asset: React.FC<AssetProps> = ({ currencyAddress, iconSize = '14px' }) => {
+  const asset = TOKENS[currencyAddress as keyof typeof TOKENS]
   if (!asset) return null
 
-  if (asset === 'USDC') return <p className={`text-light-600 font-medium opacity-60 ${fontSize}`}>$</p>
+  const assetImage = {
+    ETH: ethGray,
+    USDC: usdc,
+    WETH: weth,
+  }[asset]
 
-  return <Image src={ethGray} alt='ETH' style={{ height: ethSize }} className='w-auto' />
+  return <Image src={assetImage} alt={asset} style={{ height: iconSize }} className='w-auto' />
 }
 
 export default Asset

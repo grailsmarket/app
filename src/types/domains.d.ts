@@ -22,7 +22,7 @@ export type MarketplaceDomainType = {
 export type DomainListingType = {
   id: number
   price: string
-  currency_address: string
+  currency_address: Address
   status: string
   seller_address: string
   order_hash: string

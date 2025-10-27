@@ -1,23 +1,23 @@
 import { combineReducers } from 'redux'
 
 import searchModal from './searchModal'
-import editOfferModal from './editOfferModal'
-import quickOfferModal from './quickOfferModal'
+import makeOfferModal from './makeOfferModal'
 import cancelOfferModal from './cancelOfferModal'
 import acceptOfferModal from './acceptOfferModal'
+import makeListingModal from './makeListingModal'
 import transferTokenModal from './transferTokenModal'
-import editUserListingModal from './editUserListingModal'
-import cancelUserListingModal from './cancelUserListingModal'
+import cancelUserListingModal from './buyNowModal'
+import buyNowModal from './buyNowModal'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
   cancelOfferReducer: cancelOfferModal,
-  cancelUserListingReducer: cancelUserListingModal,
-  editUserListingReducer: editUserListingModal,
+  cancelListingReducer: cancelUserListingModal,
   acceptOfferReducer: acceptOfferModal,
-  editOfferReducer: editOfferModal,
-  quickOfferReducer: quickOfferModal,
+  makeOfferReducer: makeOfferModal,
+  makeListingReducer: makeListingModal,
   transferTokenReducer: transferTokenModal,
+  buyNowReducer: buyNowModal,
 })
 
 export default modalReducer

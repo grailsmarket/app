@@ -21,14 +21,14 @@ const Price: React.FC<PriceProps> = ({ price, currencyAddress, iconSize = '14px'
 
   const diffCurrencyPrice = useMemo(() => {
     if (asset === 'ETH' || asset === 'WETH') {
-      return (formatEtherPrice(price, true) as number ?? 0) * (ethPrice as number ?? 0)
+      return ((formatEtherPrice(price, true) as number) ?? 0) * ((ethPrice as number) ?? 0)
     } else {
-      return formatPrice(price, asset, true)
+      return formatPrice(price, asset, true) as number
     }
   }, [price, ethPrice, asset])
 
   return (
-    <Tooltip label={`${diffCurrencyPrice} USD`} position={tooltipPosition} align='center'>
+    <Tooltip label={`${diffCurrencyPrice.toFixed(2)} USD`} position={tooltipPosition} align='center'>
       <div className='flex flex-row items-center gap-1'>
         <Asset currencyAddress={currencyAddress} iconSize={iconSize} />
         <p>{formatPrice(price, asset)}</p>

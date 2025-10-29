@@ -44,7 +44,7 @@ const Event: React.FC<EventProps> = ({ event }) => {
   }[event]
 
   return (
-    <div className='flex flex-row items-center gap-2 w-full'>
+    <div className='flex w-full flex-row items-center gap-2'>
       {icon && <Image src={icon} alt={event} width={20} height={20} />}
       <div>
         <p className='text-lg font-medium capitalize'>{eventName}</p>

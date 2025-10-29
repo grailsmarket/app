@@ -167,7 +167,7 @@ const Domains: React.FC<DomainsProps> = ({
         </div>
       )}
       <div
-        className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg' : 'px-0')}
+        className={cn('h-full w-full rounded-sm pb-20', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg' : 'px-0')}
         ref={listRef}
       >
         {!noResults ? (

@@ -31,6 +31,7 @@ export const fetchDomains = async ({
       page: pageParam + 1,
       q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : '',
       owner: ownerAddress || null,
+      'filters[owner]': ownerAddress || null,
       'filters[showListings]': filters.status.includes('Listed') ? true : false,
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,

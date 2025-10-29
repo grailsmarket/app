@@ -29,31 +29,49 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   }
 
   return (
-    <div className='flex w-full flex-col gap-4 p-xl rounded-lg border-2 border-primary bg-secondary'>
-      <div className='w-full flex items-center justify-between'><h3 className='text-3xl font-sedan-sc'>Offers</h3><PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton></div>
-      {offersLoading ? <LoadingCell height='60px' width='100%' /> : displayedOffers.sort((a, b) => Number(b.offer_amount_wei) - Number(a.offer_amount_wei)).map((offer) => (
-        <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
-          <div className='flex flex-row items-center gap-4'>
-            <div className='flex flex-row items-center gap-2'>
-              <Image src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]} width={32} height={32} alt={offer.source} />
-              {/* <p>{SOURCE_LABELS[offer.source as keyof typeof SOURCE_LABELS]}</p> */}
+    <div className='p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
+      <div className='flex w-full items-center justify-between'>
+        <h3 className='font-sedan-sc text-3xl'>Offers</h3>
+        <PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton>
+      </div>
+      {offersLoading ? (
+        <LoadingCell height='60px' width='100%' />
+      ) : (
+        displayedOffers
+          .sort((a, b) => Number(b.offer_amount_wei) - Number(a.offer_amount_wei))
+          .map((offer) => (
+            <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
+              <div className='flex flex-row items-center gap-4'>
+                <div className='flex flex-row items-center gap-2'>
+                  <Image
+                    src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
+                    width={32}
+                    height={32}
+                    alt={offer.source}
+                  />
+                  {/* <p>{SOURCE_LABELS[offer.source as keyof typeof SOURCE_LABELS]}</p> */}
+                </div>
+                <div className='flex flex-row items-center gap-2'>
+                  <Price price={offer.offer_amount_wei} currencyAddress={offer.currency_address} />
+                </div>
+              </div>
+              <div className='flex flex-row items-center gap-2'>
+                <p className='break-words'>{formatExpiryDate(offer.expires_at)}</p>
+              </div>
+              <User address={offer.buyer_address} />
             </div>
-            <div className='flex flex-row items-center gap-2'>
-              <Price price={offer.offer_amount_wei} currencyAddress={offer.currency_address} />
-            </div>
-          </div>
-          <div className='flex flex-row items-center gap-2'>
-            <p className='break-words'>{formatExpiryDate(offer.expires_at)}</p>
-          </div>
-          <User address={offer.buyer_address} />
+          ))
+      )}
+      {!offersLoading && offers.length === 0 && (
+        <div className='p-2xl flex w-full flex-row items-center justify-center gap-2'>
+          <p className='text-neutral text-lg'>No offers found</p>
         </div>
-      ))}
-      {!offersLoading && offers.length === 0 && <div className='flex w-full justify-center p-2xl flex-row items-center gap-2'>
-        <p className='text-neutral text-lg'>No offers found</p>
-      </div>}
-      {showViewAllButton && <button onClick={() => setViewAll(!viewAll)} className='text-sm text-light-600'>
-        {viewAll ? 'View Less' : 'View All'}
-      </button>}
+      )}
+      {showViewAllButton && (
+        <button onClick={() => setViewAll(!viewAll)} className='text-light-600 text-sm'>
+          {viewAll ? 'View Less' : 'View All'}
+        </button>
+      )}
     </div>
   )
 }

@@ -12,8 +12,8 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useNameActivity(name)
 
   return (
-    <div className='w-full border-primary bg-secondary flex gap-2 flex-col rounded-lg border-2 pt-lg'>
-      <h2 className='text-3xl px-xl font-sedan-sc'>Activity</h2>
+    <div className='border-primary bg-secondary pt-lg flex w-full flex-col gap-2 rounded-lg border-2'>
+      <h2 className='px-xl font-sedan-sc text-3xl'>Activity</h2>
       <Activity
         maxHeight='900px'
         activity={activity}
@@ -24,6 +24,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         showHeaders={false}
+        columns={['event', 'price', 'counterparty', 'timestamp']}
       />
     </div>
   )

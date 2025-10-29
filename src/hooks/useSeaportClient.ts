@@ -3,8 +3,10 @@ import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
 import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import { createOffer as createOfferApi } from '@/api/offers/create'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function useSeaportClient() {
+  const queryClient = useQueryClient()
   const { address, isConnected } = useAccount()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
@@ -40,15 +42,20 @@ export function useSeaportClient() {
     initializeSeaport()
   }, [publicClient, walletClient, isConnected])
 
+  const refetchListingQueries = useCallback(() => {
+    queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+    queryClient.refetchQueries({ queryKey: ['name', 'details'] })
+  }, [])
+
   // Create a listing
   const createListing = useCallback(
     async (params: {
       tokenId: string
       priceInEth: string
-      durationDays: number
+      expiryDate: number
       royaltyBps?: number
       royaltyRecipient?: string
-      marketplace: 'opensea' | 'grails' | 'both'
+      marketplace: ('opensea' | 'grails')[]
       currency?: 'ETH' | 'USDC'
     }) => {
       if (!isInitialized || !address) {
@@ -67,7 +74,7 @@ export function useSeaportClient() {
         })
 
         // Handle "both" marketplace case
-        if (params.marketplace === 'both' && 'opensea' in order && 'grails' in order) {
+        if (params.marketplace.length > 1 && 'opensea' in order && 'grails' in order) {
           // Create two separate listings - one for each platform
           const openSeaOrder = seaportClient.formatOrderForStorage(order.opensea)
           openSeaOrder.marketplace = 'opensea'
@@ -77,7 +84,7 @@ export function useSeaportClient() {
 
           // Submit both orders
           const [openSeaResponse, grailsResponse] = await Promise.all([
-            fetch('/api/orders/create', {
+            fetch('/api/listings/create', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -89,7 +96,7 @@ export function useSeaportClient() {
                 seller_address: address,
               }),
             }),
-            fetch('/api/orders/create', {
+            fetch('/api/listings/create', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -132,10 +139,10 @@ export function useSeaportClient() {
 
         // Single marketplace case
         const formattedOrder = seaportClient.formatOrderForStorage(order as any)
-        formattedOrder.marketplace = params.marketplace
+        formattedOrder.marketplace = params.marketplace[0]
 
         // Send to API
-        const response = await fetch('/api/orders/create', {
+        const response = await fetch('/api/listings/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -169,10 +176,12 @@ export function useSeaportClient() {
         setError(err.message || 'Failed to create listing')
         throw err
       } finally {
+        console.log('Refetching listing queries')
         setIsLoading(false)
+        refetchListingQueries()
       }
     },
-    [isInitialized, address]
+    [isInitialized, address, refetchListingQueries]
   )
 
   // Create an offer
@@ -278,7 +287,7 @@ export function useSeaportClient() {
         await seaportClient.initialize(publicClient, walletClient)
         console.log('Seaport re-initialized with wallet client for cancellation')
         // Step 1: Fetch order components from API
-        const fetchResponse = await fetch('/api/orders/cancel', {
+        const fetchResponse = await fetch('/api/listings/cancel', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -314,7 +323,7 @@ export function useSeaportClient() {
         console.log('Cancellation transaction:', transaction)
 
         // Step 3: Update database after successful on-chain cancellation
-        const updateResponse = await fetch('/api/orders/cancel', {
+        const updateResponse = await fetch('/api/listings/cancel', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -336,6 +345,7 @@ export function useSeaportClient() {
         throw err
       } finally {
         setIsLoading(false)
+        refetchListingQueries()
       }
     },
     [address, walletClient, publicClient]

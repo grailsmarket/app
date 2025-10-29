@@ -5,7 +5,7 @@ import VirtualList from '@/components/ui/virtuallist'
 import { ProfileActivityType } from '@/types/profile'
 import LoadingRow from './components/loadingRow'
 import ActivityRow from './components/activityRow'
-import { NameActivityType } from '@/types/domains'
+import { ActivityColumnType, NameActivityType } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 
 interface ActivityProps {
@@ -19,6 +19,7 @@ interface ActivityProps {
   hasMoreActivity?: boolean
   fetchMoreActivity?: () => void
   showHeaders?: boolean
+  columns?: ActivityColumnType[]
 }
 
 const Activity: React.FC<ActivityProps> = ({
@@ -32,6 +33,7 @@ const Activity: React.FC<ActivityProps> = ({
   hasMoreActivity,
   fetchMoreActivity,
   showHeaders = true,
+  columns = ['event', 'name', 'price', 'counterparty', 'timestamp'],
 }) => {
   const { width, height } = useWindowSize()
 
@@ -42,7 +44,7 @@ const Activity: React.FC<ActivityProps> = ({
   }, [fetchMoreActivity, hasMoreActivity, isLoading])
 
   const displayedColumns = useMemo(() => {
-    const allColumns = ['event', 'name', 'price', 'counterparty', 'timestamp'] as string[]
+    const allColumns = columns
     if (!width) return allColumns
 
     const maxColumns = () => {
@@ -56,7 +58,7 @@ const Activity: React.FC<ActivityProps> = ({
     }
 
     return allColumns.slice(0, maxColumns())
-  }, [width])
+  }, [width, columns])
 
   const visibleCount = useMemo(() => {
     if (!height) return 30
@@ -77,7 +79,10 @@ const Activity: React.FC<ActivityProps> = ({
             return (
               <div
                 key={index}
-                className={cn('flex flex-row items-center gap-1', (index + 1) === displayedColumns.length && 'justify-end')}
+                className={cn(
+                  'flex flex-row items-center gap-1',
+                  index + 1 === displayedColumns.length && 'justify-end'
+                )}
                 style={{
                   width: `${100 / displayedColumns.length}%`,
                 }}

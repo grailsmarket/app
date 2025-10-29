@@ -30,7 +30,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Status'],
-  sort: 'price_high_to_low',
+  sort: null,
 }
 
 // Slice

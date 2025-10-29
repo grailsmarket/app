@@ -125,7 +125,7 @@ export class SeaportClient {
           const provider = new ethers.BrowserProvider((window as any).ethereum)
           // Try to get the signer for the specific account
           const signer = await provider.getSigner(walletClient.account.address)
-          
+
           this.seaport = new Seaport(signer, {
             overrides: {
               contractAddress: SEAPORT_ADDRESS,
@@ -452,11 +452,11 @@ export class SeaportClient {
   async createListingOrder(params: {
     tokenId: string
     priceInEth: string
-    durationDays: number
+    expiryDate: number
     offererAddress: string
     royaltyBps?: number // Basis points for royalty (e.g., 250 = 2.5%)
     royaltyRecipient?: string
-    marketplace: 'opensea' | 'grails' | 'both'
+    marketplace: ('opensea' | 'grails')[]
     currency?: 'ETH' | 'USDC' // Payment currency
   }): Promise<OrderWithCounter | { opensea: OrderWithCounter; grails: OrderWithCounter }> {
     if (!this.seaport) {
@@ -468,7 +468,7 @@ export class SeaportClient {
     }
 
     // Handle different marketplace selections
-    if (params.marketplace === 'both') {
+    if (params.marketplace.length > 1) {
       // Create orders for both marketplaces
       const openSeaOrder = await this.createListingOrderForMarketplace({
         ...params,
@@ -481,7 +481,11 @@ export class SeaportClient {
       return { opensea: openSeaOrder, grails: grailsOrder }
     } else {
       // Create order for single marketplace
-      return await this.createListingOrderForMarketplace(params)
+      const singleMarketplaceParams = {
+        ...params,
+        marketplace: params.marketplace[0],
+      }
+      return await this.createListingOrderForMarketplace(singleMarketplaceParams)
     }
   }
 
@@ -491,7 +495,7 @@ export class SeaportClient {
   private async createListingOrderForMarketplace(params: {
     tokenId: string
     priceInEth: string
-    durationDays: number
+    expiryDate: number
     offererAddress: string
     royaltyBps?: number
     royaltyRecipient?: string
@@ -671,7 +675,7 @@ export class SeaportClient {
     }
 
     const startTime = Math.floor(Date.now() / 1000).toString()
-    const endTime = (Math.floor(Date.now() / 1000) + params.durationDays * 24 * 60 * 60).toString()
+    const endTime = params.expiryDate
 
     // Determine currency settings
     const currency = params.currency || 'ETH'
@@ -1053,7 +1057,7 @@ export class SeaportClient {
         const hash = await this.walletClient.sendTransaction({
           to: result.to as `0x${string}`,
           data: result.data as `0x${string}`,
-          value: result.value ? BigInt(result.value) : 0n,
+          value: result.value ? BigInt(result.value) : BigInt(0),
           account: offererAddress as `0x${string}`,
           chain: this.walletClient.chain,
         })

@@ -8,6 +8,7 @@ import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
 import React from 'react'
 import { numberToHex } from 'viem'
+import { ens_beautify } from '@adraffy/ens-normalize'
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -17,6 +18,14 @@ interface NameProps {
 }
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
+  const beautifiedName = () => {
+    try {
+      return ens_beautify(domain.name)
+    } catch (error) {
+      console.error('Error beautifying name', error)
+      return domain.name
+    }
+  }
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
       <div className='flex h-[36px] flex-col justify-center'>
@@ -35,7 +44,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
               registrationStatus === PREMIUM ? 'text-purple' : 'text-light-100'
             }`}
           >
-            {domain.name}
+            {beautifiedName()}
           </p>
           {!domainIsValid && (
             <Tooltip position='right' label='Name contains invalid character(s)' align='center'>

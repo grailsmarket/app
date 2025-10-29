@@ -4,8 +4,10 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { useAccount } from 'wagmi'
 
 export const useMyDomains = () => {
+  const { address: userAddress } = useAccount()
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
@@ -19,6 +21,7 @@ export const useMyDomains = () => {
     queryKey: [
       'portfolio',
       'domains',
+      userAddress,
       debouncedSearch,
       filters.length,
       filters.priceRange,
@@ -33,12 +36,14 @@ export const useMyDomains = () => {
         pageParam,
         filters: filters as any, // TODO: Create separate portfolio API or adapter
         searchTerm: debouncedSearch,
+        ownerAddress: userAddress,
       })
 
       return response
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 0,
+    enabled: !!userAddress,
   })
 
   return {

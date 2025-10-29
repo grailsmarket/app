@@ -2,12 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 
 // Types --------------------------------------------
-type CancelListingListing = {
-  listingId: string
-  domainName: string
-  listedPrice: string
-  asset: string
-  expires: number
+export type CancelListingListing = {
+  id: number
+  name: string
+  price: string
+  currency: string
+  expires: string
 }
 
 type CancelListingModalState = {

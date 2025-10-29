@@ -398,3 +398,5 @@ export type NameActivityType = {
   price: string | null
   token_id: string | null
 }
+
+export type ActivityColumnType = 'event' | 'name' | 'price' | 'counterparty' | 'from' | 'to' | 'timestamp'

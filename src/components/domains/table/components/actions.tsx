@@ -1,15 +1,17 @@
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
-import React from 'react'
+import React, { MouseEventHandler } from 'react'
 import Watchlist from '@/components/ui/watchlist'
 import CartIcon from './CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
+import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
+import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -19,11 +21,34 @@ interface ActionsProps {
 }
 
 const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToCart }) => {
+  const dispatch = useAppDispatch()
   const { onSelect } = useCartDomains()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
+
+  const openListModal: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(setMakeListingModalDomain(domain))
+    dispatch(setMakeListingModalOpen(true))
+  }
+
+  const openCancelListingModal: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(
+      setCancelListingModalListing({
+        id: domainListing.id,
+        name: domain.name,
+        price: domainListing.price,
+        currency: domainListing.currency_address,
+        expires: domainListing.expires_at,
+      })
+    )
+    dispatch(setCancelListingModalOpen(true))
+  }
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
@@ -31,13 +56,13 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
             <SecondaryButton>Edit</SecondaryButton>
-            <SecondaryButton>Cancel</SecondaryButton>
+            <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
           </div>
         )
       }
       return (
         <div className={cn('flex flex-row justify-end opacity-100', width)}>
-          <PrimaryButton>List</PrimaryButton>
+          <PrimaryButton onClick={openListModal}>List</PrimaryButton>
         </div>
       )
     }

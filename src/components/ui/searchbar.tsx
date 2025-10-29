@@ -32,7 +32,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
   return (
     <div
       className={cn(
-        'bg-secondary border-foreground/10 focus-within:bg-tertiary hover:bg-tertiary active:bg-tertiary p-lg group relative flex items-center gap-2 rounded-md border-[1px] transition-all focus-within:scale-[1.01] focus-within:shadow-md',
+        'bg-secondary border-foreground/10 focus-within:bg-tertiary hover:bg-tertiary active:bg-tertiary p-lg group relative flex items-center gap-2 rounded-md border transition-all focus-within:scale-[1.01] focus-within:shadow-md',
         className
       )}
     >

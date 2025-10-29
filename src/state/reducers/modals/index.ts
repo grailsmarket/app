@@ -6,13 +6,13 @@ import cancelOfferModal from './cancelOfferModal'
 import acceptOfferModal from './acceptOfferModal'
 import makeListingModal from './makeListingModal'
 import transferTokenModal from './transferTokenModal'
-import cancelUserListingModal from './buyNowModal'
+import cancelListingModal from './cancelListingModal'
 import buyNowModal from './buyNowModal'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
   cancelOfferReducer: cancelOfferModal,
-  cancelListingReducer: cancelUserListingModal,
+  cancelListingReducer: cancelListingModal,
   acceptOfferReducer: acceptOfferModal,
   makeOfferReducer: makeOfferModal,
   makeListingReducer: makeListingModal,

@@ -29,7 +29,7 @@ const DomainPanel = () => {
       <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
-            className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border-[1px] opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+            className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
             onClick={() => dispatch(actions.setFiltersOpen(true))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />

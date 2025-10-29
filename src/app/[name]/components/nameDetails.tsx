@@ -63,11 +63,15 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
-      <div className='p-xl flex items-center flex-col gap-3'>
+      <div className='p-xl flex flex-col items-center gap-3'>
         {rows.map((row) => (
-          <div key={row.label} className='flex w-full flex-row justify-between gap-2 items-center'>
+          <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
             <p className='font-sedan-sc text-xl font-bold'>{row.label}</p>
-            {row.label === 'Owner' && row.value ? <User address={row.value as `0x${string}`} /> : <CopyValue value={row.value as string} canCopy={row.canCopy} />}
+            {row.label === 'Owner' && row.value ? (
+              <User address={row.value as `0x${string}`} />
+            ) : (
+              <CopyValue value={row.value as string} canCopy={row.canCopy} />
+            )}
           </div>
         ))}
       </div>
@@ -75,7 +79,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
   )
 }
 
-const CopyValue = ({ value, canCopy }: { value: string, canCopy: boolean }) => {
+const CopyValue = ({ value, canCopy }: { value: string; canCopy: boolean }) => {
   const [isCopied, setIsCopied] = useState(false)
   const handleCopy = (value: string) => {
     navigator.clipboard.writeText(value)
@@ -86,11 +90,14 @@ const CopyValue = ({ value, canCopy }: { value: string, canCopy: boolean }) => {
   }
 
   return (
-    <div className='flex flex-row items-center gap-1 max-w-1/2 cursor-pointer' onClick={() => {
-      if (canCopy) handleCopy(value)
-    }}>
-      <p className='text-lg max-w-full truncate'>{value}</p>
-      {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='w-4 h-4' />}
+    <div
+      className='flex max-w-1/2 cursor-pointer flex-row items-center gap-1'
+      onClick={() => {
+        if (canCopy) handleCopy(value)
+      }}
+    >
+      <p className='max-w-full truncate text-lg'>{value}</p>
+      {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='h-4 w-4' />}
     </div>
   )
 }

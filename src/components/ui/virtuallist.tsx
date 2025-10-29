@@ -95,6 +95,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
         maxHeight: listHeight,
         overflowY: 'auto',
         position: 'relative',
+        paddingBottom: '40px',
       }}
       className={clsx(containerClassName, 'hide-scrollbar')}
     >

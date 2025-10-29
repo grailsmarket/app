@@ -96,9 +96,13 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
         <button
           className={`cursor-pointer rounded-sm p-1.5`}
           disabled={!canAddToCart}
-          onClick={(e) => onSelect(e, domain)}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onSelect(e, domain)
+          }}
         >
-          <CartIcon name={domain.name} />
+          <CartIcon domain={domain} />
         </button>
       </div>
     </div>

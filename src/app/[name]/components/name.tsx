@@ -17,11 +17,15 @@ const NamePage: React.FC<Props> = ({ name }) => {
   return (
     <div className='dark mx-auto flex max-w-7xl flex-col items-center pt-40'>
       <div className='flex w-full flex-row gap-4'>
-        <div className='border-primary bg-secondary flex w-2/5 flex-col gap-4 overflow-hidden rounded-lg border-2'>
+        <div className='border-primary h-fit bg-secondary flex w-2/5 flex-col gap-4 overflow-hidden rounded-lg border-2'>
           <NameDetails name={name} nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
         </div>
         <div className='flex w-3/5 flex-col gap-4'>
-          <Listings name={name} listings={nameDetails?.listings || []} listingsLoading={nameDetailsIsLoading} />
+          <Listings
+            domain={nameDetails}
+            listings={nameDetails?.listings || []}
+            listingsLoading={nameDetailsIsLoading}
+          />
           <Offers offers={nameOffers ?? []} offersLoading={nameOffersIsLoading} domain={nameDetails} />
           <ActivityPanel name={name} />
         </div>

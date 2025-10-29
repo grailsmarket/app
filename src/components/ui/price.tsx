@@ -6,15 +6,23 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { TOKENS } from '@/constants/web3/tokens'
 import { formatPrice } from '@/utils/formatPrice'
 import { formatEtherPrice } from '@/utils/formatEtherPrice'
+import { cn } from '@/utils/tailwind'
 
 interface PriceProps {
   price: string | number
   currencyAddress: Address
   iconSize?: string
+  fontSize?: string
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
 }
 
-const Price: React.FC<PriceProps> = ({ price, currencyAddress, iconSize = '14px', tooltipPosition = 'top' }) => {
+const Price: React.FC<PriceProps> = ({
+  price,
+  currencyAddress,
+  iconSize = '14px',
+  fontSize = 'text-lg',
+  tooltipPosition = 'top',
+}) => {
   const asset = TOKENS[currencyAddress as keyof typeof TOKENS]
 
   const { ethPrice } = useETHPrice()
@@ -31,7 +39,7 @@ const Price: React.FC<PriceProps> = ({ price, currencyAddress, iconSize = '14px'
     <Tooltip label={`${diffCurrencyPrice.toFixed(2)} USD`} position={tooltipPosition} align='center'>
       <div className='flex flex-row items-center gap-1'>
         <Asset currencyAddress={currencyAddress} iconSize={iconSize} />
-        <p>{formatPrice(price, asset)}</p>
+        <p className={cn(fontSize)}>{formatPrice(price, asset)}</p>
       </div>
     </Tooltip>
   )

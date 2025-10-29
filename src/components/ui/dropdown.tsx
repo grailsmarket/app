@@ -34,11 +34,13 @@ const Dropdown: React.FC<DropdownProps> = ({
   })
 
   const selectedOption = options.find((opt) => opt.value === value)
-  const displayValue = selectedOption?.label || new Date(Number(value * 1000)).toLocaleDateString(navigator.language || 'en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-
-  }) || placeholder
+  const displayValue =
+    selectedOption?.label ||
+    new Date(Number(value * 1000)).toLocaleDateString(navigator.language || 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }) ||
+    placeholder
 
   const handleSelect = (optionValue: string | number) => {
     onSelect(optionValue)

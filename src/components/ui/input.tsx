@@ -3,8 +3,6 @@ import { cn } from '@/utils/tailwind'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
-  value: string | number
-  onChange: (value: string | number) => void
   className?: string
   placeholder?: string
 }
@@ -32,7 +30,7 @@ const Input: React.FC<InputProps> = ({
         <input
           type={type}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={onChange}
           className='bg-secondary border-primary hover:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors focus:outline-none'
           placeholder={placeholder}
           step={step}

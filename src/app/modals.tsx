@@ -2,30 +2,43 @@
 
 import React from 'react'
 import CreateListingModal from '@/components/modal/listing/createListingModal'
-import MakeOfferModal from '@/components/modal/offer/makeOfferModal'
-import BuyNowModal from '@/components/modal/offer/purchase/buyNowModal'
+import BuyNowModal from '@/components/modal/purchase/buyNowModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectAcceptOfferModal } from '@/state/reducers/modals/acceptOfferModal'
-import { selectCancelOfferModal } from '@/state/reducers/modals/cancelOfferModal'
+import { selectAcceptOfferModal, setAcceptOfferModalOpen } from '@/state/reducers/modals/acceptOfferModal'
+import { selectCancelOfferModal, setCancelOfferModalOpen } from '@/state/reducers/modals/cancelOfferModal'
 import { selectBuyNowModal, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 import { selectMakeListingModal, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { selectMakeOfferModal, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { selectCancelListingModal, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import CancelListingModal from '@/components/modal/listing/cancelListingModal'
+import CreateOfferModal from '@/components/modal/offer/createOfferModal'
+import CancelOfferModal from '@/components/modal/offer/cancelOfferModal'
+import AcceptOfferModal from '@/components/modal/offer/acceptOfferModal'
 
 const Modals: React.FC = () => {
   const dispatch = useAppDispatch()
-  const { open: acceptOfferModalOpen, offer: acceptOfferModalOffer } = useAppSelector(selectAcceptOfferModal)
+  const { open: acceptOfferModalOpen, offer: acceptOfferModalOffer, domain: acceptOfferModalDomain } = useAppSelector(selectAcceptOfferModal)
   const { open: createListingModalOpen, domain: createListingModalDomain } = useAppSelector(selectMakeListingModal)
   const { open: makeOfferModalOpen, domain: makeOfferModalDomain } = useAppSelector(selectMakeOfferModal)
-  const { open: cancelOfferModalOpen, offer: cancelOfferModalOffer } = useAppSelector(selectCancelOfferModal)
+  const {
+    open: cancelOfferModalOpen,
+    offer: cancelOfferModalOffer,
+    name: cancelOfferModalName,
+  } = useAppSelector(selectCancelOfferModal)
   const { open: cancelListingModalOpen, listing: cancelListingModalListing } = useAppSelector(selectCancelListingModal)
-  const { open: buyNowModalOpen, listing: buyNowModalListing } = useAppSelector(selectBuyNowModal)
+  const { open: buyNowModalOpen, listing: buyNowModalListing, domain: buyNowModalDomain } = useAppSelector(selectBuyNowModal)
 
   return (
     <div>
       {makeOfferModalOpen && (
-        <MakeOfferModal onClose={() => dispatch(setMakeOfferModalOpen(false))} domain={makeOfferModalDomain} />
+        <CreateOfferModal onClose={() => dispatch(setMakeOfferModalOpen(false))} domain={makeOfferModalDomain} />
+      )}
+      {cancelOfferModalOpen && (
+        <CancelOfferModal
+          onClose={() => dispatch(setCancelOfferModalOpen(false))}
+          name={cancelOfferModalName ?? ''}
+          offer={cancelOfferModalOffer}
+        />
       )}
       {createListingModalOpen && (
         <CreateListingModal
@@ -40,7 +53,14 @@ const Modals: React.FC = () => {
         />
       )}
       {buyNowModalOpen && (
-        <BuyNowModal onClose={() => dispatch(setBuyNowModalOpen(false))} listing={buyNowModalListing} />
+        <BuyNowModal onClose={() => dispatch(setBuyNowModalOpen(false))} listing={buyNowModalListing} domain={buyNowModalDomain} />
+      )}
+      {acceptOfferModalOpen && (
+        <AcceptOfferModal 
+          onClose={() => dispatch(setAcceptOfferModalOpen(false))} 
+          offer={acceptOfferModalOffer} 
+          domain={acceptOfferModalDomain} 
+        />
       )}
     </div>
   )

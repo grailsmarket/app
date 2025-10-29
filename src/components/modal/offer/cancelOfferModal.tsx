@@ -6,30 +6,31 @@ import { Check } from 'ethereum-identity-kit'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { formatPrice } from '@/utils/formatPrice'
 import { TOKENS } from '@/constants/web3/tokens'
-import { CancelListingListing } from '@/state/reducers/modals/cancelListingModal'
 import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import { DomainOfferType } from '@/types/domains'
 
-interface CancelListingModalProps {
+interface CancelOfferModalProps {
   onClose: () => void
-  listing: CancelListingListing | null
+  name: string
+  offer: DomainOfferType | null
 }
 
-const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listing }) => {
-  const { cancelListings, isLoading } = useSeaportClient()
+const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offer }) => {
+  const { cancelOffer, isLoading } = useSeaportClient()
   const [status, setStatus] = useState<'pending' | 'success' | 'error'>('pending')
 
-  if (!listing) return null
+  if (!offer) return null
 
-  const currency = TOKENS[listing.currency as keyof typeof TOKENS]
+  const currency = TOKENS[offer.currency_address as keyof typeof TOKENS]
 
-  const handleCancelListing = async (e: React.FormEvent) => {
+  const handleCancelOffer = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('pending')
 
     try {
-      await cancelListings([listing.id])
+      await cancelOffer(offer.id)
       setStatus('success')
     } catch (err) {
       console.error('Failed to cancel listing:', err)
@@ -41,7 +42,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
     <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/40 px-2 py-12 sm:px-4'>
       <div className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-sm border-2'>
         <div className='mb-4 flex items-center justify-center'>
-          <h2 className='font-sedan-sc text-3xl'>Cancel Listing</h2>
+          <h2 className='font-sedan-sc text-3xl'>Cancel Offer</h2>
         </div>
 
         {status === 'success' ? (
@@ -50,7 +51,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
               <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
                 <Check className='text-background h-6 w-6' />
               </div>
-              <div className='mb-2 text-xl font-bold'>Listing Cancelled Successfully!</div>
+              <div className='mb-2 text-xl font-bold'>Offer Cancelled Successfully!</div>
             </div>
             <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
               <p className='text-label text-lg font-bold'>Close</p>
@@ -61,20 +62,22 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
             <div className='flex flex-col gap-2'>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Name</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>{beautifyName(listing.name)}</p>
+                <p className='max-w-2/3 truncate text-lg font-medium'>{beautifyName(name)}</p>
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Price</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>{formatPrice(listing.price, currency)}</p>
+                <p className='max-w-2/3 truncate text-lg font-medium'>
+                  {formatPrice(offer.offer_amount_wei, currency)}
+                </p>
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Expires</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>{formatExpiryDate(listing.expires)}</p>
+                <p className='max-w-2/3 truncate text-lg font-medium'>{formatExpiryDate(offer.expires_at)}</p>
               </div>
             </div>
             <div className='flex flex-col gap-2'>
-              <PrimaryButton onClick={handleCancelListing} disabled={isLoading} className='w-full'>
-                <p className='text-label text-lg font-bold'>{isLoading ? 'Cancelling Listing...' : 'Confirm'}</p>
+              <PrimaryButton onClick={handleCancelOffer} disabled={isLoading} className='w-full'>
+                <p className='text-label text-lg font-bold'>{isLoading ? 'Cancelling Offer...' : 'Confirm'}</p>
               </PrimaryButton>
               <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
                 <p className='text-label text-lg font-bold'>Close</p>
@@ -87,4 +90,4 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
   )
 }
 
-export default CancelListingModal
+export default CancelOfferModal

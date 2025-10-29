@@ -1,24 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
+import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 
 // Types --------------------------------------------
-type AcceptOfferDomain = {
-  domainName?: string | null
-  price: number
-  duration: number
-  collectionId?: string | null
-  tokenId: string
-}
-
 type AcceptOfferModalState = {
   open: boolean
-  offer: AcceptOfferDomain | null
+  offer: DomainOfferType | null
+  domain: MarketplaceDomainType | null
 }
 
 // Initial State ------------------------------------
 const initialState: AcceptOfferModalState = {
   open: false,
   offer: null,
+  domain: null,
 }
 
 // Slice -------------------------------------------
@@ -29,14 +24,17 @@ export const AcceptOfferModalSlice = createSlice({
     setAcceptOfferModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    setAcceptOfferModalOffer(state, { payload }: PayloadAction<AcceptOfferDomain | null>) {
+    setAcceptOfferModalOffer(state, { payload }: PayloadAction<DomainOfferType | null>) {
       state.offer = payload
+    },
+    setAcceptOfferModalDomain(state, { payload }: PayloadAction<MarketplaceDomainType | null>) {
+      state.domain = payload
     },
   },
 })
 
 // Actions --------------------------------------------
-export const { setAcceptOfferModalOpen, setAcceptOfferModalOffer } = AcceptOfferModalSlice.actions
+export const { setAcceptOfferModalOpen, setAcceptOfferModalOffer, setAcceptOfferModalDomain } = AcceptOfferModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectAcceptOfferModal = (state: RootState) => state.modals.acceptOfferReducer

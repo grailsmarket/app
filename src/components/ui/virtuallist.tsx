@@ -26,6 +26,8 @@ export interface VirtualListProps<T = unknown> {
   onScrollNearBottom?: () => void
   /** Threshold in pixels from bottom to trigger onScrollNearBottom */
   scrollThreshold?: number
+  /** Padding bottom in pixels */
+  paddingBottom?: string
 }
 
 /**
@@ -48,6 +50,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     containerClassName,
     onScrollNearBottom,
     scrollThreshold = 300,
+    paddingBottom = '40px',
   } = props
 
   const [scrollTop, setScrollTop] = useState(0)
@@ -95,7 +98,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
         maxHeight: listHeight,
         overflowY: 'auto',
         position: 'relative',
-        paddingBottom: '40px',
+        paddingBottom,
       }}
       className={clsx(containerClassName, 'hide-scrollbar')}
     >

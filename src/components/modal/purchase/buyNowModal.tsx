@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Listing } from '@/types/seaport'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import {
@@ -14,9 +13,15 @@ import {
 import { USDC_ADDRESS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
+import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
+import SecondaryButton from '@/components/ui/buttons/secondary'
+import PrimaryButton from '@/components/ui/buttons/primary'
+import { Check } from 'ethereum-identity-kit'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface BuyNowModalProps {
-  listing: Listing | null
+  listing: DomainListingType | null
+  domain: MarketplaceDomainType | null
   onClose: () => void
 }
 
@@ -69,8 +74,9 @@ function getApprovalTarget(conduitKey: string | undefined): string {
   return SEAPORT_ADDRESS
 }
 
-const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
+const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) => {
   const { address } = useAccount()
+  const queryClient = useQueryClient()
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
 
@@ -78,6 +84,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [gasEstimate, setGasEstimate] = useState<bigint | null>(null)
+  const [gasPrice, setGasPrice] = useState<bigint | null>(null)
   const [needsApproval, setNeedsApproval] = useState(false)
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
 
@@ -89,7 +96,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
     checkApproval()
   }, [])
 
-  if (!listing) return null
+  if (!listing || !domain) return null
 
   const estimateGas = async () => {
     try {
@@ -101,11 +108,62 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
         return
       }
 
-      // For now, just set a reasonable estimate
-      // In production, we'd simulate the transaction
-      setGasEstimate(BigInt(300000)) // 300k gas units
+      // Calculate total payment
+      const totalPayment = orderBuilder.calculateTotalPayment(order)
+      const usesETH = orderBuilder.usesNativeToken(order)
+      const isERC20Order = !usesETH
+
+      let estimatedGas: bigint
+
+      // Get current gas price
+      const currentGasPrice = await publicClient.getGasPrice()
+      setGasPrice(currentGasPrice)
+
+      try {
+        if (isERC20Order) {
+          // For ERC20 orders, estimate gas for fulfillAdvancedOrder
+          const fulfillerConduitKey = order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+          const advancedOrder = orderBuilder.buildAdvancedOrder(order)
+
+          estimatedGas = await publicClient.estimateContractGas({
+            address: SEAPORT_ADDRESS as `0x${string}`,
+            abi: SEAPORT_ABI,
+            functionName: 'fulfillAdvancedOrder',
+            args: [
+              advancedOrder,
+              [], // criteriaResolvers
+              fulfillerConduitKey,
+              address, // recipient
+            ],
+            value: usesETH ? totalPayment : BigInt(0),
+            account: address,
+          })
+        } else {
+          // For ETH orders, estimate gas for fulfillBasicOrder_efficient_6GL6yc
+          const basicOrderParams = orderBuilder.buildBasicOrderParameters(order, address)
+
+          estimatedGas = await publicClient.estimateContractGas({
+            address: SEAPORT_ADDRESS as `0x${string}`,
+            abi: SEAPORT_ABI,
+            functionName: 'fulfillBasicOrder_efficient_6GL6yc',
+            args: [basicOrderParams],
+            value: totalPayment,
+            account: address,
+          })
+        }
+
+        // Add 20% buffer to the estimated gas to ensure transaction success
+        const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100)
+        setGasEstimate(gasWithBuffer)
+      } catch (estimateError) {
+        console.warn('Failed to estimate gas, using fallback:', estimateError)
+        // Fallback to reasonable defaults if estimation fails
+        setGasEstimate(isERC20Order ? BigInt(400000) : BigInt(250000))
+      }
     } catch (err) {
       console.error('Failed to estimate gas:', err)
+      // Set a reasonable fallback
+      setGasEstimate(BigInt(300000))
     }
   }
 
@@ -146,7 +204,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       })
 
       // Check if allowance is sufficient
-      const requiredAmount = BigInt(listing.price_wei)
+      const requiredAmount = BigInt(listing.price)
       setNeedsApproval(allowance < requiredAmount)
     } catch (err) {
       console.error('Failed to check approval:', err)
@@ -175,7 +233,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       console.log('Approving USDC for:', {
         conduitKey,
         approvalTarget,
-        amount: listing.price_wei,
+        amount: listing.price,
       })
 
       // Approve the conduit (or Seaport) to spend USDC
@@ -183,7 +241,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
         address: USDC_ADDRESS as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
-        args: [approvalTarget as `0x${string}`, BigInt(listing.price_wei)],
+        args: [approvalTarget as `0x${string}`, BigInt(listing.price)],
       })
 
       setApproveTxHash(approveTx)
@@ -207,6 +265,12 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       setError(err.message || 'Approval failed')
       setStep('error')
     }
+  }
+
+  const refetchDomainQueries = () => {
+    queryClient.refetchQueries({ queryKey: ['name', 'details'] })
+    queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+    queryClient.refetchQueries({ queryKey: ['my_offers'] })
   }
 
   const handlePurchase = async () => {
@@ -244,7 +308,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       let tx: `0x${string}`
 
       // ADVANCED ORDER IS ANY ORDER THAT INCLUDES SENDING ERC20 TOKENS
-      // ADVANCED ORDER CAN ONLY BE AN OFFER FOR A NAME WHICH CAN ONLY BE MADE IN ERC20
       if (useAdvancedOrder) {
         const fulfillerConduitKey =
           order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -285,6 +348,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
             address, // recipient
           ],
           value: usesETH ? totalPayment : BigInt(0),
+          gas: gasEstimate || undefined, // Use estimated gas if available
         })
 
         setTxHash(tx)
@@ -312,6 +376,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
           functionName: 'fulfillBasicOrder_efficient_6GL6yc',
           args: [basicOrderParams],
           value: totalPayment,
+          gas: gasEstimate || undefined, // Use estimated gas if available
         })
 
         setTxHash(tx)
@@ -325,6 +390,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
 
       if (receipt.status === 'success') {
         setStep('success')
+        refetchDomainQueries()
       } else {
         throw new Error('Transaction failed')
       }
@@ -340,50 +406,55 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       case 'review':
         return (
           <>
-            <h2 className='mb-6 text-2xl font-bold text-white'>Complete Purchase</h2>
-
             <div className='mb-6 space-y-4'>
-              <div className='rounded-lg bg-gray-900 p-4'>
-                <p className='mb-1 text-sm text-gray-400'>You are buying</p>
-                <p className='text-xl font-bold text-white'>{listing.ens_name || `Token #${listing.token_id}`}</p>
+              <div className='rounded-lg flex flex-row items-center justify-between'>
+                <p className='text-xl font-sedan-sc'>Name</p>
+                <p className='text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
               </div>
 
-              <div className='rounded-lg bg-gray-900 p-4'>
-                <p className='mb-1 text-sm text-gray-400'>Total Price</p>
-                <p className='text-2xl font-bold text-purple-400'>
-                  <Price price={listing.price_wei} currencyAddress={listing.currency_address} />
-                </p>
+              <div className='rounded-lg flex flex-row items-center justify-between'>
+                <p className='text-xl font-sedan-sc'>Total Price</p>
+                <Price price={listing.price} currencyAddress={listing.currency_address} fontSize='text-xl font-semibold' iconSize='16px' />
               </div>
 
-              {gasEstimate && (
-                <div className='rounded-lg bg-gray-900 p-4'>
-                  <p className='mb-1 text-sm text-gray-400'>Estimated Gas</p>
-                  <p className='text-white'>~{gasEstimate.toString()} units</p>
+              {gasEstimate && gasPrice && (
+                <div className='rounded-lg flex flex-row items-center justify-between'>
+                  <p className='text-xl font-sedan-sc'>Estimated Gas</p>
+                  <div className='text-right'>
+                    <p className='text-xl font-semibold'>
+                      ~{((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
+                        ? '<0.001'
+                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)} ETH
+                    </p>
+                    <p className='text-sm text-gray-400'>
+                      {gasEstimate.toString()} units @ {(Number(gasPrice) / 10 ** 9).toFixed(2)} gwei
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
 
             {needsApproval && (
-              <div className='mb-4 rounded-lg border border-blue-500/20 bg-blue-900/20 p-4'>
-                <p className='text-sm text-blue-400'>
+              <div className='mt-4 rounded-lg border bg-secondary border-tertiary'>
+                <p className='text-md'>
                   You need to approve USDC spending before purchasing. This is a one-time approval.
                 </p>
               </div>
             )}
 
-            <div className='flex gap-4'>
-              <button
-                onClick={onClose}
-                className='flex-1 rounded-lg bg-gray-700 px-4 py-3 text-white transition hover:bg-gray-600'
-              >
-                Cancel
-              </button>
-              <button
+            <div className='flex flex-col gap-2 w-full'>
+              <PrimaryButton
                 onClick={needsApproval ? handleApprove : handlePurchase}
-                className='flex-1 rounded-lg bg-purple-600 px-4 py-3 font-semibold text-white transition hover:bg-purple-700'
+                className='w-full'
               >
                 {needsApproval ? 'Approve USDC' : 'Confirm Purchase'}
-              </button>
+              </PrimaryButton>
+              <SecondaryButton
+                onClick={onClose}
+                className='w-full'
+              >
+                Close
+              </SecondaryButton>
             </div>
           </>
         )
@@ -403,10 +474,10 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       case 'confirming':
         return (
           <>
-            <h2 className='mb-6 text-2xl font-bold text-white'>Confirm in Wallet</h2>
-            <div className='py-8 text-center'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-purple-500'></div>
-              <p className='mt-4 text-gray-400'>Please confirm the transaction in your wallet</p>
+            <h2 className='mt-4 text-xl font-bold text-center'>Confirm in Wallet</h2>
+            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
+              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+              <p className='text-neutral text-lg'>Please confirm the transaction in your wallet</p>
             </div>
           </>
         )
@@ -414,10 +485,10 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       case 'processing':
         return (
           <>
-            <h2 className='mb-6 text-2xl font-bold text-white'>Processing Transaction</h2>
-            <div className='py-8 text-center'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-purple-500'></div>
-              <p className='mt-4 text-gray-400'>Transaction submitted</p>
+            <h2 className='mt-4 text-xl font-bold text-center'>Processing Transaction</h2>
+            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
+              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+              <p className='text-neutral text-lg'>Transaction submitted</p>
               {txHash && <p className='mt-2 font-mono text-xs break-all text-gray-500'>{txHash}</p>}
             </div>
           </>
@@ -426,52 +497,38 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
       case 'success':
         return (
           <>
-            <h2 className='mb-6 text-2xl font-bold text-green-400'>Purchase Successful!</h2>
-            <div className='py-8 text-center'>
-              <div className='mb-4 text-6xl'>🎉</div>
-              <p className='mb-2 text-white'>
-                You now own <strong>{listing.ens_name}</strong>
-              </p>
-              {txHash && (
-                <a
-                  href={`https://etherscan.io/tx/${txHash}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-sm text-purple-400 hover:text-purple-300'
-                >
-                  View on Etherscan →
-                </a>
-              )}
+            <div className='flex flex-col items-center justify-between gap-2 py-4 text-center'>
+              <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
+                <Check className='text-background h-6 w-6' />
+              </div>
+              <div className='mb-2 text-xl font-bold'>Purchase Successful!</div>
             </div>
-            <button
-              onClick={onClose}
-              className='w-full rounded-lg bg-purple-600 px-4 py-3 font-semibold text-white transition hover:bg-purple-700'
-            >
-              Close
-            </button>
+            <SecondaryButton onClick={onClose} className='w-full'>
+              <p className='text-label text-lg font-bold'>Close</p>
+            </SecondaryButton>
           </>
         )
 
       case 'error':
         return (
           <>
-            <h2 className='mb-6 text-2xl font-bold text-red-400'>Transaction Failed</h2>
-            <div className='mb-6 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-              <p className='text-red-400'>{error || 'An unknown error occurred'}</p>
+            <div className='mb-4 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
+              <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
+              <p className='text-red-400 line-clamp-6'>{error || 'An unknown error occurred'}</p>
             </div>
-            <div className='flex gap-4'>
-              <button
-                onClick={onClose}
-                className='flex-1 rounded-lg bg-gray-700 px-4 py-3 text-white transition hover:bg-gray-600'
-              >
-                Close
-              </button>
-              <button
+            <div className='flex flex-col gap-2 w-full'>
+              <PrimaryButton
                 onClick={() => setStep('review')}
-                className='flex-1 rounded-lg bg-purple-600 px-4 py-3 font-semibold text-white transition hover:bg-purple-700'
+                className='w-full'
               >
                 Try Again
-              </button>
+              </PrimaryButton>
+              <SecondaryButton
+                onClick={onClose}
+                className='w-full'
+              >
+                Close
+              </SecondaryButton>
             </div>
           </>
         )
@@ -480,12 +537,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, onClose }) => {
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm'>
-      <div className='relative w-full max-w-md rounded-2xl bg-gray-800 p-6'>
-        {step === 'review' && (
-          <button onClick={onClose} className='absolute top-4 right-4 text-gray-400 hover:text-white'>
-            ✕
-          </button>
-        )}
+      <div className='relative w-full border-2 flex flex-col border-primary max-w-md rounded-2xl bg-secondary p-6'>
+        <h2 className='mb-6 text-3xl text-center font-sedan-sc'>Buy Domain</h2>
+
         {getModalContent()}
       </div>
     </div>

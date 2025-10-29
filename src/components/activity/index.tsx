@@ -15,6 +15,7 @@ interface ActivityProps {
   loadingRowCount?: number
   noResults: boolean
   noResultsLabel?: string
+  paddingBottom?: string
   listRef?: RefObject<HTMLDivElement>
   hasMoreActivity?: boolean
   fetchMoreActivity?: () => void
@@ -29,11 +30,12 @@ const Activity: React.FC<ActivityProps> = ({
   loadingRowCount = 10,
   noResults,
   noResultsLabel = 'No results, try changing your filters.',
+  columns = ['event', 'name', 'price', 'counterparty', 'timestamp'],
+  paddingBottom,
   listRef,
   hasMoreActivity,
   fetchMoreActivity,
   showHeaders = true,
-  columns = ['event', 'name', 'price', 'counterparty', 'timestamp'],
 }) => {
   const { width, height } = useWindowSize()
 
@@ -99,6 +101,7 @@ const Activity: React.FC<ActivityProps> = ({
         {!noResults ? (
           <VirtualList<ProfileActivityType>
             ref={listRef}
+            paddingBottom={paddingBottom}
             items={[...activity, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
             visibleCount={visibleCount}
             rowHeight={60}

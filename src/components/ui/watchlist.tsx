@@ -33,6 +33,7 @@ const Watchlist: React.FC<WatchlistProps> = ({ domain, showWatchlist = true, too
       <button
         className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
         onClick={(e) => {
+          e.preventDefault()
           e.stopPropagation()
           if (authStatus !== 'authenticated') {
             if (!userAddress) openConnectModal?.()

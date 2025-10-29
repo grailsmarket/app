@@ -2,7 +2,14 @@ export const MARKETPLACE_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price 
 
 export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 
-export const MARKETPLACE_STATUS_FILTER_LABELS = ['Listed', 'Premium', 'Available', 'Unlisted', 'Expiring Soon'] as const
+export const MARKETPLACE_STATUS_FILTER_LABELS = [
+  'Listed',
+  'Premium',
+  'Available',
+  'Unlisted',
+  'Expiring Soon',
+  'Has Last Sale',
+] as const
 
 export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
   Listed: 'listed',
@@ -15,6 +22,7 @@ export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
   Unlisted: 'unlisted',
   Premium: 'premium',
   'Expiring Soon': 'expiring',
+  'Has Last Sale': 'has_last_sale',
 }
 
 export const MARKETPLACE_SORT_FILTERS = [

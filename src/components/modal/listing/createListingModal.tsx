@@ -15,6 +15,7 @@ import FilterSelector from '@/components/filters/components/FilterSelector'
 import OpenSeaIcon from 'public/logos/opensea.svg'
 import GrailsIcon from 'public/logo.png'
 import Image from 'next/image'
+import { MarketplaceDomainType } from '@/types/domains'
 
 interface CreateListingModalProps {
   onClose: () => void
@@ -58,6 +59,12 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     e.preventDefault()
     setSuccess(false)
     setError(null)
+
+    if (!price) {
+      console.error('Price is required')
+      setError('Price is required')
+      return
+    }
 
     if (expiryDate === 0) {
       console.error('Please select an expiry date')
@@ -130,7 +137,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
                 <Check className='text-background h-6 w-6' />
               </div>
-              <div className='mb-2 text-xl font-bold'>Listing Cancelled Successfully!</div>
+              <div className='mb-2 text-xl font-bold'>Listing Created Successfully!</div>
             </div>
             <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
               <p className='text-label text-lg font-bold'>Close</p>
@@ -142,13 +149,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='font-sedan-sc text-2xl'>Name</p>
               <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
             </div>
-            <div className='flex flex-col gap-2 border-primary border-2 rounded-md p-lg'>
-              <label className='mb-2 block font-medium text-xl'>Marketplace</label>
+            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border-2'>
+              <label className='mb-2 block text-xl font-medium'>Marketplace</label>
               <div className='flex flex-col gap-4'>
                 <div className='flex w-full items-center justify-between'>
                   <div className='flex items-center gap-2'>
                     <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
-                    <p className='text-2xl font-sedan-sc'>Grails</p>
+                    <p className='font-sedan-sc text-2xl'>Grails</p>
                   </div>
                   <FilterSelector
                     onClick={() =>
@@ -194,7 +201,11 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 type='number'
                 label='Price'
                 value={price}
-                onChange={(value) => setPrice(value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === '') setPrice(undefined)
+                  else setPrice(Number(value))
+                }}
                 placeholder='0.1'
                 min={0}
                 step={0.001}
@@ -271,7 +282,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             </div>
 
             {/* Fee breakdown */}
-            {(price > 0 && calculateFees()) ? (
+            {price && calculateFees() ? (
               <div className='bg-secondary border-tertiary text-md rounded-md border p-3'>
                 <div className='space-y-1'>
                   <div className='flex justify-between text-gray-400'>
@@ -292,7 +303,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   <div className='flex items-center justify-between font-medium'>
                     <span>You Receive:</span>
                     <span className='text-lg font-bold'>
-                      {calculateFees()!.netProceeds.toFixed(currency === 'USDC' ? 2 : 4)} {currency}
+                      {calculateFees()!.netProceeds.toLocaleString('default', { maximumFractionDigits: 6, minimumFractionDigits: 2 })} {currency}
                     </span>
                   </div>
                 </div>
@@ -307,17 +318,21 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <div className="text-red-500 text-sm">{error}</div>
             )} */}
 
-            {error && (
-              <div className="text-red-500 text-lg text-center">Error: {error}</div>
-            )}
+            {error && <div className='text-center text-lg text-red-500'>Error: {error}</div>}
 
             <div className='flex flex-col gap-2'>
-              <PrimaryButton disabled={isLoading || !price || selectedMarketplace.length === 0} onClick={handleSubmit} className='w-full h-10'>
+              <PrimaryButton
+                disabled={isLoading || !price || selectedMarketplace.length === 0}
+                onClick={handleSubmit}
+                className='h-10 w-full'
+              >
                 {isLoading
                   ? 'Submitting Listing...'
-                  : selectedMarketplace.length === 0 ? 'Select a marketplace' : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0]}`}
+                  : selectedMarketplace.length === 0
+                    ? 'Select a marketplace'
+                    : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0]}`}
               </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full h-10'>
+              <SecondaryButton onClick={onClose} className='h-10 w-full'>
                 Close
               </SecondaryButton>
             </div>

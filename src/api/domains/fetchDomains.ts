@@ -24,7 +24,6 @@ export const fetchDomains = async ({
   club,
 }: FetchDomainsOptions) => {
   try {
-    console.log('filters', filters)
     const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
     const paramString = buildQueryParamString({
       limit,

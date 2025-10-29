@@ -860,7 +860,7 @@ export class SeaportClient {
   async createOfferOrder(params: {
     tokenId: string
     offerPriceInEth: string
-    durationDays: number
+    expiryDate: number
     offererAddress: string
     currentOwner?: string
     isWrapped?: boolean // Add parameter to know if name is wrapped
@@ -875,7 +875,7 @@ export class SeaportClient {
     }
 
     const startTime = Math.floor(Date.now() / 1000).toString()
-    const endTime = (Math.floor(Date.now() / 1000) + params.durationDays * 24 * 60 * 60).toString()
+    const endTime = params.expiryDate.toString()
 
     // Determine currency settings (offers must use ERC20, not native ETH)
     const currency = params.currency || 'WETH'
@@ -948,7 +948,7 @@ export class SeaportClient {
    */
   async createCollectionOffer(params: {
     offerPriceInEth: string
-    durationDays: number
+    expiryDate: number
     offererAddress: string
     traits?: CollectionOfferTraits // Optional trait-based offers
   }): Promise<OrderWithCounter> {
@@ -957,7 +957,7 @@ export class SeaportClient {
     }
 
     const startTime = Math.floor(Date.now() / 1000).toString()
-    const endTime = (Math.floor(Date.now() / 1000) + params.durationDays * 24 * 60 * 60).toString()
+    const endTime = params.expiryDate.toString()
 
     // Convert ETH to Wei
     const offerInWei = parseEther(params.offerPriceInEth).toString()
@@ -1274,11 +1274,12 @@ export class SeaportClient {
    */
   async createOffer(params: {
     tokenId: string
-    priceInEth: string
-    durationDays: number
+    price: number
+    currency: 'WETH' | 'USDC'
+    expiryDate: number
     offererAddress: string
-    marketplace: 'opensea' | 'grails' | 'both'
-  }): Promise<OrderWithCounter | { opensea: OrderWithCounter; grails: OrderWithCounter }> {
+    marketplace: ('opensea' | 'grails')[]
+  }): Promise<Record<'opensea' | 'grails', OrderWithCounter>> {
     if (!this.seaport) {
       throw new Error('Seaport client not initialized')
     }
@@ -1288,7 +1289,7 @@ export class SeaportClient {
     }
 
     // Handle different marketplace selections
-    if (params.marketplace === 'both') {
+    if (params.marketplace.length > 1) {
       // Create offers for both marketplaces
       const openSeaOffer = await this.createOfferForMarketplace({
         ...params,
@@ -1301,7 +1302,14 @@ export class SeaportClient {
       return { opensea: openSeaOffer, grails: grailsOffer }
     } else {
       // Create offer for single marketplace
-      return await this.createOfferForMarketplace(params as any)
+      const marketplace = params.marketplace[0] as 'opensea' | 'grails'
+      const offer = await this.createOfferForMarketplace({
+        ...params,
+        marketplace,
+      })
+
+      // @ts-expect-error - marketplace is guaranteed to be 'opensea' or 'grails'
+      return { [marketplace]: offer }
     }
   }
 
@@ -1310,8 +1318,8 @@ export class SeaportClient {
    */
   private async createOfferForMarketplace(params: {
     tokenId: string
-    priceInEth: string
-    durationDays: number
+    price: number
+    expiryDate: number
     offererAddress: string
     marketplace: 'opensea' | 'grails'
     currency?: 'WETH' | 'USDC'
@@ -1320,7 +1328,7 @@ export class SeaportClient {
       throw new Error('Seaport client not initialized')
     }
 
-    const { tokenId, priceInEth, durationDays, offererAddress, marketplace } = params
+    const { tokenId, price, expiryDate, offererAddress, marketplace } = params
 
     // Determine conduit key based on marketplace
     const useOpenseaConduit = marketplace === 'opensea'
@@ -1332,7 +1340,7 @@ export class SeaportClient {
 
     // Calculate timestamps
     const startTime = Math.floor(Date.now() / 1000).toString()
-    const endTime = (Math.floor(Date.now() / 1000) + durationDays * 24 * 60 * 60).toString()
+    const endTime = expiryDate.toString()
 
     // Determine currency settings (offers must use ERC20, not native ETH)
     const currency = params.currency || 'WETH'
@@ -1342,7 +1350,7 @@ export class SeaportClient {
     const currencyName = isUSDC ? 'USDC' : 'WETH'
 
     // Convert price to smallest unit
-    const priceInSmallestUnit = parseAmount(priceInEth, decimals)
+    const priceInSmallestUnit = parseAmount(price.toString(), decimals)
 
     // Build consideration items (what the offerer wants - the NFT)
     const consideration: ConsiderationInputItem[] = [
@@ -1398,8 +1406,8 @@ export class SeaportClient {
 
     if (tokenBalance < priceInSmallestUnit) {
       const formattedBalance = Number(tokenBalance) / Math.pow(10, decimals)
-      throw new Error(
-        `Insufficient ${currencyName} balance. You have ${formattedBalance.toFixed(decimals === 6 ? 2 : 4)} ${currencyName} but need ${priceInEth} ${currencyName}.${isUSDC ? '' : ' Please wrap ETH to WETH first.'}`
+      console.error(
+        `Insufficient ${currencyName} balance. You have ${formattedBalance.toFixed(decimals === 6 ? 2 : 4)} ${currencyName} but need ${price.toString()} ${currencyName}.${isUSDC ? '' : ' Please wrap ETH to WETH first.'}`
       )
     }
 

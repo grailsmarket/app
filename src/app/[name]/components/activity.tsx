@@ -12,10 +12,11 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useNameActivity(name)
 
   return (
-    <div className='border-primary bg-secondary pt-lg flex w-full flex-col gap-2 rounded-lg border-2'>
+    <div className='border-primary bg-secondary pt-xl flex w-full flex-col gap-4 rounded-lg border-2'>
       <h2 className='px-xl font-sedan-sc text-3xl'>Activity</h2>
       <Activity
         maxHeight='900px'
+        paddingBottom='30px'
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}

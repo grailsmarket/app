@@ -4,6 +4,7 @@ import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import { createOffer as createOfferApi } from '@/api/offers/create'
 import { useQueryClient } from '@tanstack/react-query'
+import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
@@ -19,6 +20,11 @@ export function useSeaportClient() {
     const initializeSeaport = async () => {
       if (!publicClient) {
         console.log('Skipping Seaport init - no publicClient')
+        return
+      }
+
+      if (!walletClient) {
+        console.log('Skipping Seaport init - no walletClient')
         return
       }
 
@@ -45,7 +51,12 @@ export function useSeaportClient() {
   const refetchListingQueries = useCallback(() => {
     queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
     queryClient.refetchQueries({ queryKey: ['name', 'details'] })
-  }, [])
+  }, [queryClient])
+
+  const refetchOfferQueries = useCallback(() => {
+    queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
+    queryClient.refetchQueries({ queryKey: ['my_offers'] })
+  }, [queryClient])
 
   // Create a listing
   const createListing = useCallback(
@@ -189,9 +200,11 @@ export function useSeaportClient() {
     async (params: {
       tokenId: string
       ensNameId: number
-      offerPriceInEth: string
-      durationDays: number
+      price: number
+      currency: 'WETH' | 'USDC'
+      expiryDate: number
       currentOwner?: string
+      marketplace: ('opensea' | 'grails')[]
     }) => {
       if (!address) {
         throw new Error('Wallet not connected')
@@ -212,36 +225,43 @@ export function useSeaportClient() {
 
         const result = await seaportClient.createOffer({
           tokenId: params.tokenId,
-          priceInEth: params.offerPriceInEth,
-          durationDays: params.durationDays,
+          price: params.price,
+          currency: params.currency,
+          expiryDate: params.expiryDate,
           offererAddress: address,
-          marketplace: 'grails', // Default to grails marketplace
+          marketplace: params.marketplace,
         })
 
         // Handle the result - it should be a single order since we're using 'grails' marketplace
-        const order = result as OrderWithCounter
+        const createdOffers = Object.entries(result).map(async ([marketplace, order]) => {
+          console.log('Creating offer for marketplace:', marketplace)
+          console.log('Order:', order)
+          const formattedOrder = seaportClient.formatOrderForStorage(order)
+          const response = await createOfferApi({
+            ensNameId: params.ensNameId,
+            price: params.price,
+            currency: params.currency,
+            orderData: formattedOrder,
+            buyerAddress: address,
+            expiryDate: params.expiryDate,
+          })
 
-        // Format order for API storage
-        const formattedOrder = seaportClient.formatOrderForStorage(order)
-
-        // Send to API
-        const response = await createOfferApi({
-          ensNameId: params.ensNameId,
-          offerPriceInEth: params.offerPriceInEth,
-          orderData: formattedOrder,
-          buyerAddress: address,
-          durationDays: params.durationDays,
+          return {
+            response,
+            marketplace,
+          }
         })
 
-        return response
+        return createdOffers
       } catch (err: any) {
         setError(err.message || 'Failed to create offer')
         throw err
       } finally {
         setIsLoading(false)
+        refetchOfferQueries()
       }
     },
-    [isInitialized, address, walletClient, publicClient]
+    [address, walletClient, publicClient, refetchOfferQueries]
   )
 
   // Fulfill an order
@@ -268,7 +288,7 @@ export function useSeaportClient() {
   )
 
   // Cancel orders
-  const cancelOrders = useCallback(
+  const cancelListings = useCallback(
     async (listingIds: number[]) => {
       if (!address) {
         throw new Error('Wallet not connected')
@@ -348,7 +368,39 @@ export function useSeaportClient() {
         refetchListingQueries()
       }
     },
-    [address, walletClient, publicClient]
+    [address, walletClient, publicClient, refetchListingQueries]
+  )
+
+  const cancelOffer = useCallback(
+    async (offerId: number) => {
+      if (!address) {
+        throw new Error('Wallet not connected')
+      }
+
+      // Ensure Seaport is initialized with wallet client for signing
+      if (!walletClient || !publicClient) {
+        throw new Error('Wallet client not available')
+      }
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        // Re-initialize to ensure we have the wallet client
+        await seaportClient.initialize(publicClient, walletClient)
+        console.log('Seaport re-initialized with wallet client for cancellation')
+        // Step 1: Fetch order components from API
+        const response = await cancelOfferApi(offerId)
+        return response
+      } catch (err: any) {
+        setError(err.message || 'Failed to cancel orders')
+        throw err
+      } finally {
+        setIsLoading(false)
+        refetchOfferQueries()
+      }
+    },
+    [address, walletClient, publicClient, refetchOfferQueries]
   )
 
   // Validate order
@@ -397,7 +449,8 @@ export function useSeaportClient() {
     createListing,
     createOffer,
     fulfillOrder,
-    cancelOrders,
+    cancelListings,
+    cancelOffer,
     validateOrder,
     getOrderStatus,
     conduitConfig,

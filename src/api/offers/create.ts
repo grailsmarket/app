@@ -1,21 +1,28 @@
 import { API_URL } from '@/constants/api'
+import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 
 interface CreateOfferParams {
-  offerPriceInEth: string
+  price: number
+  currency: 'WETH' | 'USDC'
   orderData: SeaportStoredOrder
   buyerAddress: string
   ensNameId: number
-  durationDays: number
+  expiryDate: number
 }
 
 export const createOffer = async ({
-  offerPriceInEth,
+  price,
+  currency,
   orderData,
   buyerAddress,
   ensNameId,
-  durationDays,
+  expiryDate,
 }: CreateOfferParams) => {
+  console.log(expiryDate)
+  const currencyAddress = TOKEN_ADDRESSES[currency]
+  const fullPrice = price * Math.pow(10, TOKEN_DECIMALS[currency])
+
   const response = await fetch(`${API_URL}/offers`, {
     method: 'POST',
     headers: {
@@ -24,10 +31,10 @@ export const createOffer = async ({
     body: JSON.stringify({
       ensNameId,
       buyerAddress,
-      offerAmountWei: offerPriceInEth,
-      currencyAddress: 'WETH',
+      offerAmountWei: fullPrice.toString(),
+      currencyAddress,
       orderData,
-      expiresAt: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
+      expiresAt: new Date(expiryDate * 1000).toISOString(),
     }),
   })
 

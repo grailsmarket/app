@@ -1,15 +1,16 @@
-import { SeaportOrder, SeaportOrderParameters, AdvancedOrder, Fulfillment, ItemType, Listing } from '@/types/seaport'
+import { DomainListingType, DomainOfferType } from '@/types/domains'
+import { SeaportOrder, SeaportOrderParameters, AdvancedOrder, Fulfillment, ItemType } from '@/types/seaport'
 
 export class SeaportOrderBuilder {
   /**
    * Parse stored order data from listing
    */
-  parseStoredOrder(listing: Listing): SeaportOrder | null {
+  parseStoredOrder(order: DomainListingType | DomainOfferType): SeaportOrder | null {
     try {
-      if (!listing.order_data) return null
+      if (!order.order_data) return null
 
       // The order_data might be a JSON string or an object
-      const orderData = typeof listing.order_data === 'string' ? JSON.parse(listing.order_data) : listing.order_data
+      const orderData = typeof order.order_data === 'string' ? JSON.parse(order.order_data) : order.order_data
 
       // Extract protocol_data which contains the Seaport order details
       // Handle different data structures:
@@ -34,26 +35,40 @@ export class SeaportOrderBuilder {
         return null
       }
 
+      console.log('Protocol parameters:', protocolData.parameters)
+      console.log('Offer array:', protocolData.parameters.offer)
+      console.log('Consideration array:', protocolData.parameters.consideration)
+      
+      // Check if this is possibly a different format (like from the offers API)
+      if (!protocolData.parameters.offer && !protocolData.parameters.consideration) {
+        console.error('Order data is missing offer and consideration arrays')
+        return null
+      }
+
       // Convert string values to bigints where needed
       const parameters: SeaportOrderParameters = {
-        ...protocolData.parameters,
+        offerer: protocolData.parameters.offerer,
+        zone: protocolData.parameters.zone || '0x0000000000000000000000000000000000000000',
+        orderType: Number(protocolData.parameters.orderType || 0),
         startTime: BigInt(protocolData.parameters.startTime || 0),
         endTime: BigInt(protocolData.parameters.endTime || 0),
-        salt: BigInt(protocolData.parameters.salt || 0),
-        offer: protocolData.parameters.offer.map((item: any) => ({
+        zoneHash: protocolData.parameters.zoneHash || '0x0000000000000000000000000000000000000000000000000000000000000000',
+        salt: protocolData.parameters.salt,
+        conduitKey: protocolData.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000',
+        offer: (protocolData.parameters.offer || []).map((item: any) => ({
           ...item,
           identifierOrCriteria: BigInt(item.identifierOrCriteria || item.identifier || 0),
           startAmount: BigInt(item.startAmount || 0),
           endAmount: BigInt(item.endAmount || 0),
         })),
-        consideration: protocolData.parameters.consideration.map((item: any) => ({
+        consideration: (protocolData.parameters.consideration || []).map((item: any) => ({
           ...item,
           identifierOrCriteria: BigInt(item.identifierOrCriteria || item.identifier || 0),
           startAmount: BigInt(item.startAmount || 0),
           endAmount: BigInt(item.endAmount || 0),
         })),
-        totalOriginalConsiderationItems: BigInt(
-          protocolData.parameters.totalOriginalConsiderationItems || protocolData.parameters.consideration.length
+        totalOriginalConsiderationItems: Number(
+          protocolData.parameters.totalOriginalConsiderationItems || (protocolData.parameters.consideration?.length || 0)
         ),
       }
 

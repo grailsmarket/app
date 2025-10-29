@@ -3,6 +3,7 @@ import { SortFilterType } from '../state/reducers/filters/marketplaceFilters'
 import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
 
 export type MarketplaceDomainType = {
+  id: number
   name: string
   token_id: number
   owner: Address | null

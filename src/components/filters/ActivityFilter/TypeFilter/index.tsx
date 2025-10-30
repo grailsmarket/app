@@ -2,8 +2,9 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
 import UnexpandedFilter from '../../components/UnexpandedFilter'
 import FilterSelector from '../../components/FilterSelector'
-import { PROFILE_ACTIVITY_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
+import { PROFILE_ACTIVITY_FILTERS } from '@/constants/filters/portfolioFilters'
 import {
+  ActivityTypeFilterType,
   selectProfileActivityFilters,
   toggleActivityFiltersType,
 } from '@/state/reducers/filters/profileActivityFilters'
@@ -12,6 +13,10 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 const TypeFilter = () => {
   const { type: typeFilter } = useAppSelector(selectProfileActivityFilters)
   const dispatch = useAppDispatch()
+
+  const toggleActivityFiltersTypeFn = (value: ActivityTypeFilterType) => {
+    dispatch(toggleActivityFiltersType(value))
+  }
 
   return (
     <div className='bg-dark-700 flex flex-col p-4'>
@@ -22,12 +27,12 @@ const TypeFilter = () => {
           </div>
         </div>
         <div className='flex flex-col gap-y-4 overflow-x-hidden'>
-          {PROFILE_ACTIVITY_FILTER_LABELS.map((label, index) => (
-            <div key={index} className='flex justify-between'>
-              <p className='text-md font-medium'>{label}</p>
+          {PROFILE_ACTIVITY_FILTERS.map((item, index) => (
+            <div key={index} onClick={() => toggleActivityFiltersTypeFn(item.value)} className='flex justify-between'>
+              <p className='text-md font-medium'>{item.label}</p>
               <FilterSelector
-                isActive={typeFilter.includes(label as any)}
-                onClick={() => dispatch(toggleActivityFiltersType(label as any))}
+                isActive={typeFilter.includes(item.value)}
+                onClick={() => toggleActivityFiltersTypeFn(item.value)}
               />
             </div>
           ))}

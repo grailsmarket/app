@@ -1,9 +1,6 @@
 'use client'
 
 import { profileTabs } from '@/constants/domains/profile/tabs'
-import { useFilterContext } from '@/context/filters'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { changeTab, selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { ProfileTabType } from '@/types/filters'
 import { cn } from '@/utils/tailwind'
 import React, { useEffect, useState } from 'react'
@@ -14,7 +11,6 @@ interface TabSwitcherProps {
 }
 
 const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) => {
-  const dispatch = useAppDispatch()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {

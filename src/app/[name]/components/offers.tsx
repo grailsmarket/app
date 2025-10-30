@@ -11,8 +11,16 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useAccount } from 'wagmi'
-import { setAcceptOfferModalDomain, setAcceptOfferModalOffer, setAcceptOfferModalOpen } from '@/state/reducers/modals/acceptOfferModal'
-import { setCancelOfferModalName, setCancelOfferModalOffer, setCancelOfferModalOpen } from '@/state/reducers/modals/cancelOfferModal'
+import {
+  setAcceptOfferModalDomain,
+  setAcceptOfferModalOffer,
+  setAcceptOfferModalOpen,
+} from '@/state/reducers/modals/acceptOfferModal'
+import {
+  setCancelOfferModalName,
+  setCancelOfferModalOffer,
+  setCancelOfferModalOpen,
+} from '@/state/reducers/modals/cancelOfferModal'
 
 interface OffersProps {
   domain?: MarketplaceDomainType

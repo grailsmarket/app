@@ -17,7 +17,11 @@ import AcceptOfferModal from '@/components/modal/offer/acceptOfferModal'
 
 const Modals: React.FC = () => {
   const dispatch = useAppDispatch()
-  const { open: acceptOfferModalOpen, offer: acceptOfferModalOffer, domain: acceptOfferModalDomain } = useAppSelector(selectAcceptOfferModal)
+  const {
+    open: acceptOfferModalOpen,
+    offer: acceptOfferModalOffer,
+    domain: acceptOfferModalDomain,
+  } = useAppSelector(selectAcceptOfferModal)
   const { open: createListingModalOpen, domain: createListingModalDomain } = useAppSelector(selectMakeListingModal)
   const { open: makeOfferModalOpen, domain: makeOfferModalDomain } = useAppSelector(selectMakeOfferModal)
   const {
@@ -26,7 +30,11 @@ const Modals: React.FC = () => {
     name: cancelOfferModalName,
   } = useAppSelector(selectCancelOfferModal)
   const { open: cancelListingModalOpen, listing: cancelListingModalListing } = useAppSelector(selectCancelListingModal)
-  const { open: buyNowModalOpen, listing: buyNowModalListing, domain: buyNowModalDomain } = useAppSelector(selectBuyNowModal)
+  const {
+    open: buyNowModalOpen,
+    listing: buyNowModalListing,
+    domain: buyNowModalDomain,
+  } = useAppSelector(selectBuyNowModal)
 
   return (
     <div>
@@ -53,13 +61,17 @@ const Modals: React.FC = () => {
         />
       )}
       {buyNowModalOpen && (
-        <BuyNowModal onClose={() => dispatch(setBuyNowModalOpen(false))} listing={buyNowModalListing} domain={buyNowModalDomain} />
+        <BuyNowModal
+          onClose={() => dispatch(setBuyNowModalOpen(false))}
+          listing={buyNowModalListing}
+          domain={buyNowModalDomain}
+        />
       )}
       {acceptOfferModalOpen && (
-        <AcceptOfferModal 
-          onClose={() => dispatch(setAcceptOfferModalOpen(false))} 
-          offer={acceptOfferModalOffer} 
-          domain={acceptOfferModalDomain} 
+        <AcceptOfferModal
+          onClose={() => dispatch(setAcceptOfferModalOpen(false))}
+          offer={acceptOfferModalOffer}
+          domain={acceptOfferModalDomain}
         />
       )}
     </div>

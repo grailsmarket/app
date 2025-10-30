@@ -15,8 +15,6 @@ export const fetchNameActivity = async ({ name, limit, pageParam }: FetchNameAct
     pagination: PaginationType
   }>
 
-  console.log(data)
-
   return {
     activity: data.data.results,
     nextPageParam: data.data.pagination.page + 1,

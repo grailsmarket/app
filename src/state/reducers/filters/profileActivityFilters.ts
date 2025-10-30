@@ -1,11 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { LengthType, PriceDenominationType, PriceType, SortFilterType } from '@/types/filters'
-
-const PROFILE_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
+import { PROFILE_ACTIVITY_FILTERS } from '@/constants/filters/portfolioFilters'
 
 // Types
-export type ActivityTypeFilterType = (typeof PROFILE_ACTIVITY_FILTER_LABELS)[number]
+export type ActivityTypeFilterType = (typeof PROFILE_ACTIVITY_FILTERS)[number]['value']
 
 export type ProfileActivityOpenableFilterType = 'Type'
 
@@ -25,10 +24,28 @@ export type ActivityFiltersOpenedState = ActivityFiltersState & {
   openFilters: ProfileActivityOpenableFilterType[]
 }
 
+export const emptyFilterState: ActivityFiltersState = {
+  open: false,
+  type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
+  search: '',
+  categories: [],
+  sort: null,
+  denomination: [],
+  priceRange: {
+    min: null,
+    max: null,
+  },
+  length: {
+    min: null,
+    max: null,
+  },
+  status: [],
+}
+
 // Initial State
 export const initialState: ActivityFiltersOpenedState = {
   open: false,
-  type: [...PROFILE_ACTIVITY_FILTER_LABELS],
+  type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
   openFilters: ['Type'],
   search: '',
   categories: [],
@@ -76,7 +93,7 @@ export const profileActivityFiltersSlice = createSlice({
       state.search = payload
     },
     clearActivityFilters(state) {
-      state.type = [...PROFILE_ACTIVITY_FILTER_LABELS]
+      state.type = [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)]
       state.search = ''
     },
   },

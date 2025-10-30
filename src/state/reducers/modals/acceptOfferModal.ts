@@ -34,7 +34,8 @@ export const AcceptOfferModalSlice = createSlice({
 })
 
 // Actions --------------------------------------------
-export const { setAcceptOfferModalOpen, setAcceptOfferModalOffer, setAcceptOfferModalDomain } = AcceptOfferModalSlice.actions
+export const { setAcceptOfferModalOpen, setAcceptOfferModalOffer, setAcceptOfferModalDomain } =
+  AcceptOfferModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectAcceptOfferModal = (state: RootState) => state.modals.acceptOfferReducer

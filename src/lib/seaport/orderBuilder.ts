@@ -38,7 +38,7 @@ export class SeaportOrderBuilder {
       console.log('Protocol parameters:', protocolData.parameters)
       console.log('Offer array:', protocolData.parameters.offer)
       console.log('Consideration array:', protocolData.parameters.consideration)
-      
+
       // Check if this is possibly a different format (like from the offers API)
       if (!protocolData.parameters.offer && !protocolData.parameters.consideration) {
         console.error('Order data is missing offer and consideration arrays')
@@ -52,9 +52,11 @@ export class SeaportOrderBuilder {
         orderType: Number(protocolData.parameters.orderType || 0),
         startTime: BigInt(protocolData.parameters.startTime || 0),
         endTime: BigInt(protocolData.parameters.endTime || 0),
-        zoneHash: protocolData.parameters.zoneHash || '0x0000000000000000000000000000000000000000000000000000000000000000',
+        zoneHash:
+          protocolData.parameters.zoneHash || '0x0000000000000000000000000000000000000000000000000000000000000000',
         salt: protocolData.parameters.salt,
-        conduitKey: protocolData.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000',
+        conduitKey:
+          protocolData.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000',
         offer: (protocolData.parameters.offer || []).map((item: any) => ({
           ...item,
           identifierOrCriteria: BigInt(item.identifierOrCriteria || item.identifier || 0),
@@ -68,7 +70,7 @@ export class SeaportOrderBuilder {
           endAmount: BigInt(item.endAmount || 0),
         })),
         totalOriginalConsiderationItems: Number(
-          protocolData.parameters.totalOriginalConsiderationItems || (protocolData.parameters.consideration?.length || 0)
+          protocolData.parameters.totalOriginalConsiderationItems || protocolData.parameters.consideration?.length || 0
         ),
       }
 

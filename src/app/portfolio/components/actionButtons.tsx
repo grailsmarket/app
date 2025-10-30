@@ -10,7 +10,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 const ActionButtons = () => {
   const { open } = useAppSelector(selectMarketplaceFilters)
-  const { isFiltersClear, clearFilters } = useFilterButtons()
+  const { clearFilters, isFiltersClear } = useFilterButtons()
 
   return (
     <div

@@ -12,7 +12,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 const ActionButtons = () => {
   const { open } = useAppSelector(selectMarketplaceFilters)
-  const { isFiltersClear, clearFilters } = useFilterButtons()
+  const { clearFilters, isFiltersClear } = useFilterButtons()
 
   return (
     <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>

@@ -7,6 +7,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 import User from '@/components/ui/user'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
+import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 
 interface NameDetailsProps {
   name: string
@@ -28,12 +29,12 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     },
     {
       label: 'Created',
-      value: nameDetails?.registration_date,
+      value: nameDetails?.registration_date ? formatExpiryDate(nameDetails.registration_date) : null,
       canCopy: false,
     },
     {
       label: 'Expires',
-      value: nameDetails?.expiry_date,
+      value: nameDetails?.expiry_date ? formatExpiryDate(nameDetails.expiry_date) : null,
       canCopy: false,
     },
     {

@@ -8,8 +8,9 @@ import DomainPanel from './domains'
 import ActionButtons from '@/app/portfolio/components/actionButtons'
 import { ProfileTabType } from '@/types/filters'
 import TabSwitcher from './tabSwitcher'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { fetchAccount, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
+import { useQuery } from '@tanstack/react-query'
 
 interface Props {
   user: Address | string
@@ -18,6 +19,11 @@ interface Props {
 const MainPanel: React.FC<Props> = ({ user }) => {
   const [profileTab, setProfileTab] = useState<ProfileTabType>('domains')
   const { width: windowWidth } = useWindowSize()
+  const { data: userAccount } = useQuery({
+    queryKey: ['account', user],
+    queryFn: () => fetchAccount(user),
+    enabled: !!user,
+  })
 
   return (
     <FilterProvider filterType='profile' profileTab={profileTab}>
@@ -32,7 +38,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
           >
             <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
             {profileTab === 'domains' && <DomainPanel user={user} />}
-            {profileTab === 'activity' && <ActivityPanel user={user} />}
+            {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
           </div>
           <ActionButtons />
         </div>

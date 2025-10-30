@@ -95,7 +95,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   return (
     <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/40 px-2 py-12 sm:px-4'>
       <div
-        className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-sm border-2'
+        className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-md border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
         <h2 className='font-sedan-sc pb-2 text-center text-2xl'>Make Offer</h2>

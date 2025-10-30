@@ -2,62 +2,60 @@ import { RefObject, useCallback, useMemo } from 'react'
 import { Address, useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import NoResults from '@/components/ui/noResults'
 import VirtualList from '@/components/ui/virtuallist'
-import { ProfileActivityType } from '@/types/profile'
+import { DomainOfferType, OfferColumnType } from '@/types/domains'
 import LoadingRow from './components/loadingRow'
-import ActivityRow from './components/activityRow'
-import { ActivityColumnType, NameActivityType } from '@/types/domains'
+import OfferRow from './components/offerRow'
 import { cn } from '@/utils/tailwind'
 
-interface ActivityProps {
+interface OffersProps {
   maxHeight?: string
-  activity: ProfileActivityType[] | NameActivityType[]
+  offers: DomainOfferType[]
   isLoading: boolean
   loadingRowCount?: number
   noResults: boolean
   noResultsLabel?: string
   paddingBottom?: string
   listRef?: RefObject<HTMLDivElement>
-  hasMoreActivity?: boolean
-  fetchMoreActivity?: () => void
+  hasMoreOffers?: boolean
+  fetchMoreOffers?: () => void
   showHeaders?: boolean
-  columns?: ActivityColumnType[]
-  displayedAddress?: Address
+  columns?: OfferColumnType[]
+  currentUserAddress?: Address
 }
 
-const Activity: React.FC<ActivityProps> = ({
+const Offers: React.FC<OffersProps> = ({
   maxHeight = 'calc(100vh - 160px)',
-  activity,
+  offers,
   isLoading,
   loadingRowCount = 10,
   noResults,
-  noResultsLabel = 'No results, try changing your filters.',
-  columns = ['event', 'name', 'price', 'counterparty', 'timestamp'],
+  noResultsLabel = 'No offers found.',
+  columns = ['name', 'offer_amount', 'offerrer', 'expires', 'actions'],
   paddingBottom,
   listRef,
-  hasMoreActivity,
-  fetchMoreActivity,
+  hasMoreOffers,
+  fetchMoreOffers,
   showHeaders = true,
-  displayedAddress,
+  currentUserAddress,
 }) => {
   const { width, height } = useWindowSize()
 
   const handleScrollNearBottom = useCallback(() => {
-    if (fetchMoreActivity && hasMoreActivity && !isLoading) {
-      fetchMoreActivity()
+    if (fetchMoreOffers && hasMoreOffers && !isLoading) {
+      fetchMoreOffers()
     }
-  }, [fetchMoreActivity, hasMoreActivity, isLoading])
+  }, [fetchMoreOffers, hasMoreOffers, isLoading])
 
   const displayedColumns = useMemo(() => {
     const allColumns = columns
     if (!width) return allColumns
 
     const maxColumns = () => {
-      if (width < 400) return 0
-      if (width < 640) return 1
-      if (width < 768) return 2
-      if (width < 1024) return 3
-      if (width < 1280) return 4
-      if (width < 1536) return 5
+      if (width < 400) return 2
+      if (width < 640) return 3
+      if (width < 768) return 4
+      if (width < 1024) return 5
+      if (width < 1280) return 6
       return allColumns.length
     }
 
@@ -72,6 +70,14 @@ const Activity: React.FC<ActivityProps> = ({
   const isClient = useIsClient()
   if (!isClient) return null
 
+  const columnHeaders: Record<OfferColumnType, string> = {
+    name: 'Name',
+    offer_amount: 'Offer Amount',
+    offerrer: 'Offerrer',
+    expires: 'Expires',
+    actions: 'Actions',
+  }
+
   return (
     <div
       className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
@@ -83,16 +89,13 @@ const Activity: React.FC<ActivityProps> = ({
             return (
               <div
                 key={index}
-                className={cn(
-                  'flex flex-row items-center gap-1',
-                  index + 1 === displayedColumns.length && 'justify-end'
-                )}
+                className={cn('flex flex-row items-center gap-1', header === 'actions' && 'justify-end')}
                 style={{
                   width: `${100 / displayedColumns.length}%`,
                 }}
               >
-                <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium transition-colors'>
-                  {header}
+                <p className='w-fit text-left text-sm font-medium'>
+                  {header === 'actions' ? '' : columnHeaders[header]}
                 </p>
               </div>
             )
@@ -101,10 +104,10 @@ const Activity: React.FC<ActivityProps> = ({
       )}
       <div className='h-full w-full rounded-sm px-0' ref={listRef}>
         {!noResults ? (
-          <VirtualList<ProfileActivityType>
+          <VirtualList<DomainOfferType>
             ref={listRef}
             paddingBottom={paddingBottom}
-            items={[...activity, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
+            items={[...offers, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
             visibleCount={visibleCount}
             rowHeight={60}
             overscanCount={visibleCount}
@@ -120,11 +123,11 @@ const Activity: React.FC<ActivityProps> = ({
                   </div>
                 )
               return (
-                <ActivityRow
+                <OfferRow
                   key={item.id}
-                  activity={item}
+                  offer={item}
                   displayedColumns={displayedColumns}
-                  displayedAddress={displayedAddress}
+                  currentUserAddress={currentUserAddress}
                 />
               )
             }}
@@ -137,4 +140,4 @@ const Activity: React.FC<ActivityProps> = ({
   )
 }
 
-export default Activity
+export default Offers

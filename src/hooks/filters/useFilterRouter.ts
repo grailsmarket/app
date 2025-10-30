@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { RootState } from '@/state'
 import { useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
@@ -5,6 +6,7 @@ import { FilterRouter, FilterContextType } from '@/types/filters'
 
 // Import marketplace selectors and actions
 import {
+  emptyFilterState as emptyFilterStateMarketplaceFilters,
   selectMarketplaceFilters,
   setMarketplaceFiltersOpen,
   toggleMarketplaceFiltersStatus,
@@ -24,6 +26,7 @@ import {
 
 // Import myDomains selectors and actions
 import {
+  emptyFilterState as emptyFilterStateMyDomainsFilters,
   selectMyDomainsFilters,
   setMyDomainsFiltersOpen,
   toggleMyDomainsFiltersStatus,
@@ -43,6 +46,7 @@ import {
 
 // Import myOffers selectors and actions
 import {
+  emptyFilterState as emptyFilterStateMyOffersFilters,
   selectMyOffersFilters,
   setMyOffersFiltersOpen,
   toggleMyOffersFiltersStatus,
@@ -62,6 +66,7 @@ import {
 
 // Import receivedOffers selectors and actions
 import {
+  emptyFilterState as emptyFilterStateReceivedOffersFilters,
   selectReceivedOffersFilters,
   setReceivedOffersFiltersOpen,
   toggleReceivedOffersFiltersStatus,
@@ -81,6 +86,7 @@ import {
 
 // Import watchlist selectors and actions
 import {
+  emptyFilterState as emptyFilterStateWatchlistFilters,
   selectWatchlistFilters,
   setWatchlistFiltersOpen,
   toggleWatchlistFiltersStatus,
@@ -104,6 +110,7 @@ import { useMemo } from 'react'
 
 // Import profile filters selectors and actions
 import {
+  emptyFilterState as emptyFilterStateProfileDomainsFilters,
   selectProfileDomainsFilters,
   setFiltersOpen as setProfileDomainsFiltersOpen,
   toggleFiltersStatus as toggleProfileDomainsFiltersStatus,
@@ -122,6 +129,7 @@ import {
 } from '@/state/reducers/filters/profileDomainsFilters'
 
 import {
+  emptyFilterState as emptyFilterStateProfileActivityFilters,
   selectProfileActivityFilters,
   toggleActivityFiltersType,
   setActivityFiltersType,
@@ -306,6 +314,35 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
   }, [filterType, portfolioTab, profileTab])
 
+  const emptyFilterState = useMemo(() => {
+    if (filterType === 'profile') {
+      if (profileTab === 'domains') {
+        return emptyFilterStateProfileDomainsFilters
+      } else if (profileTab === 'activity') {
+        return emptyFilterStateProfileActivityFilters
+      }
+    }
+
+    if (filterType === 'portfolio') {
+      if (portfolioTab === 'domains') {
+        return emptyFilterStateMyDomainsFilters
+      } else if (portfolioTab === 'my_offers') {
+        return emptyFilterStateMyOffersFilters
+      }
+    } else if (portfolioTab === 'received_offers') {
+      return emptyFilterStateReceivedOffersFilters
+    } else if (portfolioTab === 'watchlist') {
+      return emptyFilterStateWatchlistFilters
+    }
+
+    return emptyFilterStateMarketplaceFilters
+  }, [filterType, portfolioTab, profileTab])
+
+  const isFiltersClear = useMemo(() => {
+    const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
+    return _.isEqual(filtersWithoutOpenFilters, emptyFilterState)
+  }, [filters, emptyFilterState])
+
   return {
     selectors: {
       filters: filters,
@@ -313,5 +350,6 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     actions: actions as any,
     context: filterType,
     portfolioTab: activePortfolioTab,
+    isFiltersClear,
   }
 }

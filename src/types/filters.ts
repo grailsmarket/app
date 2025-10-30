@@ -58,6 +58,7 @@ export interface FilterRouter<T extends FilterContextType> {
   actions: FilterRouterActions
   context: T
   portfolioTab?: PortfolioTabType
+  isFiltersClear: boolean
 }
 
 // Portfolio Filters Types

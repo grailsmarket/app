@@ -8,7 +8,7 @@ export type MarketplaceDomainType = {
   token_id: number
   owner: Address | null
   expiry_date: string | null
-  registration_date: number | null
+  registration_date: string | null
   metadata: Record<string, string>
   has_numbers: boolean
   has_emoji: boolean
@@ -401,3 +401,5 @@ export type NameActivityType = {
 }
 
 export type ActivityColumnType = 'event' | 'name' | 'price' | 'counterparty' | 'from' | 'to' | 'timestamp'
+
+export type OfferColumnType = 'name' | 'offer_amount' | 'offerrer' | 'expires' | 'actions'

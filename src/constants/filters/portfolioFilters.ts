@@ -50,4 +50,31 @@ export const MY_DOMAINS_CATEGORIES = [
 ]
 
 export const PROFILE_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
-export const PROFILE_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
+export const PROFILE_ACTIVITY_FILTER_LABELS = [
+  'Sale',
+  'Transfer',
+  'Offer',
+  'Mint',
+  'Listing',
+  'Bought',
+  'Sold',
+  'Offer Accepted',
+  'Cancelled',
+  'Minted',
+  'Burned',
+  'Sent',
+  'Received',
+  'Registration',
+] as const
+
+export const PROFILE_ACTIVITY_FILTERS = [
+  { label: 'Listing', value: 'listed' },
+  { label: 'Bought', value: 'bought' },
+  { label: 'Sold', value: 'sold' },
+  { label: 'Offer Accepted', value: 'offer_accepted' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Minted', value: 'mint' },
+  { label: 'Burned', value: 'burn' },
+  { label: 'Sent', value: 'sent' },
+  { label: 'Received', value: 'received' },
+] as const

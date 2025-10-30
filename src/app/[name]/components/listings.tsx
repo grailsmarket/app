@@ -25,7 +25,6 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
   const [viewAll, setViewAll] = useState(false)
   const dispatch = useAppDispatch()
   const { address: userAddress } = useAccount()
-  const { toggleCart: toggleCartDomains } = useCartDomains()
   const showViewAllButton = listings.length > 2
   const displayedListings = viewAll ? listings : listings.slice(0, 2)
   const isMyDomain = useMemo(
@@ -107,13 +106,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
 
   const openCancelListingModal = () => {
     if (!domain) return
-    dispatch(setCancelListingModalListing({
-      id: listing.id,
-      name: domain?.name,
-      price: listing.price,
-      currency: listing.currency_address,
-      expires: listing.expires_at,
-    }))
+    dispatch(
+      setCancelListingModalListing({
+        id: listing.id,
+        name: domain?.name,
+        price: listing.price,
+        currency: listing.currency_address,
+        expires: listing.expires_at,
+      })
+    )
     dispatch(setCancelListingModalOpen(true))
   }
 

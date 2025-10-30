@@ -5,6 +5,7 @@ import { cn } from '@/utils/tailwind'
 import { useUserContext } from '@/context/user'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import Link from 'next/link'
 
 const Connected = () => {
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false)
@@ -46,12 +47,18 @@ const Connected = () => {
       </button>
       <div
         className={cn(
-          'bg-secondary p-sm absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-2 rounded-sm font-semibold shadow-md sm:w-full sm:items-start',
+          'bg-secondary p-lg absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm font-semibold shadow-md sm:w-full sm:items-start',
           walletDropdownOpen && 'flex'
         )}
       >
+        <Link
+          href={`/profile/${userAddress}`}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+        >
+          My Profile
+        </Link>
         <button
-          className='flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2.5 text-red-400 transition-opacity hover:opacity-80'
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 text-red-400 transition-opacity hover:opacity-80'
           onClick={handleSignOut}
         >
           <p>Sign out</p>

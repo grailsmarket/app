@@ -1,23 +1,16 @@
 import _ from 'lodash'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { setMarketplaceSearchFloor, setMarketplaceSearchSimilar } from '@/state/reducers/search/marketplaceSearch'
-import { clearMarketplaceFilters, selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
-import { initialState as marketplaceFiltersInitialState } from '@/state/reducers/filters/marketplaceFilters'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 export const useFilterButtons = () => {
   const dispatch = useAppDispatch()
-  const marketplaceFilters = useAppSelector(selectMarketplaceFilters)
-
-  const isFiltersClear = _.isEqual(marketplaceFilters, marketplaceFiltersInitialState)
-
+  const { actions, isFiltersClear } = useFilterRouter()
   const clearFilters = () => {
-    dispatch(setMarketplaceSearchFloor(false))
-    dispatch(setMarketplaceSearchSimilar(false))
-    dispatch(clearMarketplaceFilters())
+    dispatch(actions.clearFilters())
   }
 
   return {
-    isFiltersClear,
     clearFilters,
+    isFiltersClear,
   }
 }

@@ -11,7 +11,26 @@ import {
   PriceDenominationType,
   PriceType,
   LengthType,
+  PortfolioFiltersState,
 } from '@/types/filters'
+
+export const emptyFilterState: PortfolioFiltersState = {
+  open: false,
+  search: '',
+  status: [],
+  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  length: {
+    min: null,
+    max: null,
+  },
+  denomination: PRICE_DENOMINATIONS[0],
+  priceRange: {
+    min: null,
+    max: null,
+  },
+  categories: [],
+  sort: null,
+}
 
 // Initial State
 export const initialState: PortfolioFiltersOpenedState = {

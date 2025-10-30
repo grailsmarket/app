@@ -2,15 +2,11 @@ import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useMyDomains } from './useMyDomains'
 import { useMemo } from 'react'
-import { useMyOffers } from './useMyOffers'
-import { useReceivedOffers } from './useReceivedOffers'
 import { useWatchlistDomains } from './useWatchlistDomains'
 import { MarketplaceDomainType } from '@/types/domains'
 import {
   PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS,
   PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS,
-  PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS,
-  PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS,
 } from '@/constants/domains/marketplaceDomains'
 
 // Router for the portfolio tab content
@@ -20,16 +16,6 @@ export const useDomains = () => {
 
   const { myDomains, isMyDomainsLoading, isMyDomainsFetchingNextPage, fetchMoreMyDomains, hasMoreMyDomains } =
     useMyDomains()
-
-  const {
-    receivedOffers,
-    isReceivedOffersLoading,
-    isReceivedOffersFetchingNextPage,
-    fetchMoreReceivedOffers,
-    hasMoreReceivedOffers,
-  } = useReceivedOffers()
-
-  const { myOffers, isMyOffersLoading, isMyOffersFetchingNextPage, fetchMoreMyOffers, hasMoreMyOffers } = useMyOffers()
 
   const {
     watchlistDomains,
@@ -43,10 +29,6 @@ export const useDomains = () => {
     switch (selectedTab.value) {
       case 'domains':
         return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
-      case 'received_offers':
-        return PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS
-      case 'my_offers':
-        return PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS
       case 'watchlist':
         return PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS
       default:
@@ -58,16 +40,12 @@ export const useDomains = () => {
     switch (selectedTab.value) {
       case 'domains':
         return myDomains
-      case 'received_offers':
-        return receivedOffers
-      case 'my_offers':
-        return myOffers
       case 'watchlist':
         return watchlistDomains
       default:
         return myDomains
     }
-  }, [selectedTab.value, myDomains, receivedOffers, myOffers, watchlistDomains])
+  }, [selectedTab.value, myDomains, watchlistDomains])
 
   const domains = useMemo(() => {
     return (
@@ -81,10 +59,6 @@ export const useDomains = () => {
     switch (selectedTab.value) {
       case 'domains':
         return isMyDomainsLoading || isMyDomainsFetchingNextPage
-      case 'received_offers':
-        return isReceivedOffersLoading || isReceivedOffersFetchingNextPage
-      case 'my_offers':
-        return isMyOffersLoading || isMyOffersFetchingNextPage
       case 'watchlist':
         return isWatchlistDomainsLoading || isWatchlistDomainsFetchingNextPage
       default:
@@ -94,10 +68,6 @@ export const useDomains = () => {
     selectedTab.value,
     isMyDomainsLoading,
     isMyDomainsFetchingNextPage,
-    isReceivedOffersLoading,
-    isReceivedOffersFetchingNextPage,
-    isMyOffersLoading,
-    isMyOffersFetchingNextPage,
     isWatchlistDomainsLoading,
     isWatchlistDomainsFetchingNextPage,
   ])
@@ -106,31 +76,23 @@ export const useDomains = () => {
     switch (selectedTab.value) {
       case 'domains':
         return fetchMoreMyDomains
-      case 'received_offers':
-        return fetchMoreReceivedOffers
-      case 'my_offers':
-        return fetchMoreMyOffers
       case 'watchlist':
         return fetchMoreWatchlistDomains
       default:
         return fetchMoreMyDomains
     }
-  }, [selectedTab.value, fetchMoreMyDomains, fetchMoreReceivedOffers, fetchMoreMyOffers, fetchMoreWatchlistDomains])
+  }, [selectedTab.value, fetchMoreMyDomains, fetchMoreWatchlistDomains])
 
   const hasMoreDomains = useMemo(() => {
     switch (selectedTab.value) {
       case 'domains':
         return hasMoreMyDomains
-      case 'received_offers':
-        return hasMoreReceivedOffers
-      case 'my_offers':
-        return hasMoreMyOffers
       case 'watchlist':
         return hasMoreWatchlistDomains
       default:
         return hasMoreMyDomains
     }
-  }, [selectedTab.value, hasMoreMyDomains, hasMoreReceivedOffers, hasMoreMyOffers, hasMoreWatchlistDomains])
+  }, [selectedTab.value, hasMoreMyDomains, hasMoreWatchlistDomains])
 
   return {
     displayedDetails,

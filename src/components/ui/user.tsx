@@ -28,7 +28,7 @@ const User: React.FC<UserProps> = ({ address, className }) => {
     <Link
       href={`/profile/${address}`}
       className={cn(
-        'bg-tertiary border-primary relative flex h-10 max-w-full flex-row items-center gap-2 rounded-sm border px-1.5 py-1 transition hover:opacity-80',
+        'bg-tertiary border-primary relative flex h-10 max-w-full flex-row items-center gap-2 rounded-sm border px-1.5 py-1 transition hover:opacity-70',
         className
       )}
     >
@@ -50,7 +50,9 @@ const User: React.FC<UserProps> = ({ address, className }) => {
         fallback={DEFAULT_FALLBACK_AVATAR}
         style={{ width: '30px', height: '30px', zIndex: 10 }}
       />
-      <p className='z-10 max-w-full truncate text-xl font-semibold'>{profile?.ens?.name || truncateAddress(address)}</p>
+      <p className='z-10 truncate text-xl font-semibold' style={{ maxWidth: 'calc(100% - 40px)' }}>
+        {profile?.ens?.name || truncateAddress(address)}
+      </p>
     </Link>
   )
 }

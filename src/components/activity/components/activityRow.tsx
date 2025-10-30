@@ -1,20 +1,33 @@
-import React from 'react'
+import { Address } from 'viem'
+import React, { useMemo } from 'react'
+import Name from './name'
+import Event from './event'
+import Price from './price'
+import { cn } from '@/utils/tailwind'
+import User from '@/components/ui/user'
+import { ActivityColumnType } from '@/types/domains'
 import { ProfileActivityType } from '@/types/profile'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import Event from './event'
-import Name from './name'
-import Price from './price'
-import User from '@/components/ui/user'
-import { cn } from '@/utils/tailwind'
-import { ActivityColumnType } from '@/types/domains'
 
 interface ActivityRowProps {
   activity: ProfileActivityType
   displayedColumns: ActivityColumnType[]
+  displayedAddress?: Address
 }
 
-const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns }) => {
-  const addressToShow = activity.counterparty_address || activity.actor_address
+const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, displayedAddress }) => {
+  const addressToShow = useMemo(() => {
+    if (displayedAddress) {
+      if (activity.counterparty_address === displayedAddress) {
+        return activity.actor_address
+      } else {
+        return activity.counterparty_address
+      }
+    }
+
+    return activity.counterparty_address || activity.actor_address
+  }, [activity.counterparty_address, activity.actor_address, displayedAddress])
+
   const columnWidth = `${100 / displayedColumns.length}%`
   const columns = {
     event: <Event event={activity.event_type} />,

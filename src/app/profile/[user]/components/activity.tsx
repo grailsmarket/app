@@ -12,9 +12,10 @@ import Activity from '@/components/activity'
 
 interface Props {
   user: Address | string
+  userAddress?: Address
 }
 
-const ActivityPanel: React.FC<Props> = ({ user }) => {
+const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
@@ -55,6 +56,7 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
         isLoading={activityLoading}
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
+        displayedAddress={userAddress}
       />
     </>
   )

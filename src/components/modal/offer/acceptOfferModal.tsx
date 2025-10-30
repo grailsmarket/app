@@ -3,11 +3,7 @@
 import { useState, useEffect } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
-import {
-  SEAPORT_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-  ENS_NAME_WRAPPER_ADDRESS,
-} from '@/constants/web3/contracts'
+import { SEAPORT_ADDRESS, ENS_REGISTRAR_ADDRESS, ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
@@ -72,6 +68,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       estimateGas()
       checkApproval()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offer, domain])
 
   if (!offer || !domain) return null
@@ -105,6 +102,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
+            // @ts-expect-error AdvancedOrder is of the correct type
             advancedOrder,
             [], // criteriaResolvers
             fulfillerConduitKey,
@@ -228,7 +226,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       // Build advanced order for offer acceptance
       const advancedOrder = orderBuilder.buildAdvancedOrder(order)
-      const fulfillerConduitKey = order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+      const fulfillerConduitKey =
+        order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
 
       // Simulate the transaction
       try {
@@ -237,6 +236,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
+            // @ts-expect-error AdvancedOrder is of the correct type
             advancedOrder,
             [], // criteriaResolvers
             fulfillerConduitKey,
@@ -258,6 +258,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         abi: SEAPORT_ABI,
         functionName: 'fulfillAdvancedOrder',
         args: [
+          // @ts-expect-error AdvancedOrder is of the correct type
           advancedOrder,
           [], // criteriaResolvers
           fulfillerConduitKey,
@@ -300,38 +301,43 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         return (
           <>
             <div className='mb-4 space-y-4'>
-              <div className='rounded-lg flex flex-row items-center justify-between'>
-                <p className='text-xl font-sedan-sc'>Name</p>
+              <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>Name</p>
                 <p className='text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
               </div>
 
-              <div className='rounded-lg flex flex-row items-center justify-between'>
-                <p className='text-xl font-sedan-sc'>Offer Amount</p>
-                <Price price={offer.offer_amount_wei} currencyAddress={offer.currency_address} fontSize='text-xl font-semibold' iconSize='16px' />
+              <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>Offer Amount</p>
+                <Price
+                  price={offer.offer_amount_wei}
+                  currencyAddress={offer.currency_address}
+                  fontSize='text-xl font-semibold'
+                  iconSize='16px'
+                />
               </div>
 
-              <div className='rounded-lg flex flex-row items-center justify-between'>
-                <p className='text-xl font-sedan-sc'>From</p>
-                <div className='text-xl max-w-2/3'>
+              <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>From</p>
+                <div className='max-w-2/3 text-xl'>
                   <User address={offer.buyer_address} />
                 </div>
               </div>
 
-              <div className='rounded-lg flex flex-row items-center justify-between'>
-                <p className='text-xl font-sedan-sc'>Expires</p>
-                <p className='text-xl'>
-                  {new Date(offer.expires_at).toLocaleDateString()}
-                </p>
+              <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>Expires</p>
+                <p className='text-xl'>{new Date(offer.expires_at).toLocaleDateString()}</p>
               </div>
 
               {gasEstimate && gasPrice && (
-                <div className='rounded-lg flex flex-row items-center justify-between'>
-                  <p className='text-xl font-sedan-sc'>Estimated Gas</p>
+                <div className='flex flex-row items-center justify-between rounded-lg'>
+                  <p className='font-sedan-sc text-xl'>Estimated Gas</p>
                   <div className='text-right'>
                     <p className='text-xl font-semibold'>
-                      ~{((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
+                      ~
+                      {((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
                         ? '<0.001'
-                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)} ETH
+                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)}{' '}
+                      ETH
                     </p>
                     <p className='text-sm text-gray-400'>
                       {gasEstimate.toString()} units @ {(Number(gasPrice) / 10 ** 9).toFixed(2)} gwei
@@ -342,22 +348,16 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             </div>
 
             {needsApproval && (
-              <div className='mb-2 p-3 rounded-lg border bg-secondary border-tertiary text-sm'>
+              <div className='bg-secondary border-tertiary mb-2 rounded-lg border p-3 text-sm'>
                 You need to approve Seaport to transfer your NFT. This is a one-time approval.
               </div>
             )}
 
-            <div className='flex flex-col gap-2 w-full'>
-              <PrimaryButton
-                onClick={needsApproval ? handleApprove : handleAcceptOffer}
-                className='w-full'
-              >
+            <div className='flex w-full flex-col gap-2'>
+              <PrimaryButton onClick={needsApproval ? handleApprove : handleAcceptOffer} className='w-full'>
                 {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}
               </PrimaryButton>
-              <SecondaryButton
-                onClick={onClose}
-                className='w-full'
-              >
+              <SecondaryButton onClick={onClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -367,11 +367,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       case 'approving':
         return (
           <>
-            <h2 className='mt-4 text-xl font-bold text-center'>Approving NFT Transfer</h2>
-            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+            <h2 className='mt-4 text-center text-xl font-bold'>Approving NFT Transfer</h2>
+            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Approving Seaport to transfer your NFT</p>
-              {approveTxHash && <p className='mt-2 font-mono text-xs break-all text-neutral'>{approveTxHash}</p>}
+              {approveTxHash && <p className='text-neutral mt-2 font-mono text-xs break-all'>{approveTxHash}</p>}
             </div>
           </>
         )
@@ -379,9 +379,9 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       case 'confirming':
         return (
           <>
-            <h2 className='mt-4 text-xl font-bold text-center'>Confirm in Wallet</h2>
-            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+            <h2 className='mt-4 text-center text-xl font-bold'>Confirm in Wallet</h2>
+            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Please confirm the transaction in your wallet</p>
             </div>
           </>
@@ -390,11 +390,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       case 'processing':
         return (
           <>
-            <h2 className='mt-4 text-xl font-bold text-center'>Processing Transaction</h2>
-            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+            <h2 className='mt-4 text-center text-xl font-bold'>Processing Transaction</h2>
+            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Transaction submitted</p>
-              {txHash && <p className='mt-2 font-mono text-xs break-all text-neutral'>{txHash}</p>}
+              {txHash && <p className='text-neutral mt-2 font-mono text-xs break-all'>{txHash}</p>}
             </div>
           </>
         )
@@ -409,7 +409,12 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <div className='mb-2 text-xl font-bold'>Offer Accepted!</div>
               <p className='text-gray-400'>
                 You have successfully sold {domain.name} for{' '}
-                <Price price={offer.offer_amount_wei} currencyAddress={offer.currency_address} fontSize='text-base' iconSize='14px' />
+                <Price
+                  price={offer.offer_amount_wei}
+                  currencyAddress={offer.currency_address}
+                  fontSize='text-base'
+                  iconSize='14px'
+                />
               </p>
             </div>
             <SecondaryButton onClick={onClose} className='w-full'>
@@ -423,19 +428,13 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           <>
             <div className='mb-4 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
               <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
-              <p className='text-red-400 line-clamp-6'>{error || 'An unknown error occurred'}</p>
+              <p className='line-clamp-6 text-red-400'>{error || 'An unknown error occurred'}</p>
             </div>
-            <div className='flex flex-col gap-2 w-full'>
-              <PrimaryButton
-                onClick={() => setStep('review')}
-                className='w-full'
-              >
+            <div className='flex w-full flex-col gap-2'>
+              <PrimaryButton onClick={() => setStep('review')} className='w-full'>
                 Try Again
               </PrimaryButton>
-              <SecondaryButton
-                onClick={onClose}
-                className='w-full'
-              >
+              <SecondaryButton onClick={onClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -446,8 +445,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm'>
-      <div className='relative w-full border-2 flex flex-col border-primary max-w-md rounded-2xl bg-secondary p-6'>
-        <h2 className='mb-6 text-3xl text-center font-sedan-sc'>Accept Offer</h2>
+      <div className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'>
+        <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Accept Offer</h2>
 
         {getModalContent()}
       </div>

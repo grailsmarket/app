@@ -94,6 +94,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     // Estimate gas and check approval when modal opens
     estimateGas()
     checkApproval()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (!listing || !domain) return null
@@ -122,7 +123,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       try {
         if (isERC20Order) {
           // For ERC20 orders, estimate gas for fulfillAdvancedOrder
-          const fulfillerConduitKey = order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+          const fulfillerConduitKey =
+            order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
           const advancedOrder = orderBuilder.buildAdvancedOrder(order)
 
           estimatedGas = await publicClient.estimateContractGas({
@@ -130,6 +132,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
+              // @ts-expect-error AdvancedOrder is of the correct type
               advancedOrder,
               [], // criteriaResolvers
               fulfillerConduitKey,
@@ -321,6 +324,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
+              // @ts-expect-error AdvancedOrder is of the correct type
               advancedOrder,
               [], // criteriaResolvers - empty for basic orders
               fulfillerConduitKey,
@@ -342,6 +346,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
+            // @ts-expect-error AdvancedOrder is of the correct type
             advancedOrder,
             [], // criteriaResolvers
             fulfillerConduitKey,
@@ -407,24 +412,31 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         return (
           <>
             <div className='mb-6 space-y-4'>
-              <div className='rounded-lg flex flex-row items-center justify-between'>
-                <p className='text-xl font-sedan-sc'>Name</p>
+              <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>Name</p>
                 <p className='text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
               </div>
 
-              <div className='rounded-lg flex flex-row items-center justify-between'>
-                <p className='text-xl font-sedan-sc'>Total Price</p>
-                <Price price={listing.price} currencyAddress={listing.currency_address} fontSize='text-xl font-semibold' iconSize='16px' />
+              <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>Total Price</p>
+                <Price
+                  price={listing.price}
+                  currencyAddress={listing.currency_address}
+                  fontSize='text-xl font-semibold'
+                  iconSize='16px'
+                />
               </div>
 
               {gasEstimate && gasPrice && (
-                <div className='rounded-lg flex flex-row items-center justify-between'>
-                  <p className='text-xl font-sedan-sc'>Estimated Gas</p>
+                <div className='flex flex-row items-center justify-between rounded-lg'>
+                  <p className='font-sedan-sc text-xl'>Estimated Gas</p>
                   <div className='text-right'>
                     <p className='text-xl font-semibold'>
-                      ~{((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
+                      ~
+                      {((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
                         ? '<0.001'
-                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)} ETH
+                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)}{' '}
+                      ETH
                     </p>
                     <p className='text-sm text-gray-400'>
                       {gasEstimate.toString()} units @ {(Number(gasPrice) / 10 ** 9).toFixed(2)} gwei
@@ -435,24 +447,18 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             </div>
 
             {needsApproval && (
-              <div className='mt-4 rounded-lg border bg-secondary border-tertiary'>
+              <div className='bg-secondary border-tertiary mt-4 rounded-lg border'>
                 <p className='text-md'>
                   You need to approve USDC spending before purchasing. This is a one-time approval.
                 </p>
               </div>
             )}
 
-            <div className='flex flex-col gap-2 w-full'>
-              <PrimaryButton
-                onClick={needsApproval ? handleApprove : handlePurchase}
-                className='w-full'
-              >
+            <div className='flex w-full flex-col gap-2'>
+              <PrimaryButton onClick={needsApproval ? handleApprove : handlePurchase} className='w-full'>
                 {needsApproval ? 'Approve USDC' : 'Confirm Purchase'}
               </PrimaryButton>
-              <SecondaryButton
-                onClick={onClose}
-                className='w-full'
-              >
+              <SecondaryButton onClick={onClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -474,9 +480,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       case 'confirming':
         return (
           <>
-            <h2 className='mt-4 text-xl font-bold text-center'>Confirm in Wallet</h2>
-            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+            <h2 className='mt-4 text-center text-xl font-bold'>Confirm in Wallet</h2>
+            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Please confirm the transaction in your wallet</p>
             </div>
           </>
@@ -485,9 +491,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       case 'processing':
         return (
           <>
-            <h2 className='mt-4 text-xl font-bold text-center'>Processing Transaction</h2>
-            <div className='pt-8 pb-4 text-center flex flex-col items-center justify-center gap-8'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+            <h2 className='mt-4 text-center text-xl font-bold'>Processing Transaction</h2>
+            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Transaction submitted</p>
               {txHash && <p className='mt-2 font-mono text-xs break-all text-gray-500'>{txHash}</p>}
             </div>
@@ -514,19 +520,13 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           <>
             <div className='mb-4 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
               <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
-              <p className='text-red-400 line-clamp-6'>{error || 'An unknown error occurred'}</p>
+              <p className='line-clamp-6 text-red-400'>{error || 'An unknown error occurred'}</p>
             </div>
-            <div className='flex flex-col gap-2 w-full'>
-              <PrimaryButton
-                onClick={() => setStep('review')}
-                className='w-full'
-              >
+            <div className='flex w-full flex-col gap-2'>
+              <PrimaryButton onClick={() => setStep('review')} className='w-full'>
                 Try Again
               </PrimaryButton>
-              <SecondaryButton
-                onClick={onClose}
-                className='w-full'
-              >
+              <SecondaryButton onClick={onClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -537,9 +537,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm'>
-      <div className='relative w-full border-2 flex flex-col border-primary max-w-md rounded-2xl bg-secondary p-6'>
-        <h2 className='mb-6 text-3xl text-center font-sedan-sc'>Buy Domain</h2>
-
+      <div className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'>
+        <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Buy Domain</h2>
         {getModalContent()}
       </div>
     </div>

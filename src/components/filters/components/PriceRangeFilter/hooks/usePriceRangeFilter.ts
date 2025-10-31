@@ -8,18 +8,23 @@ export const usePriceRangeFilter = () => {
 
   const { denomination, priceRange } = selectors.filters
 
+  const minVal = priceRange.min
+  const maxVal = priceRange.max
+
   const setDenominationGenerator = (value: PriceDenominationType) => {
     return () => {
       dispatch(actions.setPriceDenomination(value as any))
     }
   }
 
-  const setMaxPrice = (value: string) => {
-    dispatch(actions.setPriceRange({ ...priceRange, max: Number(value) }))
+  const setMaxPrice = (value: number) => {
+    const newMax = value === 0 ? null : minVal && value <= minVal ? minVal : value
+    dispatch(actions.setPriceRange({ ...priceRange, max: newMax }))
   }
 
-  const setMinPrice = (value: string) => {
-    dispatch(actions.setPriceRange({ ...priceRange, min: Number(value) }))
+  const setMinPrice = (value: number) => {
+    const newMin = value === 0 ? null : maxVal && value >= maxVal ? maxVal : value
+    dispatch(actions.setPriceRange({ ...priceRange, min: newMin }))
   }
 
   return {

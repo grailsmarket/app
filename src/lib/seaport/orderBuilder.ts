@@ -121,7 +121,7 @@ export class SeaportOrderBuilder {
   /**
    * Build BasicOrderParameters for efficient fulfillment (Seaport 1.6)
    */
-  buildBasicOrderParameters(order: SeaportOrder, fulfillerAddress: `0x${string}`) {
+  buildBasicOrderParameters(order: SeaportOrder) {
     const parameters = order.parameters
 
     // Get the NFT being offered (first offer item)
@@ -191,7 +191,7 @@ export class SeaportOrderBuilder {
     const parameters = order.parameters
 
     // Get the NFT being offered (usually the first offer item)
-    const nftItem = parameters.offer[0]
+    // const nftItem = parameters.offer[0]
 
     // Get the payment consideration (usually the first consideration item)
     const paymentItem = parameters.consideration[0]
@@ -220,7 +220,7 @@ export class SeaportOrderBuilder {
   /**
    * Build fulfillments array for matchOrders
    */
-  buildFulfillments(offerItemsCount: number, considerationItemsCount: number): Fulfillment[] {
+  buildFulfillments(offerItemsCount: number): Fulfillment[] {
     const fulfillments: Fulfillment[] = []
 
     // Create fulfillments for each offer item

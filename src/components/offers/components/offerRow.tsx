@@ -12,14 +12,15 @@ interface OfferRowProps {
   offer: DomainOfferType
   displayedColumns: OfferColumnType[]
   currentUserAddress?: Address
+  index: number
 }
 
-const OfferRow: React.FC<OfferRowProps> = ({ offer, displayedColumns, currentUserAddress }) => {
+const OfferRow: React.FC<OfferRowProps> = ({ offer, displayedColumns, currentUserAddress, index }) => {
   const columnWidth = `${100 / displayedColumns.length}%`
 
   const columns: Record<OfferColumnType, React.ReactNode> = {
     name: <Name offer={offer} />,
-    offer_amount: <OfferAmount offer={offer} />,
+    offer_amount: <OfferAmount offer={offer} index={index} />,
     offerrer: <Offerrer offer={offer} />,
     expires: <Expires offer={offer} />,
     actions: <Actions offer={offer} currentUserAddress={currentUserAddress} />,

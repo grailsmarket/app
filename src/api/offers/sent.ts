@@ -11,16 +11,10 @@ interface FetchReceivedOffersOptions {
   ownerAddress: string
   searchTerm: string
 }
-const fetchReceivedOffers = async ({
-  limit,
-  pageParam,
-  filters,
-  ownerAddress,
-  searchTerm,
-}: FetchReceivedOffersOptions) => {
+const fetchReceivedOffers = async ({ limit, pageParam, ownerAddress }: FetchReceivedOffersOptions) => {
   const paramString = buildQueryParamString({
     limit,
-    page: pageParam + 1,
+    page: pageParam,
     // q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : '',
     // 'filters[expiringWithinDays]': filters.status.includes('Expiring Soon') ? true : false,
     // 'filters[hasNumbers]': filters.type.includes('Numbers') ? true : false,

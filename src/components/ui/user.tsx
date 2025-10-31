@@ -50,9 +50,9 @@ const User: React.FC<UserProps> = ({ address, className }) => {
         fallback={DEFAULT_FALLBACK_AVATAR}
         style={{ width: '30px', height: '30px', zIndex: 10 }}
       />
-      <p className='z-10 truncate text-xl font-semibold' style={{ maxWidth: 'calc(100% - 40px)' }}>
-        {profile?.ens?.name || truncateAddress(address)}
-      </p>
+      <div className='w-full' style={{ maxWidth: 'calc(100% - 38px)' }}>
+        <p className='z-10 w-full truncate text-xl font-semibold'>{profile?.ens?.name || truncateAddress(address)}</p>
+      </div>
     </Link>
   )
 }

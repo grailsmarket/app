@@ -12,6 +12,7 @@ import { DAY_IN_SECONDS, ONE_MINUTE } from '@/constants/time'
 import config from '@/lib/wagmi'
 import { UserProvider } from '@/context/user'
 import Modals from './modals'
+import Cart from '@/components/cart'
 
 type ProviderProps = {
   children: React.ReactNode
@@ -34,6 +35,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
               <ReduxProvider store={store}>
                 <UserProvider>
                   <Navigation />
+                  <Cart />
                   {children}
                   <TransactionModal />
                   <Modals />

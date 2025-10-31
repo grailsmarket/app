@@ -115,7 +115,7 @@ const Offers: React.FC<OffersProps> = ({
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
-            renderItem={(item) => {
+            renderItem={(item, index) => {
               if (!item)
                 return (
                   <div className='px-lg flex h-[60px] w-full items-center'>
@@ -128,6 +128,7 @@ const Offers: React.FC<OffersProps> = ({
                   offer={item}
                   displayedColumns={displayedColumns}
                   currentUserAddress={currentUserAddress}
+                  index={index}
                 />
               )
             }}

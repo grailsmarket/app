@@ -11,7 +11,7 @@ interface NameProps {
 
 const Name: React.FC<NameProps> = ({ name, tokenId }) => {
   return (
-    <Link href={`/${name}`} className='flex h-[36px] flex-col justify-center hover:opacity-70'>
+    <Link href={`/${name}`} className='flex h-[36px] max-w-full flex-col justify-center hover:opacity-70'>
       <div className='flex w-full max-w-full flex-row items-center justify-start gap-2'>
         <Image
           src={`${DOMAIN_IMAGE_URL}/${numberToHex(BigInt(tokenId))}/image`}
@@ -22,7 +22,7 @@ const Name: React.FC<NameProps> = ({ name, tokenId }) => {
           className='h-8 w-8 rounded-sm'
           onError={(e) => (e.currentTarget.style.display = 'none')}
         />
-        <p className='truncate text-xs leading-[18px] font-bold'>{name}</p>
+        <p className='text-md w-full max-w-full truncate leading-[18px] font-bold'>{name}</p>
       </div>
     </Link>
   )

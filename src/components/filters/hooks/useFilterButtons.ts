@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 

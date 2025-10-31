@@ -12,10 +12,9 @@ interface FetchProfileActivityOptions {
 }
 
 export const fetchProfileActivity = async ({ address, limit, pageParam, eventTypes }: FetchProfileActivityOptions) => {
-  console.log(eventTypes)
   const typeFilter = eventTypes.join('&event_type=')
   const response = await fetch(
-    `${API_URL}/activity/address/${address}?limit=${limit}&page=${pageParam + 1}&event_type=${typeFilter}`
+    `${API_URL}/activity/address/${address}?limit=${limit}&page=${pageParam}&event_type=${typeFilter}`
   )
   const data = (await response.json()) as APIResponseType<{
     results: ProfileActivityType[]

@@ -13,7 +13,7 @@ export const useNameActivity = (name: string) => {
     hasNextPage: hasMoreActivity,
   } = useInfiniteQuery({
     queryKey: ['name', 'activity', name],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const activity = await fetchNameActivity({ name, limit: DEFAULT_FETCH_LIMIT, pageParam })
 
       return {
@@ -23,7 +23,7 @@ export const useNameActivity = (name: string) => {
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
+    initialPageParam: 1,
   })
 
   const activityData = useMemo(() => {

@@ -28,8 +28,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
   const [currency, setCurrency] = useState<'ETH' | 'USDC'>('ETH')
   const [includeRoyalty, setIncludeRoyalty] = useState(false)
-  const [royaltyBps, setRoyaltyBps] = useState('250') // 2.5% default
-  const [royaltyRecipient, setRoyaltyRecipient] = useState('')
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [success, setSuccess] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -81,11 +79,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         currency,
       }
 
-      if (includeRoyalty && royaltyRecipient) {
-        params.royaltyBps = parseInt(royaltyBps)
-        params.royaltyRecipient = royaltyRecipient
-      }
-
       await createListing(params)
       setSuccess(true)
 
@@ -112,11 +105,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       fees.push({ label: 'OpenSea Fee (1%)', amount: price * 0.01 })
     }
 
-    if (includeRoyalty && royaltyBps) {
-      const royaltyPercent = parseInt(royaltyBps) / 100
-      fees.push({ label: `Creator Royalty (${royaltyPercent}%)`, amount: price * (royaltyPercent / 100) })
-    }
-
     const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0)
     const netProceeds = price - totalFees
 
@@ -126,7 +114,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   return (
     <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/40 px-2 py-12 sm:px-4'>
       <div
-        className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-sm flex-col gap-4 rounded-md border-2'
+        className='bg-background border-primary p-lg sm:p-xl relative flex h-fit w-full max-w-sm flex-col gap-4 rounded-md border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
         <h2 className='font-sedan-sc max-w-full truncate text-center text-3xl text-white'>List Domain</h2>
@@ -149,7 +137,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='font-sedan-sc text-2xl'>Name</p>
               <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
             </div>
-            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border-2'>
+            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border'>
               <label className='mb-2 block text-xl font-medium'>Marketplace</label>
               <div className='flex flex-col gap-4'>
                 <div className='flex w-full items-center justify-between'>
@@ -187,6 +175,28 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </div>
             </div>
 
+            <div className='relative z-20'>
+              <Dropdown
+                label='Duration'
+                placeholder='Select a duration'
+                options={durationOptions}
+                value={expiryDate}
+                onSelect={(value) => {
+                  setExpiryDate(Number(value))
+                  if (Number(value) === 0) setShowDatePicker(true)
+                }}
+              />
+              {expiryDate === 0 && showDatePicker && (
+                <DatePicker
+                  onSelect={(timestamp) => setExpiryDate(timestamp)}
+                  onClose={() => {
+                    setShowDatePicker(false)
+                  }}
+                  className='absolute top-14 left-0 w-full'
+                />
+              )}
+            </div>
+
             <div>
               <Dropdown
                 label='Currency'
@@ -212,28 +222,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               />
             </div>
 
-            <div className='relative z-20'>
-              <Dropdown
-                label='Duration'
-                placeholder='Select a duration'
-                options={durationOptions}
-                value={expiryDate}
-                onSelect={(value) => {
-                  setExpiryDate(Number(value))
-                  if (Number(value) === 0) setShowDatePicker(true)
-                }}
-              />
-              {expiryDate === 0 && showDatePicker && (
-                <DatePicker
-                  onSelect={(timestamp) => setExpiryDate(timestamp)}
-                  onClose={() => {
-                    setShowDatePicker(false)
-                  }}
-                  className='absolute top-16 left-0 mt-4 w-full'
-                />
-              )}
-            </div>
-
             <div className='space-y-3'>
               <div className='flex items-center'>
                 <input
@@ -247,38 +235,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   Include royalty fee
                 </label>
               </div>
-
-              {includeRoyalty && (
-                <>
-                  <div>
-                    <label className='mb-2 block text-sm font-medium text-gray-300'>Royalty Percentage</label>
-                    <div className='flex items-center'>
-                      <input
-                        type='number'
-                        step='0.1'
-                        min='0'
-                        max='100'
-                        value={(parseInt(royaltyBps) / 100).toString()}
-                        onChange={(e) => setRoyaltyBps((parseFloat(e.target.value) * 100).toString())}
-                        className='w-24 rounded-md border border-gray-700 bg-gray-900 px-3 py-2 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none'
-                      />
-                      <span className='ml-2 text-gray-300'>%</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className='mb-2 block text-sm font-medium text-gray-300'>Royalty Recipient Address</label>
-                    <input
-                      type='text'
-                      value={royaltyRecipient}
-                      onChange={(e) => setRoyaltyRecipient(e.target.value)}
-                      className='w-full rounded-md border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-purple-500 focus:outline-none'
-                      placeholder='0x...'
-                      pattern='^0x[a-fA-F0-9]{40}$'
-                    />
-                  </div>
-                </>
-              )}
             </div>
 
             {/* Fee breakdown */}

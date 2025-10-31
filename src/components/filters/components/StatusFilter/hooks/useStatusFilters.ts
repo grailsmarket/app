@@ -1,7 +1,7 @@
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
-import { ActivityTypeFilterType } from '@/hooks/filters/useProfileActivityFilters'
 import { MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
+import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
 import { PortfolioStatusFilterType } from '@/types/filters'
 
 export const useStatusFilters = () => {

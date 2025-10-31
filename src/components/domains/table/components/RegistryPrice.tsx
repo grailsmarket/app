@@ -5,6 +5,7 @@ import React from 'react'
 import { hasRegistrationPrice } from '@/utils/listStatus'
 import { formatRegisterPrice } from '@/utils/formatPremiumPrice'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
+import useETHPrice from '@/hooks/useETHPrice'
 
 interface RegistryPriceProps {
   domain: MarketplaceDomainType
@@ -12,6 +13,8 @@ interface RegistryPriceProps {
 }
 
 const RegistryPrice: React.FC<RegistryPriceProps> = ({ domain, columnCount }) => {
+  const { ethPrice } = useETHPrice()
+
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['registry_price'].getWidth(columnCount))}>
       <div className='flex flex-col'>
@@ -19,7 +22,9 @@ const RegistryPrice: React.FC<RegistryPriceProps> = ({ domain, columnCount }) =>
           {hasRegistrationPrice(domain.expiry_date) && (
             <>
               <p className='text-light-600 opacity-60'>$</p>
-              <p className='text-light-600 ml-1'>{formatRegisterPrice(calculateRegistrationPrice(domain.name).usd)}</p>
+              <p className='text-light-600 ml-1'>
+                {formatRegisterPrice(calculateRegistrationPrice(domain.name, ethPrice ?? 4000).usd)}
+              </p>
             </>
           )}
         </div>

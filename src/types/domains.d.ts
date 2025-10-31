@@ -17,7 +17,7 @@ export type MarketplaceDomainType = {
   highest_offer: string | null
   offer: string | null
   last_sale_price: string | null
-  last_sale_asset: string | null
+  last_sale_currency: string | null
 }
 
 export type DomainListingType = {
@@ -43,6 +43,8 @@ export type DomainOfferType = {
   created_at: string
   expires_at: string
   source: string
+  name: string
+  token_id: number
   order_data: DomainOfferOrderDataType
   order_hash: Hex
 }
@@ -366,6 +368,7 @@ export type WatchlistItemType = {
   nameData: {
     name: string
     tokenId: number
+    activeListing: DomainListingType | null
     ownerAddress: Address | null
     hasActiveListing: boolean
     listingPrice: string | null

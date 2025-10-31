@@ -1,7 +1,7 @@
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import { ShortArrow } from 'ethereum-identity-kit'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 
 interface DatePickerProps {
   onSelect: (timestamp: number) => void
@@ -160,17 +160,20 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
       className={cn('bg-background border-primary w-[320px] rounded-lg border-2 p-4', className)}
     >
       {/* Header with month/year navigation */}
-      <div className='mb-4 flex items-center justify-between'>
-        <button onClick={() => navigateMonth('prev')} className='hover:bg-tertiary rounded p-1 transition-colors'>
+      <div className='mb-2 flex items-center justify-between'>
+        <button
+          onClick={() => navigateMonth('prev')}
+          className='hover:bg-tertiary bg-secondary rounded p-2 transition-colors'
+        >
           <ShortArrow className='h-5 w-5 -rotate-90 text-white' />
         </button>
 
-        <div className='flex gap-2'>
+        <div className='flex gap-1'>
           {/* Month dropdown */}
           <div ref={monthRef as React.RefObject<HTMLDivElement>} className='relative'>
             <button
               onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-              className='hover:bg-tertiary rounded px-3 py-1 text-white transition-colors'
+              className='hover:bg-tertiary bg-secondary rounded px-3 py-2 text-white transition-colors'
             >
               {months[viewMonth]}
             </button>
@@ -198,7 +201,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
           <div ref={yearRef as React.RefObject<HTMLDivElement>} className='relative'>
             <button
               onClick={() => setShowYearDropdown(!showYearDropdown)}
-              className='hover:bg-tertiary rounded px-3 py-1 text-white transition-colors'
+              className='hover:bg-tertiary bg-secondary rounded px-3 py-2 text-white transition-colors'
             >
               {viewYear}
             </button>
@@ -223,7 +226,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
           </div>
         </div>
 
-        <button onClick={() => navigateMonth('next')} className='hover:bg-tertiary rounded p-1 transition-colors'>
+        <button
+          onClick={() => navigateMonth('next')}
+          className='hover:bg-tertiary bg-secondary rounded p-2 transition-colors'
+        >
           <ShortArrow className='h-5 w-5 rotate-90 text-white' />
         </button>
       </div>
@@ -252,7 +258,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
               key={index}
               onClick={() => handleDateClick(day)}
               disabled={day.disabled}
-              className={`flex aspect-square items-center justify-center rounded text-lg font-semibold transition-colors ${day.month !== 'current' ? 'text-gray-600' : ''} ${day.disabled ? 'cursor-not-allowed text-gray-600' : ''} ${!day.disabled && day.month === 'current' ? 'bg-secondary hover:bg-tertiary cursor-pointer text-white' : ''} ${isSelected ? 'bg-primary text-background font-semibold' : ''} `}
+              className={`flex aspect-square items-center justify-center rounded text-xl font-semibold transition-colors ${day.month !== 'current' ? 'text-gray-600' : ''} ${day.disabled ? 'cursor-not-allowed text-gray-600' : ''} ${!day.disabled && day.month === 'current' ? 'bg-secondary hover:bg-tertiary cursor-pointer text-white' : ''} ${isSelected ? 'bg-primary text-background font-semibold' : ''} `}
             >
               {day.date}
             </button>
@@ -261,8 +267,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
       </div>
 
       {/* Time inputs */}
-      <div className='mt-4 flex items-center gap-2'>
-        <label className='text-sm text-gray-400'>Time:</label>
+      <div className='mt-4 flex w-full items-center justify-center gap-2'>
+        {/* <label className='text-lg text-gray-400'>Time:</label> */}
         <input
           type='number'
           value={hours.toString().padStart(2, '0')}

@@ -4,12 +4,15 @@ import { useAppDispatch } from '@/state/hooks'
 import { setUserEnsProfile, setWatchlistDomains } from '@/state/reducers/portfolio/profile'
 import { useEffect } from 'react'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
+import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
+import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 
 interface UseUserProfileProps {
   address?: Address | null
+  authStatus?: AuthenticationStatus
 }
 
-export const useUserProfile = ({ address }: UseUserProfileProps) => {
+export const useUserProfile = ({ address, authStatus }: UseUserProfileProps) => {
   const dispatch = useAppDispatch()
 
   const {
@@ -24,7 +27,7 @@ export const useUserProfile = ({ address }: UseUserProfileProps) => {
       const profile = await fetchAccount(address)
       return profile
     },
-    enabled: !!address,
+    enabled: !!address && authStatus === 'authenticated',
   })
 
   useEffect(() => {
@@ -49,10 +52,17 @@ export const useUserProfile = ({ address }: UseUserProfileProps) => {
     queryFn: async () => {
       if (!address) return null
 
-      const watchlist = await getWatchlist()
-      return watchlist.response.watchlist
+      const result = await getWatchlist({
+        limit: DEFAULT_FETCH_LIMIT,
+        pageParam: 1,
+        // @ts-expect-error the filters do exist
+        filters: {},
+        searchTerm: '',
+      })
+
+      return result.watchlist
     },
-    enabled: !!address,
+    enabled: !!address && authStatus === 'authenticated',
   })
 
   useEffect(() => {

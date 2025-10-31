@@ -1,13 +1,13 @@
 import fetchReceivedOffers from '@/api/offers/received'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
+import { useAuth } from '@/hooks/useAuthStatus'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useAccount } from 'wagmi'
 
 export const useReceivedOffers = () => {
-  const { address: userAddress } = useAccount()
+  const { address: userAddress, authStatus } = useAuth()
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
@@ -21,6 +21,7 @@ export const useReceivedOffers = () => {
     queryKey: [
       'portfolio',
       'received_offers',
+      userAddress,
       debouncedSearch,
       filters.length,
       filters.priceRange,
@@ -29,7 +30,7 @@ export const useReceivedOffers = () => {
       filters.sort,
       filters.length,
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       if (!userAddress)
         return {
           offers: [],
@@ -52,8 +53,8 @@ export const useReceivedOffers = () => {
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
-    enabled: !!userAddress,
+    initialPageParam: 1,
+    enabled: !!userAddress && authStatus === 'authenticated',
   })
 
   return {

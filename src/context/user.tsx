@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi'
 import type { Address } from 'viem'
-import { useContext, createContext, useEffect, useCallback, useState } from 'react'
+import { useContext, createContext, useEffect, useCallback, useState, SetStateAction, Dispatch } from 'react'
 import { useSiwe } from 'ethereum-identity-kit'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { queryClient } from '@/lib/queryClient'
@@ -14,6 +14,8 @@ import { useUserProfile } from '@/hooks/useUserProfile'
 type userContextType = {
   userAddress: Address | undefined
   authStatus: AuthenticationStatus
+  isCartOpen: boolean
+  setIsCartOpen: Dispatch<SetStateAction<boolean>>
   isSigningIn: boolean
   handleSignIn: () => void
   handleSignOut: () => void
@@ -31,10 +33,14 @@ const userContext = createContext<userContextType | undefined>(undefined)
 
 export const UserProvider: React.FC<Props> = ({ children }) => {
   const [isSigningIn, setIsSigningIn] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
   const { address } = useAccount()
-  const { profileIsLoading, refetchProfile, watchlistIsLoading, refetchWatchlist } = useUserProfile({ address })
   const { authStatus, verify, refetchAuthStatus, signOut, disconnect } = useAuth()
+  const { profileIsLoading, refetchProfile, watchlistIsLoading, refetchWatchlist } = useUserProfile({
+    address,
+    authStatus,
+  })
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')
@@ -80,6 +86,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         userAddress: address,
         authStatus,
         isSigningIn,
+        isCartOpen,
+        setIsCartOpen,
         handleSignIn,
         handleSignOut,
         profileIsLoading,

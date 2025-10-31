@@ -118,7 +118,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
               <p className='font-sedan-sc text-2xl'>Name</p>
               <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
             </div>
-            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border-2'>
+            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border'>
               <label className='mb-2 block text-xl font-medium'>Marketplace</label>
               <div className='flex flex-col gap-4'>
                 <div className='flex w-full items-center justify-between'>
@@ -156,6 +156,28 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
               </div>
             </div>
 
+            <div className='relative z-20'>
+              <Dropdown
+                label='Duration'
+                placeholder='Select a duration'
+                options={durationOptions}
+                value={expiryDate}
+                onSelect={(value) => {
+                  setExpiryDate(Number(value))
+                  if (Number(value) === 0) setShowDatePicker(true)
+                }}
+              />
+              {expiryDate === 0 && showDatePicker && (
+                <DatePicker
+                  onSelect={(timestamp) => setExpiryDate(timestamp)}
+                  onClose={() => {
+                    setShowDatePicker(false)
+                  }}
+                  className='absolute top-14 left-0 w-full'
+                />
+              )}
+            </div>
+
             <div>
               <Dropdown
                 label='Currency'
@@ -179,28 +201,6 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                 min={0}
                 step={0.001}
               />
-            </div>
-
-            <div className='relative z-20'>
-              <Dropdown
-                label='Duration'
-                placeholder='Select a duration'
-                options={durationOptions}
-                value={expiryDate}
-                onSelect={(value) => {
-                  setExpiryDate(Number(value))
-                  if (Number(value) === 0) setShowDatePicker(true)
-                }}
-              />
-              {expiryDate === 0 && showDatePicker && (
-                <DatePicker
-                  onSelect={(timestamp) => setExpiryDate(timestamp)}
-                  onClose={() => {
-                    setShowDatePicker(false)
-                  }}
-                  className='absolute top-14 left-0 w-full'
-                />
-              )}
             </div>
 
             <div className='text-center text-sm text-gray-400'>

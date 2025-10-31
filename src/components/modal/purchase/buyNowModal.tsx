@@ -143,7 +143,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           })
         } else {
           // For ETH orders, estimate gas for fulfillBasicOrder_efficient_6GL6yc
-          const basicOrderParams = orderBuilder.buildBasicOrderParameters(order, address)
+          const basicOrderParams = orderBuilder.buildBasicOrderParameters(order)
 
           estimatedGas = await publicClient.estimateContractGas({
             address: SEAPORT_ADDRESS as `0x${string}`,
@@ -298,7 +298,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       }
 
       // Build basic order parameters for efficient fulfillment
-      const basicOrderParams = orderBuilder.buildBasicOrderParameters(order, address)
+      const basicOrderParams = orderBuilder.buildBasicOrderParameters(order)
 
       // Calculate total payment
       const totalPayment = orderBuilder.calculateTotalPayment(order)

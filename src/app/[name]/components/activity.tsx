@@ -3,20 +3,22 @@
 import React from 'react'
 import { useNameActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
+import { useWindowSize } from 'ethereum-identity-kit'
 
 interface Props {
   name: string
 }
 
 const ActivityPanel: React.FC<Props> = ({ name }) => {
+  const { width } = useWindowSize()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useNameActivity(name)
 
   return (
-    <div className='border-primary bg-secondary pt-xl flex w-full flex-col gap-4 rounded-lg border-2'>
-      <h2 className='px-xl font-sedan-sc text-3xl'>Activity</h2>
+    <div className='border-primary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 rounded-lg border-2 lg:gap-4'>
+      <h2 className='px-lg lg:px-xl font-sedan-sc text-3xl'>Activity</h2>
       <Activity
-        maxHeight='900px'
-        paddingBottom='30px'
+        maxHeight={width && width < 1024 ? '100%' : '520px'}
+        paddingBottom={width && width < 1024 ? '0px' : '30px'}
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}
@@ -25,7 +27,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         showHeaders={false}
-        columns={['event', 'price', 'counterparty', 'timestamp']}
+        columns={['event', 'price', 'timestamp', 'counterparty']}
       />
     </div>
   )

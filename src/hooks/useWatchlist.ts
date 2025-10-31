@@ -28,8 +28,10 @@ const useWatchlist = () => {
             name: domain.name,
             tokenId: domain.token_id,
             ownerAddress: domain.owner,
-            hasActiveListing: domain.status === 'listed',
-            listingPrice: domain.price,
+            hasActiveListing: domain.listings.length > 0,
+            listingPrice: domain.listings[0].price,
+            expiryDate: domain.expiry_date,
+            activeListing: domain.listings[0],
           },
         }
 

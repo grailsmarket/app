@@ -9,7 +9,7 @@ interface FetchNameActivityOptions {
 }
 
 export const fetchNameActivity = async ({ name, limit, pageParam }: FetchNameActivityOptions) => {
-  const response = await fetch(`${API_URL}/activity/${name}?limit=${limit}&page=${pageParam + 1}`)
+  const response = await fetch(`${API_URL}/activity/${name}?limit=${limit}&page=${pageParam}`)
   const data = (await response.json()) as APIResponseType<{
     results: ProfileActivityType[]
     pagination: PaginationType

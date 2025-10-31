@@ -180,6 +180,7 @@ async function submitOrderToOpenSea(order_data: any) {
       const errorJson = JSON.parse(errorText)
       errorMessage = errorJson.message || errorJson.error || errorText
     } catch (e) {
+      console.error('Error parsing OpenSea API error:', e)
       // Use raw error text if not JSON
     }
 

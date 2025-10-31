@@ -28,7 +28,7 @@ export const useProfileActivity = (user: Address | string) => {
     hasNextPage: hasMoreActivity,
   } = useInfiniteQuery({
     queryKey: ['profile', 'activity', profile?.address || user, debouncedSearch, filters.type],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       console.log(profile?.address)
       if (!profile?.address)
         return {
@@ -51,7 +51,7 @@ export const useProfileActivity = (user: Address | string) => {
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
+    initialPageParam: 1,
   })
 
   const activityData = useMemo(() => {

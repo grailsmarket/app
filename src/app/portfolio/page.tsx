@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import FilterPanel from '@/components/filters'
 import Image from 'next/image'
 import heroBackground from 'public/art/wallpapper-left.svg'
@@ -9,9 +10,18 @@ import ActionButtons from './components/actionButtons'
 import { FilterProvider } from '@/context/filters'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import OfferPanel from './components/offerPanel'
 
 const Portfolio = () => {
   const { selectedTab } = useAppSelector(selectUserProfile)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const showDomainPanel = selectedTab.value === 'domains' || selectedTab.value === 'watchlist'
+  const showOfferPanel = selectedTab.value === 'received_offers' || selectedTab.value === 'my_offers'
 
   return (
     <FilterProvider filterType='portfolio' portfolioTab={selectedTab.value}>
@@ -29,7 +39,15 @@ const Portfolio = () => {
         <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-24'>
           <div className='px-lg max-w-domain-panel lg:p-lg bg-background border-primary relative mx-auto flex h-[calc(100vh-96px)] w-full flex-row gap-4 overflow-hidden rounded-t-sm border-t-2 pb-0! md:h-[90vh] md:rounded-lg md:border-2'>
             <FilterPanel />
-            <DomainPanel />
+            {mounted ? (
+              <>
+                {showDomainPanel && <DomainPanel />}
+                {showOfferPanel && <OfferPanel />}
+              </>
+            ) : (
+              /* Render default panel during SSR to avoid hydration mismatch */
+              <DomainPanel />
+            )}
             <ActionButtons />
           </div>
         </div>

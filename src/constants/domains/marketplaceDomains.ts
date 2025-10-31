@@ -1,5 +1,5 @@
 import { OfferDurationUnitsType, ExtendDurationUnitsType } from '@/state/reducers/domains/marketplaceDomains'
-import { MarketplaceHeaderColumn, MarketplaceHeaderItem } from '@/types/domains'
+import { MarketplaceHeaderColumn, MarketplaceHeaderItem, OfferColumnType } from '@/types/domains'
 
 export const MARKETPLACE_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['listed_price', 'last_sale', 'highest_offer']
 export const PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
@@ -7,16 +7,13 @@ export const PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] =
   'last_sale',
   'expires',
 ]
-export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
-  'highest_offer',
-  'listed_price',
-  'last_sale',
+export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = [
+  'name',
+  'offer_amount',
+  'offerrer',
+  'expires',
 ]
-export const PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
-  'highest_offer',
-  'listed_price',
-  'last_sale',
-]
+export const PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = ['name', 'offer_amount', 'expires']
 export const PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
   'listed_price',
   'last_sale',

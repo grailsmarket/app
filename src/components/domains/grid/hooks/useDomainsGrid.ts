@@ -1,16 +1,14 @@
 import { MouseEvent } from 'react'
 import { useAppDispatch } from '@/state/hooks'
-import { setQuickOfferModalDomain, setQuickOfferModalOpen } from '@/state/reducers/modals/quickOfferModal'
 import { MarketplaceDomainType } from '@/types/domains'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import { REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
-import useETHPrice from '@/hooks/useETHPrice'
 import useSufficientBalance from '@/hooks/useSufficientBalance'
+import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
+import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 
 const useDomainsGrid = () => {
   const dispatch = useAppDispatch()
-  const { ethPrice } = useETHPrice()
   const { calculateIsSufficientEthBalance } = useSufficientBalance()
 
   const onCheckout = (e: MouseEvent, domain: MarketplaceDomainType) => {
@@ -18,32 +16,29 @@ const useDomainsGrid = () => {
 
     const checkoutType = REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date) as string)
       ? 'Registration'
-      : !domain.price && getRegistrationStatus(domain.expiry_date) === 'Registered'
+      : !domain.listings && getRegistrationStatus(domain.expiry_date) === 'Registered'
         ? 'Offer'
         : 'Purchase'
 
     if (checkoutType === 'Offer') {
-      dispatch(setQuickOfferModalOpen(true))
-      dispatch(setQuickOfferModalDomain(domain))
+      dispatch(setMakeOfferModalOpen(true))
+      dispatch(setMakeOfferModalDomain(domain))
       return
     }
 
     if (checkoutType === 'Registration') {
-      const isBalanceSufficient = calculateIsSufficientEthBalance(
-        (Number(domain.price) || calculateRegistrationPrice(domain.name).usd) / Number(ethPrice || 1)
-      )
-      if (!isBalanceSufficient) return
-
-      // checkout(checkoutType as MarketplaceCheckoutType, [{ ...domain, registrationPeriod: 1 }])
+      window.open(`https://app.ens.domains/${domain.name}/register`, '_blank')
       return
     }
 
-    if (!domain.price) return
+    if (!domain.listings[0].price) return
 
-    const isBalanceSufficient = calculateIsSufficientEthBalance(domain.price, true)
+    const isBalanceSufficient = calculateIsSufficientEthBalance(domain.listings[0].price, true)
     if (!isBalanceSufficient) return
 
-    // checkout(checkoutType as MarketplaceCheckoutType, [domain])
+    dispatch(setBuyNowModalOpen(true))
+    dispatch(setBuyNowModalDomain(domain))
+    dispatch(setBuyNowModalListing(domain.listings[0]))
   }
 
   return {

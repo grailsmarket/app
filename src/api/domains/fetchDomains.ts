@@ -1,10 +1,10 @@
 import { Address } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
-import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
-import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
+import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { PortfolioFiltersState, PortfolioStatusFilterType } from '@/types/filters'
+import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 
 interface FetchDomainsOptions {
   limit: number
@@ -27,21 +27,26 @@ export const fetchDomains = async ({
     const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
     const paramString = buildQueryParamString({
       limit,
-      page: pageParam + 1,
+      page: pageParam,
       q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : '',
       'filters[owner]': ownerAddress || null,
-      'filters[showListings]': filters.status.includes('Listed') ? true : false,
+      'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
-      'filters[maxPrice]': filters.priceRange.max ? Number(filters.priceRange.max) * 10 ** 18 : filters.priceRange.max,
-      'filters[minPrice]': filters.priceRange.min ? Number(filters.priceRange.min) * 10 ** 18 : filters.priceRange.max,
-      'filters[hasNumbers]': filters.type.includes('Numbers') ? true : false,
-      'filters[hasEmojis]': filters.type.includes('Emojis') ? true : false,
-      'filters[clubs][]': club || filters.categories?.join(','),
-      'filters[isExpired]': statusFilter.includes('Available') ? true : false,
-      'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : false,
-      'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : false,
-      'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? true : false,
+      'filters[maxPrice]': filters.priceRange.max
+        ? Number(filters.priceRange.max) * 10 ** 18
+        : filters.priceRange.max || null,
+      'filters[minPrice]': filters.priceRange.min
+        ? Number(filters.priceRange.min) * 10 ** 18
+        : filters.priceRange.max || null,
+      'filters[hasNumbers]': filters.type.includes('Numbers') ? undefined : false,
+      'filters[hasEmojis]': filters.type.includes('Emojis') ? undefined : false,
+      'filters[clubs][]': club || filters.categories?.join(',') || null,
+      'filters[isExpired]': statusFilter.includes('Available') ? true : undefined,
+      'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : undefined,
+      'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : undefined,
+      'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? true : undefined,
+      'filters[hasSales]': statusFilter.includes('Has Last Sale') ? true : undefined,
       sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
     })

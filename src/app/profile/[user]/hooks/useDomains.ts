@@ -38,7 +38,7 @@ export const useProfileDomains = (user: Address | string) => {
       filters.status,
       filters.sort,
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       if (!profile?.address)
         return {
           domains: [],
@@ -62,7 +62,7 @@ export const useProfileDomains = (user: Address | string) => {
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
+    initialPageParam: 1,
   })
 
   const domainsData = useMemo(() => {

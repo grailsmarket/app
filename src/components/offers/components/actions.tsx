@@ -8,20 +8,14 @@ import {
   setCancelOfferModalOffer,
   setCancelOfferModalOpen,
 } from '@/state/reducers/modals/cancelOfferModal'
-import {
-  setAcceptOfferModalDomain,
-  setAcceptOfferModalOffer,
-  setAcceptOfferModalOpen,
-} from '@/state/reducers/modals/acceptOfferModal'
+import { setAcceptOfferModalOffer, setAcceptOfferModalOpen } from '@/state/reducers/modals/acceptOfferModal'
 
 interface ActionsProps {
   offer: DomainOfferType
   currentUserAddress?: Address
-  onAcceptOffer?: (offer: DomainOfferType) => void
-  onCancelOffer?: (offer: DomainOfferType) => void
 }
 
-const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress, onAcceptOffer, onCancelOffer }) => {
+const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
   const dispatch = useAppDispatch()
   const openCancelOfferModal = () => {
     dispatch(setCancelOfferModalOpen(true))
@@ -32,7 +26,7 @@ const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress, onAcceptOf
   const openAcceptOfferModal = () => {
     dispatch(setAcceptOfferModalOpen(true))
     dispatch(setAcceptOfferModalOffer(offer))
-    dispatch(setAcceptOfferModalDomain(domain))
+    // dispatch(setAcceptOfferModalDomain(domain))
   }
   if (!currentUserAddress) return null
 

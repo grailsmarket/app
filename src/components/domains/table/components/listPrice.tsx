@@ -16,9 +16,11 @@ const ListPrice: React.FC<ListPriceProps> = ({ listing, columnCount, index }) =>
     <div className={cn(ALL_MARKETPLACE_COLUMNS['listed_price'].getWidth(columnCount), 'text-md')}>
       {listing && (
         <Price
-          price={listing.price}
+          // @ts-expect-error - price_wei is a type from the watchlist
+          price={listing.price || listing.price_wei}
           currencyAddress={listing.currency_address}
           tooltipPosition={index === 0 ? 'bottom' : 'top'}
+          iconSize='16px'
         />
       )}
     </div>

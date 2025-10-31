@@ -11,12 +11,12 @@ export const useLengthFilter = () => {
   const maxVal = lengthFilter.max
 
   const setMinLength = (min: number) => {
-    const newMin = maxVal && min >= maxVal ? maxVal : min
+    const newMin = min === 0 ? null : maxVal && min >= maxVal ? maxVal : min
     dispatch(actions.setFiltersLength({ min: newMin, max: lengthFilter.max }))
   }
 
   const setMaxLength = (max: number) => {
-    const newMax = minVal && max <= minVal ? minVal : max
+    const newMax = max === 0 ? null : minVal && max <= minVal ? minVal : max
     dispatch(actions.setFiltersLength({ min: lengthFilter.min, max: newMax }))
   }
 

@@ -64,7 +64,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
-      <div className='p-xl flex flex-col items-center gap-3'>
+      <div className='p-lg lg:p-xl flex flex-col items-center gap-3'>
         {rows.map((row) => (
           <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
             <p className='font-sedan-sc text-xl font-bold'>{row.label}</p>

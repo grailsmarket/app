@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
-import { Listing } from '@/types/seaport'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import { Address } from 'viem'
+import { DomainListingType } from '@/types/domains'
 
 export function useSeaportOrder() {
   const { address } = useAccount()
@@ -14,7 +14,7 @@ export function useSeaportOrder() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fulfillOrder = async (listing: Listing) => {
+  const fulfillOrder = async (listing: DomainListingType) => {
     setIsLoading(true)
     setError(null)
 
@@ -38,7 +38,7 @@ export function useSeaportOrder() {
       }
 
       // Build basic order parameters for efficient fulfillment
-      const basicOrderParams = orderBuilder.buildBasicOrderParameters(order, address)
+      const basicOrderParams = orderBuilder.buildBasicOrderParameters(order)
 
       // Calculate total payment
       const totalPayment = orderBuilder.calculateTotalPayment(order)
@@ -73,7 +73,7 @@ export function useSeaportOrder() {
     }
   }
 
-  const estimateGas = async (listing: Listing) => {
+  const estimateGas = async (listing: DomainListingType) => {
     try {
       if (!address || !publicClient) {
         throw new Error('Wallet not connected')
@@ -87,7 +87,7 @@ export function useSeaportOrder() {
       }
 
       // Build basic order parameters for efficient fulfillment
-      const basicOrderParams = orderBuilder.buildBasicOrderParameters(order, address)
+      const basicOrderParams = orderBuilder.buildBasicOrderParameters(order)
 
       const totalPayment = orderBuilder.calculateTotalPayment(order)
       const usesETH = orderBuilder.usesNativeToken(order)

@@ -4,10 +4,10 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useAccount } from 'wagmi'
+import { useAuth } from '@/hooks/useAuthStatus'
 
 export const useMyDomains = () => {
-  const { address: userAddress } = useAccount()
+  const { address: userAddress, authStatus } = useAuth()
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
@@ -22,6 +22,7 @@ export const useMyDomains = () => {
       'portfolio',
       'domains',
       userAddress,
+      authStatus,
       debouncedSearch,
       filters.length,
       filters.priceRange,
@@ -30,7 +31,7 @@ export const useMyDomains = () => {
       filters.status,
       filters.sort,
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const response = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
@@ -42,8 +43,8 @@ export const useMyDomains = () => {
       return response
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
-    enabled: !!userAddress,
+    initialPageParam: 1,
+    enabled: !!userAddress && authStatus === 'authenticated',
   })
 
   return {

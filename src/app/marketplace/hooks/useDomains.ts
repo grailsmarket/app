@@ -29,7 +29,7 @@ export const useDomains = () => {
       filters.status,
       filters.sort,
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
@@ -44,7 +44,7 @@ export const useDomains = () => {
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
+    initialPageParam: 1,
   })
 
   const domainsData = useMemo(() => {

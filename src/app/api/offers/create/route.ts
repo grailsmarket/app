@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       const searchData = await searchResponse.json()
       if (searchData.success && searchData.data.listings.length > 0) {
         // Name exists, get the ID from the listings search
-        const existingName = searchData.data.listings[0]
+        // const existingName = searchData.data.listings[0]
         // We need to query the ens_names table to get the ID
         // For now, we'll use The Graph to get name details
       }

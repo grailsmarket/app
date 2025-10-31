@@ -22,6 +22,7 @@ interface DomainsProps {
   isLoading: boolean
   loadingRowCount?: number
   noResults: boolean
+  noResultsLabel?: string
   listRef?: RefObject<HTMLDivElement>
   hasMoreDomains?: boolean
   fetchMoreDomains?: () => void
@@ -36,6 +37,7 @@ const Domains: React.FC<DomainsProps> = ({
   isLoading,
   loadingRowCount = 10,
   noResults,
+  noResultsLabel = 'No results, try changing your filters.',
   listRef,
   hasMoreDomains,
   fetchMoreDomains,
@@ -197,6 +199,7 @@ const Domains: React.FC<DomainsProps> = ({
               overscanCount={visibleCount}
               listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               gap={0}
+              paddingBottom='60px'
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={200}
               renderItem={(item, index) => {
@@ -211,7 +214,7 @@ const Domains: React.FC<DomainsProps> = ({
             />
           )
         ) : (
-          <NoResults label={'No results, try changing your filters.'} requiresAuth={false} />
+          <NoResults label={noResultsLabel} requiresAuth={false} />
         )}
       </div>
     </div>

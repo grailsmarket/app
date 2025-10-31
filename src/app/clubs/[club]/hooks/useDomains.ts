@@ -35,7 +35,7 @@ export const useClubDomains = (club: string) => {
       filters.status,
       filters.sort,
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
@@ -52,7 +52,7 @@ export const useClubDomains = (club: string) => {
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 0,
+    initialPageParam: 1,
   })
 
   const clubDomains = useMemo(() => {

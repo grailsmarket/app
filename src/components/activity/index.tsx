@@ -31,7 +31,7 @@ const Activity: React.FC<ActivityProps> = ({
   loadingRowCount = 10,
   noResults,
   noResultsLabel = 'No results, try changing your filters.',
-  columns = ['event', 'name', 'price', 'counterparty', 'timestamp'],
+  columns = ['event', 'name', 'price', 'timestamp', 'counterparty'],
   paddingBottom,
   listRef,
   hasMoreActivity,
@@ -52,12 +52,12 @@ const Activity: React.FC<ActivityProps> = ({
     if (!width) return allColumns
 
     const maxColumns = () => {
-      if (width < 400) return 0
-      if (width < 640) return 1
-      if (width < 768) return 2
-      if (width < 1024) return 3
-      if (width < 1280) return 4
-      if (width < 1536) return 5
+      if (width < 400) return 2
+      if (width < 640) return 3
+      if (width < 768) return 4
+      if (width < 1024) return 5
+      if (width < 1280) return 6
+      if (width < 1536) return 7
       return allColumns.length
     }
 
@@ -78,7 +78,7 @@ const Activity: React.FC<ActivityProps> = ({
       style={{ maxHeight }}
     >
       {showHeaders && (
-        <div className='md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
+        <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             return (
               <div

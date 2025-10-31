@@ -86,13 +86,13 @@ const UserPage = async (props: Props) => {
   // Skip prefetching if ssr is false
   if (ssr) {
     await queryClient.prefetchQuery({
-      queryKey: ['profile', user],
+      queryKey: ['profile', user, undefined, false, undefined],
       queryFn: () => (user ? fetchProfileDetails(user, listNum) : null),
       staleTime: 3 * ONE_MINUTE * 1000,
     })
 
     await queryClient.prefetchQuery({
-      queryKey: ['stats', user],
+      queryKey: ['stats', user, undefined, false, undefined],
       queryFn: () => (user ? fetchProfileStats(user, listNum) : null),
       staleTime: 3 * ONE_MINUTE * 1000,
     })

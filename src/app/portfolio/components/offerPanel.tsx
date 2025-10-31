@@ -1,9 +1,6 @@
 'use client'
 
 import React from 'react'
-import { useDomains } from '../hooks/useDomains'
-import Domains from '@/components/domains'
-import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -13,24 +10,26 @@ import MagnifyingGlass from 'public/icons/search.svg'
 import TabSwitcher from './tabSwitcher'
 import { useAuth } from '@/hooks/useAuthStatus'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import Offers from '@/components/offers'
+import { useOffers } from '../hooks/useOffers'
 
-const DomainPanel = () => {
+const OfferPanel = () => {
   const dispatch = useAppDispatch()
   const { authStatus } = useAuth()
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { selectedTab } = useAppSelector(selectUserProfile)
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, displayedDetails } = useDomains()
+  const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers()
 
   const disconnectMessage = {
-    domains: 'Sign in to view your domains.',
-    watchlist: 'Sign in to view your watchlist.',
-  }[selectedTab.value as 'domains' | 'watchlist']
+    my_offers: 'Sign in to view your offers.',
+    received_offers: 'Sign in to view your received offers.',
+  }[selectedTab.value as 'my_offers' | 'received_offers']
 
   const noResultMessage = {
-    domains: 'No domains found. Try clearing your filters.',
-    watchlist: 'No domains found. Try clearing your filters.',
-  }[selectedTab.value as 'domains' | 'watchlist']
+    my_offers: 'No offers found. Try clearing your filters.',
+    received_offers: 'No offers found. Try clearing your filters.',
+  }[selectedTab.value as 'my_offers' | 'received_offers']
 
   return (
     <div
@@ -65,25 +64,20 @@ const DomainPanel = () => {
             />
           </div>
         </div>
-        <ViewSelector />
       </div>
-      <Domains
+      <Offers
         maxHeight='calc(100vh - 220px)'
-        domains={domains}
+        offers={offers}
         loadingRowCount={20}
-        noResults={!domainsLoading && domains?.length === 0}
+        noResults={!offersLoading && offers?.length === 0}
         noResultsLabel={authStatus === 'unauthenticated' ? disconnectMessage : noResultMessage}
-        isLoading={domainsLoading}
-        hasMoreDomains={hasMoreDomains}
-        fetchMoreDomains={() => {
-          if (hasMoreDomains && !domainsLoading) {
-            fetchMoreDomains()
-          }
-        }}
-        displayedDetails={displayedDetails}
+        isLoading={offersLoading}
+        hasMoreOffers={hasMoreOffers}
+        fetchMoreOffers={fetchMoreOffers}
+        columns={displayedDetails}
       />
     </div>
   )
 }
 
-export default DomainPanel
+export default OfferPanel

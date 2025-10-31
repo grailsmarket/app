@@ -1,7 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
-import { formatEther } from 'viem'
+import { Address, formatEther } from 'viem'
 import { formatEtherPrice } from '@/utils/formatEtherPrice'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
@@ -13,6 +13,8 @@ import { getDomainImage } from '@/utils/getDomainImage'
 import { cn } from '@/utils/tailwind'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Actions from './actions'
+import useETHPrice from '@/hooks/useETHPrice'
+import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -22,7 +24,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
   const { address } = useAccount()
-
+  const { ethPrice } = useETHPrice()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
@@ -62,7 +64,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
             (registrationStatus === REGISTERED ? (
               domainListing?.price ? (
                 <div className='flex items-center gap-1'>
-                  <SaleAsset asset='ETH' ethSize='12px' />
+                  <SaleAsset currencyAddress={TOKEN_ADDRESSES.ETH} iconSize='12px' />
                   <p className='text-light-100 truncate text-xs leading-[18px] font-bold'>
                     {domainListing.price && formatEther(BigInt(domainListing.price))}
                   </p>
@@ -72,9 +74,9 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
               )
             ) : (
               <div className='flex items-center gap-1'>
-                <SaleAsset asset='USDC' fontSize='text-xs' />
+                <SaleAsset currencyAddress={TOKEN_ADDRESSES.USDC} fontSize='text-xs' />
                 <p className={'text-light-100 truncate text-xs leading-[18px] font-bold'}>
-                  {calculateRegistrationPrice(domain.name).usd}
+                  {ethPrice && calculateRegistrationPrice(domain.name, ethPrice).usd}
                 </p>
               </div>
             ))}
@@ -82,7 +84,11 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
             <div className='flex items-center gap-[6px]'>
               <p className='text-light-400 truncate text-xs leading-[18px] font-medium'>Last sale:</p>
               <div className='flex items-center gap-1'>
-                <SaleAsset asset={domain.last_sale_asset || 'ETH'} ethSize='11px' fontSize='text-xs' />
+                <SaleAsset
+                  currencyAddress={(domain.last_sale_currency as Address) || TOKEN_ADDRESSES.ETH}
+                  iconSize='11px'
+                  fontSize='text-xs'
+                />
                 <p className='text-light-150 text-xs'>
                   {domain.last_sale_price ? formatEtherPrice(domain.last_sale_price) : null}
                 </p>

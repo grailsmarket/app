@@ -10,7 +10,7 @@ const useCartDomains = () => {
   const { clearCart, clearCartLoading, modifyCart } = useModifyCart()
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
-  const offerableDomains = cartRegisteredDomains.filter((domain) => !domain.price || domain.offerValue)
+  const offerableDomains = cartRegisteredDomains.filter((domain) => !domain.listings[0].price || domain.offerValue)
   const cartIsEmpty = cartRegisteredDomains.length === 0 && cartUnregisteredDomains.length === 0
 
   const isAddedToCart = (name: MarketplaceDomainNameType) => {

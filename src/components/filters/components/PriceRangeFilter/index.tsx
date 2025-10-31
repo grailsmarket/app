@@ -25,14 +25,14 @@ const PriceRangeFilter = () => {
               className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
               placeholder='Min'
               value={priceRange.min || ''}
-              onChange={(e) => setMinPrice(e.target.value)}
+              onChange={(e) => setMinPrice(Number(e.target.value))}
             />
             <input
               type='number'
               className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
               placeholder='Max'
               value={priceRange.max || ''}
-              onChange={(e) => setMaxPrice(e.target.value)}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
             />
           </div>
         </div>

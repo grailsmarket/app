@@ -90,7 +90,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
           disabled={!canAddToCart}
           onClick={(e) => onSelect(e, domain)}
         >
-          <CartIcon name={domain.name} />
+          <CartIcon domain={domain} />
         </button>
       </div>
     </div>

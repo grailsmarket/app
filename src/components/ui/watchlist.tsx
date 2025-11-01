@@ -15,9 +15,18 @@ interface WatchlistProps {
   tooltipPosition?: TooltipPositionType
   showWatchlist?: boolean
   tooltipAlign?: TooltipAlignType
+  iconSize?: number
+  iconClassName?: string
 }
 
-const Watchlist: React.FC<WatchlistProps> = ({ domain, showWatchlist = true, tooltipPosition, tooltipAlign }) => {
+const Watchlist: React.FC<WatchlistProps> = ({
+  domain,
+  showWatchlist = true,
+  tooltipPosition,
+  tooltipAlign,
+  iconSize,
+  iconClassName,
+}) => {
   const { authStatus, handleSignIn, userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const { watchlistNames, toggleWatchlist, isLoading } = useWatchlist()
@@ -43,12 +52,13 @@ const Watchlist: React.FC<WatchlistProps> = ({ domain, showWatchlist = true, too
       >
         <Image
           src={isWatchlisted ? BinocularsFilled : BinocularsEmpty}
-          height={22}
-          width={22}
+          height={iconSize || 22}
+          width={iconSize || 22}
           alt='Like heart'
           className={cn(
             isWatchlisted || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
-            'transition-opacity'
+            'transition-opacity',
+            iconClassName
           )}
         />
       </button>

@@ -14,6 +14,7 @@ interface PriceProps {
   iconSize?: string
   fontSize?: string
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
+  alignTooltip?: 'left' | 'center' | 'right'
 }
 
 const Price: React.FC<PriceProps> = ({
@@ -22,6 +23,7 @@ const Price: React.FC<PriceProps> = ({
   iconSize = '14px',
   fontSize = 'text-lg',
   tooltipPosition = 'top',
+  alignTooltip = 'center',
 }) => {
   const asset = TOKENS[currencyAddress as keyof typeof TOKENS]
 
@@ -36,7 +38,7 @@ const Price: React.FC<PriceProps> = ({
   }, [price, ethPrice, asset])
 
   return (
-    <Tooltip label={`${diffCurrencyPrice.toFixed(2)} USD`} position={tooltipPosition} align='center'>
+    <Tooltip label={`${diffCurrencyPrice.toFixed(2)} USD`} position={tooltipPosition} align={alignTooltip}>
       <div className='flex flex-row items-center gap-1'>
         <Asset currencyAddress={currencyAddress} iconSize={iconSize} />
         <p className={cn(fontSize)}>{formatPrice(price, asset)}</p>

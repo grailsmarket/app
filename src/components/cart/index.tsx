@@ -1,7 +1,7 @@
 import React, { Ref } from 'react'
 import { cn } from '@/utils/tailwind'
 import { useUserContext } from '@/context/user'
-import { useOutsideClick } from 'ethereum-identity-kit'
+import { Cross, useOutsideClick } from 'ethereum-identity-kit'
 
 const Cart = () => {
   const { isCartOpen, setIsCartOpen } = useUserContext()
@@ -16,13 +16,14 @@ const Cart = () => {
     >
       <div
         ref={cartRef as Ref<HTMLDivElement>}
-        className='bg-background border-primary p-lg h-full w-1/2 max-w-2xl rounded-tl-lg rounded-bl-lg border-l-2'
+        className='bg-background border-primary justify-between p-2xl h-full w-1/2 max-w-2xl rounded-tl-lg rounded-bl-lg border-l-2 starting:translate-x-full transition-all duration-300'
       >
-        <h2 className='font-sedan-sc text-3xl'>Cart</h2>
+        <div className='flex flex-row items-center justify-between'><h2 className='font-sedan-sc text-3xl'>Cart</h2><Cross className='cursor-pointer hover:opacity-80 h-5 w-5' onClick={() => setIsCartOpen(false)} /></div>
         <div className='flex flex-col gap-2'>
-          <div className='flex flex-col gap-2'>
-            <h3 className='font-sedan-sc text-2xl'>Items</h3>
-          </div>
+          <h3 className='font-sedan-sc text-2xl'>Items</h3>
+        </div>
+        <div className='flex flex-col gap-2 bg-background border-t-2 border-primary'>
+          <h3 className='font-sedan-sc text-2xl'>Checkout</h3>
         </div>
       </div>
     </div>

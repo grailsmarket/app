@@ -6,9 +6,10 @@ import { useName } from '../hooks/useName'
 import Listings from './listings'
 import Offers from './offers'
 import ActivityPanel from './activity'
+import Register from './register'
+import Actions from './actions'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
-import Register from './register'
 
 interface Props {
   name: string
@@ -21,10 +22,18 @@ const NamePage: React.FC<Props> = ({ name }) => {
   const isRegistered = registrationStatus === REGISTERED
 
   return (
-    <div className='dark mx-auto flex max-w-7xl flex-col items-center pt-20 xl:pt-40'>
+    <div className='dark mx-auto flex max-w-7xl flex-col gap-3 items-center pt-20 xl:pt-40'>
+      <div className='flex w-full px-md flex-row justify-between'>
+        <Actions nameDetails={nameDetails} />
+      </div>
       <div className='flex w-full flex-col gap-4 lg:flex-row'>
         <div className='border-primary bg-secondary flex h-fit flex-col gap-4 overflow-hidden rounded-lg border-2 xl:w-2/5'>
-          <NameDetails name={name} nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+          <NameDetails
+            name={name}
+            nameDetails={nameDetails}
+            nameDetailsIsLoading={nameDetailsIsLoading}
+            registrationStatus={registrationStatus}
+          />
         </div>
         <div className='flex w-full flex-col gap-4 xl:w-3/5'>
           {isRegistered ? (

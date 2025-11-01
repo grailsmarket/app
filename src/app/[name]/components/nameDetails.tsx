@@ -1,22 +1,31 @@
 import { DOMAIN_IMAGE_URL } from '@/constants'
 import Image from 'next/image'
-import React, { useState } from 'react'
-import { numberToHex } from 'viem'
+import React, { ReactNode, useState } from 'react'
+import { Address, numberToHex } from 'viem'
 import LoadingCell from '@/components/ui/loadingCell'
-import { MarketplaceDomainType } from '@/types/domains'
+import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import User from '@/components/ui/user'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import Price from '@/components/ui/price'
+
+type Row = {
+  label: string
+  value: string | number | ReactNode | null | undefined
+  canCopy: boolean
+}
 
 interface NameDetailsProps {
   name: string
   nameDetails: MarketplaceDomainType | undefined
   nameDetailsIsLoading: boolean
+  registrationStatus: RegistrationStatus
 }
 
-const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetailsIsLoading }) => {
-  const rows = [
+const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetailsIsLoading, registrationStatus }) => {
+  const rows: Row[] = [
     {
       label: 'Name',
       value: name,
@@ -24,12 +33,35 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     },
     {
       label: 'Owner',
-      value: nameDetails?.owner,
+      value:
+        nameDetails?.owner && registrationStatus !== UNREGISTERED ? (
+          <User address={nameDetails?.owner as `0x${string}`} />
+        ) : null,
+      canCopy: false,
+    },
+    // {
+    //   label: 'Created',
+    //   value: nameDetails?.registration_date ? formatExpiryDate(nameDetails.registration_date) : null,
+    //   canCopy: false,
+    // },
+    {
+      label: 'Club',
+      value: nameDetails?.clubs?.join(', ') || 'None',
       canCopy: false,
     },
     {
-      label: 'Created',
-      value: nameDetails?.registration_date ? formatExpiryDate(nameDetails.registration_date) : null,
+      label: 'Last Sale',
+      value: nameDetails?.last_sale_price ? (
+        <Price
+          price={nameDetails?.last_sale_price}
+          currencyAddress={nameDetails?.last_sale_currency as Address}
+          iconSize='24px'
+          fontSize='text-xl font-semibold'
+          alignTooltip='right'
+        />
+      ) : (
+        'N/A'
+      ),
       canCopy: false,
     },
     {
@@ -67,11 +99,11 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
       <div className='p-lg lg:p-xl flex flex-col items-center gap-3'>
         {rows.map((row) => (
           <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
-            <p className='font-sedan-sc text-xl font-bold'>{row.label}</p>
-            {row.label === 'Owner' && row.value ? (
-              <User address={row.value as `0x${string}`} />
+            <p className='font-sedan-sc text-2xl'>{row.label}</p>
+            {typeof row.value === 'string' ? (
+              <CopyValue value={row.value} canCopy={row.canCopy} />
             ) : (
-              <CopyValue value={row.value as string} canCopy={row.canCopy} />
+              <div className='max-w-2/3'>{row.value}</div>
             )}
           </div>
         ))}
@@ -97,7 +129,7 @@ const CopyValue = ({ value, canCopy }: { value: string; canCopy: boolean }) => {
         if (canCopy) handleCopy(value)
       }}
     >
-      <p className='max-w-full truncate text-lg'>{value}</p>
+      <p className='max-w-full truncate text-xl'>{value}</p>
       {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='h-4 w-4' />}
     </div>
   )

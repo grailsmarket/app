@@ -41,7 +41,6 @@ export type MarketplaceOpenableFilterType = (typeof MARKETPLACE_OPENABLE_FILTERS
 export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type MarketplaceFiltersState = {
-  open: boolean
   search: string
   status: MarketplaceStatusFilterType[]
   type: MarketplaceTypeFilterType[]
@@ -54,10 +53,10 @@ export type MarketplaceFiltersState = {
 
 export type MarketplaceFiltersOpenedState = MarketplaceFiltersState & {
   openFilters: MarketplaceOpenableFilterType[]
+  open: boolean
 }
 
 export const emptyFilterState: MarketplaceFiltersState = {
-  open: false,
   search: '',
   status: [],
   type: [...MARKETPLACE_TYPE_FILTER_LABELS],
@@ -166,7 +165,6 @@ export const marketplaceFiltersSlice = createSlice({
       }
     },
     clearMarketplaceFilters(state) {
-      state.open = false
       state.search = ''
       state.status = []
       state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]

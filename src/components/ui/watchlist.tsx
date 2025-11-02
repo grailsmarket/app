@@ -12,6 +12,7 @@ import { useUserContext } from '@/context/user'
 
 interface WatchlistProps {
   domain: MarketplaceDomainType
+  includeCount?: boolean
   tooltipPosition?: TooltipPositionType
   showWatchlist?: boolean
   tooltipAlign?: TooltipAlignType
@@ -21,6 +22,7 @@ interface WatchlistProps {
 
 const Watchlist: React.FC<WatchlistProps> = ({
   domain,
+  includeCount = false,
   showWatchlist = true,
   tooltipPosition,
   tooltipAlign,
@@ -29,39 +31,41 @@ const Watchlist: React.FC<WatchlistProps> = ({
 }) => {
   const { authStatus, handleSignIn, userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const { watchlistNames, toggleWatchlist, isLoading } = useWatchlist()
-  const isWatchlisted = watchlistNames?.includes(domain.name) || isLoading
+  const { toggleWatchlist, isLoading, isWatching, watchlistCountChange } = useWatchlist(domain.name)
 
   return (
     <Tooltip
-      label={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
+      label={isWatching ? 'Remove from watchlist' : 'Add to watchlist'}
       position={tooltipPosition || 'top'}
       align={tooltipAlign || 'right'}
       showOnMobile
     >
-      <button
-        className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          if (authStatus !== 'authenticated') {
-            if (!userAddress) openConnectModal?.()
-            else handleSignIn()
-          } else toggleWatchlist(domain)
-        }}
-      >
-        <Image
-          src={isWatchlisted ? BinocularsFilled : BinocularsEmpty}
-          height={iconSize || 22}
-          width={iconSize || 22}
-          alt='Like heart'
-          className={cn(
-            isWatchlisted || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
-            'transition-opacity',
-            iconClassName
-          )}
-        />
-      </button>
+      <div className='flex flex-row items-center gap-2'>
+        <button
+          className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            if (authStatus !== 'authenticated') {
+              if (!userAddress) openConnectModal?.()
+              else handleSignIn()
+            } else toggleWatchlist(domain)
+          }}
+        >
+          <Image
+            src={isWatching ? BinocularsFilled : BinocularsEmpty}
+            height={iconSize || 22}
+            width={iconSize || 22}
+            alt='Like heart'
+            className={cn(
+              isWatching || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
+              'transition-opacity',
+              iconClassName
+            )}
+          />
+        </button>
+        {includeCount && <p className='text-xl'>{domain.watchers_count + watchlistCountChange}</p>}
+      </div>
     </Tooltip>
   )
 }

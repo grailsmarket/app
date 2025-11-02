@@ -2,25 +2,27 @@ import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 import React from 'react'
-import { formatEtherPrice } from '@/utils/formatEtherPrice'
-import Image from 'next/image'
-import ethGray from 'public/icons/eth-gray.svg'
+import Price from '@/components/ui/price'
 
 interface HighestOfferProps {
   domain: MarketplaceDomainType
   columnCount: number
+  index: number
 }
 
-const HighestOffer: React.FC<HighestOfferProps> = ({ domain, columnCount }) => {
-  const highestOffer = domain.highest_offer
+const HighestOffer: React.FC<HighestOfferProps> = ({ domain, columnCount, index }) => {
+  const highestOfferPrice = domain.highest_offer_wei
+  const highestOfferCurrency = domain.highest_offer_currency
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['highest_offer'].getWidth(columnCount))}>
-      {highestOffer && (
-        <div className='flex'>
-          <Image src={ethGray} alt='ETH' className='h-[14px] w-auto' />
-          <p className='text-light-600 ml-1 text-xs font-medium'>{formatEtherPrice(highestOffer || '0') || null}</p>
-        </div>
+      {highestOfferPrice && highestOfferCurrency && (
+        <Price
+          price={highestOfferPrice}
+          currencyAddress={highestOfferCurrency}
+          tooltipPosition={index === 0 ? 'bottom' : 'top'}
+          iconSize='16px'
+        />
       )}
     </div>
   )

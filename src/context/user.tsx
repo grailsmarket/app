@@ -10,9 +10,11 @@ import { fetchNonce } from '@/api/siwe/fetchNonce'
 import { useAuth } from '@/hooks/useAuthStatus'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { useUserProfile } from '@/hooks/useUserProfile'
+import { WatchlistItemType } from '@/types/domains'
 
 type userContextType = {
   userAddress: Address | undefined
+  watchlist: WatchlistItemType[] | null | undefined
   authStatus: AuthenticationStatus
   isCartOpen: boolean
   setIsCartOpen: Dispatch<SetStateAction<boolean>>
@@ -37,7 +39,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
 
   const { address } = useAccount()
   const { authStatus, verify, refetchAuthStatus, signOut, disconnect } = useAuth()
-  const { profileIsLoading, refetchProfile, watchlistIsLoading, refetchWatchlist } = useUserProfile({
+  const { profileIsLoading, refetchProfile, watchlist, watchlistIsLoading, refetchWatchlist } = useUserProfile({
     address,
     authStatus,
   })
@@ -84,6 +86,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
     <userContext.Provider
       value={{
         userAddress: address,
+        watchlist,
         authStatus,
         isSigningIn,
         isCartOpen,

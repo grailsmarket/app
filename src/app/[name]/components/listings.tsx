@@ -96,7 +96,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, domain }) => {
   const dispatch = useAppDispatch()
-  const { toggleCart: toggleCartDomains } = useCartDomains()
+  const { onSelect: addToCart } = useCartDomains()
 
   const openEditListingModal = () => {
     if (!domain) return
@@ -141,7 +141,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          if (domain) toggleCartDomains(domain, domain?.expiry_date)
+          if (domain) addToCart(e, domain)
         }}
       >
         <CartIcon

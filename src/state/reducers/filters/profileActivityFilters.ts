@@ -9,7 +9,6 @@ export type ActivityTypeFilterType = (typeof PROFILE_ACTIVITY_FILTERS)[number]['
 export type ProfileActivityOpenableFilterType = 'Type'
 
 export type ActivityFiltersState = {
-  open: boolean
   type: ActivityTypeFilterType[]
   search: string
   categories: string[]
@@ -22,10 +21,10 @@ export type ActivityFiltersState = {
 
 export type ActivityFiltersOpenedState = ActivityFiltersState & {
   openFilters: ProfileActivityOpenableFilterType[]
+  open: boolean
 }
 
 export const emptyFilterState: ActivityFiltersState = {
-  open: false,
   type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
   search: '',
   categories: [],

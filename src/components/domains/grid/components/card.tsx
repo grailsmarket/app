@@ -15,6 +15,7 @@ import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Actions from './actions'
 import useETHPrice from '@/hooks/useETHPrice'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
+import Link from 'next/link'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -31,7 +32,8 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
   const domainListing = domain.listings[0]
 
   return (
-    <div
+    <Link
+      href={`/${domain.name}`}
       className={cn(
         'group bg-secondary flex h-[440px] w-full cursor-pointer flex-col gap-y-px rounded-sm opacity-70 transition hover:opacity-100 sm:h-[340px]',
         className
@@ -111,7 +113,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
           />
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

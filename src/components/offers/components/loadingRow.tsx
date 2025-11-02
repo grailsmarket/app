@@ -12,11 +12,7 @@ const LoadingRow: React.FC<LoadingRowProps> = ({ displayedColumns }) => {
     <>
       {displayedColumns.map((column, index) => (
         <div key={`loading-${column}-${index}`} className='flex items-center' style={{ width: columnWidth }}>
-          {column === 'name' && <LoadingCell width='w-32' />}
-          {column === 'offer_amount' && <LoadingCell width='w-24' />}
-          {column === 'offerrer' && <LoadingCell width='w-28' />}
-          {column === 'expires' && <LoadingCell width='w-24' />}
-          {column === 'actions' && <LoadingCell width='w-20' />}
+          <LoadingCell width='100px' height='24px' />
         </div>
       ))}
     </>

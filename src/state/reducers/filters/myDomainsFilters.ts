@@ -15,7 +15,6 @@ import {
 } from '@/types/filters'
 
 export const emptyFilterState: PortfolioFiltersState = {
-  open: false,
   search: '',
   status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],

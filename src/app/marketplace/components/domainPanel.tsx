@@ -19,9 +19,9 @@ const DomainPanel = () => {
 
   return (
     <div
-      className='pt-lg flex flex-col gap-4'
+      className='pt-lg flex w-full flex-col gap-4'
       style={{
-        width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
+        width: windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
       }}
     >
       <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
@@ -52,7 +52,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100vh - 240px)'
+        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 190px)' : 'calc(100vh - 240px)'}
         domains={domains}
         loadingRowCount={20}
         noResults={!domainsLoading && domains?.length === 0}

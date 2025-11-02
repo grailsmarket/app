@@ -28,9 +28,13 @@ export const fetchDomains = async ({
     const paramString = buildQueryParamString({
       limit,
       page: pageParam,
-      q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : '',
+      q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : undefined,
       'filters[owner]': ownerAddress || null,
-      'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
+      'filters[showListings]': filters.status.includes('Listed')
+        ? true
+        : filters.status.includes('Unlisted')
+          ? false
+          : undefined,
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max
@@ -69,7 +73,7 @@ export const fetchDomains = async ({
 
     return {
       domains,
-      nextPageParam: json.data.pagination.page,
+      nextPageParam: json.data.pagination.page + 1,
       hasNextPage: json.data.pagination.hasNext,
     }
   } catch (e) {

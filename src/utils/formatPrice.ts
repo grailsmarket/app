@@ -13,10 +13,21 @@ export const formatPrice = (price: string | number | null, asset: AssetType = 'E
 
       if (returnNumber) return transformedPrice
 
-      return transformedPrice.toLocaleString('default', {
-        maximumFractionDigits: 2,
-        minimumFractionDigits: returnNumber ? 0 : 2,
-      })
+      const findSizeIdentifier = (price: number) => {
+        if (price >= 1000000000) return { identifier: 'B', multiplier: 1000000000 }
+        if (price >= 1000000) return { identifier: 'M', multiplier: 1000000 }
+        // if (price >= 1000) return { identifier: 'k', multiplier: 1000 }
+        return { identifier: '', multiplier: 1 }
+      }
+
+      const { identifier, multiplier } = findSizeIdentifier(transformedPrice)
+
+      return (
+        (transformedPrice / multiplier).toLocaleString('default', {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: returnNumber ? 0 : 2,
+        }) + identifier
+      )
     }
 
     return formatEtherPrice(price, returnNumber)

@@ -15,7 +15,7 @@ interface CartIconProps {
 
 const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder = false }) => {
   const { isAddedToCart: isAddedToCartDomains } = useCartDomains()
-  const isAddedToCart = domain ? isAddedToCartDomains(domain.name) : false
+  const isAddedToCart = domain ? isAddedToCartDomains(domain.token_id) : false
 
   return (
     <div

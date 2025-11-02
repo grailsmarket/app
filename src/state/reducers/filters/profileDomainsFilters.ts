@@ -15,7 +15,6 @@ import {
 } from '@/types/filters'
 
 export const emptyFilterState: PortfolioFiltersState = {
-  open: false,
   search: '',
   status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
@@ -119,7 +118,6 @@ export const profileDomainsFiltersSlice = createSlice({
       }
     },
     clearFilters(state) {
-      state.open = false
       state.search = ''
       state.status = []
       state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]

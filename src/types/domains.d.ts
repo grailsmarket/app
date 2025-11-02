@@ -14,10 +14,15 @@ export type MarketplaceDomainType = {
   has_emoji: boolean
   clubs: string[]
   listings: DomainListingType[]
-  highest_offer: string | null
+  highest_offer_wei: string | null
+  highest_offer_currency: Address | null
   offer: string | null
   last_sale_price: string | null
   last_sale_currency: string | null
+  view_count: number
+  watchers_count: number
+  downvotes: number
+  upvotes: number
 }
 
 export type DomainListingType = {

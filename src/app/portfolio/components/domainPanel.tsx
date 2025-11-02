@@ -11,12 +11,12 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import TabSwitcher from './tabSwitcher'
-import { useAuth } from '@/hooks/useAuthStatus'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { useUserContext } from '@/context/user'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
-  const { authStatus } = useAuth()
+  const { authStatus } = useUserContext()
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { selectedTab } = useAppSelector(selectUserProfile)

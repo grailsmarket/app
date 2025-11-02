@@ -340,7 +340,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
-    return _.isEqual(filtersWithoutOpenFilters, emptyFilterState)
+    const filtersWithoutOpen = _.omit(filtersWithoutOpenFilters, 'open')
+    return _.isEqual(filtersWithoutOpen, emptyFilterState)
   }, [filters, emptyFilterState])
 
   return {

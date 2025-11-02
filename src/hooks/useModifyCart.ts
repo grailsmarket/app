@@ -20,10 +20,7 @@ const useModifyCart = () => {
   const modifyCartLocal = ({ domain, inCart, basket }: ModifyCartsVariables) => {
     if (inCart) {
       dispatch(removeFromMarketplaceDomainsCart([domain.name]))
-      return
-    }
-
-    if (basket === 'REGISTER') {
+    } else if (basket === 'REGISTER') {
       dispatch(
         addToCartUnregisteredDomains([
           {

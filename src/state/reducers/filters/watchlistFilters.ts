@@ -16,7 +16,6 @@ import {
 } from './marketplaceFilters'
 
 export const emptyFilterState: MarketplaceFiltersState = {
-  open: false,
   search: '',
   status: [],
   type: [...MARKETPLACE_TYPE_FILTER_LABELS],
@@ -137,7 +136,6 @@ export const watchlistFiltersSlice = createSlice({
       }
     },
     clearWatchlistFilters(state) {
-      state.open = false
       state.search = ''
       state.status = []
       state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]

@@ -5,11 +5,10 @@ import { usePanels } from './hooks/usePanels'
 import Filters from './components/Filters'
 import backArrow from 'public/icons/arrow-back.svg'
 import FilterIcon from 'public/icons/filter.svg'
-import { useOutsideClick, useWindowSize } from 'ethereum-identity-kit'
+import { useWindowSize } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
-import { RefObject } from 'react'
 import CloseIcon from 'public/icons/cross.svg'
 import { useFilterContext } from '@/context/filters'
 import ActivityTypeFilter from './ActivityFilter/TypeFilter'
@@ -23,18 +22,19 @@ const FilterPanel: React.FC = () => {
   const { profileTab, filterType } = useFilterContext()
   const filtersOpen = selectors.filters.open
 
-  const isExpandable = windowWidth && windowWidth < 1024
-  const isOpen = isExpandable ? filtersOpen : true
+  // const outsideClickRef = useOutsideClick(() => {
+  //   dispatch(actions.setFiltersOpen(false))
+  // })
 
-  const outsideClickRef = useOutsideClick(() => {
-    dispatch(actions.setFiltersOpen(false))
-  })
+  if (!windowWidth) return null
+
+  const isOpen = windowWidth < 1024 ? filtersOpen : true
 
   return (
     <div
-      ref={outsideClickRef as RefObject<HTMLDivElement>}
+      // ref={outsideClickRef as RefObject<HTMLDivElement>}
       className={cn(
-        'bg-background absolute top-0 left-0 z-20 h-[90vh] w-full overflow-y-auto shadow-md transition-transform duration-300 sm:w-72 lg:relative lg:h-[calc(100vh-146px)] lg:shadow-none',
+        'bg-background absolute top-0 left-0 z-20 h-[90vh] w-full overflow-y-auto shadow-md transition-transform duration-300 md:w-72 lg:relative lg:h-[calc(100vh-146px)] lg:shadow-none',
         isOpen ? 'translate-x-0' : '-translate-x-[110%]'
       )}
     >
@@ -79,12 +79,11 @@ const FilterPanel: React.FC = () => {
       </div>
 
       {/* Middle div */}
-      {isOpen &&
-        (filterType === 'profile' && profileTab === 'activity' ? (
-          <ActivityTypeFilter />
-        ) : (
-          <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />
-        ))}
+      {filterType === 'profile' && profileTab === 'activity' ? (
+        <ActivityTypeFilter />
+      ) : (
+        <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />
+      )}
     </div>
   )
 }

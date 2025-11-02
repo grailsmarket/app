@@ -18,6 +18,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
+import useModifyCart from '@/hooks/useModifyCart'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -79,6 +80,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const queryClient = useQueryClient()
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
+  const { modifyCart } = useModifyCart()
 
   const [step, setStep] = useState<TransactionStep>('review')
   const [error, setError] = useState<string | null>(null)
@@ -396,6 +398,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       if (receipt.status === 'success') {
         setStep('success')
         refetchDomainQueries()
+        modifyCart({ domain, inCart: true, basket: 'PURCHASE' })
       } else {
         throw new Error('Transaction failed')
       }
@@ -536,7 +539,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
       <div className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'>
         <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Buy Domain</h2>
         {getModalContent()}

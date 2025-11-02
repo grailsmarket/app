@@ -13,7 +13,7 @@ import Hamburger from './hamburger'
 
 const Navigation = () => {
   return (
-    <header className='px-lg bg-background fixed top-0 left-0 z-50 h-20 w-full'>
+    <header className='px-lg bg-background/60 fixed top-0 left-0 z-50 h-20 w-full backdrop-blur-md'>
       <nav className='mx-auto flex h-full max-w-7xl items-center justify-between'>
         <div className='flex items-center gap-8'>
           <Link href='/'>

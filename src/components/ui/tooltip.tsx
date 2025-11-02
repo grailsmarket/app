@@ -50,7 +50,7 @@ const Tooltip: React.FC<TooltipProps> = ({
           className={`animate-fadeIn absolute whitespace-nowrap text-white ${!showOnMobile && 'hidden lg:block'}`}
         >
           <div style={pointStyle} className='absolute'></div>
-          {label}
+          <p className='text-lg'>{label}</p>
         </div>
       )}
     </div>

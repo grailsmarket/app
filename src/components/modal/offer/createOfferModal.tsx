@@ -16,6 +16,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { Check } from 'ethereum-identity-kit'
+import useModifyCart from '@/hooks/useModifyCart'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -23,7 +24,9 @@ interface CreateOfferModalProps {
 }
 
 const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) => {
+  const { modifyCart } = useModifyCart()
   const { createOffer, isLoading } = useSeaportClient()
+
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
@@ -82,6 +85,8 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
       setSuccess(true)
 
+      modifyCart({ domain, inCart: true, basket: 'OFFER' })
+
       // Close modal after 2 seconds
       setTimeout(() => {
         onClose()
@@ -93,7 +98,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   }
 
   return (
-    <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/40 px-2 py-12 sm:px-4'>
+    <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'>
       <div
         className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-md border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}

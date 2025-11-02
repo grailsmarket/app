@@ -1,13 +1,13 @@
 import fetchReceivedOffers from '@/api/offers/received'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import { useAuth } from '@/hooks/useAuthStatus'
+import { useUserContext } from '@/context/user'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 export const useReceivedOffers = () => {
-  const { address: userAddress, authStatus } = useAuth()
+  const { userAddress, authStatus } = useUserContext()
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 

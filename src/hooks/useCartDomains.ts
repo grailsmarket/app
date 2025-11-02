@@ -2,21 +2,22 @@ import { MouseEvent } from 'react'
 import { useAppSelector } from '../state/hooks'
 import useModifyCart from './useModifyCart'
 import { getRegistrationStatus } from '../utils/getRegistrationStatus'
-import { selectMarketplaceDomains, MarketplaceDomainNameType } from '../state/reducers/domains/marketplaceDomains'
+import { selectMarketplaceDomains } from '../state/reducers/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '../types/domains'
 import { GRACE_PERIOD, REGISTERED } from '../constants/domains/registrationStatuses'
 
 const useCartDomains = () => {
-  const { clearCart, clearCartLoading, modifyCart } = useModifyCart()
+  const { modifyCart } = useModifyCart()
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
-  const offerableDomains = cartRegisteredDomains.filter((domain) => !domain.listings[0].price || domain.offerValue)
+  const purchaseDomains = cartRegisteredDomains.filter((domain) => domain.listings[0]?.price)
+  const offerDomains = cartRegisteredDomains.filter((domain) => !domain.listings[0]?.price)
   const cartIsEmpty = cartRegisteredDomains.length === 0 && cartUnregisteredDomains.length === 0
 
-  const isAddedToCart = (name: MarketplaceDomainNameType) => {
+  const isAddedToCart = (tokenId: number) => {
     const inCart =
-      cartRegisteredDomains.filter((cartDomain) => cartDomain.name === name).length > 0 ||
-      cartUnregisteredDomains.filter((cartDomain) => cartDomain.name === name).length > 0
+      cartRegisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0 ||
+      cartUnregisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0
 
     return inCart
   }
@@ -25,10 +26,10 @@ const useCartDomains = () => {
     if (getRegistrationStatus(expireTime) === GRACE_PERIOD) return
 
     const registered = getRegistrationStatus(expireTime) === REGISTERED
-    const inCart = isAddedToCart(domain.name)
+    const inCart = isAddedToCart(domain.token_id)
 
-    if (registered) modifyCart({ domain, inCart, basket: 'PURCHASE' })
-    else modifyCart({ domain, inCart, basket: 'REGISTER' })
+    const basket = registered ? 'PURCHASE' : 'REGISTER'
+    return modifyCart({ domain, inCart, basket })
   }
 
   const onSelect = (e: MouseEvent, domain: MarketplaceDomainType) => {
@@ -37,17 +38,12 @@ const useCartDomains = () => {
   }
 
   return {
-    registeredDomains: cartRegisteredDomains,
-    unregisteredDomains: cartUnregisteredDomains,
-    offerableDomains,
-    isRegisteredEmpty: cartRegisteredDomains.length === 0,
-    isUnregisteredEmpty: cartUnregisteredDomains.length === 0,
-    cartIsEmpty,
-    toggleCart,
+    purchaseDomains,
+    registerDomains: cartUnregisteredDomains,
+    offerDomains,
     onSelect,
+    cartIsEmpty,
     isAddedToCart,
-    clearCart,
-    clearCartLoading,
   }
 }
 

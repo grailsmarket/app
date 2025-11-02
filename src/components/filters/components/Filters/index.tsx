@@ -32,7 +32,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     <div className='flex w-full overflow-x-hidden pb-10'>
       <div
         className={cn(
-          'hide-scrollbar flex min-w-full flex-col gap-y-2 overflow-y-scroll transition-transform lg:min-w-[280px] lg:flex-1',
+          'hide-scrollbar flex min-w-full flex-col gap-y-2 overflow-y-scroll pb-16 transition-transform lg:min-w-[280px] lg:flex-1',
           showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
         )}
       >

@@ -42,7 +42,6 @@ export type MyDomainsOpenableFilterType = (typeof MY_DOMAINS_OPENABLE_FILTERS)[n
 export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type MyDomainsFiltersState = {
-  open: boolean
   search: string
   status: MyDomainsStatusFilterType[]
   type: MyDomainsTypeFilterType[]
@@ -55,10 +54,10 @@ export type MyDomainsFiltersState = {
 
 export type MyDomainsFiltersOpenedState = MyDomainsFiltersState & {
   openFilters: MyDomainsOpenableFilterType[]
+  open: boolean
 }
 
 export const emptyFilterState: MyDomainsFiltersState = {
-  open: false,
   search: '',
   status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
@@ -167,7 +166,6 @@ export const myOffersFiltersSlice = createSlice({
       }
     },
     clearMyOffersFilters(state) {
-      state.open = false
       state.search = ''
       state.status = []
       state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]

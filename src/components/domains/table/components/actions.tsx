@@ -2,7 +2,6 @@ import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 import React, { MouseEventHandler } from 'react'
-import Watchlist from '@/components/ui/watchlist'
 import CartIcon from './CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -20,7 +19,7 @@ interface ActionsProps {
   canAddToCart: boolean
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToCart }) => {
+const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) => {
   const dispatch = useAppDispatch()
   const { onSelect } = useCartDomains()
   const { filterType } = useFilterContext()
@@ -90,9 +89,9 @@ const Actions: React.FC<ActionsProps> = ({ domain, index, columnCount, canAddToC
   return (
     <div className={cn('flex flex-row justify-end opacity-100', width)}>
       <div className='flex items-center lg:gap-x-2'>
-        <div className=''>
+        {/* <div className=''>
           <Watchlist domain={domain} tooltipPosition={index === 0 ? 'bottom' : 'top'} />
-        </div>
+        </div> */}
         <button
           className={`cursor-pointer rounded-sm p-1.5`}
           disabled={!canAddToCart}

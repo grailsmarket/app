@@ -77,7 +77,6 @@ export type PriceDenominationType = (typeof PRICE_DENOMINATIONS)[number]
 export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 
 export type PortfolioFiltersState = {
-  open: boolean
   search: string
   status: PortfolioStatusFilterType[]
   type: PortfolioTypeFilterType[]
@@ -90,6 +89,7 @@ export type PortfolioFiltersState = {
 
 export type PortfolioFiltersOpenedState = PortfolioFiltersState & {
   openFilters: PortfolioOpenableFilterType[]
+  open: boolean
 }
 
 export type ProfileFiltersOpenedState = ActivityFiltersOpenedState & {

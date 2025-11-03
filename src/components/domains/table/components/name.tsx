@@ -21,7 +21,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
       <div className='flex h-[36px] max-w-full flex-row items-center'>
         <div
           className='flex w-full flex-row items-center justify-start gap-2 truncate'
-          style={{ maxWidth: domainIsValid ? 'calc(100% - 16px)' : 'calc(100% - 52px)' }}
+          style={{ maxWidth: domainIsValid ? 'calc(100% - 32px)' : 'calc(100% - 46px)' }}
         >
           <NameImage
             name={domain.name}
@@ -29,7 +29,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             expiryDate={domain.expiry_date}
             className='h-8 w-8 rounded-sm sm:h-[34px] sm:w-[34px]'
           />
-          <div className='flex max-w-full flex-col gap-px'>
+          <div className='flex flex-col truncate gap-px max-w-full'>
             <p
               className={cn(
                 'text-md truncate leading-[18px] font-bold',

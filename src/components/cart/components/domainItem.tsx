@@ -9,7 +9,7 @@ import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { beautifyName } from '@/lib/ens'
 import { Trash } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
-import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Link from 'next/link'
 
 interface DomainItemProps {
@@ -19,12 +19,13 @@ interface DomainItemProps {
 const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   const { modifyCart } = useModifyCart()
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
+  const isRegistered = registrationStatus === REGISTERED
 
   return (
     <div className='flex w-full flex-row items-center justify-between'>
       <Link
         href={`/${domain.name}`}
-        className='flex w-[50%] flex-row items-center gap-2 transition-all duration-300 hover:opacity-70'
+        className='flex w-[40%] sm:w-[50%] flex-row items-center gap-2 transition-all duration-300 hover:opacity-70'
       >
         <Image
           unoptimized
@@ -33,12 +34,12 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
           width={36}
           height={36}
           onError={(e) => (e.currentTarget.style.display = 'none')}
-          className='rounded-sm'
+          className='rounded-sm h-8 w-8 sm:h-9 sm:w-9'
         />
-        <p className='line-clamp-2 text-lg font-bold'>{beautifyName(domain.name)}</p>
+        <p className='line-clamp-2 text-md sm:text-lg font-bold'>{beautifyName(domain.name)}</p>
       </Link>
-      <div className='flex w-[20%] flex-row items-center gap-2'>
-        {domain.listings[0] && (
+      <div className='flex min-w-16 sm:w-[20%] justify-end flex-row items-center gap-2'>
+        {isRegistered && domain.listings[0] && (
           <Price
             price={domain.listings[0].price}
             currencyAddress={domain.listings[0].currency_address}
@@ -48,7 +49,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
           />
         )}
       </div>
-      <div className='flex w-[30%] flex-row items-center justify-end gap-2'>
+      <div className='flex w-fit sm:w-[30%] flex-row items-center justify-end gap-2'>
         <ActionButtons domain={domain} registrationStatus={registrationStatus} />
         <Trash
           className='text-neutral hover:text-foreground border-neutral hover:border-foreground box-border h-[38px] w-[38px] cursor-pointer rounded-sm border p-2.5 transition-all duration-300'

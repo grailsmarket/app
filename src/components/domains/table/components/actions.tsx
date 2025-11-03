@@ -92,9 +92,8 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
         {/* <div className=''>
           <Watchlist domain={domain} tooltipPosition={index === 0 ? 'bottom' : 'top'} />
         </div> */}
-        <button
+        {canAddToCart && <button
           className={`cursor-pointer rounded-sm p-1.5`}
-          disabled={!canAddToCart}
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
@@ -102,7 +101,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
           }}
         >
           <CartIcon domain={domain} />
-        </button>
+        </button>}
       </div>
     </div>
   )

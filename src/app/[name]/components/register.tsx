@@ -21,7 +21,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
 
   if (registrationStatus === GRACE_PERIOD) {
     const expiryDateTimestamp = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() : 0
-    const gracePeriodEndDate = new Date(expiryDateTimestamp + 90 * DAY_IN_SECONDS).toISOString()
+    const gracePeriodEndDate = new Date(expiryDateTimestamp + 90 * DAY_IN_SECONDS * 1000).toISOString()
 
     return (
       <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-6 rounded-lg border-2'>

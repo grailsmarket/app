@@ -1,13 +1,24 @@
-export const formatExpiryDate = (expiry_date: string) => {
+interface FormatExpiryDateOptions {
+  dateStyle?: 'short' | 'medium' | 'long' | 'full'
+  includeTime?: boolean
+  dateDivider?: string
+}
+
+const defaultOptions: FormatExpiryDateOptions = {
+  includeTime: true,
+  dateDivider: '-',
+}
+
+export const formatExpiryDate = (expiry_date: string, options: FormatExpiryDateOptions = defaultOptions) => {
   const expiryDate = new Date(expiry_date)
 
   const formatted = expiryDate
     .toLocaleDateString('default', {
-      hour: '2-digit',
-      minute: '2-digit',
+      hour: options.includeTime ? '2-digit' : undefined,
+      minute: options.includeTime ? '2-digit' : undefined,
     })
     .replace(',', '')
-    .replaceAll('/', '-')
+    .replaceAll('/', options.dateDivider ?? '-')
 
   return formatted
 }

@@ -7,7 +7,7 @@ import { MarketplaceDomainType } from '../types/domains'
 import { GRACE_PERIOD, REGISTERED } from '../constants/domains/registrationStatuses'
 
 const useCartDomains = () => {
-  const { modifyCart } = useModifyCart()
+  const { modifyCart, clearCart } = useModifyCart()
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
   const purchaseDomains = cartRegisteredDomains.filter((domain) => domain.listings[0]?.price)
@@ -44,6 +44,7 @@ const useCartDomains = () => {
     onSelect,
     cartIsEmpty,
     isAddedToCart,
+    clearCart,
   }
 }
 

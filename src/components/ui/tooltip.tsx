@@ -4,6 +4,7 @@ import React, { ReactNode } from 'react'
 
 import { useTooltip } from '@/hooks/useTooltip'
 import { TooltipAlignType, TooltipPositionType } from '@/types/ui'
+import { useClickAway } from '@/hooks/useClickAway'
 
 export interface TooltipProps {
   padding?: string | number
@@ -39,9 +40,15 @@ const Tooltip: React.FC<TooltipProps> = ({
     showTooltip,
   })
 
+  const outsideClickRef = useClickAway(() => setTooltipHovered(false))
+
   return (
-    <div className='relative' onMouseLeave={() => setTooltipHovered(false)}>
-      <div onMouseEnter={() => setTooltipHovered(true)} className='relative flex'>
+    <div ref={outsideClickRef as React.RefObject<HTMLDivElement>} className='relative' onMouseLeave={() => setTooltipHovered(false)}>
+      <div onMouseEnter={() => setTooltipHovered(true)} onClick={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        setTooltipHovered(true)
+      }} className='relative flex'>
         {children}
       </div>
       {showTooltip && tooltipHovered && (

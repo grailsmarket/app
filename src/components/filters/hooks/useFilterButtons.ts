@@ -9,8 +9,13 @@ export const useFilterButtons = () => {
     dispatch(actions.clearFilters())
   }
 
+  const closeFilters = () => {
+    dispatch(actions.setFiltersOpen(false))
+  }
+
   return {
     clearFilters,
     isFiltersClear,
+    closeFilters,
   }
 }

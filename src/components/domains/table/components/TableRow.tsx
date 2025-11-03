@@ -49,7 +49,9 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
     ),
     registry_price: <RegistryPrice key={`${domain.name}-registry_price`} domain={domain} columnCount={columnCount} />,
     last_sale: <LastSale key={`${domain.name}-last_sale`} domain={domain} columnCount={columnCount} index={index} />,
-    highest_offer: <HighestOffer key={`${domain.name}-highest_offer`} domain={domain} columnCount={columnCount} index={index} />,
+    highest_offer: (
+      <HighestOffer key={`${domain.name}-highest_offer`} domain={domain} columnCount={columnCount} index={index} />
+    ),
     expires: (
       <Expiration
         key={`${domain.name}-expires`}

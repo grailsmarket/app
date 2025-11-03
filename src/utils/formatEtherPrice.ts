@@ -5,6 +5,18 @@ export const formatEtherPrice = (price: string | number, returnNumber?: boolean,
 
   const locale = typeof window === 'undefined' ? 'default' : navigator.language
 
+  // check if price exceeds total ETH supply (120,700,000)
+  if (
+    BigNumber.from(price.toString().replaceAll(',', '').replaceAll(' ', '').replace('.', ''))
+      .div(BigNumber.from(10).pow(18))
+      .gt(BigNumber.from(120700000).mul(BigNumber.from(10).pow(18)))
+  ) {
+    if (returnNumber) {
+      return 120700000
+    }
+    return '> 120.7M'
+  }
+
   if (returnNumber) {
     return (
       BigNumber.from(price.toString().replaceAll(',', '').replaceAll(' ', '').replace('.', ''))

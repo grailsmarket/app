@@ -55,6 +55,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
         <Price
           price={nameDetails?.last_sale_price}
           currencyAddress={nameDetails?.last_sale_currency as Address}
+          usdPrice={nameDetails?.last_sale_price_usd ?? undefined}
           iconSize='24px'
           fontSize='text-xl font-semibold'
           alignTooltip='right'

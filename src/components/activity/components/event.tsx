@@ -5,7 +5,7 @@ import Mint from 'public/icons/mint.svg'
 import Burn from 'public/icons/burn.svg'
 import Transfer from 'public/icons/transfer.svg'
 import Cancelled from 'public/icons/cancelled.svg'
-// import OfferMade from 'public/icons/offer-made.svg'
+import OfferMade from 'public/icons/bid.svg'
 import Sold from 'public/icons/sold.svg'
 import Listed from 'public/icons/listed.svg'
 
@@ -16,7 +16,7 @@ interface EventProps {
 const Event: React.FC<EventProps> = ({ event }) => {
   const icon = {
     listed: Listed,
-    offer_made: Transfer,
+    offer_made: OfferMade,
     bought: Transfer,
     sold: Sold,
     offer_accepted: Transfer,

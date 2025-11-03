@@ -5,7 +5,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import CartIcon from '../../table/components/CartIcon'
-import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
@@ -97,7 +97,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
 
   return (
     <div className='flex w-full flex-row justify-between opacity-100'>
-      {registrationStatus === REGISTERED ? (
+      {registrationStatus === UNREGISTERED ? (
         <button
           onClick={(e) =>
             clickHandler(e, () => window.open(`https://app.ens.domains/${domain.name}/register`, '_blank'))
@@ -122,13 +122,13 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
       )}
       <div className='flex items-center lg:gap-x-2'>
         {/* <Watchlist domain={domain} tooltipAlign={isFirstInRow ? 'left' : 'right'} /> */}
-        <button
+        {canAddToCart && <button
           className='cursor-pointer rounded-sm p-1.5'
           disabled={!canAddToCart}
           onClick={(e) => onSelect(e, domain)}
         >
-          <CartIcon domain={domain} />
-        </button>
+          <CartIcon domain={domain} className='p-0' />
+        </button>}
       </div>
     </div>
   )

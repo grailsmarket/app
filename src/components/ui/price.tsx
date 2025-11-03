@@ -11,6 +11,7 @@ import { cn } from '@/utils/tailwind'
 interface PriceProps {
   price: string | number
   currencyAddress: Address
+  usdPrice?: string | number
   iconSize?: string
   fontSize?: string
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
@@ -20,6 +21,7 @@ interface PriceProps {
 const Price: React.FC<PriceProps> = ({
   price,
   currencyAddress,
+  usdPrice,
   iconSize = '14px',
   fontSize = 'text-lg',
   tooltipPosition = 'top',
@@ -31,12 +33,13 @@ const Price: React.FC<PriceProps> = ({
 
   const diffCurrencyPrice = useMemo(() => {
     if (asset === 'ETH' || asset === 'WETH') {
+      if (usdPrice) return usdPrice
       const USDPrice = ((formatEtherPrice(price, true) as number) ?? 0) * ((ethPrice as number) ?? 0)
       return formatPrice(USDPrice * 10 ** 6, 'USDC') as number
     } else {
       return formatPrice(price, asset, true) as number
     }
-  }, [price, ethPrice, asset])
+  }, [price, ethPrice, asset, usdPrice])
 
   return (
     <Tooltip label={`${diffCurrencyPrice} USD`} position={tooltipPosition} align={alignTooltip}>

@@ -17,12 +17,15 @@ const HighestOffer: React.FC<HighestOfferProps> = ({ domain, columnCount, index 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['highest_offer'].getWidth(columnCount))}>
       {highestOfferPrice && highestOfferCurrency && (
-        <Price
-          price={highestOfferPrice}
-          currencyAddress={highestOfferCurrency}
-          tooltipPosition={index === 0 ? 'bottom' : 'top'}
-          iconSize='16px'
-        />
+        <>
+          <Price
+            price={highestOfferPrice}
+            currencyAddress={highestOfferCurrency}
+            tooltipPosition={index === 0 ? 'bottom' : 'top'}
+            iconSize='16px'
+          />
+          {/* <p className='text-md text-neutral'>Expires {formatExpiryDate(domain.high, { includeTime: false, dateDivider: '/' })}</p> */}
+        </>
       )}
     </div>
   )

@@ -15,10 +15,13 @@ export type MarketplaceDomainType = {
   clubs: string[]
   listings: DomainListingType[]
   highest_offer_wei: string | null
+  highest_offer_id: number | null
   highest_offer_currency: Address | null
   offer: string | null
   last_sale_price: string | null
+  last_sale_price_usd: string | null
   last_sale_currency: string | null
+  last_sale_date: string | null
   view_count: number
   watchers_count: number
   downvotes: number

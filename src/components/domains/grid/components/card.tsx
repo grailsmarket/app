@@ -35,11 +35,11 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
     <Link
       href={`/${domain.name}`}
       className={cn(
-        'group bg-secondary flex h-[440px] w-full cursor-pointer flex-col gap-y-px rounded-sm opacity-70 transition hover:opacity-100 sm:h-[340px]',
+        'group bg-secondary flex h-[440px] xs:h-[330px] w-full cursor-pointer flex-col rounded-sm opacity-70 transition hover:opacity-100',
         className
       )}
     >
-      <div className='relative flex max-h-[340px] w-full flex-col justify-between sm:max-h-[230px]'>
+      <div className='relative flex max-h-[320px] xs:max-h-[250px] w-full flex-col justify-between sm:max-h-[240px]'>
         <Image
           src={getDomainImage(domain.token_id)}
           alt='Domain image'
@@ -60,8 +60,8 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
           </div>
         )}
       </div>
-      <div className='flex w-full flex-1 flex-col justify-between gap-1'>
-        <div className='flex w-full flex-col pt-4 pl-4'>
+      <div className='flex w-full flex-1 flex-col justify-between gap-1 p-lg'>
+        <div className='flex w-full flex-col'>
           {registrationStatus !== GRACE_PERIOD &&
             (registrationStatus === REGISTERED ? (
               domainListing?.price ? (
@@ -104,7 +104,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
             </p>
           )}
         </div>
-        <div className='pl-lg flex justify-between p-2 pt-0'>
+        <div className='flex justify-between'>
           <Actions
             domain={domain}
             registrationStatus={registrationStatus}

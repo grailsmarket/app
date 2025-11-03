@@ -30,11 +30,7 @@ export const fetchDomains = async ({
       page: pageParam,
       q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : undefined,
       'filters[owner]': ownerAddress || null,
-      'filters[showListings]': filters.status.includes('Listed')
-        ? true
-        : filters.status.includes('Unlisted')
-          ? false
-          : undefined,
+      'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max

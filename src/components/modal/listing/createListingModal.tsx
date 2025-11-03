@@ -27,7 +27,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [price, setPrice] = useState<number>()
   const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
   const [currency, setCurrency] = useState<'ETH' | 'USDC'>('ETH')
-  const [includeRoyalty, setIncludeRoyalty] = useState(false)
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [success, setSuccess] = useState(false)
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -220,21 +219,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 min={0}
                 step={0.001}
               />
-            </div>
-
-            <div className='space-y-3'>
-              <div className='flex items-center'>
-                <input
-                  type='checkbox'
-                  id='includeRoyalty'
-                  checked={includeRoyalty}
-                  onChange={(e) => setIncludeRoyalty(e.target.checked)}
-                  className='mr-2'
-                />
-                <label htmlFor='includeRoyalty' className='text-sm text-gray-300'>
-                  Include royalty fee
-                </label>
-              </div>
             </div>
 
             {/* Fee breakdown */}

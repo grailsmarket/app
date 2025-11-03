@@ -24,7 +24,12 @@ const ListPrice: React.FC<ListPriceProps> = ({ listing, columnCount, index }) =>
             tooltipPosition={index === 0 ? 'bottom' : 'top'}
             iconSize='16px'
           />
-          {listing.expires_at && <p className='text-md text-neutral'><span className=' xs:inline hidden'>Expires</span> {formatExpiryDate(listing.expires_at, { includeTime: false, dateDivider: '/' })}</p>}
+          {listing.expires_at && (
+            <p className='text-md text-neutral'>
+              <span className='xs:inline hidden'>Expires</span>{' '}
+              {formatExpiryDate(listing.expires_at, { includeTime: false, dateDivider: '/' })}
+            </p>
+          )}
         </>
       )}
     </div>

@@ -7,3 +7,4 @@ export const APP_FAVICON = 'src/app/favicon.ico'
 export const APP_THEME_COLOR = '#ffdfc0'
 export const APP_ENS_ADDRESS = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'
 export const DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
+export const DOMAIN_IMAGE_URL_V2 = `https://raw2.seadn.io/ethereum/${APP_ENS_ADDRESS}/8759e0e53f8bcd718b565102a2410a`

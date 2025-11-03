@@ -20,7 +20,7 @@ const ActionButtons = () => {
 
   return (
     <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
-      <div className={cn('lg:w-[262px] flex-row justify-end gap-2 ', open ? 'flex' : 'hidden lg:flex')}>
+      <div className={cn('flex-row justify-end gap-2 lg:w-[262px]', open ? 'flex' : 'hidden lg:flex')}>
         <PersistGate persistor={persistor}>
           <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
             Clear Filters

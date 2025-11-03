@@ -15,7 +15,7 @@ const ActionButtons = () => {
   return (
     <div
       className={cn(
-        'bg-background border-primary p-lg absolute bottom-0 left-0 z-50 w-full flex-row justify-end border-t-2 sm:w-[288px] lg:w-[300px] lg:rounded-tr-md lg:border-r-2',
+        'bg-background border-primary p-lg absolute bottom-px left-0 z-50 w-full flex-row justify-end border-t-2 sm:w-[288px] lg:w-[300px] lg:rounded-tr-md lg:border-r-2',
         open ? 'flex' : 'hidden lg:flex'
       )}
     >

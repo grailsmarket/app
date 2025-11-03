@@ -119,3 +119,16 @@ body {
     appearance: textfield;
   }
 }
+
+/* Name Gradients */
+.gradient-blue {
+  background: linear-gradient(331.79deg, #44bcf1 2.57%, #628bf2 65.63%, #a099fe 149.86%);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #682e7e 0%, #2b0c65 100%);
+}
+
+.gradient-gray {
+  background: linear-gradient(135deg, rgba(129, 133, 152, 0.7) 0%, rgba(129, 133, 152, 0.05) 103.11%);
+}

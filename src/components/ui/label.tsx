@@ -8,7 +8,12 @@ interface LabelProps {
 
 const Label: React.FC<LabelProps> = ({ label, className }) => {
   return (
-    <p className={cn('text-md bg-foreground/80 text-background rounded-sm flex min-w-5 items-center justify-center w-fit px-1 h-[22px] py-px text-lg font-bold', className)}>
+    <p
+      className={cn(
+        'text-md bg-foreground/80 text-background flex h-[22px] w-fit min-w-5 items-center justify-center rounded-sm px-1 py-px text-lg font-bold',
+        className
+      )}
+    >
       {label}
     </p>
   )

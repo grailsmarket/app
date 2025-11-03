@@ -43,12 +43,20 @@ const Tooltip: React.FC<TooltipProps> = ({
   const outsideClickRef = useClickAway(() => setTooltipHovered(false))
 
   return (
-    <div ref={outsideClickRef as React.RefObject<HTMLDivElement>} className='relative' onMouseLeave={() => setTooltipHovered(false)}>
-      <div onMouseEnter={() => setTooltipHovered(true)} onClick={(e) => {
-        e.stopPropagation()
-        e.preventDefault()
-        setTooltipHovered(true)
-      }} className='relative flex'>
+    <div
+      ref={outsideClickRef as React.RefObject<HTMLDivElement>}
+      className='relative'
+      onMouseLeave={() => setTooltipHovered(false)}
+    >
+      <div
+        onMouseEnter={() => setTooltipHovered(true)}
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          setTooltipHovered(true)
+        }}
+        className='relative flex'
+      >
         {children}
       </div>
       {showTooltip && tooltipHovered && (

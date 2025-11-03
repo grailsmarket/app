@@ -14,7 +14,7 @@ const useCartDomains = () => {
   const offerDomains = cartRegisteredDomains.filter((domain) => !domain.listings[0]?.price)
   const cartIsEmpty = cartRegisteredDomains.length === 0 && cartUnregisteredDomains.length === 0
 
-  const isAddedToCart = (tokenId: number) => {
+  const isAddedToCart = (tokenId: string) => {
     const inCart =
       cartRegisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0 ||
       cartUnregisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0

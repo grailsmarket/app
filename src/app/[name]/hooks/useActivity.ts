@@ -35,10 +35,13 @@ export const useNameActivity = (name: string) => {
   }, [activity])
   const activityLoading = isLoading || isFetchingNextPage
 
+  const isActivityEmpty = activityData.length === 0 && !activityLoading
+
   return {
     activity: activityData,
     activityLoading,
     fetchMoreActivity,
     hasMoreActivity,
+    isActivityEmpty,
   }
 }

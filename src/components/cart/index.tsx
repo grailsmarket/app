@@ -45,7 +45,7 @@ const Cart = () => {
     >
       <div
         className={cn(
-          'bg-background border-primary p-lg md:p-2xl relative flex h-full w-full md:max-w-2xl flex-col gap-10 transition-transform duration-300 md:border-l-2',
+          'bg-background border-primary p-lg md:p-2xl relative flex h-full w-full flex-col gap-10 transition-transform duration-300 md:max-w-2xl md:border-l-2',
           isAnimating ? 'translate-x-0' : 'translate-x-full'
         )}
         onClick={(e) => e.stopPropagation()}

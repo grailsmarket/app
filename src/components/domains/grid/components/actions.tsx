@@ -1,15 +1,15 @@
-import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import React from 'react'
 import useCartDomains from '@/hooks/useCartDomains'
-import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import CartIcon from '../../table/components/CartIcon'
-import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
+import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
-import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -63,6 +63,8 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
+      if (registrationStatus !== REGISTERED) return null
+
       if (domainListing?.price) {
         return (
           <div className='py-md flex flex-row justify-end gap-4 opacity-100'>
@@ -122,13 +124,15 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
       )}
       <div className='flex items-center lg:gap-x-2'>
         {/* <Watchlist domain={domain} tooltipAlign={isFirstInRow ? 'left' : 'right'} /> */}
-        {canAddToCart && <button
-          className='cursor-pointer rounded-sm p-1.5'
-          disabled={!canAddToCart}
-          onClick={(e) => onSelect(e, domain)}
-        >
-          <CartIcon domain={domain} className='p-0' />
-        </button>}
+        {canAddToCart && (
+          <button
+            className='cursor-pointer rounded-sm p-1.5'
+            disabled={!canAddToCart}
+            onClick={(e) => onSelect(e, domain)}
+          >
+            <CartIcon domain={domain} className='p-0' />
+          </button>
+        )}
       </div>
     </div>
   )

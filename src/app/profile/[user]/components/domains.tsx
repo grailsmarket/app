@@ -50,7 +50,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100vh - 200px)'
+        maxHeight='calc(100vh - 190px)'
         domains={domains}
         loadingRowCount={20}
         noResults={!domainsLoading && domains?.length === 0}

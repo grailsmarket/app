@@ -1,5 +1,4 @@
 import React from 'react'
-import Image from 'next/image'
 import { useAccount } from 'wagmi'
 import { Address, formatEther } from 'viem'
 import { formatEtherPrice } from '@/utils/formatEtherPrice'
@@ -9,13 +8,13 @@ import Tooltip from '@/components/ui/tooltip'
 import SaleAsset from '@/components/ui/asset'
 import { MarketplaceDomainType } from '@/types/domains'
 import { REGISTERED, GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
-import { getDomainImage } from '@/utils/getDomainImage'
 import { cn } from '@/utils/tailwind'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Actions from './actions'
 import useETHPrice from '@/hooks/useETHPrice'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import Link from 'next/link'
+import NameImage from '@/components/ui/nameImage'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -35,17 +34,15 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
     <Link
       href={`/${domain.name}`}
       className={cn(
-        'group bg-secondary flex h-[440px] xs:h-[330px] w-full cursor-pointer flex-col rounded-sm opacity-70 transition hover:opacity-100',
+        'group bg-secondary xs:h-[330px] flex h-[440px] w-full cursor-pointer flex-col rounded-sm opacity-70 transition hover:opacity-100',
         className
       )}
     >
-      <div className='relative flex max-h-[320px] xs:max-h-[250px] w-full flex-col justify-between sm:max-h-[240px]'>
-        <Image
-          src={getDomainImage(domain.token_id)}
-          alt='Domain image'
-          unoptimized
-          width={200}
-          height={200}
+      <div className='xs:max-h-[250px] relative flex max-h-[320px] w-full flex-col justify-between sm:max-h-[240px]'>
+        <NameImage
+          name={domain.name}
+          tokenId={domain.token_id}
+          expiryDate={domain.expiry_date}
           className='h-full w-full rounded-t-sm object-cover'
         />
         {!domainIsValid && (
@@ -60,7 +57,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
           </div>
         )}
       </div>
-      <div className='flex w-full flex-1 flex-col justify-between gap-1 p-lg'>
+      <div className='p-lg flex w-full flex-1 flex-col justify-between gap-1'>
         <div className='flex w-full flex-col'>
           {registrationStatus !== GRACE_PERIOD &&
             (registrationStatus === REGISTERED ? (

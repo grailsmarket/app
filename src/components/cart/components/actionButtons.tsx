@@ -54,7 +54,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   return (
     <PrimaryButton
-      className={`w-20 sm:w-24 cursor-pointer rounded-sm p-1.5`}
+      className={`w-20 cursor-pointer rounded-sm p-1.5 sm:w-24`}
       onClick={(e) => clickHandler(e, openMakeOfferModal)}
     >
       Offer

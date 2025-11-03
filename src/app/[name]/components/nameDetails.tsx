@@ -1,4 +1,3 @@
-import { DOMAIN_IMAGE_URL } from '@/constants'
 import Image from 'next/image'
 import React, { ReactNode, useState } from 'react'
 import { Address, numberToHex } from 'viem'
@@ -10,6 +9,9 @@ import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Price from '@/components/ui/price'
+import { beautifyName } from '@/lib/ens'
+import NameImage from '@/components/ui/nameImage'
+import { CLUB_LABELS } from '@/constants/domains/marketplaceDomains'
 
 type Row = {
   label: string
@@ -28,15 +30,12 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
   const rows: Row[] = [
     {
       label: 'Name',
-      value: name,
+      value: nameDetails?.name ? beautifyName(nameDetails.name) : name,
       canCopy: true,
     },
     {
-      label: 'Owner',
-      value:
-        nameDetails?.owner && registrationStatus !== UNREGISTERED ? (
-          <User address={nameDetails?.owner as `0x${string}`} />
-        ) : null,
+      label: registrationStatus === UNREGISTERED ? 'Previous Owner' : 'Owner',
+      value: nameDetails?.owner ? <User address={nameDetails?.owner as `0x${string}`} /> : null,
       canCopy: false,
     },
     // {
@@ -46,7 +45,10 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     // },
     {
       label: 'Club',
-      value: nameDetails?.clubs?.join(', ') || 'None',
+      value:
+        nameDetails?.clubs && nameDetails?.clubs.length > 0
+          ? nameDetails?.clubs?.map((club) => CLUB_LABELS[club as keyof typeof CLUB_LABELS]).join(', ')
+          : 'None',
       canCopy: false,
     },
     {
@@ -66,7 +68,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
       canCopy: false,
     },
     {
-      label: 'Expires',
+      label: registrationStatus === UNREGISTERED ? 'Expired' : 'Expires',
       value: nameDetails?.expiry_date ? formatExpiryDate(nameDetails.expiry_date) : null,
       canCopy: false,
     },
@@ -77,7 +79,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     },
     {
       label: 'Namehash',
-      value: numberToHex(nameDetails?.token_id ?? 0),
+      value: nameDetails?.token_id ? numberToHex(BigInt(nameDetails.token_id)) : null,
       canCopy: true,
     },
   ]
@@ -86,13 +88,11 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     <div className='flex flex-col'>
       <div>
         {nameDetails?.token_id && (
-          <Image
-            unoptimized
-            src={`${DOMAIN_IMAGE_URL}/${numberToHex(nameDetails.token_id)}/image`}
-            alt={nameDetails.name}
-            width={600}
-            height={600}
-            className='aspect-square h-full w-full'
+          <NameImage
+            name={nameDetails.name}
+            tokenId={nameDetails.token_id}
+            expiryDate={nameDetails.expiry_date}
+            className='aspect-square'
           />
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}

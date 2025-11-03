@@ -27,11 +27,14 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   return (
     <FilterProvider filterType='profile' profileTab={profileTab}>
-      <div className='p-lg z-50'>
-        <div className='p-lg bg-background border-primary relative z-10 flex gap-4 rounded-lg border-2'>
+      <div className='md:p-lg z-50 mt-12 md:mt-0'>
+        <div
+          style={{ height: 'calc(100vh - 160px)' }}
+          className='p-lg bg-background border-primary relative z-10 flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
+        >
           <FilterPanel />
           <div
-            className='pt-lg flex flex-col gap-4'
+            className='md:pt-lg flex flex-col gap-4'
             style={{
               width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
             }}

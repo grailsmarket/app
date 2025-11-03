@@ -5,7 +5,7 @@ import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatu
 export type MarketplaceDomainType = {
   id: number
   name: string
-  token_id: number
+  token_id: string
   owner: Address | null
   expiry_date: string | null
   registration_date: string | null
@@ -52,7 +52,7 @@ export type DomainOfferType = {
   expires_at: string
   source: string
   name: string
-  token_id: number
+  token_id: string
   order_data: DomainOfferOrderDataType
   order_hash: Hex
 }
@@ -375,7 +375,7 @@ export type WatchlistItemType = {
   addedAt: string
   nameData: {
     name: string
-    tokenId: number
+    tokenId: string
     activeListing: DomainListingType | null
     ownerAddress: Address | null
     hasActiveListing: boolean

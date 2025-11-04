@@ -262,32 +262,187 @@ export class SeaportClient {
             to: toAddress,
             data: tx.data?.slice(0, 10),
             hasValue: !!tx.value,
+            chainId: publicClient.chain?.id,
           })
           if (!toAddress) {
             console.error('Call without address:', tx)
             throw new Error('Transaction "to" or "target" field is required')
           }
-          const result = await publicClient.call({
-            to: toAddress,
-            data: tx.data,
-            value: tx.value ? BigInt(tx.value) : undefined,
-          })
-          return result.data || '0x'
+          
+          try {
+            const result = await publicClient.call({
+              to: toAddress,
+              data: tx.data,
+              value: tx.value ? BigInt(tx.value) : undefined,
+            })
+            
+            console.log('Provider.call result:', {
+              to: toAddress,
+              data: tx.data?.slice(0, 10),
+              resultData: result.data?.slice(0, 10),
+              resultLength: result.data?.length,
+            })
+            
+            if (!result.data || result.data === '0x') {
+              console.warn('Contract call returned no data, trying alternative method:', { 
+                to: toAddress, 
+                data: tx.data,
+                isWETHContract: toAddress.toLowerCase() === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+              })
+              
+              // Try alternative method for WalletConnect providers
+              try {
+                // For balanceOf calls (0x70a08231)
+                if (tx.data?.startsWith('0x70a08231')) {
+                  const account = `0x${tx.data.slice(34)}` as `0x${string}`
+                  const balance = await publicClient.readContract({
+                    address: toAddress as `0x${string}`,
+                    abi: [{
+                      name: 'balanceOf',
+                      type: 'function',
+                      stateMutability: 'view',
+                      inputs: [{ name: 'account', type: 'address' }],
+                      outputs: [{ name: '', type: 'uint256' }],
+                    }],
+                    functionName: 'balanceOf',
+                    args: [account],
+                  })
+                  
+                  console.log('Alternative balanceOf succeeded:', { to: toAddress, account, balance })
+                  return `0x${(balance as bigint).toString(16).padStart(64, '0')}`
+                }
+                
+                // For ownerOf calls (0x6352211e)
+                if (tx.data?.startsWith('0x6352211e')) {
+                  const tokenId = BigInt(`0x${tx.data.slice(10)}`)
+                  const owner = await publicClient.readContract({
+                    address: toAddress as `0x${string}`,
+                    abi: [{
+                      name: 'ownerOf',
+                      type: 'function',
+                      stateMutability: 'view',
+                      inputs: [{ name: 'tokenId', type: 'uint256' }],
+                      outputs: [{ name: '', type: 'address' }],
+                    }],
+                    functionName: 'ownerOf',
+                    args: [tokenId],
+                  })
+                  
+                  console.log('Alternative ownerOf succeeded:', { to: toAddress, tokenId, owner })
+                  return `0x${(owner as string).slice(2).padStart(64, '0')}`
+                }
+                
+                throw new Error('Unknown function signature')
+              } catch (altError: any) {
+                console.error('Alternative readContract also failed:', altError.message)
+                throw new Error(`Contract call to ${toAddress} returned no data`)
+              }
+            }
+            
+            return result.data
+          } catch (error: any) {
+            console.error('Provider.call failed:', {
+              to: toAddress,
+              data: tx.data?.slice(0, 10),
+              error: error.message,
+              chainId: publicClient.chain?.id,
+            })
+            throw new Error(`Contract call failed: ${error.message}`)
+          }
         },
         // Add staticCall method that Seaport might be using
         staticCall: async (tx: EthersTransaction) => {
           const toAddress = tx.to || tx.target
-          console.log('Provider.staticCall invoked with:', { to: toAddress, data: tx.data?.slice(0, 10) })
+          console.log('Provider.staticCall invoked with:', {
+            to: toAddress,
+            data: tx.data?.slice(0, 10),
+            chainId: publicClient.chain?.id,
+          })
           if (!toAddress) {
             console.error('StaticCall without address:', tx)
             throw new Error('Transaction "to" or "target" field is required for staticCall')
           }
-          const result = await publicClient.call({
-            to: toAddress,
-            data: tx.data,
-            value: tx.value ? BigInt(tx.value) : undefined,
-          })
-          return result.data || '0x'
+          
+          try {
+            const result = await publicClient.call({
+              to: toAddress,
+              data: tx.data,
+              value: tx.value ? BigInt(tx.value) : undefined,
+            })
+            
+            console.log('Provider.staticCall result:', {
+              to: toAddress,
+              data: tx.data?.slice(0, 10),
+              resultData: result.data?.slice(0, 10),
+              resultLength: result.data?.length,
+            })
+            
+            if (!result.data || result.data === '0x') {
+              console.warn('Static contract call returned no data, trying alternative method:', { 
+                to: toAddress, 
+                data: tx.data,
+                isWETHContract: toAddress.toLowerCase() === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+              })
+              
+              // Try alternative method for WalletConnect providers
+              try {
+                // For balanceOf calls (0x70a08231)
+                if (tx.data?.startsWith('0x70a08231')) {
+                  const account = `0x${tx.data.slice(34)}` as `0x${string}`
+                  const balance = await publicClient.readContract({
+                    address: toAddress as `0x${string}`,
+                    abi: [{
+                      name: 'balanceOf',
+                      type: 'function',
+                      stateMutability: 'view',
+                      inputs: [{ name: 'account', type: 'address' }],
+                      outputs: [{ name: '', type: 'uint256' }],
+                    }],
+                    functionName: 'balanceOf',
+                    args: [account],
+                  })
+                  
+                  console.log('Alternative staticCall balanceOf succeeded:', { to: toAddress, account, balance })
+                  return `0x${(balance as bigint).toString(16).padStart(64, '0')}`
+                }
+                
+                // For ownerOf calls (0x6352211e)
+                if (tx.data?.startsWith('0x6352211e')) {
+                  const tokenId = BigInt(`0x${tx.data.slice(10)}`)
+                  const owner = await publicClient.readContract({
+                    address: toAddress as `0x${string}`,
+                    abi: [{
+                      name: 'ownerOf',
+                      type: 'function',
+                      stateMutability: 'view',
+                      inputs: [{ name: 'tokenId', type: 'uint256' }],
+                      outputs: [{ name: '', type: 'address' }],
+                    }],
+                    functionName: 'ownerOf',
+                    args: [tokenId],
+                  })
+                  
+                  console.log('Alternative staticCall ownerOf succeeded:', { to: toAddress, tokenId, owner })
+                  return `0x${(owner as string).slice(2).padStart(64, '0')}`
+                }
+                
+                throw new Error('Unknown function signature')
+              } catch (altError: any) {
+                console.error('Alternative staticCall readContract also failed:', altError.message)
+                throw new Error(`Static contract call to ${toAddress} returned no data`)
+              }
+            }
+            
+            return result.data
+          } catch (error: any) {
+            console.error('Provider.staticCall failed:', {
+              to: toAddress,
+              data: tx.data?.slice(0, 10),
+              error: error.message,
+              chainId: publicClient.chain?.id,
+            })
+            throw new Error(`Static contract call failed: ${error.message}`)
+          }
         },
         estimateGas: async (tx: EthersTransaction) => {
           const toAddress = tx.to || tx.target
@@ -334,16 +489,96 @@ export class SeaportClient {
         await publicClient.getTransactionCount({ address: address as `0x${string}` }),
       call: async (tx: EthersTransaction) => {
         const toAddress = tx.to || tx.target
+        console.log('Read-only provider.call invoked with:', {
+          to: toAddress,
+          data: tx.data?.slice(0, 10),
+          chainId: publicClient.chain?.id,
+        })
         if (!toAddress) {
           console.error('Provider call without address:', tx)
           throw new Error('Transaction "to" or "target" field is required')
         }
-        const result = await publicClient.call({
-          to: toAddress,
-          data: tx.data,
-          value: tx.value ? BigInt(tx.value) : undefined,
-        })
-        return result.data || '0x'
+        
+        try {
+          const result = await publicClient.call({
+            to: toAddress,
+            data: tx.data,
+            value: tx.value ? BigInt(tx.value) : undefined,
+          })
+          
+          console.log('Read-only provider.call result:', {
+            to: toAddress,
+            data: tx.data?.slice(0, 10),
+            resultData: result.data?.slice(0, 10),
+            resultLength: result.data?.length,
+          })
+          
+          if (!result.data || result.data === '0x') {
+            console.warn('Read-only contract call returned no data, trying alternative method:', { 
+              to: toAddress, 
+              data: tx.data,
+              isWETHContract: toAddress.toLowerCase() === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            })
+            
+            // Try alternative method for WalletConnect providers
+            try {
+              // For balanceOf calls (0x70a08231)
+              if (tx.data?.startsWith('0x70a08231')) {
+                const account = `0x${tx.data.slice(34)}` as `0x${string}`
+                const balance = await publicClient.readContract({
+                  address: toAddress as `0x${string}`,
+                  abi: [{
+                    name: 'balanceOf',
+                    type: 'function',
+                    stateMutability: 'view',
+                    inputs: [{ name: 'account', type: 'address' }],
+                    outputs: [{ name: '', type: 'uint256' }],
+                  }],
+                  functionName: 'balanceOf',
+                  args: [account],
+                })
+                
+                console.log('Alternative read-only balanceOf succeeded:', { to: toAddress, account, balance })
+                return `0x${(balance as bigint).toString(16).padStart(64, '0')}`
+              }
+              
+              // For ownerOf calls (0x6352211e)
+              if (tx.data?.startsWith('0x6352211e')) {
+                const tokenId = BigInt(`0x${tx.data.slice(10)}`)
+                const owner = await publicClient.readContract({
+                  address: toAddress as `0x${string}`,
+                  abi: [{
+                    name: 'ownerOf',
+                    type: 'function',
+                    stateMutability: 'view',
+                    inputs: [{ name: 'tokenId', type: 'uint256' }],
+                    outputs: [{ name: '', type: 'address' }],
+                  }],
+                  functionName: 'ownerOf',
+                  args: [tokenId],
+                })
+                
+                console.log('Alternative read-only ownerOf succeeded:', { to: toAddress, tokenId, owner })
+                return `0x${(owner as string).slice(2).padStart(64, '0')}`
+              }
+              
+              throw new Error('Unknown function signature')
+            } catch (altError: any) {
+              console.error('Alternative read-only readContract also failed:', altError.message)
+              throw new Error(`Contract call to ${toAddress} returned no data`)
+            }
+          }
+          
+          return result.data
+        } catch (error: any) {
+          console.error('Read-only provider.call failed:', {
+            to: toAddress,
+            data: tx.data?.slice(0, 10),
+            error: error.message,
+            chainId: publicClient.chain?.id,
+          })
+          throw new Error(`Contract call failed: ${error.message}`)
+        }
       },
       estimateGas: async (tx: EthersTransaction) => {
         const toAddress = tx.to || tx.target

@@ -30,3 +30,12 @@ export type ProfileActivityType = {
   token_id: string
   metadata: Record<string, unknown>
 }
+
+export type SearchENSProfile = {
+  name: string
+  resolvedAddress: { id: Address | string } | null
+}
+
+export type SearchENSProfilesResults = {
+  domains: SearchENSProfile[]
+}

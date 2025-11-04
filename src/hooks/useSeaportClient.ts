@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
+import { useWalletClient, usePublicClient } from 'wagmi'
 import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import { createOffer as createOfferApi } from '@/api/offers/create'
 import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
+import { useUserContext } from '@/context/user'
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
-  const { address, isConnected } = useAccount()
+  const { userAddress: address, authStatus } = useUserContext()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
   const [isInitialized, setIsInitialized] = useState(false)
@@ -23,7 +24,7 @@ export function useSeaportClient() {
         return
       }
 
-      if (!walletClient) {
+      if (!walletClient || !address || authStatus !== 'authenticated') {
         console.log('Skipping Seaport init - no walletClient')
         return
       }
@@ -32,7 +33,7 @@ export function useSeaportClient() {
         console.log('Initializing Seaport...', {
           hasPublicClient: !!publicClient,
           hasWalletClient: !!walletClient,
-          isConnected,
+          authStatus,
         })
         // Pass viem clients directly
         await seaportClient.initialize(publicClient, walletClient || undefined)
@@ -46,7 +47,7 @@ export function useSeaportClient() {
     }
 
     initializeSeaport()
-  }, [publicClient, walletClient, isConnected])
+  }, [publicClient, walletClient, address, authStatus])
 
   const refetchListingQueries = useCallback(() => {
     queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
@@ -54,8 +55,11 @@ export function useSeaportClient() {
   }, [queryClient])
 
   const refetchOfferQueries = useCallback(() => {
-    queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
-    queryClient.refetchQueries({ queryKey: ['my_offers'] })
+    // Timeout to ensure DB is fully updated (does not work without timeout)
+    setTimeout(() => {
+      queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
+      queryClient.refetchQueries({ queryKey: ['my_offers'] })
+    }, 500)
   }, [queryClient])
 
   // Create a listing

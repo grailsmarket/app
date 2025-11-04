@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { MagnifyingGlass } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
+import { setSearchModalOpen } from '@/state/reducers/modals/searchModal'
+import { useAppDispatch } from '@/state/hooks'
 
 interface SearchbarProps {
   onSearch: (search: string) => void
@@ -18,7 +20,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
   showSearchIcon = true,
 }) => {
   const [search, setSearch] = useState('')
-
+  const dispatch = useAppDispatch()
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
   }
@@ -35,6 +37,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
         'bg-secondary border-foreground/10 focus-within:bg-tertiary hover:bg-tertiary active:bg-tertiary p-lg group relative flex items-center gap-2 rounded-md border transition-all focus-within:scale-[1.01] focus-within:shadow-md',
         className
       )}
+      onClick={() => dispatch(setSearchModalOpen(true))}
     >
       <input
         type='text'

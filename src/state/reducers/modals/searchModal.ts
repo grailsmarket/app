@@ -2,15 +2,15 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 
 // Types --------------------------------------------
-type CancelOfferModalState = {
+type GlobalSearchModalState = {
   open: boolean
-  search: string | null
+  query: string
 }
 
 // Initial State ------------------------------------
-const initialState: CancelOfferModalState = {
+const initialState: GlobalSearchModalState = {
   open: false,
-  search: null,
+  query: '',
 }
 
 // Slice -------------------------------------------
@@ -21,14 +21,14 @@ export const SearchModalSlice = createSlice({
     setSearchModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    setSearchModalSearch(state, { payload }: PayloadAction<string | null>) {
-      state.search = payload
+    setSearchModalQuery(state, { payload }: PayloadAction<string>) {
+      state.query = payload
     },
   },
 })
 
 // Actions --------------------------------------------
-export const { setSearchModalOpen, setSearchModalSearch } = SearchModalSlice.actions
+export const { setSearchModalOpen, setSearchModalQuery } = SearchModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectSearchModal = (state: RootState) => state.modals.searchReducer

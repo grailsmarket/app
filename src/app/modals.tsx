@@ -14,6 +14,8 @@ import CancelListingModal from '@/components/modal/listing/cancelListingModal'
 import CreateOfferModal from '@/components/modal/offer/createOfferModal'
 import CancelOfferModal from '@/components/modal/offer/cancelOfferModal'
 import AcceptOfferModal from '@/components/modal/offer/acceptOfferModal'
+import GlobalSearchModal from '@/components/modal/search/globalSearchModal'
+import { selectSearchModal, setSearchModalOpen } from '@/state/reducers/modals/searchModal'
 
 const Modals: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -35,6 +37,7 @@ const Modals: React.FC = () => {
     listing: buyNowModalListing,
     domain: buyNowModalDomain,
   } = useAppSelector(selectBuyNowModal)
+  const { open: searchModalOpen, query: searchModalQuery } = useAppSelector(selectSearchModal)
 
   return (
     <div>
@@ -74,6 +77,11 @@ const Modals: React.FC = () => {
           domain={acceptOfferModalDomain}
         />
       )}
+      <GlobalSearchModal
+        isOpen={searchModalOpen}
+        onClose={() => dispatch(setSearchModalOpen(false))}
+        initialQuery={searchModalQuery}
+      />
     </div>
   )
 }

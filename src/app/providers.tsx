@@ -31,7 +31,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={config} initialState={initialState}>
           <RainbowKitProvider coolMode={false} theme={darkTheme()}>
-            <TransactionProvider batchTransactions={true}>
+            <TransactionProvider batchTransactions={false}>
               <ReduxProvider store={store}>
                 <UserProvider>
                   <Navigation />

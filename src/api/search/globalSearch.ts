@@ -1,7 +1,6 @@
 import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { MarketplaceDomainType, ClubType } from '@/types/domains'
-import { fetchClubs } from '../domains/fetchClubs'
 import { searchProfiles } from '../search-profiles'
 import { SearchENSProfile } from '@/types/profile'
 
@@ -11,7 +10,7 @@ export interface GlobalSearchResult {
   profiles: SearchENSProfile[]
 }
 
-export const globalSearch = async (query: string): Promise<GlobalSearchResult> => {
+export const globalSearch = async (query: string, clubs: ClubType[]): Promise<GlobalSearchResult> => {
   if (!query.trim()) {
     return { domains: [], clubs: [], profiles: [] }
   }
@@ -33,8 +32,7 @@ export const globalSearch = async (query: string): Promise<GlobalSearchResult> =
     }>
 
     // Search clubs
-    const clubRes = await fetchClubs()
-    const filteredClubs = clubRes
+    const filteredClubs = clubs
       .filter(
         (club) =>
           club.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -46,7 +44,7 @@ export const globalSearch = async (query: string): Promise<GlobalSearchResult> =
     const profiles = await searchProfiles({ search: query })
 
     return {
-      domains: (domainData.data.names || domainData.data.results || []).slice(0, 5),
+      domains: (domainData.data.names || domainData.data.results || []).slice(0, 6),
       clubs: filteredClubs,
       profiles,
     }

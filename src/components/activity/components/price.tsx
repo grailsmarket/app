@@ -5,14 +5,15 @@ import PriceComponent from '@/components/ui/price'
 interface PriceProps {
   price: string | number | null
   currencyAddress: Address | null
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
 }
 
-const Price: React.FC<PriceProps> = ({ price, currencyAddress }) => {
+const Price: React.FC<PriceProps> = ({ price, currencyAddress, tooltipPosition }) => {
   if (!currencyAddress || !price) return null
 
   return (
     <div className='flex w-full flex-row items-center gap-1'>
-      <PriceComponent price={price} currencyAddress={currencyAddress} tooltipPosition='bottom' />
+      <PriceComponent price={price} currencyAddress={currencyAddress} tooltipPosition={tooltipPosition} />
     </div>
   )
 }

@@ -53,13 +53,17 @@ const Connected = () => {
       >
         <Link
           href={`/profile/${userAddress}`}
+          onClick={() => setWalletDropdownOpen(false)}
           className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
         >
           My Profile
         </Link>
         <button
+          onClick={() => {
+            setWalletDropdownOpen(false)
+            handleSignOut()
+          }}
           className='flex cursor-pointer items-center gap-2 rounded-sm px-1 text-red-400 transition-opacity hover:opacity-80'
-          onClick={handleSignOut}
         >
           <p>Sign out</p>
         </button>

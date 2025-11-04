@@ -112,7 +112,7 @@ const Activity: React.FC<ActivityProps> = ({
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
-            renderItem={(item) => {
+            renderItem={(item, index) => {
               if (!item)
                 return (
                   <div className='px-lg flex h-[60px] w-full items-center'>
@@ -125,6 +125,7 @@ const Activity: React.FC<ActivityProps> = ({
                   activity={item}
                   displayedColumns={displayedColumns}
                   displayedAddress={displayedAddress}
+                  index={index}
                 />
               )
             }}

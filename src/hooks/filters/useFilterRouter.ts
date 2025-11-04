@@ -139,6 +139,26 @@ import {
   clearActivityFilters,
 } from '@/state/reducers/filters/profileActivityFilters'
 
+// Import clubDomains selectors and actions
+import {
+  emptyFilterState as emptyFilterStateClubDomainsFilters,
+  selectClubDomainsFilters,
+  setFiltersOpen as setClubDomainsFiltersOpen,
+  toggleFiltersStatus as toggleClubDomainsFiltersStatus,
+  setFiltersStatus as setClubDomainsFiltersStatus,
+  toggleFiltersType as toggleClubDomainsFiltersType,
+  setFiltersType as setClubDomainsFiltersType,
+  setFiltersLength as setClubDomainsFiltersLength,
+  setPriceDenomination as setClubDomainsPriceDenomination,
+  setPriceRange as setClubDomainsPriceRange,
+  toggleCategory as toggleClubDomainsCategory,
+  setFiltersCategory as setClubDomainsFiltersCategory,
+  setSort as setClubDomainsSort,
+  setSearch as setClubDomainsSearch,
+  toggleFilterOpen as toggleClubDomainsFilterOpen,
+  clearFilters as clearClubDomainsFilters,
+} from '@/state/reducers/filters/clubDomainsFilters'
+
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType, portfolioTab, profileTab } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
@@ -148,6 +168,10 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
+    if (filterType === 'club') {
+      return selectClubDomainsFilters(state)
+    }
+
     if (filterType === 'profile') {
       if (profileTab === 'domains') {
         return selectProfileDomainsFilters(state)
@@ -177,6 +201,25 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
+    if (filterType === 'club') {
+      return {
+        setFiltersOpen: setClubDomainsFiltersOpen,
+        toggleFiltersStatus: toggleClubDomainsFiltersStatus,
+        setFiltersStatus: setClubDomainsFiltersStatus,
+        toggleFiltersType: toggleClubDomainsFiltersType,
+        setFiltersType: setClubDomainsFiltersType,
+        setFiltersLength: setClubDomainsFiltersLength,
+        setPriceDenomination: setClubDomainsPriceDenomination,
+        setPriceRange: setClubDomainsPriceRange,
+        toggleCategory: toggleClubDomainsCategory,
+        setFiltersCategory: setClubDomainsFiltersCategory,
+        setSort: setClubDomainsSort,
+        setSearch: setClubDomainsSearch,
+        toggleFilterOpen: toggleClubDomainsFilterOpen,
+        clearFilters: clearClubDomainsFilters,
+      }
+    }
+
     if (filterType === 'profile') {
       if (profileTab === 'domains') {
         return {
@@ -315,6 +358,10 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   }, [filterType, portfolioTab, profileTab])
 
   const emptyFilterState = useMemo(() => {
+    if (filterType === 'club') {
+      return emptyFilterStateClubDomainsFilters
+    }
+
     if (filterType === 'profile') {
       if (profileTab === 'domains') {
         return emptyFilterStateProfileDomainsFilters

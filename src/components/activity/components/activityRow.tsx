@@ -13,9 +13,10 @@ interface ActivityRowProps {
   activity: ProfileActivityType
   displayedColumns: ActivityColumnType[]
   displayedAddress?: Address
+  index: number
 }
 
-const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, displayedAddress }) => {
+const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, displayedAddress, index }) => {
   const addressToShow = useMemo(() => {
     if (displayedAddress) {
       if (activity.counterparty_address === displayedAddress) {
@@ -32,7 +33,13 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   const columns = {
     event: <Event event={activity.event_type} />,
     name: <Name name={activity.name} tokenId={activity.token_id} />,
-    price: <Price price={activity.price_wei} currencyAddress={activity.currency_address} />,
+    price: (
+      <Price
+        price={activity.price_wei}
+        currencyAddress={activity.currency_address}
+        tooltipPosition={index === 0 ? 'bottom' : 'top'}
+      />
+    ),
     counterparty: addressToShow && <User address={addressToShow} />,
     from: activity.actor_address && <User address={activity.actor_address} />,
     to: activity.counterparty_address && <User address={activity.counterparty_address} />,

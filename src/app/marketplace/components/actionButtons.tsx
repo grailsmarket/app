@@ -6,17 +6,17 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import { persistor } from '@/state'
-import { useAppSelector } from '@/state/hooks'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 const ActionButtons = () => {
-  const { open } = useAppSelector(selectMarketplaceFilters)
+  const { selectors } = useFilterRouter()
   const { clearCart, cartIsEmpty } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
   const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
+  const open = selectors.filters.open
 
   return (
     <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>

@@ -29,7 +29,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             expiryDate={domain.expiry_date}
             className='h-8 w-8 rounded-sm sm:h-[34px] sm:w-[34px]'
           />
-          <div className='flex flex-col truncate gap-px max-w-full'>
+          <div className='flex max-w-full flex-col gap-px truncate'>
             <p
               className={cn(
                 'text-md truncate leading-[18px] font-bold',

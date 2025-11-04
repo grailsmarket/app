@@ -6,10 +6,7 @@ export const useCategories = () => {
     queryKey: ['clubs'],
     queryFn: async () => {
       const results = await fetchClubs()
-      return results.map((club) => ({
-        category: club.name,
-        owner_count: club.member_count,
-      }))
+      return results
     },
   })
 

@@ -4,7 +4,7 @@ import React from 'react'
 import { FilterProvider } from '@/context/filters'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
-import ActionButtons from '@/app/portfolio/components/actionButtons'
+import ActionButtons from '@/app/marketplace/components/actionButtons'
 import { useWindowSize } from 'ethereum-identity-kit'
 
 interface Props {
@@ -16,7 +16,7 @@ const MainPanel: React.FC<Props> = ({ club }) => {
 
   return (
     <FilterProvider filterType='club'>
-      <div className='p-lg z-50'>
+      <div className='p-lg z-10'>
         <div className='p-lg bg-background border-primary relative z-10 flex gap-4 rounded-lg border-2'>
           <FilterPanel />
           <div

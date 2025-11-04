@@ -24,7 +24,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
       <h2 className='px-lg lg:px-xl font-sedan-sc text-3xl'>Activity</h2>
       <Activity
         maxHeight={width && width < 1024 ? '100%' : '520px'}
-        paddingBottom={width && width < 1024 ? '0px' : '30px'}
+        paddingBottom='0px'
         activity={activity}
         loadingRowCount={20}
         noResults={isActivityEmpty}

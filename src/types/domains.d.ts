@@ -390,6 +390,12 @@ export type ClubType = {
   name: string
   description: string
   member_count: number
+  floor_price_wei: string
+  floor_price_currency: Address
+  total_sales_count: number
+  total_sales_volume_wei: string
+  last_floor_update: string
+  last_sales_update: string
   created_at: string
   updated_at: string
 }

@@ -49,7 +49,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           }`}
         >
           {categories?.map((category, index) => (
-            <CategoryFilter key={index} category={category.category} owner_count={category.owner_count} />
+            <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />
           ))}
           <div className='flex-1' />
         </div>

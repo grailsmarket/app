@@ -443,6 +443,25 @@ export function useSeaportClient() {
     [isInitialized]
   )
 
+  // Reinitialize Seaport client (useful after chain switch)
+  const reinitializeSeaport = useCallback(async () => {
+    if (!publicClient) {
+      console.log('Cannot reinitialize - no publicClient')
+      return
+    }
+
+    try {
+      console.log('Reinitializing Seaport after chain switch...')
+      await seaportClient.initialize(publicClient, walletClient || undefined)
+      setIsInitialized(true)
+      console.log('Seaport reinitialized successfully')
+    } catch (err) {
+      console.error('Failed to reinitialize Seaport:', err)
+      setError('Failed to reinitialize Seaport client')
+      setIsInitialized(false)
+    }
+  }, [publicClient, walletClient])
+
   // Get conduit configuration
   const conduitConfig = seaportClient.getConduitConfig()
 
@@ -458,5 +477,6 @@ export function useSeaportClient() {
     validateOrder,
     getOrderStatus,
     conduitConfig,
+    reinitializeSeaport,
   }
 }

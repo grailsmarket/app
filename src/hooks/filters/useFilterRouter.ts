@@ -139,25 +139,25 @@ import {
   clearActivityFilters,
 } from '@/state/reducers/filters/profileActivityFilters'
 
-// Import clubDomains selectors and actions
+// Import categoryDomains selectors and actions
 import {
-  emptyFilterState as emptyFilterStateClubDomainsFilters,
-  selectClubDomainsFilters,
-  setFiltersOpen as setClubDomainsFiltersOpen,
-  toggleFiltersStatus as toggleClubDomainsFiltersStatus,
-  setFiltersStatus as setClubDomainsFiltersStatus,
-  toggleFiltersType as toggleClubDomainsFiltersType,
-  setFiltersType as setClubDomainsFiltersType,
-  setFiltersLength as setClubDomainsFiltersLength,
-  setPriceDenomination as setClubDomainsPriceDenomination,
-  setPriceRange as setClubDomainsPriceRange,
-  toggleCategory as toggleClubDomainsCategory,
-  setFiltersCategory as setClubDomainsFiltersCategory,
-  setSort as setClubDomainsSort,
-  setSearch as setClubDomainsSearch,
-  toggleFilterOpen as toggleClubDomainsFilterOpen,
-  clearFilters as clearClubDomainsFilters,
-} from '@/state/reducers/filters/clubDomainsFilters'
+  emptyFilterState as emptyFilterStateCategoryDomainsFilters,
+  selectCategoryDomainsFilters,
+  setFiltersOpen as setCategoryDomainsFiltersOpen,
+  toggleFiltersStatus as toggleCategoryDomainsFiltersStatus,
+  setFiltersStatus as setCategoryDomainsFiltersStatus,
+  toggleFiltersType as toggleCategoryDomainsFiltersType,
+  setFiltersType as setCategoryDomainsFiltersType,
+  setFiltersLength as setCategoryDomainsFiltersLength,
+  setPriceDenomination as setCategoryDomainsPriceDenomination,
+  setPriceRange as setCategoryDomainsPriceRange,
+  toggleCategory as toggleCategoryDomainsCategory,
+  setFiltersCategory as setCategoryDomainsFiltersCategory,
+  setSort as setCategoryDomainsSort,
+  setSearch as setCategoryDomainsSearch,
+  toggleFilterOpen as toggleCategoryDomainsFilterOpen,
+  clearFilters as clearCategoryDomainsFilters,
+} from '@/state/reducers/filters/categoryDomainsFilters'
 
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType, portfolioTab, profileTab } = useFilterContext()
@@ -168,8 +168,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
-    if (filterType === 'club') {
-      return selectClubDomainsFilters(state)
+    if (filterType === 'category') {
+      return selectCategoryDomainsFilters(state)
     }
 
     if (filterType === 'profile') {
@@ -201,22 +201,22 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
-    if (filterType === 'club') {
+    if (filterType === 'category') {
       return {
-        setFiltersOpen: setClubDomainsFiltersOpen,
-        toggleFiltersStatus: toggleClubDomainsFiltersStatus,
-        setFiltersStatus: setClubDomainsFiltersStatus,
-        toggleFiltersType: toggleClubDomainsFiltersType,
-        setFiltersType: setClubDomainsFiltersType,
-        setFiltersLength: setClubDomainsFiltersLength,
-        setPriceDenomination: setClubDomainsPriceDenomination,
-        setPriceRange: setClubDomainsPriceRange,
-        toggleCategory: toggleClubDomainsCategory,
-        setFiltersCategory: setClubDomainsFiltersCategory,
-        setSort: setClubDomainsSort,
-        setSearch: setClubDomainsSearch,
-        toggleFilterOpen: toggleClubDomainsFilterOpen,
-        clearFilters: clearClubDomainsFilters,
+        setFiltersOpen: setCategoryDomainsFiltersOpen,
+        toggleFiltersStatus: toggleCategoryDomainsFiltersStatus,
+        setFiltersStatus: setCategoryDomainsFiltersStatus,
+        toggleFiltersType: toggleCategoryDomainsFiltersType,
+        setFiltersType: setCategoryDomainsFiltersType,
+        setFiltersLength: setCategoryDomainsFiltersLength,
+        setPriceDenomination: setCategoryDomainsPriceDenomination,
+        setPriceRange: setCategoryDomainsPriceRange,
+        toggleCategory: toggleCategoryDomainsCategory,
+        setFiltersCategory: setCategoryDomainsFiltersCategory,
+        setSort: setCategoryDomainsSort,
+        setSearch: setCategoryDomainsSearch,
+        toggleFilterOpen: toggleCategoryDomainsFilterOpen,
+        clearFilters: clearCategoryDomainsFilters,
       }
     }
 
@@ -358,8 +358,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   }, [filterType, portfolioTab, profileTab])
 
   const emptyFilterState = useMemo(() => {
-    if (filterType === 'club') {
-      return emptyFilterStateClubDomainsFilters
+    if (filterType === 'category') {
+      return emptyFilterStateCategoryDomainsFilters
     }
 
     if (filterType === 'profile') {

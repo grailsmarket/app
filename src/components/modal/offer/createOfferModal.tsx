@@ -1,7 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useSeaportClient } from '@/hooks/useSeaportClient'
+import { useEffect, useMemo, useState } from 'react'
 import { MarketplaceDomainType } from '@/types/domains'
 import DatePicker from '@/components/ui/datepicker'
 import Dropdown, { DropdownOption } from '@/components/ui/dropdown'
@@ -17,6 +16,8 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { Check } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
+import { useSeaportContext } from '@/context/seaport'
+import { mainnet } from 'viem/chains'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -25,7 +26,7 @@ interface CreateOfferModalProps {
 
 const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) => {
   const { modifyCart } = useModifyCart()
-  const { createOffer, isLoading } = useSeaportClient()
+  const { createOffer, isLoading, isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
@@ -48,6 +49,11 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
     { value: 'WETH', label: 'WETH (Wrapped Ether)', icon: WrappedEtherIcon },
     { value: 'USDC', label: 'USDC (USD Coin)', icon: UsdcIcon },
   ]
+
+  useEffect(() => {
+    getCurrentChain()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!domain) return null
 
@@ -216,10 +222,14 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
             <div className='flex flex-col gap-2'>
               <PrimaryButton
                 disabled={isLoading || !price || selectedMarketplace.length === 0}
-                onClick={handleSubmit}
+                onClick={
+                  isCorrectChain
+                    ? handleSubmit
+                    : (e) => checkChain({ chainId: mainnet.id, onSuccess: () => handleSubmit(e) })
+                }
                 className='h-10 w-full'
               >
-                {isLoading ? 'Submitting Offer...' : 'Make Offer'}
+                {isCorrectChain ? (isLoading ? 'Submitting Offer...' : 'Make Offer') : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='h-10 w-full'>
                 Close

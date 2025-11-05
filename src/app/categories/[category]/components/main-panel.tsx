@@ -8,14 +8,14 @@ import ActionButtons from '@/app/marketplace/components/actionButtons'
 import { useWindowSize } from 'ethereum-identity-kit'
 
 interface Props {
-  club: string
+  category: string
 }
 
-const MainPanel: React.FC<Props> = ({ club }) => {
+const MainPanel: React.FC<Props> = ({ category }) => {
   const { width: windowWidth } = useWindowSize()
 
   return (
-    <FilterProvider filterType='club'>
+    <FilterProvider filterType='category'>
       <div className='p-lg z-10'>
         <div className='p-lg bg-background border-primary relative z-10 flex gap-4 rounded-lg border-2'>
           <FilterPanel />
@@ -25,7 +25,7 @@ const MainPanel: React.FC<Props> = ({ club }) => {
               width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
             }}
           >
-            <DomainPanel club={club} />
+            <DomainPanel category={category} />
           </div>
           <ActionButtons />
         </div>

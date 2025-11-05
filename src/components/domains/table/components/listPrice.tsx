@@ -1,9 +1,9 @@
 import React from 'react'
 import { cn } from '@/utils/tailwind'
 import Price from '@/components/ui/price'
+import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { DomainListingType, RegistrationStatus } from '@/types/domains'
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 
 interface ListPriceProps {
   listing: DomainListingType
@@ -26,7 +26,7 @@ const ListPrice: React.FC<ListPriceProps> = ({ listing, columnCount, index }) =>
           />
           {listing.expires_at && (
             <p className='text-md text-neutral'>
-              <span className='xs:inline hidden'>Expires</span>{' '}
+              <span className='xs:inline hidden'>Ends</span>{' '}
               {formatExpiryDate(listing.expires_at, { includeTime: false, dateDivider: '/' })}
             </p>
           )}

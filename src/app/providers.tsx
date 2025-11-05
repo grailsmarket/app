@@ -13,6 +13,7 @@ import config from '@/lib/wagmi'
 import { UserProvider } from '@/context/user'
 import Modals from './modals'
 import Cart from '@/components/cart'
+import { SeaportProvider } from '@/context/seaport'
 
 type ProviderProps = {
   children: React.ReactNode
@@ -34,12 +35,14 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
             <TransactionProvider batchTransactions={false}>
               <ReduxProvider store={store}>
                 <UserProvider>
-                  <Navigation />
-                  <Cart />
-                  {children}
-                  <TransactionModal />
-                  <Modals />
-                  <div id='modal-root' />
+                  <SeaportProvider>
+                    <Navigation />
+                    <Cart />
+                    {children}
+                    <TransactionModal />
+                    <Modals />
+                    <div id='modal-root' />
+                  </SeaportProvider>
                 </UserProvider>
               </ReduxProvider>
             </TransactionProvider>

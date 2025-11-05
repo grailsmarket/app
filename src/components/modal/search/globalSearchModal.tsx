@@ -10,13 +10,13 @@ import { useAppDispatch } from '@/state/hooks'
 import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
 import NoResults from '@/components/ui/noResults'
-import { CLUB_LABELS } from '@/constants/domains/marketplaceDomains'
+import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import NameLoadingRow from './components/loading-rows/nameLoadingRow'
-import ClubLoadingRow from './components/loading-rows/clubLoadingRow'
+import CategoryLoadingRow from './components/loading-rows/categoryLoadingRow'
 import UserLoadingRow from './components/loading-rows/userLoadingRow'
 import Image from 'next/image'
-import { CLUB_IMAGES } from '@/app/clubs/[club]/components/clubDetails'
+import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -29,37 +29,37 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   const dispatch = useAppDispatch()
 
   const [query, setQuery] = useState(initialQuery)
-  const [results, setResults] = useState<GlobalSearchResult>({ domains: [], clubs: [], profiles: [] })
+  const [results, setResults] = useState<GlobalSearchResult>({ domains: [], categories: [], profiles: [] })
   const [isLoading, setIsLoading] = useState(false)
 
   const handleClose = () => {
     setQuery('')
-    setResults({ domains: [], clubs: [], profiles: [] })
+    setResults({ domains: [], categories: [], profiles: [] })
     onClose()
   }
 
-  const { categories: clubs } = useCategories()
+  const { categories } = useCategories()
   const debouncedQuery = useDebounce(query, 400)
 
   const handleSearch = useCallback(
     async (searchQuery: string) => {
       if (!searchQuery.trim()) {
-        setResults({ domains: [], clubs: [], profiles: [] })
+        setResults({ domains: [], categories: [], profiles: [] })
         return
       }
 
       setIsLoading(true)
       try {
-        const searchResults = await globalSearch(searchQuery, clubs || [])
+        const searchResults = await globalSearch(searchQuery, categories || [])
         setResults(searchResults)
       } catch (error) {
         console.error('Search failed:', error)
-        setResults({ domains: [], clubs: [], profiles: [] })
+        setResults({ domains: [], categories: [], profiles: [] })
       } finally {
         setIsLoading(false)
       }
     },
-    [clubs]
+    [categories]
   )
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
     !isLoading &&
     debouncedQuery.trim() &&
     results.domains.length === 0 &&
-    results.clubs.length === 0 &&
+    results.categories.length === 0 &&
     results.profiles.length === 0
 
   if (!isOpen) return null
@@ -102,7 +102,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
           <MagnifyingGlass className='text-foreground/60 h-6 w-6' />
           <input
             type='text'
-            placeholder='Search domains, clubs, and profiles...'
+            placeholder='Search domains, categories, and profiles...'
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className='text-foreground placeholder:text-foreground/40 flex-1 bg-transparent text-2xl font-medium outline-none'
@@ -150,7 +150,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                 {domain.clubs && domain.clubs.length > 0 && (
                                   <div className='text-md text-foreground/60 font-semibold'>
                                     {domain.clubs
-                                      .map((club) => CLUB_LABELS[club as keyof typeof CLUB_LABELS])
+                                      .map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS])
                                       .join(', ')}
                                   </div>
                                 )}
@@ -168,40 +168,40 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                 </div>
               )}
 
-              {/* Clubs */}
-              {(isLoading || results.clubs.length > 0) && (
+              {/* Categories */}
+              {(isLoading || results.categories.length > 0) && (
                 <div className='p-lg border-primary/20 flex flex-col gap-1 border-t'>
                   <div className='flex items-center'>
-                    <h3 className='text-foreground px-3 text-2xl font-bold'>Clubs</h3>
+                    <h3 className='text-foreground px-3 text-2xl font-bold'>Categories</h3>
                   </div>
                   <div className='flex flex-col'>
                     {isLoading
-                      ? Array.from({ length: 3 }).map((_, index) => <ClubLoadingRow key={index} />)
-                      : results.clubs.map((club) => (
+                      ? Array.from({ length: 3 }).map((_, index) => <CategoryLoadingRow key={index} />)
+                      : results.categories.map((category) => (
                           <Link
-                            key={club.name}
-                            href={`/clubs/${club.name}`}
+                            key={category.name}
+                            href={`/categories/${category.name}`}
                             onClick={handleClose}
                             className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
                           >
                             <div className='flex flex-row items-center gap-3'>
                               <Image
-                                src={CLUB_IMAGES[club.name as keyof typeof CLUB_IMAGES].avatar}
-                                alt={`${club.name} avatar`}
+                                src={CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].avatar}
+                                alt={`${category.name} avatar`}
                                 width={100}
                                 height={100}
                                 className='h-9 w-9 rounded-full object-cover'
                               />
                               <div className='flex flex-col gap-px'>
                                 <div className='text-foreground font-semibold'>
-                                  {CLUB_LABELS[club.name as keyof typeof CLUB_LABELS]}
+                                  {CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]}
                                 </div>
                                 <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
-                                  {club.description}
+                                  {category.description}
                                 </div>
                               </div>
                             </div>
-                            <div className='text-md text-neutral font-semibold'>{club.member_count} members</div>
+                            <div className='text-md text-neutral font-semibold'>{category.member_count} members</div>
                           </Link>
                         ))}
                   </div>

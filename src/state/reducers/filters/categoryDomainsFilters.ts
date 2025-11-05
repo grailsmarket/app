@@ -52,8 +52,8 @@ export const initialState: PortfolioFiltersOpenedState = {
 }
 
 // Slice
-export const clubDomainsFiltersSlice = createSlice({
-  name: 'clubDomainsFilters',
+export const categoryDomainsFiltersSlice = createSlice({
+  name: 'categoryDomainsFilters',
   initialState,
   reducers: {
     setFiltersOpen(state, { payload }: PayloadAction<boolean>) {
@@ -147,10 +147,10 @@ export const {
   setSort,
   toggleFilterOpen,
   clearFilters,
-} = clubDomainsFiltersSlice.actions
+} = categoryDomainsFiltersSlice.actions
 
 // Selectors
-export const selectClubDomainsFilters = (state: RootState) => state.filters.clubDomainsFilters
+export const selectCategoryDomainsFilters = (state: RootState) => state.filters.categoryDomainsFilters
 
 // Reducer
-export default clubDomainsFiltersSlice.reducer
+export default categoryDomainsFiltersSlice.reducer

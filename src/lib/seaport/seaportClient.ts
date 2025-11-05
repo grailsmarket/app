@@ -1646,6 +1646,8 @@ export class SeaportClient {
     }
 
     // Check token balance and approval before creating the order
+    console.log('Checking token balance and approval for:', currencyToken)
+    console.log(this.publicClient.readContract)
     const tokenBalance = (await this.publicClient.readContract({
       address: currencyToken as `0x${string}`,
       abi: [

@@ -389,7 +389,7 @@ export type WatchlistItemType = {
 
 export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]
 
-export type ClubType = {
+export type CategoryType = {
   name: string
   description: string
   member_count: number

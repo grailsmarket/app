@@ -32,7 +32,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
         isLoading={activityLoading}
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
-        showHeaders={false}
+        showHeaders={true}
         columns={['event', 'price', 'timestamp', 'counterparty']}
       />
     </div>

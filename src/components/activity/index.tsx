@@ -91,7 +91,7 @@ const Activity: React.FC<ActivityProps> = ({
                   width: `${100 / displayedColumns.length}%`,
                 }}
               >
-                <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium transition-colors'>
+                <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium capitalize transition-colors'>
                   {header}
                 </p>
               </div>

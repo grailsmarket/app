@@ -12,7 +12,7 @@ interface FetchDomainsOptions {
   filters: MarketplaceFiltersState | PortfolioFiltersState
   searchTerm: string
   ownerAddress?: Address
-  club?: string
+  category?: string
 }
 
 export const fetchDomains = async ({
@@ -21,7 +21,7 @@ export const fetchDomains = async ({
   filters,
   searchTerm,
   ownerAddress,
-  club,
+  category,
 }: FetchDomainsOptions) => {
   try {
     const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
@@ -41,7 +41,7 @@ export const fetchDomains = async ({
         : filters.priceRange.max || null,
       'filters[hasNumbers]': filters.type.includes('Numbers') ? undefined : false,
       'filters[hasEmojis]': filters.type.includes('Emojis') ? undefined : false,
-      'filters[clubs][]': club || filters.categories?.join(',') || null,
+      'filters[clubs][]': category || filters.categories?.join(',') || null,
       'filters[isExpired]': statusFilter.includes('Available') ? true : undefined,
       'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : undefined,
       'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : undefined,

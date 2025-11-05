@@ -54,7 +54,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
       if (domainListing?.price) {
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-            <SecondaryButton>Edit</SecondaryButton>
+            <SecondaryButton onClick={openListModal}>Edit</SecondaryButton>
             <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
           </div>
         )

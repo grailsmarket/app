@@ -1,7 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { useSeaportClient } from '@/hooks/useSeaportClient'
+import { useEffect, useMemo, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import DatePicker from '@/components/ui/datepicker'
@@ -16,6 +15,8 @@ import OpenSeaIcon from 'public/logos/opensea.svg'
 import GrailsIcon from 'public/logo.png'
 import Image from 'next/image'
 import { MarketplaceDomainType } from '@/types/domains'
+import { useSeaportContext } from '@/context/seaport'
+import { mainnet } from 'viem/chains'
 
 interface CreateListingModalProps {
   onClose: () => void
@@ -23,7 +24,7 @@ interface CreateListingModalProps {
 }
 
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain }) => {
-  const { createListing, isLoading } = useSeaportClient()
+  const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain } = useSeaportContext()
   const [price, setPrice] = useState<number>()
   const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
   const [currency, setCurrency] = useState<'ETH' | 'USDC'>('ETH')
@@ -33,6 +34,11 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [error, setError] = useState<string | null>(null)
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
+
+  useEffect(() => {
+    getCurrentChain()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!domain) return null
   const { token_id: tokenId, name: ensName } = domain
@@ -267,14 +273,20 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             <div className='flex flex-col gap-2'>
               <PrimaryButton
                 disabled={isLoading || !price || selectedMarketplace.length === 0}
-                onClick={handleSubmit}
+                onClick={
+                  isCorrectChain
+                    ? handleSubmit
+                    : (e) => checkChain({ chainId: mainnet.id, onSuccess: () => handleSubmit(e) })
+                }
                 className='h-10 w-full'
               >
-                {isLoading
-                  ? 'Submitting Listing...'
-                  : selectedMarketplace.length === 0
-                    ? 'Select a marketplace'
-                    : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0]}`}
+                {isCorrectChain
+                  ? isLoading
+                    ? 'Submitting Listing...'
+                    : selectedMarketplace.length === 0
+                      ? 'Select a marketplace'
+                      : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0]}`
+                  : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='h-10 w-full'>
                 Close

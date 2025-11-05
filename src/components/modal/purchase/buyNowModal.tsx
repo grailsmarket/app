@@ -19,6 +19,8 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
+import { useSeaportContext } from '@/context/seaport'
+import { mainnet } from 'viem/chains'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -81,6 +83,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
   const { modifyCart } = useModifyCart()
+  const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
   const [step, setStep] = useState<TransactionStep>('review')
   const [error, setError] = useState<string | null>(null)
@@ -96,6 +99,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     // Estimate gas and check approval when modal opens
     estimateGas()
     checkApproval()
+    getCurrentChain()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -458,8 +462,18 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             )}
 
             <div className='flex w-full flex-col gap-2'>
-              <PrimaryButton onClick={needsApproval ? handleApprove : handlePurchase} className='w-full'>
-                {needsApproval ? 'Approve USDC' : 'Confirm Purchase'}
+              <PrimaryButton
+                onClick={
+                  isCorrectChain
+                    ? needsApproval
+                      ? handleApprove
+                      : handlePurchase
+                    : () => checkChain({ chainId: mainnet.id, onSuccess: () => handlePurchase() })
+                }
+                className='w-full'
+                disabled={isCorrectChain ? needsApproval : false}
+              >
+                {isCorrectChain ? (needsApproval ? 'Approve USDC' : 'Confirm Purchase') : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='w-full'>
                 Close

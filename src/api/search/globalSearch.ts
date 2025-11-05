@@ -1,18 +1,18 @@
 import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
-import { MarketplaceDomainType, ClubType } from '@/types/domains'
+import { MarketplaceDomainType, CategoryType } from '@/types/domains'
 import { searchProfiles } from '../search-profiles'
 import { SearchENSProfile } from '@/types/profile'
 
 export interface GlobalSearchResult {
   domains: MarketplaceDomainType[]
-  clubs: ClubType[]
+  categories: CategoryType[]
   profiles: SearchENSProfile[]
 }
 
-export const globalSearch = async (query: string, clubs: ClubType[]): Promise<GlobalSearchResult> => {
+export const globalSearch = async (query: string, categories: CategoryType[]): Promise<GlobalSearchResult> => {
   if (!query.trim()) {
-    return { domains: [], clubs: [], profiles: [] }
+    return { domains: [], categories: [], profiles: [] }
   }
 
   try {
@@ -31,12 +31,12 @@ export const globalSearch = async (query: string, clubs: ClubType[]): Promise<Gl
       results: MarketplaceDomainType[]
     }>
 
-    // Search clubs
-    const filteredClubs = clubs
+    // Search categories
+    const filteredCategories = categories
       .filter(
-        (club) =>
-          club.name.toLowerCase().includes(query.toLowerCase()) ||
-          club.description.toLowerCase().includes(query.toLowerCase())
+        (category) =>
+          category.name.toLowerCase().includes(query.toLowerCase()) ||
+          category.description.toLowerCase().includes(query.toLowerCase())
       )
       .slice(0, 5)
 
@@ -45,11 +45,11 @@ export const globalSearch = async (query: string, clubs: ClubType[]): Promise<Gl
 
     return {
       domains: (domainData.data.names || domainData.data.results || []).slice(0, 6),
-      clubs: filteredClubs,
+      categories: filteredCategories,
       profiles,
     }
   } catch (error) {
     console.error('Global search failed:', error)
-    return { domains: [], clubs: [], profiles: [] }
+    return { domains: [], categories: [], profiles: [] }
   }
 }

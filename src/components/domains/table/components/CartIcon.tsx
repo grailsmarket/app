@@ -29,7 +29,7 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder 
         showInCart ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
         hasBorder && 'border-foreground/50 hover:border-foreground/80 rounded-sm border-2',
         hasBorder && showInCart && 'border-primary hover:border-primary',
-        (isCartDomainsLoading || isDomainModifying) && 'opacity-40',
+        isCartDomainsLoading && 'opacity-40',
         className
       )}
     >

@@ -7,11 +7,11 @@ import User from '@/components/ui/user'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { EXPIRED_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
-import { CLUB_LABELS } from '@/constants/domains/marketplaceDomains'
+import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 
 type Row = {
   label: string
@@ -34,7 +34,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
       canCopy: true,
     },
     {
-      label: registrationStatus === UNREGISTERED ? 'Previous Owner' : 'Owner',
+      label: EXPIRED_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner',
       value: nameDetails?.owner ? <User address={nameDetails?.owner as `0x${string}`} /> : null,
       canCopy: false,
     },
@@ -47,7 +47,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
       label: 'Club',
       value:
         nameDetails?.clubs && nameDetails?.clubs.length > 0
-          ? nameDetails?.clubs?.map((club) => CLUB_LABELS[club as keyof typeof CLUB_LABELS]).join(', ')
+          ? nameDetails?.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')
           : 'None',
       canCopy: false,
     },

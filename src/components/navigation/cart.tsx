@@ -16,9 +16,13 @@ const Cart = () => {
   }
 
   return (
-    <div onClick={handleOpenCart} className='cursor-pointer relative transition-all hover:opacity-80'>
+    <div onClick={handleOpenCart} className='relative cursor-pointer transition-all hover:opacity-80'>
       <Image src={cart} alt='cart' width={24} height={24} />
-      {totalCartItems > 0 && <div className='absolute -top-2.5 -right-2.5 flex h-5 w-fit min-w-5 items-center text-background justify-center rounded-full bg-primary px-1 text-md font-bold sm:h-5 sm:min-w-5'>{totalCartItems}</div>}
+      {totalCartItems > 0 && (
+        <div className='text-background bg-primary text-md absolute -top-2.5 -right-2.5 flex h-5 w-fit min-w-5 items-center justify-center rounded-full px-1 font-bold sm:h-5 sm:min-w-5'>
+          {totalCartItems}
+        </div>
+      )}
     </div>
   )
 }

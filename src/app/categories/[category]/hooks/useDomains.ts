@@ -6,7 +6,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
-export const useClubDomains = (club: string) => {
+export const useCategoryDomains = (category: string) => {
   const { selectors } = useFilterRouter()
   const filters = selectors.filters
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
@@ -21,13 +21,13 @@ export const useClubDomains = (club: string) => {
     data: domains,
     isLoading,
     isFetchingNextPage,
-    fetchNextPage: fetchMoreClubDomains,
-    hasNextPage: hasMoreClubDomains,
+    fetchNextPage: fetchMoreCategoryDomains,
+    hasNextPage: hasMoreCategoryDomains,
   } = useInfiniteQuery({
     queryKey: [
-      'club',
+      'category',
       'domains',
-      club,
+      category,
       debouncedSearch,
       filters.length,
       filters.priceRange,
@@ -42,7 +42,7 @@ export const useClubDomains = (club: string) => {
         // @ts-expect-error the activity filter state will not be used for domains
         filters,
         searchTerm: debouncedSearch,
-        club: club,
+        category: category,
       })
 
       return {
@@ -55,19 +55,19 @@ export const useClubDomains = (club: string) => {
     initialPageParam: 1,
   })
 
-  const clubDomains = useMemo(() => {
+  const categoryDomains = useMemo(() => {
     return (
       domains?.pages?.reduce((acc, page) => {
         return [...acc, ...page.domains]
       }, [] as MarketplaceDomainType[]) || []
     )
   }, [domains])
-  const clubDomainsLoading = isLoading || isFetchingNextPage
+  const categoryDomainsLoading = isLoading || isFetchingNextPage
 
   return {
-    domains: clubDomains,
-    clubDomainsLoading,
-    fetchMoreClubDomains,
-    hasMoreClubDomains,
+    domains: categoryDomains,
+    categoryDomainsLoading,
+    fetchMoreCategoryDomains,
+    hasMoreCategoryDomains,
   }
 }

@@ -8,16 +8,17 @@ import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
-import { useClubDomains } from '../hooks/useDomains'
+import { useCategoryDomains } from '../hooks/useDomains'
 
 interface Props {
-  club: string
+  category: string
 }
 
-const DomainPanel: React.FC<Props> = ({ club }) => {
+const DomainPanel: React.FC<Props> = ({ category }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const { domains, clubDomainsLoading, fetchMoreClubDomains, hasMoreClubDomains } = useClubDomains(club)
+  const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
+    useCategoryDomains(category)
 
   return (
     <>
@@ -52,12 +53,12 @@ const DomainPanel: React.FC<Props> = ({ club }) => {
         maxHeight='calc(100vh - 200px)'
         domains={domains}
         loadingRowCount={20}
-        noResults={!clubDomainsLoading && domains?.length === 0}
-        isLoading={clubDomainsLoading}
-        hasMoreDomains={hasMoreClubDomains}
+        noResults={!categoryDomainsLoading && domains?.length === 0}
+        isLoading={categoryDomainsLoading}
+        hasMoreDomains={hasMoreCategoryDomains}
         fetchMoreDomains={() => {
-          if (hasMoreClubDomains && !clubDomainsLoading) {
-            fetchMoreClubDomains()
+          if (hasMoreCategoryDomains && !categoryDomainsLoading) {
+            fetchMoreCategoryDomains()
           }
         }}
       />

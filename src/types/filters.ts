@@ -24,7 +24,7 @@ export type PriceType = {
   max: number | null
 }
 
-export type FilterContextType = 'marketplace' | 'portfolio' | 'profile' | 'club'
+export type FilterContextType = 'marketplace' | 'portfolio' | 'profile' | 'category'
 export type PortfolioTabType = 'domains' | 'received_offers' | 'my_offers' | 'watchlist'
 export type ProfileTabType = 'domains' | 'activity'
 

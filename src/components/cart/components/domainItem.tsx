@@ -9,6 +9,8 @@ import useModifyCart from '@/hooks/useModifyCart'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
+import { useAppSelector } from '@/state/hooks'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 interface DomainItemProps {
   domain: MarketplaceDomainType
@@ -16,8 +18,11 @@ interface DomainItemProps {
 
 const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   const { modifyCart } = useModifyCart()
+  const { modifyingCartTokenIds } = useAppSelector(selectMarketplaceDomains)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isRegistered = registrationStatus === REGISTERED
+
+  if (modifyingCartTokenIds.includes(domain.token_id)) return null
 
   return (
     <div className='flex w-full flex-row items-center justify-between'>
@@ -49,7 +54,11 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
         <Trash
           className='text-neutral hover:text-foreground border-neutral hover:border-foreground box-border h-[38px] w-[38px] cursor-pointer rounded-sm border p-2.5 transition-all duration-300'
           onClick={() =>
-            modifyCart({ domain, inCart: true, basket: registrationStatus === UNREGISTERED ? 'REGISTER' : 'PURCHASE' })
+            modifyCart({
+              domain,
+              inCart: true,
+              cartType: registrationStatus === UNREGISTERED ? 'registrations' : 'sales',
+            })
           }
         />
       </div>

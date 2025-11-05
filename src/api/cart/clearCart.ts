@@ -6,15 +6,19 @@ interface ClearCartVariables {
 }
 
 export const clearCart = async ({ userAddress }: ClearCartVariables) => {
-  if (!userAddress) return false
+  if (!userAddress) {
+    console.error('No connected user')
+    return false
+  }
 
-  await authFetch(`${API_URL}/user/cart/clear`, {
+  await authFetch(`${API_URL}/cart`, {
     method: 'DELETE',
     mode: 'cors',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({}),
   })
 
   return true

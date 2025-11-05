@@ -85,7 +85,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
       setSuccess(true)
 
-      modifyCart({ domain, inCart: true, basket: 'PURCHASE' })
+      modifyCart({ domain, inCart: true, cartType: 'sales' })
 
       // Close modal after 2 seconds
       setTimeout(() => {

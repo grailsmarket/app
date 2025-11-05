@@ -6,10 +6,15 @@ import { MarketplaceDomainType } from '@/types/domains'
 export type MarketplaceDomainIdType = number
 export type MarketplaceDomainNameType = string
 
-export type CartUnregisteredDomainType = MarketplaceDomainType & {
-  registrationPeriod: number
+export type CartDomainType = MarketplaceDomainType & {
+  cartItemId: number
+  cartType: 'sales' | 'registrations'
 }
-export type CartRegisteredDomainType = MarketplaceDomainType & {
+
+export type CartUnregisteredDomainType = CartDomainType & {
+  registrationPeriod?: number
+}
+export type CartRegisteredDomainType = CartDomainType & {
   offerValue?: number
 }
 
@@ -29,6 +34,8 @@ type MarketplaceDomainsState = {
   changedPurchaseDomains: string[]
   isCheckingOut: boolean
   viewType: 'list' | 'grid'
+  isModifyingCart: boolean
+  modifyingCartTokenIds: string[]
 }
 
 // Initial State ------------------------------------
@@ -38,6 +45,8 @@ const initialState: MarketplaceDomainsState = {
   changedPurchaseDomains: [],
   isCheckingOut: false,
   viewType: 'list',
+  isModifyingCart: false,
+  modifyingCartTokenIds: [],
 }
 
 // Slice -------------------------------------------
@@ -89,6 +98,14 @@ export const marketplaceDomainsSlice = createSlice({
       state.cartUnregisteredDomains = []
       state.cartRegisteredDomains = []
     },
+    setModifyingCartTokenIds(state, { payload }: PayloadAction<string[]>) {
+      state.modifyingCartTokenIds = payload
+    },
+    toggleModifyingCart(state, { payload }: PayloadAction<{ isModifying: boolean; tokenId: string }>) {
+      state.modifyingCartTokenIds = payload.isModifying
+        ? state.modifyingCartTokenIds.concat([payload.tokenId])
+        : state.modifyingCartTokenIds.filter((tokenId) => tokenId !== payload.tokenId)
+    },
   },
 })
 
@@ -105,6 +122,8 @@ export const {
   clearMarketplaceDomainsCart,
   setDomainsIsCheckingOut,
   setViewType,
+  setModifyingCartTokenIds,
+  toggleModifyingCart,
 } = marketplaceDomainsSlice.actions
 
 // Selectors ------------------------------------------

@@ -1,62 +1,75 @@
 import { useAccount } from 'wagmi'
 import { useMutation } from '@tanstack/react-query'
 
-import { useAppDispatch } from '../state/hooks'
+import { useAppDispatch, useAppSelector } from '../state/hooks'
 
 import { clearCart } from '@/api/cart/clearCart'
-import { ModifyCartsVariables, modifyCart } from '@/api/cart/modifyCart'
+import { modifyCart } from '@/api/cart/modifyCart'
 
 import {
   addToCartRegisteredDomains,
   clearMarketplaceDomainsCart,
-  addToCartUnregisteredDomains,
   removeFromMarketplaceDomainsCart,
+  selectMarketplaceDomains,
+  setModifyingCartTokenIds,
+  toggleModifyingCart,
 } from '../state/reducers/domains/marketplaceDomains'
+import { MarketplaceDomainType } from '@/types/domains'
+
+interface ModifyCartsVariables {
+  domain: MarketplaceDomainType
+  inCart: boolean
+  cartType: 'sales' | 'registrations'
+}
 
 const useModifyCart = () => {
   const dispatch = useAppDispatch()
+  const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
   const { address: userAddress } = useAccount()
-
-  const modifyCartLocal = ({ domain, inCart, basket }: ModifyCartsVariables) => {
-    if (inCart) {
-      dispatch(removeFromMarketplaceDomainsCart([domain.name]))
-    } else if (basket === 'REGISTER') {
-      dispatch(
-        addToCartUnregisteredDomains([
-          {
-            ...domain,
-            registrationPeriod: 1,
-          },
-        ])
-      )
-    } else {
-      dispatch(addToCartRegisteredDomains([domain]))
-    }
-  }
 
   const clearCartMutation = useMutation({
     mutationFn: clearCart,
     onSuccess: () => {
       dispatch(clearMarketplaceDomainsCart())
+      dispatch(setModifyingCartTokenIds([]))
     },
     onError: (error) => {
       console.error(error)
+      dispatch(setModifyingCartTokenIds([]))
     },
   })
 
-  const modifyCartMutation = useMutation({
+  const { mutate: modifyCartMutation } = useMutation({
     mutationFn: modifyCart,
     onError: (error) => {
       console.error(error)
+      dispatch(setModifyingCartTokenIds([]))
+    },
+    onSuccess: (data) => {
+      if (data.inCart) {
+        dispatch(removeFromMarketplaceDomainsCart([data.cartItem.name]))
+      } else {
+        dispatch(addToCartRegisteredDomains([data.cartItem]))
+      }
+    },
+    onSettled: (data) => {
+      if (data?.cartItem) {
+        dispatch(toggleModifyingCart({ isModifying: false, tokenId: data.cartItem.token_id }))
+      }
     },
   })
 
   return {
-    clearCart: () => clearCartMutation.mutate({ userAddress }),
+    clearCart: () => {
+      dispatch(
+        setModifyingCartTokenIds(cartRegisteredDomains.concat(cartUnregisteredDomains).map((domain) => domain.token_id))
+      )
+      clearCartMutation.mutate({ userAddress })
+    },
     clearCartLoading: clearCartMutation.isPending,
-    modifyCart: ({ domain, inCart, basket }: ModifyCartsVariables) => {
-      modifyCartLocal({ domain, inCart, basket })
-      return modifyCartMutation.mutate({ domain, inCart, basket })
+    modifyCart: ({ domain, inCart, cartType }: ModifyCartsVariables) => {
+      dispatch(toggleModifyingCart({ isModifying: true, tokenId: domain.token_id }))
+      return modifyCartMutation({ domain, inCart, cartType })
     },
   }
 }

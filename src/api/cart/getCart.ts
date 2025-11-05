@@ -1,12 +1,15 @@
 import { authFetch } from '../authFetch'
-import { CartDomainAPIType } from '@/types/domains'
 import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
+import { CartDomainType } from '@/state/reducers/domains/marketplaceDomains'
 
 export const getCart = async (userAddress: `0x${string}` | undefined) => {
-  if (!userAddress) return null
+  if (!userAddress) {
+    console.error('No connected user')
+    return null
+  }
 
-  const res = await authFetch(`${API_URL}/user/cart/list`, {
+  const res = await authFetch(`${API_URL}/cart`, {
     method: 'GET',
     mode: 'cors',
     headers: {
@@ -15,7 +18,7 @@ export const getCart = async (userAddress: `0x${string}` | undefined) => {
     },
   })
 
-  const userCartDomains = (await res.json()) as APIResponseType<{ cart: CartDomainAPIType[] }>
+  const userCartDomains = (await res.json()) as APIResponseType<{ items: CartDomainType[] }>
 
-  return userCartDomains.data.cart
+  return userCartDomains.data.items
 }

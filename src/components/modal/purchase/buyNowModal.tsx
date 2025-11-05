@@ -398,7 +398,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       if (receipt.status === 'success') {
         setStep('success')
         refetchDomainQueries()
-        modifyCart({ domain, inCart: true, basket: 'PURCHASE' })
+        modifyCart({ domain, inCart: true, cartType: 'sales' })
       } else {
         throw new Error('Transaction failed')
       }

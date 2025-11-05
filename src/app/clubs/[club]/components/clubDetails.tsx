@@ -77,7 +77,7 @@ const ClubDetails = ({ clubDetails }: Props) => {
   const twitterLink = CLUB_SOCIAL_LINKS[clubDetails.name as keyof typeof CLUB_SOCIAL_LINKS].twitter
 
   return (
-    <div className='relative w-full translate-y-20 px-4 items-center justify-center'>
+    <div className='relative w-full translate-y-20 items-center justify-center px-4'>
       <Image
         src={clubImage.header}
         alt={`${clubName} header`}
@@ -99,11 +99,7 @@ const ClubDetails = ({ clubDetails }: Props) => {
             <p className='text-neutral text-2xl font-medium'>{clubDetails.description}</p>
             <div className='flex items-center gap-2'>
               {twitterLink && (
-                <Link
-                  href={twitterLink}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                >
+                <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
                   <Image
                     src={TwitterIcon}
                     alt='Twitter'

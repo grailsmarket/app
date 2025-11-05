@@ -1,33 +1,48 @@
 import { authFetch } from '../authFetch'
 
-import { CartRegisteredDomainType, CartUnregisteredDomainType } from '@/state/reducers/domains/marketplaceDomains'
-import { DomainBasketType, MarketplaceDomainType } from '@/types/domains'
+import { CartDomainType } from '@/state/reducers/domains/marketplaceDomains'
 
 import { API_URL } from '@/constants/api'
+import { APIResponseType } from '@/types/api'
+import { MarketplaceDomainType, ModifyCartResponseType } from '@/types/domains'
 
 export interface ModifyCartsVariables {
-  domain: MarketplaceDomainType | CartRegisteredDomainType | CartUnregisteredDomainType
+  domain: MarketplaceDomainType | CartDomainType
   inCart: boolean
-  basket: DomainBasketType
+  cartType: 'sales' | 'registrations'
 }
 
-export const modifyCart = async ({ domain, inCart, basket }: ModifyCartsVariables) => {
-  await authFetch(`${API_URL}/user/cart/modify`, {
+export const modifyCart = async ({ domain, inCart, cartType }: ModifyCartsVariables) => {
+  const response = await authFetch(`${API_URL}/cart${inCart ? `/${(domain as CartDomainType).cartItemId}` : ''}`, {
     method: inCart ? 'DELETE' : 'POST',
     mode: 'cors',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      basket,
-      id: domain.name,
-    }),
+    body: JSON.stringify(
+      inCart
+        ? undefined
+        : {
+            cartType,
+            ensNameId: domain.id,
+          }
+    ),
   })
 
+  const data = (await response.json()) as APIResponseType<ModifyCartResponseType>
+
+  const cartItem = inCart
+    ? (domain as CartDomainType)
+    : ({
+        ...domain,
+        cartItemId: data.data.cartItemId,
+        cartType: data.data.cartType,
+      } as CartDomainType)
+
   return {
-    domain,
+    cartItem,
     inCart,
-    basket,
+    cartType,
   }
 }

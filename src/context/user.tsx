@@ -11,6 +11,14 @@ import { useAuth } from '@/hooks/useAuthStatus'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { useUserProfile } from '@/hooks/useUserProfile'
 import { WatchlistItemType } from '@/types/domains'
+import { useQuery } from '@tanstack/react-query'
+import { useAppDispatch } from '@/state/hooks'
+import {
+  CartDomainType,
+  setCartRegisteredDomains,
+  setCartUnregisteredDomains,
+} from '@/state/reducers/domains/marketplaceDomains'
+import { getCart } from '@/api/cart/getCart'
 
 type userContextType = {
   userAddress: Address | undefined
@@ -25,6 +33,8 @@ type userContextType = {
   watchlistIsLoading: boolean
   refetchProfile: () => void
   refetchWatchlist: () => void
+  cartDomains: CartDomainType[] | null | undefined
+  isCartDomainsLoading: boolean
 }
 
 type Props = {
@@ -38,10 +48,23 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   const { address } = useAccount()
+  const dispatch = useAppDispatch()
   const { authStatus, verify, refetchAuthStatus, signOut, disconnect } = useAuth()
   const { profileIsLoading, refetchProfile, watchlist, watchlistIsLoading, refetchWatchlist } = useUserProfile({
     address,
     authStatus,
+  })
+
+  const { data: cartDomains, isLoading: isCartDomainsLoading } = useQuery({
+    queryKey: ['cartDomains', address],
+    queryFn: async () => {
+      const result = await getCart(address)
+      if (!result) return []
+      dispatch(setCartRegisteredDomains(result.filter((domain) => domain.cartType === 'sales')))
+      dispatch(setCartUnregisteredDomains(result.filter((domain) => domain.cartType === 'registrations')))
+      return result
+    },
+    enabled: !!address && authStatus === 'authenticated',
   })
 
   const handleGetNonce = useCallback(async () => {
@@ -97,6 +120,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         watchlistIsLoading,
         refetchProfile,
         refetchWatchlist,
+        cartDomains,
+        isCartDomainsLoading,
       }}
     >
       {children}

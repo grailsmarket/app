@@ -298,10 +298,13 @@ export type WatchlistDomainType = {
 
 export type DomainBasketType = 'PURCHASE' | 'OFFER' | 'REGISTER'
 
-export type CartDomainAPIType = {
-  basket: DomainBasketType
-  id: string
-} & MarketplaceDomainType
+export type ModifyCartResponseType = {
+  cartItemId: number
+  cartType: 'sales' | 'registrations'
+  ensNameId: number
+  ensName: string
+  message: string
+}
 
 export type CategoriesResponseType = {
   domain: string

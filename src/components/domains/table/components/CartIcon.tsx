@@ -14,21 +14,27 @@ interface CartIconProps {
 }
 
 const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder = false }) => {
-  const { isAddedToCart: isAddedToCartDomains } = useCartDomains()
+  const { isAddedToCart: isAddedToCartDomains, isModifyingDomain, isCartDomainsLoading } = useCartDomains()
   const isAddedToCart = domain ? isAddedToCartDomains(domain.token_id) : false
+  const isDomainModifying = domain ? isModifyingDomain(domain.token_id) : false
+
+  const isBeingRemoved = isDomainModifying && isAddedToCart
+  const isBeingAdded = isDomainModifying && !isAddedToCart
+  const showInCart = (isAddedToCart || isBeingAdded) && !isBeingRemoved
 
   return (
     <div
       className={cn(
         'flex items-center justify-center rounded-[4px] p-1.5 transition-all',
-        isAddedToCart ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
+        showInCart ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
         hasBorder && 'border-foreground/50 hover:border-foreground/80 rounded-sm border-2',
-        hasBorder && isAddedToCart && 'border-primary hover:border-primary',
+        hasBorder && showInCart && 'border-primary hover:border-primary',
+        (isCartDomainsLoading || isDomainModifying) && 'opacity-40',
         className
       )}
     >
       <Image
-        src={isAddedToCart ? inCart : addToCart}
+        src={showInCart ? inCart : addToCart}
         alt='Add to cart'
         style={size ? { width: size, height: size } : {}}
       />

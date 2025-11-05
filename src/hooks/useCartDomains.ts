@@ -5,10 +5,13 @@ import { getRegistrationStatus } from '../utils/getRegistrationStatus'
 import { selectMarketplaceDomains } from '../state/reducers/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '../types/domains'
 import { GRACE_PERIOD, REGISTERED } from '../constants/domains/registrationStatuses'
+import { useUserContext } from '@/context/user'
 
 const useCartDomains = () => {
+  const { isCartDomainsLoading } = useUserContext()
   const { modifyCart, clearCart } = useModifyCart()
-  const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
+  const { cartRegisteredDomains, cartUnregisteredDomains, modifyingCartTokenIds } =
+    useAppSelector(selectMarketplaceDomains)
 
   const purchaseDomains = cartRegisteredDomains.filter((domain) => domain.listings[0]?.price)
   const offerDomains = cartRegisteredDomains.filter((domain) => !domain.listings[0]?.price)
@@ -22,14 +25,18 @@ const useCartDomains = () => {
     return inCart
   }
 
+  const isModifyingDomain = (tokenId: string) => {
+    return modifyingCartTokenIds.includes(tokenId)
+  }
+
   const toggleCart = async (domain: MarketplaceDomainType, expireTime: string | null) => {
     if (getRegistrationStatus(expireTime) === GRACE_PERIOD) return
 
     const registered = getRegistrationStatus(expireTime) === REGISTERED
     const inCart = isAddedToCart(domain.token_id)
 
-    const basket = registered ? 'PURCHASE' : 'REGISTER'
-    return modifyCart({ domain, inCart, basket })
+    const cartType = registered ? 'sales' : 'registrations'
+    return modifyCart({ domain, inCart, cartType })
   }
 
   const onSelect = (e: MouseEvent, domain: MarketplaceDomainType) => {
@@ -45,6 +52,8 @@ const useCartDomains = () => {
     cartIsEmpty,
     isAddedToCart,
     clearCart,
+    isModifyingDomain,
+    isCartDomainsLoading,
   }
 }
 

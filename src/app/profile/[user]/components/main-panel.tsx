@@ -30,8 +30,8 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       <div className='md:p-lg mt-12 md:mt-0'>
         <div className='z-10'>
           <div
-            style={{ height: 'calc(100vh - 160px)' }}
-            className='p-lg bg-background border-primary flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
+            style={{ height: 'calc(100vh - 110px)' }}
+            className='p-lg relative bg-background border-primary flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
           >
             <FilterPanel />
             <div

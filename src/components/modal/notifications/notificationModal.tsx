@@ -7,6 +7,7 @@ import { fetchNotifications } from '@/api/notifications/fetchNotifications'
 import NotificationRow from './notificationRow'
 import { Cross } from 'ethereum-identity-kit'
 import NotificationLoadingRow from './loadingRow'
+import NoResults from '@/components/ui/noResults'
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -26,7 +27,6 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-    error,
   } = useInfiniteQuery({
     queryKey: ['notifications'],
     queryFn: async ({ pageParam = 1 }) => {
@@ -42,6 +42,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
   // Get all notifications from pages
   const allNotifications = data?.pages.flatMap(page => page.notifications) || []
+  const isNotificationsLoading = isLoading || isFetchingNextPage
 
   if (!isOpen) return null
 
@@ -67,43 +68,29 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 
         {/* Notifications list */}
         <div className="flex-1 overflow-hidden">
-          {error ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-foreground/60">Failed to load notifications. Please try again later.</p>
-            </div>
-          ) : isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-foreground/60">Loading notifications...</p>
-            </div>
-          ) : allNotifications.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-foreground/60">No notifications</p>
-            </div>
-          ) : (
-            <VirtualList
-              ref={virtualListRef}
-              items={isFetchingNextPage ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications, null]}
-              visibleCount={20}
-              rowHeight={60}
-              overscanCount={10}
-              paddingBottom='0'
-              renderItem={(notification) => {
-                if (!notification) return <NotificationLoadingRow />
+          {allNotifications.length > 0 ? <VirtualList
+            ref={virtualListRef}
+            items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
+            visibleCount={20}
+            rowHeight={60}
+            overscanCount={10}
+            paddingBottom='0'
+            renderItem={(notification) => {
+              if (!notification) return <NotificationLoadingRow />
 
-                return (
-                  <NotificationRow
-                    notification={notification}
-                  />
-                )
-              }}
-              onScrollNearBottom={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage()
-                }
-              }}
-              containerClassName="h-full"
-            />
-          )}
+              return (
+                <NotificationRow
+                  notification={notification}
+                />
+              )
+            }}
+            onScrollNearBottom={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage()
+              }
+            }}
+            containerClassName="h-full"
+          /> : <NoResults label="No notifications" />}
         </div>
       </div>
     </div>

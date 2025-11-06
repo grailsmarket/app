@@ -5,7 +5,7 @@ export const authFetch = (url: string, options?: any) => {
 
   return fetch(url, {
     ...options,
-    credentials: 'include',
+    mode: 'cors',
     headers: {
       ...options?.headers,
       id: cookies?.id || '',

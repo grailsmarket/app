@@ -26,7 +26,6 @@ interface CreateListingModalProps {
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain }) => {
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain } = useSeaportContext()
   const [price, setPrice] = useState<number>()
-  const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
   const [currency, setCurrency] = useState<'ETH' | 'USDC'>('ETH')
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [success, setSuccess] = useState(false)
@@ -34,6 +33,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [error, setError] = useState<string | null>(null)
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
+  const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 30)
 
   useEffect(() => {
     getCurrentChain()
@@ -259,7 +259,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 </div>
               </div>
             ) : null}
-
             {/* {status && (
               <div className="text-blue-500 text-sm">{status}</div>
             )} */}
@@ -267,9 +266,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             {/* {error && (
               <div className="text-red-500 text-sm">{error}</div>
             )} */}
-
             {error && <div className='text-center text-lg text-red-500'>Error: {error}</div>}
-
             <div className='flex flex-col gap-2'>
               <PrimaryButton
                 disabled={isLoading || !price || selectedMarketplace.length === 0}
@@ -285,7 +282,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     ? 'Submitting Listing...'
                     : selectedMarketplace.length === 0
                       ? 'Select a marketplace'
-                      : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0]}`
+                      : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}`
                   : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='h-10 w-full'>

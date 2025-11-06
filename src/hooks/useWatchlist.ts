@@ -4,7 +4,9 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../state/hooks'
 import {
+  addUserPendingWatchlistDomain,
   addUserWatchlistDomain,
+  removeUserPendingWatchlistDomain,
   removeUserWatchlistDomain,
   selectUserProfile,
 } from '../state/reducers/portfolio/profile'
@@ -14,9 +16,10 @@ import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 
-const useWatchlist = (name: string) => {
+const useWatchlist = (name: string, tokenId: string) => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
+  const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
   const { userAddress, authStatus } = useUserContext()
   const [watchlistCountChange, setWatchlistCountChange] = useState(0)
 
@@ -46,12 +49,16 @@ const useWatchlist = (name: string) => {
         }
 
         dispatch(addUserWatchlistDomain(item))
-        invalidateWatchlist()
         setWatchlistCountChange(watchlistCountChange + 1)
+        invalidateWatchlist()
       }
     },
     onError: (error: any, domain) => {
       console.error(`Error adding ${domain.name} to watchlist`, error)
+      setWatchlistCountChange(watchlistCountChange - 1)
+    },
+    onSettled: () => {
+      dispatch(removeUserPendingWatchlistDomain(tokenId))
     },
   })
 
@@ -66,10 +73,13 @@ const useWatchlist = (name: string) => {
     },
     onError: (error: any, watchlistId) => {
       console.error(`Error removing watchlist item ID-${watchlistId}`, error)
+      setWatchlistCountChange(watchlistCountChange + 1)
+    },
+    onSettled: () => {
+      dispatch(removeUserPendingWatchlistDomain(tokenId))
     },
   })
 
-  const { watchlist } = useAppSelector(selectUserProfile)
   const { data: watchlistItem } = useQuery({
     queryKey: ['isWatchlisted', name, userAddress],
     queryFn: () => checkWatchlist(name),
@@ -77,11 +87,18 @@ const useWatchlist = (name: string) => {
   })
 
   const isWatching = useMemo(
-    () => watchlistItem?.isWatching || watchlist?.some((item) => item.ensName === name),
-    [watchlistItem, watchlist, name]
+    () =>
+      watchlist.find((item) => item.nameData.name === name) ||
+      pendingWatchlistTokenIds.includes(tokenId) ||
+      watchlistItem?.isWatching ||
+      watchlist?.some((item) => item.ensName === name),
+    [watchlistItem, watchlist, name, tokenId, pendingWatchlistTokenIds]
   )
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
+    dispatch(addUserPendingWatchlistDomain(domain.token_id))
+    setWatchlistCountChange(watchlistCountChange + (isWatching ? -1 : 1))
+
     const watchlistItemId =
       watchlistItem?.watchlistEntry?.id || watchlist?.find((item) => item.ensNameId === domain.id)?.id
 

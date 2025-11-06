@@ -123,7 +123,7 @@ export const MARKETPLACE_GRID_ROW_COUNT_WIDTHS: Record<number, number> = {
 }
 
 export const CATEGORY_LABELS = {
-  prepunks: 'PrePunks',
+  prepunks: 'Prepunks',
   '10k': '10k Club',
   pokemon: 'Pokemon',
   '1kforenames': '1k Forenames',

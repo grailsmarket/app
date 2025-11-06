@@ -27,23 +27,25 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   return (
     <FilterProvider filterType='profile' profileTab={profileTab}>
-      <div className='md:p-lg z-50 mt-12 md:mt-0'>
-        <div
-          style={{ height: 'calc(100vh - 160px)' }}
-          className='p-lg bg-background border-primary relative z-10 flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
-        >
-          <FilterPanel />
+      <div className='md:p-lg mt-12 md:mt-0'>
+        <div className='z-10'>
           <div
-            className='md:pt-lg flex flex-col gap-4'
-            style={{
-              width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
-            }}
+            style={{ height: 'calc(100vh - 160px)' }}
+            className='p-lg bg-background border-primary flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
           >
-            <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
-            {profileTab === 'domains' && <DomainPanel user={user} />}
-            {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
+            <FilterPanel />
+            <div
+              className='md:pt-lg flex flex-col gap-4'
+              style={{
+                width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
+              }}
+            >
+              <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
+              {profileTab === 'domains' && <DomainPanel user={user} />}
+              {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
+            </div>
+            <ActionButtons />
           </div>
-          <ActionButtons />
         </div>
       </div>
     </FilterProvider>

@@ -48,7 +48,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
 
   return (
     <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
-      <h3 className='font-sedan-sc text-3xl'>Register Domain</h3>
+      <h3 className='font-sedan-sc text-3xl'>Register Name</h3>
       <div className='flex w-full flex-row items-center justify-between gap-4'>
         <div className='flex flex-row items-center gap-3'>
           <Image src={ENS_LOGO} alt='ENS Logo' width={32} height={32} />

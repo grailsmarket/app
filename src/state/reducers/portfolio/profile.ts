@@ -15,6 +15,7 @@ type EnsProfileType = {
 type profileState = {
   ensProfile: EnsProfileType
   watchlist: WatchlistItemType[]
+  pendingWatchlistTokenIds: string[]
   selectedTab: TabType
 }
 
@@ -32,6 +33,7 @@ const initialState: profileState = {
     header: null,
   },
   watchlist: [],
+  pendingWatchlistTokenIds: [],
   selectedTab: portfolioTabs[0],
 }
 
@@ -52,6 +54,12 @@ export const profileSlice = createSlice({
     removeUserWatchlistDomain(state, { payload }: PayloadAction<number>) {
       state.watchlist = state.watchlist.filter((item) => item.id !== payload)
     },
+    addUserPendingWatchlistDomain(state, { payload }: PayloadAction<string>) {
+      state.pendingWatchlistTokenIds.push(payload)
+    },
+    removeUserPendingWatchlistDomain(state, { payload }: PayloadAction<string>) {
+      state.pendingWatchlistTokenIds = state.pendingWatchlistTokenIds.filter((item) => item !== payload)
+    },
     changeTab(state, { payload }: PayloadAction<TabType>) {
       state.selectedTab = payload
     },
@@ -59,8 +67,15 @@ export const profileSlice = createSlice({
 })
 
 // Actions --------------------------------------------
-export const { setUserEnsProfile, setWatchlistDomains, addUserWatchlistDomain, removeUserWatchlistDomain, changeTab } =
-  profileSlice.actions
+export const {
+  setUserEnsProfile,
+  setWatchlistDomains,
+  addUserWatchlistDomain,
+  removeUserWatchlistDomain,
+  addUserPendingWatchlistDomain,
+  removeUserPendingWatchlistDomain,
+  changeTab,
+} = profileSlice.actions
 
 // Selectors ------------------------------------------
 export const selectUserProfile = (state: RootState) => state.user.profile

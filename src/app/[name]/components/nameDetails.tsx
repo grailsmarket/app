@@ -12,6 +12,7 @@ import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
+import Link from 'next/link'
 
 type Row = {
   label: string
@@ -45,10 +46,11 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     // },
     {
       label: 'Club',
-      value:
-        nameDetails?.clubs && nameDetails?.clubs.length > 0
-          ? nameDetails?.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')
-          : 'None',
+      value: (<div>
+        {nameDetails?.clubs && nameDetails?.clubs.length > 0
+          ? nameDetails?.clubs?.map((club) => <Link key={club} href={`/categories/${club}`} className='text-primary hover:text-primary/80 font-medium transition-colors'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</Link>)
+          : 'None'}
+      </div>),
       canCopy: false,
     },
     {

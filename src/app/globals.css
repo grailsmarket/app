@@ -132,3 +132,15 @@ body {
 .gradient-gray {
   background: linear-gradient(135deg, rgba(129, 133, 152, 0.7) 0%, rgba(129, 133, 152, 0.05) 103.11%);
 }
+
+/* .user-profile {
+  z-index: 1;
+} */
+
+/* .user-profile-header-container {
+  z-index: -1000;
+} */
+
+.user-profile-content {
+  z-index: 1000;
+}

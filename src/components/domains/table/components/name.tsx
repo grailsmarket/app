@@ -1,5 +1,5 @@
 import Tooltip from '@/components/ui/tooltip'
-import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
+import { ALL_MARKETPLACE_COLUMNS, CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
 import { MarketplaceDomainType } from '@/types/domains'
 import { RegistrationStatus } from '@/types/domains'
@@ -41,7 +41,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             {registrationStatus === GRACE_PERIOD ? (
               <p className='text-md text-neutral'>Grace Period</p>
             ) : (
-              <p className='text-md text-neutral truncate font-semibold'>{domain.clubs?.join(', ')}</p>
+              <p className='text-md text-neutral truncate font-semibold'>{domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}</p>
             )}
           </div>
         </div>

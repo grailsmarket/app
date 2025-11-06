@@ -29,13 +29,13 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const { createOffer, isLoading, isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [expiryDate, setExpiryDate] = useState<number>(Math.floor(new Date().getTime() / 1000))
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [currency, setCurrency] = useState<'WETH' | 'USDC'>('WETH')
   const [price, setPrice] = useState<number>()
   const [success, setSuccess] = useState(false)
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
+  const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 7)
   const durationOptions: DropdownOption[] = [
     { value: currentTimestamp + DAY_IN_SECONDS, label: '1 Day' },
     { value: currentTimestamp + DAY_IN_SECONDS * 3, label: '3 Days' },
@@ -78,6 +78,11 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
       return
     }
 
+    if (selectedMarketplace.length === 0) {
+      console.error('Please select a marketplace')
+      return
+    }
+
     try {
       await createOffer({
         tokenId: tokenId.toString(),
@@ -86,7 +91,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         expiryDate,
         currentOwner,
         ensNameId: domainId,
-        marketplace: ['grails'],
+        marketplace: selectedMarketplace,
       })
 
       setSuccess(true)
@@ -216,7 +221,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
             <div className='text-center text-sm text-gray-400'>
               By making an offer, you&apos;re committing to purchase this NFT if the seller accepts. The offer will be
-              signed with your wallet and stored on-chain.
+              signed with your wallet.
             </div>
 
             <div className='flex flex-col gap-2'>

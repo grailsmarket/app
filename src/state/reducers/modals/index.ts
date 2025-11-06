@@ -8,6 +8,7 @@ import makeListingModal from './makeListingModal'
 import transferTokenModal from './transferTokenModal'
 import cancelListingModal from './cancelListingModal'
 import buyNowModal from './buyNowModal'
+import notificationModal from './notificationModal'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
@@ -18,6 +19,7 @@ const modalReducer = combineReducers({
   makeListingReducer: makeListingModal,
   transferTokenReducer: transferTokenModal,
   buyNowReducer: buyNowModal,
+  notificationReducer: notificationModal,
 })
 
 export default modalReducer

@@ -14,14 +14,16 @@ const Profile: React.FC<Props> = ({ user }) => {
   const { userAddress } = useUserContext()
 
   return (
-    <div className='dark'>
-      <FullWidthProfile
-        connectedAddress={userAddress}
-        addressOrName={user}
-        showPoaps={false}
-        showFollowButton={true}
-        style={{ paddingBottom: '80px', transform: 'translateY(80px)', position: 'relative' }}
-      />
+    <div className='dark pt-20 relative'>
+      <div className='z-20 w-full'>
+        <FullWidthProfile
+          connectedAddress={userAddress}
+          addressOrName={user}
+          showPoaps={false}
+          showFollowButton={true}
+        // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+        />
+      </div>
       <MainPanel user={user} />
     </div>
   )

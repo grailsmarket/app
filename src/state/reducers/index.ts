@@ -10,7 +10,6 @@ import domainsReducer from './domains'
 import filtersReducer from './filters'
 import profileReducer from './portfolio'
 import transactionReducer from './transactions'
-import notificationsReducer from './notifications'
 
 const PERSISTED_KEYS: string[] = ['filters', 'cache', 'user']
 
@@ -25,7 +24,6 @@ const reducer = combineReducers({
   filters: filtersReducer,
   domains: domainsReducer,
   search: searchReducer,
-  notifications: notificationsReducer,
   modals: modalReducer,
   user: profileReducer,
   transactions: transactionReducer,

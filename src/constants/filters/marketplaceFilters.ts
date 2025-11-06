@@ -42,8 +42,8 @@ export const PORTFOLIO_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'M
 export const ALL_SORT_FILTERS = [
   'alphabetical_asc',
   'alphabetical_desc',
-  'last_sale_asc',
-  'last_sale_desc',
+  'last_sale_price_asc',
+  'last_sale_price_desc',
   'last_sale_date_asc',
   'last_sale_date_desc',
   'price_desc',

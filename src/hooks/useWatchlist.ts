@@ -49,7 +49,6 @@ const useWatchlist = (name: string, tokenId: string) => {
         }
 
         dispatch(addUserWatchlistDomain(item))
-        setWatchlistCountChange(watchlistCountChange + 1)
         invalidateWatchlist()
       }
     },
@@ -67,16 +66,14 @@ const useWatchlist = (name: string, tokenId: string) => {
     onSuccess: (response) => {
       if (response.success) {
         dispatch(removeUserWatchlistDomain(response.watchlistId))
-        setWatchlistCountChange(watchlistCountChange - 1)
+        dispatch(removeUserPendingWatchlistDomain(tokenId))
         invalidateWatchlist()
       }
     },
     onError: (error: any, watchlistId) => {
+      dispatch(removeUserPendingWatchlistDomain(tokenId))
       console.error(`Error removing watchlist item ID-${watchlistId}`, error)
       setWatchlistCountChange(watchlistCountChange + 1)
-    },
-    onSettled: () => {
-      dispatch(removeUserPendingWatchlistDomain(tokenId))
     },
   })
 
@@ -86,14 +83,13 @@ const useWatchlist = (name: string, tokenId: string) => {
     enabled: !!name && !!userAddress && authStatus === 'authenticated',
   })
 
-  const isWatching = useMemo(
-    () =>
-      watchlist.find((item) => item.nameData.name === name) ||
-      pendingWatchlistTokenIds?.includes(tokenId) ||
-      watchlistItem?.isWatching ||
-      watchlist?.some((item) => item.ensName === name),
-    [watchlistItem, watchlist, name, tokenId, pendingWatchlistTokenIds]
-  )
+  const isWatching = useMemo(() => {
+    if (pendingWatchlistTokenIds?.includes(tokenId) && !watchlist.some((item) => item.nameData.name === name)) {
+      return true
+    }
+
+    return watchlistItem?.isWatching || watchlist?.some((item) => item.ensName === name)
+  }, [watchlistItem, watchlist, name, tokenId, pendingWatchlistTokenIds])
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
     dispatch(addUserPendingWatchlistDomain(domain.token_id))

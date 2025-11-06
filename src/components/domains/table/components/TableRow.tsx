@@ -12,6 +12,7 @@ import HighestOffer from './highestOffer'
 import Expiration from './expiration'
 import Actions from './actions'
 import Link from 'next/link'
+import { cn } from '@/utils/tailwind'
 
 interface TableRowProps {
   domain: MarketplaceDomainType
@@ -74,7 +75,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
   return (
     <Link
       href={`/${domain.name}`}
-      className='group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full cursor-pointer flex-row items-center justify-start rounded-sm transition'
+      className={cn('group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full flex-row items-center justify-start rounded-sm transition', domainIsValid ? 'opacity-100 cursor-pointer' : 'opacity-40 pointer-events-none cursor-not-allowed')}
     >
       {displayedColumns.map((column) => columns[column])}
     </Link>

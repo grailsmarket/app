@@ -55,7 +55,7 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
   last_sale: {
     label: 'Last Sale',
     sort: null,
-    value: { asc: 'last_sale_asc', desc: 'last_sale_desc' },
+    value: { asc: 'last_sale_price_asc', desc: 'last_sale_price_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },

@@ -89,7 +89,7 @@ const useWatchlist = (name: string, tokenId: string) => {
   const isWatching = useMemo(
     () =>
       watchlist.find((item) => item.nameData.name === name) ||
-      pendingWatchlistTokenIds.includes(tokenId) ||
+      pendingWatchlistTokenIds?.includes(tokenId) ||
       watchlistItem?.isWatching ||
       watchlist?.some((item) => item.ensName === name),
     [watchlistItem, watchlist, name, tokenId, pendingWatchlistTokenIds]

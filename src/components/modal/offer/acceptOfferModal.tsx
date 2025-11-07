@@ -6,7 +6,7 @@ import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import { SEAPORT_ADDRESS, ENS_REGISTRAR_ADDRESS, ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
-import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
+import { DomainOfferType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { Check } from 'ethereum-identity-kit'
@@ -15,10 +15,11 @@ import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
+import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
-  domain: MarketplaceDomainType | null
+  domain: AcceptOfferDomain | null
   onClose: () => void
 }
 
@@ -138,7 +139,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       if (!address || !publicClient || !domain) return
 
       // Determine which NFT contract to check based on if the name is wrapped
-      const isWrapped = domain.metadata?.is_wrapped === 'true'
+      const isWrapped = domain.isWrapped
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
       // Check if Seaport is approved to transfer the NFT
@@ -166,7 +167,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       }
 
       // Determine which NFT contract to approve based on if the name is wrapped
-      const isWrapped = domain.metadata?.is_wrapped === 'true'
+      const isWrapped = domain.isWrapped
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
       // Approve Seaport to transfer the NFT
@@ -204,7 +205,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
     queryClient.refetchQueries({ queryKey: ['name', 'details'] })
     queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
     queryClient.refetchQueries({ queryKey: ['received_offers'] })
-    queryClient.refetchQueries({ queryKey: ['offers'] })
+    queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
   }
 
   const handleAcceptOffer = async () => {
@@ -311,7 +312,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <div className='mb-4 space-y-4'>
               <div className='flex flex-row items-center justify-between rounded-lg'>
                 <p className='font-sedan-sc text-xl'>Name</p>
-                <p className='text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
+                <p className='text-xl font-semibold'>{domain.name || `Token #${domain.tokenId}`}</p>
               </div>
 
               <div className='flex flex-row items-center justify-between rounded-lg'>
@@ -356,8 +357,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             </div>
 
             {needsApproval && (
-              <div className='bg-secondary border-tertiary mb-2 rounded-lg border p-3 text-sm'>
-                You need to approve Seaport to transfer your NFT. This is a one-time approval.
+              <div className='mb-2 rounded-lg text-md p-sm text-center'>
+                You need to approve Seaport to transfer your NFT. This is a one time approval.
               </div>
             )}
 
@@ -371,7 +372,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
                 }
                 className='w-full'
-                disabled={isCorrectChain ? needsApproval : false}
+              // disabled={isCorrectChain ? needsApproval : false}
               >
                 {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
               </PrimaryButton>

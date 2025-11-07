@@ -77,7 +77,7 @@ const Activity: React.FC<ActivityProps> = ({
       className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
       style={{ maxHeight }}
     >
-      {showHeaders && (
+      {showHeaders && !noResults && (
         <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             return (

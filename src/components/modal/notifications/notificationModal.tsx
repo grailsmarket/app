@@ -81,6 +81,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               return (
                 <NotificationRow
                   notification={notification}
+                  onClick={() => onClose()}
                 />
               )
             }}

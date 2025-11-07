@@ -68,7 +68,6 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
     ensTokenId: '567890',
     metadata: {
       priceWei: '1000000000000000000', // 1 ETH
-      previousPriceWei: '2000000000000000000', // 2 ETH
       listingId: 301,
     },
     sentAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
@@ -136,4 +135,4 @@ export const MOCK_NOTIFICATIONS_RESPONSE: NotificationsResponse = {
 }
 
 // Mock unread count (notifications where isRead is false)
-export const MOCK_UNREAD_COUNT = MOCK_NOTIFICATIONS.filter(n => !n.isRead).length
+export const MOCK_UNREAD_COUNT = MOCK_NOTIFICATIONS.filter((n) => !n.isRead).length

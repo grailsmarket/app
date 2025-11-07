@@ -53,6 +53,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         maxHeight='calc(100vh - 190px)'
         domains={domains}
         loadingRowCount={20}
+        paddingBottom='140px'
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}

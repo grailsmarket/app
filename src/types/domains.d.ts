@@ -58,69 +58,78 @@ export type DomainOfferType = {
 }
 
 export type DomainOfferOrderDataType = {
-  item: {
-    chain: {
-      name: string
-    }
-    nft_id: string
-    metadata: {
-      name: string
-      traits: {
-        value: string
-        trait_type: string
-      }[]
-      image_url: string
-      description: string
-      metadata_url: string | null
-      animation_url: string | null
-      background_color: string | null
-    }
-    permalink: string
-  }
-  chain: string
-  maker: {
-    address: Address
-  }
-  taker: {
-    address: Address
-  }
-  quantity: number
-  base_price: string
-  collection: {
-    slug: string
-  }
-  order_hash: string
-  created_date: string
-  payment_token: {
-    name: string
-    symbol: string
-    address: Address
-    decimals: number
-    eth_price: string
-    usd_price: string
-  }
-  protocol_data: {
-    signature: string
-    parameters: {
-      salt: string
-      zone: Address
-      offer: {
+  orderHash: Address
+  signature: Hex
+  parameters: {
+    salt: Hex
+    zone: Address
+    offer: [
+      {
         token: Address
         itemType: number
         endAmount: string
         startAmount: string
-        identifierOrCriteria: string
-      }[]
-      counter: Address
+        identifierOrCriteria: Hex
+      },
+    ]
+    counter: string
+    endTime: string
+    offerer: Address
+    zoneHash: Hex
+    orderType: number
+    startTime: string
+    conduitKey: Address
+    consideration: [
+      {
+        token: Address
+        itemType: number
+        endAmount: string
+        recipient: Address
+        startAmount: string
+        identifierOrCriteria: Hex
+      },
+    ]
+    totalOriginalConsiderationItems: number
+  }
+  marketplace: 'grails'
+  usesConduit: true
+  protocol_data: {
+    signature: Hex
+    conduitKey: Hex
+    parameters: {
+      salt: Hex
+      zone: Address
+      offer: [
+        {
+          token: Address
+          itemType: number
+          endAmount: string
+          startAmount: string
+          identifierOrCriteria: Hex
+        },
+      ]
+      counter: string
       endTime: string
       offerer: Address
+      zoneHash: Hex
+      orderType: number
+      startTime: string
+      conduitKey: Address
+      consideration: [
+        {
+          token: Address
+          itemType: number
+          endAmount: string
+          recipient: Address
+          startAmount: string
+          identifierOrCriteria: Hex
+        },
+      ]
+      totalOriginalConsiderationItems: number
     }
+    conduitAddress: Address
   }
-  event_timestamp: string
-  expiration_date: string
-  protocol_address: Address
 }
-
 // Names API item
 // "name": "_vitalik.eth",
 // "token_id": "114908560202028942467862703253656492567899290430658454902987364571129807569325",

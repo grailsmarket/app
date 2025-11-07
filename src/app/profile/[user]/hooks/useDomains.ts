@@ -63,6 +63,7 @@ export const useProfileDomains = (user: Address | string) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
+    enabled: !!profile?.address,
   })
 
   const domainsData = useMemo(() => {

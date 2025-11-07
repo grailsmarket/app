@@ -6,8 +6,7 @@ export interface NotificationMetadata {
   buyerAddress?: string
   listingId?: number
   offerId?: number
-  previousPriceWei?: string
-  expirationDate?: string
+  offerAmountWei?: string
 }
 
 export interface Notification {

@@ -90,7 +90,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   return (
     <div
       className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm'
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         className='bg-background border-primary relative flex h-fit w-full max-w-2xl flex-col rounded-md border-2 shadow-lg'
@@ -102,7 +102,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
           <MagnifyingGlass className='text-foreground/60 h-6 w-6' />
           <input
             type='text'
-            placeholder='Search domains, categories, and profiles...'
+            placeholder='Search names, categories, and profiles...'
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className='text-foreground placeholder:text-foreground/40 flex-1 bg-transparent text-2xl font-medium outline-none'
@@ -122,11 +122,11 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
         <div className='max-h-[80vh] overflow-y-auto'>
           {query.trim() && (
             <>
-              {/* Domains */}
+              {/* Names */}
               {(isLoading || results.domains.length > 0) && (
                 <div className='p-lg flex flex-col gap-1'>
                   <div className='flex items-center'>
-                    <h3 className='text-foreground px-3 text-2xl font-bold'>Domains</h3>
+                    <h3 className='text-foreground px-3 text-2xl font-bold'>Names</h3>
                   </div>
                   <div className='flex flex-col'>
                     {isLoading

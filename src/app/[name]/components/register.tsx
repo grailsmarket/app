@@ -7,9 +7,11 @@ import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import useETHPrice from '@/hooks/useETHPrice'
-import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, PREMIUM } from '@/constants/domains/registrationStatuses'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
+import { BigNumber } from '@ethersproject/bignumber'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -39,6 +41,30 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           The domain is in grace period and can be registered again after{' '}
           <strong>{formatExpiryDate(gracePeriodEndDate)}</strong>
         </p>
+      </div>
+    )
+  }
+
+  if (registrationStatus === PREMIUM) {
+    const expireTime = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() / 1000 : 0
+    const currentTime = Math.floor(new Date().getTime() / 1000)
+    const registrationPrice = calculateRegistrationPrice(nameDetails?.name || '', ethPrice || 3300).usd
+    const priceOracle = new PremiumPriceOracle(expireTime)
+    const premiumPrice = BigNumber.from(Math.floor((priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice) / (ethPrice || 3300) * 10000)).mul(BigNumber.from(10).pow(14)).toString()
+
+    return (
+      <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
+        <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
+        <div className='flex w-full flex-row items-center justify-between gap-4'>
+          <Price price={premiumPrice} currencyAddress={TOKEN_ADDRESSES.ETH} iconSize='24px' fontSize='text-2xl font-bold' />
+          <PrimaryButton
+            onClick={() => {
+              window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+            }}
+          >
+            Register
+          </PrimaryButton>
+        </div>
       </div>
     )
   }

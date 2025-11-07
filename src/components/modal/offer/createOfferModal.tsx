@@ -38,9 +38,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 7)
   const durationOptions: DropdownOption[] = [
     { value: currentTimestamp + DAY_IN_SECONDS, label: '1 Day' },
-    { value: currentTimestamp + DAY_IN_SECONDS * 3, label: '3 Days' },
     { value: currentTimestamp + DAY_IN_SECONDS * 7, label: '1 Week' },
-    { value: currentTimestamp + DAY_IN_SECONDS * 14, label: '2 Weeks' },
     { value: currentTimestamp + DAY_IN_SECONDS * 30, label: '1 Month' },
     { value: currentTimestamp + DAY_IN_SECONDS * 90, label: '3 Months' },
     { value: 0, label: 'Custom' },

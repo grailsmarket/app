@@ -7,7 +7,7 @@ import User from '@/components/ui/user'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { EXPIRED_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { EXPIRED_STATUSES, PREMIUM, GRACE_PERIOD, UNREGISTERED, REGISTERED } from '@/constants/domains/registrationStatuses'
 import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
@@ -45,12 +45,17 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     //   canCopy: false,
     // },
     {
-      label: 'Club',
+      label: 'Category',
       value: (<div>
         {nameDetails?.clubs && nameDetails?.clubs.length > 0
           ? nameDetails?.clubs?.map((club) => <Link key={club} href={`/categories/${club}`} className='text-primary hover:text-primary/80 font-medium transition-colors'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</Link>)
           : 'None'}
       </div>),
+      canCopy: false,
+    },
+    {
+      label: 'Status',
+      value: <p className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-yellow-500' : registrationStatus === PREMIUM ? 'text-purple-500' : registrationStatus === REGISTERED ? 'text-blue-400' : 'text-text-foreground/80'}`}>{registrationStatus}</p>,
       canCopy: false,
     },
     {

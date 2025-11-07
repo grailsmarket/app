@@ -29,8 +29,8 @@ const Watchlist: React.FC<WatchlistProps> = ({
   iconSize,
   iconClassName,
 }) => {
-  const { authStatus, handleSignIn, userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
+  const { authStatus, handleSignIn, userAddress } = useUserContext()
   const { toggleWatchlist, isLoading, isWatching, watchlistCountChange } = useWatchlist(domain.name, domain.token_id)
 
   return (

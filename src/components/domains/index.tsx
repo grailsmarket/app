@@ -29,6 +29,7 @@ interface DomainsProps {
   showHeaders?: boolean
   displayedDetails?: MarketplaceHeaderColumn[]
   forceViewType?: 'grid' | 'list'
+  paddingBottom?: string
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -44,6 +45,7 @@ const Domains: React.FC<DomainsProps> = ({
   showHeaders = true,
   displayedDetails = MARKETPLACE_DISPLAYED_COLUMNS,
   forceViewType,
+  paddingBottom,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const viewTypeToUse = forceViewType || viewType
@@ -119,9 +121,8 @@ const Domains: React.FC<DomainsProps> = ({
 
                     setSortFilter(item.value?.asc || item.value?.desc || null)
                   }}
-                  className={`w-fit text-left text-sm font-medium ${
-                    item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
-                  }`}
+                  className={`w-fit text-left text-sm font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
+                    }`}
                 >
                   {item.label === 'Actions' ? '' : item.label}
                 </p>
@@ -130,9 +131,8 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort ascending'
-                      className={`rotate-180 ${
-                        sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`rotate-180 ${sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
+                        } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.asc) return
 
@@ -147,9 +147,8 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort descending'
-                      className={`${
-                        sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`${sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
+                        } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.desc) return
 
@@ -199,7 +198,7 @@ const Domains: React.FC<DomainsProps> = ({
               overscanCount={visibleCount}
               listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               gap={0}
-              paddingBottom='60px'
+              paddingBottom={paddingBottom ? paddingBottom : '40px'}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={200}
               renderItem={(item, index) => {

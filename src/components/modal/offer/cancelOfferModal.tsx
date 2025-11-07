@@ -10,6 +10,7 @@ import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { DomainOfferType } from '@/types/domains'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface CancelOfferModalProps {
   onClose: () => void
@@ -18,6 +19,7 @@ interface CancelOfferModalProps {
 }
 
 const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offer }) => {
+  const queryClient = useQueryClient()
   const { cancelOffer, isLoading } = useSeaportClient()
   const [status, setStatus] = useState<'pending' | 'success' | 'error'>('pending')
 
@@ -35,6 +37,13 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
     } catch (err) {
       console.error('Failed to cancel listing:', err)
       setStatus('error')
+    } finally {
+      queryClient.invalidateQueries({
+        queryKey: ['portfolio', 'my_offers']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['name', 'offers']
+      })
     }
   }
 

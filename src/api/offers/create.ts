@@ -3,6 +3,7 @@ import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 
 interface CreateOfferParams {
+  marketplace: 'opensea' | 'grails'
   price: number
   currency: 'WETH' | 'USDC'
   orderData: SeaportStoredOrder
@@ -12,6 +13,7 @@ interface CreateOfferParams {
 }
 
 export const createOffer = async ({
+  marketplace,
   price,
   currency,
   orderData,
@@ -29,6 +31,7 @@ export const createOffer = async ({
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      marketplace,
       ensNameId,
       buyerAddress,
       offerAmountWei: fullPrice.toString(),

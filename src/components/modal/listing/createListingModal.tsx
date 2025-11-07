@@ -45,9 +45,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
   const durationOptions: DropdownOption[] = [
     { value: currentTimestamp + DAY_IN_SECONDS, label: '1 Day' },
-    { value: currentTimestamp + DAY_IN_SECONDS * 3, label: '3 Days' },
     { value: currentTimestamp + DAY_IN_SECONDS * 7, label: '1 Week' },
-    { value: currentTimestamp + DAY_IN_SECONDS * 14, label: '2 Weeks' },
     { value: currentTimestamp + DAY_IN_SECONDS * 30, label: '1 Month' },
     { value: currentTimestamp + DAY_IN_SECONDS * 90, label: '3 Months' },
     { value: 0, label: 'Custom' },
@@ -122,7 +120,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         className='bg-background border-primary p-lg sm:p-xl relative flex h-fit w-full max-w-sm flex-col gap-4 rounded-md border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
-        <h2 className='font-sedan-sc max-w-full truncate text-center text-3xl text-white'>List Domain</h2>
+        <h2 className='font-sedan-sc max-w-full truncate text-center text-3xl text-white'>List Name</h2>
 
         {success ? (
           <>

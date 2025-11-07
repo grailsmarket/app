@@ -242,6 +242,7 @@ export function useSeaportClient() {
           console.log('Order:', order)
           const formattedOrder = seaportClient.formatOrderForStorage(order)
           const response = await createOfferApi({
+            marketplace: marketplace as 'opensea' | 'grails',
             ensNameId: params.ensNameId,
             price: params.price,
             currency: params.currency,

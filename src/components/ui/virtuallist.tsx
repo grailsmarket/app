@@ -50,7 +50,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     containerClassName,
     onScrollNearBottom,
     scrollThreshold = 300,
-    paddingBottom = '40px',
+    paddingBottom = '80px',
   } = props
 
   const [scrollTop, setScrollTop] = useState(0)

@@ -18,6 +18,7 @@ const OfferPanel = () => {
   const { authStatus } = useUserContext()
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
+  const { userAddress } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers()
 
@@ -75,6 +76,7 @@ const OfferPanel = () => {
         hasMoreOffers={hasMoreOffers}
         fetchMoreOffers={fetchMoreOffers}
         columns={displayedDetails}
+        currentUserAddress={userAddress}
       />
     </div>
   )

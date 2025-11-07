@@ -59,9 +59,10 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     const { metadata, type } = notification
 
     if (type === 'sale' || type === 'new-listing' || type === 'new-offer' || type === 'price-change') {
-      if (metadata.priceWei) {
+      const price = metadata.priceWei || metadata.offerAmountWei
+      if (price) {
         return (
-          <Price price={metadata.priceWei} currencyAddress={TOKEN_ADDRESSES.ETH} />
+          <Price price={price} currencyAddress={TOKEN_ADDRESSES.ETH} />
         )
       }
     }
@@ -80,14 +81,6 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     //   }
     // }
 
-    if (metadata.expirationDate) {
-      return (
-        <div className="text-foreground/60 text-sm">
-          {new Date(metadata.expirationDate).toLocaleDateString()}
-        </div>
-      )
-    }
-
     return null
   }
 
@@ -100,7 +93,6 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
       href={`/${notification.ensName}`}
       className={cn(
         'flex items-center w-full justify-between gap-4 p-lg hover:bg-white/5 transition-colors cursor-pointer',
-        !notification.isRead && 'bg-white/[0.02]'
       )}
       onClick={onClick}
     >

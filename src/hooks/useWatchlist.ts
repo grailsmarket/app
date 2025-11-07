@@ -21,6 +21,7 @@ const useWatchlist = (name: string, tokenId: string) => {
   const queryClient = useQueryClient()
   const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
   const { userAddress, authStatus } = useUserContext()
+  const [hasWatchlistedBefore, setHasWatchlistedBefore] = useState<boolean | undefined>(undefined)
   const [watchlistCountChange, setWatchlistCountChange] = useState(0)
 
   const invalidateWatchlist = () => {
@@ -41,10 +42,10 @@ const useWatchlist = (name: string, tokenId: string) => {
             name: domain.name,
             tokenId: domain.token_id,
             ownerAddress: domain.owner,
-            hasActiveListing: domain.listings.length > 0,
-            listingPrice: domain.listings[0].price,
+            hasActiveListing: domain.listings?.length > 0,
+            listingPrice: domain.listings?.[0]?.price,
             expiryDate: domain.expiry_date,
-            activeListing: domain.listings[0],
+            activeListing: domain.listings?.[0],
           },
         }
 
@@ -79,21 +80,43 @@ const useWatchlist = (name: string, tokenId: string) => {
 
   const { data: watchlistItem } = useQuery({
     queryKey: ['isWatchlisted', name, userAddress],
-    queryFn: () => checkWatchlist(name),
+    queryFn: async () => {
+      const result = await checkWatchlist(name)
+
+      if (result.isWatching) {
+        if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(true)
+        dispatch(addUserWatchlistDomain(result.watchlistEntry))
+      } else {
+        if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(false)
+        dispatch(removeUserWatchlistDomain(result.watchlistEntry?.id))
+      }
+      return result
+    },
     enabled: !!name && !!userAddress && authStatus === 'authenticated',
   })
 
   const isWatching = useMemo(() => {
-    if (pendingWatchlistTokenIds?.includes(tokenId) && !watchlist.some((item) => item.nameData.name === name)) {
+    if (pendingWatchlistTokenIds?.includes(tokenId) || removeFromWatchlistMutation.isPending) {
+      if (watchlist.some((item) => item.ensName === name) || removeFromWatchlistMutation.isPending) {
+        return false
+      }
+
       return true
     }
 
-    return watchlistItem?.isWatching || watchlist?.some((item) => item.ensName === name)
-  }, [watchlistItem, watchlist, name, tokenId, pendingWatchlistTokenIds])
+    return watchlist?.some((item) => item.ensName === name)
+  }, [watchlist, name, tokenId, pendingWatchlistTokenIds, removeFromWatchlistMutation.isPending])
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
     dispatch(addUserPendingWatchlistDomain(domain.token_id))
-    setWatchlistCountChange(watchlistCountChange + (isWatching ? -1 : 1))
+    if (
+      !(
+        pendingWatchlistTokenIds?.includes(tokenId) ||
+        removeFromWatchlistMutation.isPending ||
+        addToWatchlistMutation.isPending
+      )
+    )
+      setWatchlistCountChange(isWatching ? (hasWatchlistedBefore ? -1 : 0) : hasWatchlistedBefore ? 0 : 1)
 
     const watchlistItemId =
       watchlistItem?.watchlistEntry?.id || watchlist?.find((item) => item.ensNameId === domain.id)?.id

@@ -84,6 +84,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
     try {
       await createOffer({
         tokenId: tokenId.toString(),
+        ensName,
         price,
         currency,
         expiryDate,

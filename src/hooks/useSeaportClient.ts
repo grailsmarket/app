@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useWalletClient, usePublicClient } from 'wagmi'
 import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
-import { createOffer as createOfferApi } from '@/api/offers/create'
+import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offers/create'
 import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 import { useUserContext } from '@/context/user'
@@ -203,6 +203,7 @@ export function useSeaportClient() {
   const createOffer = useCallback(
     async (params: {
       tokenId: string
+      ensName: string
       ensNameId: number
       price: number
       currency: 'WETH' | 'USDC'
@@ -238,17 +239,29 @@ export function useSeaportClient() {
 
         // Handle the result - it should be a single order since we're using 'grails' marketplace
         const createdOffers = Object.entries(result).map(async ([marketplace, order]) => {
+          // Here we handle submitting the offer to OpenseaAPI directly
+          if (marketplace === 'opensea') {
+            const openSeaResponse = await submitOfferToOpenSea(order)
+            console.log('OpenSea response:', openSeaResponse)
+            return {
+              response: openSeaResponse,
+              marketplace,
+            }
+          }
+
+          // Here we handle creating the offer for the Grails marketplace
           console.log('Creating offer for marketplace:', marketplace)
-          console.log('Order:', order)
           const formattedOrder = seaportClient.formatOrderForStorage(order)
           const response = await createOfferApi({
             marketplace: marketplace as 'opensea' | 'grails',
-            ensNameId: params.ensNameId,
+            tokenId: params.tokenId,
+            ensName: params.ensName,
             price: params.price,
             currency: params.currency,
             orderData: formattedOrder,
             buyerAddress: address,
             expiryDate: params.expiryDate,
+            ensNameId: params.ensNameId,
           })
 
           return {

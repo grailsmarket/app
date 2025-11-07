@@ -1770,6 +1770,10 @@ export class SeaportClient {
       conduitKey: order.parameters?.conduitKey,
     })
 
+    // Add metadata to order
+    ;(order as any).marketplace = marketplace
+    ;(order as any).conduitKey = conduitKey
+
     return order
   }
 }

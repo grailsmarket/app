@@ -41,7 +41,9 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             {registrationStatus === GRACE_PERIOD ? (
               <p className='text-md text-neutral'>Grace Period</p>
             ) : (
-              <p className='text-md text-neutral truncate font-semibold'>{domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}</p>
+              <p className='text-md text-neutral truncate font-semibold'>
+                {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
+              </p>
             )}
           </div>
         </div>

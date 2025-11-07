@@ -1,6 +1,6 @@
 export const portfolioTabs = [
   {
-    label: 'My Domains',
+    label: 'My Names',
     value: 'domains',
   },
   {

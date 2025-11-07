@@ -44,7 +44,7 @@ const initialState: MarketplaceDomainsState = {
   cartRegisteredDomains: [],
   changedPurchaseDomains: [],
   isCheckingOut: false,
-  viewType: 'list',
+  viewType: 'grid',
   isModifyingCart: false,
   modifyingCartTokenIds: [],
 }

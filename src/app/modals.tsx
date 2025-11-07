@@ -85,10 +85,7 @@ const Modals: React.FC = () => {
         onClose={() => dispatch(setSearchModalOpen(false))}
         initialQuery={searchModalQuery}
       />
-      <NotificationModal
-        isOpen={notificationModalOpen}
-        onClose={() => dispatch(setNotificationModalOpen(false))}
-      />
+      <NotificationModal isOpen={notificationModalOpen} onClose={() => dispatch(setNotificationModalOpen(false))} />
     </div>
   )
 }

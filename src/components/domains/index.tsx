@@ -123,8 +123,9 @@ const Domains: React.FC<DomainsProps> = ({
 
                     setSortFilter(item.value?.asc || item.value?.desc || null)
                   }}
-                  className={`w-fit text-left text-sm font-medium ${item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
-                    }`}
+                  className={`w-fit text-left text-sm font-medium ${
+                    item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
+                  }`}
                 >
                   {item.label === 'Actions' ? '' : item.label}
                 </p>
@@ -133,8 +134,9 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort ascending'
-                      className={`rotate-180 ${sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
-                        } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`rotate-180 ${
+                        sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
+                      } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.asc) return
 
@@ -149,8 +151,9 @@ const Domains: React.FC<DomainsProps> = ({
                     <Image
                       src={SortArrow}
                       alt='sort descending'
-                      className={`${sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
-                        } cursor-pointer transition-opacity hover:opacity-100`}
+                      className={`${
+                        sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
+                      } cursor-pointer transition-opacity hover:opacity-100`}
                       onClick={() => {
                         if (!item.value?.desc) return
 

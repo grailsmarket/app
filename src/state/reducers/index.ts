@@ -11,7 +11,7 @@ import filtersReducer from './filters'
 import profileReducer from './portfolio'
 import transactionReducer from './transactions'
 
-const PERSISTED_KEYS: string[] = ['filters', 'cache', 'user']
+const PERSISTED_KEYS: string[] = ['cache', 'user']
 
 const persistConfig = {
   key: 'root',

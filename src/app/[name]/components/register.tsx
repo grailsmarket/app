@@ -50,13 +50,24 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     const currentTime = Math.floor(new Date().getTime() / 1000)
     const registrationPrice = calculateRegistrationPrice(nameDetails?.name || '', ethPrice || 3300).usd
     const priceOracle = new PremiumPriceOracle(expireTime)
-    const premiumPrice = BigNumber.from(Math.floor((priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice) / (ethPrice || 3300) * 10000)).mul(BigNumber.from(10).pow(14)).toString()
+    const premiumPrice = BigNumber.from(
+      Math.floor(
+        ((priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice) / (ethPrice || 3300)) * 10000
+      )
+    )
+      .mul(BigNumber.from(10).pow(14))
+      .toString()
 
     return (
       <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
         <div className='flex w-full flex-row items-center justify-between gap-4'>
-          <Price price={premiumPrice} currencyAddress={TOKEN_ADDRESSES.ETH} iconSize='24px' fontSize='text-2xl font-bold' />
+          <Price
+            price={premiumPrice}
+            currencyAddress={TOKEN_ADDRESSES.ETH}
+            iconSize='24px'
+            fontSize='text-2xl font-bold'
+          />
           <PrimaryButton
             onClick={() => {
               window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')

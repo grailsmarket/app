@@ -6,10 +6,6 @@ import { authFetch } from '../authFetch'
 export const markAllAsRead = async (): Promise<MarkAllAsReadResponse> => {
   const response = await authFetch(`${API_URL}/notifications/read-all`, {
     method: 'PATCH',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
   })
 
   if (!response.ok) {

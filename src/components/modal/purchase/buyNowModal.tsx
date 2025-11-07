@@ -555,7 +555,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
       <div className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'>
-        <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Buy Domain</h2>
+        <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Purchase Name</h2>
         {getModalContent()}
       </div>
     </div>

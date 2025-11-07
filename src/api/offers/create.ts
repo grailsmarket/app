@@ -1,14 +1,14 @@
-import { API_URL } from '@/constants/api'
-import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 
 interface CreateOfferParams {
   marketplace: 'opensea' | 'grails'
+  tokenId: string
+  ensName: string
   price: number
   currency: 'WETH' | 'USDC'
   orderData: SeaportStoredOrder
   buyerAddress: string
-  ensNameId: number
   expiryDate: number
 }
 

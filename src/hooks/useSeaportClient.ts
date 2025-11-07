@@ -246,7 +246,6 @@ export function useSeaportClient() {
             marketplace: marketplace as 'opensea' | 'grails',
             tokenId: params.tokenId,
             ensName: params.ensName,
-            ensNameId: params.ensNameId,
             price: params.price,
             currency: params.currency,
             orderData: formattedOrder,

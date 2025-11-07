@@ -19,6 +19,7 @@ const SalesAndRegs = () => {
           ...filters,
           sort: 'last_sale_date_desc',
         },
+        searchTerm: '',
       }),
   })
 

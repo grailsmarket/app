@@ -20,6 +20,7 @@ const RecentListings = () => {
           ...filters,
           sort: 'price_desc',
         },
+        searchTerm: '',
       }),
   })
 

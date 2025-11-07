@@ -124,7 +124,30 @@ export async function POST(request: NextRequest) {
       expiresAt = new Date(parseInt(order_data.parameters.endTime) * 1000).toISOString()
     }
 
-    // Create the offer
+    // For OpenSea-only offers, skip backend call and only submit to OpenSea
+    // The indexer will pick it up from OpenSea's stream API
+    if (offerMarketplace === 'opensea') {
+      try {
+        const openSeaResult = await submitOfferToOpenSea(order_data)
+        console.log('Successfully submitted offer to OpenSea')
+        return NextResponse.json({
+          success: true,
+          message: 'Offer submitted to OpenSea',
+          data: openSeaResult,
+        })
+      } catch (openSeaError: any) {
+        console.error('Failed to submit offer to OpenSea:', openSeaError)
+        return NextResponse.json(
+          {
+            error: `Failed to submit offer to OpenSea: ${openSeaError.message || String(openSeaError)}`,
+            details: 'Please check that the order parameters are correct and you have sufficient balance.',
+          },
+          { status: 500 }
+        )
+      }
+    }
+
+    // For Grails offers (or "both"), save to backend
     const offerResponse = await fetch(`${API_URL}/offers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -146,32 +169,20 @@ export async function POST(request: NextRequest) {
 
     const offerData = await offerResponse.json()
 
-    // Submit to OpenSea if marketplace is 'opensea' or 'both'
+    // If marketplace is "both", also submit to OpenSea
     let openSeaSubmissionError = null
-    if (offerMarketplace === 'opensea' || offerMarketplace === 'both') {
+    if (offerMarketplace === 'both') {
       try {
         await submitOfferToOpenSea(order_data)
         console.log('Successfully submitted offer to OpenSea')
       } catch (openSeaError: any) {
         console.error('Failed to submit offer to OpenSea:', openSeaError)
         openSeaSubmissionError = openSeaError.message || String(openSeaError)
-
-        // If offer ONLY to OpenSea, fail the request
-        if (offerMarketplace === 'opensea') {
-          return NextResponse.json(
-            {
-              error: `Failed to submit offer to OpenSea: ${openSeaSubmissionError}`,
-              details: 'Please check that the order parameters are correct and you have sufficient balance.',
-            },
-            { status: 500 }
-          )
-        }
-        // For "both", we'll continue and save to our DB, but include warning in response
       }
     }
 
     // If there was an OpenSea error during cross-marketplace offer, include it in response
-    if (openSeaSubmissionError && offerMarketplace === 'both') {
+    if (openSeaSubmissionError) {
       return NextResponse.json({
         ...offerData,
         warning: `Offer saved to Grails marketplace, but failed to submit to OpenSea: ${openSeaSubmissionError}`,

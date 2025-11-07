@@ -5,10 +5,7 @@ interface UseScrollToBottomOptions {
   enabled?: boolean // Whether to track scroll position
 }
 
-const useScrollToBottom = ({ 
-  threshold = 100, 
-  enabled = true 
-}: UseScrollToBottomOptions = {}) => {
+const useScrollToBottom = ({ threshold = 100, enabled = true }: UseScrollToBottomOptions = {}) => {
   const [isAtBottom, setIsAtBottom] = useState(false)
 
   useEffect(() => {
@@ -21,10 +18,10 @@ const useScrollToBottom = ({
       const windowHeight = window.innerHeight
       const documentHeight = document.documentElement.scrollHeight
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      
+
       // Check if we've scrolled to within threshold pixels of the bottom
       const atBottom = windowHeight + scrollTop >= documentHeight - threshold
-      
+
       setIsAtBottom(atBottom)
     }
 

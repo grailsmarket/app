@@ -73,9 +73,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
               )
             ) : (
               <div className='flex items-center gap-1'>
-                <p className='text-md leading-[18px] font-bold'>
-                  Unregistered
-                </p>
+                <p className='text-md leading-[18px] font-bold'>Unregistered</p>
               </div>
             ))}
           {domain.last_sale_price ? (

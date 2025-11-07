@@ -56,14 +56,14 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
         <div>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-              <Link
-                key={club}
-                href={`/categories/${club}`}
-                className='text-primary hover:text-primary/80 font-medium transition-colors'
-              >
-                {CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}
-              </Link>
-            ))
+                <Link
+                  key={club}
+                  href={`/categories/${club}`}
+                  className='text-primary hover:text-primary/80 font-medium transition-colors'
+                >
+                  {CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}
+                </Link>
+              ))
             : 'None'}
         </div>
       ),
@@ -71,7 +71,13 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     },
     {
       label: 'Status',
-      value: <p className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-yellow-500' : registrationStatus === PREMIUM ? 'text-purple-500' : registrationStatus === REGISTERED ? 'text-blue-400' : 'text-foreground/70'}`}>{registrationStatus}</p>,
+      value: (
+        <p
+          className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-yellow-500' : registrationStatus === PREMIUM ? 'text-purple-500' : registrationStatus === REGISTERED ? 'text-blue-400' : 'text-foreground/70'}`}
+        >
+          {registrationStatus}
+        </p>
+      ),
       canCopy: false,
     },
     {

@@ -110,11 +110,14 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   const totalHeight = totalRows * rowHeight
 
-  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
-    if (!scrollEnabled) {
-      e.preventDefault()
-    }
-  }, [scrollEnabled])
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      if (!scrollEnabled) {
+        e.preventDefault()
+      }
+    },
+    [scrollEnabled]
+  )
 
   return (
     <div

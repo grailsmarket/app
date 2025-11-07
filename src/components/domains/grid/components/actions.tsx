@@ -123,10 +123,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
       <div className='flex items-center lg:gap-x-2'>
         {/* <Watchlist domain={domain} tooltipAlign={isFirstInRow ? 'left' : 'right'} /> */}
         {canAddToCart && (
-          <button
-            className='cursor-pointer rounded-sm p-1.5'
-            disabled={!canAddToCart}
-          >
+          <button className='cursor-pointer rounded-sm p-1.5' disabled={!canAddToCart}>
             <CartIcon domain={domain} className='p-0' />
           </button>
         )}

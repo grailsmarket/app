@@ -15,9 +15,11 @@ const RecentListings = () => {
     queryFn: () =>
       fetchDomains({
         limit: 7,
-        pageParam: 0,
-        filters,
-        searchTerm: '',
+        pageParam: 1,
+        filters: {
+          ...filters,
+          sort: 'price_desc',
+        },
       }),
   })
 
@@ -27,6 +29,8 @@ const RecentListings = () => {
       <Domains
         domains={listings?.domains || []}
         loadingRowCount={7}
+        maxHeight='420px'
+        paddingBottom='0px'
         isLoading={isLoading}
         noResults={!isLoading && listings?.domains?.length === 0}
         showHeaders={false}

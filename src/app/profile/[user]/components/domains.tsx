@@ -40,13 +40,20 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
               onChange={(e) => dispatch(actions.setSearch(e.target.value))}
               className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
             />
-            {selectors.filters.search.length === 0 ? <Image
-              src={MagnifyingGlass}
-              alt='Search'
-              width={16}
-              height={16}
-              className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-            /> : <Cross onClick={() => dispatch(actions.setSearch(''))} className='h-4 w-4 p-0.5 opacity-100 hover:opacity-70 transition-opacity cursor-pointer' />}
+            {selectors.filters.search.length === 0 ? (
+              <Image
+                src={MagnifyingGlass}
+                alt='Search'
+                width={16}
+                height={16}
+                className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+              />
+            ) : (
+              <Cross
+                onClick={() => dispatch(actions.setSearch(''))}
+                className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+              />
+            )}
           </div>
         </div>
         <ViewSelector />

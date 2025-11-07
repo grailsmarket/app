@@ -93,11 +93,14 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
 
   const visibleItems = items.slice(startIndex, endIndex)
 
-  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
-    if (!scrollEnabled) {
-      e.preventDefault()
-    }
-  }, [scrollEnabled])
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLDivElement>) => {
+      if (!scrollEnabled) {
+        e.preventDefault()
+      }
+    },
+    [scrollEnabled]
+  )
 
   return (
     <div

@@ -72,9 +72,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
           <Watchlist domain={domain} tooltipPosition={index === 0 ? 'bottom' : 'top'} />
         </div> */}
         {canAddToCart && (
-          <button
-            className={`cursor-pointer rounded-sm p-1.5`}
-          >
+          <button className={`cursor-pointer rounded-sm p-1.5`}>
             <CartIcon domain={domain} />
           </button>
         )}

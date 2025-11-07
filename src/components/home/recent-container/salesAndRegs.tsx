@@ -10,13 +10,15 @@ import { useAppSelector } from '@/state/hooks'
 const SalesAndRegs = () => {
   const filters = useAppSelector(selectMarketplaceFilters)
   const { data: listings, isLoading } = useQuery({
-    queryKey: ['recentListings'],
+    queryKey: ['recentSalesAndRegs'],
     queryFn: () =>
       fetchDomains({
         limit: 7,
-        pageParam: 0,
-        filters,
-        searchTerm: 'hey',
+        pageParam: 1,
+        filters: {
+          ...filters,
+          sort: 'last_sale_date_desc',
+        },
       }),
   })
 
@@ -26,10 +28,12 @@ const SalesAndRegs = () => {
       <Domains
         domains={listings?.domains || []}
         loadingRowCount={7}
+        maxHeight='420px'
+        paddingBottom='0px'
         isLoading={isLoading}
         noResults={!isLoading && listings?.domains?.length === 0}
         showHeaders={false}
-        displayedDetails={['listed_price']}
+        displayedDetails={['last_sale']}
         forceViewType='list'
       />
     </div>

@@ -16,8 +16,8 @@ const MainPanel: React.FC<Props> = ({ category }) => {
 
   return (
     <FilterProvider filterType='category'>
-      <div className='p-lg w-full z-10'>
-        <div className='p-lg max-w-domain-panel mx-auto bg-background border-primary relative z-10 flex gap-4 rounded-lg border-2'>
+      <div className='p-lg z-10 w-full'>
+        <div className='p-lg max-w-domain-panel bg-background border-primary relative z-10 mx-auto flex gap-4 rounded-lg border-2'>
           <FilterPanel />
           <div
             className='pt-lg flex flex-col gap-4'

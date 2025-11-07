@@ -13,13 +13,13 @@ export const fetchNotificationsMock = async ({
   unreadOnly = false,
 }: FetchNotificationsParams = {}): Promise<NotificationsResponse> => {
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
+  await new Promise((resolve) => setTimeout(resolve, 500))
 
   // Filter notifications based on parameters
   let notifications = [...MOCK_NOTIFICATIONS_RESPONSE.notifications]
-  
+
   if (unreadOnly) {
-    notifications = notifications.filter(n => !n.isRead)
+    notifications = notifications.filter((n) => !n.isRead)
   }
 
   // Paginate results

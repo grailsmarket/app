@@ -7,7 +7,11 @@ import {
   setCancelOfferModalOffer,
   setCancelOfferModalOpen,
 } from '@/state/reducers/modals/cancelOfferModal'
-import { setAcceptOfferModalDomain, setAcceptOfferModalOffer, setAcceptOfferModalOpen } from '@/state/reducers/modals/acceptOfferModal'
+import {
+  setAcceptOfferModalDomain,
+  setAcceptOfferModalOffer,
+  setAcceptOfferModalOpen,
+} from '@/state/reducers/modals/acceptOfferModal'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 
@@ -27,11 +31,13 @@ const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
   const openAcceptOfferModal = () => {
     dispatch(setAcceptOfferModalOpen(true))
     dispatch(setAcceptOfferModalOffer(offer))
-    dispatch(setAcceptOfferModalDomain({
-      name: offer.name,
-      tokenId: offer.token_id,
-      isWrapped: false,
-    }))
+    dispatch(
+      setAcceptOfferModalDomain({
+        name: offer.name,
+        tokenId: offer.token_id,
+        isWrapped: false,
+      })
+    )
   }
 
   if (!currentUserAddress) return null
@@ -47,23 +53,10 @@ const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
   // const isSeller = offer.order_data?.parameters?.offerer.toLowerCase() === currentUserAddress.toLowerCase()
 
   if (isBuyer) {
-    return (
-      <SecondaryButton
-        onClick={openCancelOfferModal}
-      >
-        Cancel
-      </SecondaryButton>
-    )
+    return <SecondaryButton onClick={openCancelOfferModal}>Cancel</SecondaryButton>
   }
 
-  return (
-    <PrimaryButton
-      onClick={openAcceptOfferModal}
-    >
-      Accept
-    </PrimaryButton>
-  )
-
+  return <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
 }
 
 export default Actions

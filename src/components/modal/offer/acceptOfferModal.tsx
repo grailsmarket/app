@@ -357,7 +357,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             </div>
 
             {needsApproval && (
-              <div className='mb-2 rounded-lg text-md p-sm text-center'>
+              <div className='text-md p-sm mb-2 rounded-lg text-center'>
                 You need to approve Seaport to transfer your NFT. This is a one time approval.
               </div>
             )}
@@ -372,7 +372,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
                 }
                 className='w-full'
-              // disabled={isCorrectChain ? needsApproval : false}
+                // disabled={isCorrectChain ? needsApproval : false}
               >
                 {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
               </PrimaryButton>

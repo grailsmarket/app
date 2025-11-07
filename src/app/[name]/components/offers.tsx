@@ -113,11 +113,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
     if (!domain) return
     dispatch(setAcceptOfferModalOpen(true))
     dispatch(setAcceptOfferModalOffer(offer))
-    dispatch(setAcceptOfferModalDomain({
-      name: domain.name,
-      tokenId: domain.token_id,
-      isWrapped: domain.metadata?.is_wrapped === 'true',
-    }))
+    dispatch(
+      setAcceptOfferModalDomain({
+        name: domain.name,
+        tokenId: domain.token_id,
+        isWrapped: domain.metadata?.is_wrapped === 'true',
+      })
+    )
   }
 
   const openCancelOfferModal = () => {

@@ -9,7 +9,7 @@ import { useUserContext } from '@/context/user'
 
 const useCartDomains = () => {
   const { isCartDomainsLoading } = useUserContext()
-  const { modifyCart, clearCart } = useModifyCart()
+  const { modifyCart, clearCart, modifyCartLoading } = useModifyCart()
   const { cartRegisteredDomains, cartUnregisteredDomains, modifyingCartTokenIds } =
     useAppSelector(selectMarketplaceDomains)
 
@@ -26,7 +26,7 @@ const useCartDomains = () => {
   }
 
   const isModifyingDomain = (tokenId: string) => {
-    return modifyingCartTokenIds.includes(tokenId)
+    return modifyingCartTokenIds.includes(tokenId) || modifyCartLoading
   }
 
   const toggleCart = async (domain: MarketplaceDomainType, expireTime: string | null) => {

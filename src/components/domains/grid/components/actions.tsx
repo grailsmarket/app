@@ -1,5 +1,4 @@
 import React from 'react'
-import useCartDomains from '@/hooks/useCartDomains'
 import { useFilterContext } from '@/context/filters'
 import CartIcon from '../../table/components/CartIcon'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -20,7 +19,6 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToCart }) => {
   const dispatch = useAppDispatch()
-  const { onSelect } = useCartDomains()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
@@ -128,7 +126,6 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
           <button
             className='cursor-pointer rounded-sm p-1.5'
             disabled={!canAddToCart}
-            onClick={(e) => onSelect(e, domain)}
           >
             <CartIcon domain={domain} className='p-0' />
           </button>

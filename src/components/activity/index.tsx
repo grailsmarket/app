@@ -22,6 +22,7 @@ interface ActivityProps {
   showHeaders?: boolean
   columns?: ActivityColumnType[]
   displayedAddress?: Address
+  scrollEnabled?: boolean
 }
 
 const Activity: React.FC<ActivityProps> = ({
@@ -38,6 +39,7 @@ const Activity: React.FC<ActivityProps> = ({
   fetchMoreActivity,
   showHeaders = true,
   displayedAddress,
+  scrollEnabled = true,
 }) => {
   const { width, height } = useWindowSize()
 
@@ -112,6 +114,7 @@ const Activity: React.FC<ActivityProps> = ({
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
+            scrollEnabled={scrollEnabled}
             renderItem={(item, index) => {
               if (!item)
                 return (

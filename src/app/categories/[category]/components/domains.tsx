@@ -9,6 +9,7 @@ import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useCategoryDomains } from '../hooks/useDomains'
+import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
   category: string
@@ -19,6 +20,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
   const { selectors, actions } = useFilterRouter()
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
     useCategoryDomains(category)
+  const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
     <>
@@ -61,6 +63,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
             fetchMoreCategoryDomains()
           }
         }}
+        scrollEnabled={isAtBottom}
       />
     </>
   )

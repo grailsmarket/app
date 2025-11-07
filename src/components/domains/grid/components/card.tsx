@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-import { Address, formatEther } from 'viem'
+import { Address } from 'viem'
 import { formatEtherPrice } from '@/utils/formatEtherPrice'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
@@ -9,12 +9,11 @@ import SaleAsset from '@/components/ui/asset'
 import { MarketplaceDomainType } from '@/types/domains'
 import { REGISTERED, GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
-import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Actions from './actions'
-import useETHPrice from '@/hooks/useETHPrice'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
+import Price from '@/components/ui/price'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -24,7 +23,6 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
   const { address } = useAccount()
-  const { ethPrice } = useETHPrice()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
@@ -63,19 +61,20 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
             (registrationStatus === REGISTERED ? (
               domainListing?.price ? (
                 <div className='flex items-center gap-1'>
-                  <SaleAsset currencyAddress={TOKEN_ADDRESSES.ETH} iconSize='12px' />
-                  <p className='text-light-100 truncate text-xs leading-[18px] font-bold'>
-                    {domainListing.price && formatEther(BigInt(domainListing.price))}
-                  </p>
+                  <Price
+                    price={domainListing.price}
+                    currencyAddress={domainListing.currency_address}
+                    iconSize='16px'
+                    fontSize='text-md'
+                  />
                 </div>
               ) : (
-                <p className='text-light-150 text-xs leading-[18px] font-bold'>Unlisted</p>
+                <p className='text-md leading-[18px] font-bold'>Unlisted</p>
               )
             ) : (
               <div className='flex items-center gap-1'>
-                <SaleAsset currencyAddress={TOKEN_ADDRESSES.USDC} fontSize='text-xs' />
-                <p className={'text-light-100 truncate text-xs leading-[18px] font-bold'}>
-                  {ethPrice && calculateRegistrationPrice(domain.name, ethPrice).usd}
+                <p className='text-md leading-[18px] font-bold'>
+                  Unregistered
                 </p>
               </div>
             ))}

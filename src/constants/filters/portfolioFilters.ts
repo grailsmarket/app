@@ -16,25 +16,31 @@ export const MY_DOMAINS_STATUS_PARAM_OPTIONS: Record<string, string> = {
 }
 
 export const MY_DOMAINS_SORT_FILTERS = [
-  'alphabetical',
-  'most_favorited',
-  'highest_last_sale',
-  'price_low_to_high',
-  'price_high_to_low',
+  'alphabetical_asc',
+  'alphabetical_desc',
+  'last_sale_price_asc',
+  'last_sale_price_desc',
+  'last_sale_date_asc',
+  'last_sale_date_desc',
+  'price_desc',
+  'price_asc',
+  'offer_asc',
+  'offer_desc',
 ]
 
 export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
 
 export const ALL_SORT_FILTERS = [
-  'alphabetical',
+  'alphabetical_asc',
   'alphabetical_desc',
-  'most_favorited',
-  'highest_last_sale',
-  'lowest_last_sale',
-  'price_low_to_high',
-  'price_high_to_low',
-  'highest_offer',
-  'highest_offer_desc',
+  'last_sale_price_asc',
+  'last_sale_price_desc',
+  'last_sale_date_asc',
+  'last_sale_date_desc',
+  'price_desc',
+  'price_asc',
+  'offer_asc',
+  'offer_desc',
 ] as const
 
 export const MY_DOMAINS_CATEGORIES = [

@@ -39,7 +39,7 @@ const useModifyCart = () => {
     },
   })
 
-  const { mutate: modifyCartMutation } = useMutation({
+  const { mutate: modifyCartMutation, isPending: modifyCartLoading } = useMutation({
     mutationFn: modifyCart,
     onError: (error) => {
       console.error(error)
@@ -71,6 +71,7 @@ const useModifyCart = () => {
       dispatch(toggleModifyingCart({ isModifying: true, tokenId: domain.token_id }))
       return modifyCartMutation({ domain, inCart, cartType })
     },
+    modifyCartLoading,
   }
 }
 

@@ -92,7 +92,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Status'],
-  sort: 'price_high_to_low',
+  sort: 'price_desc',
 }
 
 export type MyDomainsFiltersType = MyDomainsFiltersState & {

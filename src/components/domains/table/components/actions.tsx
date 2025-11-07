@@ -3,7 +3,6 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 import React, { MouseEventHandler } from 'react'
 import CartIcon from './CartIcon'
-import useCartDomains from '@/hooks/useCartDomains'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
@@ -21,7 +20,6 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) => {
   const dispatch = useAppDispatch()
-  const { onSelect } = useCartDomains()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
@@ -65,25 +63,6 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
         </div>
       )
     }
-
-    if (selectedTab.value === 'received_offers') {
-      return (
-        <div className={cn('flex flex-row justify-end opacity-100', width)}>
-          <PrimaryButton disabled={!canAddToCart} onClick={(e) => onSelect(e, domain)}>
-            Accept
-          </PrimaryButton>
-        </div>
-      )
-    }
-
-    if (selectedTab.value === 'my_offers') {
-      return (
-        <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-          <SecondaryButton>Edit</SecondaryButton>
-          <SecondaryButton>Cancel</SecondaryButton>
-        </div>
-      )
-    }
   }
 
   return (
@@ -95,11 +74,6 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
         {canAddToCart && (
           <button
             className={`cursor-pointer rounded-sm p-1.5`}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onSelect(e, domain)
-            }}
           >
             <CartIcon domain={domain} />
           </button>

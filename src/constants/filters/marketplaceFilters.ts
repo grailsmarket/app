@@ -26,11 +26,16 @@ export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
 }
 
 export const MARKETPLACE_SORT_FILTERS = [
-  'alphabetical',
-  'most_favorited',
-  'highest_last_sale',
-  'price_low_to_high',
-  'price_high_to_low',
+  'alphabetical_asc',
+  'alphabetical_desc',
+  'last_sale_price_asc',
+  'last_sale_price_desc',
+  'last_sale_date_asc',
+  'last_sale_date_desc',
+  'price_desc',
+  'price_asc',
+  'offer_asc',
+  'offer_desc',
 ]
 
 export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Has Offers'] as const

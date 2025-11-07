@@ -13,6 +13,7 @@ import MagnifyingGlass from 'public/icons/search.svg'
 import TabSwitcher from './tabSwitcher'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useUserContext } from '@/context/user'
+import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
@@ -21,6 +22,7 @@ const DomainPanel = () => {
   const { width: windowWidth } = useWindowSize()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, displayedDetails } = useDomains()
+  const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   const disconnectMessage = {
     domains: 'Sign in to view your domains.',
@@ -81,6 +83,7 @@ const DomainPanel = () => {
           }
         }}
         displayedDetails={displayedDetails}
+        scrollEnabled={isAtBottom}
       />
     </div>
   )

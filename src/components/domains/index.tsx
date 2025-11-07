@@ -30,6 +30,7 @@ interface DomainsProps {
   displayedDetails?: MarketplaceHeaderColumn[]
   forceViewType?: 'grid' | 'list'
   paddingBottom?: string
+  scrollEnabled?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -46,6 +47,7 @@ const Domains: React.FC<DomainsProps> = ({
   displayedDetails = MARKETPLACE_DISPLAYED_COLUMNS,
   forceViewType,
   paddingBottom,
+  scrollEnabled = true,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const viewTypeToUse = forceViewType || viewType
@@ -184,6 +186,7 @@ const Domains: React.FC<DomainsProps> = ({
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}
+              scrollEnabled={scrollEnabled}
               renderItem={(item, index, columnsCount) => {
                 if (!item) return <LoadingCard key={index} />
                 return <Card key={item.token_id} domain={item} isFirstInRow={index % columnsCount === 0} />
@@ -201,6 +204,7 @@ const Domains: React.FC<DomainsProps> = ({
               paddingBottom={paddingBottom ? paddingBottom : '40px'}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={200}
+              scrollEnabled={scrollEnabled}
               renderItem={(item, index) => {
                 if (!item)
                   return (

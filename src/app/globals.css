@@ -141,6 +141,67 @@ body {
   z-index: -1000;
 } */
 
+.user-profile {
+  box-sizing: border-box;
+}
+
 .user-profile-content {
-  z-index: 1000;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  position: relative;
+}
+
+/* Got some issue with FullWidthProfile from Ethereum Identity Kit,
+   so I have created this abominable media queries to fix the issue,
+   please don't judge me, I'll fix it later */
+@media screen and (min-width: 1380px) and (max-width: 1440px) {
+  .more-options {
+    right: 60px !important;
+  }
+
+  .user-profile-status-container {
+    right: 60px !important;
+  }
+}
+
+@media screen and (min-width: 1440px) and (max-width: 1540px) {
+  .more-options {
+    right: 100px !important;
+  }
+
+  .user-profile-status-container {
+    right: 100px !important;
+  }
+}
+
+@media screen and (min-width: 1540px) and (max-width: 1640px) {
+  .more-options {
+    right: 160px !important;
+  }
+
+  .user-profile-status-container {
+    right: 160px !important;
+  }
+}
+
+@media screen and (min-width: 1640px) and (max-width: 1800px) {
+  .more-options {
+    right: 220px !important;
+  }
+
+  .user-profile-status-container {
+    right: 220px !important;
+  }
+}
+
+@media screen and (min-width: 1800px) {
+  .more-options {
+    right: 320px !important;
+  }
+
+  .user-profile-status-container {
+    right: 320px !important;
+  }
 }

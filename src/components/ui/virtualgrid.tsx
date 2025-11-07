@@ -28,6 +28,8 @@ export interface VirtualGridProps<T = unknown> {
   onScrollNearBottom?: () => void
   /** Threshold in pixels from bottom to trigger onScrollNearBottom */
   scrollThreshold?: number
+  /** Whether scrolling is enabled */
+  scrollEnabled?: boolean
 }
 
 /**
@@ -51,6 +53,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     renderItem,
     onScrollNearBottom,
     scrollThreshold = 300,
+    scrollEnabled = true,
   } = props
 
   const [scrollTop, setScrollTop] = useState(0)
@@ -107,14 +110,22 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   const totalHeight = totalRows * rowHeight
 
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    if (!scrollEnabled) {
+      e.preventDefault()
+    }
+  }, [scrollEnabled])
+
   return (
     <div
       ref={ref}
       onScroll={onScroll}
+      onWheel={handleWheel}
       style={{
         height: gridHeight,
-        overflowY: 'auto',
+        overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
+        touchAction: scrollEnabled ? 'auto' : 'none',
       }}
       className={clsx(containerClassName, 'hide-scrollbar')}
     >

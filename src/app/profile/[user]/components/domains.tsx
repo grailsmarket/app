@@ -7,9 +7,10 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { Address } from 'ethereum-identity-kit'
+import { Address, Cross } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useProfileDomains } from '../hooks/useDomains'
+import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
   user: Address | string
@@ -19,6 +20,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useProfileDomains(user)
+  const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
     <>
@@ -38,13 +40,13 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
               onChange={(e) => dispatch(actions.setSearch(e.target.value))}
               className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
             />
-            <Image
+            {selectors.filters.search.length === 0 ? <Image
               src={MagnifyingGlass}
               alt='Search'
               width={16}
               height={16}
               className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-            />
+            /> : <Cross onClick={() => dispatch(actions.setSearch(''))} className='h-4 w-4 p-0.5 opacity-100 hover:opacity-70 transition-opacity cursor-pointer' />}
           </div>
         </div>
         <ViewSelector />
@@ -62,6 +64,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
             fetchMoreDomains()
           }
         }}
+        scrollEnabled={isAtBottom}
       />
     </>
   )

@@ -9,6 +9,7 @@ import { Address } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useProfileActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
+import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
   user: Address | string
@@ -19,6 +20,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
+  const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
     <>
@@ -57,6 +59,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         displayedAddress={userAddress}
+        scrollEnabled={isAtBottom}
       />
     </>
   )

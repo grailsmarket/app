@@ -14,7 +14,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const { userAddress } = useUserContext()
 
   return (
-    <div className='dark pt-20 relative'>
+    <div className='dark pt-20 z-0 relative'>
       <div className='z-20 w-full'>
         <FullWidthProfile
           connectedAddress={userAddress}
@@ -24,7 +24,7 @@ const Profile: React.FC<Props> = ({ user }) => {
         // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
         />
       </div>
-      <MainPanel user={user} />
+      <div className='md:p-lg'><MainPanel user={user} /></div>
     </div>
   )
 }

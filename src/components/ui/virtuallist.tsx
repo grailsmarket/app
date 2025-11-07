@@ -28,6 +28,8 @@ export interface VirtualListProps<T = unknown> {
   scrollThreshold?: number
   /** Padding bottom in pixels */
   paddingBottom?: string
+  /** Whether scrolling is enabled */
+  scrollEnabled?: boolean
 }
 
 /**
@@ -51,6 +53,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     onScrollNearBottom,
     scrollThreshold = 300,
     paddingBottom = '80px',
+    scrollEnabled = true,
   } = props
 
   const [scrollTop, setScrollTop] = useState(0)
@@ -90,15 +93,23 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
 
   const visibleItems = items.slice(startIndex, endIndex)
 
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    if (!scrollEnabled) {
+      e.preventDefault()
+    }
+  }, [scrollEnabled])
+
   return (
     <div
       ref={ref}
       onScroll={onScroll}
+      onWheel={handleWheel}
       style={{
         maxHeight: listHeight,
-        overflowY: 'auto',
+        overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
         paddingBottom,
+        touchAction: scrollEnabled ? 'auto' : 'none',
       }}
       className={clsx(containerClassName, 'hide-scrollbar')}
     >

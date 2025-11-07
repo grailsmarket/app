@@ -27,7 +27,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   return (
     <FilterProvider filterType='profile' profileTab={profileTab}>
-      <div className='md:p-lg mt-12 md:mt-0'>
+      <div className='max-w-domain-panel z-0 mx-auto'>
         <div className='z-10'>
           <div
             style={{ height: 'calc(100vh - 110px)' }}

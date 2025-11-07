@@ -14,7 +14,7 @@ interface CartIconProps {
 }
 
 const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder = false }) => {
-  const { isAddedToCart: isAddedToCartDomains, isModifyingDomain, isCartDomainsLoading } = useCartDomains()
+  const { isAddedToCart: isAddedToCartDomains, isModifyingDomain, isCartDomainsLoading, onSelect } = useCartDomains()
   const isAddedToCart = domain ? isAddedToCartDomains(domain.token_id) : false
   const isDomainModifying = domain ? isModifyingDomain(domain.token_id) : false
 
@@ -32,6 +32,13 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder 
         isCartDomainsLoading && 'opacity-40',
         className
       )}
+      onClick={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
+        if (domain) {
+          onSelect(e, domain)
+        }
+      }}
     >
       <Image
         src={showInCart ? inCart : addToCart}

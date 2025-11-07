@@ -10,12 +10,14 @@ import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
+import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
+  const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
     <div
@@ -63,6 +65,7 @@ const DomainPanel = () => {
             fetchMoreDomains()
           }
         }}
+        scrollEnabled={isAtBottom}
       />
     </div>
   )

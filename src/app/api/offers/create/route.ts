@@ -2,10 +2,16 @@ import { API_URL } from '@/constants/api'
 import { USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { NextRequest, NextResponse } from 'next/server'
 
+const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
+const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { token_id, ens_name, buyer_address, price_wei, currency, order_data, platform } = body
+    const { token_id, ens_name, buyer_address, price_wei, currency, order_data, marketplace, platform } = body
+
+    // Support both 'marketplace' (from frontend) and 'platform' (legacy) parameters
+    const offerMarketplace = marketplace || platform || 'grails'
 
     // Normalize address to lowercase
     const normalizedBuyerAddress = buyer_address ? buyer_address.toLowerCase() : null
@@ -25,7 +31,7 @@ export async function POST(request: NextRequest) {
       price_wei: price_wei,
       currency,
       currencyAddress,
-      platform,
+      marketplace: offerMarketplace,
       order_data,
     })
 
@@ -123,6 +129,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        marketplace: offerMarketplace,
         ensNameId,
         buyerAddress: normalizedBuyerAddress,
         offerAmountWei: price_wei,
@@ -139,9 +146,36 @@ export async function POST(request: NextRequest) {
 
     const offerData = await offerResponse.json()
 
-    // TODO: Submit to OpenSea if platform is 'opensea' or 'both'
-    if (platform === 'opensea' || platform === 'both') {
-      console.log('OpenSea offer submission not yet implemented')
+    // Submit to OpenSea if marketplace is 'opensea' or 'both'
+    let openSeaSubmissionError = null
+    if (offerMarketplace === 'opensea' || offerMarketplace === 'both') {
+      try {
+        await submitOfferToOpenSea(order_data)
+        console.log('Successfully submitted offer to OpenSea')
+      } catch (openSeaError: any) {
+        console.error('Failed to submit offer to OpenSea:', openSeaError)
+        openSeaSubmissionError = openSeaError.message || String(openSeaError)
+
+        // If offer ONLY to OpenSea, fail the request
+        if (offerMarketplace === 'opensea') {
+          return NextResponse.json(
+            {
+              error: `Failed to submit offer to OpenSea: ${openSeaSubmissionError}`,
+              details: 'Please check that the order parameters are correct and you have sufficient balance.',
+            },
+            { status: 500 }
+          )
+        }
+        // For "both", we'll continue and save to our DB, but include warning in response
+      }
+    }
+
+    // If there was an OpenSea error during cross-marketplace offer, include it in response
+    if (openSeaSubmissionError && offerMarketplace === 'both') {
+      return NextResponse.json({
+        ...offerData,
+        warning: `Offer saved to Grails marketplace, but failed to submit to OpenSea: ${openSeaSubmissionError}`,
+      })
     }
 
     return NextResponse.json(offerData)
@@ -149,4 +183,87 @@ export async function POST(request: NextRequest) {
     console.error('Error creating offer:', error)
     return NextResponse.json({ error: error.message || 'Failed to create offer' }, { status: 500 })
   }
+}
+
+/**
+ * Submit a Seaport offer to OpenSea's API
+ */
+async function submitOfferToOpenSea(order_data: any) {
+  if (!OPENSEA_API_KEY) {
+    throw new Error('OPENSEA_API_KEY not configured')
+  }
+
+  const { parameters, signature, protocol_data } = order_data
+
+  // Use protocol_data if available, otherwise use top-level parameters
+  const orderParameters = protocol_data?.parameters || parameters
+  const orderSignature = protocol_data?.signature || signature
+
+  if (!orderParameters || !orderSignature) {
+    throw new Error('Missing order parameters or signature')
+  }
+
+  // Build the OpenSea API payload for offers
+  const payload = {
+    parameters: {
+      offerer: orderParameters.offerer,
+      zone: orderParameters.zone,
+      offer: orderParameters.offer,
+      consideration: orderParameters.consideration,
+      orderType: orderParameters.orderType,
+      startTime: orderParameters.startTime?.toString(),
+      endTime: orderParameters.endTime?.toString(),
+      zoneHash: orderParameters.zoneHash,
+      salt: orderParameters.salt?.toString(),
+      conduitKey: orderParameters.conduitKey,
+      totalOriginalConsiderationItems: orderParameters.totalOriginalConsiderationItems?.toString(),
+      counter: orderParameters.counter?.toString(),
+    },
+    signature: orderSignature,
+    protocol_address: process.env.NEXT_PUBLIC_SEAPORT_ADDRESS || '0x0000000000000068F116a894984e2DB1123eB395',
+  }
+
+  const url = `${OPENSEA_API_URL}/v2/orders/ethereum/seaport/offers`
+  console.log('Submitting offer to OpenSea:', {
+    url,
+    offerer: payload.parameters.offerer,
+    offerItems: payload.parameters.offer?.length,
+    considerationItems: payload.parameters.consideration?.length,
+    hasSignature: !!payload.signature,
+  })
+  console.log('Full OpenSea offer payload:', JSON.stringify(payload, null, 2))
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-KEY': OPENSEA_API_KEY,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('OpenSea API error response:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText,
+    })
+
+    // Try to parse error as JSON for better error message
+    let errorMessage = errorText
+    try {
+      const errorJson = JSON.parse(errorText)
+      errorMessage = errorJson.message || errorJson.error || errorText
+    } catch (e) {
+      console.error('Error parsing OpenSea API error:', e)
+      // Use raw error text if not JSON
+    }
+
+    throw new Error(`OpenSea API error (${response.status}): ${errorMessage}`)
+  }
+
+  const result = await response.json()
+  console.log('OpenSea API response:', result)
+  return result
 }

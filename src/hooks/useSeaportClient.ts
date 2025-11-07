@@ -203,6 +203,7 @@ export function useSeaportClient() {
   const createOffer = useCallback(
     async (params: {
       tokenId: string
+      ensName: string
       ensNameId: number
       price: number
       currency: 'WETH' | 'USDC'
@@ -243,6 +244,8 @@ export function useSeaportClient() {
           const formattedOrder = seaportClient.formatOrderForStorage(order)
           const response = await createOfferApi({
             marketplace: marketplace as 'opensea' | 'grails',
+            tokenId: params.tokenId,
+            ensName: params.ensName,
             ensNameId: params.ensNameId,
             price: params.price,
             currency: params.currency,

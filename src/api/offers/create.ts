@@ -14,35 +14,39 @@ interface CreateOfferParams {
 
 export const createOffer = async ({
   marketplace,
+  tokenId,
+  ensName,
   price,
   currency,
   orderData,
   buyerAddress,
-  ensNameId,
   expiryDate,
 }: CreateOfferParams) => {
   console.log(expiryDate)
-  const currencyAddress = TOKEN_ADDRESSES[currency]
   const fullPrice = price * Math.pow(10, TOKEN_DECIMALS[currency])
 
-  const response = await fetch(`${API_URL}/offers`, {
+  // Call Next.js API route which handles OpenSea submission and then forwards to backend
+  const response = await fetch('/api/offers/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       marketplace,
-      ensNameId,
-      buyerAddress,
-      offerAmountWei: fullPrice.toString(),
-      currencyAddress,
-      orderData,
-      expiresAt: new Date(expiryDate * 1000).toISOString(),
+      token_id: tokenId,
+      ens_name: ensName,
+      buyer_address: buyerAddress,
+      price_wei: fullPrice.toString(),
+      currency,
+      order_data: orderData,
     }),
   })
 
   if (!response.ok) {
-    throw new Error('Failed to create offer')
+    const errorData = await response.json().catch(() => ({}))
+    const errorMessage = errorData.error || errorData.message || 'Failed to create offer'
+    console.error('Create offer API error:', errorData)
+    throw new Error(errorMessage)
   }
 
   return response.json()

@@ -25,6 +25,7 @@ type SeaportContextValue = {
   }) => Promise<any>
   createOffer: (params: {
     tokenId: string
+    ensName: string
     ensNameId: number
     price: number
     currency: 'WETH' | 'USDC'

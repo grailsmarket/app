@@ -1,6 +1,7 @@
 import _ from 'lodash'
+import { useEffect } from 'react'
 import { RootState } from '@/state'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import { FilterRouter, FilterContextType } from '@/types/filters'
 
@@ -162,6 +163,7 @@ import {
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType, portfolioTab, profileTab } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
+  const dispatch = useAppDispatch()
 
   // Determine which tab is active in portfolio or profile
   const activePortfolioTab = portfolioTab || profileState.selectedTab?.value || 'domains'
@@ -390,6 +392,13 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     const filtersWithoutOpen = _.omit(filtersWithoutOpenFilters, 'open')
     return _.isEqual(filtersWithoutOpen, emptyFilterState)
   }, [filters, emptyFilterState])
+
+  useEffect(() => {
+    if (actions) {
+      dispatch(actions.clearFilters())
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return {
     selectors: {

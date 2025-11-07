@@ -1,6 +1,6 @@
 export const profileTabs = [
   {
-    label: 'Domains',
+    label: 'Names',
     value: 'domains',
   },
   {

@@ -14,7 +14,7 @@ const NoResults: React.FC<NoResultsProps> = ({ label = 'No results found', requi
   const { authStatus } = useUserContext()
 
   return (
-    <div className='flex h-full w-full flex-1 pt-4 flex-col items-center justify-center gap-4'>
+    <div className='flex h-full w-full flex-1 flex-col items-center justify-center gap-4 pt-4'>
       <Image src={Logo} alt='no result' width={100} height={100} />
       <p className='p-md text-lg leading-4 font-medium text-gray-300'>{label}</p>
       {requiresAuth && authStatus === 'unauthenticated' && <SignInButton />}

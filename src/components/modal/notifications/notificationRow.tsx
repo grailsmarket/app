@@ -61,9 +61,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     if (type === 'sale' || type === 'new-listing' || type === 'new-offer' || type === 'price-change') {
       const price = metadata.priceWei || metadata.offerAmountWei
       if (price) {
-        return (
-          <Price price={price} currencyAddress={TOKEN_ADDRESSES.ETH} />
-        )
+        return <Price price={price} currencyAddress={TOKEN_ADDRESSES.ETH} />
       }
     }
 
@@ -92,29 +90,33 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     <Link
       href={`/${notification.ensName}`}
       className={cn(
-        'flex items-center w-full justify-between gap-4 p-lg hover:bg-white/5 transition-colors cursor-pointer',
+        'p-lg flex w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
       )}
       onClick={onClick}
     >
-      <div className="flex items-center gap-3 w-2/5">
-        {!notification.isRead && <div className="w-2 h-2 rounded-full bg-primary" />}
+      <div className='flex w-2/5 items-center gap-3'>
+        {!notification.isRead && <div className='bg-primary h-2 w-2 rounded-full' />}
         <div className=''>
           <Image src={icon} alt={eventName} width={26} height={26} />
         </div>
-        <div className="flex flex-col gap-px">
-          <p className="text-lg font-medium text-foreground">{eventName}</p>
-          <div className="text-md font-medium text-neutral">{timeAgo}</div>
+        <div className='flex flex-col gap-px'>
+          <p className='text-foreground text-lg font-medium'>{eventName}</p>
+          <div className='text-md text-neutral font-medium'>{timeAgo}</div>
         </div>
       </div>
 
-      <div className="w-2/5 flex items-center gap-2">
-        <NameImage name={notification.ensName} tokenId={notification.ensTokenId} expiryDate={new Date().toISOString()} height={32} width={32} />
-        <span className="text-foreground font-semibold">{notification.ensName}</span>
+      <div className='flex w-2/5 items-center gap-2'>
+        <NameImage
+          name={notification.ensName}
+          tokenId={notification.ensTokenId}
+          expiryDate={new Date().toISOString()}
+          height={32}
+          width={32}
+        />
+        <span className='text-foreground font-semibold'>{notification.ensName}</span>
       </div>
 
-      <div className="w-1/5 flex justify-end">
-        {getContextualData()}
-      </div>
+      <div className='flex w-1/5 justify-end'>{getContextualData()}</div>
 
       {/* {!notification.isRead && (
         <div className="w-2 h-2 absolute top-[26px] left-2 rounded-full bg-primary" />

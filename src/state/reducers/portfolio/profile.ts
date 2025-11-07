@@ -55,10 +55,12 @@ export const profileSlice = createSlice({
       state.watchlist = state.watchlist.filter((item) => item.id !== payload)
     },
     addUserPendingWatchlistDomain(state, { payload }: PayloadAction<string>) {
-      state.pendingWatchlistTokenIds.push(payload)
+      if (state.pendingWatchlistTokenIds === undefined) state.pendingWatchlistTokenIds = []
+      state.pendingWatchlistTokenIds?.push(payload)
     },
     removeUserPendingWatchlistDomain(state, { payload }: PayloadAction<string>) {
-      state.pendingWatchlistTokenIds = state.pendingWatchlistTokenIds.filter((item) => item !== payload)
+      if (state.pendingWatchlistTokenIds === undefined) state.pendingWatchlistTokenIds = []
+      state.pendingWatchlistTokenIds = state.pendingWatchlistTokenIds?.filter((item) => item !== payload)
     },
     changeTab(state, { payload }: PayloadAction<TabType>) {
       state.selectedTab = payload

@@ -19,14 +19,14 @@ interface ActivityRowProps {
 const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, displayedAddress, index }) => {
   const addressToShow = useMemo(() => {
     if (displayedAddress) {
-      if (activity.counterparty_address === displayedAddress) {
-        return activity.actor_address
-      } else {
+      if (activity.actor_address === displayedAddress) {
         return activity.counterparty_address
+      } else {
+        return activity.actor_address
       }
     }
 
-    return activity.counterparty_address || activity.actor_address
+    return activity.actor_address || activity.counterparty_address
   }, [activity.counterparty_address, activity.actor_address, displayedAddress])
 
   const columnWidth = `${100 / displayedColumns.length}%`
@@ -40,7 +40,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
         tooltipPosition={index === 0 ? 'bottom' : 'top'}
       />
     ),
-    counterparty: addressToShow && <User address={addressToShow} />,
+    user: addressToShow && <User address={addressToShow} />,
     from: activity.actor_address && <User address={activity.actor_address} />,
     to: activity.counterparty_address && <User address={activity.counterparty_address} />,
     time: activity.created_at ? (

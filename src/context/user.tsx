@@ -35,6 +35,8 @@ type userContextType = {
   refetchWatchlist: () => void
   cartDomains: CartDomainType[] | null | undefined
   isCartDomainsLoading: boolean
+  isSettingsOpen: boolean
+  setIsSettingsOpen: Dispatch<SetStateAction<boolean>>
 }
 
 type Props = {
@@ -44,6 +46,7 @@ type Props = {
 const userContext = createContext<userContextType | undefined>(undefined)
 
 export const UserProvider: React.FC<Props> = ({ children }) => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
 
@@ -122,6 +125,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         refetchWatchlist,
         cartDomains,
         isCartDomainsLoading,
+        isSettingsOpen,
+        setIsSettingsOpen,
       }}
     >
       {children}

@@ -14,9 +14,16 @@ type EnsProfileType = {
 
 type profileState = {
   ensProfile: EnsProfileType
+  userId: number | null
   watchlist: WatchlistItemType[]
   pendingWatchlistTokenIds: string[]
   selectedTab: TabType
+  email: {
+    address: string | null
+    verified: boolean
+  }
+  discord: string | null
+  telegram: string | null
 }
 
 export const nullEnsProfile = {
@@ -32,6 +39,13 @@ const initialState: profileState = {
     avatar: null,
     header: null,
   },
+  userId: null,
+  email: {
+    address: null,
+    verified: false,
+  },
+  discord: null,
+  telegram: null,
   watchlist: [],
   pendingWatchlistTokenIds: [],
   selectedTab: portfolioTabs[0],
@@ -44,6 +58,18 @@ export const profileSlice = createSlice({
   reducers: {
     setUserEnsProfile(state, { payload }: PayloadAction<EnsProfileType>) {
       state.ensProfile = payload
+    },
+    setUserId(state, { payload }: PayloadAction<number | null>) {
+      state.userId = payload
+    },
+    setUserEmail(state, { payload }: PayloadAction<{ address: string | null; verified: boolean }>) {
+      state.email = payload
+    },
+    setUserDiscord(state, { payload }: PayloadAction<string | null>) {
+      state.discord = payload
+    },
+    setUserTelegram(state, { payload }: PayloadAction<string | null>) {
+      state.telegram = payload
     },
     setWatchlistDomains(state, { payload }: PayloadAction<WatchlistItemType[]>) {
       state.watchlist = payload
@@ -65,22 +91,36 @@ export const profileSlice = createSlice({
     changeTab(state, { payload }: PayloadAction<TabType>) {
       state.selectedTab = payload
     },
+    resetUserProfile(state) {
+      state.ensProfile = nullEnsProfile
+      state.userId = null
+      state.email = { address: null, verified: false }
+      state.discord = null
+      state.telegram = null
+      state.watchlist = []
+      state.pendingWatchlistTokenIds = []
+    },
   },
 })
 
 // Actions --------------------------------------------
 export const {
   setUserEnsProfile,
+  setUserId,
+  setUserEmail,
+  setUserDiscord,
+  setUserTelegram,
   setWatchlistDomains,
   addUserWatchlistDomain,
   removeUserWatchlistDomain,
   addUserPendingWatchlistDomain,
   removeUserPendingWatchlistDomain,
   changeTab,
+  resetUserProfile,
 } = profileSlice.actions
 
 // Selectors ------------------------------------------
-export const selectUserProfile = (state: RootState) => state.user.profile
+export const selectUserProfile = (state: RootState) => state.profile.profile
 
 // Reducer --------------------------------------------
 export default profileSlice.reducer

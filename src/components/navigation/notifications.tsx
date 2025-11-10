@@ -9,17 +9,19 @@ import { getUnreadCount } from '@/api/notifications/getUnreadCount'
 import notifications from 'public/icons/bell.svg'
 import { cn } from '@/utils/tailwind'
 import { markAllAsRead } from '@/api/notifications/markAllAsRead'
+import { useUserContext } from '@/context/user'
 
 const Notifications = () => {
+  const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
 
   // Fetch unread count
   const { data: unreadCount = 0, refetch: refetchUnreadCount } = useQuery({
-    queryKey: ['unreadCount'],
+    queryKey: ['unreadCount', userAddress],
     queryFn: getUnreadCount,
     refetchInterval: 60000, // Refetch every minute
     retry: 1, // Only retry once on failure
-    enabled: true, // Always try to fetch
+    enabled: !!userAddress && authStatus === 'authenticated', // Always try to fetch
   })
 
   // Mark all as read mutation

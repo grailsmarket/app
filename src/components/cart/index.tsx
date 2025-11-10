@@ -30,6 +30,11 @@ const Cart = () => {
     setIsCartOpen(false)
   }, [pathname, setIsCartOpen])
 
+  const handleClearCart = () => {
+    clearCart()
+    setIsCartOpen(false)
+  }
+
   const registerDomainsEmpty = registerDomains.length === 0
   const registeredDomainsEmpty = purchaseDomains.length === 0
   const offerDomainsEmpty = offerDomains.length === 0
@@ -105,7 +110,7 @@ const Cart = () => {
         )}
         <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
           <div className='flex w-fit flex-row gap-x-2'>
-            <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
+            <SecondaryButton onClick={handleClearCart} disabled={cartIsEmpty}>
               Clear Cart
             </SecondaryButton>
             <SecondaryButton onClick={() => setIsCartOpen(false)}>Close Cart</SecondaryButton>

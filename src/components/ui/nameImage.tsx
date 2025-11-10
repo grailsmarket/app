@@ -1,8 +1,12 @@
-import { DOMAIN_IMAGE_URL } from '@/constants'
+import { APP_ENS_ADDRESS } from '@/constants'
 import Image from 'next/image'
 import React, { useState } from 'react'
-import { numberToHex } from 'viem'
+import { labelhash } from 'viem'
 import { cn } from '@/utils/tailwind'
+import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
+
+export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
+export const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 
 interface NameImageProps {
   name: string
@@ -21,9 +25,11 @@ export default function NameImage({
   height = 1024,
   width = 1024,
 }: NameImageProps) {
+  const nameHash = labelhash(name)
+  const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
+
   const [isLoading, setIsLoading] = useState(true)
   const [displayFallback, setDisplayFallback] = useState(false)
-  const imageSrc = `${DOMAIN_IMAGE_URL}/${numberToHex(BigInt(tokenId))}/image`
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
 
@@ -34,7 +40,13 @@ export default function NameImage({
       alt={name}
       width={width}
       height={height}
-      onError={() => setDisplayFallback(true)}
+      onError={() => {
+        if (imageSrc === `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`) {
+          setImageSrc(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
+        } else {
+          setDisplayFallback(true)
+        }
+      }}
       onLoad={() => setIsLoading(false)}
       className={cn('bg-foreground/80 rounded-sm', isLoading ? 'animate-pulse' : '', className)}
     />

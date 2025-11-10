@@ -28,7 +28,7 @@ export function formatTimeAgo(date: Date | number | string): string {
   if (years > 0) {
     return `${years}y ago`
   } else if (months > 0) {
-    return `${months}m ago`
+    return `${months}mo ago`
   } else if (weeks > 0) {
     return `${weeks}w ago`
   } else if (days > 0) {

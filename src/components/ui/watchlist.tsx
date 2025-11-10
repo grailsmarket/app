@@ -69,8 +69,6 @@ const Watchlist: React.FC<WatchlistProps> = ({
     notifyOnPriceChange: watchlistItem?.notifyOnPriceChange,
   } as WatchlistSettingsType
 
-  console.log(currentSettings, watchlistSettings, _.isEqual(watchlistSettings, currentSettings))
-
   return (
     <>
       <Tooltip

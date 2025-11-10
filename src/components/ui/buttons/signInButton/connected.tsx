@@ -15,7 +15,7 @@ const Connected = () => {
 
   const { ensProfile } = useAppSelector(selectUserProfile)
   const { profileIsLoading } = useUserContext()
-  const { userAddress, handleSignOut } = useUserContext()
+  const { userAddress, handleSignOut, setIsSettingsOpen } = useUserContext()
 
   return (
     <div ref={dropdownWalletRef} className='group relative'>
@@ -51,6 +51,12 @@ const Connected = () => {
           walletDropdownOpen && 'flex'
         )}
       >
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+        >
+          Settings
+        </button>
         <Link
           href={`/profile/${userAddress}`}
           onClick={() => setWalletDropdownOpen(false)}

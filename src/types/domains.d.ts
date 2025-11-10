@@ -428,6 +428,6 @@ export type NameActivityType = {
   token_id: string | null
 }
 
-export type ActivityColumnType = 'event' | 'name' | 'price' | 'counterparty' | 'from' | 'to' | 'time'
+export type ActivityColumnType = 'event' | 'name' | 'price' | 'user' | 'from' | 'to' | 'time'
 
 export type OfferColumnType = 'name' | 'offer_amount' | 'offerrer' | 'expires' | 'actions'

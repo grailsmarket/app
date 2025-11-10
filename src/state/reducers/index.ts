@@ -4,14 +4,13 @@ import { persistReducer } from 'redux-persist'
 import storage from '../storage'
 import cacheReducer from './cache'
 import modalReducer from './modals'
-import searchReducer from './search'
 import scrollPosition from './scroll'
 import domainsReducer from './domains'
 import filtersReducer from './filters'
 import profileReducer from './portfolio'
 import transactionReducer from './transactions'
 
-const PERSISTED_KEYS: string[] = ['cache', 'user']
+const PERSISTED_KEYS: string[] = ['cache', 'profile']
 
 const persistConfig = {
   key: 'root',
@@ -23,9 +22,8 @@ const persistConfig = {
 const reducer = combineReducers({
   filters: filtersReducer,
   domains: domainsReducer,
-  search: searchReducer,
   modals: modalReducer,
-  user: profileReducer,
+  profile: profileReducer,
   transactions: transactionReducer,
   cache: cacheReducer,
   scroll: scrollPosition,

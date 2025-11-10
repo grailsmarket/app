@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
-import CategoryPage from './components/category'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
+import Categories from './components/categories'
 
 interface Props {
   params: Promise<{ category: string }>
@@ -33,12 +33,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   }
 }
 
-const UserPage = async (props: Props) => {
-  const { category } = await props.params
-
+const UserPage = () => {
   return (
-    <main className='min-h-screen w-full' style={{ minHeight: 'calc(100vh - 360px)' }}>
-      <CategoryPage category={category} />
+    <main className='px-lg min-h-screen w-full pt-20' style={{ minHeight: 'calc(100vh - 360px)' }}>
+      <Categories />
     </main>
   )
 }

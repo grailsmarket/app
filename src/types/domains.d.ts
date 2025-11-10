@@ -425,10 +425,9 @@ export type NameActivityType = {
   transaction_hash: string | null
   block_number: number | null
   created_at: string
-  price: string | null
   token_id: string | null
 }
 
-export type ActivityColumnType = 'event' | 'name' | 'price' | 'counterparty' | 'from' | 'to' | 'timestamp'
+export type ActivityColumnType = 'event' | 'name' | 'price' | 'counterparty' | 'from' | 'to' | 'time'
 
 export type OfferColumnType = 'name' | 'offer_amount' | 'offerrer' | 'expires' | 'actions'

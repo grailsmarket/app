@@ -6,7 +6,7 @@
 // import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 // import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 // import { fetchProfileActivity } from '@/api/activity/profile'
-// import { ProfileActivityType } from '@/types/profile'
+// import { ActivityType } from '@/types/profile'
 
 // export const useClubActivity = (club: string) => {
 //   const { selectors } = useFilterRouter()
@@ -48,7 +48,7 @@
 //     return (
 //       activity?.pages?.reduce((acc, page) => {
 //         return [...acc, ...page.activity]
-//       }, [] as ProfileActivityType[]) || []
+//       }, [] as ActivityType[]) || []
 //     )
 //   }, [activity])
 //   const activityLoading = isLoading || isFetchingNextPage

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../state/hooks'
 import {
@@ -15,6 +15,7 @@ import { addToWatchlist } from '@/api/watchlist/addToWatchlist'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
+import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
 
 const useWatchlist = (name: string, tokenId: string) => {
   const dispatch = useAppDispatch()
@@ -23,6 +24,12 @@ const useWatchlist = (name: string, tokenId: string) => {
   const { userAddress, authStatus } = useUserContext()
   const [hasWatchlistedBefore, setHasWatchlistedBefore] = useState<boolean | undefined>(undefined)
   const [watchlistCountChange, setWatchlistCountChange] = useState(0)
+  const [watchlistSettings, setWatchlistSettings] = useState<WatchlistSettingsType>({
+    notifyOnSale: true,
+    notifyOnOffer: true,
+    notifyOnListing: true,
+    notifyOnPriceChange: true,
+  })
 
   const invalidateWatchlist = () => {
     queryClient.invalidateQueries({ queryKey: ['isWatchlisted', name] })
@@ -78,6 +85,16 @@ const useWatchlist = (name: string, tokenId: string) => {
     },
   })
 
+  const updateSettingsMutation = useMutation({
+    mutationFn: updateWatchlistSettings,
+    onSuccess: () => {
+      invalidateWatchlist()
+    },
+    onError: (error: any) => {
+      console.error('Error updating settings', error)
+    },
+  })
+
   const { data: watchlistItem } = useQuery({
     queryKey: ['isWatchlisted', name, userAddress],
     queryFn: async () => {
@@ -94,6 +111,17 @@ const useWatchlist = (name: string, tokenId: string) => {
     },
     enabled: !!name && !!userAddress && authStatus === 'authenticated',
   })
+
+  useEffect(() => {
+    if (watchlistItem?.watchlistEntry) {
+      setWatchlistSettings({
+        notifyOnSale: watchlistItem.watchlistEntry.notifyOnSale,
+        notifyOnOffer: watchlistItem.watchlistEntry.notifyOnOffer,
+        notifyOnListing: watchlistItem.watchlistEntry.notifyOnListing,
+        notifyOnPriceChange: watchlistItem.watchlistEntry.notifyOnPriceChange,
+      })
+    }
+  }, [watchlistItem])
 
   const isWatching = useMemo(() => {
     if (pendingWatchlistTokenIds?.includes(tokenId) || removeFromWatchlistMutation.isPending) {
@@ -137,6 +165,17 @@ const useWatchlist = (name: string, tokenId: string) => {
     toggleWatchlist,
     isLoading: isLoadingWatchlist,
     watchlistCountChange,
+    watchlistSettings,
+    setWatchlistSettings,
+    updateWatchlistSettings: (settings: WatchlistSettingsType) => {
+      setWatchlistSettings(settings)
+      if (watchlistItem?.watchlistEntry?.id) {
+        updateSettingsMutation.mutate({ watchlistId: watchlistItem?.watchlistEntry?.id, settings })
+      } else {
+        console.error('Watchlist item not found')
+      }
+    },
+    isUpdatingSettings: updateSettingsMutation.isPending,
   }
 }
 

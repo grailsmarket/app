@@ -76,7 +76,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
     <Link
       href={`/${domain.name}`}
       className={cn(
-        'group bg-background hover:bg-secondary md:p-md lg:p-lg flex h-[60px] w-full flex-row items-center justify-start rounded-sm transition',
+        'group hover:bg-foreground/10 md:p-md lg:p-lg flex h-[60px] w-full flex-row items-center justify-start rounded-sm transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40'
       )}
     >

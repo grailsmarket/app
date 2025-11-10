@@ -1,9 +1,6 @@
-import Image from 'next/image'
 import { RefObject, useCallback, useMemo } from 'react'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
-import useSortFilter from '@/hooks/useSortFilter'
 import TableRow from './table/components/TableRow'
-import SortArrow from 'public/icons/arrow-down.svg'
 import NoResults from '@/components/ui/noResults'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { ALL_MARKETPLACE_COLUMNS, MARKETPLACE_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
@@ -52,7 +49,6 @@ const Domains: React.FC<DomainsProps> = ({
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
-  const { sort, setSortFilter } = useSortFilter()
 
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {
@@ -107,66 +103,7 @@ const Domains: React.FC<DomainsProps> = ({
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
               <div key={index} className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
-                <p
-                  onClick={() => {
-                    if (item.sort === 'none') return
-
-                    if (item.value?.desc && sort === item.value?.asc) {
-                      setSortFilter(item.value?.desc)
-                      return
-                    }
-
-                    if (sort === item.value?.desc) {
-                      setSortFilter(null)
-                      return
-                    }
-
-                    setSortFilter(item.value?.asc || item.value?.desc || null)
-                  }}
-                  className={`w-fit text-left text-sm font-medium ${
-                    item.sort !== 'none' && 'hover:text-light-100 cursor-pointer transition-colors'
-                  }`}
-                >
-                  {item.label === 'Actions' ? '' : item.label}
-                </p>
-                {item.sort !== 'none' && (
-                  <div className='w-fit'>
-                    <Image
-                      src={SortArrow}
-                      alt='sort ascending'
-                      className={`rotate-180 ${
-                        sort === item.value?.asc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
-                      onClick={() => {
-                        if (!item.value?.asc) return
-
-                        if (sort?.includes(item.value?.asc)) {
-                          setSortFilter(null)
-                          return
-                        }
-
-                        setSortFilter(item.value?.asc)
-                      }}
-                    />
-                    <Image
-                      src={SortArrow}
-                      alt='sort descending'
-                      className={`${
-                        sort === item.value?.desc ? 'opacity-100' : 'opacity-50'
-                      } cursor-pointer transition-opacity hover:opacity-100`}
-                      onClick={() => {
-                        if (!item.value?.desc) return
-
-                        if (sort?.includes(item.value?.desc)) {
-                          setSortFilter(null)
-                          return
-                        }
-
-                        setSortFilter(item.value?.desc)
-                      }}
-                    />
-                  </div>
-                )}
+                <p className='w-fit text-left text-sm font-medium'>{item.label === 'Actions' ? '' : item.label}</p>
               </div>
             )
           })}
@@ -187,6 +124,7 @@ const Domains: React.FC<DomainsProps> = ({
               containerWidth={containerWidth - (width && width < 1024 ? (width < 768 ? 0 : 16) : 32)}
               overscanCount={3}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
+              paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}
               scrollEnabled={scrollEnabled}

@@ -1,7 +1,7 @@
 import { API_URL } from '@/constants/api'
 import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
 import { APIResponseType, PaginationType } from '@/types/api'
-import { ProfileActivityType } from '@/types/profile'
+import { ActivityType } from '@/types/profile'
 import { Address } from 'viem'
 
 interface FetchProfileActivityOptions {
@@ -17,7 +17,7 @@ export const fetchProfileActivity = async ({ address, limit, pageParam, eventTyp
     `${API_URL}/activity/address/${address}?limit=${limit}&page=${pageParam}&event_type=${typeFilter}`
   )
   const data = (await response.json()) as APIResponseType<{
-    results: ProfileActivityType[]
+    results: ActivityType[]
     pagination: PaginationType
   }>
 

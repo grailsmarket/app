@@ -13,7 +13,7 @@ export type ActivityFiltersState = {
   search: string
   categories: string[]
   sort: SortFilterType | null
-  denomination: PriceDenominationType[]
+  denomination: PriceDenominationType
   priceRange: PriceType
   length: LengthType
   status: string[]
@@ -29,7 +29,7 @@ export const emptyFilterState: ActivityFiltersState = {
   search: '',
   categories: [],
   sort: null,
-  denomination: [],
+  denomination: 'ETH',
   priceRange: {
     min: null,
     max: null,
@@ -49,7 +49,7 @@ export const initialState: ActivityFiltersOpenedState = {
   search: '',
   categories: [],
   sort: null,
-  denomination: [],
+  denomination: 'ETH',
   priceRange: {
     min: null,
     max: null,

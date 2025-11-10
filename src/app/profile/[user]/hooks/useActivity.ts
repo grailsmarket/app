@@ -6,7 +6,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { fetchProfileActivity } from '@/api/activity/profile'
-import { ProfileActivityType } from '@/types/profile'
+import { ActivityType } from '@/types/profile'
 import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
 
 export const useProfileActivity = (user: Address | string) => {
@@ -58,7 +58,7 @@ export const useProfileActivity = (user: Address | string) => {
     return (
       activity?.pages?.reduce((acc, page) => {
         return [...acc, ...page.activity]
-      }, [] as ProfileActivityType[]) || []
+      }, [] as ActivityType[]) || []
     )
   }, [activity])
   const activityLoading = isLoading || isFetchingNextPage

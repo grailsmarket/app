@@ -35,7 +35,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         showHeaders={true}
-        columns={['event', 'price', 'timestamp', 'counterparty']}
+        columns={['event', 'price', 'time', 'counterparty']}
         scrollEnabled={isAtBottom}
       />
     </div>

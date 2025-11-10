@@ -42,6 +42,16 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Portfolio
       </Link>
+      <Link
+        href='/categories'
+        className={cn(
+          'text-lg font-semibold transition-all',
+          pathname === '/categories' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Categories
+      </Link>
     </div>
   )
 }

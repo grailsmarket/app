@@ -12,7 +12,7 @@ export type ProfileActivityEventType =
   | 'sent'
   | 'received'
 
-export type ProfileActivityType = {
+export type ActivityType = {
   id: number
   name: string
   ens_name_id: number

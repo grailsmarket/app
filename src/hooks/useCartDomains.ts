@@ -1,4 +1,4 @@
-import { MouseEvent } from 'react'
+import { MouseEvent, useCallback } from 'react'
 import { useAppSelector } from '../state/hooks'
 import useModifyCart from './useModifyCart'
 import { getRegistrationStatus } from '../utils/getRegistrationStatus'
@@ -17,17 +17,23 @@ const useCartDomains = () => {
   const offerDomains = cartRegisteredDomains.filter((domain) => !domain.listings[0]?.price)
   const cartIsEmpty = cartRegisteredDomains.length === 0 && cartUnregisteredDomains.length === 0
 
-  const isAddedToCart = (tokenId: string) => {
-    const inCart =
-      cartRegisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0 ||
-      cartUnregisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0
+  const isAddedToCart = useCallback(
+    (tokenId: string) => {
+      const inCart =
+        cartRegisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0 ||
+        cartUnregisteredDomains.filter((cartDomain) => cartDomain.token_id === tokenId).length > 0
 
-    return inCart
-  }
+      return inCart
+    },
+    [cartRegisteredDomains, cartUnregisteredDomains]
+  )
 
-  const isModifyingDomain = (tokenId: string) => {
-    return modifyingCartTokenIds.includes(tokenId) || modifyCartLoading
-  }
+  const isModifyingDomain = useCallback(
+    (tokenId: string) => {
+      return modifyCartLoading && modifyingCartTokenIds.includes(tokenId)
+    },
+    [modifyCartLoading, modifyingCartTokenIds]
+  )
 
   const toggleCart = async (domain: MarketplaceDomainType, expireTime: string | null) => {
     if (getRegistrationStatus(expireTime) === GRACE_PERIOD) return

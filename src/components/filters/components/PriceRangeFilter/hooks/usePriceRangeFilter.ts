@@ -1,10 +1,17 @@
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { PriceDenominationType } from '@/state/reducers/filters/marketplaceFilters'
+import { useEffect, useState } from 'react'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export const usePriceRangeFilter = () => {
+  const [currMinVal, setCurrMinVal] = useState<number | null>(null)
+  const [currMaxVal, setCurrMaxVal] = useState<number | null>(null)
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
+
+  const debouncedMinVal = useDebounce(currMinVal?.toString() || '', 400)
+  const debouncedMaxVal = useDebounce(currMaxVal?.toString() || '', 400)
 
   const { denomination, priceRange } = selectors.filters
 
@@ -27,11 +34,25 @@ export const usePriceRangeFilter = () => {
     dispatch(actions.setPriceRange({ ...priceRange, min: newMin }))
   }
 
+  useEffect(() => {
+    setMinPrice(Number(debouncedMinVal))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedMinVal])
+
+  useEffect(() => {
+    setMaxPrice(Number(debouncedMaxVal))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedMaxVal])
+
   return {
     denomination,
     priceRange,
     setDenominationGenerator,
     setMaxPrice,
     setMinPrice,
+    currMinVal,
+    currMaxVal,
+    setCurrMinVal,
+    setCurrMaxVal,
   }
 }

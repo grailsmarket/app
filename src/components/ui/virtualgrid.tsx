@@ -1,40 +1,22 @@
 import clsx from 'clsx'
 import React, { useState, useCallback, forwardRef, ReactElement, ForwardedRef, useMemo } from 'react'
 
-/**
- * Props for the VirtualGrid component
- * @template T - The type of items in the grid (must be serializable)
- */
 export interface VirtualGridProps<T = unknown> {
-  /** Array of items to render */
   items: T[]
-  /** Width of each card in pixels */
   cardWidth: number
-  /** Height of each card in pixels */
   cardHeight: number
-  /** Gap between cards in pixels */
   gap?: number
-  /** Container width to calculate columns */
+  paddingBottom?: string | number
   containerWidth?: number
-  /** Number of extra rows to render outside visible area for smooth scrolling */
   overscanCount?: number
-  /** CSS class name for the container */
   containerClassName?: string
-  /** Height of the grid container */
   gridHeight?: string
-  /** Function to render each item */
   renderItem: (item: T, index: number, columnsCount: number) => React.ReactNode
-  /** Callback when scrolling near the bottom */
   onScrollNearBottom?: () => void
-  /** Threshold in pixels from bottom to trigger onScrollNearBottom */
   scrollThreshold?: number
-  /** Whether scrolling is enabled */
   scrollEnabled?: boolean
 }
 
-/**
- * Virtual grid component type with generic constraint
- */
 export type VirtualGridComponentType = <T = unknown>(
   props: VirtualGridProps<T>,
   ref: ForwardedRef<HTMLDivElement>
@@ -46,6 +28,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     cardWidth,
     cardHeight,
     gap = 2,
+    paddingBottom = '80px',
     containerWidth = 1200,
     overscanCount = 2,
     gridHeight = '100%',
@@ -128,6 +111,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
         height: gridHeight,
         overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
+        paddingBottom,
         touchAction: scrollEnabled ? 'auto' : 'none',
       }}
       className={clsx(containerClassName, 'hide-scrollbar')}

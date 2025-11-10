@@ -8,6 +8,7 @@ import { useFilterContext } from '@/context/filters'
 import { cn } from '@/utils/tailwind'
 import { useIsClient } from 'ethereum-identity-kit'
 import { useCategories } from '../../hooks/useCategories'
+import SortFilter from '../SortFilter'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -36,6 +37,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
         )}
       >
+        <SortFilter />
         <StatusFilter />
         <TypeFilter />
         <LengthFilter />

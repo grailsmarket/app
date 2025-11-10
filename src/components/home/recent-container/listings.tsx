@@ -4,12 +4,9 @@ import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import Domains from '@/components/domains'
-import { useAppSelector } from '@/state/hooks'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
+import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 
 const RecentListings = () => {
-  const filters = useAppSelector(selectMarketplaceFilters)
-
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentListings'],
     queryFn: () =>
@@ -17,8 +14,8 @@ const RecentListings = () => {
         limit: 7,
         pageParam: 1,
         filters: {
-          ...filters,
-          sort: 'price_desc',
+          ...emptyFilterState,
+          status: ['Listed'],
         },
         searchTerm: '',
       }),
@@ -37,6 +34,7 @@ const RecentListings = () => {
         showHeaders={false}
         displayedDetails={['listed_price']}
         forceViewType='list'
+        scrollEnabled={false}
       />
     </div>
   )

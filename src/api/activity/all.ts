@@ -2,18 +2,25 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { ActivityType } from '@/types/profile'
 
-interface FetchNameActivityOptions {
-  name: string
+interface FetchAllActivityOptions {
   limit: number
   pageParam: number
 }
 
-export const fetchNameActivity = async ({ name, limit, pageParam }: FetchNameActivityOptions) => {
-  const response = await fetch(`${API_URL}/activity/${name}?limit=${limit}&page=${pageParam}`)
+export const fetchAllActivity = async ({ limit, pageParam }: FetchAllActivityOptions) => {
+  const response = await fetch(`${API_URL}/activity?limit=${limit}&page=${pageParam}`)
   const data = (await response.json()) as APIResponseType<{
     results: ActivityType[]
     pagination: PaginationType
   }>
+
+  if (!data.data.results) {
+    return {
+      activity: [],
+      nextPageParam: pageParam,
+      hasNextPage: false,
+    }
+  }
 
   return {
     activity: data.data.results,

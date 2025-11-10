@@ -13,7 +13,13 @@ const Price: React.FC<PriceProps> = ({ price, currencyAddress, tooltipPosition }
 
   return (
     <div className='flex w-full flex-row items-center gap-1'>
-      <PriceComponent price={price} currencyAddress={currencyAddress} tooltipPosition={tooltipPosition} />
+      <PriceComponent
+        price={price}
+        currencyAddress={currencyAddress}
+        tooltipPosition={tooltipPosition}
+        iconSize='20px'
+        fontSize='text-lg font-semibold'
+      />
     </div>
   )
 }

@@ -24,6 +24,7 @@ export const useNameActivity = (name: string) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
+    refetchOnWindowFocus: true,
   })
 
   const activityData = useMemo(() => {

@@ -27,6 +27,7 @@ const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
               iconSize={36}
               iconClassName='w-8 h-8 opacity-100'
               tooltipAlign='left'
+              showSettings={true}
             />
           )}
         </div>

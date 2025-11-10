@@ -2,7 +2,7 @@ import { RefObject, useCallback, useMemo } from 'react'
 import { Address, useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import NoResults from '@/components/ui/noResults'
 import VirtualList from '@/components/ui/virtuallist'
-import { ProfileActivityType } from '@/types/profile'
+import { ActivityType } from '@/types/profile'
 import LoadingRow from './components/loadingRow'
 import ActivityRow from './components/activityRow'
 import { ActivityColumnType, NameActivityType } from '@/types/domains'
@@ -10,7 +10,7 @@ import { cn } from '@/utils/tailwind'
 
 interface ActivityProps {
   maxHeight?: string
-  activity: ProfileActivityType[] | NameActivityType[]
+  activity: ActivityType[] | NameActivityType[]
   isLoading: boolean
   loadingRowCount?: number
   noResults: boolean
@@ -32,7 +32,7 @@ const Activity: React.FC<ActivityProps> = ({
   loadingRowCount = 10,
   noResults,
   noResultsLabel = 'No results, try changing your filters.',
-  columns = ['event', 'name', 'price', 'timestamp', 'counterparty'],
+  columns = ['event', 'name', 'price', 'time', 'counterparty'],
   paddingBottom,
   listRef,
   hasMoreActivity,
@@ -103,7 +103,7 @@ const Activity: React.FC<ActivityProps> = ({
       )}
       <div className='h-full w-full rounded-sm px-0' ref={listRef}>
         {!noResults ? (
-          <VirtualList<ProfileActivityType>
+          <VirtualList<ActivityType>
             ref={listRef}
             paddingBottom={paddingBottom}
             items={[...activity, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}

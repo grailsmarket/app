@@ -7,12 +7,14 @@ export const useName = (name: string) => {
     queryKey: ['name', 'details', name],
     queryFn: async () => await fetchNameDetails(name),
     enabled: !!name,
+    refetchOnWindowFocus: true,
   })
 
   const { data: nameOffers, isLoading: nameOffersIsLoading } = useQuery({
     queryKey: ['name', 'offers', name],
     queryFn: async () => await fetchNameOffers(name),
     enabled: !!name,
+    refetchOnWindowFocus: true,
   })
 
   return {

@@ -1,4 +1,5 @@
 import HeroSearch from '@/components/home/heroSearch'
+import LiveActivity from '@/components/home/liveActivity'
 import RecentContainer from '@/components/home/recent-container'
 
 const Home = () => {
@@ -14,12 +15,13 @@ const Home = () => {
         />
         <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
       </div> */}
-      <div className='py-homeDesktop relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col gap-32'>
-        <div className='flex flex-col items-start justify-start gap-4'>
-          <h1 className='font-sedan-sc text-9xl'>Your ENS Market</h1>
+      <div className='md:pt-homeDesktop pb-lg relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col gap-4 pt-36'>
+        <div className='mb-4 flex flex-col items-start justify-start gap-4 sm:mb-20'>
+          <h1 className='font-sedan-sc text-6xl sm:text-9xl'>Your ENS Market</h1>
           <HeroSearch />
         </div>
         <RecentContainer />
+        <LiveActivity />
       </div>
     </main>
   )

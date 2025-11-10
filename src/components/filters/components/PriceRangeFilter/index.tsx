@@ -12,27 +12,49 @@ import PriceDenominatorSwitch from './components/PriceDenominatorSwitch'
 
 const PriceRangeFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Price Range')
-  const { priceRange, setMaxPrice, setMinPrice } = usePriceRangeFilter()
+  const {
+    denomination,
+    setDenominationGenerator,
+    priceRange,
+    currMinVal,
+    currMaxVal,
+    setCurrMinVal,
+    setCurrMaxVal,
+    setMaxPrice,
+    setMinPrice,
+  } = usePriceRangeFilter()
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Price Range' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={142} label='Price Range'>
+      <ExpandableTab
+        open={open}
+        toggleOpen={toggleOpen}
+        expandedHeight={142}
+        label='Price Range'
+        CustomComponent={
+          <p className='text-md text-neutral font-medium'>
+            {priceRange.min || priceRange.max ? `${priceRange.min || ''} - ${priceRange.max || ''}` : null}
+          </p>
+        }
+      >
         <div className='px-lg py-md flex flex-col items-start gap-y-4'>
-          <PriceDenominatorSwitch />
+          <PriceDenominatorSwitch denomination={denomination} setDenominationGenerator={setDenominationGenerator} />
           <div className='flex gap-x-2'>
             <input
               type='number'
               className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
               placeholder='Min'
-              value={priceRange.min || ''}
-              onChange={(e) => setMinPrice(Number(e.target.value))}
+              value={currMinVal || ''}
+              onChange={(e) => setCurrMinVal(Number(e.target.value))}
+              onBlur={() => setMinPrice(Number(currMinVal))}
             />
             <input
               type='number'
               className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
               placeholder='Max'
-              value={priceRange.max || ''}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              value={currMaxVal || ''}
+              onChange={(e) => setCurrMaxVal(Number(e.target.value))}
+              onBlur={() => setMaxPrice(Number(currMaxVal))}
             />
           </div>
         </div>

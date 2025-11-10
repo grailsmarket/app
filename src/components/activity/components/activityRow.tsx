@@ -6,11 +6,11 @@ import Price from './price'
 import { cn } from '@/utils/tailwind'
 import User from '@/components/ui/user'
 import { ActivityColumnType } from '@/types/domains'
-import { ProfileActivityType } from '@/types/profile'
-import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { ActivityType } from '@/types/profile'
+import ActivityTime from '@/components/ui/activityTime'
 
 interface ActivityRowProps {
-  activity: ProfileActivityType
+  activity: ActivityType
   displayedColumns: ActivityColumnType[]
   displayedAddress?: Address
   index: number
@@ -43,7 +43,15 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
     counterparty: addressToShow && <User address={addressToShow} />,
     from: activity.actor_address && <User address={activity.actor_address} />,
     to: activity.counterparty_address && <User address={activity.counterparty_address} />,
-    timestamp: activity.created_at ? formatExpiryDate(activity.created_at) : 'N/A',
+    time: activity.created_at ? (
+      <ActivityTime
+        timestamp={activity.created_at}
+        className='text-md text-light-200 font-medium'
+        tooltipPosition={index === 0 ? 'bottom' : 'top'}
+      />
+    ) : (
+      'N/A'
+    ),
   }
 
   return (

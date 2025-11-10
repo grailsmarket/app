@@ -5,12 +5,13 @@ import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { Address, Cross } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useProfileDomains } from '../hooks/useDomains'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 interface Props {
   user: Address | string
@@ -21,6 +22,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { selectors, actions } = useFilterRouter()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useProfileDomains(user)
   const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
     <>
@@ -62,7 +64,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         maxHeight='calc(100vh - 190px)'
         domains={domains}
         loadingRowCount={20}
-        paddingBottom='140px'
+        paddingBottom={viewType === 'list' ? '140px' : '100px'}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}

@@ -6,11 +6,12 @@ import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
@@ -18,6 +19,7 @@ const DomainPanel = () => {
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
   const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
     <div
@@ -57,6 +59,7 @@ const DomainPanel = () => {
         maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 190px)' : 'calc(100vh - 240px)'}
         domains={domains}
         loadingRowCount={20}
+        paddingBottom={viewType === 'list' ? '140px' : '80px'}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}

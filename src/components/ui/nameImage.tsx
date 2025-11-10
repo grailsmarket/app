@@ -1,12 +1,12 @@
 import { APP_ENS_ADDRESS } from '@/constants'
 import Image from 'next/image'
 import React, { useState } from 'react'
-import { labelhash } from 'viem'
+import { labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
 export const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
 
 interface NameImageProps {
   name: string
@@ -28,12 +28,12 @@ export default function NameImage({
   const [isLoading, setIsLoading] = useState(true)
   const [displayFallback, setDisplayFallback] = useState(false)
 
-  const nameHash = labelhash(name.replace('.eth', ''))
+  const nameHash = namehash(name)
+  const labelHash = labelhash(name.replace('.eth', ''))
   const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
-
 
   return (
     <Image
@@ -44,7 +44,7 @@ export default function NameImage({
       height={height}
       onError={() => {
         if (imageSrc === `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`) {
-          setImageSrc(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
+          setImageSrc(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`)
         } else {
           setDisplayFallback(true)
         }

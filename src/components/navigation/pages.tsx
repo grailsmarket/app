@@ -33,16 +33,6 @@ const Pages = ({ className, onClick }: PagesProps) => {
         Explore
       </Link>
       <Link
-        href='/portfolio'
-        className={cn(
-          'text-lg font-semibold transition-all',
-          pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
-        )}
-        onClick={onClick}
-      >
-        Portfolio
-      </Link>
-      <Link
         href='/categories'
         className={cn(
           'text-lg font-semibold transition-all',
@@ -51,6 +41,16 @@ const Pages = ({ className, onClick }: PagesProps) => {
         onClick={onClick}
       >
         Categories
+      </Link>
+      <Link
+        href='/portfolio'
+        className={cn(
+          'text-lg font-semibold transition-all',
+          pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Portfolio
       </Link>
     </div>
   )

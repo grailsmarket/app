@@ -25,13 +25,15 @@ export default function NameImage({
   height = 1024,
   width = 1024,
 }: NameImageProps) {
-  const nameHash = labelhash(name)
-  const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
-
   const [isLoading, setIsLoading] = useState(true)
   const [displayFallback, setDisplayFallback] = useState(false)
+
+  const nameHash = labelhash(name.replace('.eth', ''))
+  const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
+
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
+
 
   return (
     <Image

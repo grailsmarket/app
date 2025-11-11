@@ -41,17 +41,17 @@ export async function POST(request: NextRequest) {
     // Calculate price_wei with correct decimals
     const priceInSmallestUnit = price ? BigInt(Math.floor(parseFloat(price) * Math.pow(10, decimals))).toString() : '0'
 
-    // If posting to OpenSea, submit the order to OpenSea API first
+    // If posting to OpenSea, submit the order to OpenSea API
     let openSeaSubmissionError = null
-    if ((marketplace === 'opensea' || marketplace === 'both') && type === 'listing') {
+    if (marketplace === 'opensea') {
       try {
-        await submitOrderToOpenSea(order_data)
+        const openSeaResponse = await submitOrderToOpenSea(order_data)
         console.log('Successfully submitted order to OpenSea')
+        return NextResponse.json(openSeaResponse)
       } catch (openSeaError: any) {
         console.error('Failed to submit to OpenSea:', openSeaError)
         openSeaSubmissionError = openSeaError.message || String(openSeaError)
 
-        // If listing ONLY to OpenSea, fail the request
         if (marketplace === 'opensea') {
           return NextResponse.json(
             {
@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
             { status: 500 }
           )
         }
-        // For "both", we'll continue and save to our DB, but include warning in response
       }
     }
 
@@ -189,5 +188,5 @@ async function submitOrderToOpenSea(order_data: any) {
 
   const result = await response.json()
   console.log('OpenSea API response:', result)
-  return result
+  return NextResponse.json(result)
 }

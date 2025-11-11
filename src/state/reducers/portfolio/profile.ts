@@ -77,6 +77,12 @@ export const profileSlice = createSlice({
     addUserWatchlistDomain(state, { payload }: PayloadAction<WatchlistItemType>) {
       state.watchlist.push(payload)
     },
+    addUserWatchlistDomains(state, { payload }: PayloadAction<WatchlistItemType[]>) {
+      const namesNotInWatchlist = payload.filter(
+        (item) => !state.watchlist.some((watchlistItem) => watchlistItem.id === item.id)
+      )
+      state.watchlist = state.watchlist.concat(namesNotInWatchlist)
+    },
     removeUserWatchlistDomain(state, { payload }: PayloadAction<number>) {
       state.watchlist = state.watchlist.filter((item) => item.id !== payload)
     },
@@ -112,6 +118,7 @@ export const {
   setUserTelegram,
   setWatchlistDomains,
   addUserWatchlistDomain,
+  addUserWatchlistDomains,
   removeUserWatchlistDomain,
   addUserPendingWatchlistDomain,
   removeUserPendingWatchlistDomain,

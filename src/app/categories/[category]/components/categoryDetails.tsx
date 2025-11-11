@@ -18,6 +18,7 @@ import NineNinetyNineAvatar from 'public/clubs/999/avatar.jpg'
 import NineNinetyNineHeader from 'public/clubs/999/header.jpeg'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import TwitterIcon from 'public/logos/x.svg'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 export const CATEGORY_IMAGES = {
   prepunks: {
@@ -115,7 +116,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
         <div className='bg-background p-lg border-primary flex w-72 flex-col items-center gap-2 rounded-md border-2'>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
-            <p className='text-xl font-semibold'>{categoryDetails.member_count}</p>
+            <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>
           </div>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Floor Price</p>
@@ -128,7 +129,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
           </div>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Total Sales</p>
-            <p className='text-xl font-semibold'>{categoryDetails.total_sales_count}</p>
+            <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.total_sales_count)}</p>
           </div>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Total Sales Volume</p>

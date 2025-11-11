@@ -142,13 +142,19 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const isWrapped = domain.isWrapped
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
+      const conduitAddress = offer.order_data.protocol_data.conduitAddress
+
+      console.log('Conduit address:', conduitAddress)
+
       // Check if Seaport is approved to transfer the NFT
       const isApproved = await publicClient.readContract({
         address: nftContract as `0x${string}`,
         abi: NFT_ABI,
         functionName: 'isApprovedForAll',
-        args: [address, SEAPORT_ADDRESS as `0x${string}`],
+        args: [address, conduitAddress],
       })
+
+      console.log('Is approved:', isApproved)
 
       setNeedsApproval(!isApproved)
     } catch (err) {
@@ -169,13 +175,14 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       // Determine which NFT contract to approve based on if the name is wrapped
       const isWrapped = domain.isWrapped
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+      const conduitAddress = offer.order_data.protocol_data.conduitAddress
 
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({
         address: nftContract as `0x${string}`,
         abi: NFT_ABI,
         functionName: 'setApprovalForAll',
-        args: [SEAPORT_ADDRESS as `0x${string}`, true],
+        args: [conduitAddress, true],
       })
 
       setApproveTxHash(approveTx)
@@ -237,6 +244,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const advancedOrder = orderBuilder.buildAdvancedOrder(order)
       const fulfillerConduitKey =
         order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+
+      console.log('Fulfiller conduit key:', fulfillerConduitKey)
+      console.log('Advanced order:', advancedOrder)
+      console.log('Order:', order)
+      console.log('Address:', address)
 
       // Simulate the transaction
       try {

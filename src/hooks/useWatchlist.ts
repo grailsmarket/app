@@ -115,6 +115,19 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
   })
 
   useEffect(() => {
+    if (watchlistId) {
+      const watchlistItem = watchlist?.find((item) => item.id === watchlistId)
+      if (watchlistItem) {
+        setWatchlistSettings({
+          notifyOnSale: watchlistItem.notifyOnSale,
+          notifyOnOffer: watchlistItem.notifyOnOffer,
+          notifyOnListing: watchlistItem.notifyOnListing,
+          notifyOnPriceChange: watchlistItem.notifyOnPriceChange,
+        })
+      }
+      return
+    }
+
     if (watchlistItem?.watchlistEntry) {
       setWatchlistSettings({
         notifyOnSale: watchlistItem.watchlistEntry.notifyOnSale,
@@ -123,7 +136,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
         notifyOnPriceChange: watchlistItem.watchlistEntry.notifyOnPriceChange,
       })
     }
-  }, [watchlistItem])
+  }, [watchlistItem, watchlistId, watchlist])
 
   const isWatching = useMemo(() => {
     if (watchlistId) {
@@ -212,7 +225,9 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
     setWatchlistSettings,
     updateWatchlistSettings: (settings: WatchlistSettingsType) => {
       setWatchlistSettings(settings)
-      if (watchlistItem?.watchlistEntry?.id) {
+      if (watchlistId) {
+        updateSettingsMutation.mutate({ watchlistId, settings })
+      } else if (watchlistItem?.watchlistEntry?.id) {
         updateSettingsMutation.mutate({ watchlistId: watchlistItem?.watchlistEntry?.id, settings })
       } else {
         console.error('Watchlist item not found')

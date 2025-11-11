@@ -80,7 +80,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [MY_DOMAINS_TYPE_FILTER_LABELS[0]],
+  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
   length: {
     min: null,
     max: null,
@@ -92,7 +92,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Status'],
-  sort: 'price_desc',
+  sort: null,
 }
 
 export type MyDomainsFiltersType = MyDomainsFiltersState & {

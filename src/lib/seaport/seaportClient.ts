@@ -1260,11 +1260,14 @@ export class SeaportClient {
       throw new Error('Seaport client not initialized with signer')
     }
 
+    const conduitKey = order.parameters.conduitKey || undefined
+    console.log('Conduit key:', conduitKey)
+    console.log('Order:', order)
+
     const { executeAllActions } = await this.seaport.fulfillOrder({
       order,
       accountAddress: fulfillerAddress,
-      // Include conduit key for fulfiller if using conduits
-      ...(USE_CONDUIT && { conduitKey: MARKETPLACE_CONDUIT_KEY }),
+      conduitKey,
     })
 
     const transaction = await executeAllActions()

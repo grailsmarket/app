@@ -33,11 +33,13 @@ const LiveActivity = () => {
       )
 
       // Exclude sent and receive events
-      ws.send(JSON.stringify({
-        type: 'set_event_filter',
-        filter_type: 'exclude',
-        event_types: ['sent', 'received']
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'set_event_filter',
+          filter_type: 'exclude',
+          event_types: ['sent', 'received'],
+        })
+      )
     }
 
     ws.onmessage = (event) => {
@@ -82,7 +84,11 @@ const LiveActivity = () => {
   } = useInfiniteQuery({
     queryKey: ['all', 'activity'],
     queryFn: async ({ pageParam = 1 }) => {
-      const activities = await fetchAllActivity({ limit: 30, pageParam, eventTypes: ['listed', 'bought', 'sold', 'offer_made', 'offer_accepted', 'cancelled'] })
+      const activities = await fetchAllActivity({
+        limit: 30,
+        pageParam,
+        eventTypes: ['listed', 'bought', 'sold', 'offer_made', 'offer_accepted', 'cancelled'],
+      })
       return activities
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
@@ -109,7 +115,7 @@ const LiveActivity = () => {
 
       {/* Live Activity Section */}
       <Activity
-        maxHeight='calc(90vh - 202px)'
+        maxHeight='1200px'
         activity={allActivities}
         paddingBottom='10px'
         loadingRowCount={16}

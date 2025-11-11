@@ -14,7 +14,7 @@ const Categories = () => {
         <p className='text-md w-1/6 font-semibold'>Names</p>
         <p className='text-md w-1/6 font-semibold'>Sales</p>
         <p className='text-md w-1/6 font-semibold'>Floor Price</p>
-        <p className='text-md w-32 font-semibold'></p>
+        <p className='text-md w-20 font-semibold'></p>
       </div>
       {categories?.map((category) => (
         <CategoryRow key={category.name} category={category} />

@@ -1,13 +1,14 @@
 import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { Address } from 'viem'
+import { useRouter } from 'next/navigation'
+import Price from '@/components/ui/price'
 import { CategoryType } from '@/types/domains'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { CATEGORY_IMAGES } from '../[category]/components/categoryDetails'
-import Image from 'next/image'
-import Price from '@/components/ui/price'
-import { Address } from 'viem'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface CategoryRowProps {
   category: CategoryType
@@ -30,8 +31,8 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
           <p className='text-md text-neutral font-medium'>{category.description}</p>
         </div>
       </div>
-      <div className='flex w-1/6 items-center gap-2'>{category.member_count} names</div>
-      <div className='flex w-1/6 items-center gap-2'>{category.total_sales_count} sales</div>
+      <div className='flex w-1/6 items-center gap-2'>{localizeNumber(category.member_count)} names</div>
+      <div className='flex w-1/6 items-center gap-2'>{localizeNumber(category.total_sales_count)} sales</div>
       <div className='flex w-1/6 items-center gap-2'>
         <Price
           price={category.floor_price_wei}

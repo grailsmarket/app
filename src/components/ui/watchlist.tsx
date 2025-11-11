@@ -121,6 +121,10 @@ const Watchlist: React.FC<WatchlistProps> = ({
             <ShortArrow className={cn('h-4 w-4 transition-transform', settingsOpen ? 'rotate-0' : 'rotate-180')} />
           </button>
           <div
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
             className={cn(
               'bg-secondary border-primary p-md absolute top-10 z-50 flex w-64 flex-col items-center rounded-md border shadow-md',
               dropdownPosition === 'right' ? 'left-0' : 'right-0',

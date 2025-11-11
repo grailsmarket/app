@@ -2,13 +2,15 @@ import { getWatchlist } from '@/api/watchlist/getWatchlist'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useUserContext } from '@/context/user'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
+import { addUserWatchlistDomains } from '@/state/reducers/portfolio/profile'
 import { MarketplaceDomainType } from '@/types/domains'
 import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 export const useWatchlistDomains = () => {
+  const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
@@ -46,6 +48,8 @@ export const useWatchlistDomains = () => {
         filters,
         searchTerm: debouncedSearch,
       })
+
+      dispatch(addUserWatchlistDomains(response.watchlist))
 
       const domains: MarketplaceDomainType[] = response.watchlist.map((domain) => ({
         id: domain.ensNameId,

@@ -27,6 +27,8 @@ interface WatchlistProps {
   iconSize?: number
   iconClassName?: string
   showSettings?: boolean
+  dropdownPosition?: 'right' | 'left'
+  watchlistId?: number | undefined
 }
 
 const watchlistSettingsLabels: Record<keyof WatchlistSettingsType, string> = {
@@ -45,6 +47,8 @@ const Watchlist: React.FC<WatchlistProps> = ({
   iconSize,
   iconClassName,
   showSettings = false,
+  dropdownPosition = 'right',
+  watchlistId,
 }) => {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const outsideSettingsRef = useClickAway(() => setSettingsOpen(false))
@@ -60,7 +64,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
     updateWatchlistSettings,
     watchlistItem,
     isUpdatingSettings,
-  } = useWatchlist(domain.name, domain.token_id)
+  } = useWatchlist(domain.name, domain.token_id, watchlistId)
 
   const currentSettings = {
     notifyOnSale: watchlistItem?.notifyOnSale,
@@ -118,7 +122,8 @@ const Watchlist: React.FC<WatchlistProps> = ({
           </button>
           <div
             className={cn(
-              'bg-secondary border-primary p-md absolute top-10 left-0 flex w-64 flex-col items-center rounded-md border shadow-md',
+              'bg-secondary border-primary p-md absolute top-10 z-50 flex w-64 flex-col items-center rounded-md border shadow-md',
+              dropdownPosition === 'right' ? 'left-0' : 'right-0',
               settingsOpen ? 'flex' : 'hidden'
             )}
           >

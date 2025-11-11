@@ -19,10 +19,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const {
     emailAddress,
     setEmailAddress,
-    discordUsername,
-    setDiscordUsername,
-    telegramUsername,
-    setTelegramUsername,
+    // discordUsername,
+    // setDiscordUsername,
+    // telegramUsername,
+    // setTelegramUsername,
     ensProfile,
     haveChanges,
     isEmailVerified,
@@ -68,13 +68,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
         <div className='flex flex-col gap-4'>
+          <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
+            <p className='text-md text-neutral font-medium'>
+              Your email is going to be used to send you notifications and updates from Grails.
+            </p>
+          </div>
           <Input
             label='Email'
             value={emailAddress || ''}
             onChange={(e) => setEmailAddress(e.target.value)}
             placeholder='mymail@example.com'
           />
-          <Input
+          {/* <Input
             label='Discord'
             value={discordUsername || ''}
             onChange={(e) => setDiscordUsername(e.target.value)}
@@ -85,7 +90,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             value={telegramUsername || ''}
             onChange={(e) => setTelegramUsername(e.target.value)}
             placeholder='@telegramusername'
-          />
+          /> */}
         </div>
         {!isEmailVerified && (
           <div className='bg-secondary p-md flex items-center gap-2 rounded-md'>

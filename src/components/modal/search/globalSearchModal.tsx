@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDebounce } from '@/hooks/useDebounce'
-import { globalSearch, GlobalSearchResult } from '@/api/search/globalSearch'
 import { Avatar, Cross, MagnifyingGlass } from 'ethereum-identity-kit'
-import { setMarketplaceSearch } from '@/state/reducers/filters/marketplaceFilters'
+import { emptyFilterState, setMarketplaceSearch } from '@/state/reducers/filters/marketplaceFilters'
 import { useAppDispatch } from '@/state/hooks'
 import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
@@ -17,6 +16,9 @@ import CategoryLoadingRow from './components/loading-rows/categoryLoadingRow'
 import UserLoadingRow from './components/loading-rows/userLoadingRow'
 import Image from 'next/image'
 import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
+import { fetchDomains } from '@/api/domains/fetchDomains'
+import { useQuery } from '@tanstack/react-query'
+import { searchProfiles } from '@/api/search-profiles'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -29,46 +31,54 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   const dispatch = useAppDispatch()
 
   const [query, setQuery] = useState(initialQuery)
-  const [results, setResults] = useState<GlobalSearchResult>({ domains: [], categories: [], profiles: [] })
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleClose = () => {
     setQuery('')
-    setResults({ domains: [], categories: [], profiles: [] })
     onClose()
   }
 
   const { categories } = useCategories()
   const debouncedQuery = useDebounce(query, 400)
 
-  const handleSearch = useCallback(
-    async (searchQuery: string) => {
-      if (!searchQuery.trim()) {
-        setResults({ domains: [], categories: [], profiles: [] })
-        return
-      }
-
-      setIsLoading(true)
-      try {
-        const searchResults = await globalSearch(searchQuery, categories || [])
-        setResults(searchResults)
-      } catch (error) {
-        console.error('Search failed:', error)
-        setResults({ domains: [], categories: [], profiles: [] })
-      } finally {
-        setIsLoading(false)
-      }
+  const { data: fetchedDomains, isLoading: isFetchedDomainsLoading } = useQuery({
+    queryKey: ['globalSearch', 'domains', debouncedQuery],
+    queryFn: async () => {
+      if (debouncedQuery.length === 0) return { domains: [], nextPageParam: 0, hasNextPage: false }
+      const domains = await fetchDomains({
+        limit: 5,
+        pageParam: 1,
+        filters: emptyFilterState as any,
+        searchTerm: debouncedQuery,
+      })
+      return domains
     },
-    [categories]
-  )
+    enabled: debouncedQuery.length >= 3,
+  })
 
-  useEffect(() => {
-    handleSearch(debouncedQuery)
-  }, [debouncedQuery, handleSearch])
+  const displayedCategories = useMemo(() => {
+    if (debouncedQuery.length === 0) return []
+    return (
+      categories?.filter(
+        (category) =>
+          category.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          category.description.toLowerCase().includes(debouncedQuery.toLowerCase())
+      ) || [].slice(0, 5)
+    )
+  }, [categories, debouncedQuery])
+
+  const { data: fetchedProfiles, isLoading: isFetchedProfilesLoading } = useQuery({
+    queryKey: ['globalSearch', 'profiles', debouncedQuery],
+    queryFn: async () => {
+      if (debouncedQuery.length === 0) return []
+      const profiles = await searchProfiles({ search: debouncedQuery })
+      return profiles
+    },
+    enabled: debouncedQuery.length >= 3,
+  })
 
   const handleViewAllDomains = () => {
     dispatch(setMarketplaceSearch(query))
-    router.push('/marketplace')
+    router.push(`/marketplace?search=${query}`)
     handleClose()
   }
 
@@ -78,12 +88,14 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
     }
   }
 
+  const isLoading = isFetchedDomainsLoading || isFetchedProfilesLoading
+
   const isEmptyResults =
     !isLoading &&
     debouncedQuery.trim() &&
-    results.domains.length === 0 &&
-    results.categories.length === 0 &&
-    results.profiles.length === 0
+    fetchedDomains?.domains.length === 0 &&
+    displayedCategories.length === 0 &&
+    fetchedProfiles?.length === 0
 
   if (!isOpen) return null
 
@@ -134,41 +146,41 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
           {query.trim() && (
             <>
               {/* Names */}
-              {(isLoading || results.domains.length > 0) && (
+              {(isFetchedDomainsLoading || (fetchedDomains?.domains && fetchedDomains.domains.length > 0)) && (
                 <div className='p-lg flex flex-col gap-1'>
                   <div className='flex items-center'>
                     <h3 className='text-foreground px-3 text-2xl font-bold'>Names</h3>
                   </div>
                   <div className='flex flex-col'>
-                    {isLoading
+                    {isFetchedDomainsLoading
                       ? Array.from({ length: 5 }).map((_, index) => <NameLoadingRow key={index} />)
-                      : results.domains.map((domain) => (
-                        <Link
-                          href={`/${domain.name}`}
-                          key={domain.id}
-                          onClick={handleClose}
-                          className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-                        >
-                          <div className='flex w-full flex-row items-center gap-2'>
-                            <NameImage
-                              name={domain.name}
-                              tokenId={domain.token_id}
-                              expiryDate={domain.expiry_date}
-                              className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
-                            />
-                            <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
-                              <div className='text-foreground truncate font-semibold'>{domain.name}</div>
-                              {domain.clubs && domain.clubs.length > 0 && (
-                                <div className='text-md text-foreground/60 font-semibold'>
-                                  {domain.clubs
-                                    .map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS])
-                                    .join(', ')}
-                                </div>
-                              )}
+                      : fetchedDomains?.domains.map((domain) => (
+                          <Link
+                            href={`/${domain.name}`}
+                            key={domain.id}
+                            onClick={handleClose}
+                            className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
+                          >
+                            <div className='flex w-full flex-row items-center gap-2'>
+                              <NameImage
+                                name={domain.name}
+                                tokenId={domain.token_id}
+                                expiryDate={domain.expiry_date}
+                                className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
+                              />
+                              <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
+                                <div className='text-foreground truncate font-semibold'>{domain.name}</div>
+                                {domain.clubs && domain.clubs.length > 0 && (
+                                  <div className='text-md text-foreground/60 font-semibold'>
+                                    {domain.clubs
+                                      .map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS])
+                                      .join(', ')}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        ))}
                     <button
                       onClick={handleViewAllDomains}
                       className='text-primary hover:bg-primary/10 w-full cursor-pointer rounded-md p-3 text-left text-lg font-semibold transition-colors'
@@ -180,79 +192,79 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
               )}
 
               {/* Categories */}
-              {(isLoading || results.categories.length > 0) && (
+              {(isFetchedDomainsLoading || displayedCategories.length > 0) && (
                 <div className='p-lg border-primary/20 flex flex-col gap-1 border-t'>
                   <div className='flex items-center'>
                     <h3 className='text-foreground px-3 text-2xl font-bold'>Categories</h3>
                   </div>
                   <div className='flex flex-col'>
-                    {isLoading
+                    {isFetchedDomainsLoading
                       ? Array.from({ length: 3 }).map((_, index) => <CategoryLoadingRow key={index} />)
-                      : results.categories.map((category) => (
-                        <Link
-                          key={category.name}
-                          href={`/categories/${category.name}`}
-                          onClick={handleClose}
-                          className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-                        >
-                          <div className='flex flex-row items-center gap-3'>
-                            <Image
-                              src={CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].avatar}
-                              alt={`${category.name} avatar`}
-                              width={100}
-                              height={100}
-                              className='h-9 w-9 rounded-full object-cover'
-                            />
-                            <div className='flex flex-col gap-px'>
-                              <div className='text-foreground font-semibold'>
-                                {CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]}
-                              </div>
-                              <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
-                                {category.description}
+                      : displayedCategories.map((category) => (
+                          <Link
+                            key={category.name}
+                            href={`/categories/${category.name}`}
+                            onClick={handleClose}
+                            className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
+                          >
+                            <div className='flex flex-row items-center gap-3'>
+                              <Image
+                                src={CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].avatar}
+                                alt={`${category.name} avatar`}
+                                width={100}
+                                height={100}
+                                className='h-9 w-9 rounded-full object-cover'
+                              />
+                              <div className='flex flex-col gap-px'>
+                                <div className='text-foreground font-semibold'>
+                                  {CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]}
+                                </div>
+                                <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
+                                  {category.description}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className='text-md text-neutral font-semibold'>{category.member_count} names</div>
-                        </Link>
-                      ))}
+                            <div className='text-md text-neutral font-semibold'>{category.member_count} names</div>
+                          </Link>
+                        ))}
                   </div>
                 </div>
               )}
 
               {/* Profiles */}
-              {(isLoading || results.profiles.length > 0) && (
+              {(isFetchedProfilesLoading || (fetchedProfiles && fetchedProfiles.length > 0)) && (
                 <div className='p-lg border-primary/20 flex flex-col gap-1 border-t'>
                   <div className='flex items-center'>
                     <h3 className='text-foreground px-3 text-2xl font-bold'>Users</h3>
                   </div>
                   <div className='flex flex-col'>
-                    {isLoading
+                    {isFetchedProfilesLoading
                       ? Array.from({ length: 3 }).map((_, index) => <UserLoadingRow key={index} />)
-                      : results.profiles.map((profile) => (
-                        <Link
-                          prefetch={true}
-                          key={profile.name}
-                          href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
-                          onClick={handleClose}
-                          className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
-                        >
-                          <Avatar
-                            name={profile.name}
-                            style={{ width: '36px', height: '36px', borderRadius: '50%' }}
-                          />
-                          <div
-                            className='text-foreground flex flex-col gap-px truncate font-semibold'
-                            style={{ maxWidth: 'calc(100% - 48px)' }}
+                      : fetchedProfiles?.map((profile) => (
+                          <Link
+                            prefetch={true}
+                            key={profile.name}
+                            href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
+                            onClick={handleClose}
+                            className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
                           >
-                            <p className='max-w-full truncate text-lg'>{profile.name}</p>
-                            {profile.resolvedAddress?.id && (
-                              <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
-                                {profile.resolvedAddress?.id}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      ))}
+                            <Avatar
+                              name={profile.name}
+                              style={{ width: '36px', height: '36px', borderRadius: '50%' }}
+                            />
+                            <div
+                              className='text-foreground flex flex-col gap-px truncate font-semibold'
+                              style={{ maxWidth: 'calc(100% - 48px)' }}
+                            >
+                              <p className='max-w-full truncate text-lg'>{profile.name}</p>
+                              {profile.resolvedAddress?.id && (
+                                <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
+                                  {profile.resolvedAddress?.id}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
                   </div>
                 </div>
               )}

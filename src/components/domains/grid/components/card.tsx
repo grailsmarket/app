@@ -17,9 +17,10 @@ interface CardProps {
   domain: MarketplaceDomainType
   className?: string
   isFirstInRow?: boolean
+  watchlistId?: number | undefined
 }
 
-const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
+const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId }) => {
   const { address } = useAccount()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
@@ -94,6 +95,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow }) => {
             registrationStatus={registrationStatus}
             canAddToCart={canAddToCart}
             isFirstInRow={isFirstInRow}
+            watchlistId={watchlistId}
           />
         </div>
       </div>

@@ -10,6 +10,7 @@ import Cart from './cart'
 import Notifications from './notifications'
 import search from 'public/icons/search.svg'
 import Hamburger from './hamburger'
+import Watchlist from './watchlist'
 
 const Navigation = () => {
   return (
@@ -33,21 +34,24 @@ const Navigation = () => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 min-w-60' />
+            <Searchbar onSearch={() => {}} className='h-10 w-48' />
           </div>
           <Pages className='hidden md:flex' />
         </div>
         <div className='flex items-center justify-end gap-6'>
-          <Image
-            src={search}
-            alt='Search'
-            width={24}
-            height={24}
-            className='cursor-pointer transition-all hover:opacity-80 lg:hidden'
-          />
-          <Cart />
-          <Notifications />
-          <Hamburger />
+          <div className='flex items-center gap-4'>
+            <Image
+              src={search}
+              alt='Search'
+              width={24}
+              height={24}
+              className='cursor-pointer transition-all hover:opacity-80 lg:hidden'
+            />
+            <Cart />
+            <Notifications />
+            <Watchlist />
+            <Hamburger />
+          </div>
           <SignInButton />
         </div>
       </nav>

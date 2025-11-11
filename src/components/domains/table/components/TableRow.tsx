@@ -18,9 +18,10 @@ interface TableRowProps {
   domain: MarketplaceDomainType
   index: number
   displayedColumns: MarketplaceHeaderColumn[]
+  watchlistId?: number | undefined
 }
 
-const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) => {
+const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, watchlistId }) => {
   const { address } = useAccount()
 
   const domainListing = domain.listings[0]
@@ -68,6 +69,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns }) 
         index={index}
         columnCount={columnCount}
         canAddToCart={canAddToCart}
+        watchlistId={watchlistId}
       />
     ),
   }

@@ -159,8 +159,10 @@ import {
   toggleFilterOpen as toggleCategoryDomainsFilterOpen,
   clearFilters as clearCategoryDomainsFilters,
 } from '@/state/reducers/filters/categoryDomainsFilters'
+import { useSearchParams } from 'next/navigation'
 
 export function useFilterRouter(): FilterRouter<FilterContextType> {
+  const searchParams = useSearchParams()
   const { filterType, portfolioTab, profileTab } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
   const dispatch = useAppDispatch()
@@ -396,6 +398,11 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   useEffect(() => {
     if (actions) {
       dispatch(actions.clearFilters())
+
+      const defaultSearch = searchParams.get('search')
+      if (defaultSearch) {
+        dispatch(setMarketplaceSearch(defaultSearch))
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

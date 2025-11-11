@@ -1,10 +1,12 @@
-import { Address } from 'viem'
+import { Address, hexToBigInt, namehash } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { PortfolioFiltersState, PortfolioStatusFilterType } from '@/types/filters'
 import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
+import { nameHasEmoji } from '@/utils/nameCharacters'
+import { nameHasNumbers } from '@/utils/nameCharacters'
 
 interface FetchDomainsOptions {
   limit: number
@@ -66,6 +68,40 @@ export const fetchDomains = async ({
       pagination: PaginationType
     }>
     const domains = json.data.names || json.data.results
+
+    if (pageParam === 1) {
+      if (searchTerm.length >= 3) {
+        const name = searchTerm.replace('.eth', '').trim() + '.eth'
+        if (!domains.map((domain) => domain.name).includes(name)) {
+          const tokenId = hexToBigInt(namehash(name))
+          domains.unshift({
+            id: 0,
+            name,
+            token_id: tokenId.toString(),
+            expiry_date: null,
+            registration_date: null,
+            owner: null,
+            metadata: {},
+            has_numbers: nameHasNumbers(name),
+            has_emoji: nameHasEmoji(name),
+            listings: [],
+            clubs: [],
+            highest_offer_wei: null,
+            highest_offer_id: null,
+            highest_offer_currency: null,
+            last_sale_price_usd: null,
+            offer: null,
+            last_sale_price: null,
+            last_sale_currency: null,
+            last_sale_date: null,
+            view_count: 0,
+            watchers_count: 0,
+            downvotes: 0,
+            upvotes: 0,
+          })
+        }
+      }
+    }
 
     return {
       domains,

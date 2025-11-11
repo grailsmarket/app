@@ -28,8 +28,11 @@ export default function NameImage({
   const [isLoading, setIsLoading] = useState(true)
   const [displayFallback, setDisplayFallback] = useState(false)
 
+  // Namehash is used for wrapped names
   const nameHash = namehash(name)
+  // Labelhash is used for unwrapped names
   const labelHash = labelhash(name.replace('.eth', ''))
+
   const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''

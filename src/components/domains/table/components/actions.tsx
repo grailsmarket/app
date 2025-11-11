@@ -10,15 +10,17 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
+import Watchlist from '@/components/ui/watchlist'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
   index: number
   columnCount: number
   canAddToCart: boolean
+  watchlistId?: number | undefined
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) => {
+const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, index, watchlistId }) => {
   const dispatch = useAppDispatch()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
@@ -68,9 +70,23 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart }) 
   return (
     <div className={cn('flex flex-row justify-end opacity-100', width)}>
       <div className='flex items-center lg:gap-x-2'>
-        {/* <div className=''>
-          <Watchlist domain={domain} tooltipPosition={index === 0 ? 'bottom' : 'top'} />
-        </div> */}
+        {watchlistId && (
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            className='flex flex-row items-center gap-2'
+          >
+            <Watchlist
+              domain={domain}
+              showSettings={true}
+              tooltipPosition={index === 0 ? 'bottom' : 'top'}
+              dropdownPosition='left'
+              watchlistId={watchlistId}
+            />
+          </div>
+        )}
         {canAddToCart && (
           <button className={`cursor-pointer rounded-sm p-1.5`}>
             <CartIcon domain={domain} />

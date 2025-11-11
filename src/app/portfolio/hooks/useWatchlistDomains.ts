@@ -49,6 +49,7 @@ export const useWatchlistDomains = () => {
 
       const domains: MarketplaceDomainType[] = response.watchlist.map((domain) => ({
         id: domain.ensNameId,
+        watchlist_id: domain.id,
         name: domain.ensName,
         token_id: domain.nameData.tokenId,
         expiry_date: domain.nameData.expiryDate,

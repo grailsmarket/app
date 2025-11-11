@@ -15,13 +15,19 @@ const Home = () => {
         />
         <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
       </div> */}
-      <div className='md:pt-homeDesktop pb-lg relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col gap-4 pt-36'>
-        <div className='mb-4 flex flex-col items-start justify-start gap-4 sm:mb-20'>
+      <div className='md:pt-homeDesktop pb-lg z-10 mx-auto flex h-full w-full flex-col items-center gap-4 pt-36'>
+        <div className='mb-4 flex w-full max-w-7xl flex-col items-start justify-start gap-4 sm:mb-20'>
           <h1 className='font-sedan-sc text-6xl sm:text-9xl'>Your ENS Market</h1>
           <HeroSearch />
         </div>
-        <RecentContainer />
-        <LiveActivity />
+        <div className='2xl:max-w-domain-panel mx-auto flex w-full max-w-7xl flex-col gap-4 2xl:flex-row-reverse'>
+          <div className='w-full 2xl:w-2/5'>
+            <RecentContainer />
+          </div>
+          <div className='w-full 2xl:w-3/5'>
+            <LiveActivity />
+          </div>
+        </div>
       </div>
     </main>
   )

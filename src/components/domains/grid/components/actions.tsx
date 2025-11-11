@@ -9,15 +9,17 @@ import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
+import Watchlist from '@/components/ui/watchlist'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
   registrationStatus: RegistrationStatus
   canAddToCart: boolean
   isFirstInRow?: boolean
+  watchlistId?: number | undefined
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToCart }) => {
+const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToCart, watchlistId }) => {
   const dispatch = useAppDispatch()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
@@ -121,7 +123,11 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
         </button>
       )}
       <div className='flex items-center lg:gap-x-2'>
-        {/* <Watchlist domain={domain} tooltipAlign={isFirstInRow ? 'left' : 'right'} /> */}
+        {watchlistId && (
+          <div className=''>
+            <Watchlist domain={domain} tooltipPosition='top' dropdownPosition='left' watchlistId={watchlistId} />
+          </div>
+        )}
         {canAddToCart && (
           <button className='cursor-pointer rounded-sm p-1.5' disabled={!canAddToCart}>
             <CartIcon domain={domain} className='p-0' />

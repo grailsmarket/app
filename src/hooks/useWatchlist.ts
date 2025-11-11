@@ -17,7 +17,7 @@ import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
 
-const useWatchlist = (name: string, tokenId: string) => {
+const useWatchlist = (name: string, tokenId: string, watchlistId: number | undefined) => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
@@ -109,7 +109,7 @@ const useWatchlist = (name: string, tokenId: string) => {
       }
       return result
     },
-    enabled: !!name && !!userAddress && authStatus === 'authenticated',
+    enabled: !!name && !!userAddress && authStatus === 'authenticated' && !watchlistId,
   })
 
   useEffect(() => {
@@ -124,6 +124,10 @@ const useWatchlist = (name: string, tokenId: string) => {
   }, [watchlistItem])
 
   const isWatching = useMemo(() => {
+    if (watchlistId) {
+      return true
+    }
+
     if (pendingWatchlistTokenIds?.includes(tokenId) || removeFromWatchlistMutation.isPending) {
       if (watchlist.some((item) => item.ensName === name) || removeFromWatchlistMutation.isPending) {
         return false
@@ -133,9 +137,19 @@ const useWatchlist = (name: string, tokenId: string) => {
     }
 
     return watchlist?.some((item) => item.ensName === name)
-  }, [watchlist, name, tokenId, pendingWatchlistTokenIds, removeFromWatchlistMutation.isPending])
+  }, [watchlist, name, tokenId, pendingWatchlistTokenIds, removeFromWatchlistMutation.isPending, watchlistId])
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
+    if (watchlistId) {
+      removeFromWatchlistMutation.mutate(watchlistId)
+      dispatch(removeUserWatchlistDomain(watchlistId))
+      // queryClient.setQueryData(['portfolio', 'watchlist'], (old: any) =>
+      //   old.filter((item: any) => item.watchlist_id !== watchlistId)
+      // )
+      queryClient.refetchQueries({ queryKey: ['portfolio', 'watchlist'] })
+      return
+    }
+
     dispatch(addUserPendingWatchlistDomain(domain.token_id))
     if (
       !(

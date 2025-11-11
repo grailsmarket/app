@@ -84,6 +84,7 @@ const DomainPanel = () => {
         }}
         displayedDetails={displayedDetails}
         scrollEnabled={isAtBottom}
+        showWatchlist={selectedTab.value === 'watchlist'}
       />
     </div>
   )

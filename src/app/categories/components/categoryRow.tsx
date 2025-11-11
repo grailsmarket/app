@@ -40,8 +40,8 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
           fontSize='text-xl font-semibold'
         />
       </div>
-      <SecondaryButton className='w-32' onClick={() => router.push(`/categories/${category.name}`)}>
-        View Names
+      <SecondaryButton className='w-20' onClick={() => router.push(`/categories/${category.name}`)}>
+        View
       </SecondaryButton>
     </Link>
   )

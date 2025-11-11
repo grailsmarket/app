@@ -28,6 +28,7 @@ interface DomainsProps {
   forceViewType?: 'grid' | 'list'
   paddingBottom?: string
   scrollEnabled?: boolean
+  showWatchlist?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -45,6 +46,7 @@ const Domains: React.FC<DomainsProps> = ({
   forceViewType,
   paddingBottom,
   scrollEnabled = true,
+  showWatchlist = false,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const viewTypeToUse = forceViewType || viewType
@@ -130,7 +132,15 @@ const Domains: React.FC<DomainsProps> = ({
               scrollEnabled={scrollEnabled}
               renderItem={(item, index, columnsCount) => {
                 if (!item) return <LoadingCard key={index} />
-                return <Card key={item.token_id} domain={item} isFirstInRow={index % columnsCount === 0} />
+                return (
+                  <Card
+                    key={item.token_id}
+                    domain={item}
+                    isFirstInRow={index % columnsCount === 0}
+                    // @ts-expect-error - watchlist_id is not defined in the type
+                    watchlistId={showWatchlist ? item.watchlist_id : undefined}
+                  />
+                )
               }}
             />
           ) : (
@@ -153,7 +163,16 @@ const Domains: React.FC<DomainsProps> = ({
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )
-                return <TableRow key={item.token_id} domain={item} index={index} displayedColumns={displayedColumns} />
+                return (
+                  <TableRow
+                    key={item.token_id}
+                    domain={item}
+                    index={index}
+                    displayedColumns={displayedColumns}
+                    // @ts-expect-error - watchlist_id is not defined in the type
+                    watchlistId={showWatchlist ? item.watchlist_id : undefined}
+                  />
+                )
               }}
             />
           )

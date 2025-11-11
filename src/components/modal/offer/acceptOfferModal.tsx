@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
-import { SEAPORT_ADDRESS, ENS_REGISTRAR_ADDRESS, ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
+import {
+  SEAPORT_ADDRESS,
+  ENS_REGISTRAR_ADDRESS,
+  ENS_NAME_WRAPPER_ADDRESS,
+  OPENSEA_CONDUIT_ADDRESS,
+  OPENSEA_CONDUIT_KEY,
+} from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
 import { DomainOfferType } from '@/types/domains'
@@ -175,7 +181,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       // Determine which NFT contract to approve based on if the name is wrapped
       const isWrapped = domain.isWrapped
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-      const conduitAddress = offer.order_data.protocol_data.conduitAddress
+      const conduitKey = offer.order_data.protocol_data.conduitKey
+      const conduitAddress =
+        conduitKey === OPENSEA_CONDUIT_KEY
+          ? OPENSEA_CONDUIT_ADDRESS
+          : offer.order_data.protocol_data.conduitAddress || SEAPORT_ADDRESS
 
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({

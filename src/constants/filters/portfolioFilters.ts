@@ -26,6 +26,8 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'price_asc',
   'offer_asc',
   'offer_desc',
+  'expiry_date_asc',
+  'expiry_date_desc',
 ]
 
 export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
@@ -41,6 +43,8 @@ export const ALL_SORT_FILTERS = [
   'price_asc',
   'offer_asc',
   'offer_desc',
+  'expiry_date_asc',
+  'expiry_date_desc',
 ] as const
 
 export const MY_DOMAINS_CATEGORIES = [

@@ -36,6 +36,8 @@ export const MARKETPLACE_SORT_FILTERS = [
   'price_asc',
   'offer_asc',
   'offer_desc',
+  'expiry_date_asc',
+  'expiry_date_desc',
 ]
 
 export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Has Offers'] as const
@@ -55,6 +57,8 @@ export const ALL_SORT_FILTERS = [
   'last_sale_price_desc',
   'last_sale_date_asc',
   'last_sale_date_desc',
+  'expiry_date_asc',
+  'expiry_date_desc',
 ] as const
 
 export const SORT_FILTER_LABELS = {
@@ -68,4 +72,6 @@ export const SORT_FILTER_LABELS = {
   price_asc: 'Price (Low to High)',
   offer_asc: 'Offer (Low to High)',
   offer_desc: 'Offer (High to Low)',
+  expiry_date_asc: 'Expiration Date (Soonest First)',
+  expiry_date_desc: 'Expiration Date (Latest First)',
 }

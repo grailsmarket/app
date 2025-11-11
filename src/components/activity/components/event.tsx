@@ -2,7 +2,6 @@ import React from 'react'
 import { ProfileActivityEventType } from '@/types/profile'
 import Image from 'next/image'
 import Mint from 'public/icons/mint.svg'
-import Burn from 'public/icons/burn.svg'
 import Transfer from 'public/icons/transfer.svg'
 import Cancelled from 'public/icons/cancelled.svg'
 import OfferMade from 'public/icons/bid.svg'
@@ -22,7 +21,6 @@ const Event: React.FC<EventProps> = ({ event }) => {
     offer_accepted: Transfer,
     cancelled: Cancelled,
     mint: Mint,
-    burn: Burn,
     sent: Transfer,
     received: Transfer,
     registration: Mint,
@@ -38,7 +36,6 @@ const Event: React.FC<EventProps> = ({ event }) => {
     offer_accepted: 'Offer Accepted',
     cancelled: 'Cancelled',
     mint: 'Minted',
-    burn: 'Burned',
     sent: 'Sent',
     received: 'Received',
   }[event]

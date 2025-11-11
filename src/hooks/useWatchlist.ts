@@ -16,10 +16,12 @@ import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
+import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 
 const useWatchlist = (name: string, tokenId: string, watchlistId: number | undefined) => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
+  const filters = useAppSelector(selectMyDomainsFilters)
   const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
   const { userAddress, authStatus } = useUserContext()
   const [hasWatchlistedBefore, setHasWatchlistedBefore] = useState<boolean | undefined>(undefined)
@@ -141,12 +143,39 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
     if (watchlistId) {
+      // This logic is here specifically for the watchlist tab in portfolio
+      // It removes the watchlist item from the watchlist list because we fetch those directly from the API
+      // This way we can avoid refetches, but still reflect the real state of the watchlist
       removeFromWatchlistMutation.mutate(watchlistId)
       dispatch(removeUserWatchlistDomain(watchlistId))
-      // queryClient.setQueryData(['portfolio', 'watchlist'], (old: any) =>
-      //   old.filter((item: any) => item.watchlist_id !== watchlistId)
-      // )
-      queryClient.refetchQueries({ queryKey: ['portfolio', 'watchlist'] })
+      queryClient.setQueryData(
+        [
+          'portfolio',
+          'watchlist',
+          userAddress,
+          filters.search,
+          filters.length,
+          filters.priceRange,
+          filters.categories,
+          filters.type,
+          filters.status,
+          filters.sort,
+        ],
+        (old: any) => {
+          const newData = old.pages.map((page: any) => {
+            return {
+              ...page,
+              domains: page.domains.filter((item: any) => item.watchlist_id !== watchlistId),
+            }
+          })
+
+          return {
+            ...old,
+            pages: newData,
+          }
+        }
+      )
+      // queryClient.refetchQueries({ queryKey: ['portfolio', 'watchlist'] })
       return
     }
 

@@ -1,14 +1,17 @@
 import { API_URL } from '@/constants/api'
+import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { ActivityType } from '@/types/profile'
 
 interface FetchAllActivityOptions {
   limit: number
   pageParam: number
+  eventTypes: ActivityTypeFilterType[]
 }
 
-export const fetchAllActivity = async ({ limit, pageParam }: FetchAllActivityOptions) => {
-  const response = await fetch(`${API_URL}/activity?limit=${limit}&page=${pageParam}`)
+export const fetchAllActivity = async ({ limit, pageParam, eventTypes }: FetchAllActivityOptions) => {
+  const typeFilter = eventTypes.join('&event_type=')
+  const response = await fetch(`${API_URL}/activity?limit=${limit}&page=${pageParam}&event_type=${typeFilter}`)
   const data = (await response.json()) as APIResponseType<{
     results: ActivityType[]
     pagination: PaginationType

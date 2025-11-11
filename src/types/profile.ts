@@ -8,7 +8,6 @@ export type ProfileActivityEventType =
   | 'offer_accepted'
   | 'cancelled'
   | 'mint'
-  | 'burn'
   | 'sent'
   | 'received'
 

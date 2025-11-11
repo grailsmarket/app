@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { Suspense } from 'react'
 import { FilterProvider } from '@/context/filters'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
@@ -15,22 +15,24 @@ const MainPanel: React.FC<Props> = ({ category }) => {
   const { width: windowWidth } = useWindowSize()
 
   return (
-    <FilterProvider filterType='category'>
-      <div className='p-lg z-10 w-full'>
-        <div className='p-lg max-w-domain-panel bg-background border-primary relative z-10 mx-auto flex gap-4 rounded-lg border-2'>
-          <FilterPanel />
-          <div
-            className='pt-lg flex flex-col gap-4'
-            style={{
-              width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
-            }}
-          >
-            <DomainPanel category={category} />
+    <Suspense>
+      <FilterProvider filterType='category'>
+        <div className='p-lg z-10 w-full'>
+          <div className='p-lg max-w-domain-panel bg-background border-primary relative z-10 mx-auto flex gap-4 rounded-lg border-2'>
+            <FilterPanel />
+            <div
+              className='pt-lg flex flex-col gap-4'
+              style={{
+                width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
+              }}
+            >
+              <DomainPanel category={category} />
+            </div>
+            <ActionButtons />
           </div>
-          <ActionButtons />
         </div>
-      </div>
-    </FilterProvider>
+      </FilterProvider>
+    </Suspense>
   )
 }
 

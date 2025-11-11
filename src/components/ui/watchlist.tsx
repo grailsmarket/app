@@ -114,7 +114,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
           className='relative ml-1 flex flex-row items-center gap-2'
         >
           <button
-            className='bg-secondary hover:bg-tertiary flex flex-row items-center gap-1 rounded-md p-1.5'
+            className='bg-secondary hover:bg-tertiary flex cursor-pointer flex-row items-center gap-1 rounded-md p-1.5'
             onClick={() => setSettingsOpen(!settingsOpen)}
           >
             <Image src={BellIcon} alt='Settings' width={22} height={22} className='h-5 w-5 opacity-100' />

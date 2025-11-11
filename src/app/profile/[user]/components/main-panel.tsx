@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import { FilterProvider } from '@/context/filters'
 import { Address } from 'viem'
 import FilterPanel from '@/components/filters'
@@ -26,29 +26,31 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   })
 
   return (
-    <FilterProvider filterType='profile' profileTab={profileTab}>
-      <div className='max-w-domain-panel z-0 mx-auto'>
-        <div className='z-10'>
-          <div
-            style={{ height: 'calc(100vh - 110px)' }}
-            className='p-lg bg-background border-primary relative flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
-          >
-            <FilterPanel />
+    <Suspense>
+      <FilterProvider filterType='profile' profileTab={profileTab}>
+        <div className='max-w-domain-panel z-0 mx-auto'>
+          <div className='z-10'>
             <div
-              className='md:pt-lg flex flex-col gap-4'
-              style={{
-                width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
-              }}
+              style={{ height: 'calc(100vh - 110px)' }}
+              className='p-lg bg-background border-primary relative flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
             >
-              <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
-              {profileTab === 'domains' && <DomainPanel user={user} />}
-              {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
+              <FilterPanel />
+              <div
+                className='md:pt-lg flex flex-col gap-4'
+                style={{
+                  width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
+                }}
+              >
+                <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
+                {profileTab === 'domains' && <DomainPanel user={user} />}
+                {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
+              </div>
+              <ActionButtons />
             </div>
-            <ActionButtons />
           </div>
         </div>
-      </div>
-    </FilterProvider>
+      </FilterProvider>
+    </Suspense>
   )
 }
 

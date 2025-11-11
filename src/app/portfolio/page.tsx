@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import FilterPanel from '@/components/filters'
 // import heroBackground from 'public/art/wallpapper-left.svg'
 // import heroBackgroundRight from 'public/art/wallpapper-right.svg'
@@ -23,9 +23,10 @@ const Portfolio = () => {
   const showOfferPanel = selectedTab.value === 'received_offers' || selectedTab.value === 'my_offers'
 
   return (
-    <FilterProvider filterType='portfolio' portfolioTab={selectedTab.value}>
-      <main className='relative md:px-4'>
-        {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
+    <Suspense>
+      <FilterProvider filterType='portfolio' portfolioTab={selectedTab.value}>
+        <main className='relative md:px-4'>
+          {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
           <Image
             src={heroBackground}
             alt='hero-background'
@@ -35,23 +36,24 @@ const Portfolio = () => {
           />
           <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
         </div> */}
-        <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-24'>
-          <div className='px-lg max-w-domain-panel lg:p-lg bg-background border-primary relative mx-auto flex h-[calc(100vh-96px)] w-full flex-row gap-4 overflow-hidden rounded-t-sm border-t-2 pb-0! md:h-[90vh] md:rounded-lg md:border-2'>
-            <FilterPanel />
-            {mounted ? (
-              <>
-                {showDomainPanel && <DomainPanel />}
-                {showOfferPanel && <OfferPanel />}
-              </>
-            ) : (
-              /* Render default panel during SSR to avoid hydration mismatch */
-              <DomainPanel />
-            )}
-            <ActionButtons />
+          <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-24'>
+            <div className='px-lg max-w-domain-panel lg:p-lg bg-background border-primary relative mx-auto flex h-[calc(100vh-96px)] w-full flex-row gap-4 overflow-hidden rounded-t-sm border-t-2 pb-0! md:h-[90vh] md:rounded-lg md:border-2'>
+              <FilterPanel />
+              {mounted ? (
+                <>
+                  {showDomainPanel && <DomainPanel />}
+                  {showOfferPanel && <OfferPanel />}
+                </>
+              ) : (
+                /* Render default panel during SSR to avoid hydration mismatch */
+                <DomainPanel />
+              )}
+              <ActionButtons />
+            </div>
           </div>
-        </div>
-      </main>
-    </FilterProvider>
+        </main>
+      </FilterProvider>
+    </Suspense>
   )
 }
 

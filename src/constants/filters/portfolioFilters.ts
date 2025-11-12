@@ -26,6 +26,8 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'price_asc',
   'offer_asc',
   'offer_desc',
+  'expiry_date_asc',
+  'expiry_date_desc',
 ]
 
 export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
@@ -41,6 +43,8 @@ export const ALL_SORT_FILTERS = [
   'price_asc',
   'offer_asc',
   'offer_desc',
+  'expiry_date_asc',
+  'expiry_date_desc',
 ] as const
 
 export const MY_DOMAINS_CATEGORIES = [
@@ -65,7 +69,8 @@ export const PROFILE_ACTIVITY_FILTER_LABELS = [
   'Bought',
   'Sold',
   'Offer Accepted',
-  'Cancelled',
+  'Offer Cancelled',
+  'Listing Cancelled',
   'Minted',
   'Burned',
   'Sent',
@@ -79,7 +84,8 @@ export const PROFILE_ACTIVITY_FILTERS = [
   { label: 'Sold', value: 'sold' },
   { label: 'Offer', value: 'offer_made' },
   { label: 'Offer Accepted', value: 'offer_accepted' },
-  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Offer Cancelled', value: 'offer_cancelled' },
+  { label: 'Listing Cancelled', value: 'listing_cancelled' },
   { label: 'Minted', value: 'mint' },
   { label: 'Sent', value: 'sent' },
   { label: 'Received', value: 'received' },

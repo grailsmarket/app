@@ -76,6 +76,15 @@ const Activity: React.FC<ActivityProps> = ({
   const isClient = useIsClient()
   if (!isClient) return null
 
+  const basecolWidthReduction =
+    (displayedColumns.includes('event') ? 10 : 0) +
+    (displayedColumns.includes('name') || displayedColumns.includes('user') ? 10 : 0)
+  const baseColWidth = (100 - basecolWidthReduction) / displayedColumns.length
+  const columnWidth = `${baseColWidth}%`
+  const nameColumnWidth = `${baseColWidth + 10}%`
+  const userColumnWidth = displayedColumns.includes('name') ? `${baseColWidth}%` : `${baseColWidth + 10}%`
+  const eventColumnWidth = `${baseColWidth + 10}%`
+
   return (
     <div
       className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
@@ -94,10 +103,12 @@ const Activity: React.FC<ActivityProps> = ({
                 style={{
                   width:
                     header === 'name'
-                      ? `${(100 - 20) / displayedColumns.length + 10}%`
+                      ? nameColumnWidth
                       : header === 'event'
-                        ? `${(100 - 20) / displayedColumns.length + 10}%`
-                        : `${(100 - 20) / displayedColumns.length}%`,
+                        ? eventColumnWidth
+                        : header === 'user'
+                          ? userColumnWidth
+                          : columnWidth,
                 }}
               >
                 <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium capitalize transition-colors'>

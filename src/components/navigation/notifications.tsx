@@ -38,7 +38,7 @@ const Notifications = () => {
   }
 
   return (
-    <button onClick={handleClick} className='hover:bg-primary/10 relative rounded-md p-2 transition-colors'>
+    <button onClick={handleClick} className='hover:bg-primary/10 relative rounded-md p-1 transition-colors'>
       <Image src={notifications} alt='notifications' width={24} height={24} />
       {unreadCount > 0 && (
         <div

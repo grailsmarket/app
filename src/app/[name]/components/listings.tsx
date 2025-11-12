@@ -39,7 +39,7 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
   }
 
   return (
-    <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
+    <div className='p-lg lg:p-xl sm:border-primary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Listings</h3>
         {isMyDomain && (
@@ -53,23 +53,26 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
       ) : (
         displayedListings.map((listing) => (
           <div key={listing.id} className='flex flex-row items-center justify-between gap-2'>
-            <div className='flex flex-row items-center gap-4'>
+            <div className='flex flex-row items-center gap-2 sm:gap-4'>
               <Image
                 src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
                 width={32}
                 height={32}
                 alt={listing.source}
+                className='h-auto w-7 sm:w-8'
               />
-              <div className='flex flex-row items-center gap-2'>
-                <Price
-                  price={listing.price}
-                  currencyAddress={listing.currency_address}
-                  iconSize='24px'
-                  fontSize='text-2xl pt-[3px] font-semibold'
-                />
+              <div className='flex flex-col gap-1'>
+                <div className='flex flex-row items-center gap-2'>
+                  <Price
+                    price={listing.price}
+                    currencyAddress={listing.currency_address}
+                    iconSize='22px'
+                    fontSize='text-2xl sm:text-2xl pt-[3px] font-semibold'
+                  />
+                </div>
+                <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
               </div>
             </div>
-            <div>{formatExpiryDate(listing.expires_at)}</div>
             <ActionButtons listing={listing} isMyDomain={isMyDomain} domain={domain} />
           </div>
         ))

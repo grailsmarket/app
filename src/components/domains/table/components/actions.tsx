@@ -120,8 +120,8 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
   }
 
   return (
-    <div className={cn('flex flex-row justify-end opacity-100', width)}>
-      <div className='flex items-center lg:gap-x-2'>
+    <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
+      <div className='flex h-7 items-center gap-1'>
         {watchlistId && (
           <div
             onClick={(e) => {

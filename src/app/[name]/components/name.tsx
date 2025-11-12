@@ -22,12 +22,12 @@ const NamePage: React.FC<Props> = ({ name }) => {
   const isRegistered = registrationStatus === REGISTERED
 
   return (
-    <div className='dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-20 pb-4'>
-      <div className='px-md flex w-full flex-row justify-between'>
+    <div className='dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-[90px] sm:pb-4'>
+      <div className='px-lg sm:px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
-      <div className='flex w-full flex-col gap-4 lg:flex-row'>
-        <div className='border-primary bg-secondary flex h-fit flex-col gap-4 overflow-hidden rounded-lg border-2 xl:w-2/5'>
+      <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
+        <div className='sm:border-primary bg-secondary flex h-fit flex-col gap-4 overflow-hidden sm:rounded-lg sm:border-2 lg:w-1/2 xl:w-2/5'>
           <NameDetails
             name={name}
             nameDetails={nameDetails}
@@ -35,7 +35,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             registrationStatus={registrationStatus}
           />
         </div>
-        <div className='flex w-full flex-col gap-4 xl:w-3/5'>
+        <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-1/2 xl:w-3/5'>
           {isRegistered ? (
             <>
               <Listings

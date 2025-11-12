@@ -1,8 +1,11 @@
+'use client'
+
 import Watchlist from '@/components/ui/watchlist'
 import { MarketplaceDomainType } from '@/types/domains'
 import Image from 'next/image'
-import React from 'react'
+import React, { useMemo } from 'react'
 import ViewIcon from 'public/icons/view.svg'
+import { useWindowSize } from 'ethereum-identity-kit'
 // import UpvoteIcon from 'public/icons/upvote.svg'
 // import DownvoteIcon from 'public/icons/downvote.svg'
 
@@ -11,9 +14,13 @@ interface ActionsProps {
 }
 
 const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
+  const { width } = useWindowSize()
+
+  const dropdownPosition = useMemo(() => (width && width < 640 ? 'left' : 'right'), [width])
+
   return (
     <div className='flex w-full flex-row justify-between gap-2'>
-      <div className='flex flex-row gap-4'>
+      <div className='flex w-full flex-row justify-between gap-4 sm:justify-start md:w-fit'>
         <div className='flex flex-row items-center gap-2'>
           <Image src={ViewIcon} alt='View' width={34} height={34} className='h-7 w-7 opacity-100' />
           <p>{nameDetails?.view_count}</p>
@@ -26,8 +33,8 @@ const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
               tooltipPosition='bottom'
               iconSize={36}
               iconClassName='w-8 h-8 opacity-100'
-              tooltipAlign='left'
               showSettings={true}
+              dropdownPosition={dropdownPosition}
             />
           )}
         </div>

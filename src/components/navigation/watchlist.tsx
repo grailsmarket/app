@@ -21,7 +21,7 @@ const Watchlist = () => {
 
   return (
     <button onClick={handleClick} className='cursor-pointer transition-all hover:opacity-80'>
-      <Image src={watchlist} alt='Watchlist' width={32} height={32} />
+      <Image src={watchlist} alt='Watchlist' width={30} height={30} />
     </button>
   )
 }

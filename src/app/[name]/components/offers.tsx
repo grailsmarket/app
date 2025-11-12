@@ -46,7 +46,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   }
 
   return (
-    <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
+    <div className='p-lg lg:p-xl sm:border-primary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Offers</h3>
         {!isMyDomain && <PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton>}
@@ -58,27 +58,27 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
           .sort((a, b) => Number(b.offer_amount_wei) - Number(a.offer_amount_wei))
           .map((offer) => (
             <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
-              <div className='flex flex-row items-center gap-4'>
+              <div className='flex flex-row items-center gap-2 sm:gap-4'>
                 <div className='flex flex-row items-center gap-2'>
                   <Image
                     src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
                     width={32}
                     height={32}
                     alt={offer.source}
-                  />
-                  {/* <p>{SOURCE_LABELS[offer.source as keyof typeof SOURCE_LABELS]}</p> */}
-                </div>
-                <div className='flex flex-row items-center gap-2'>
-                  <Price
-                    price={offer.offer_amount_wei}
-                    currencyAddress={offer.currency_address}
-                    fontSize='text-2xl font-semibold'
-                    iconSize='24px'
+                    className='h-auto min-w-7 sm:w-8'
                   />
                 </div>
-              </div>
-              <div className='flex flex-row items-center gap-2'>
-                <p className='break-words'>{formatExpiryDate(offer.expires_at)}</p>
+                <div className='flex flex-col gap-1'>
+                  <div className='flex flex-row items-center gap-2'>
+                    <Price
+                      price={offer.offer_amount_wei}
+                      currencyAddress={offer.currency_address}
+                      fontSize='text-2xl font-semibold'
+                      iconSize='24px'
+                    />
+                  </div>
+                  <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
+                </div>
               </div>
               <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
             </div>
@@ -90,7 +90,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
         </div>
       )}
       {showViewAllButton && (
-        <button onClick={() => setViewAll(!viewAll)} className='text-light-600 text-sm'>
+        <button onClick={() => setViewAll(!viewAll)} className='text-primary text-md'>
           {viewAll ? 'View Less' : 'View All'}
         </button>
       )}
@@ -132,7 +132,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
   if (isMyDomain) {
     return (
       <div className='flex flex-row items-center gap-2'>
-        <User address={offer.buyer_address} />
+        <User address={offer.buyer_address} className='xs:max-w-full max-w-32' />
         <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
       </div>
     )

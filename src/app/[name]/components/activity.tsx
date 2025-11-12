@@ -19,25 +19,27 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
   return (
     <div
       className={cn(
-        'border-primary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 rounded-lg border-2 lg:gap-4',
+        'sm:border-primary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4',
         isActivityEmpty && 'pb-6'
       )}
     >
-      <h2 className='px-lg lg:px-xl font-sedan-sc text-3xl'>Activity</h2>
-      <Activity
-        maxHeight={width && width < 1024 ? '100%' : '520px'}
-        paddingBottom='0px'
-        activity={activity}
-        loadingRowCount={20}
-        noResults={isActivityEmpty}
-        noResultsLabel='No activity found for this name.'
-        isLoading={activityLoading}
-        hasMoreActivity={hasMoreActivity}
-        fetchMoreActivity={fetchMoreActivity}
-        showHeaders={true}
-        columns={['event', 'price', 'time', 'user']}
-        scrollEnabled={isAtBottom}
-      />
+      <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
+      <div className='px-md w-full sm:px-0'>
+        <Activity
+          maxHeight={width && width < 1024 ? '600px' : '520px'}
+          paddingBottom='0px'
+          activity={activity}
+          loadingRowCount={20}
+          noResults={isActivityEmpty}
+          noResultsLabel='No activity found for this name.'
+          isLoading={activityLoading}
+          hasMoreActivity={hasMoreActivity}
+          fetchMoreActivity={fetchMoreActivity}
+          showHeaders={true}
+          columns={['event', 'price', 'time', 'user']}
+          scrollEnabled={isAtBottom}
+        />
+      </div>
     </div>
   )
 }

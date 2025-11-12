@@ -38,7 +38,7 @@ const Connected = () => {
           {profileIsLoading ? (
             <p>Loading...</p>
           ) : (
-            <p className='max-w-[160px] truncate text-xl font-semibold text-nowrap overflow-ellipsis'>
+            <p className='max-w-[150px] truncate text-xl font-semibold text-nowrap overflow-ellipsis'>
               {ensProfile?.name || truncateAddress(userAddress!)}
             </p>
           )}
@@ -47,7 +47,7 @@ const Connected = () => {
       </button>
       <div
         className={cn(
-          'bg-secondary p-lg absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm font-semibold shadow-md sm:w-full sm:items-start',
+          'bg-secondary p-lg border-tertiary absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border font-semibold shadow-sm sm:w-full sm:items-start',
           walletDropdownOpen && 'flex'
         )}
       >

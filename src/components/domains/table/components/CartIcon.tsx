@@ -25,7 +25,7 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder 
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-[4px] p-1.5 transition-all',
+        'flex min-h-7 min-w-7 items-center justify-center rounded-[4px] transition-all sm:p-1.5',
         showInCart ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
         hasBorder && 'border-foreground/50 hover:border-foreground/80 rounded-sm border-2',
         hasBorder && showInCart && 'border-primary hover:border-primary',
@@ -43,7 +43,7 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder 
       <Image
         src={showInCart ? inCart : addToCart}
         alt='Add to cart'
-        style={size ? { width: size, height: size } : {}}
+        style={size ? { width: size, height: size, minWidth: size, minHeight: size } : {}}
       />
     </div>
   )

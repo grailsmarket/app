@@ -83,7 +83,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
         align={tooltipAlign || 'right'}
         showOnMobile
       >
-        <div className='flex flex-row items-center gap-2'>
+        <div className='flex min-w-6 flex-row items-center gap-2'>
           <button
             className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
             onClick={(e) => {

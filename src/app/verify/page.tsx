@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Verify from './verify'
 
 export const metadata = {
@@ -18,7 +19,9 @@ const UserPage = () => {
       className='px-lg flex min-h-screen w-full flex-col items-center justify-center gap-4 pt-20 md:pt-24'
       style={{ minHeight: 'calc(100vh - 360px)' }}
     >
-      <Verify />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Verify />
+      </Suspense>
     </main>
   )
 }

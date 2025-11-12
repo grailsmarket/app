@@ -6,7 +6,6 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { persistor } from '@/state'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import {
   selectBulkRenewalModal,
   setBulkRenewalModalCanAddDomains,

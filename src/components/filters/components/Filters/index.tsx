@@ -1,4 +1,4 @@
-import TypeFilter from '../TypeFilter'
+// import TypeFilter from '../TypeFilter'
 import StatusFilter from '../StatusFilter'
 import LengthFilter from '../LengthFilter'
 import CategoryFilter from '../CategoryFilter'
@@ -39,7 +39,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       >
         <SortFilter />
         <StatusFilter />
-        <TypeFilter />
+        {/* <TypeFilter /> */}
         <LengthFilter />
         <PriceRangeFilter />
         {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useChainId, useChains, useSwitchChain, useWalletClient } from 'wagmi'
-import { mainnet } from 'viem/chains'
 
 /**
  * useChain hook - keeps track of the current chain id and switching between chains
@@ -17,7 +16,7 @@ export const useChain = () => {
   const getCurrentChain = useCallback(async () => {
     if (!walletClient) return
 
-    const chainId = await walletClient.getChainId()
+    const chainId = walletClient.chain.id
     setCurrentChainId(chainId)
   }, [walletClient])
 
@@ -25,34 +24,34 @@ export const useChain = () => {
     getCurrentChain()
   }, [getCurrentChain])
 
-  // Auto-switch to mainnet when wallet is first connected
-  useEffect(() => {
-    if (walletClient && walletClient.chain.id !== mainnet.id) {
-      switchChain(
-        { chainId: mainnet.id },
-        {
-          onSuccess: () => {
-            setCurrentChainId(mainnet.id)
-          },
-        }
-      )
-    }
-    // if (walletClient && !hasAutoSwitched && currentChainId !== mainnet.id) {
-    //   switchChain(
-    //     { chainId: mainnet.id },
-    //     {
-    //       onSuccess: () => {
-    //         setCurrentChainId(mainnet.id)
-    //         setHasAutoSwitched(true)
-    //       },
-    //       onError: () => {
-    //         // If auto-switch fails, still mark as attempted to avoid infinite loops
-    //         setHasAutoSwitched(true)
-    //       }
-    //     }
-    //   )
-    // }
-  }, [walletClient, currentChainId, switchChain])
+  // // Auto-switch to mainnet when wallet is first connected
+  // useEffect(() => {
+  //   if (walletClient && walletClient.chain.id !== mainnet.id) {
+  //     switchChain(
+  //       { chainId: mainnet.id },
+  //       {
+  //         onSuccess: () => {
+  //           setCurrentChainId(mainnet.id)
+  //         },
+  //       }
+  //     )
+  //   }
+  //   // if (walletClient && !hasAutoSwitched && currentChainId !== mainnet.id) {
+  //   //   switchChain(
+  //   //     { chainId: mainnet.id },
+  //   //     {
+  //   //       onSuccess: () => {
+  //   //         setCurrentChainId(mainnet.id)
+  //   //         setHasAutoSwitched(true)
+  //   //       },
+  //   //       onError: () => {
+  //   //         // If auto-switch fails, still mark as attempted to avoid infinite loops
+  //   //         setHasAutoSwitched(true)
+  //   //       }
+  //   //     }
+  //   //   )
+  //   // }
+  // }, [walletClient, currentChainId, switchChain])
 
   // check the current chain id and switch if it's not the correct chain
   const checkChain = useCallback(

@@ -28,8 +28,8 @@ const ActionButtons = () => {
   return (
     <div
       className={cn(
-        'border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between',
-        selectedTab.value === 'domains' || filtersOpen ? 'lg:justify-between' : 'lg:justify-end'
+        'border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 transition-transform duration-300 lg:justify-between starting:translate-y-full',
+        selectedTab.value === 'domains' || filtersOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'
       )}
     >
       <div className={cn('flex-row justify-end gap-2 lg:w-[262px]', filtersOpen ? 'flex' : 'hidden lg:flex')}>

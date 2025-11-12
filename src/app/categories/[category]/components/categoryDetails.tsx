@@ -86,7 +86,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
         height={1000}
         className='bg-foreground absolute top-0 left-0 h-full w-full object-cover opacity-20'
       />
-      <div className='relative z-10 mx-auto flex w-full max-w-7xl justify-between pt-10 pb-30'>
+      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between gap-8 pt-10 pb-20 md:flex-row md:pb-30'>
         <div className='flex items-start gap-4'>
           <Image
             src={categoryImage.avatar}
@@ -113,7 +113,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
             </div>
           </div>
         </div>
-        <div className='bg-background p-lg border-primary flex w-72 flex-col items-center gap-2 rounded-md border-2'>
+        <div className='bg-background p-lg border-primary flex w-full flex-col items-center gap-2 rounded-md border-2 md:w-72'>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
             <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>

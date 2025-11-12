@@ -7,8 +7,8 @@ import Price from '@/components/ui/price'
 import { CategoryType } from '@/types/domains'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { CATEGORY_IMAGES } from '../[category]/components/categoryDetails'
-import SecondaryButton from '@/components/ui/buttons/secondary'
 import { localizeNumber } from '@/utils/localizeNumber'
+import PrimaryButton from '@/components/ui/buttons/primary'
 
 interface CategoryRowProps {
   category: CategoryType
@@ -18,22 +18,37 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
   const router = useRouter()
   const categoryName = CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]
   const categoryImage = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES]
+  const categoryHeader = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].header
 
   return (
     <Link
       href={`/categories/${category.name}`}
-      className='hover:bg-primary/10 p-lg flex w-full items-center justify-between gap-1 rounded-lg'
+      className='bg-secondary p-lg relative flex w-full flex-col gap-2 rounded-lg hover:bg-white/10'
     >
-      <div className='flex w-1/3 items-center gap-4'>
+      <Image
+        src={categoryHeader}
+        alt={categoryName}
+        width={1000}
+        height={1000}
+        className='absolute top-0 left-0 h-full w-full object-cover opacity-10'
+      />
+      <div className='z-10 flex items-center gap-4'>
         <Image src={categoryImage.avatar} alt={categoryName} width={60} height={60} className='rounded-full' />
         <div className='flex flex-col gap-0.5'>
           <h3 className='text-2xl font-bold'>{categoryName}</h3>
-          <p className='text-md text-neutral font-medium'>{category.description}</p>
+          <p className='text-neutral text-lg font-medium'>{category.description}</p>
         </div>
       </div>
-      <div className='flex w-1/6 items-center gap-2'>{localizeNumber(category.member_count)} names</div>
-      <div className='flex w-1/6 items-center gap-2'>{localizeNumber(category.total_sales_count)} sales</div>
-      <div className='flex w-1/6 items-center gap-2'>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-2xl'>Names</p>
+        <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
+      </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-2xl'>Sales</p>
+        <p className='text-xl font-semibold'>{localizeNumber(category.total_sales_count)}</p>
+      </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-2xl'>Floor Price</p>
         <Price
           price={category.floor_price_wei}
           currencyAddress={category.floor_price_currency as Address}
@@ -41,9 +56,9 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
           fontSize='text-xl font-semibold'
         />
       </div>
-      <SecondaryButton className='w-20' onClick={() => router.push(`/categories/${category.name}`)}>
+      <PrimaryButton className='z-10 mt-2 w-full' onClick={() => router.push(`/categories/${category.name}`)}>
         View
-      </SecondaryButton>
+      </PrimaryButton>
     </Link>
   )
 }

@@ -40,7 +40,7 @@ const OfferPanel = () => {
       }}
     >
       <TabSwitcher />
-      <div className='px-md flex flex-col gap-4'>
+      <div className='px-md flex flex-col gap-4 sm:px-0'>
         <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
           <div className='flex w-auto items-center gap-2'>
             <button

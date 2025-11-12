@@ -1,4 +1,4 @@
-import Categories from './components/categories'
+import Verify from './verify'
 
 export const metadata = {
   title: `Categories | Grails`,
@@ -14,8 +14,11 @@ export const metadata = {
 
 const UserPage = () => {
   return (
-    <main className='px-lg min-h-screen w-full pt-20' style={{ minHeight: 'calc(100vh - 360px)' }}>
-      <Categories />
+    <main
+      className='px-lg flex min-h-screen w-full flex-col items-center justify-center gap-4 pt-20 md:pt-24'
+      style={{ minHeight: 'calc(100vh - 360px)' }}
+    >
+      <Verify />
     </main>
   )
 }

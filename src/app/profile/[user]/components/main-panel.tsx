@@ -31,8 +31,8 @@ const MainPanel: React.FC<Props> = ({ user }) => {
         <div className='max-w-domain-panel z-0 mx-auto'>
           <div className='z-10'>
             <div
-              style={{ height: 'calc(100vh - 110px)' }}
-              className='p-lg bg-background border-primary relative flex gap-4 overflow-hidden rounded-lg border-t-2 md:border-2'
+              style={{ height: windowWidth && windowWidth < 768 ? 'calc(100vh - 80px)' : 'calc(100vh - 110px)' }}
+              className='p-md md:p-lg bg-background border-tertiary md:border-primary relative flex gap-4 overflow-hidden border-t-2 md:rounded-lg md:border-2'
             >
               <FilterPanel />
               <div

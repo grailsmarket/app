@@ -25,7 +25,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) 
           <button
             key={tab.value}
             onClick={() => setProfileTab(tab.value)}
-            className='py-md cursor-pointer font-medium opacity-50 transition-colors hover:opacity-80'
+            className='py-md w-full cursor-pointer font-medium opacity-50 transition-colors hover:opacity-80'
           >
             {tab.label}
           </button>
@@ -36,15 +36,15 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) 
 
   // After mount, render with proper active state
   return (
-    <div className='px-md md:px-lg flex gap-4'>
+    <div className='px-md md:px-lg border-tertiary flex gap-4 border-b-2'>
       {profileTabs.map((tab) => (
         <button
           key={tab.value}
           onClick={() => setProfileTab(tab.value)}
           className={cn(
-            'py-md cursor-pointer',
+            'py-md w-full cursor-pointer',
             profileTab === tab.value
-              ? 'border-primary border-b-[1px] font-bold opacity-100'
+              ? 'text-primary font-bold opacity-100'
               : 'font-medium opacity-50 transition-colors hover:opacity-80'
           )}
         >

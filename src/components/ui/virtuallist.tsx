@@ -123,7 +123,6 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
         overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
         paddingBottom,
-        pointerEvents: scrollEnabled ? 'auto' : 'none',
         WebkitOverflowScrolling: 'touch',
       }}
       id='virtual-list'

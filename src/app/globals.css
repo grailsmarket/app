@@ -205,3 +205,8 @@ body {
     right: 320px !important;
   }
 }
+
+.common-followers-modal-backdrop {
+  z-index: 1000 !important;
+  padding-top: 90px !important;
+}

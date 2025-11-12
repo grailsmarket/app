@@ -73,7 +73,7 @@ const DomainPanel = () => {
           <ViewSelector />
         </div>
         <Domains
-          maxHeight='calc(100vh - 220px)'
+          maxHeight={windowWidth && windowWidth < 640 ? 'calc(100vh - 164px)' : 'calc(100vh - 220px)'}
           domains={domains}
           loadingRowCount={20}
           paddingBottom={selectedTab.value === 'watchlist' ? '300px' : '140px'}

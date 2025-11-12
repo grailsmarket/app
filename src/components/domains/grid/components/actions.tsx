@@ -26,7 +26,14 @@ interface ActionsProps {
   isBulkRenewing?: boolean
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToCart, watchlistId, isBulkRenewing }) => {
+const Actions: React.FC<ActionsProps> = ({
+  domain,
+  registrationStatus,
+  canAddToCart,
+  watchlistId,
+  isBulkRenewing,
+  isFirstInRow,
+}) => {
   const dispatch = useAppDispatch()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
@@ -153,17 +160,17 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
       ) : (
         <button onClick={(e) => clickHandler(e, openMakeOfferModal)}>
           <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-            Make Offer
+            Offer
           </p>
         </button>
       )}
-      <div className={cn('flex items-center lg:gap-x-2', watchlistId ? 'flex-col-reverse items-end' : 'gap-x-0')}>
+      <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
           <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'
-              dropdownPosition='left'
+              dropdownPosition={isFirstInRow ? 'right' : 'left'}
               watchlistId={watchlistId}
               showSettings={true}
               showSettingsArrow={false}
@@ -171,7 +178,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
           </div>
         )}
         {canAddToCart && (
-          <button className='cursor-pointer rounded-sm p-1.5' disabled={!canAddToCart}>
+          <button className='cursor-pointer rounded-sm' disabled={!canAddToCart}>
             <CartIcon domain={domain} className='p-0' />
           </button>
         )}

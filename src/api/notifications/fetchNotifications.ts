@@ -2,7 +2,6 @@ import { authFetch } from '../authFetch'
 import { APIResponseType } from '@/types/api'
 import { NotificationsResponse } from '@/types/notifications'
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import { fetchNotificationsMock } from './fetchNotificationsMock'
 
 interface FetchNotificationsParams {
   page?: number
@@ -37,8 +36,17 @@ export const fetchNotifications = async ({
     const data = (await response.json()) as APIResponseType<NotificationsResponse>
     return data.data
   } catch (error) {
-    console.warn('Failed to fetch notifications from API, using mock data:', error)
-    // Use mock data as fallback
-    return fetchNotificationsMock({ page, limit, unreadOnly })
+    console.error('Failed to fetch notifications from API, using mock data:', error)
+    return {
+      notifications: [],
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false,
+      },
+    }
   }
 }

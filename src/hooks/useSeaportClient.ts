@@ -91,6 +91,12 @@ export function useSeaportClient() {
           currency: params.currency,
         })
 
+        console.log('Params:', params)
+        console.log('Marketplace:', params.marketplace)
+        console.log('Currency:', params.currency)
+        console.log('Offerer Address:', address)
+        console.log('Order:', order)
+
         // Handle "both" marketplace case
         if (params.marketplace.length > 1 && 'opensea' in order && 'grails' in order) {
           // Create two separate listings - one for each platform

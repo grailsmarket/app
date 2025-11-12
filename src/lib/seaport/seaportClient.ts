@@ -779,6 +779,8 @@ export class SeaportClient {
         args: [BigInt(params.tokenId)],
       })) as Address
 
+      console.log('registrarOwner:', registrarOwner)
+
       // If the NameWrapper owns it, check the wrapper for the actual owner
       if (registrarOwner.toLowerCase() === ENS_NAME_WRAPPER_ADDRESS.toLowerCase()) {
         isWrapped = true
@@ -1260,6 +1262,7 @@ export class SeaportClient {
       throw new Error('Seaport client not initialized with signer')
     }
 
+    console.log('Fulfilling order:', order)
     const conduitKey = order.parameters.conduitKey || undefined
     console.log('Conduit key:', conduitKey)
     console.log('Order:', order)

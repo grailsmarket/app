@@ -405,13 +405,17 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
         setTxHash(tx)
       } else {
+        const fulfillerConduitKey =
+          order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+
         // ETH orders use the efficient basic route
         try {
           await publicClient.simulateContract({
             address: SEAPORT_ADDRESS as `0x${string}`,
             abi: SEAPORT_ABI,
             functionName: 'fulfillBasicOrder_efficient_6GL6yc',
-            args: [basicOrderParams],
+            // @ts-expect-error BasicOrderParameters is of the correct type
+            args: [basicOrderParams, fulfillerConduitKey as `0x${string}`],
             value: totalPayment,
             account: address,
           })
@@ -426,7 +430,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           address: SEAPORT_ADDRESS as `0x${string}`,
           abi: SEAPORT_ABI,
           functionName: 'fulfillBasicOrder_efficient_6GL6yc',
-          args: [basicOrderParams],
+          // @ts-expect-error BasicOrderParameters is of the correct type
+          args: [basicOrderParams, fulfillerConduitKey as `0x${string}`],
           value: totalPayment,
           gas: gasEstimate || undefined, // Use estimated gas if available
         })

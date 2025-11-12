@@ -25,6 +25,7 @@ import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
 import ClaimPoap from '../poap/claimPoap'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -149,7 +150,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       if (!address || !publicClient || !domain) return
 
       // Determine which NFT contract to check based on if the name is wrapped
-      const isWrapped = domain.isWrapped
+      const isWrapped = await checkIfWrapped(domain.name)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
       const conduitAddress = offer.order_data.protocol_data.conduitAddress
@@ -183,7 +184,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       }
 
       // Determine which NFT contract to approve based on if the name is wrapped
-      const isWrapped = domain.isWrapped
+      const isWrapped = await checkIfWrapped(domain.name)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
       const conduitKey = offer.order_data.protocol_data.conduitKey
       const conduitAddress =
@@ -398,7 +399,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
                 }
                 className='w-full'
-                // disabled={isCorrectChain ? needsApproval : false}
+              // disabled={isCorrectChain ? needsApproval : false}
               >
                 {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
               </PrimaryButton>
@@ -415,7 +416,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <h2 className='mt-4 text-center text-xl font-bold'>Approving NFT Transfer</h2>
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Approving Seaport to transfer your NFT</p>
+              <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
               {approveTxHash && <p className='text-neutral mt-2 font-mono text-xs break-all'>{approveTxHash}</p>}
             </div>
           </>

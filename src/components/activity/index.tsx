@@ -23,6 +23,7 @@ interface ActivityProps {
   columns?: ActivityColumnType[]
   displayedAddress?: Address
   scrollEnabled?: boolean
+  useLocalScrollTop?: boolean
 }
 
 const Activity: React.FC<ActivityProps> = ({
@@ -40,6 +41,7 @@ const Activity: React.FC<ActivityProps> = ({
   showHeaders = true,
   displayedAddress,
   scrollEnabled = true,
+  useLocalScrollTop = false,
 }) => {
   const { width, height } = useWindowSize()
 
@@ -90,7 +92,12 @@ const Activity: React.FC<ActivityProps> = ({
                   index + 1 === displayedColumns.length && 'justify-end'
                 )}
                 style={{
-                  width: `${100 / displayedColumns.length}%`,
+                  width:
+                    header === 'name'
+                      ? `${(100 - 20) / displayedColumns.length + 10}%`
+                      : header === 'event'
+                        ? `${(100 - 20) / displayedColumns.length + 10}%`
+                        : `${(100 - 20) / displayedColumns.length}%`,
                 }}
               >
                 <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium capitalize transition-colors'>
@@ -115,10 +122,11 @@ const Activity: React.FC<ActivityProps> = ({
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
             scrollEnabled={scrollEnabled}
+            useLocalScrollTop={useLocalScrollTop}
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-lg flex h-[60px] w-full items-center'>
+                  <div className='px-lg flex h-[60px] w-full items-center justify-between'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

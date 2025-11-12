@@ -50,8 +50,10 @@ export function useSeaportClient() {
   }, [publicClient, walletClient, address, authStatus])
 
   const refetchListingQueries = useCallback(() => {
-    queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
-    queryClient.refetchQueries({ queryKey: ['name', 'details'] })
+    setTimeout(() => {
+      queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+      queryClient.refetchQueries({ queryKey: ['name', 'details'] })
+    }, 1000)
   }, [queryClient])
 
   const refetchOfferQueries = useCallback(() => {
@@ -59,7 +61,8 @@ export function useSeaportClient() {
     setTimeout(() => {
       queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
       queryClient.refetchQueries({ queryKey: ['my_offers'] })
-    }, 500)
+      queryClient.refetchQueries({ queryKey: ['received_offers'] })
+    }, 1000)
   }, [queryClient])
 
   // Create a listing

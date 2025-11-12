@@ -21,6 +21,7 @@ interface OffersProps {
   showHeaders?: boolean
   columns?: OfferColumnType[]
   currentUserAddress?: Address
+  useLocalScrollTop?: boolean
 }
 
 const Offers: React.FC<OffersProps> = ({
@@ -37,6 +38,7 @@ const Offers: React.FC<OffersProps> = ({
   fetchMoreOffers,
   showHeaders = true,
   currentUserAddress,
+  useLocalScrollTop = false,
 }) => {
   const { width, height } = useWindowSize()
 
@@ -51,15 +53,24 @@ const Offers: React.FC<OffersProps> = ({
     if (!width) return allColumns
 
     const maxColumns = () => {
-      if (width < 400) return 2
-      if (width < 640) return 3
-      if (width < 768) return 4
+      if (width < 420) return 2
+      if (width < 640) return 2
+      if (width < 768) return 3
       if (width < 1024) return 5
       if (width < 1280) return 6
       return allColumns.length
     }
 
-    return allColumns.slice(0, maxColumns())
+    const newColumns = [...allColumns.slice(0, maxColumns())]
+    const allIncludesActions = columns.includes('actions')
+    const newColumnsIncludesActions = newColumns.includes('actions')
+    if (allIncludesActions && !newColumnsIncludesActions) {
+      newColumns.push('actions')
+    }
+    if (!allIncludesActions && newColumnsIncludesActions) {
+      newColumns.pop()
+    }
+    return newColumns as OfferColumnType[]
   }, [width, columns])
 
   const visibleCount = useMemo(() => {
@@ -73,7 +84,7 @@ const Offers: React.FC<OffersProps> = ({
   const columnHeaders: Record<OfferColumnType, string> = {
     name: 'Name',
     offer_amount: 'Offer Amount',
-    offerrer: 'Offerrer',
+    offerrer: 'Bidder',
     expires: 'Expires',
     actions: 'Actions',
   }
@@ -84,14 +95,18 @@ const Offers: React.FC<OffersProps> = ({
       style={{ maxHeight }}
     >
       {showHeaders && (
-        <div className='md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
+        <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-between sm:flex'>
           {displayedColumns.map((header, index) => {
+            const columnWidth = `${(100 - 20) / displayedColumns.length}%`
+            const nameWidth = `${(100 - 20) / displayedColumns.length + 15}%`
+            const offerrerWidth = `${(100 - 20) / displayedColumns.length + 5}%`
+
             return (
               <div
                 key={index}
                 className={cn('flex flex-row items-center gap-1', header === 'actions' && 'justify-end')}
                 style={{
-                  width: `${100 / displayedColumns.length}%`,
+                  width: header === 'name' ? nameWidth : header === 'offerrer' ? offerrerWidth : columnWidth,
                 }}
               >
                 <p className='w-fit text-left text-sm font-medium'>
@@ -115,6 +130,7 @@ const Offers: React.FC<OffersProps> = ({
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
+            useLocalScrollTop={useLocalScrollTop}
             renderItem={(item, index) => {
               if (!item)
                 return (

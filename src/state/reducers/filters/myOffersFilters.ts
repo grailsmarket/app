@@ -55,6 +55,7 @@ export type MyDomainsFiltersState = {
 export type MyDomainsFiltersOpenedState = MyDomainsFiltersState & {
   openFilters: MyDomainsOpenableFilterType[]
   open: boolean
+  scrollTop: number
 }
 
 export const emptyFilterState: MyDomainsFiltersState = {
@@ -93,6 +94,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
   categories: [],
   openFilters: ['Status'],
   sort: null,
+  scrollTop: 0,
 }
 
 export type MyDomainsFiltersType = MyDomainsFiltersState & {
@@ -157,6 +159,9 @@ export const myOffersFiltersSlice = createSlice({
     setMyOffersSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
+    setMyOffersScrollTop(state, { payload }: PayloadAction<number>) {
+      state.scrollTop = payload
+    },
     toggleMyOffersFilterOpen(state, { payload }: PayloadAction<MyDomainsOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -198,6 +203,7 @@ export const {
   setMyOffersFiltersCategory,
   setMyOffersSort,
   setMyOffersSearch,
+  setMyOffersScrollTop,
   toggleMyOffersFilterOpen,
   clearMyOffersFilters,
 } = myOffersFiltersSlice.actions

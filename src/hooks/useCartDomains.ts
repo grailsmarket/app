@@ -60,6 +60,7 @@ const useCartDomains = () => {
     clearCart,
     isModifyingDomain,
     isCartDomainsLoading,
+    modifyingCartTokenIds,
   }
 }
 

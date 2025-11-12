@@ -30,6 +30,7 @@ interface DomainsProps {
   scrollEnabled?: boolean
   showWatchlist?: boolean
   isBulkRenewing?: boolean
+  useLocalScrollTop?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -49,6 +50,7 @@ const Domains: React.FC<DomainsProps> = ({
   scrollEnabled = true,
   showWatchlist = false,
   isBulkRenewing = false,
+  useLocalScrollTop = false,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const viewTypeToUse = forceViewType || viewType
@@ -97,12 +99,9 @@ const Domains: React.FC<DomainsProps> = ({
   if (!isClient) return null
 
   return (
-    <div
-      className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
-      style={{ maxHeight }}
-    >
+    <div className='hide-scrollbar flex w-full flex-1 flex-col overflow-hidden' style={{ maxHeight }}>
       {showHeaders && viewTypeToUse !== 'grid' && (
-        <div className='md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
+        <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-between sm:flex'>
           {displayedColumns.map((header, index) => {
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
@@ -114,7 +113,7 @@ const Domains: React.FC<DomainsProps> = ({
         </div>
       )}
       <div
-        className={cn('h-full w-full rounded-sm pb-20', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg' : 'px-0')}
+        className={cn('h-full w-full rounded-sm pb-20', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg px-0' : 'px-0')}
         ref={listRef}
       >
         {!noResults ? (
@@ -123,15 +122,17 @@ const Domains: React.FC<DomainsProps> = ({
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
               cardWidth={width && width < 640 ? 200 : 200}
-              cardHeight={width && width < 420 ? 440 : 330}
+              cardHeight={width && width < 420 ? 460 : width && width < 640 ? 350 : 330}
               gap={4}
-              containerWidth={containerWidth - (width && width < 1024 ? (width < 768 ? 0 : 16) : 32)}
+              containerPadding={width && width < 1024 ? (width < 640 ? 8 : width < 768 ? 16 : 24) : 48}
+              containerWidth={containerWidth}
               overscanCount={3}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}
               scrollEnabled={scrollEnabled}
+              useLocalScrollTop={useLocalScrollTop}
               renderItem={(item, index, columnsCount) => {
                 if (!item) return <LoadingCard key={index} />
                 return (
@@ -159,10 +160,11 @@ const Domains: React.FC<DomainsProps> = ({
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={200}
               scrollEnabled={scrollEnabled}
+              useLocalScrollTop={useLocalScrollTop}
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='px-lg flex h-[60px] w-full items-center'>
+                    <div className='md:px-lg flex h-[60px] w-full items-center'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

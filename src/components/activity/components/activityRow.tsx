@@ -29,7 +29,10 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
     return activity.actor_address || activity.counterparty_address
   }, [activity.counterparty_address, activity.actor_address, displayedAddress])
 
-  const columnWidth = `${100 / displayedColumns.length}%`
+  const columnWidth = `${(100 - 20) / displayedColumns.length}%`
+  const nameColumnWidth = `${(100 - 20) / displayedColumns.length + 10}%`
+  const eventColumnWidth = `${(100 - 20) / displayedColumns.length + 10}%`
+
   const columns = {
     event: <Event event={activity.event_type} platform={activity.platform} />,
     name: <Name name={activity.name} tokenId={activity.token_id} />,
@@ -60,7 +63,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
         <div
           key={column}
           className={cn('flex flex-row items-center gap-2', index + 1 === displayedColumns.length && 'justify-end')}
-          style={{ width: columnWidth }}
+          style={{ width: column === 'name' ? nameColumnWidth : column === 'event' ? eventColumnWidth : columnWidth }}
         >
           {columns[column]}
         </div>

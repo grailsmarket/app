@@ -28,7 +28,7 @@ const DomainPanel = () => {
         width: windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
       }}
     >
-      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+      <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
             className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
@@ -56,7 +56,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 190px)' : 'calc(100vh - 240px)'}
+        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 140px)' : 'calc(100vh - 240px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom={viewType === 'list' ? '140px' : '80px'}

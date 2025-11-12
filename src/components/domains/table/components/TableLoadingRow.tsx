@@ -15,12 +15,13 @@ const TableLoadingRow: React.FC<TableLoadingRowsProps> = ({ displayedColumns }) 
         className={cn(
           'flex items-center gap-2',
           item.getWidth(displayedColumns.length),
-          index === displayedColumns.length - 1 && 'justify-end'
+          index === displayedColumns.length - 1 && 'justify-end',
+          header === 'actions' && 'pr-md'
         )}
         key={index}
       >
         {header === 'domain' && <LoadingCell height='36px' width='36px' radius='4px' />}
-        <LoadingCell height='22px' width='90px' />
+        <LoadingCell height={header === 'actions' ? '26px' : '22px'} width={header === 'actions' ? '26px' : '90px'} />
       </div>
     )
   })

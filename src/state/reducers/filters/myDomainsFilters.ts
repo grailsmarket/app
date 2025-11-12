@@ -50,6 +50,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   categories: [],
   openFilters: ['Status'],
   sort: null,
+  scrollTop: 0,
 }
 
 export type MyDomainsFiltersType = PortfolioFiltersState & {
@@ -114,6 +115,9 @@ export const myDomainsFiltersSlice = createSlice({
     setMyDomainsSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
+    setMyDomainsScrollTop(state, { payload }: PayloadAction<number>) {
+      state.scrollTop = payload
+    },
     toggleMyDomainsFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -156,6 +160,7 @@ export const {
   setMyDomainsFiltersCategory,
   setMyDomainsSort,
   setMyDomainsSearch,
+  setMyDomainsScrollTop,
   toggleMyDomainsFilterOpen,
   clearMyDomainsFilters,
 } = myDomainsFiltersSlice.actions

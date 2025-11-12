@@ -36,8 +36,8 @@ const Portfolio = () => {
           />
           <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
         </div> */}
-          <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-24'>
-            <div className='px-lg max-w-domain-panel lg:p-lg bg-background border-primary relative mx-auto flex h-[calc(100vh-96px)] w-full flex-row gap-4 overflow-hidden rounded-t-sm border-t-2 pb-0! md:h-[90vh] md:rounded-lg md:border-2'>
+          <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-20'>
+            <div className='max-w-domain-panel lg:p-lg bg-background sm:border-primary relative mx-auto flex h-[calc(100vh-80px)] w-full flex-row gap-4 overflow-hidden px-0 pb-0! sm:px-3 md:h-[90vh] md:rounded-lg md:border-2'>
               <FilterPanel />
               {mounted ? (
                 <>

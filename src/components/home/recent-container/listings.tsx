@@ -3,8 +3,9 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchDomains } from '@/api/domains/fetchDomains'
-import Domains from '@/components/domains'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
+import TableRow from '@/components/domains/table/components/TableRow'
+import TableLoadingRow from '@/components/domains/table/components/TableLoadingRow'
 
 const RecentListings = () => {
   const { data: listings, isLoading } = useQuery({
@@ -24,18 +25,19 @@ const RecentListings = () => {
   return (
     <div className='flex flex-col gap-4'>
       <h2 className='md:px-md lg:px-lg text-2xl font-bold'>Recent Listings</h2>
-      <Domains
-        domains={listings?.domains || []}
-        loadingRowCount={7}
-        maxHeight='420px'
-        paddingBottom='0px'
-        isLoading={isLoading}
-        noResults={!isLoading && listings?.domains?.length === 0}
-        showHeaders={false}
-        displayedDetails={['listed_price']}
-        forceViewType='list'
-        scrollEnabled={false}
-      />
+      <div className='flex flex-col gap-0'>
+        {isLoading
+          ? new Array(7).fill(null).map((_, index) => (
+              <div key={index} className='px-lg flex h-[60px] w-full items-center'>
+                <TableLoadingRow displayedColumns={['domain', 'listed_price', 'actions']} />
+              </div>
+            ))
+          : listings?.domains?.map((domain, index) => (
+              <div key={domain.token_id}>
+                <TableRow domain={domain} index={index} displayedColumns={['domain', 'listed_price', 'actions']} />
+              </div>
+            ))}
+      </div>
     </div>
   )
 }

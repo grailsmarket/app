@@ -21,6 +21,7 @@ import {
   setMarketplaceFiltersCategory,
   setMarketplaceSort,
   setMarketplaceSearch,
+  setMarketplaceScrollTop,
   toggleMarketplaceFilterOpen,
   clearMarketplaceFilters,
 } from '@/state/reducers/filters/marketplaceFilters'
@@ -41,6 +42,7 @@ import {
   setMyDomainsFiltersCategory,
   setMyDomainsSort,
   setMyDomainsSearch,
+  setMyDomainsScrollTop,
   toggleMyDomainsFilterOpen,
   clearMyDomainsFilters,
 } from '@/state/reducers/filters/myDomainsFilters'
@@ -61,6 +63,7 @@ import {
   setMyOffersFiltersCategory,
   setMyOffersSort,
   setMyOffersSearch,
+  setMyOffersScrollTop,
   toggleMyOffersFilterOpen,
   clearMyOffersFilters,
 } from '@/state/reducers/filters/myOffersFilters'
@@ -81,6 +84,7 @@ import {
   setReceivedOffersFiltersCategory,
   setReceivedOffersSort,
   setReceivedOffersSearch,
+  setReceivedOffersScrollTop,
   toggleReceivedOffersFilterOpen,
   clearReceivedOffersFilters,
 } from '@/state/reducers/filters/receivedOffersFilters'
@@ -101,6 +105,7 @@ import {
   setWatchlistFiltersCategory,
   setWatchlistSort,
   setWatchlistSearch,
+  setWatchlistFiltersScrollTop,
   toggleWatchlistFilterOpen,
   clearWatchlistFilters,
 } from '@/state/reducers/filters/watchlistFilters'
@@ -125,6 +130,7 @@ import {
   setFiltersCategory as setProfileDomainsFiltersCategory,
   setSort as setProfileDomainsSort,
   setSearch as setProfileDomainsSearch,
+  setFiltersScrollTop as setProfileDomainsFiltersScrollTop,
   toggleFilterOpen as toggleProfileDomainsFilterOpen,
   clearFilters as clearProfileDomainsFilters,
 } from '@/state/reducers/filters/profileDomainsFilters'
@@ -137,6 +143,7 @@ import {
   toggleFilterOpen as toggleProfileActivityFilterOpen,
   setFiltersOpen as setProfileActivityFilterOpen,
   setSearch as setProfileActivitySearch,
+  setFiltersScrollTop as setProfileActivityFiltersScrollTop,
   clearActivityFilters,
 } from '@/state/reducers/filters/profileActivityFilters'
 
@@ -156,6 +163,7 @@ import {
   setFiltersCategory as setCategoryDomainsFiltersCategory,
   setSort as setCategoryDomainsSort,
   setSearch as setCategoryDomainsSearch,
+  setFiltersScrollTop as setCategoryDomainsFiltersScrollTop,
   toggleFilterOpen as toggleCategoryDomainsFilterOpen,
   clearFilters as clearCategoryDomainsFilters,
 } from '@/state/reducers/filters/categoryDomainsFilters'
@@ -219,6 +227,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         setFiltersCategory: setCategoryDomainsFiltersCategory,
         setSort: setCategoryDomainsSort,
         setSearch: setCategoryDomainsSearch,
+        setScrollTop: setCategoryDomainsFiltersScrollTop,
         toggleFilterOpen: toggleCategoryDomainsFilterOpen,
         clearFilters: clearCategoryDomainsFilters,
       }
@@ -239,11 +248,13 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setFiltersCategory: setProfileDomainsFiltersCategory,
           setSort: setProfileDomainsSort,
           setSearch: setProfileDomainsSearch,
+          setScrollTop: setProfileDomainsFiltersScrollTop,
           toggleFilterOpen: toggleProfileDomainsFilterOpen,
           clearFilters: clearProfileDomainsFilters,
         }
       } else if (profileTab === 'activity') {
         return {
+          setScrollTop: setProfileActivityFiltersScrollTop,
           toggleFilterOpen: toggleProfileActivityFilterOpen,
           toggleFiltersType: toggleActivityFiltersType,
           setFiltersOpen: setProfileActivityFilterOpen,
@@ -266,6 +277,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         setFiltersCategory: setProfileDomainsFiltersCategory,
         setSort: setProfileDomainsSort,
         setSearch: setProfileDomainsSearch,
+        setScrollTop: setProfileDomainsFiltersScrollTop,
         toggleFilterOpen: toggleProfileDomainsFilterOpen,
         clearFilters: clearProfileDomainsFilters,
       }
@@ -286,6 +298,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setFiltersCategory: setMyDomainsFiltersCategory,
           setSort: setMyDomainsSort,
           setSearch: setMyDomainsSearch,
+          setScrollTop: setMyDomainsScrollTop,
           toggleFilterOpen: toggleMyDomainsFilterOpen,
           clearFilters: clearMyDomainsFilters,
         }
@@ -303,6 +316,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setFiltersCategory: setMyOffersFiltersCategory,
           setSort: setMyOffersSort,
           setSearch: setMyOffersSearch,
+          setScrollTop: setMyOffersScrollTop,
           toggleFilterOpen: toggleMyOffersFilterOpen,
           clearFilters: clearMyOffersFilters,
         }
@@ -320,6 +334,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setFiltersCategory: setReceivedOffersFiltersCategory,
           setSort: setReceivedOffersSort,
           setSearch: setReceivedOffersSearch,
+          setScrollTop: setReceivedOffersScrollTop,
           toggleFilterOpen: toggleReceivedOffersFilterOpen,
           clearFilters: clearReceivedOffersFilters,
         }
@@ -337,6 +352,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setFiltersCategory: setWatchlistFiltersCategory,
           setSort: setWatchlistSort,
           setSearch: setWatchlistSearch,
+          setScrollTop: setWatchlistFiltersScrollTop,
           toggleFilterOpen: toggleWatchlistFilterOpen,
           clearFilters: clearWatchlistFilters,
         }
@@ -356,6 +372,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       setFiltersCategory: setMarketplaceFiltersCategory,
       setSort: setMarketplaceSort,
       setSearch: setMarketplaceSearch,
+      setScrollTop: setMarketplaceScrollTop,
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
@@ -392,7 +409,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
     const filtersWithoutOpen = _.omit(filtersWithoutOpenFilters, 'open')
-    return _.isEqual(filtersWithoutOpen, emptyFilterState)
+    const filtersWithoutScrollTop = _.omit(filtersWithoutOpen, 'scrollTop')
+    return _.isEqual(filtersWithoutScrollTop, emptyFilterState)
   }, [filters, emptyFilterState])
 
   useEffect(() => {

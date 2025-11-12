@@ -17,6 +17,7 @@ import {
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
 import { Check } from 'ethereum-identity-kit'
+import Link from 'next/link'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -91,10 +92,17 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
       }
       if (domainListing?.price) {
         return (
-          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-            <SecondaryButton onClick={openListModal}>Edit</SecondaryButton>
-            <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
-          </div>
+          <>
+            <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+              <SecondaryButton onClick={openListModal}>Edit</SecondaryButton>
+              <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
+            </div>
+            <div className={cn('flex flex-row justify-end sm:hidden', width)}>
+              <Link href={`/${domain.name}`}>
+                <SecondaryButton>Edit</SecondaryButton>
+              </Link>
+            </div>
+          </>
         )
       }
       return (

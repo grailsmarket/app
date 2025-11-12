@@ -1,11 +1,14 @@
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { useAppDispatch } from '@/state/hooks'
 import clsx from 'clsx'
-import React, { useState, useCallback, forwardRef, ReactElement, ForwardedRef, useMemo } from 'react'
+import React, { useState, useCallback, forwardRef, ReactElement, ForwardedRef, useMemo, useEffect } from 'react'
 
 export interface VirtualGridProps<T = unknown> {
   items: T[]
   cardWidth: number
   cardHeight: number
   gap?: number
+  containerPadding?: number
   paddingBottom?: string | number
   containerWidth?: number
   overscanCount?: number
@@ -15,6 +18,7 @@ export interface VirtualGridProps<T = unknown> {
   onScrollNearBottom?: () => void
   scrollThreshold?: number
   scrollEnabled?: boolean
+  useLocalScrollTop?: boolean
 }
 
 export type VirtualGridComponentType = <T = unknown>(
@@ -28,6 +32,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     cardWidth,
     cardHeight,
     gap = 2,
+    containerPadding = 20,
     paddingBottom = '80px',
     containerWidth = 1200,
     overscanCount = 2,
@@ -37,9 +42,28 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     onScrollNearBottom,
     scrollThreshold = 300,
     scrollEnabled = true,
+    useLocalScrollTop = false,
   } = props
 
-  const [scrollTop, setScrollTop] = useState(0)
+  const dispatch = useAppDispatch()
+  const { selectors, actions } = useFilterRouter()
+  const [localScrollTop, setLocalScrollTop] = useState(0)
+
+  const scrollTop = useLocalScrollTop ? localScrollTop : selectors.filters.scrollTop
+  const setScrollTop = useMemo(
+    () => (useLocalScrollTop ? setLocalScrollTop : (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [useLocalScrollTop, actions]
+  )
+
+  useEffect(() => {
+    const virtualGrid = document.getElementById('virtual-grid')
+    if (virtualGrid) {
+      virtualGrid.scrollTop = scrollTop
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Calculate columns based on container width
   const columnsCount = useMemo(() => {
@@ -65,7 +89,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
         }
       }
     },
-    [onScrollNearBottom, scrollThreshold]
+    [onScrollNearBottom, scrollThreshold, setScrollTop]
   )
 
   // Calculate visible rows
@@ -93,14 +117,12 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   const totalHeight = totalRows * rowHeight
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent<HTMLDivElement>) => {
-      if (!scrollEnabled) {
-        e.preventDefault()
-      }
-    },
-    [scrollEnabled]
-  )
+  const handleWheel = useCallback(() => {
+    if (!scrollEnabled) {
+      // Don't prevent default - let it bubble up
+      return
+    }
+  }, [scrollEnabled])
 
   return (
     <div
@@ -112,8 +134,10 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
         overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
         paddingBottom,
-        touchAction: scrollEnabled ? 'auto' : 'none',
+        pointerEvents: scrollEnabled ? 'auto' : 'none',
+        WebkitOverflowScrolling: 'touch',
       }}
+      id='virtual-grid'
       className={clsx(containerClassName, 'hide-scrollbar')}
     >
       <div
@@ -130,7 +154,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
               position: 'absolute',
               top: row * rowHeight,
               left: col * (100 / columnsCount) + '%',
-              width: (containerWidth - 20) / columnsCount - gap,
+              width: (containerWidth - containerPadding) / columnsCount - gap,
               height: cardHeight,
             }}
           >

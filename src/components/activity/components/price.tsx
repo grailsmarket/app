@@ -12,7 +12,7 @@ const Price: React.FC<PriceProps> = ({ price, currencyAddress, tooltipPosition }
   if (!currencyAddress || !price) return null
 
   return (
-    <div className='flex w-full flex-row items-center gap-1'>
+    <div className='flex flex-row items-center gap-1'>
       <PriceComponent
         price={price}
         currencyAddress={currencyAddress}

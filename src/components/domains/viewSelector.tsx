@@ -8,15 +8,22 @@ import { selectMarketplaceDomains, setViewType } from '@/state/reducers/domains/
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { cn } from '@/utils/tailwind'
 import Tooltip from '../ui/tooltip'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 const ViewSelector = () => {
   const dispatch = useAppDispatch()
+  const { actions } = useFilterRouter()
   const { viewType } = useAppSelector(selectMarketplaceDomains)
+
+  const onChangeViewType = (viewType: 'list' | 'grid') => {
+    dispatch(setViewType(viewType))
+    dispatch(actions.setScrollTop(0))
+  }
 
   return (
     <div className='flex gap-x-2'>
       <Tooltip label='List view'>
-        <button onClick={() => dispatch(setViewType('list'))} className='h-6 w-6'>
+        <button onClick={() => onChangeViewType('list')} className='h-6 w-6'>
           <Image
             src={list}
             alt='List layout'
@@ -27,7 +34,7 @@ const ViewSelector = () => {
         </button>
       </Tooltip>
       <Tooltip label='Grid view'>
-        <button onClick={() => dispatch(setViewType('grid'))} className='h-6 w-6'>
+        <button onClick={() => onChangeViewType('grid')} className='h-6 w-6'>
           <Image
             src={grid}
             alt='Grid layout'

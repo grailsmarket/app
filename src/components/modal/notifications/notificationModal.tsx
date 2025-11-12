@@ -64,6 +64,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
               rowHeight={60}
               overscanCount={10}
               paddingBottom='0'
+              useLocalScrollTop={true}
               renderItem={(notification) => {
                 if (!notification) return <NotificationLoadingRow />
 

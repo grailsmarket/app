@@ -50,6 +50,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   categories: [],
   openFilters: ['Status'],
   sort: null,
+  scrollTop: 0,
 }
 
 // Slice -------------------------------------------
@@ -110,6 +111,9 @@ export const receivedOffersFiltersSlice = createSlice({
     setReceivedOffersSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
+    setReceivedOffersScrollTop(state, { payload }: PayloadAction<number>) {
+      state.scrollTop = payload
+    },
     toggleReceivedOffersFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -151,6 +155,7 @@ export const {
   setReceivedOffersFiltersCategory,
   setReceivedOffersSort,
   setReceivedOffersSearch,
+  setReceivedOffersScrollTop,
   toggleReceivedOffersFilterOpen,
   clearReceivedOffersFilters,
 } = receivedOffersFiltersSlice.actions

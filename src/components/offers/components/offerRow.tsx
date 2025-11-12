@@ -16,7 +16,9 @@ interface OfferRowProps {
 }
 
 const OfferRow: React.FC<OfferRowProps> = ({ offer, displayedColumns, currentUserAddress, index }) => {
-  const columnWidth = `${100 / displayedColumns.length}%`
+  const columnWidth = `${(100 - 20) / displayedColumns.length}%`
+  const nameWidth = `${(100 - 20) / displayedColumns.length + 15}%`
+  const offerrerWidth = `${(100 - 20) / displayedColumns.length + 5}%`
 
   const columns: Record<OfferColumnType, React.ReactNode> = {
     name: <Name offer={offer} />,
@@ -27,12 +29,12 @@ const OfferRow: React.FC<OfferRowProps> = ({ offer, displayedColumns, currentUse
   }
 
   return (
-    <div className='group md:px-md lg:px-lg flex h-[60px] w-full flex-row items-center justify-start gap-1 rounded-sm bg-transparent transition hover:bg-white/10'>
+    <div className='group px-sm md:px-md lg:px-lg flex h-[60px] w-full flex-row items-center justify-between gap-1 rounded-sm bg-transparent transition hover:bg-white/10'>
       {displayedColumns.map((column) => (
         <div
           key={column}
           className={cn('flex flex-row items-center gap-2', column === 'actions' && 'justify-end')}
-          style={{ width: columnWidth }}
+          style={{ width: column === 'name' ? nameWidth : column === 'offerrer' ? offerrerWidth : columnWidth }}
         >
           {columns[column]}
         </div>

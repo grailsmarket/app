@@ -89,7 +89,15 @@ const LiveActivity = () => {
       const activities = await fetchAllActivity({
         limit: 30,
         pageParam,
-        eventTypes: ['listed', 'bought', 'sold', 'offer_made', 'offer_accepted', 'offer_cancelled', 'listing_cancelled'],
+        eventTypes: [
+          'listed',
+          'bought',
+          'sold',
+          'offer_made',
+          'offer_accepted',
+          'offer_cancelled',
+          'listing_cancelled',
+        ],
       })
       return activities
     },
@@ -102,8 +110,8 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary p-lg border-primary mx-auto w-full max-w-7xl rounded-lg border-2 pb-0'>
-      <div className='p-sm sm:p-lg py-md sm:py-lg mb-1 flex items-center justify-between'>
+    <div className='bg-secondary p-md sm:p-lg md:border-primary border-tertiary mx-auto w-full max-w-7xl rounded-none border-t-2 pb-0 md:rounded-lg md:border-2'>
+      <div className='p-md sm:p-lg py-lg mb-1 flex items-center justify-between'>
         <h2 className='text-2xl font-bold text-white sm:text-3xl'>Live Activity</h2>
         <div className='flex items-center justify-end gap-1 sm:gap-2'>
           <div
@@ -126,6 +134,7 @@ const LiveActivity = () => {
         fetchMoreActivity={fetchNextPageHistoricalActivities}
         hasMoreActivity={hasNextPageHistoricalActivities}
         scrollEnabled={isAtBottom}
+        useLocalScrollTop={true}
       />
     </div>
   )

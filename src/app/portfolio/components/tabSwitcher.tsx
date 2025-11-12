@@ -34,7 +34,7 @@ const TabSwitcher = () => {
 
   // After mount, render with proper active state
   return (
-    <div className='md:px-md lg:px-lg px-sm flex gap-4'>
+    <div className='py-md px-lg border-secondary xs:text-lg text-md lg:px-lg flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl'>
       {portfolioTabs.map((tab) => (
         <button
           key={tab.value}
@@ -42,7 +42,7 @@ const TabSwitcher = () => {
           className={cn(
             'py-md cursor-pointer',
             selectedTab.value === tab.value
-              ? 'border-primary border-b-[1px] font-bold opacity-100'
+              ? 'border-primary text-primary font-bold opacity-100'
               : 'font-medium opacity-50 transition-colors hover:opacity-80'
           )}
         >

@@ -37,6 +37,7 @@ export interface FilterRouterSelectors<T extends FilterContextType> {
 }
 
 export interface FilterRouterActions {
+  setScrollTop: (payload: number) => PayloadAction<number>
   setFiltersOpen: (payload: boolean) => PayloadAction<boolean>
   setSearch: (payload: string) => PayloadAction<string>
   toggleFiltersStatus: (payload: any) => PayloadAction<any>
@@ -90,6 +91,7 @@ export type PortfolioFiltersState = {
 export type PortfolioFiltersOpenedState = PortfolioFiltersState & {
   openFilters: PortfolioOpenableFilterType[]
   open: boolean
+  scrollTop: number
 }
 
 export type ProfileFiltersOpenedState = ActivityFiltersOpenedState & {

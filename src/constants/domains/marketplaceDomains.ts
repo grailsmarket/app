@@ -93,7 +93,7 @@ export const MARKETPLACE_DOMAIN_COLUMN_WIDTHS: Record<number, string> = {
 }
 
 export const MARKETPLACE_DETAILS_COLUMN_WIDTHS: Record<number, string> = {
-  3: 'w-[25%]',
+  3: 'w-[30%]',
   4: 'w-[22.5%]',
   5: 'w-[17.5%]',
   6: 'w-[15%]',
@@ -102,9 +102,9 @@ export const MARKETPLACE_DETAILS_COLUMN_WIDTHS: Record<number, string> = {
 }
 
 export const MARKETPLACE_ACTIONS_COLUMN_WIDTHS: Record<number, string> = {
-  1: 'w-[30%]',
-  2: 'w-[30%]',
-  3: 'w-[20%]',
+  1: 'w-[15%]',
+  2: 'w-[15%]',
+  3: 'w-[15%]',
   4: 'w-[15%]',
   5: 'w-[15%]',
   6: 'w-[15%]',

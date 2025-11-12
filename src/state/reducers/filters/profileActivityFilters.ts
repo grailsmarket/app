@@ -22,6 +22,7 @@ export type ActivityFiltersState = {
 export type ActivityFiltersOpenedState = ActivityFiltersState & {
   openFilters: ProfileActivityOpenableFilterType[]
   open: boolean
+  scrollTop: number
 }
 
 export const emptyFilterState: ActivityFiltersState = {
@@ -59,6 +60,7 @@ export const initialState: ActivityFiltersOpenedState = {
     max: null,
   },
   status: [],
+  scrollTop: 0,
 }
 
 // Slice
@@ -91,6 +93,9 @@ export const profileActivityFiltersSlice = createSlice({
     setSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
+    setFiltersScrollTop(state, { payload }: PayloadAction<number>) {
+      state.scrollTop = payload
+    },
     clearActivityFilters(state) {
       state.type = [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)]
       state.search = ''
@@ -106,6 +111,7 @@ export const {
   toggleFilterOpen,
   setFiltersOpen,
   setSearch,
+  setFiltersScrollTop,
 } = profileActivityFiltersSlice.actions
 
 // Selectors

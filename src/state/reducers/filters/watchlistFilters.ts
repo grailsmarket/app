@@ -51,6 +51,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   categories: [],
   openFilters: ['Status'],
   sort: null,
+  scrollTop: 0,
 }
 
 export type MarketplaceFiltersType = MarketplaceFiltersState & {
@@ -127,6 +128,9 @@ export const watchlistFiltersSlice = createSlice({
     setWatchlistSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
+    setWatchlistFiltersScrollTop(state, { payload }: PayloadAction<number>) {
+      state.scrollTop = payload
+    },
     toggleWatchlistFilterOpen(state, { payload }: PayloadAction<MarketplaceOpenableFilterType>) {
       const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
       if (index > -1) {
@@ -170,6 +174,7 @@ export const {
   setWatchlistFiltersSubcategory,
   setWatchlistSort,
   setWatchlistSearch,
+  setWatchlistFiltersScrollTop,
   toggleWatchlistFilterOpen,
   clearWatchlistFilters,
 } = watchlistFiltersSlice.actions

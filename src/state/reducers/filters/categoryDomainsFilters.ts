@@ -49,6 +49,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   categories: [],
   openFilters: ['Status'],
   sort: null,
+  scrollTop: 0,
 }
 
 // Slice
@@ -109,6 +110,9 @@ export const categoryDomainsFiltersSlice = createSlice({
     setSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
+    setFiltersScrollTop(state, { payload }: PayloadAction<number>) {
+      state.scrollTop = payload
+    },
     toggleFilterOpen(state, { payload }: PayloadAction<PortfolioOpenableFilterType>) {
       const index = state.openFilters.findIndex((filter) => filter === payload)
       if (index > -1) {
@@ -145,6 +149,7 @@ export const {
   toggleCategory,
   setFiltersCategory,
   setSort,
+  setFiltersScrollTop,
   toggleFilterOpen,
   clearFilters,
 } = categoryDomainsFiltersSlice.actions

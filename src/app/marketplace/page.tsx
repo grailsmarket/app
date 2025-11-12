@@ -20,7 +20,7 @@ const Marketplace = () => {
           <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
         </div> */}
           <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-20 md:pt-24'>
-            <div className='px-lg lg:p-lg max-w-domain-panel bg-background border-primary relative mx-auto flex h-[calc(100vh-96px)] w-full flex-row gap-4 overflow-hidden rounded-t-sm border-t-2 md:h-[calc(100vh-110px)] md:rounded-lg md:border-2'>
+            <div className='px-md lg:p-lg max-w-domain-panel bg-background sm:border-primary relative mx-auto flex h-[calc(100vh-80px)] w-full flex-row gap-4 overflow-hidden sm:px-3 md:h-[calc(100vh-110px)] md:rounded-lg md:border-2'>
               <FilterPanel />
               <DomainPanel />
               <ActionButtons />

@@ -1,5 +1,7 @@
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { useAppDispatch } from '@/state/hooks'
 import clsx from 'clsx'
-import React, { useState, useCallback, forwardRef, ReactElement, ForwardedRef } from 'react'
+import React, { useCallback, forwardRef, ReactElement, ForwardedRef, useEffect, useState, useMemo } from 'react'
 
 export interface VirtualListProps<T = unknown> {
   items: T[]
@@ -14,6 +16,8 @@ export interface VirtualListProps<T = unknown> {
   scrollThreshold?: number
   paddingBottom?: string
   scrollEnabled?: boolean
+  cacheScrollTop?: boolean
+  useLocalScrollTop?: boolean
 }
 
 export type VirtualListComponentType = <T = unknown>(
@@ -35,9 +39,37 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     scrollThreshold = 300,
     paddingBottom = '80px',
     scrollEnabled = true,
+    useLocalScrollTop = false,
   } = props
 
-  const [scrollTop, setScrollTop] = useState(0)
+  const dispatch = useAppDispatch()
+  const { selectors, actions } = useFilterRouter()
+  const [localScrollTop, setLocalScrollTop] = useState(0)
+
+  const scrollTop = useMemo(
+    () => (useLocalScrollTop ? localScrollTop : selectors.filters.scrollTop),
+    [useLocalScrollTop, localScrollTop, selectors.filters.scrollTop]
+  )
+  const setScrollTop = useMemo(
+    () => {
+      if (useLocalScrollTop) {
+        return setLocalScrollTop
+      } else {
+        return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [useLocalScrollTop, actions]
+  )
+
+  useEffect(() => {
+    const virtualList = document.getElementById('virtual-list')
+    if (virtualList) {
+      virtualList.scrollTop = scrollTop
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const containerHeight = visibleCount * (rowHeight + gap)!
 
@@ -55,7 +87,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
         }
       }
     },
-    [onScrollNearBottom, scrollThreshold]
+    [onScrollNearBottom, scrollThreshold, setScrollTop]
   )
 
   // Calculate startIndex and endIndex for the items to be rendered.
@@ -74,14 +106,12 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
 
   const visibleItems = items.slice(startIndex, endIndex)
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent<HTMLDivElement>) => {
-      if (!scrollEnabled) {
-        e.preventDefault()
-      }
-    },
-    [scrollEnabled]
-  )
+  const handleWheel = useCallback(() => {
+    if (!scrollEnabled) {
+      // Don't prevent default - let it bubble up
+      return
+    }
+  }, [scrollEnabled])
 
   return (
     <div
@@ -93,8 +123,10 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
         overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
         paddingBottom,
-        touchAction: scrollEnabled ? 'auto' : 'none',
+        pointerEvents: scrollEnabled ? 'auto' : 'none',
+        WebkitOverflowScrolling: 'touch',
       }}
+      id='virtual-list'
       className={clsx(containerClassName, 'hide-scrollbar')}
     >
       <div style={{ width: '100%', height: totalHeight, position: 'relative' }}>

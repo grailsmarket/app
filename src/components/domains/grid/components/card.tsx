@@ -32,12 +32,12 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
     <Link
       href={`/${domain.name}`}
       className={cn(
-        'group bg-secondary xs:h-[330px] flex h-[440px] w-full cursor-pointer flex-col rounded-sm opacity-80 transition hover:opacity-100',
+        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-80 transition hover:opacity-100',
         !domainIsValid && 'pointer-events-none opacity-40',
         className
       )}
     >
-      <div className='xs:max-h-[250px] relative flex max-h-[320px] w-full flex-col justify-between sm:max-h-[240px]'>
+      <div className='xs:max-h-[240px] relative flex max-h-[340px] w-full flex-col justify-between'>
         <NameImage
           name={domain.name}
           tokenId={domain.token_id}

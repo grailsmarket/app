@@ -14,7 +14,7 @@ import Watchlist from './watchlist'
 
 const Navigation = () => {
   return (
-    <header className='px-lg bg-background/60 fixed top-0 left-0 z-50 h-20 w-full backdrop-blur-md'>
+    <header className='px-lg bg-background border-secondary fixed top-0 left-0 z-50 h-20 w-full border-b-2 backdrop-blur-md'>
       <nav className='mx-auto flex h-full max-w-7xl items-center justify-between'>
         <div className='flex items-center gap-8'>
           <Link href='/'>

@@ -21,6 +21,9 @@ import { mainnet } from 'viem/chains'
 import { useAccount, useBalance } from 'wagmi'
 import { parseUnits } from 'viem'
 import { WETH_ADDRESS, USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import ClaimPoap from '../poap/claimPoap'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { useAppSelector } from '@/state/hooks'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -31,6 +34,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const { modifyCart } = useModifyCart()
   const { createOffer, isLoading, isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
   const { address } = useAccount()
+  const { poapClaimed } = useAppSelector(selectUserProfile)
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
@@ -134,182 +138,191 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
       setSuccess(true)
 
       modifyCart({ domain, inCart: true, cartType: 'sales' })
-
-      // Close modal after 2 seconds
-      setTimeout(() => {
-        onClose()
-        setSuccess(false)
-      }, 2000)
     } catch (err) {
       console.error('Failed to create offer:', err)
     }
   }
 
   return (
-    <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'>
+    <div
+      onClick={() => {
+        if (success || isLoading) return
+        onClose()
+      }}
+      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'
+    >
       <div
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
         className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-md border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
-        <h2 className='font-sedan-sc pb-2 text-center text-2xl'>Make Offer</h2>
-
-        {success ? (
-          <>
-            <div className='flex flex-col items-center justify-between gap-2 py-4 text-center'>
-              <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <div className='mb-2 text-xl font-bold'>Offer Created Successfully!</div>
-            </div>
-            <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
-              <p className='text-label text-lg font-bold'>Close</p>
-            </SecondaryButton>
-          </>
+        {success && !poapClaimed ? (
+          <ClaimPoap />
         ) : (
-          <div className='space-y-4'>
-            <div className='flex w-full items-center justify-between gap-2'>
-              <p className='font-sedan-sc text-2xl'>Name</p>
-              <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
-            </div>
-            <div className='border-primary p-md flex flex-col gap-1 rounded-md border'>
-              <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
-              <div className='flex flex-col gap-0.5'>
-                <div
-                  onClick={() => {
-                    setSelectedMarketplace(
-                      selectedMarketplace.includes('grails')
-                        ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
-                        : [...selectedMarketplace, 'grails']
-                    )
-                  }}
-                  className='p-md hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
-                >
-                  <div className='flex items-center gap-2'>
-                    <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
-                    <p className='font-sedan-sc text-2xl'>Grails</p>
+          <>
+            <h2 className='font-sedan-sc pb-2 text-center text-2xl'>Make Offer</h2>
+
+            {success ? (
+              <>
+                <div className='flex flex-col items-center justify-between gap-2 py-4 text-center'>
+                  <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
+                    <Check className='text-background h-6 w-6' />
                   </div>
-                  <FilterSelector
-                    onClick={() =>
-                      setSelectedMarketplace(
-                        selectedMarketplace.includes('grails')
-                          ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
-                          : [...selectedMarketplace, 'grails']
-                      )
-                    }
-                    isActive={selectedMarketplace.includes('grails')}
+                  <div className='mb-2 text-xl font-bold'>Offer Created Successfully!</div>
+                </div>
+                <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
+                  <p className='text-label text-lg font-bold'>Close</p>
+                </SecondaryButton>
+              </>
+            ) : (
+              <div className='space-y-4'>
+                <div className='flex w-full items-center justify-between gap-2'>
+                  <p className='font-sedan-sc text-2xl'>Name</p>
+                  <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
+                </div>
+                <div className='border-primary p-md flex flex-col gap-1 rounded-md border'>
+                  <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
+                  <div className='flex flex-col gap-0.5'>
+                    <div
+                      onClick={() => {
+                        setSelectedMarketplace(
+                          selectedMarketplace.includes('grails')
+                            ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
+                            : [...selectedMarketplace, 'grails']
+                        )
+                      }}
+                      className='p-md hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
+                    >
+                      <div className='flex items-center gap-2'>
+                        <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
+                        <p className='font-sedan-sc text-2xl'>Grails</p>
+                      </div>
+                      <FilterSelector
+                        onClick={() =>
+                          setSelectedMarketplace(
+                            selectedMarketplace.includes('grails')
+                              ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
+                              : [...selectedMarketplace, 'grails']
+                          )
+                        }
+                        isActive={selectedMarketplace.includes('grails')}
+                      />
+                    </div>
+                    <div
+                      onClick={() => {
+                        setSelectedMarketplace(
+                          selectedMarketplace.includes('opensea')
+                            ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
+                            : [...selectedMarketplace, 'opensea']
+                        )
+                      }}
+                      className='hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md p-2 transition-colors'
+                    >
+                      <div className='flex items-center gap-2'>
+                        <Image src={OpenSeaIcon} alt='OpenSea' width={24} height={24} />
+                        <p className='text-xl font-bold'>OpenSea</p>
+                      </div>
+                      <FilterSelector
+                        onClick={() =>
+                          setSelectedMarketplace(
+                            selectedMarketplace.includes('opensea')
+                              ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
+                              : [...selectedMarketplace, 'opensea']
+                          )
+                        }
+                        isActive={selectedMarketplace.includes('opensea')}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className='relative z-20'>
+                  <Dropdown
+                    label='Duration'
+                    placeholder='Select a duration'
+                    options={durationOptions}
+                    value={expiryDate}
+                    onSelect={(value) => {
+                      setExpiryDate(Number(value))
+                      if (Number(value) === 0) setShowDatePicker(true)
+                    }}
+                  />
+                  {expiryDate === 0 && showDatePicker && (
+                    <DatePicker
+                      onSelect={(timestamp) => setExpiryDate(timestamp)}
+                      onClose={() => {
+                        setShowDatePicker(false)
+                      }}
+                      className='absolute top-14 left-0 w-full'
+                    />
+                  )}
+                </div>
+
+                <div>
+                  <Dropdown
+                    label='Currency'
+                    options={currencyOptions}
+                    value={currency}
+                    onSelect={(value) => setCurrency(value as 'WETH' | 'USDC')}
                   />
                 </div>
-                <div
-                  onClick={() => {
-                    setSelectedMarketplace(
-                      selectedMarketplace.includes('opensea')
-                        ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
-                        : [...selectedMarketplace, 'opensea']
-                    )
-                  }}
-                  className='hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md p-2 transition-colors'
-                >
-                  <div className='flex items-center gap-2'>
-                    <Image src={OpenSeaIcon} alt='OpenSea' width={24} height={24} />
-                    <p className='text-xl font-bold'>OpenSea</p>
-                  </div>
-                  <FilterSelector
-                    onClick={() =>
-                      setSelectedMarketplace(
-                        selectedMarketplace.includes('opensea')
-                          ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
-                          : [...selectedMarketplace, 'opensea']
-                      )
-                    }
-                    isActive={selectedMarketplace.includes('opensea')}
+
+                <div>
+                  <Input
+                    type='number'
+                    label='Price'
+                    value={price}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value === '') setPrice(undefined)
+                      else setPrice(Number(value))
+                    }}
+                    placeholder='0.1'
+                    min={0}
+                    step={0.001}
                   />
+                  <div className='py-sm px-md mt-1 flex items-center justify-between'>
+                    <p className='text-md text-gray-400'>
+                      Balance: {currentBalanceFormatted} {currency}
+                    </p>
+                    {price && !hasSufficientBalance && (
+                      <p className='text-md font-semibold text-red-400'>Insufficient balance</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className='text-center text-sm text-gray-400'>
+                  By making an offer, you&apos;re committing to purchase this NFT if the seller accepts. The offer will
+                  be signed with your wallet.
+                </div>
+
+                <div className='flex flex-col gap-2'>
+                  <PrimaryButton
+                    disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
+                    onClick={
+                      isCorrectChain
+                        ? handleSubmit
+                        : (e) => checkChain({ chainId: mainnet.id, onSuccess: () => handleSubmit(e) })
+                    }
+                    className='h-10 w-full'
+                  >
+                    {isCorrectChain
+                      ? !hasSufficientBalance
+                        ? `Insufficient ${currency} Balance`
+                        : isLoading
+                          ? 'Submitting Offer...'
+                          : 'Make Offer'
+                      : 'Switch Chain'}
+                  </PrimaryButton>
+                  <SecondaryButton onClick={onClose} className='h-10 w-full'>
+                    Close
+                  </SecondaryButton>
                 </div>
               </div>
-            </div>
-
-            <div className='relative z-20'>
-              <Dropdown
-                label='Duration'
-                placeholder='Select a duration'
-                options={durationOptions}
-                value={expiryDate}
-                onSelect={(value) => {
-                  setExpiryDate(Number(value))
-                  if (Number(value) === 0) setShowDatePicker(true)
-                }}
-              />
-              {expiryDate === 0 && showDatePicker && (
-                <DatePicker
-                  onSelect={(timestamp) => setExpiryDate(timestamp)}
-                  onClose={() => {
-                    setShowDatePicker(false)
-                  }}
-                  className='absolute top-14 left-0 w-full'
-                />
-              )}
-            </div>
-
-            <div>
-              <Dropdown
-                label='Currency'
-                options={currencyOptions}
-                value={currency}
-                onSelect={(value) => setCurrency(value as 'WETH' | 'USDC')}
-              />
-            </div>
-
-            <div>
-              <Input
-                type='number'
-                label='Price'
-                value={price}
-                onChange={(e) => {
-                  const value = e.target.value
-                  if (value === '') setPrice(undefined)
-                  else setPrice(Number(value))
-                }}
-                placeholder='0.1'
-                min={0}
-                step={0.001}
-              />
-              <div className='py-sm px-md mt-1 flex items-center justify-between'>
-                <p className='text-md text-gray-400'>
-                  Balance: {currentBalanceFormatted} {currency}
-                </p>
-                {price && !hasSufficientBalance && (
-                  <p className='text-md font-semibold text-red-400'>Insufficient balance</p>
-                )}
-              </div>
-            </div>
-
-            <div className='text-center text-sm text-gray-400'>
-              By making an offer, you&apos;re committing to purchase this NFT if the seller accepts. The offer will be
-              signed with your wallet.
-            </div>
-
-            <div className='flex flex-col gap-2'>
-              <PrimaryButton
-                disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
-                onClick={
-                  isCorrectChain
-                    ? handleSubmit
-                    : (e) => checkChain({ chainId: mainnet.id, onSuccess: () => handleSubmit(e) })
-                }
-                className='h-10 w-full'
-              >
-                {isCorrectChain
-                  ? !hasSufficientBalance
-                    ? `Insufficient ${currency} Balance`
-                    : isLoading
-                      ? 'Submitting Offer...'
-                      : 'Make Offer'
-                  : 'Switch Chain'}
-              </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='h-10 w-full'>
-                Close
-              </SecondaryButton>
-            </div>
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

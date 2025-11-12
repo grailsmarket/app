@@ -18,7 +18,7 @@ interface CancelListingModalProps {
 
 const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listing }) => {
   const { cancelListings, isLoading } = useSeaportClient()
-  const [status, setStatus] = useState<'pending' | 'success' | 'error'>('pending')
+  const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle')
 
   if (!listing) return null
 
@@ -38,8 +38,19 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
   }
 
   return (
-    <div className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'>
-      <div className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-md border-2'>
+    <div
+      onClick={() => {
+        if (status === 'success' || status === 'pending') return
+        onClose()
+      }}
+      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+        className='bg-background border-primary p-md sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 rounded-md border-2'
+      >
         <div className='mb-4 flex items-center justify-center'>
           <h2 className='font-sedan-sc text-3xl'>Cancel Listing</h2>
         </div>
@@ -72,6 +83,11 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
                 <p className='max-w-2/3 truncate text-lg font-medium'>{formatExpiryDate(listing.expires)}</p>
               </div>
             </div>
+            {status === 'error' && (
+              <div className='flex flex-col gap-2'>
+                <p className='text-lg font-medium text-red-500'>Error: Failed to cancel listing</p>
+              </div>
+            )}
             <div className='flex flex-col gap-2'>
               <PrimaryButton onClick={handleCancelListing} disabled={isLoading} className='w-full'>
                 <p className='text-label text-lg font-bold'>{isLoading ? 'Cancelling Listing...' : 'Confirm'}</p>

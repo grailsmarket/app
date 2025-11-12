@@ -24,6 +24,7 @@ type profileState = {
   }
   discord: string | null
   telegram: string | null
+  poapClaimed: boolean
 }
 
 export const nullEnsProfile = {
@@ -46,6 +47,7 @@ const initialState: profileState = {
   },
   discord: null,
   telegram: null,
+  poapClaimed: false,
   watchlist: [],
   pendingWatchlistTokenIds: [],
   selectedTab: portfolioTabs[0],
@@ -70,6 +72,9 @@ export const profileSlice = createSlice({
     },
     setUserTelegram(state, { payload }: PayloadAction<string | null>) {
       state.telegram = payload
+    },
+    setUserPoapClaimed(state, { payload }: PayloadAction<boolean>) {
+      state.poapClaimed = payload
     },
     setWatchlistDomains(state, { payload }: PayloadAction<WatchlistItemType[]>) {
       state.watchlist = payload
@@ -103,6 +108,7 @@ export const profileSlice = createSlice({
       state.email = { address: null, verified: false }
       state.discord = null
       state.telegram = null
+      state.poapClaimed = false
       state.watchlist = []
       state.pendingWatchlistTokenIds = []
     },
@@ -116,6 +122,7 @@ export const {
   setUserEmail,
   setUserDiscord,
   setUserTelegram,
+  setUserPoapClaimed,
   setWatchlistDomains,
   addUserWatchlistDomain,
   addUserWatchlistDomains,

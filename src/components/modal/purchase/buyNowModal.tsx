@@ -21,6 +21,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import ClaimPoap from '../poap/claimPoap'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -80,10 +83,11 @@ function getApprovalTarget(conduitKey: string | undefined): string {
 const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) => {
   const { address } = useAccount()
   const queryClient = useQueryClient()
+  const { modifyCart } = useModifyCart()
   const publicClient = usePublicClient()
   const { data: gasPrice } = useGasPrice()
   const { data: walletClient } = useWalletClient()
-  const { modifyCart } = useModifyCart()
+  const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
   const [step, setStep] = useState<TransactionStep>('review')
@@ -500,7 +504,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
             {!hasSufficientBalance && !needsApproval && gasEstimate && gasPrice && (
               <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-                <p className='text-sm text-red-400'>
+                <p className='text-md text-red-400'>
                   Insufficient balance. You need{' '}
                   {isETHListing
                     ? `${(Number((BigInt(listing.price) + (gasEstimate || BigInt(0)) * (gasPrice || BigInt(0))) / BigInt(10 ** 16)) / 100).toString()} ETH`
@@ -608,10 +612,29 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
-      <div className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'>
-        <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Purchase Name</h2>
-        {getModalContent()}
+    <div
+      onClick={() => {
+        if (step === 'review' || step === 'error') {
+          onClose()
+        }
+        onClose()
+      }}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+        className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'
+      >
+        {!poapClaimed && step === 'success' ? (
+          <ClaimPoap />
+        ) : (
+          <>
+            <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Purchase Name</h2>
+            {getModalContent()}
+          </>
+        )}
       </div>
     </div>
   )

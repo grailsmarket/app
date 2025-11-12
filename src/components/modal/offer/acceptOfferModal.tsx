@@ -22,6 +22,9 @@ import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
 import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
+import ClaimPoap from '../poap/claimPoap'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -60,6 +63,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const queryClient = useQueryClient()
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
+  const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
   const [step, setStep] = useState<TransactionStep>('review')
@@ -485,11 +489,28 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'>
-      <div className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'>
-        <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Accept Offer</h2>
-
-        {getModalContent()}
+    <div
+      onClick={() => {
+        if (step === 'review' || step === 'error') {
+          onClose()
+        }
+      }}
+      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
+    >
+      <div
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+        className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'
+      >
+        {step === 'success' && !poapClaimed ? (
+          <ClaimPoap />
+        ) : (
+          <>
+            <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Accept Offer</h2>
+            {getModalContent()}
+          </>
+        )}
       </div>
     </div>
   )

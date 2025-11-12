@@ -19,6 +19,8 @@ import {
   setCartUnregisteredDomains,
 } from '@/state/reducers/domains/marketplaceDomains'
 import { getCart } from '@/api/cart/getCart'
+import { checkPoap } from '@/api/user/checkPoap'
+import { setUserPoapClaimed } from '@/state/reducers/portfolio/profile'
 
 type userContextType = {
   userAddress: Address | undefined
@@ -37,6 +39,7 @@ type userContextType = {
   isCartDomainsLoading: boolean
   isSettingsOpen: boolean
   setIsSettingsOpen: Dispatch<SetStateAction<boolean>>
+  isPoapClaimed: boolean
 }
 
 type Props = {
@@ -68,6 +71,19 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
       return result
     },
     enabled: !!address && authStatus === 'authenticated',
+  })
+
+  const { data: isPoapClaimed } = useQuery({
+    queryKey: ['isPoapClaimed', address],
+    queryFn: async () => {
+      if (!address) return false
+
+      const result = await checkPoap()
+      dispatch(setUserPoapClaimed(result))
+      return result
+    },
+    enabled: !!address && authStatus === 'authenticated',
+    initialData: false,
   })
 
   const handleGetNonce = useCallback(async () => {
@@ -127,6 +143,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         isCartDomainsLoading,
         isSettingsOpen,
         setIsSettingsOpen,
+        isPoapClaimed,
       }}
     >
       {children}

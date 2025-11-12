@@ -1,6 +1,7 @@
 'use client'
 
 import { useFilterButtons } from '@/components/filters/hooks/useFilterButtons'
+import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { persistor } from '@/state'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -8,6 +9,7 @@ import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFi
 import {
   selectBulkRenewalModal,
   setBulkRenewalModalCanAddDomains,
+  setBulkRenewalModalDomains,
   setBulkRenewalModalOpen,
 } from '@/state/reducers/modals/bulkRenewalModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -36,16 +38,26 @@ const ActionButtons = () => {
       </div>
       <div className={cn('flex w-fit flex-row gap-x-2', open ? 'hidden lg:flex' : 'flex')}>
         {selectedTab.value === 'domains' && canAddDomains && (
-          <SecondaryButton
+          <PrimaryButton
             onClick={() => dispatch(setBulkRenewalModalOpen(true))}
             disabled={domainsToRenew?.length === 0}
           >
-            Open Modal
-          </SecondaryButton>
+            Extend
+          </PrimaryButton>
         )}
         {selectedTab.value === 'domains' && (
-          <SecondaryButton onClick={() => dispatch(setBulkRenewalModalCanAddDomains(!canAddDomains))}>
-            {canAddDomains ? 'Disable Bulk Extend' : 'Bulk Extend'}
+          <SecondaryButton
+            onClick={() => {
+              if (canAddDomains) {
+                dispatch(setBulkRenewalModalDomains([]))
+                dispatch(setBulkRenewalModalCanAddDomains(false))
+                return
+              }
+
+              dispatch(setBulkRenewalModalCanAddDomains(true))
+            }}
+          >
+            {canAddDomains ? 'Cancel' : 'Bulk Extend'}
           </SecondaryButton>
         )}
       </div>

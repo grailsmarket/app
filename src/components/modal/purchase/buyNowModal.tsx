@@ -431,7 +431,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           address: SEAPORT_ADDRESS as `0x${string}`,
           abi: SEAPORT_ABI,
           functionName: 'fulfillBasicOrder_efficient_6GL6yc',
-          // @ts-expect-error BasicOrderParameters is of the correct type
           args: [basicOrderParams],
           value: totalPayment,
           gas: gasEstimate || undefined, // Use estimated gas if available

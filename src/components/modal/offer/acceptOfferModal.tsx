@@ -114,8 +114,9 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       try {
         // For accepting offers, we use fulfillAdvancedOrder
-        const fulfillerConduitKey = '0x0000000000000000000000000000000000000000000000000000000000000000'
         const advancedOrder = orderBuilder.buildAdvancedOrder(order)
+        const fulfillerConduitKey =
+          advancedOrder.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
 
         const estimatedGas = await publicClient.estimateContractGas({
           address: SEAPORT_ADDRESS as `0x${string}`,
@@ -399,7 +400,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
                 }
                 className='w-full'
-              // disabled={isCorrectChain ? needsApproval : false}
+                // disabled={isCorrectChain ? needsApproval : false}
               >
                 {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
               </PrimaryButton>

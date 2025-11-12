@@ -24,7 +24,11 @@ export const checkIfWrapped = async (domain: string) => {
   `
   const response = await fetch(`https://ensnode-api-production-500f.up.railway.app/subgraph`, {
     method: 'POST',
-    body: JSON.stringify({ query }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: query,
+      operationName: 'GetRegistrations',
+    }),
   })
 
   if (!response.ok) {

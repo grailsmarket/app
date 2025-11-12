@@ -239,6 +239,7 @@ export function useSeaportClient() {
 
         const result = await seaportClient.createOffer({
           tokenId: params.tokenId,
+          ensName: params.ensName,
           price: params.price,
           currency: params.currency,
           expiryDate: params.expiryDate,

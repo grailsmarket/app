@@ -34,6 +34,7 @@ import {
   USE_CONDUIT,
 } from '@/constants/web3/contracts'
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
+import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 
 // Type definitions for ethers compatibility
 interface EthersTransaction {
@@ -1535,6 +1536,7 @@ export class SeaportClient {
    */
   async createOffer(params: {
     tokenId: string
+    ensName: string
     price: number
     currency: 'WETH' | 'USDC'
     expiryDate: number
@@ -1579,6 +1581,7 @@ export class SeaportClient {
    */
   private async createOfferForMarketplace(params: {
     tokenId: string
+    ensName: string
     price: number
     expiryDate: number
     offererAddress: string
@@ -1589,7 +1592,11 @@ export class SeaportClient {
       throw new Error('Seaport client not initialized')
     }
 
-    const { tokenId, price, expiryDate, offererAddress, marketplace } = params
+    const { tokenId, price, expiryDate, offererAddress, marketplace, ensName } = params
+
+    const isWrapped = await checkIfWrapped(ensName)
+    const tokenContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+    const tokenIdentifier = isWrapped ? this.labelhashToNamehash(tokenId) : tokenId
 
     // Determine conduit key based on marketplace
     const useOpenseaConduit = marketplace === 'opensea'
@@ -1617,8 +1624,8 @@ export class SeaportClient {
     const consideration: ConsiderationInputItem[] = [
       {
         itemType: ItemType.ERC721, // ENS NFT
-        token: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-        identifier: tokenId,
+        token: tokenContract as `0x${string}`,
+        identifier: tokenIdentifier,
         recipient: offererAddress as `0x${string}`,
       },
     ]

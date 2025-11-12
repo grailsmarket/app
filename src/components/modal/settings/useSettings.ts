@@ -1,4 +1,6 @@
+import { authFetch } from '@/api/authFetch'
 import { updateSettings } from '@/api/user/updateSettings'
+import { API_URL } from '@/constants/api'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectUserProfile,
@@ -39,6 +41,12 @@ export const useSettings = () => {
       console.error('Error updating user profile', error)
     },
   })
+
+  const sendVerificationEmail = () => {
+    authFetch(`${API_URL}/verification/resend`, {
+      method: 'POST',
+    })
+  }
 
   const isEmailVerified = useMemo(() => {
     if (email.address === null) return true
@@ -81,5 +89,6 @@ export const useSettings = () => {
     updateUserProfileMutation,
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,
+    sendVerificationEmail,
   }
 }

@@ -14,6 +14,7 @@ import TabSwitcher from './tabSwitcher'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useUserContext } from '@/context/user'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
+import { selectBulkRenewalModal } from '@/state/reducers/modals/bulkRenewalModal'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
@@ -23,6 +24,7 @@ const DomainPanel = () => {
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, displayedDetails } = useDomains()
   const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const { canAddDomains } = useAppSelector(selectBulkRenewalModal)
 
   const disconnectMessage = {
     domains: 'Sign in to view your domains.',
@@ -30,8 +32,8 @@ const DomainPanel = () => {
   }[selectedTab.value as 'domains' | 'watchlist']
 
   const noResultMessage = {
-    domains: 'No domains found. Try clearing your filters.',
-    watchlist: 'No domains found. Try clearing your filters.',
+    domains: 'No names found. Try clearing your filters.',
+    watchlist: 'No names found. Try clearing your filters.',
   }[selectedTab.value as 'domains' | 'watchlist']
 
   return (
@@ -73,6 +75,7 @@ const DomainPanel = () => {
         maxHeight='calc(100vh - 220px)'
         domains={domains}
         loadingRowCount={20}
+        paddingBottom={selectedTab.value === 'watchlist' ? '300px' : '140px'}
         noResults={!domainsLoading && domains?.length === 0}
         noResultsLabel={authStatus === 'unauthenticated' ? disconnectMessage : noResultMessage}
         isLoading={domainsLoading}
@@ -85,6 +88,7 @@ const DomainPanel = () => {
         displayedDetails={displayedDetails}
         scrollEnabled={isAtBottom}
         showWatchlist={selectedTab.value === 'watchlist'}
+        isBulkRenewing={selectedTab.value === 'domains' && canAddDomains}
       />
     </div>
   )

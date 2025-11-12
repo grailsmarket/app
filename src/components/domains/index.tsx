@@ -29,6 +29,7 @@ interface DomainsProps {
   paddingBottom?: string
   scrollEnabled?: boolean
   showWatchlist?: boolean
+  isBulkRenewing?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -47,6 +48,7 @@ const Domains: React.FC<DomainsProps> = ({
   paddingBottom,
   scrollEnabled = true,
   showWatchlist = false,
+  isBulkRenewing = false,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const viewTypeToUse = forceViewType || viewType
@@ -139,6 +141,7 @@ const Domains: React.FC<DomainsProps> = ({
                     isFirstInRow={index % columnsCount === 0}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
+                    isBulkRenewing={isBulkRenewing}
                   />
                 )
               }}
@@ -171,6 +174,7 @@ const Domains: React.FC<DomainsProps> = ({
                     displayedColumns={displayedColumns}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
+                    isBulkRenewing={isBulkRenewing}
                   />
                 )
               }}

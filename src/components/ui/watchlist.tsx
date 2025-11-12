@@ -29,6 +29,7 @@ interface WatchlistProps {
   showSettings?: boolean
   dropdownPosition?: 'right' | 'left'
   watchlistId?: number | undefined
+  showSettingsArrow?: boolean
 }
 
 const watchlistSettingsLabels: Record<keyof WatchlistSettingsType, string> = {
@@ -49,6 +50,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
   showSettings = false,
   dropdownPosition = 'right',
   watchlistId,
+  showSettingsArrow = true,
 }) => {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const outsideSettingsRef = useClickAway(() => setSettingsOpen(false))
@@ -118,7 +120,9 @@ const Watchlist: React.FC<WatchlistProps> = ({
             onClick={() => setSettingsOpen(!settingsOpen)}
           >
             <Image src={BellIcon} alt='Settings' width={22} height={22} className='h-5 w-5 opacity-100' />
-            <ShortArrow className={cn('h-4 w-4 transition-transform', settingsOpen ? 'rotate-0' : 'rotate-180')} />
+            {showSettingsArrow && (
+              <ShortArrow className={cn('h-4 w-4 transition-transform', settingsOpen ? 'rotate-0' : 'rotate-180')} />
+            )}
           </button>
           <div
             onClick={(e) => {

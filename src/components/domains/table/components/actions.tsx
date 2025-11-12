@@ -11,6 +11,12 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import Watchlist from '@/components/ui/watchlist'
+import {
+  addBulkRenewalModalDomain,
+  removeBulkRenewalModalDomain,
+  selectBulkRenewalModal,
+} from '@/state/reducers/modals/bulkRenewalModal'
+import { Check } from 'ethereum-identity-kit'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -18,11 +24,13 @@ interface ActionsProps {
   columnCount: number
   canAddToCart: boolean
   watchlistId?: number | undefined
+  isBulkRenewing?: boolean
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, index, watchlistId }) => {
+const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, index, watchlistId, isBulkRenewing }) => {
   const dispatch = useAppDispatch()
   const { filterType } = useFilterContext()
+  const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
   const { selectedTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
@@ -51,6 +59,36 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
+      if (isBulkRenewing) {
+        const isSelected = bulkRenewalDomains.some((d) => d.name === domain.name)
+        return (
+          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
+            {isSelected ? (
+              <PrimaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(removeBulkRenewalModalDomain(domain))
+                }}
+                className='flex flex-row items-center gap-1'
+              >
+                <p>Selected</p>
+                <Check className='text-background h-3 w-3' />
+              </PrimaryButton>
+            ) : (
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(addBulkRenewalModalDomain(domain))
+                }}
+              >
+                Select
+              </SecondaryButton>
+            )}
+          </div>
+        )
+      }
       if (domainListing?.price) {
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
@@ -60,7 +98,13 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
         )
       }
       return (
-        <div className={cn('flex flex-row justify-end opacity-100', width)}>
+        <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
+          {/* <SecondaryButton onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            dispatch(setBulkRenewalModalOpen(true))
+            dispatch(setBulkRenewalModalDomains([domain]))
+          }}>Extend</SecondaryButton> */}
           <PrimaryButton onClick={openListModal}>List</PrimaryButton>
         </div>
       )

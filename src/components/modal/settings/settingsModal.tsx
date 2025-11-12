@@ -9,6 +9,8 @@ import Link from 'next/link'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import AlertCircle from 'public/icons/alert-circle.svg'
 import ErrorIcon from 'public/icons/cancelled.svg'
+import SecondaryButton from '@/components/ui/buttons/secondary'
+import CheckCircle from 'public/icons/check-circle.svg'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -30,6 +32,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     updateUserProfileMutation,
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,
+    sendVerificationEmail,
   } = useSettings()
 
   if (!isOpen) return null
@@ -92,13 +95,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             placeholder='@telegramusername'
           /> */}
         </div>
-        {!isEmailVerified && (
-          <div className='bg-secondary p-md flex items-center gap-2 rounded-md'>
-            <Image src={AlertCircle} alt='Email Verified' height={32} width={32} />
-            <p style={{ maxWidth: 'calc(100% - 48px)' }} className='text-md font-medium text-[#E79339]'>
-              Your email address {emailAddress} is not verified. You have received an email to verify your email address
-              on Grails.
-            </p>
+        {isEmailVerified ? (
+          <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
+            <Image src={CheckCircle} alt='Email Verified' height={20} width={20} />
+            <p className='text-md max-w-full font-medium text-[#16A34A]'>Your email address is verified.</p>
+          </div>
+        ) : (
+          <div className='flex flex-row gap-2'>
+            <div className='p-md flex items-center gap-2 rounded-md bg-yellow-400/10'>
+              <Image src={AlertCircle} alt='Email Verified' height={32} width={32} />
+              <p className='text-md max-w-full font-medium text-[#E79339]'>
+                Your email address is not verified. You have received an email to verify your email.
+              </p>
+            </div>
+            <SecondaryButton className='w-40 px-0!' onClick={() => sendVerificationEmail()}>
+              Resend Email
+            </SecondaryButton>
           </div>
         )}
         {updateUserProfileMutationError && (

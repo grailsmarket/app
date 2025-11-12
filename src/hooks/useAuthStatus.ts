@@ -42,6 +42,8 @@ export const useAuth = () => {
     placeholderData: 'loading',
     initialData: 'loading',
     enabled: !!address,
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
 
   useEffect(() => {

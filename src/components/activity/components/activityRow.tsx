@@ -31,7 +31,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
 
   const columnWidth = `${100 / displayedColumns.length}%`
   const columns = {
-    event: <Event event={activity.event_type} />,
+    event: <Event event={activity.event_type} platform={activity.platform} />,
     name: <Name name={activity.name} tokenId={activity.token_id} />,
     price: (
       <Price
@@ -40,9 +40,9 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
         tooltipPosition={index === 0 ? 'bottom' : 'top'}
       />
     ),
-    user: addressToShow && <User address={addressToShow} />,
-    from: activity.actor_address && <User address={activity.actor_address} />,
-    to: activity.counterparty_address && <User address={activity.counterparty_address} />,
+    user: addressToShow && <User address={addressToShow} className='max-w-[95%]' />,
+    from: activity.actor_address && <User address={activity.actor_address} className='max-w-[95%]' />,
+    to: activity.counterparty_address && <User address={activity.counterparty_address} className='max-w-[95%]' />,
     time: activity.created_at ? (
       <ActivityTime
         timestamp={activity.created_at}

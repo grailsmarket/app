@@ -12,6 +12,7 @@ export interface DropdownOption {
 
 interface DropdownProps {
   label: string
+  hideLabel?: boolean
   options: DropdownOption[]
   value: string | number
   onSelect: (value: string | number) => void
@@ -21,6 +22,7 @@ interface DropdownProps {
 
 const Dropdown: React.FC<DropdownProps> = ({
   label,
+  hideLabel = false,
   options,
   value,
   onSelect,
@@ -51,16 +53,21 @@ const Dropdown: React.FC<DropdownProps> = ({
     <div className={cn('w-full', className)}>
       <div className='flex'>
         {/* Label section */}
-        <div className='bg-background border-primary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
-          <span className='text-lg font-semibold'>{label}</span>
-        </div>
+        {!hideLabel && (
+          <div className='bg-background border-primary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
+            <span className='text-lg font-semibold'>{label}</span>
+          </div>
+        )}
 
         {/* Dropdown button section */}
         <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className='relative flex-1'>
           <button
             type='button'
             onClick={() => setIsOpen(!isOpen)}
-            className='bg-secondary border-primary hover:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors focus:outline-none'
+            className={cn(
+              'bg-secondary border-primary hover:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors focus:outline-none',
+              hideLabel && 'rounded-md'
+            )}
           >
             <div className='flex items-center gap-2'>
               {selectedOption?.icon && (

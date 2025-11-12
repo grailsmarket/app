@@ -17,6 +17,7 @@ import Image from 'next/image'
 import { MarketplaceDomainType } from '@/types/domains'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
+import { cn } from '@/utils/tailwind'
 
 interface CreateListingModalProps {
   onClose: () => void
@@ -108,6 +109,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       fees.push({ label: 'OpenSea Fee (1%)', amount: price * 0.01 })
     }
 
+    if (selectedMarketplace.includes('grails')) {
+      fees.push({ label: 'Grails Fee (0%)', amount: price * 0.0 })
+    }
+
     const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0)
     const netProceeds = price - totalFees
 
@@ -140,10 +145,19 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='font-sedan-sc text-2xl'>Name</p>
               <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
             </div>
-            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border'>
-              <label className='mb-2 block text-xl font-medium'>Marketplace</label>
-              <div className='flex flex-col gap-4'>
-                <div className='flex w-full items-center justify-between'>
+            <div className='border-primary p-md flex flex-col gap-1 rounded-md border'>
+              <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
+              <div className='flex flex-col gap-0.5'>
+                <div
+                  onClick={() => {
+                    setSelectedMarketplace(
+                      selectedMarketplace.includes('grails')
+                        ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
+                        : [...selectedMarketplace, 'grails']
+                    )
+                  }}
+                  className='p-md hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
+                >
                   <div className='flex items-center gap-2'>
                     <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
                     <p className='font-sedan-sc text-2xl'>Grails</p>
@@ -159,7 +173,16 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     isActive={selectedMarketplace.includes('grails')}
                   />
                 </div>
-                <div className='flex w-full items-center justify-between'>
+                <div
+                  onClick={() => {
+                    setSelectedMarketplace(
+                      selectedMarketplace.includes('opensea')
+                        ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
+                        : [...selectedMarketplace, 'opensea']
+                    )
+                  }}
+                  className='hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md p-2 transition-colors'
+                >
                   <div className='flex items-center gap-2'>
                     <Image src={OpenSeaIcon} alt='OpenSea' width={24} height={24} />
                     <p className='text-xl font-bold'>OpenSea</p>
@@ -236,7 +259,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     </span>
                   </div>
                   {calculateFees()!.fees.map((fee, idx) => (
-                    <div key={idx} className='flex justify-between text-red-400'>
+                    <div
+                      key={idx}
+                      className={cn('flex justify-between', fee.amount > 0 ? 'text-red-400' : 'text-green-400')}
+                    >
                       <span>- {fee.label}:</span>
                       <span>
                         {fee.amount.toFixed(currency === 'USDC' ? 2 : 4)} {currency}
@@ -267,7 +293,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             {error && <div className='text-center text-lg text-red-500'>Error: {error}</div>}
             <div className='flex flex-col gap-2'>
               <PrimaryButton
-                disabled={isLoading || !price || selectedMarketplace.length === 0}
+                disabled={isLoading || !price || selectedMarketplace.length === 0 || expiryDate < currentTimestamp}
                 onClick={
                   isCorrectChain
                     ? handleSubmit

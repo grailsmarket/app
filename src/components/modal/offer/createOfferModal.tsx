@@ -18,6 +18,9 @@ import { Check } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
+import { useAccount, useBalance } from 'wagmi'
+import { parseUnits } from 'viem'
+import { WETH_ADDRESS, USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -27,6 +30,7 @@ interface CreateOfferModalProps {
 const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) => {
   const { modifyCart } = useModifyCart()
   const { createOffer, isLoading, isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
+  const { address } = useAccount()
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
@@ -47,6 +51,40 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
     { value: 'WETH', label: 'WETH (Wrapped Ether)', icon: WrappedEtherIcon },
     { value: 'USDC', label: 'USDC (USD Coin)', icon: UsdcIcon },
   ]
+
+  // Get token balances
+  const { data: wethBalance } = useBalance({
+    address,
+    token: WETH_ADDRESS as `0x${string}`,
+  })
+
+  const { data: usdcBalance } = useBalance({
+    address,
+    token: USDC_ADDRESS as `0x${string}`,
+  })
+
+  // Check if user has sufficient balance
+  const hasSufficientBalance = useMemo(() => {
+    if (!price) return true // No price entered yet
+
+    const selectedBalance = currency === 'WETH' ? wethBalance : usdcBalance
+    if (!selectedBalance) return false
+
+    const decimals = TOKEN_DECIMALS[currency]
+    const priceInWei = parseUnits(price.toString(), decimals)
+
+    return selectedBalance.value >= priceInWei
+  }, [price, currency, wethBalance, usdcBalance])
+
+  // Get the current balance formatted
+  const currentBalanceFormatted = useMemo(() => {
+    const selectedBalance = currency === 'WETH' ? wethBalance : usdcBalance
+    if (!selectedBalance) return '0'
+
+    const decimals = TOKEN_DECIMALS[currency]
+    const balance = Number(selectedBalance.value) / Math.pow(10, decimals)
+    return balance.toFixed(4)
+  }, [currency, wethBalance, usdcBalance])
 
   useEffect(() => {
     getCurrentChain()
@@ -133,10 +171,19 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
               <p className='font-sedan-sc text-2xl'>Name</p>
               <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
             </div>
-            <div className='border-primary p-lg flex flex-col gap-2 rounded-md border'>
-              <label className='mb-2 block text-xl font-medium'>Marketplace</label>
-              <div className='flex flex-col gap-4'>
-                <div className='flex w-full items-center justify-between'>
+            <div className='border-primary p-md flex flex-col gap-1 rounded-md border'>
+              <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
+              <div className='flex flex-col gap-0.5'>
+                <div
+                  onClick={() => {
+                    setSelectedMarketplace(
+                      selectedMarketplace.includes('grails')
+                        ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
+                        : [...selectedMarketplace, 'grails']
+                    )
+                  }}
+                  className='p-md hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
+                >
                   <div className='flex items-center gap-2'>
                     <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
                     <p className='font-sedan-sc text-2xl'>Grails</p>
@@ -152,7 +199,16 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                     isActive={selectedMarketplace.includes('grails')}
                   />
                 </div>
-                <div className='flex w-full items-center justify-between'>
+                <div
+                  onClick={() => {
+                    setSelectedMarketplace(
+                      selectedMarketplace.includes('opensea')
+                        ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
+                        : [...selectedMarketplace, 'opensea']
+                    )
+                  }}
+                  className='hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md p-2 transition-colors'
+                >
                   <div className='flex items-center gap-2'>
                     <Image src={OpenSeaIcon} alt='OpenSea' width={24} height={24} />
                     <p className='text-xl font-bold'>OpenSea</p>
@@ -216,6 +272,14 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                 min={0}
                 step={0.001}
               />
+              <div className='py-sm px-md mt-1 flex items-center justify-between'>
+                <p className='text-md text-gray-400'>
+                  Balance: {currentBalanceFormatted} {currency}
+                </p>
+                {price && !hasSufficientBalance && (
+                  <p className='text-md font-semibold text-red-400'>Insufficient balance</p>
+                )}
+              </div>
             </div>
 
             <div className='text-center text-sm text-gray-400'>
@@ -225,7 +289,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
             <div className='flex flex-col gap-2'>
               <PrimaryButton
-                disabled={isLoading || !price || selectedMarketplace.length === 0}
+                disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
                 onClick={
                   isCorrectChain
                     ? handleSubmit
@@ -233,7 +297,13 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                 }
                 className='h-10 w-full'
               >
-                {isCorrectChain ? (isLoading ? 'Submitting Offer...' : 'Make Offer') : 'Switch Chain'}
+                {isCorrectChain
+                  ? !hasSufficientBalance
+                    ? `Insufficient ${currency} Balance`
+                    : isLoading
+                      ? 'Submitting Offer...'
+                      : 'Make Offer'
+                  : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='h-10 w-full'>
                 Close

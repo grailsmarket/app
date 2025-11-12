@@ -18,6 +18,8 @@ import GlobalSearchModal from '@/components/modal/search/globalSearchModal'
 import { selectSearchModal, setSearchModalOpen } from '@/state/reducers/modals/searchModal'
 import NotificationModal from '@/components/modal/notifications/notificationModal'
 import { selectNotificationModal, setNotificationModalOpen } from '@/state/reducers/modals/notificationModal'
+import ExtendModal from '@/components/modal/renewal/extendModal'
+import { selectBulkRenewalModal, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import SettingsModal from '@/components/modal/settings/settingsModal'
 import { useUserContext } from '@/context/user'
 
@@ -43,6 +45,7 @@ const Modals: React.FC = () => {
   } = useAppSelector(selectBuyNowModal)
   const { open: searchModalOpen, query: searchModalQuery } = useAppSelector(selectSearchModal)
   const { open: notificationModalOpen } = useAppSelector(selectNotificationModal)
+  const { open: bulkRenewalModalOpen } = useAppSelector(selectBulkRenewalModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
 
   return (
@@ -89,7 +92,8 @@ const Modals: React.FC = () => {
         initialQuery={searchModalQuery}
       />
       <NotificationModal isOpen={notificationModalOpen} onClose={() => dispatch(setNotificationModalOpen(false))} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      {bulkRenewalModalOpen && <ExtendModal onClose={() => dispatch(setBulkRenewalModalOpen(false))} />}
+      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
     </div>
   )
 }

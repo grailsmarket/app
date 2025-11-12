@@ -21,7 +21,7 @@ const Home = () => {
           <HeroSearch />
         </div>
         <div className='2xl:max-w-domain-panel mx-auto flex w-full max-w-7xl flex-col gap-4 2xl:flex-row-reverse'>
-          <div className='w-full 2xl:w-2/5'>
+          <div className='w-full 2xl:h-[1000px] 2xl:w-2/5'>
             <RecentContainer />
           </div>
           <div className='w-full 2xl:w-3/5'>

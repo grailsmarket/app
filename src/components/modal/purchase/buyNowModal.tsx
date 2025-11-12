@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, usePublicClient, useWalletClient, useBalance, useGasPrice } from 'wagmi'
 import {
   SEAPORT_ADDRESS,
   MARKETPLACE_CONDUIT_ADDRESS,
@@ -10,7 +10,7 @@ import {
   OPENSEA_CONDUIT_ADDRESS,
   OPENSEA_CONDUIT_KEY,
 } from '@/constants/web3/contracts'
-import { USDC_ADDRESS } from '@/constants/web3/tokens'
+import { USDC_ADDRESS, ETH_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
@@ -81,6 +81,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const { address } = useAccount()
   const queryClient = useQueryClient()
   const publicClient = usePublicClient()
+  const { data: gasPrice } = useGasPrice()
   const { data: walletClient } = useWalletClient()
   const { modifyCart } = useModifyCart()
   const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
@@ -89,11 +90,46 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [gasEstimate, setGasEstimate] = useState<bigint | null>(null)
-  const [gasPrice, setGasPrice] = useState<bigint | null>(null)
   const [needsApproval, setNeedsApproval] = useState(false)
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
 
   const orderBuilder = new SeaportOrderBuilder()
+
+  // Get balances
+  const { data: ethBalance } = useBalance({
+    address,
+  })
+
+  const { data: usdcBalance } = useBalance({
+    address,
+    token: USDC_ADDRESS as `0x${string}`,
+  })
+
+  // Check if listing uses ETH or USDC
+  const isETHListing = useMemo(() => {
+    return !listing?.currency_address || listing.currency_address.toLowerCase() === ETH_ADDRESS.toLowerCase()
+  }, [listing])
+
+  const isUSDCListing = useMemo(() => {
+    return listing?.currency_address?.toLowerCase() === USDC_ADDRESS.toLowerCase()
+  }, [listing])
+
+  // Check if user has sufficient balance
+  const hasSufficientBalance = useMemo(() => {
+    if (!listing) return false
+
+    if (isETHListing) {
+      if (!ethBalance || !gasEstimate || !gasPrice) return false
+      // For ETH, include gas costs in the calculation
+      const totalCost = BigInt(listing.price) + gasEstimate * gasPrice
+      return ethBalance.value >= totalCost
+    } else if (isUSDCListing) {
+      if (!usdcBalance) return false
+      return usdcBalance.value >= BigInt(listing.price)
+    }
+
+    return false
+  }, [listing, isETHListing, isUSDCListing, ethBalance, usdcBalance, gasEstimate, gasPrice])
 
   useEffect(() => {
     // Estimate gas and check approval when modal opens
@@ -102,6 +138,11 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     getCurrentChain()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const formattedGasEstimate = useMemo(() => {
+    if (!gasPrice || !gasEstimate) return null
+    return Number((gasEstimate * gasPrice) / BigInt(10 ** 12)) / 10 ** 6
+  }, [gasPrice, gasEstimate])
 
   if (!listing || !domain) return null
 
@@ -121,10 +162,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       const isERC20Order = !usesETH
 
       let estimatedGas: bigint
-
-      // Get current gas price
-      const currentGasPrice = await publicClient.getGasPrice()
-      setGasPrice(currentGasPrice)
 
       try {
         if (isERC20Order) {
@@ -417,8 +454,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     switch (step) {
       case 'review':
         return (
-          <>
-            <div className='mb-6 space-y-4'>
+          <div className='flex flex-col gap-3'>
+            <div className='space-y-4'>
               <div className='flex flex-row items-center justify-between rounded-lg'>
                 <p className='font-sedan-sc text-xl'>Name</p>
                 <p className='text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
@@ -439,24 +476,36 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
                   <p className='font-sedan-sc text-xl'>Estimated Gas</p>
                   <div className='text-right'>
                     <p className='text-xl font-semibold'>
-                      ~
-                      {((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
-                        ? '<0.001'
-                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)}{' '}
-                      ETH
-                    </p>
-                    <p className='text-sm text-gray-400'>
-                      {gasEstimate.toString()} units @ {(Number(gasPrice) / 10 ** 9).toFixed(2)} gwei
+                      ~{formattedGasEstimate ? formattedGasEstimate.toString() : '<0.001'} ETH
                     </p>
                   </div>
                 </div>
               )}
+
+              {/* <div className='flex flex-row items-center justify-between rounded-lg'>
+                <p className='font-sedan-sc text-xl'>Your Balance</p>
+                <p className={`text-xl font-semibold ${!hasSufficientBalance ? 'text-red-400' : ''}`}>
+                  {currentBalanceFormatted}
+                </p>
+              </div> */}
             </div>
 
             {needsApproval && (
-              <div className='bg-secondary border-tertiary mt-4 rounded-lg border'>
-                <p className='text-md'>
+              <div className='bg-secondary border-tertiary mt-4 rounded-lg border p-3'>
+                <p className='text-sm'>
                   You need to approve USDC spending before purchasing. This is a one-time approval.
+                </p>
+              </div>
+            )}
+
+            {!hasSufficientBalance && !needsApproval && gasEstimate && gasPrice && (
+              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+                <p className='text-sm text-red-400'>
+                  Insufficient balance. You need{' '}
+                  {isETHListing
+                    ? `${(Number((BigInt(listing.price) + (gasEstimate || BigInt(0)) * (gasPrice || BigInt(0))) / BigInt(10 ** 16)) / 100).toString()} ETH`
+                    : `${(Number(listing.price) / Math.pow(10, TOKEN_DECIMALS.USDC)).toFixed(2)} USDC`}{' '}
+                  to complete this purchase.
                 </p>
               </div>
             )}
@@ -471,15 +520,21 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handlePurchase() })
                 }
                 className='w-full'
-                disabled={isCorrectChain ? needsApproval : false}
+                disabled={isCorrectChain ? !hasSufficientBalance && !needsApproval : false}
               >
-                {isCorrectChain ? (needsApproval ? 'Approve USDC' : 'Confirm Purchase') : 'Switch Chain'}
+                {isCorrectChain
+                  ? !hasSufficientBalance && !needsApproval
+                    ? `Insufficient ${isETHListing ? 'ETH' : 'USDC'} Balance`
+                    : needsApproval
+                      ? 'Approve USDC'
+                      : 'Confirm Purchase'
+                  : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
-          </>
+          </div>
         )
 
       case 'approving':

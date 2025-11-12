@@ -7,7 +7,7 @@ interface OfferrerProps {
 }
 
 const Offerrer: React.FC<OfferrerProps> = ({ offer }) => {
-  return <User address={offer.buyer_address} />
+  return <User address={offer.buyer_address} className='max-w-[95%]' />
 }
 
 export default Offerrer

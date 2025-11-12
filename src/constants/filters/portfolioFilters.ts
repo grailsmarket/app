@@ -77,7 +77,7 @@ export const PROFILE_ACTIVITY_FILTERS = [
   { label: 'Listing', value: 'listed' },
   { label: 'Bought', value: 'bought' },
   { label: 'Sold', value: 'sold' },
-  { label: 'Offer Made', value: 'offer_made' },
+  { label: 'Offer', value: 'offer_made' },
   { label: 'Offer Accepted', value: 'offer_accepted' },
   { label: 'Cancelled', value: 'cancelled' },
   { label: 'Minted', value: 'mint' },

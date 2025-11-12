@@ -10,6 +10,12 @@ import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state
 import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 import Watchlist from '@/components/ui/watchlist'
+import { cn } from '@/utils/tailwind'
+import {
+  addBulkRenewalModalDomain,
+  removeBulkRenewalModalDomain,
+  selectBulkRenewalModal,
+} from '@/state/reducers/modals/bulkRenewalModal'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -17,13 +23,15 @@ interface ActionsProps {
   canAddToCart: boolean
   isFirstInRow?: boolean
   watchlistId?: number | undefined
+  isBulkRenewing?: boolean
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToCart, watchlistId }) => {
+const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToCart, watchlistId, isBulkRenewing }) => {
   const dispatch = useAppDispatch()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
+  const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
 
   const openBuyNowModal = () => {
     dispatch(setBuyNowModalDomain(domain))
@@ -63,6 +71,31 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
+      if (isBulkRenewing) {
+        const isSelected = bulkRenewalDomains.some((d) => d.name === domain.name)
+        return (
+          <div className='py-md flex flex-row justify-end gap-4 opacity-100'>
+            <p
+              className={cn(
+                'text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors',
+                !isSelected && 'text-primary'
+              )}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+
+                if (isSelected) {
+                  dispatch(removeBulkRenewalModalDomain(domain))
+                } else {
+                  dispatch(addBulkRenewalModalDomain(domain))
+                }
+              }}
+            >
+              {isSelected ? 'Remove' : 'Select'}
+            </p>
+          </div>
+        )
+      }
       if (registrationStatus !== REGISTERED) return null
 
       if (domainListing?.price) {
@@ -98,34 +131,43 @@ const Actions: React.FC<ActionsProps> = ({ domain, registrationStatus, canAddToC
   }
 
   return (
-    <div className='flex w-full flex-row justify-between opacity-100'>
+    <div
+      className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
+    >
       {registrationStatus === UNREGISTERED ? (
         <button
           onClick={(e) =>
             clickHandler(e, () => window.open(`https://app.ens.domains/${domain.name}/register`, '_blank'))
           }
         >
-          <p className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'>
+          <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Register
           </p>
         </button>
       ) : domainListing?.price ? (
         <button onClick={(e) => clickHandler(e, openBuyNowModal)}>
-          <p className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'>
+          <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Buy Now
           </p>
         </button>
       ) : (
         <button onClick={(e) => clickHandler(e, openMakeOfferModal)}>
-          <p className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'>
+          <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Make Offer
           </p>
         </button>
       )}
-      <div className='flex items-center lg:gap-x-2'>
+      <div className={cn('flex items-center lg:gap-x-2', watchlistId ? 'flex-col-reverse items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div className=''>
-            <Watchlist domain={domain} tooltipPosition='top' dropdownPosition='left' watchlistId={watchlistId} />
+          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
+            <Watchlist
+              domain={domain}
+              tooltipPosition='top'
+              dropdownPosition='left'
+              watchlistId={watchlistId}
+              showSettings={true}
+              showSettingsArrow={false}
+            />
           </div>
         )}
         {canAddToCart && (

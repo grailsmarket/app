@@ -18,9 +18,10 @@ interface CardProps {
   className?: string
   isFirstInRow?: boolean
   watchlistId?: number | undefined
+  isBulkRenewing?: boolean
 }
 
-const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId }) => {
+const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkRenewing }) => {
   const { address } = useAccount()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
@@ -31,7 +32,8 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
     <Link
       href={`/${domain.name}`}
       className={cn(
-        'group bg-secondary xs:h-[330px] flex h-[440px] w-full cursor-pointer flex-col rounded-sm opacity-70 transition hover:opacity-100',
+        'group bg-secondary xs:h-[330px] flex h-[440px] w-full cursor-pointer flex-col rounded-sm opacity-80 transition hover:opacity-100',
+        !domainIsValid && 'pointer-events-none opacity-40',
         className
       )}
     >
@@ -96,6 +98,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             canAddToCart={canAddToCart}
             isFirstInRow={isFirstInRow}
             watchlistId={watchlistId}
+            isBulkRenewing={isBulkRenewing}
           />
         </div>
       </div>

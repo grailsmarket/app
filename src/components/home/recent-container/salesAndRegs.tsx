@@ -23,7 +23,7 @@ const SalesAndRegs = () => {
 
   return (
     <div className='flex flex-col gap-4'>
-      <h2 className='md:px-md lg:px-lg text-2xl font-bold'>Recent Sales & Registrations</h2>
+      <h2 className='md:px-md lg:px-lg text-2xl font-bold'>Recent Sales</h2>
       <Domains
         domains={listings?.domains || []}
         loadingRowCount={7}

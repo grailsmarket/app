@@ -145,7 +145,7 @@ export class SeaportOrderBuilder {
 
     if (offerItem.itemType === 3) {
       // ERC1155
-      basicOrderType = 1 // ETH_TO_ERC1155
+      basicOrderType = 4 // ETH_TO_ERC1155
     }
     if (primaryConsideration.itemType === ItemType.ERC20) {
       basicOrderType = offerItem.itemType === 2 ? 2 : 3 // ERC20_TO_ERC721 or ERC20_TO_ERC1155

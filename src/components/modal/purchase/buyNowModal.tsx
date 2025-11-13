@@ -405,10 +405,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
         setTxHash(tx)
       } else {
-        const fulfillerConduitKey =
-          order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
-
-        basicOrderParams.fulfillerConduitKey = fulfillerConduitKey as `0x${string}`
+        // const fulfillerConduitKey =
+        //   order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+        // basicOrderParams.fulfillerConduitKey = fulfillerConduitKey as `0x${string}`
 
         // ETH orders use the efficient basic route
         try {

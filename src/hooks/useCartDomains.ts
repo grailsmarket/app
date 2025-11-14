@@ -30,7 +30,7 @@ const useCartDomains = () => {
 
   const isModifyingDomain = useCallback(
     (tokenId: string) => {
-      return modifyCartLoading && modifyingCartTokenIds.includes(tokenId)
+      return modifyCartLoading || modifyingCartTokenIds.includes(tokenId)
     },
     [modifyCartLoading, modifyingCartTokenIds]
   )

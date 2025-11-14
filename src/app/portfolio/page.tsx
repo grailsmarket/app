@@ -25,7 +25,7 @@ const Portfolio = () => {
   return (
     <Suspense>
       <FilterProvider filterType='portfolio' portfolioTab={selectedTab.value}>
-        <main className='relative md:px-4'>
+        <main className='relative'>
           {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
           <Image
             src={heroBackground}
@@ -37,8 +37,9 @@ const Portfolio = () => {
           <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
         </div> */}
           <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-20'>
-            <div className='max-w-domain-panel lg:p-lg bg-background sm:border-primary relative mx-auto flex h-[calc(100vh-80px)] w-full flex-row gap-4 overflow-hidden px-0 pb-0! sm:px-3 md:h-[90vh] md:rounded-lg md:border-2'>
+            <div className='pl-2 bg-background relative mx-auto flex h-[calc(100vh-80px)] w-full flex-row overflow-hidden'>
               <FilterPanel />
+              <div className='w-0.5 h-full bg-tertiary ml-1.5 hidden lg:block' />
               {mounted ? (
                 <>
                   {showDomainPanel && <DomainPanel />}

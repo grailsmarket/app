@@ -17,11 +17,16 @@ const MainPanel: React.FC<Props> = ({ category }) => {
   return (
     <Suspense>
       <FilterProvider filterType='category'>
-        <div className='pt-lg md:p-lg z-10 w-full'>
-          <div className='p-lg max-w-domain-panel border-tertiary bg-background md:border-primary relative z-10 mx-auto flex gap-4 border-t-2 md:rounded-lg md:border-2'>
+        <div className='z-10 w-full'>
+          <div className='px-md border-tertiary overflow-hidden bg-background relative z-10 mx-auto flex gap-2 border-t-2'
+            style={{
+              height: 'calc(100vh - 80px)',
+            }}
+          >
             <FilterPanel />
+            <div className='w-0.5 h-full bg-tertiary hidden lg:block' />
             <div
-              className='pt-lg flex flex-col gap-4'
+              className='flex flex-col gap-4'
               style={{
                 width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
               }}

@@ -22,6 +22,7 @@ interface NotificationRowProps {
 }
 
 const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick }) => {
+  console.log('Notification:', notification)
   // Get icon based on notification type
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -44,6 +45,8 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
       case 'new-listing':
         return 'Listed'
       case 'new-offer':
+        return 'Offer'
+      case 'offer-received':
         return 'Offer received'
       case 'sale':
         return 'Sold'

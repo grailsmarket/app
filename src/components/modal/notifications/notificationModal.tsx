@@ -43,11 +43,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       onClick={onClose}
     >
       <div
-        className='bg-background border-primary relative flex h-[600px] w-full max-w-xl flex-col rounded-md border-2 shadow-lg'
+        className='bg-background border-secondary relative flex h-[600px] w-full max-w-xl flex-col rounded-md border-2'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='flex items-center justify-between p-6'>
+        <div className='flex items-center justify-between p-lg pt-6 md:p-6'>
           <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
           <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
@@ -56,28 +56,28 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
 
         {/* Notifications list */}
         <div className='flex-1 overflow-hidden'>
-          {allNotifications.length > 0 ? (
-            <VirtualList
-              ref={virtualListRef}
-              items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
-              visibleCount={20}
-              rowHeight={60}
-              overscanCount={10}
-              paddingBottom='0'
-              useLocalScrollTop={true}
-              renderItem={(notification) => {
-                if (!notification) return <NotificationLoadingRow />
+          <VirtualList
+            listHeight='auto'
+            ref={virtualListRef}
+            items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
+            visibleCount={20}
+            rowHeight={60}
+            overscanCount={10}
+            paddingBottom='0'
+            useLocalScrollTop={true}
+            renderItem={(notification) => {
+              if (!notification) return <NotificationLoadingRow />
 
-                return <NotificationRow notification={notification} onClick={() => onClose()} />
-              }}
-              onScrollNearBottom={() => {
-                if (hasNextPage && !isFetchingNextPage) {
-                  fetchNextPage()
-                }
-              }}
-              containerClassName='h-full'
-            />
-          ) : (
+              return <NotificationRow notification={notification} onClick={() => onClose()} />
+            }}
+            onScrollNearBottom={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage()
+              }
+            }}
+            containerClassName='h-full'
+          />
+          {allNotifications.length === 0 && !isNotificationsLoading && (
             <NoResults label='No notifications' />
           )}
         </div>

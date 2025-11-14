@@ -43,7 +43,7 @@ const Notifications = () => {
       {unreadCount > 0 && (
         <div
           className={cn(
-            'absolute top-0 right-0 h-5 min-w-5',
+            'absolute -top-1 -right-1 h-5 min-w-5',
             'bg-primary text-background text-md font-bold',
             'flex items-center justify-center rounded-full'
           )}

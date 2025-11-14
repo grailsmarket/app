@@ -7,12 +7,13 @@ import { clearCart } from '@/api/cart/clearCart'
 import { modifyCart } from '@/api/cart/modifyCart'
 
 import {
+  addModifyingCartTokenId,
   addToCartRegisteredDomains,
   clearMarketplaceDomainsCart,
   removeFromMarketplaceDomainsCart,
+  removeModifyingCartTokenId,
   selectMarketplaceDomains,
   setModifyingCartTokenIds,
-  toggleModifyingCart,
 } from '../state/reducers/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '@/types/domains'
 
@@ -54,7 +55,7 @@ const useModifyCart = () => {
     },
     onSettled: (data) => {
       if (data?.cartItem) {
-        dispatch(toggleModifyingCart({ isModifying: false, tokenId: data.cartItem.token_id }))
+        dispatch(removeModifyingCartTokenId(data.cartItem.token_id))
       }
     },
   })
@@ -68,7 +69,7 @@ const useModifyCart = () => {
     },
     clearCartLoading: clearCartMutation.isPending,
     modifyCart: ({ domain, inCart, cartType }: ModifyCartsVariables) => {
-      dispatch(toggleModifyingCart({ isModifying: true, tokenId: domain.token_id }))
+      dispatch(addModifyingCartTokenId(domain.token_id))
       return modifyCartMutation({ domain, inCart, cartType })
     },
     modifyCartLoading,

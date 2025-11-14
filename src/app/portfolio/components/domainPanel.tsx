@@ -44,7 +44,7 @@ const DomainPanel = () => {
       }}
     >
       <TabSwitcher />
-      <div className='px-md flex flex-col gap-4 sm:px-0'>
+      <div className='px-md flex flex-col gap-4 sm:px-md'>
         <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
           <div className='flex w-auto items-center gap-2'>
             <button
@@ -53,7 +53,7 @@ const DomainPanel = () => {
             >
               <Image src={FilterIcon} alt='Filter' width={16} height={16} />
             </button>
-            <div className='w-ful group focus-within:border-primary/100! hover:border-primary/70 border-primary/40 p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+            <div className='w-ful group focus-within:border-white/80! hover:border-white/40 border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
               <input
                 type='text'
                 placeholder='Search'
@@ -73,7 +73,7 @@ const DomainPanel = () => {
           <ViewSelector />
         </div>
         <Domains
-          maxHeight={windowWidth && windowWidth < 640 ? 'calc(100vh - 164px)' : 'calc(100vh - 220px)'}
+          maxHeight={windowWidth && windowWidth < 640 ? 'calc(100vh - 164px)' : 'calc(100vh - 164px)'}
           domains={domains}
           loadingRowCount={20}
           paddingBottom={selectedTab.value === 'watchlist' ? '300px' : '140px'}

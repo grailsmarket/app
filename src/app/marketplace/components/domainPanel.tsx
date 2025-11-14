@@ -18,7 +18,7 @@ const DomainPanel = () => {
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
-  const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const isAtBottom = useScrollToBottom({ threshold: 10 })
   const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
@@ -36,7 +36,7 @@ const DomainPanel = () => {
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group focus-within:border-primary/100! hover:border-primary/70 border-primary/40 p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+          <div className='w-ful group focus-within:border-white/80! hover:border-white/50 border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
             <input
               type='text'
               placeholder='Search'
@@ -56,7 +56,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 140px)' : 'calc(100vh - 240px)'}
+        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 140px)' : 'calc(100vh - 16px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom={viewType === 'list' ? '140px' : '80px'}

@@ -99,7 +99,7 @@ const UserPage = async (props: Props) => {
   }
 
   return (
-    <main className='min-h-screen w-full' style={{ minHeight: 'calc(100vh - 360px)' }}>
+    <main className='min-h-screen w-full'>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Profile user={user} />
       </HydrationBoundary>

@@ -78,7 +78,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS].twitter
 
   return (
-    <div className='relative w-full translate-y-20 items-center justify-center px-4'>
+    <div className='relative w-full items-center justify-center px-4'>
       <Image
         src={categoryImage.header}
         alt={`${categoryName} header`}
@@ -86,18 +86,18 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
         height={1000}
         className='bg-foreground absolute top-0 left-0 h-full w-full object-cover opacity-20'
       />
-      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between gap-8 pt-10 pb-20 md:flex-row md:pb-30'>
+      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between gap-4 md:gap-8 py-10 md:flex-row'>
         <div className='flex items-start gap-4'>
           <Image
             src={categoryImage.avatar}
             alt={`${categoryName} avatar`}
             width={100}
             height={100}
-            className='rounded-full object-cover'
+            className='md:w-24 md:h-24 w-16 h-16 rounded-full object-cover'
           />
           <div className='flex flex-col gap-2'>
-            <p className='text-5xl font-bold'>{categoryName}</p>
-            <p className='text-neutral text-2xl font-medium'>{categoryDetails.description}</p>
+            <p className='text-3xl md:text-4xl lg:text-5xl font-bold'>{categoryName}</p>
+            <p className='text-neutral text-xl md:text-2xl font-medium'>{categoryDetails.description}</p>
             <div className='flex items-center gap-2'>
               {twitterLink && (
                 <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
@@ -113,7 +113,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
             </div>
           </div>
         </div>
-        <div className='bg-background p-lg border-primary flex w-full flex-col items-center gap-2 rounded-md border-2 md:w-72'>
+        <div className='bg-background p-lg border-tertiary flex w-full flex-col items-center gap-2 rounded-md border-2 md:w-72'>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
             <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>

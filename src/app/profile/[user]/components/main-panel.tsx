@@ -31,12 +31,13 @@ const MainPanel: React.FC<Props> = ({ user }) => {
         <div className='max-w-domain-panel z-0 mx-auto'>
           <div className='z-10'>
             <div
-              style={{ height: windowWidth && windowWidth < 768 ? 'calc(100vh - 80px)' : 'calc(100vh - 110px)' }}
-              className='p-md md:p-lg bg-background border-tertiary md:border-primary relative flex gap-4 overflow-hidden border-t-2 md:rounded-lg md:border-2'
+              className='pl-md bg-background border-tertiary relative flex gap-0 overflow-hidden h-[calc(100vh-80px)] border-t-2'
             >
               <FilterPanel />
+              <div className='w-0.5 h-full bg-tertiary hidden lg:block ml-2' />
+
               <div
-                className='md:pt-lg flex flex-col gap-4'
+                className='flex flex-col gap-2'
                 style={{
                   width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
                 }}
@@ -45,7 +46,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                 {profileTab === 'domains' && <DomainPanel user={user} />}
                 {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
               </div>
-              <ActionButtons />
+              <ActionButtons hideDomainActions={profileTab === 'activity'} />
             </div>
           </div>
         </div>

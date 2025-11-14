@@ -20,11 +20,11 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
   const { selectors, actions } = useFilterRouter()
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
     useCategoryDomains(category)
-  const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const isAtBottom = useScrollToBottom({ threshold: 10 })
 
   return (
     <>
-      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+      <div className='md:px-md lg:px-lg pt-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
             className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
@@ -32,7 +32,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group focus-within:border-primary/100! hover:border-primary/70 border-primary/40 p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+          <div className='w-ful group focus-within:border-white/80! hover:border-white/50 border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
             <input
               type='text'
               placeholder='Search'
@@ -52,9 +52,10 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100vh - 200px)'
+        maxHeight='calc(100vh - 110px)'
         domains={domains}
         loadingRowCount={20}
+        paddingBottom='100px'
         noResults={!categoryDomainsLoading && domains?.length === 0}
         isLoading={categoryDomainsLoading}
         hasMoreDomains={hasMoreCategoryDomains}

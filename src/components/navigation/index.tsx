@@ -14,15 +14,15 @@ import SearchIcon from './searchIcon'
 
 const Navigation = () => {
   return (
-    <header className='px-lg bg-background border-secondary fixed top-0 left-0 z-50 h-20 w-full border-b-2 backdrop-blur-md'>
+    <header className='px-lg bg-background border-tertiary fixed top-0 left-0 z-50 h-20 w-full border-b-2 backdrop-blur-md'>
       <nav className='mx-auto flex h-full max-w-7xl items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>
             <Image
               src={logoMobile}
               alt='Grails Market'
-              width={40}
-              height={40}
+              width={32}
+              height={32}
               className='cursor-pointer transition-all hover:opacity-80 lg:hidden'
             />
             <Image
@@ -34,7 +34,7 @@ const Navigation = () => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

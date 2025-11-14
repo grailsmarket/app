@@ -34,7 +34,7 @@ const TabSwitcher = () => {
 
   // After mount, render with proper active state
   return (
-    <div className='py-md px-lg border-secondary xs:text-lg text-md lg:px-lg flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl'>
+    <div className='py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 lg:gap-6 border-b-2 sm:justify-start sm:text-xl'>
       {portfolioTabs.map((tab) => (
         <button
           key={tab.value}

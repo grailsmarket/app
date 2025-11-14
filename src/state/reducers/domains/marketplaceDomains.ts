@@ -101,6 +101,12 @@ export const marketplaceDomainsSlice = createSlice({
     setModifyingCartTokenIds(state, { payload }: PayloadAction<string[]>) {
       state.modifyingCartTokenIds = payload
     },
+    addModifyingCartTokenId(state, { payload }: PayloadAction<string>) {
+      state.modifyingCartTokenIds = state.modifyingCartTokenIds.concat([payload])
+    },
+    removeModifyingCartTokenId(state, { payload }: PayloadAction<string>) {
+      state.modifyingCartTokenIds = state.modifyingCartTokenIds.filter((tokenId) => tokenId !== payload)
+    },
     toggleModifyingCart(state, { payload }: PayloadAction<{ isModifying: boolean; tokenId: string }>) {
       state.modifyingCartTokenIds = payload.isModifying
         ? state.modifyingCartTokenIds.concat([payload.tokenId])
@@ -123,6 +129,8 @@ export const {
   setDomainsIsCheckingOut,
   setViewType,
   setModifyingCartTokenIds,
+  addModifyingCartTokenId,
+  removeModifyingCartTokenId,
   toggleModifyingCart,
 } = marketplaceDomainsSlice.actions
 

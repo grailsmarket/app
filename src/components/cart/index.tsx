@@ -50,21 +50,21 @@ const Cart = () => {
     >
       <div
         className={cn(
-          'bg-background border-primary p-lg md:p-2xl relative flex h-full w-full flex-col gap-10 transition-transform duration-300 md:max-w-2xl md:border-l-2',
+          'bg-background border-tertiary relative flex h-full w-full flex-col gap-10 transition-transform duration-300 md:max-w-xl md:border-l-2',
           isAnimating ? 'translate-x-0' : 'translate-x-full'
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className='flex flex-col gap-10 overflow-y-scroll pb-16'>
-          <div className='flex flex-row items-center justify-between'>
+        <div className='flex flex-col gap-4 overflow-y-scroll pb-24'>
+          <div className='flex px-lg flex-row items-center min-h-16 border-b-2 border-tertiary justify-between'>
             <div className='flex items-center gap-2'>
               <h2 className='font-sedan-sc text-3xl'>Cart</h2>
               <Label label={purchaseDomains.length + registerDomains.length + offerDomains.length} />
             </div>
-            <Cross className='h-5 w-5 cursor-pointer hover:opacity-80' onClick={() => setIsCartOpen(false)} />
+            <Cross className='h-4 w-4 cursor-pointer hover:opacity-80' onClick={() => setIsCartOpen(false)} />
           </div>
           {!registeredDomainsEmpty && (
-            <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4 px-lg'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Purchase</h3>
                 <Label label={purchaseDomains.length} />
@@ -77,7 +77,7 @@ const Cart = () => {
             </div>
           )}
           {!registerDomainsEmpty && (
-            <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4 px-lg'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Register</h3>
                 <Label label={registerDomains.length} />
@@ -90,7 +90,7 @@ const Cart = () => {
             </div>
           )}
           {!offerDomainsEmpty && (
-            <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4 px-lg'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Offer</h3>
                 <Label label={offerDomains.length} />
@@ -108,7 +108,7 @@ const Cart = () => {
             <NoResults label='No Grails in your cart' />
           </div>
         )}
-        <div className='border-primary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
+        <div className='border-tertiary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
           <div className='flex w-fit flex-row gap-x-2'>
             <SecondaryButton onClick={handleClearCart} disabled={cartIsEmpty}>
               Clear Cart

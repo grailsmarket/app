@@ -1,7 +1,6 @@
 import _ from 'lodash'
-import { useEffect } from 'react'
 import { RootState } from '@/state'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import { FilterRouter, FilterContextType } from '@/types/filters'
 
@@ -167,13 +166,10 @@ import {
   toggleFilterOpen as toggleCategoryDomainsFilterOpen,
   clearFilters as clearCategoryDomainsFilters,
 } from '@/state/reducers/filters/categoryDomainsFilters'
-import { useSearchParams } from 'next/navigation'
 
 export function useFilterRouter(): FilterRouter<FilterContextType> {
-  const searchParams = useSearchParams()
   const { filterType, portfolioTab, profileTab } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
-  const dispatch = useAppDispatch()
 
   // Determine which tab is active in portfolio or profile
   const activePortfolioTab = portfolioTab || profileState.selectedTab?.value || 'domains'
@@ -412,18 +408,6 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     const filtersWithoutScrollTop = _.omit(filtersWithoutOpen, 'scrollTop')
     return _.isEqual(filtersWithoutScrollTop, emptyFilterState)
   }, [filters, emptyFilterState])
-
-  useEffect(() => {
-    if (actions) {
-      dispatch(actions.clearFilters())
-
-      const defaultSearch = searchParams.get('search')
-      if (defaultSearch) {
-        dispatch(setMarketplaceSearch(defaultSearch))
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return {
     selectors: {

@@ -7,7 +7,6 @@ import { PortfolioStatusFilterType } from '@/types/filters'
 export const useStatusFilters = () => {
   const dispatch = useAppDispatch()
   const { selectors, actions, context } = useFilterRouter()
-
   const statusFilter = selectors.filters.status
 
   const isActive = (status: MarketplaceStatusFilterType | PortfolioStatusFilterType | ActivityTypeFilterType) => {

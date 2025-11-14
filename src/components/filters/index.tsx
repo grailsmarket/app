@@ -5,17 +5,26 @@ import { usePanels } from './hooks/usePanels'
 import Filters from './components/Filters'
 import backArrow from 'public/icons/arrow-back.svg'
 import FilterIcon from 'public/icons/filter.svg'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
 import CloseIcon from 'public/icons/cross.svg'
 import { useFilterContext } from '@/context/filters'
 import ActivityTypeFilter from './ActivityFilter/TypeFilter'
+import { useEffect, useRef } from 'react'
 
 const FilterPanel: React.FC = () => {
+  const filterRef = useRef<HTMLDivElement>(null)
+  const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
   const { isPanelCategories, setPanelCategories, setPanelAll } = usePanels()
+
+  useEffect(() => {
+    if (filterRef.current) {
+      filterRef.current.scrollTo({ top: 0, behavior: 'instant' })
+    }
+  }, [isPanelCategories])
 
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
@@ -26,26 +35,27 @@ const FilterPanel: React.FC = () => {
   //   dispatch(actions.setFiltersOpen(false))
   // })
 
-  if (!windowWidth) return null
+  if (!isClient || !windowWidth) return null
 
   const isOpen = windowWidth < 1024 ? filtersOpen : true
 
   return (
     <div
-      // ref={outsideClickRef as RefObject<HTMLDivElement>}
+      ref={filterRef}
       className={cn(
-        'bg-background absolute top-0 left-0 z-20 h-[90vh] w-full overflow-y-auto shadow-md transition-transform duration-300 md:w-72 lg:relative lg:h-[calc(100vh-146px)] lg:shadow-none',
-        isOpen ? 'translate-x-0' : '-translate-x-[110%]'
+        'bg-background absolute top-0 left-0 z-20 w-full shadow-md transition-transform duration-300 md:min-w-[284px] md:max-w-[284px] lg:relative h-[calc(100vh-80px)] lg:shadow-none',
+        isOpen ? 'translate-x-0' : '-translate-x-[110%]',
+        isPanelCategories ? 'overflow-hidden' : 'overflow-y-scroll'
       )}
     >
       <div
         className={cn(
           'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
-          isOpen ? 'w-full overflow-x-hidden lg:w-[282px]' : 'w-0 lg:z-0 lg:w-[56px]'
+          isOpen ? 'w-full overflow-x-hidden lg:w-[284px]' : 'w-0 lg:z-0 lg:w-[56px]'
         )}
       >
         {/* Top div */}
-        <div className='relative flex items-center justify-between'>
+        <div className='relative flex items-center justify-between pt-md'>
           <div
             className={cn(
               'pr-lg flex w-full min-w-full justify-between transition-transform lg:min-w-[300px]',

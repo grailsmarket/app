@@ -15,7 +15,7 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
   const { width } = useWindowSize()
-
+  const tooltipAlign = useMemo(() => (width && width < 640 ? 'right' : 'left'), [width])
   const dropdownPosition = useMemo(() => (width && width < 640 ? 'left' : 'right'), [width])
 
   return (
@@ -35,6 +35,7 @@ const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
               iconClassName='w-8 h-8 opacity-100'
               showSettings={true}
               dropdownPosition={dropdownPosition}
+              tooltipAlign={tooltipAlign}
             />
           )}
         </div>

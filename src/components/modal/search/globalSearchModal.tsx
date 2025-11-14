@@ -125,8 +125,8 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
               }
 
               if (e.key === 'Enter') {
-                onClose()
                 const lookupQuery = query.replace('.eth', '').trim() + '.eth'
+                handleClose()
                 router.push(`/${lookupQuery}`)
               }
             }}

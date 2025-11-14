@@ -109,9 +109,11 @@ export const marketplaceFiltersSlice = createSlice({
       state.open = payload
     },
     toggleMarketplaceFiltersStatus(state, { payload }: PayloadAction<MarketplaceStatusFilterType>) {
-      const index = state.status.findIndex((_status) => _status === payload)
-      if (index > -1) {
-        state.status.splice(index, 1)
+      console.log('toggleMarketplaceFiltersStatus', payload)
+      console.log('state.status', [...state.status])
+      console.log('state.status.includes(payload)', state.status.includes(payload))
+      if (state.status.includes(payload)) {
+        state.status = state.status.filter((status) => status !== payload)
       } else {
         state.status.push(payload)
       }
@@ -120,11 +122,10 @@ export const marketplaceFiltersSlice = createSlice({
       state.status = [payload]
     },
     toggleMarketplaceFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterType>) {
-      const index = state.type.findIndex((type) => type === payload)
-      if (index > -1) {
-        state.type.splice(index, 1)
+      if (state.type.includes(payload)) {
+        state.type = state.type.filter((type) => type !== payload)
       } else {
-        state.type.push(payload)
+        state.type = state.type.concat(payload)
       }
     },
     setMarketplaceFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterType>) {

@@ -57,6 +57,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   )
 
   useEffect(() => {
+    // console.log('scrollTop', scrollTop)
     const virtualGrid = document.getElementById('virtual-grid')
     if (virtualGrid) {
       virtualGrid.scrollTop = scrollTop

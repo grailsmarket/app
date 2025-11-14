@@ -25,8 +25,8 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
-    <>
-      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+    <div className='px-md flex flex-col gap-2'>
+      <div className='md:p-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='px-sm flex w-auto items-center gap-2 md:p-0'>
           <button
             className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
@@ -61,10 +61,10 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100vh - 190px)'
+        maxHeight='calc(100vh - 110px)'
         domains={domains}
         loadingRowCount={20}
-        paddingBottom={viewType === 'list' ? '140px' : '100px'}
+        paddingBottom={viewType === 'list' ? '160px' : '120px'}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}
@@ -75,7 +75,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         }}
         scrollEnabled={isAtBottom}
       />
-    </>
+    </div>
   )
 }
 

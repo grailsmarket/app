@@ -33,8 +33,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     <div className='flex w-full overflow-x-hidden pb-10'>
       <div
         className={cn(
-          'hide-scrollbar flex min-w-full flex-col gap-y-2 overflow-y-scroll pb-16 transition-transform lg:min-w-[280px] lg:flex-1',
-          showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+          'flex min-w-full flex-col gap-y-2 pb-16 transition-transform lg:min-w-[284px]',
+          showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[284px]'
         )}
       >
         <SortFilter />
@@ -46,9 +46,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       </div>
       {showCategoryTab && (
         <div
-          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-scroll transition-transform lg:min-w-[282px] ${
-            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
-          }`}
+          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-hidden transition-transform lg:min-w-[282px] ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+            }`}
         >
           {categories?.map((category, index) => (
             <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />

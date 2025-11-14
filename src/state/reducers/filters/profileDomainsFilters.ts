@@ -64,22 +64,20 @@ export const profileDomainsFiltersSlice = createSlice({
       state.search = payload
     },
     toggleFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
-      const index = state.status.findIndex((status) => status === payload)
-      if (index > -1) {
-        state.status.splice(index, 1)
+      if (state.status.includes(payload)) {
+        state.status = state.status.filter((status) => status !== payload)
       } else {
-        state.status.push(payload)
+        state.status = state.status.concat(payload)
       }
     },
     setFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       state.status = [payload]
     },
     toggleFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      const index = state.type.findIndex((type) => type === payload)
-      if (index > -1) {
-        state.type.splice(index, 1)
+      if (state.type.includes(payload)) {
+        state.type = state.type.filter((type) => type !== payload)
       } else {
-        state.type.push(payload)
+        state.type = state.type.concat(payload)
       }
     },
     setFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {

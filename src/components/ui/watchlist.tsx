@@ -130,7 +130,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
               e.preventDefault()
             }}
             className={cn(
-              'bg-secondary border-primary p-md absolute top-10 z-50 flex w-64 flex-col items-center rounded-md border shadow-md',
+              'bg-secondary border-tertiary p-md absolute top-10 z-50 flex w-64 flex-col items-center rounded-md border shadow-md',
               dropdownPosition === 'right' ? 'left-0' : 'right-0',
               settingsOpen ? 'flex' : 'hidden'
             )}

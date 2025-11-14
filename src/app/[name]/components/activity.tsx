@@ -19,7 +19,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
   return (
     <div
       className={cn(
-        'sm:border-primary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4',
+        'sm:border-tertiary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4',
         isActivityEmpty && 'pb-6'
       )}
     >
@@ -38,6 +38,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
           showHeaders={true}
           columns={['event', 'price', 'time', 'user']}
           scrollEnabled={isAtBottom}
+          useLocalScrollTop={true}
         />
       </div>
     </div>

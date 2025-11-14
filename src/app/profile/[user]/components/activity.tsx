@@ -23,7 +23,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
   const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
-    <>
+    <div className='p-md flex flex-col gap-2'>
       <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
@@ -51,7 +51,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
         </div>
       </div>
       <Activity
-        maxHeight='calc(100vh - 260px)'
+        maxHeight='calc(100vh - 190px)'
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}
@@ -61,7 +61,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
         displayedAddress={userAddress}
         scrollEnabled={isAtBottom}
       />
-    </>
+    </div>
   )
 }
 

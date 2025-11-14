@@ -21,10 +21,11 @@ const Profile: React.FC<Props> = ({ user }) => {
           addressOrName={user}
           showPoaps={false}
           showFollowButton={true}
-          // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+          style={{ paddingLeft: '10px' }}
+        // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
         />
       </div>
-      <div className='md:p-lg'>
+      <div>
         <MainPanel user={user} />
       </div>
     </div>

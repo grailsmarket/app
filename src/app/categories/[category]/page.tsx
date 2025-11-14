@@ -37,7 +37,7 @@ const UserPage = async (props: Props) => {
   const { category } = await props.params
 
   return (
-    <main className='min-h-screen w-full' style={{ minHeight: 'calc(100vh - 360px)' }}>
+    <main className='w-full'>
       <CategoryPage category={category} />
     </main>
   )

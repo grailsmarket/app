@@ -64,6 +64,14 @@ const Connected = () => {
         >
           My Profile
         </Link>
+        <Link
+          href={`https://discord.com/invite/ZUyG3mSXFD`}
+          target='_blank'
+          onClick={() => setWalletDropdownOpen(false)}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+        >
+          Discord
+        </Link>
         <button
           onClick={() => {
             setWalletDropdownOpen(false)

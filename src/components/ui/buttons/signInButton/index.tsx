@@ -6,6 +6,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { EthereumIcon, LoadingCell } from 'ethereum-identity-kit'
 import Connected from './connected'
 import { useUserContext } from '@/context/user'
+import PrimaryButton from '../primary'
 
 const SignInButton = () => {
   const { address } = useAccount()
@@ -17,14 +18,14 @@ const SignInButton = () => {
   return address && authStatus === 'loading' ? (
     <LoadingCell style={{ width: '200px', height: '44px' }} />
   ) : (
-    <button
+    <PrimaryButton
       onClick={() => openConnectModal?.()}
       disabled={isSigningIn}
-      className='bg-primary text-background flex cursor-pointer items-center gap-2 rounded-sm px-4 py-2.5 transition-opacity hover:opacity-80 disabled:opacity-50'
+      className='flex flex-row items-center gap-1.5 px-md sm:px-lg'
     >
-      <EthereumIcon className='h-5 w-5' />
-      <p className='font-sedan-sc text-xl font-medium'>{isSigningIn ? 'Signing In...' : 'Sign In'}</p>
-    </button>
+      <EthereumIcon className='h-4 w-4 md:h-5 md:w-5' />
+      <p className='font-sedan-sc text-lg md:text-xl font-medium'>{isSigningIn ? 'Signing In...' : 'Sign In'}</p>
+    </PrimaryButton>
   )
 }
 

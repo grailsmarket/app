@@ -87,10 +87,10 @@ const Domains: React.FC<DomainsProps> = ({
   const containerWidth = useMemo(() => {
     if (!width) return 1200
 
-    if (width >= 1728) return width - 344
+    if (width >= 1728) return width - 340
 
     if (width < 768) return width - 8
-    if (width < 1024) return width - 48
+    if (width < 1024) return width - 38
     // Account for sidebar (280px) and padding
     return width - (width < 1024 ? 48 : 344)
   }, [width])
@@ -121,12 +121,12 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualGrid<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              cardWidth={190}
-              cardHeight={360}
+              cardWidth={180}
+              cardHeight={width && width < 388 ? 390 : 340}
               gap={4}
               containerPadding={width && width < 640 ? 4 : 0}
               containerWidth={containerWidth}
-              overscanCount={3}
+              overscanCount={4}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 64 : 24}px)` : '600px'}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}

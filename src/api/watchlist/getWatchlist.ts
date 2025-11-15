@@ -31,7 +31,7 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
     'filters[hasNumbers]': filters.type.includes('Numbers') ? undefined : false,
     'filters[hasEmojis]': filters.type.includes('Emojis') ? undefined : false,
     'filters[clubs][]': filters.categories?.join(',') || undefined,
-    'filters[isExpired]': statusFilter.includes('Available') ? true : undefined,
+    // 'filters[isExpired]': statusFilter.includes('Available') ? true : undefined,
     'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : undefined,
     'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : undefined,
     'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? 60 : undefined,

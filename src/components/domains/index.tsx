@@ -113,7 +113,7 @@ const Domains: React.FC<DomainsProps> = ({
         </div>
       )}
       <div
-        className={cn('h-full w-full rounded-sm pb-20', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg px-0' : 'px-0')}
+        className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg px-0' : 'px-0')}
         ref={listRef}
       >
         {!noResults ? (
@@ -127,7 +127,7 @@ const Domains: React.FC<DomainsProps> = ({
               containerPadding={width && width < 640 ? 6 : 0}
               containerWidth={containerWidth}
               overscanCount={3}
-              gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
+              gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 64 : 24}px)` : '600px'}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}

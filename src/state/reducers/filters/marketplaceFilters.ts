@@ -109,9 +109,6 @@ export const marketplaceFiltersSlice = createSlice({
       state.open = payload
     },
     toggleMarketplaceFiltersStatus(state, { payload }: PayloadAction<MarketplaceStatusFilterType>) {
-      console.log('toggleMarketplaceFiltersStatus', payload)
-      console.log('state.status', [...state.status])
-      console.log('state.status.includes(payload)', state.status.includes(payload))
       if (state.status.includes(payload)) {
         state.status = state.status.filter((status) => status !== payload)
       } else {

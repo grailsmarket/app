@@ -315,9 +315,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                             <p className='font-medium text-green-500'>
                               {domain.expiry_date
                                 ? new Date(
-                                    new Date(domain.expiry_date).getTime() +
-                                      quantity * getSecondsPerUnit(timeUnit) * 1000
-                                  ).toLocaleDateString()
+                                  new Date(domain.expiry_date).getTime() +
+                                  quantity * getSecondsPerUnit(timeUnit) * 1000
+                                ).toLocaleDateString()
                                 : 'Unknown'}
                             </p>
                           </div>
@@ -360,6 +360,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       type='number'
                       label='Quantity'
                       placeholder='Number'
+                      min={0}
                       hideLabel={true}
                       className='w-3/5'
                       value={quantity || ''}

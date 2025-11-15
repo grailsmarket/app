@@ -11,7 +11,7 @@ const RecentContainer = () => {
   return (
     <div className='bg-secondary w-full overflow-y-scroll lg:w-2/5'
       style={{
-        height: width && width > 1024 ? 'calc(100vh - 79px)' : 'fit-content',
+        height: width && width > 1024 ? 'calc(100vh - 70px)' : 'fit-content',
       }}
     >
       <div className='bg-secondary border-tertiary p-md shadow-medium flex h-full w-full flex-col justify-between gap-4 border-t-2 md:flex-row lg:flex-col xl:border-l'>

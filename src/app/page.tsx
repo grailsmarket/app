@@ -24,7 +24,7 @@ const Home = () => {
           <RecentContainer />
           <div className='bg-secondary w-full overflow-y-scroll lg:w-3/5'
             style={{
-              height: 'calc(100vh - 79px)',
+              height: 'calc(100vh - 78px)',
             }}
           >
             <LiveActivity />

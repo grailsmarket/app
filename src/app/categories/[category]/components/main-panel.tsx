@@ -21,7 +21,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
           <div
             className='px-md border-tertiary bg-background relative z-10 mx-auto flex gap-2 overflow-hidden border-t-2'
             style={{
-              height: 'calc(100dvh - 80px)',
+              height: 'calc(100dvh - 78px)',
             }}
           >
             <FilterPanel />

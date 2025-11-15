@@ -7,7 +7,7 @@ const Marketplace = () => {
   return (
     <Suspense>
       <FilterProvider filterType='marketplace'>
-        <main className='relative overflow-hidden max-h-[100dvh]'>
+        <main className='overflow-hidden max-h-[100dvh]'>
           {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
           <Image
             src={heroBackground}

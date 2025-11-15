@@ -100,11 +100,20 @@ body {
     padding: 0;
   }
 
-  html,
+  html {
+    height: 100vh;
+    overflow: hidden;
+    width: 100%;
+  }
+
   body {
     width: 100vw;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: fixed;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Remove spinner arrows from number inputs */

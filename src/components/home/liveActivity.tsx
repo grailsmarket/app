@@ -7,14 +7,12 @@ import { fetchAllActivity } from '@/api/activity/all'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { API_URL } from '@/constants/api'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
-import { useWindowSize } from 'ethereum-identity-kit'
 
 const LiveActivity = () => {
   const [liveActivities, setLiveActivities] = useState<NameActivityType[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
   const isAtBottom = useScrollToBottom({ threshold: 20, enabled: true })
-  const { width: windowWidth } = useWindowSize()
 
   useEffect(() => {
     const baseUrl = API_URL.replace(/\/api\/v1$/, '')
@@ -125,7 +123,7 @@ const LiveActivity = () => {
 
       {/* Live Activity Section */}
       <Activity
-        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 220px)' : 'calc(960px - 42px)'}
+        maxHeight='calc(100vh - 133px)'
         activity={allActivities}
         paddingBottom='10px'
         loadingRowCount={16}

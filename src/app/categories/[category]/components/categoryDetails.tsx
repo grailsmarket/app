@@ -78,42 +78,51 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS].twitter
 
   return (
-    <div className='relative w-full items-center justify-center px-4'>
+    <div className='relative w-full items-center justify-center md:px-4'>
       <Image
         src={categoryImage.header}
         alt={`${categoryName} header`}
         width={1000}
         height={1000}
-        className='bg-foreground absolute top-0 left-0 h-full w-full object-cover opacity-20'
+        className='bg-foreground absolute top-0 md:block hidden left-0 h-full w-full object-cover opacity-20'
       />
-      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between gap-4 py-10 md:flex-row md:gap-8'>
-        <div className='flex items-start gap-4'>
+      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between md:py-4 md:flex-row md:gap-8'>
+        <div className='relative z-10 w-full md:w-fit flex items-center py-6 md:py-0'>
           <Image
-            src={categoryImage.avatar}
-            alt={`${categoryName} avatar`}
-            width={100}
-            height={100}
-            className='h-16 w-16 rounded-full object-cover md:h-24 md:w-24'
+            src={categoryImage.header}
+            alt={`${categoryName} header`}
+            width={1000}
+            height={1000}
+            className='bg-foreground absolute top-0 left-0 h-full w-full object-cover opacity-20 md:hidden block'
           />
-          <div className='flex flex-col gap-2'>
-            <div className='flex flex-row items-center gap-2'>
-              <p className='text-3xl font-bold md:text-4xl lg:text-5xl'>{categoryName}</p>
-              {twitterLink && (
-                <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
-                  <Image
-                    src={TwitterIcon}
-                    alt='Twitter'
-                    width={28}
-                    height={28}
-                    className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'
-                  />
-                </Link>
-              )}
+          <div className='relative z-20 flex items-start gap-4 px-4 md:px-0'>
+            <Image
+              src={categoryImage.avatar}
+              alt={`${categoryName} avatar`}
+              width={100}
+              height={100}
+              className='h-16 w-16 rounded-full object-cover md:h-24 md:w-24'
+            />
+            <div className='flex flex-col gap-2'>
+              <div className='flex flex-row items-center gap-2'>
+                <p className='text-3xl font-bold md:text-4xl lg:text-5xl'>{categoryName}</p>
+                {twitterLink && (
+                  <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
+                    <Image
+                      src={TwitterIcon}
+                      alt='Twitter'
+                      width={28}
+                      height={28}
+                      className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'
+                    />
+                  </Link>
+                )}
+              </div>
+              <p className='text-neutral text-xl font-medium md:text-2xl'>{categoryDetails.description}</p>
             </div>
-            <p className='text-neutral text-xl font-medium md:text-2xl'>{categoryDetails.description}</p>
           </div>
         </div>
-        <div className='bg-background p-lg border-tertiary flex w-full flex-col items-center gap-2 rounded-md border-2 md:w-72'>
+        <div className='bg-background relative z-20 p-lg border-tertiary flex w-full flex-col items-center gap-2 md:rounded-md md:border-2 border-t-2 md:w-72'>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
             <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>

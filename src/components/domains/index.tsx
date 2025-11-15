@@ -101,12 +101,12 @@ const Domains: React.FC<DomainsProps> = ({
   return (
     <div className='hide-scrollbar flex w-full flex-1 flex-col overflow-hidden' style={{ maxHeight }}>
       {showHeaders && viewTypeToUse !== 'grid' && (
-        <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-between sm:flex'>
+        <div className='px-sm md:px-md pt-sm lg:px-lg md:py-md flex w-full items-center justify-between sm:flex'>
           {displayedColumns.map((header, index) => {
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
               <div key={index} className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
-                <p className='w-fit text-left text-sm font-medium'>{item.label === 'Actions' ? '' : item.label}</p>
+                <p className='w-fit text-left text-sm text-neutral font-medium'>{item.label === 'Actions' ? '' : item.label}</p>
               </div>
             )
           })}
@@ -127,7 +127,7 @@ const Domains: React.FC<DomainsProps> = ({
               containerPadding={width && width < 640 ? 4 : 0}
               containerWidth={containerWidth}
               overscanCount={4}
-              gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 64 : 24}px)` : '600px'}
+              gridHeight={maxHeight ? `calc(${maxHeight} - 24px)` : '600px'}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}

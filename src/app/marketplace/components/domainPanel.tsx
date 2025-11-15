@@ -22,21 +22,21 @@ const DomainPanel = () => {
 
   return (
     <div
-      className='pt-lg flex w-full flex-col gap-4 overflow-hidden'
+      className='pt-3 sm:pt-lg flex w-full flex-col gap-3 sm:gap-4 overflow-hidden'
       style={{
         width: windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
-        maxHeight: 'calc(100dvh - 78px)',
+        maxHeight: windowWidth && windowWidth < 768 ? 'calc(100dvh - 62px)' : 'calc(100dvh - 80px)',
       }}
     >
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
-            className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+            className='border-foreground flex sm:h-10 h-9 sm:w-10 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
             onClick={() => dispatch(actions.setFiltersOpen(true))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50'>
+          <div className='w-ful group border-tertiary h-9 sm:h-10 flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50'>
             <input
               type='text'
               placeholder='Search'
@@ -56,10 +56,10 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100dvh - 90px)'
+        maxHeight={windowWidth && windowWidth < 768 ? 'calc(100dvh - 62px)' : 'calc(100dvh - 90px)'}
         domains={domains}
         loadingRowCount={20}
-        paddingBottom='0px'
+        paddingBottom='80px'
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}

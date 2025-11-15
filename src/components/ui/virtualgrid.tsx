@@ -150,6 +150,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
       style={{
         height: gridHeight,
         overflowY: scrollEnabled ? 'auto' : 'hidden',
+        overflowX: 'hidden',
         position: 'relative',
         paddingBottom,
         WebkitOverflowScrolling: 'touch',

@@ -18,7 +18,7 @@ const TabSwitcher = () => {
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
     return (
-      <div className='py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl lg:gap-6'>
+      <div className='py-sm sm:py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl lg:gap-6'>
         {portfolioTabs.map((tab) => (
           <button
             key={tab.value}
@@ -39,7 +39,7 @@ const TabSwitcher = () => {
 
   // After mount, render with proper active state
   return (
-    <div className='py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl lg:gap-6'>
+    <div className='py-sm sm:py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl lg:gap-6'>
       {portfolioTabs.map((tab) => (
         <button
           key={tab.value}

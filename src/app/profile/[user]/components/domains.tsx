@@ -25,16 +25,16 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
-    <div className='px-md flex flex-col gap-2'>
+    <div className='sm:px-md px-sm flex flex-col gap-2'>
       <div className='md:p-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='px-sm flex w-auto items-center gap-2 md:p-0'>
           <button
-            className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+            className='border-foreground flex md:h-10 h-9 md:w-10 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
             onClick={() => dispatch(actions.setFiltersOpen(true))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group focus-within:border-primary/100! hover:border-primary/70 border-primary/40 p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+          <div className='w-ful group focus-within:border-white/50! hover:border-white/50 border-tertiary md:p-md h-9 flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
             <input
               type='text'
               placeholder='Search'

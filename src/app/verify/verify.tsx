@@ -33,7 +33,7 @@ const Verify = () => {
   })
 
   return (
-    <main className='flex flex-col items-center justify-center gap-4' style={{ minHeight: 'calc(100dvh - 78px)' }}>
+    <main className='flex flex-col items-center justify-center gap-4 min-h-[calc(100dvh-62px)] md:min-h-[calc(100dvh-78px)]'>
       <h1 className='font-sedan-sc text-4xl'>Verify Email</h1>
       {isVerifyingEmail ? (
         <p className='text-neutral'>Verifying your email address on Grails</p>

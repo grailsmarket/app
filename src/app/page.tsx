@@ -23,10 +23,7 @@ const Home = () => {
         <div className='flex w-full flex-col gap-0 lg:flex-row-reverse'>
           <RecentContainer />
           <div
-            className='bg-secondary w-full overflow-y-scroll lg:w-3/5'
-            style={{
-              height: 'calc(100dvh - 78px)',
-            }}
+            className='bg-secondary w-full overflow-y-scroll h-[calc(100dvh-62px)] md:h-[calc(100dvh-78px)] lg:w-3/5'
           >
             <LiveActivity />
           </div>

@@ -38,22 +38,22 @@ const DomainPanel = () => {
 
   return (
     <div
-      className='flex flex-col gap-4'
+      className='flex flex-col gap-3 sm:gap-4'
       style={{
         width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
       }}
     >
       <TabSwitcher />
-      <div className='px-md sm:px-md flex flex-col gap-4'>
+      <div className='px-sm sm:px-md flex flex-col gap-3 sm:gap-4'>
         <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
           <div className='flex w-auto items-center gap-2'>
             <button
-              className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+              className='border-foreground flex md:h-10 h-9 md:w-10 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
               onClick={() => dispatch(actions.setFiltersOpen(true))}
             >
               <Image src={FilterIcon} alt='Filter' width={16} height={16} />
             </button>
-            <div className='w-ful group border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40'>
+            <div className='w-ful group border-tertiary md:h-10 h-9 flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40'>
               <input
                 type='text'
                 placeholder='Search'
@@ -73,7 +73,7 @@ const DomainPanel = () => {
           <ViewSelector />
         </div>
         <Domains
-          maxHeight={windowWidth && windowWidth < 640 ? 'calc(100dvh - 164px)' : 'calc(100dvh - 164px)'}
+          maxHeight='calc(100dvh - 164px)'
           domains={domains}
           loadingRowCount={20}
           paddingBottom={selectedTab.value === 'watchlist' ? '300px' : '140px'}

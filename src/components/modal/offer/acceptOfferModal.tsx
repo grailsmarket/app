@@ -9,6 +9,8 @@ import {
   ENS_NAME_WRAPPER_ADDRESS,
   OPENSEA_CONDUIT_ADDRESS,
   OPENSEA_CONDUIT_KEY,
+  MARKETPLACE_CONDUIT_KEY,
+  MARKETPLACE_CONDUIT_ADDRESS,
 } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
@@ -715,7 +717,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       try {
         // For accepting offers, we use fulfillAdvancedOrder
-        const advancedOrder = orderBuilder.buildAdvancedOrder(order)
+        const isOpenseaOrder = offer.source === 'opensea'
+        const advancedOrder = orderBuilder.buildAdvancedOrder(order, isOpenseaOrder, address)
         const fulfillerConduitKey =
           advancedOrder.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
 
@@ -755,7 +758,14 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const isWrapped = await checkIfWrapped(domain.name)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
-      const conduitAddress = offer.order_data.protocol_data.conduitAddress
+      console.log('Parameters:', offer)
+      const conduitKey = offer.order_data.protocol_data.parameters.conduitKey
+      const conduitAddress =
+        conduitKey === OPENSEA_CONDUIT_KEY
+          ? OPENSEA_CONDUIT_ADDRESS
+          : conduitKey === MARKETPLACE_CONDUIT_KEY
+            ? (MARKETPLACE_CONDUIT_ADDRESS as `0x${string}`)
+            : (SEAPORT_ADDRESS as `0x${string}`)
 
       console.log('Conduit address:', conduitAddress)
 
@@ -788,12 +798,15 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       // Determine which NFT contract to approve based on if the name is wrapped
       const isWrapped = await checkIfWrapped(domain.name)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-      const conduitKey = offer.order_data.protocol_data.conduitKey
+      const conduitKey = offer.order_data.protocol_data.parameters.conduitKey
       const conduitAddress =
         conduitKey === OPENSEA_CONDUIT_KEY
           ? OPENSEA_CONDUIT_ADDRESS
-          : offer.order_data.protocol_data.conduitAddress || SEAPORT_ADDRESS
+          : conduitKey === MARKETPLACE_CONDUIT_KEY
+            ? (MARKETPLACE_CONDUIT_ADDRESS as `0x${string}`)
+            : (SEAPORT_ADDRESS as `0x${string}`)
 
+      console.log('Conduit key:', conduitKey)
       console.log('Conduit address:', conduitAddress)
       console.log('NFT contract:', nftContract)
       console.log('Is wrapped:', isWrapped)
@@ -863,8 +876,9 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         throw new Error(validation.errors[0] || 'Invalid offer')
       }
 
+      const isOpenseaOrder = offer.source === 'opensea'
       // Build advanced order for offer acceptance
-      const advancedOrder = orderBuilder.buildAdvancedOrder(order)
+      const advancedOrder = orderBuilder.buildAdvancedOrder(order, isOpenseaOrder, address)
       const fulfillerConduitKey =
         order.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
 

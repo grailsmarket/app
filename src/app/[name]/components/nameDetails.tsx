@@ -19,6 +19,7 @@ import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import Link from 'next/link'
+import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 
 type Row = {
   label: string
@@ -53,15 +54,22 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     {
       label: 'Category',
       value: (
-        <div>
+        <div className='flex flex-row gap-2'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
                 <Link
                   key={club}
                   href={`/categories/${club}`}
-                  className='text-primary hover:text-primary/80 font-medium transition-colors'
+                  className='text-primary flex gap-1 font-medium transition-colors hover:opacity-80'
                 >
-                  {CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}
+                  <Image
+                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                    alt={club}
+                    width={24}
+                    height={24}
+                    className='rounded-full'
+                  />
+                  <div>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</div>
                 </Link>
               ))
             : 'None'}

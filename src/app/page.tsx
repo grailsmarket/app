@@ -22,7 +22,8 @@ const Home = () => {
         </div>
         <div className='flex w-full flex-col gap-0 lg:flex-row-reverse'>
           <RecentContainer />
-          <div className='bg-secondary w-full overflow-y-scroll lg:w-3/5'
+          <div
+            className='bg-secondary w-full overflow-y-scroll lg:w-3/5'
             style={{
               height: 'calc(100vh - 78px)',
             }}

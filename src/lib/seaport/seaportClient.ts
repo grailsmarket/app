@@ -1596,7 +1596,7 @@ export class SeaportClient {
 
     const isWrapped = await checkIfWrapped(ensName)
     const tokenContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-    const tokenIdentifier = isWrapped ? this.labelhashToNamehash(tokenId) : tokenId
+    const tokenIdentifier = tokenId
 
     // Determine conduit key based on marketplace
     const useOpenseaConduit = marketplace === 'opensea'
@@ -1623,10 +1623,11 @@ export class SeaportClient {
     // Build consideration items (what the offerer wants - the NFT)
     const consideration: ConsiderationInputItem[] = [
       {
-        itemType: ItemType.ERC721, // ENS NFT
+        itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721, // ENS NFT
         token: tokenContract as `0x${string}`,
         identifier: tokenIdentifier,
         recipient: offererAddress as `0x${string}`,
+        amount: '1',
       },
     ]
 

@@ -9,7 +9,8 @@ const RecentContainer = () => {
   const { width } = useWindowSize()
 
   return (
-    <div className='bg-secondary w-full overflow-y-scroll lg:w-2/5'
+    <div
+      className='bg-secondary w-full overflow-y-scroll lg:w-2/5'
       style={{
         height: width && width > 1024 ? 'calc(100vh - 70px)' : 'fit-content',
       }}

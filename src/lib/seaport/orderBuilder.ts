@@ -1,5 +1,11 @@
 import { DomainListingType, DomainOfferType } from '@/types/domains'
 import { SeaportOrder, SeaportOrderParameters, AdvancedOrder, Fulfillment, ItemType } from '@/types/seaport'
+import { numberToHex } from 'viem'
+
+const OPENSEA_OFFER_EXTRA_DATA_PARAMS = [
+  '0000006918b499',
+  '4d209e4e154402720dca7f9fc69ff7489273c258e9cea67f83539d38dd52010bb521254084b65462631023c07fe469111032e770f47f132430a3bc81caeb8e',
+]
 
 export class SeaportOrderBuilder {
   /**
@@ -207,13 +213,21 @@ export class SeaportOrderBuilder {
   /**
    * Build advanced order for fulfillment
    */
-  buildAdvancedOrder(order: SeaportOrder): AdvancedOrder {
+  buildAdvancedOrder(order: SeaportOrder, includeExtraData: boolean = false, address?: `0x${string}`): AdvancedOrder {
+    const extraData = [
+      address?.slice(2),
+      ...OPENSEA_OFFER_EXTRA_DATA_PARAMS,
+      numberToHex(BigInt(order.parameters.consideration[0].identifierOrCriteria)).slice(2),
+    ].join('00')
+
     return {
-      parameters: order.parameters,
+      parameters: {
+        ...order.parameters,
+      },
       signature: order.signature,
       numerator: BigInt(1),
       denominator: BigInt(1),
-      extraData: '0x' as `0x${string}`,
+      extraData: ('0x00' + (includeExtraData ? extraData : '')) as `0x${string}`,
     }
   }
 

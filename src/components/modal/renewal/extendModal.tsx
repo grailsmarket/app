@@ -235,7 +235,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
 
   return (
     <div
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation()
+        e.preventDefault()
         if (success || isLoading) return
         onClose()
       }}
@@ -305,21 +307,31 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                 <div>
                   <div className='bg-secondary border-tertiary max-h-32 overflow-y-auto rounded-lg border p-3'>
                     <div className='text-md space-y-1'>
+                      <div className='flex flex-row gap-1 text-sm text-neutral items-center justify-between w-full'>
+                        <p className='w-1/2'>Name</p>
+                        <div className='flex flex-row items-center w-1/2 justify-between'>
+                          <p className='w-1/2 text-right'>Old Expiration</p>
+                          <p className='w-1/2 text-right'>New Expiration</p>
+                        </div>
+                      </div>
                       {domains.map((domain, index) => (
                         <div key={index} className='flex justify-between'>
-                          <span className='font-semibold'>{domain.name}</span>
-                          <div>
-                            <p className='text-neutral font-medium'>
+                          <span className='font-semibold w-1/2 truncate max-w-1/2'>{domain.name}</span>
+                          <div className='flex flex-row w-1/2 items-center justify-between'>
+                            <p className='text-neutral font-medium w-1/2 text-right'>
                               {domain.expiry_date ? new Date(domain.expiry_date).toLocaleDateString() : 'Unknown'}
                             </p>
-                            <p className='font-medium text-green-500'>
-                              {domain.expiry_date
-                                ? new Date(
+                            <div className='flex flex-row items-center gap-3 w-1/2 justify-end'>
+                              <p className='text-neutral text-md pb-px text-center'>&rarr;</p>
+                              <p className='font-medium text-green-500 text-right'>
+                                {domain.expiry_date
+                                  ? new Date(
                                     new Date(domain.expiry_date).getTime() +
-                                      quantity * getSecondsPerUnit(timeUnit) * 1000
+                                    quantity * getSecondsPerUnit(timeUnit) * 1000
                                   ).toLocaleDateString()
-                                : 'Unknown'}
-                            </p>
+                                  : 'Unknown'}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       ))}

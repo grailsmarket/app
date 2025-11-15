@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './components/domainPanel'
-import ActionButtons from './components/actionButtons'
 import { FilterProvider } from '@/context/filters'
 
 const Marketplace = () => {
@@ -24,7 +23,7 @@ const Marketplace = () => {
               <FilterPanel />
               <div className='bg-tertiary hidden h-full w-0.5 lg:block' />
               <DomainPanel />
-              <ActionButtons />
+              {/* <ActionButtons /> */}
             </div>
           </div>
         </main>

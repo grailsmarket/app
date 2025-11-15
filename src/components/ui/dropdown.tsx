@@ -54,7 +54,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       <div className='flex'>
         {/* Label section */}
         {!hideLabel && (
-          <div className='bg-background border-primary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
+          <div className='bg-background border-tertiary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
             <span className='text-lg font-semibold'>{label}</span>
           </div>
         )}
@@ -65,7 +65,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             type='button'
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              'bg-secondary border-primary hover:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors focus:outline-none',
+              'bg-secondary border-tertiary hover:border-white/70 hover:bg-tertiary focus:border-white/70 focus:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors focus:outline-none',
               hideLabel && 'rounded-md'
             )}
           >
@@ -80,7 +80,7 @@ const Dropdown: React.FC<DropdownProps> = ({
 
           {/* Dropdown menu */}
           {isOpen && (
-            <div className='bg-background border-primary absolute top-full right-0 left-0 z-50 mt-2 max-h-[240px] overflow-y-auto rounded-md border-2 shadow-lg'>
+            <div className='bg-background border-tertiary absolute top-full right-0 left-0 z-50 mt-2 max-h-[240px] overflow-y-auto rounded-md border-2 shadow-lg'>
               {options.map((option) => (
                 <button
                   key={option.value}

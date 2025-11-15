@@ -121,10 +121,10 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualGrid<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              cardWidth={200}
-              cardHeight={350}
+              cardWidth={190}
+              cardHeight={360}
               gap={4}
-              containerPadding={width && width < 640 ? 6 : 0}
+              containerPadding={width && width < 640 ? 4 : 0}
               containerWidth={containerWidth}
               overscanCount={3}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 64 : 24}px)` : '600px'}

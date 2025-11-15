@@ -56,7 +56,7 @@ const Cart = () => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className='flex flex-col gap-4 overflow-y-scroll pb-24'>
-          <div className='flex px-lg flex-row items-center min-h-16 border-b-2 border-tertiary justify-between'>
+          <div className='px-lg border-tertiary flex min-h-16 flex-row items-center justify-between border-b-2'>
             <div className='flex items-center gap-2'>
               <h2 className='font-sedan-sc text-3xl'>Cart</h2>
               <Label label={purchaseDomains.length + registerDomains.length + offerDomains.length} />
@@ -64,7 +64,7 @@ const Cart = () => {
             <Cross className='h-4 w-4 cursor-pointer hover:opacity-80' onClick={() => setIsCartOpen(false)} />
           </div>
           {!registeredDomainsEmpty && (
-            <div className='flex flex-col gap-4 px-lg'>
+            <div className='px-lg flex flex-col gap-4'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Purchase</h3>
                 <Label label={purchaseDomains.length} />
@@ -77,7 +77,7 @@ const Cart = () => {
             </div>
           )}
           {!registerDomainsEmpty && (
-            <div className='flex flex-col gap-4 px-lg'>
+            <div className='px-lg flex flex-col gap-4'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Register</h3>
                 <Label label={registerDomains.length} />
@@ -90,7 +90,7 @@ const Cart = () => {
             </div>
           )}
           {!offerDomainsEmpty && (
-            <div className='flex flex-col gap-4 px-lg'>
+            <div className='px-lg flex flex-col gap-4'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Offer</h3>
                 <Label label={offerDomains.length} />
@@ -103,11 +103,7 @@ const Cart = () => {
             </div>
           )}
         </div>
-        {cartIsEmpty && (
-          <div className='flex h-[70vh] flex-col'>
-            <NoResults label='No Grails in your cart' />
-          </div>
-        )}
+        {cartIsEmpty && <NoResults label='No Grails in your cart' height='calc(80vh - 200px)' />}
         <div className='border-tertiary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
           <div className='flex w-fit flex-row gap-x-2'>
             <SecondaryButton onClick={handleClearCart} disabled={cartIsEmpty}>

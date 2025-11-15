@@ -12,7 +12,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({ className, onClick, disab
   return (
     <button
       className={cn(
-        'bg-primary text-background h-9 md:h-10 px-lg relative w-fit cursor-pointer rounded-sm text-lg font-bold transition-all hover:opacity-70 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100',
+        'bg-primary text-background px-lg relative h-9 w-fit cursor-pointer rounded-sm text-lg font-bold transition-all hover:opacity-70 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 md:h-10',
         className
       )}
       onClick={onClick}

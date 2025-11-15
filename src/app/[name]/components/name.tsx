@@ -9,7 +9,7 @@ import ActivityPanel from './activity'
 import Register from './register'
 import Actions from './actions'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface Props {
   name: string
@@ -18,7 +18,7 @@ interface Props {
 const NamePage: React.FC<Props> = ({ name }) => {
   const { nameDetails, nameDetailsIsLoading, nameOffers, nameOffersIsLoading } = useName(name)
 
-  const registrationStatus = nameDetails ? getRegistrationStatus(nameDetails.expiry_date) : REGISTERED
+  const registrationStatus = nameDetails ? getRegistrationStatus(nameDetails.expiry_date) : UNREGISTERED
   const isRegistered = registrationStatus === REGISTERED
 
   return (

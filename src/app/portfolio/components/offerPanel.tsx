@@ -49,7 +49,7 @@ const OfferPanel = () => {
             >
               <Image src={FilterIcon} alt='Filter' width={16} height={16} />
             </button>
-            <div className='w-full group focus-within:border-white/80! hover:border-white/40 border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+            <div className='group border-tertiary p-md flex w-full items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40'>
               <input
                 type='text'
                 placeholder='Search'
@@ -68,7 +68,7 @@ const OfferPanel = () => {
           </div>
         </div>
         <Offers
-          maxHeight='calc(100vh - 220px)'
+          maxHeight='calc(100dvh - 220px)'
           offers={offers}
           loadingRowCount={20}
           noResults={!offersLoading && offers?.length === 0}

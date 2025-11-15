@@ -47,7 +47,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='flex items-center justify-between p-lg pt-6 md:p-6'>
+        <div className='p-lg flex items-center justify-between pt-6 md:p-6'>
           <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
           <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
@@ -78,7 +78,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
             containerClassName='h-full'
           />
           {allNotifications.length === 0 && !isNotificationsLoading && (
-            <NoResults label='No notifications' />
+            <NoResults label='No notifications' height='50vh' />
           )}
         </div>
       </div>

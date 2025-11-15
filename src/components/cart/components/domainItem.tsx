@@ -27,19 +27,30 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   if (modifyingCartTokenIds.includes(domain.token_id)) return null
 
   return (
-    <div className='flex w-full flex-row items-center gap-1 justify-between'>
+    <div className='flex w-full flex-row items-center justify-between gap-1'>
       <Link
         href={`/${domain.name}`}
-        className={cn('flex flex-row items-center gap-2 transition-all duration-300 hover:opacity-70', hasListing ? 'w-[40%]' : 'w-[70%] md:w-[40%]')}>
+        className={cn(
+          'flex flex-row items-center gap-2 transition-all duration-300 hover:opacity-70',
+          hasListing ? 'w-[40%]' : 'w-[70%] md:w-[40%]'
+        )}
+      >
         <NameImage
           name={domain.name}
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
           className='h-8 w-8 rounded-sm sm:h-9 sm:w-9'
         />
-        <p className='text-md line-clamp-2 truncate font-bold sm:text-lg' style={{ maxWidth: 'calc(100% - 40px)' }}>{beautifyName(domain.name)}</p>
+        <p className='text-md line-clamp-2 truncate font-bold sm:text-lg' style={{ maxWidth: 'calc(100% - 40px)' }}>
+          {beautifyName(domain.name)}
+        </p>
       </Link>
-      <div className={cn('min-w-16 flex-row items-center justify-end gap-2 w-[20%]', hasListing ? 'w-[20%]' : 'hidden md:flex md:w-[20%]')}>
+      <div
+        className={cn(
+          'w-[20%] min-w-16 flex-row items-center justify-end gap-2',
+          hasListing ? 'w-[20%]' : 'hidden md:flex md:w-[20%]'
+        )}
+      >
         {hasListing && (
           <Price
             price={domain.listings[0].price}
@@ -53,7 +64,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
       <div className='flex w-fit flex-row items-center justify-end gap-2 sm:w-[30%]'>
         <ActionButtons domain={domain} registrationStatus={registrationStatus} />
         <Trash
-          className='text-neutral hover:text-foreground border-neutral hover:border-foreground box-border h-[36px] md:h-[38px] w-[36px] md:w-[38px] cursor-pointer rounded-sm border p-2.5 transition-all duration-300'
+          className='text-neutral hover:text-foreground border-neutral hover:border-foreground box-border h-[36px] w-[36px] cursor-pointer rounded-sm border p-2.5 transition-all duration-300 md:h-[38px] md:w-[38px]'
           onClick={() =>
             modifyCart({
               domain,

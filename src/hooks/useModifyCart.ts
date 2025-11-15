@@ -47,11 +47,13 @@ const useModifyCart = () => {
       dispatch(setModifyingCartTokenIds([]))
     },
     onSuccess: (data) => {
-      if (data.inCart) {
-        dispatch(removeFromMarketplaceDomainsCart([data.cartItem.name]))
-      } else {
-        dispatch(addToCartRegisteredDomains([data.cartItem]))
-      }
+      setTimeout(() => {
+        if (data.inCart) {
+          dispatch(removeFromMarketplaceDomainsCart([data.cartItem.name]))
+        } else {
+          dispatch(addToCartRegisteredDomains([data.cartItem]))
+        }
+      }, 10)
     },
     onSettled: (data) => {
       if (data?.cartItem) {

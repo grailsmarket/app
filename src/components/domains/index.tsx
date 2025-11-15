@@ -34,7 +34,7 @@ interface DomainsProps {
 }
 
 const Domains: React.FC<DomainsProps> = ({
-  maxHeight = 'calc(100vh - 160px)',
+  maxHeight = 'calc(100dvh - 160px)',
   domains,
   isLoading,
   loadingRowCount = 10,
@@ -87,7 +87,7 @@ const Domains: React.FC<DomainsProps> = ({
   const containerWidth = useMemo(() => {
     if (!width) return 1200
 
-    if (width >= 1728) return 1728 - 344
+    if (width >= 1728) return width - 344
 
     if (width < 768) return width - 8
     if (width < 1024) return width - 48
@@ -121,10 +121,10 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualGrid<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              cardWidth={width && width < 640 ? 200 : 200}
-              cardHeight={width && width < 420 ? 460 : width && width < 640 ? 350 : 330}
+              cardWidth={200}
+              cardHeight={350}
               gap={4}
-              containerPadding={0}
+              containerPadding={width && width < 640 ? 6 : 0}
               containerWidth={containerWidth}
               overscanCount={3}
               gridHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
@@ -183,7 +183,11 @@ const Domains: React.FC<DomainsProps> = ({
             />
           )
         ) : (
-          <NoResults label={noResultsLabel} requiresAuth={false} />
+          <NoResults
+            label={noResultsLabel}
+            requiresAuth={false}
+            height={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px - 80px)` : '600px'}
+          />
         )}
       </div>
     </div>

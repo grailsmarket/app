@@ -21,10 +21,10 @@ const Home = () => {
           <HeroSearch />
         </div>
         <div className='flex w-full flex-col gap-0 lg:flex-row-reverse'>
-          <div className='w-full lg:h-[970px] lg:w-2/5'>
+          <div className='bg-secondary w-full lg:max-h-[970px] lg:min-h-[970px] lg:w-2/5'>
             <RecentContainer />
           </div>
-          <div className='w-full lg:h-[970px] lg:w-3/5'>
+          <div className='bg-secondary w-full lg:max-h-[970px] lg:min-h-[970px] lg:w-3/5'>
             <LiveActivity />
           </div>
         </div>

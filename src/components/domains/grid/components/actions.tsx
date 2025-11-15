@@ -17,6 +17,8 @@ import {
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
 import { Check } from 'ethereum-identity-kit'
+import SecondaryButton from '@/components/ui/buttons/secondary'
+import PrimaryButton from '@/components/ui/buttons/primary'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -83,25 +85,30 @@ const Actions: React.FC<ActionsProps> = ({
         const isSelected = bulkRenewalDomains.some((d) => d.name === domain.name)
         return (
           <div className='flex flex-row justify-end gap-4 opacity-100'>
-            <div
-              className={cn(
-                'text-foreground/70 flex flex-row items-center gap-1 hover:text-foreground cursor-pointer text-lg font-bold transition-colors',
-                isSelected && 'text-primary'
-              )}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
+            {isSelected ? (
+              <PrimaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
 
-                if (isSelected) {
                   dispatch(removeBulkRenewalModalDomain(domain))
-                } else {
+                }}
+                className='flex flex-row items-center gap-1'
+              >
+                Selected
+                <Check className='h-3 w-3' />
+              </PrimaryButton>
+            ) : (
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
                   dispatch(addBulkRenewalModalDomain(domain))
-                }
-              }}
-            >
-              <p className='text-lg font-bold transition-colors'>{isSelected ? 'Selected' : 'Select'}</p>
-              {isSelected && <Check className='h-3 w-3' />}
-            </div>
+                }}
+              >
+                Select
+              </SecondaryButton>
+            )}
           </div>
         )
       }
@@ -168,7 +175,7 @@ const Actions: React.FC<ActionsProps> = ({
       )}
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => { })} className='flex flex-row items-center gap-0'>
+          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'

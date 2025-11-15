@@ -17,12 +17,10 @@ const CategoryPage: React.FC<Props> = ({ category }) => {
 
   if (!categoryDetails) {
     return (
-      <div className='w-full flex flex-col items-center gap-4 h-screen justify-center'>
+      <div className='flex h-screen w-full flex-col items-center justify-center gap-4'>
         <p className='text-2xl font-bold'>Category not found</p>
         <Link href='/categories'>
-          <PrimaryButton>
-            View All Categories
-          </PrimaryButton>
+          <PrimaryButton>View All Categories</PrimaryButton>
         </Link>
       </div>
     )

@@ -37,9 +37,9 @@ const Portfolio = () => {
           <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
         </div> */}
           <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-20'>
-            <div className='pl-2 bg-background relative mx-auto flex h-[calc(100vh-80px)] w-full flex-row overflow-hidden'>
+            <div className='bg-background relative mx-auto flex h-[calc(100dvh-80px)] w-full flex-row overflow-hidden pl-2'>
               <FilterPanel />
-              <div className='w-0.5 h-full bg-tertiary ml-1.5 hidden lg:block' />
+              <div className='bg-tertiary ml-1.5 hidden h-full w-0.5 lg:block' />
               {mounted ? (
                 <>
                   {showDomainPanel && <DomainPanel />}

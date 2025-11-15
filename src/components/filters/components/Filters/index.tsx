@@ -46,8 +46,9 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       </div>
       {showCategoryTab && (
         <div
-          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-hidden transition-transform lg:min-w-[282px] ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
-            }`}
+          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-hidden transition-transform lg:min-w-[282px] ${
+            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+          }`}
         >
           {categories?.map((category, index) => (
             <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />

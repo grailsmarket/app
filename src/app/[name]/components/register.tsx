@@ -26,7 +26,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     const gracePeriodEndDate = new Date(expiryDateTimestamp + 90 * DAY_IN_SECONDS * 1000).toISOString()
 
     return (
-      <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-6 rounded-lg border-2'>
+      <div className='p-lg lg:p-xl bg-secondary flex w-full flex-col gap-6'>
         <div className='flex flex-row items-center justify-between'>
           <h3 className='font-sedan-sc text-3xl'>Grace Period</h3>
           <PrimaryButton
@@ -59,7 +59,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
       .toString()
 
     return (
-      <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
+      <div className='p-lg lg:p-xl bg-secondary flex w-full flex-col gap-4'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
         <div className='flex w-full flex-row items-center justify-between gap-4'>
           <Price
@@ -84,7 +84,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const price = nameDetails && ethPrice ? calculateRegistrationPrice(nameDetails.name, ethPrice).eth : 0
 
   return (
-    <div className='p-lg lg:p-xl border-primary bg-secondary flex w-full flex-col gap-4 rounded-lg border-2'>
+    <div className='p-lg lg:p-xl bg-secondary flex w-full flex-col gap-4'>
       <h3 className='font-sedan-sc text-3xl'>Register Name</h3>
       <div className='flex w-full flex-row items-center justify-between gap-4'>
         <div className='flex flex-row items-center gap-3'>

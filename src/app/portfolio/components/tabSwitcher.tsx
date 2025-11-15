@@ -18,12 +18,17 @@ const TabSwitcher = () => {
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
     return (
-      <div className='px-lg flex gap-4'>
+      <div className='py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl lg:gap-6'>
         {portfolioTabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => dispatch(changeTab(tab))}
-            className='py-md cursor-pointer font-medium opacity-50 transition-colors hover:opacity-80'
+            className={cn(
+              'py-md cursor-pointer',
+              selectedTab.value === tab.value
+                ? 'border-primary text-primary font-bold opacity-100'
+                : 'font-medium opacity-50 transition-colors hover:opacity-80'
+            )}
           >
             {tab.label}
           </button>
@@ -34,7 +39,7 @@ const TabSwitcher = () => {
 
   // After mount, render with proper active state
   return (
-    <div className='py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 lg:gap-6 border-b-2 sm:justify-start sm:text-xl'>
+    <div className='py-md px-lg border-tertiary xs:text-lg text-md lg:px-xl flex justify-between gap-4 border-b-2 sm:justify-start sm:text-xl lg:gap-6'>
       {portfolioTabs.map((tab) => (
         <button
           key={tab.value}

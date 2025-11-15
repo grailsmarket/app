@@ -86,31 +86,31 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
         height={1000}
         className='bg-foreground absolute top-0 left-0 h-full w-full object-cover opacity-20'
       />
-      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between gap-4 md:gap-8 py-10 md:flex-row'>
+      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between gap-4 py-10 md:flex-row md:gap-8'>
         <div className='flex items-start gap-4'>
           <Image
             src={categoryImage.avatar}
             alt={`${categoryName} avatar`}
             width={100}
             height={100}
-            className='md:w-24 md:h-24 w-16 h-16 rounded-full object-cover'
+            className='h-16 w-16 rounded-full object-cover md:h-24 md:w-24'
           />
           <div className='flex flex-col gap-2'>
-            <p className='text-3xl md:text-4xl lg:text-5xl font-bold'>{categoryName}</p>
-            <p className='text-neutral text-xl md:text-2xl font-medium'>{categoryDetails.description}</p>
-            <div className='flex items-center gap-2'>
+            <div className='flex flex-row items-center gap-2'>
+              <p className='text-3xl font-bold md:text-4xl lg:text-5xl'>{categoryName}</p>
               {twitterLink && (
                 <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
                   <Image
                     src={TwitterIcon}
                     alt='Twitter'
-                    width={32}
-                    height={32}
-                    className='transition-opacity hover:opacity-70'
+                    width={28}
+                    height={28}
+                    className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'
                   />
                 </Link>
               )}
             </div>
+            <p className='text-neutral text-xl font-medium md:text-2xl'>{categoryDetails.description}</p>
           </div>
         </div>
         <div className='bg-background p-lg border-tertiary flex w-full flex-col items-center gap-2 rounded-md border-2 md:w-72'>

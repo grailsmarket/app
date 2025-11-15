@@ -56,14 +56,14 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
         <div>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-              <Link
-                key={club}
-                href={`/categories/${club}`}
-                className='text-primary hover:text-primary/80 font-medium transition-colors'
-              >
-                {CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}
-              </Link>
-            ))
+                <Link
+                  key={club}
+                  href={`/categories/${club}`}
+                  className='text-primary hover:text-primary/80 font-medium transition-colors'
+                >
+                  {CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}
+                </Link>
+              ))
             : 'None'}
         </div>
       ),
@@ -115,13 +115,13 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
 
   return (
     <div className='flex flex-col'>
-      <div className='w-full h-fit bg-tertiary'>
+      <div className='bg-tertiary h-fit w-full'>
         {nameDetails?.token_id && (
           <NameImage
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
             expiryDate={nameDetails.expiry_date}
-            className='aspect-square mx-auto w-full max-w-lg bg-tertiary'
+            className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}

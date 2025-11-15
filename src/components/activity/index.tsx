@@ -153,7 +153,7 @@ const Activity: React.FC<ActivityProps> = ({
             }}
           />
         ) : (
-          <NoResults label={noResultsLabel} requiresAuth={false} />
+          <NoResults label={noResultsLabel} requiresAuth={false} height={maxHeight || '600px'} />
         )}
       </div>
     </div>

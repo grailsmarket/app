@@ -28,13 +28,11 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   return (
     <Suspense>
       <FilterProvider filterType='profile' profileTab={profileTab}>
-        <div className='max-w-domain-panel z-0 mx-auto'>
+        <div className='z-0 mx-auto'>
           <div className='z-10'>
-            <div
-              className='pl-md bg-background border-tertiary relative flex gap-0 overflow-hidden h-[calc(100vh-80px)] border-t-2'
-            >
+            <div className='pl-md bg-background border-tertiary relative flex h-[calc(100vh-80px)] gap-0 overflow-hidden border-t-2'>
               <FilterPanel />
-              <div className='w-0.5 h-full bg-tertiary hidden lg:block ml-2' />
+              <div className='bg-tertiary ml-2 hidden h-full w-0.5 lg:block' />
 
               <div
                 className='flex flex-col gap-2'

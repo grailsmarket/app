@@ -150,7 +150,11 @@ const Offers: React.FC<OffersProps> = ({
             }}
           />
         ) : (
-          <NoResults label={noResultsLabel} requiresAuth={false} />
+          <NoResults
+            label={noResultsLabel}
+            requiresAuth={false}
+            height={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px - 80px)` : '600px'}
+          />
         )}
       </div>
     </div>

@@ -43,7 +43,7 @@ const FilterPanel: React.FC = () => {
     <div
       ref={filterRef}
       className={cn(
-        'bg-background absolute top-0 left-0 z-20 w-full shadow-md transition-transform duration-300 md:min-w-[284px] md:max-w-[284px] lg:relative h-[calc(100vh-80px)] lg:shadow-none',
+        'bg-background absolute top-0 left-0 z-20 h-[calc(100dvh-80px)] w-full shadow-md transition-transform duration-300 md:max-w-[284px] md:min-w-[284px] lg:relative lg:shadow-none',
         isOpen ? 'translate-x-0' : '-translate-x-[110%]',
         isPanelCategories ? 'overflow-hidden' : 'overflow-y-scroll'
       )}
@@ -55,7 +55,7 @@ const FilterPanel: React.FC = () => {
         )}
       >
         {/* Top div */}
-        <div className='relative flex items-center justify-between pt-md'>
+        <div className='pt-md relative flex items-center justify-between'>
           <div
             className={cn(
               'pr-lg flex w-full min-w-full justify-between transition-transform lg:min-w-[300px]',

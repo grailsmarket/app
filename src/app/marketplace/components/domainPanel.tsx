@@ -36,7 +36,7 @@ const DomainPanel = () => {
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group focus-within:border-white/80! hover:border-white/50 border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none'>
+          <div className='w-ful group border-tertiary p-md flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50'>
             <input
               type='text'
               placeholder='Search'
@@ -56,7 +56,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100vh - 140px)' : 'calc(100vh - 16px)'}
+        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100dvh - 140px)' : 'calc(100dvh - 16px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom={viewType === 'list' ? '140px' : '80px'}

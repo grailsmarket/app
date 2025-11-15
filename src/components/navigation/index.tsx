@@ -34,7 +34,7 @@ const Navigation = () => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => { }} className='h-10 w-48' />
+            <Searchbar onSearch={() => {}} className='h-10 w-48' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

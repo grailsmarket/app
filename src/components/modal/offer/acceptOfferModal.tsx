@@ -1007,7 +1007,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
                 }
                 className='w-full'
-              // disabled={isCorrectChain ? needsApproval : false}
+                // disabled={isCorrectChain ? needsApproval : false}
               >
                 {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
               </PrimaryButton>

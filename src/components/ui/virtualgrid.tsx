@@ -19,6 +19,8 @@ export interface VirtualGridProps<T = unknown> {
   scrollThreshold?: number
   scrollEnabled?: boolean
   useLocalScrollTop?: boolean
+  maxColumns?: number
+  minCardWidth?: number
 }
 
 export type VirtualGridComponentType = <T = unknown>(
@@ -43,6 +45,8 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     scrollThreshold = 300,
     scrollEnabled = true,
     useLocalScrollTop = false,
+    maxColumns = 9,
+    minCardWidth = 120,
   } = props
 
   const dispatch = useAppDispatch()
@@ -68,9 +72,22 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   // Calculate columns based on container width
   const columnsCount = useMemo(() => {
-    const availableWidth = containerWidth - gap
-    return Math.floor(availableWidth / (cardWidth + gap)) || 1
-  }, [containerWidth, cardWidth, gap])
+    const availableWidth = containerWidth - gap - containerPadding * 2
+    const calculatedColumns = Math.floor(availableWidth / (cardWidth + gap)) || 1
+
+    // Limit to maxColumns if specified
+    return Math.min(calculatedColumns, maxColumns)
+  }, [containerWidth, cardWidth, gap, containerPadding, maxColumns])
+
+  // Calculate actual card width when columns are constrained
+  const actualCardWidth = useMemo(() => {
+    const availableWidth = containerWidth - gap - containerPadding * 2
+    const totalGaps = (columnsCount - 1) * gap
+    const calculatedWidth = (availableWidth - totalGaps) / columnsCount
+
+    // Ensure card width doesn't go below minimum
+    return Math.max(calculatedWidth, minCardWidth)
+  }, [containerWidth, columnsCount, gap, containerPadding, minCardWidth])
 
   // Calculate total rows
   const totalRows = Math.ceil(items.length / columnsCount)
@@ -153,8 +170,8 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
             style={{
               position: 'absolute',
               top: row * rowHeight,
-              left: col * (100 / columnsCount) + '%',
-              width: (containerWidth - containerPadding) / columnsCount - gap,
+              left: containerPadding + col * (actualCardWidth + gap),
+              width: actualCardWidth,
               height: cardHeight,
             }}
           >

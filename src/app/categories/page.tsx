@@ -14,7 +14,7 @@ export const metadata = {
 
 const UserPage = () => {
   return (
-    <main className='px-lg min-h-screen w-full pt-20' style={{ minHeight: 'calc(100vh - 360px)' }}>
+    <main className='px-lg w-full pt-20' style={{ minHeight: 'calc(100dvh - 78px)' }}>
       <Categories />
     </main>
   )

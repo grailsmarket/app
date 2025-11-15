@@ -16,8 +16,8 @@ export const metadata = {
 const UserPage = () => {
   return (
     <main
-      className='px-lg flex min-h-screen w-full flex-col items-center justify-center gap-4 pt-20 md:pt-24'
-      style={{ minHeight: 'calc(100vh - 360px)' }}
+      className='px-lg flex w-full flex-col items-center justify-center gap-4 pt-20 md:pt-24'
+      style={{ minHeight: 'calc(100dvh - 78px)' }}
     >
       <Suspense fallback={<div>Loading...</div>}>
         <Verify />

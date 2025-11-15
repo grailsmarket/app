@@ -25,7 +25,7 @@ interface OffersProps {
 }
 
 const Offers: React.FC<OffersProps> = ({
-  maxHeight = 'calc(100vh - 160px)',
+  maxHeight = 'calc(100dvh - 160px)',
   offers,
   isLoading,
   loadingRowCount = 10,

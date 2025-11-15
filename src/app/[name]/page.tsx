@@ -34,7 +34,7 @@ const Name = async (props: Props) => {
   const { name } = await props.params
 
   return (
-    <main className='min-h-screen w-full sm:px-4' style={{ minHeight: 'calc(100vh - 360px)' }}>
+    <main className='w-full sm:px-4' style={{ minHeight: 'calc(100dvh - 78px)' }}>
       <NamePage name={name} />
     </main>
   )

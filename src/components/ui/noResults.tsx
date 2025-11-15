@@ -14,7 +14,7 @@ interface NoResultsProps {
 const NoResults: React.FC<NoResultsProps> = ({
   label = 'No results found',
   requiresAuth = false,
-  height = '100vh',
+  height = '100dvh',
 }) => {
   const { authStatus } = useUserContext()
 

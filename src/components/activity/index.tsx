@@ -27,7 +27,7 @@ interface ActivityProps {
 }
 
 const Activity: React.FC<ActivityProps> = ({
-  maxHeight = 'calc(100vh - 160px)',
+  maxHeight = 'calc(100dvh - 160px)',
   activity,
   isLoading,
   loadingRowCount = 10,

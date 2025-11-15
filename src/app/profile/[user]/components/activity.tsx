@@ -51,7 +51,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
         </div>
       </div>
       <Activity
-        maxHeight='calc(100vh - 190px)'
+        maxHeight='calc(100dvh - 190px)'
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}

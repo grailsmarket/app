@@ -6,12 +6,11 @@ import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
-import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
@@ -19,13 +18,14 @@ const DomainPanel = () => {
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
   const isAtBottom = useScrollToBottom({ threshold: 10 })
-  const { viewType } = useAppSelector(selectMarketplaceDomains)
+  // const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
     <div
-      className='pt-lg flex w-full flex-col gap-4'
+      className='pt-lg flex w-full flex-col gap-4 overflow-hidden'
       style={{
         width: windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
+        maxHeight: 'calc(100dvh - 78px)',
       }}
     >
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
@@ -56,10 +56,10 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth < 1024 ? 'calc(100dvh - 140px)' : 'calc(100dvh - 90px)'}
+        maxHeight='calc(100dvh - 90px)'
         domains={domains}
         loadingRowCount={20}
-        paddingBottom={viewType === 'list' ? '140px' : '80px'}
+        paddingBottom='0px'
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}

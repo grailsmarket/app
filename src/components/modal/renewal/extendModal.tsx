@@ -308,10 +308,18 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       {domains.map((domain, index) => (
                         <div key={index} className='flex justify-between'>
                           <span className='font-semibold'>{domain.name}</span>
-                          <span className='text-neutral font-medium'>
-                            Current Expiry:{' '}
-                            {domain.expiry_date ? new Date(domain.expiry_date).toLocaleDateString() : 'Unknown'}
-                          </span>
+                          <div>
+                            <p className='text-neutral font-medium'>
+                              {domain.expiry_date ? new Date(domain.expiry_date).toLocaleDateString() : 'Unknown'}
+                            </p>
+                            <p className='text-green-500 font-medium'>
+                              {domain.expiry_date
+                                ? new Date(
+                                  new Date(domain.expiry_date).getTime() + quantity * getSecondsPerUnit(timeUnit) * 1000
+                                ).toLocaleDateString()
+                                : 'Unknown'}
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -387,28 +395,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     )}
                   </div>
                 )}
-
-                {/* Calculation results */}
-                <div>
-                  <div className='bg-secondary border-tertiary max-h-32 overflow-y-auto rounded-lg border p-3'>
-                    <h3 className='mb-2 text-lg font-semibold'>Extended</h3>
-                    <div className='text-md space-y-1'>
-                      {domains.map((domain, index) => (
-                        <div key={index} className='flex justify-between'>
-                          <span className='font-semibold'>{domain.name}</span>
-                          <span className='font-medium text-green-500'>
-                            New Expiry:{' '}
-                            {domain.expiry_date
-                              ? new Date(
-                                  new Date(domain.expiry_date).getTime() + quantity * getSecondsPerUnit(timeUnit) * 1000
-                                ).toLocaleDateString()
-                              : 'Unknown'}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
 
                 <div className='flex flex-col gap-2'>
                   {/* Pricing display */}

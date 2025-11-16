@@ -5,7 +5,6 @@ import type { Address } from 'viem'
 import { useContext, createContext, useEffect, useCallback, useState, SetStateAction, Dispatch } from 'react'
 import { useSiwe } from 'ethereum-identity-kit'
 import { DAY_IN_SECONDS } from '@/constants/time'
-import { queryClient } from '@/lib/queryClient'
 import { fetchNonce } from '@/api/siwe/fetchNonce'
 import { useAuth } from '@/hooks/useAuthStatus'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
@@ -26,6 +25,8 @@ type userContextType = {
   userAddress: Address | undefined
   watchlist: WatchlistItemType[] | null | undefined
   authStatus: AuthenticationStatus
+  authStatusIsLoading: boolean
+  authStatusIsRefetching: boolean
   isCartOpen: boolean
   setIsCartOpen: Dispatch<SetStateAction<boolean>>
   isSigningIn: boolean
@@ -55,7 +56,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
 
   const { address } = useAccount()
   const dispatch = useAppDispatch()
-  const { authStatus, verify, refetchAuthStatus, signOut, disconnect } = useAuth()
+  const { authStatus, verify, refetchAuthStatus, signOut, disconnect, authStatusIsLoading, authStatusIsRefetching } =
+    useAuth()
   const { profileIsLoading, refetchProfile, watchlist, watchlistIsLoading, refetchWatchlist } = useUserProfile({
     address,
     authStatus,
@@ -92,9 +94,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   }, [address])
 
   const handleSignInSuccess = async () => {
-    queryClient.invalidateQueries({ queryKey: ['auth', 'status'] })
-    setIsSigningIn(false)
     refetchAuthStatus()
+    setIsSigningIn(false)
   }
 
   const handleSignInError = (error: Error) => {
@@ -117,6 +118,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
       setIsSigningIn(true)
       handleSignIn()
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, authStatus])
 
@@ -130,6 +132,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         userAddress: address,
         watchlist,
         authStatus,
+        authStatusIsLoading,
+        authStatusIsRefetching,
         isSigningIn,
         isCartOpen,
         setIsCartOpen,

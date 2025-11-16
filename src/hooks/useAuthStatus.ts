@@ -20,20 +20,16 @@ export const useAuth = () => {
   const [currAddress, setCurrAddress] = useState<Address | null>(null)
   const { address } = useAccount()
   const dispatch = useAppDispatch()
+  const { disconnect } = useDisconnect()
 
   const {
     data: authStatus,
     isLoading: authStatusIsLoading,
     refetch: refetchAuthStatus,
+    isRefetching: authStatusIsRefetching,
   } = useQuery<AuthenticationStatus>({
     queryKey: ['auth', 'status'],
     queryFn: async () => {
-      const token = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('token='))
-        ?.split('=')[1]
-      if (!token) return 'unauthenticated'
-
       const authenticateRes = await checkAuthentication()
 
       if (authenticateRes.success) {
@@ -51,20 +47,24 @@ export const useAuth = () => {
     initialData: 'loading',
     enabled: !!address,
     refetchOnWindowFocus: false,
-    refetchInterval: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: false,
+    // refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
 
   useEffect(() => {
     if (!address) return
 
-    if (currAddress && address !== currAddress) {
+    if (currAddress && address.toLowerCase() !== currAddress.toLowerCase()) {
       logout()
       dispatch(resetUserProfile())
       document.cookie = `token=; path=/; max-age=0;`
       refetchAuthStatus()
+      setCurrAddress(address)
+    } else {
+      checkAuthentication()
+      setCurrAddress(address)
     }
 
-    setCurrAddress(address)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])
 
@@ -81,10 +81,10 @@ export const useAuth = () => {
     return
   }
 
-  const { disconnect } = useDisconnect()
   const signOut = async () => {
     disconnect()
-    logout()
+    await logout()
+    setCurrAddress(null)
     dispatch(resetUserProfile())
     document.cookie = `token=; path=/; max-age=0;`
     await refetchAuthStatus()
@@ -97,6 +97,7 @@ export const useAuth = () => {
     disconnect,
     authStatus,
     authStatusIsLoading,
+    authStatusIsRefetching,
     refetchAuthStatus,
   }
 }

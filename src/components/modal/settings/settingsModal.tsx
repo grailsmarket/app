@@ -61,11 +61,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         <div>
           <div className='p-md md:p-lg border-tertiary relative flex items-center justify-between gap-1 overflow-hidden rounded-md border md:gap-2'>
             {ensProfile.header && <HeaderImage src={ensProfile.header} isLoading={false} style={{ opacity: 0.2 }} />}
-            <div className='relative z-10 flex max-w-[calc(100%-80px)] items-center gap-2 truncate'>
+            <div className='relative z-10 flex max-w-[calc(100%-80px)] items-center gap-1 truncate md:gap-2'>
               <Avatar
                 src={ensProfile.avatar}
                 name={ensProfile.name}
-                className='h-9 min-w-9 overflow-hidden rounded-full sm:h-10 sm:w-10 md:h-12 md:w-12'
+                className='h-9 w-9 min-w-9 overflow-hidden rounded-full sm:h-10 sm:w-10 md:h-12 md:w-12'
               />
               <p className='xs:text-xl line-clamp-2 truncate text-lg font-semibold sm:text-xl md:text-2xl'>
                 {ensProfile.name}

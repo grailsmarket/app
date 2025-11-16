@@ -15,7 +15,7 @@ import SearchIcon from './searchIcon'
 const Navigation = () => {
   return (
     <header className='bg-background border-tertiary app:border-r-2 app:border-l-2 fixed top-0 left-[50%] z-50 mx-auto h-16 w-full max-w-[2340px] -translate-x-1/2 border-b-2 backdrop-blur-md md:h-20'>
-      <nav className='px-lg mx-auto flex h-full max-w-[2340px] items-center justify-between'>
+      <nav className='px-md md:px-lg mx-auto flex h-full max-w-[2340px] items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>
             <Image
@@ -34,7 +34,7 @@ const Navigation = () => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

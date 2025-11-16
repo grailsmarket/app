@@ -18,7 +18,7 @@ const DomainPanel = () => {
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
-  const isAtBottom = useScrollToBottom({ threshold: 10 })
+  const isAtBottom = useScrollToBottom({ threshold: 30 })
   // const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (

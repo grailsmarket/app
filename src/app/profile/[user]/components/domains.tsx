@@ -25,7 +25,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
-    <div className='sm:px-md px-sm w-full flex flex-col gap-2'>
+    <div className='sm:px-md px-sm flex w-full flex-col gap-2'>
       <div className='md:p-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='px-sm flex w-auto items-center gap-2 md:p-0'>
           <button

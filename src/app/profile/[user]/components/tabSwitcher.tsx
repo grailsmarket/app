@@ -20,7 +20,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) 
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
     return (
-      <div className='px-md py-md md:px-lg border-tertiary w-full flex gap-4 border-b-2'>
+      <div className='px-md py-md md:px-lg border-tertiary flex w-full gap-4 border-b-2'>
         {profileTabs.map((tab) => (
           <button
             key={tab.value}
@@ -41,7 +41,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) 
 
   // After mount, render with proper active state
   return (
-    <div className='px-md md:py-md md:px-xl border-tertiary w-full flex gap-4 border-b-2 py-0.5'>
+    <div className='px-md md:py-md md:px-xl border-tertiary flex w-full gap-4 border-b-2 py-0.5'>
       {profileTabs.map((tab) => (
         <button
           key={tab.value}

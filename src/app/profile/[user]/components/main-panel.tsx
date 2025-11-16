@@ -34,7 +34,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
               <FilterPanel />
               <div className='bg-tertiary ml-2 hidden h-full w-0.5 lg:block' />
               <div
-                className='flex flex-col gap-2 w-full'
+                className='flex w-full flex-col gap-2'
                 style={{
                   width: windowWidth && windowWidth > 1024 ? 'calc(100% - 280px)' : '100%',
                 }}

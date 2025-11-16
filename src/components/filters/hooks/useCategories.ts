@@ -2,7 +2,7 @@ import { fetchCategories } from '@/api/domains/fetchCategories'
 import { useQuery } from '@tanstack/react-query'
 
 export const useCategories = () => {
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
       const results = await fetchCategories()
@@ -12,5 +12,6 @@ export const useCategories = () => {
 
   return {
     categories,
+    categoriesLoading: isLoading,
   }
 }

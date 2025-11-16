@@ -12,8 +12,16 @@ interface Props {
 }
 
 const CategoryPage: React.FC<Props> = ({ category }) => {
-  const { categories: allCategories } = useCategories()
+  const { categories: allCategories, categoriesLoading } = useCategories()
   const categoryDetails = allCategories?.find((item) => item.name === category)
+
+  if (categoriesLoading) {
+    return (
+      <div className='flex h-screen w-full flex-col items-center justify-center gap-4'>
+        <p className='text-2xl font-bold'>Loading...</p>
+      </div>
+    )
+  }
 
   if (!categoryDetails) {
     return (

@@ -110,7 +110,7 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary p-md sm:p-md border-tertiary mx-auto w-full rounded-none border-t-2 border-r sm:pb-0'>
+    <div className='bg-secondary p-md border-tertiary mx-auto w-full rounded-none border-t-2 border-r lg:pb-0'>
       <div className='p-sm pt-md sm:p-lg flex items-center justify-between'>
         <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
         <div className='flex items-center justify-end gap-1 sm:gap-2'>
@@ -125,7 +125,7 @@ const LiveActivity = () => {
 
       {/* Live Activity Section */}
       <Activity
-        maxHeight={width && width < 1024 ? 'calc(100dvh - 96px)' : 'calc(100dvh - 123px)'}
+        maxHeight={width && width < 1024 ? 'calc(100dvh - 90px)' : 'calc(100dvh - 120px)'}
         activity={allActivities}
         paddingBottom='10px'
         loadingRowCount={16}

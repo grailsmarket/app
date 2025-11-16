@@ -60,10 +60,11 @@ export const useAuth = () => {
       document.cookie = `token=; path=/; max-age=0;`
       refetchAuthStatus()
       setCurrAddress(address)
-    } else {
-      checkAuthentication()
-      setCurrAddress(address)
+      return
     }
+
+    refetchAuthStatus()
+    setCurrAddress(address)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])

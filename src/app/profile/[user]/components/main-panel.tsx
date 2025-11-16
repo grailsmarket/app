@@ -28,9 +28,9 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   return (
     <Suspense>
       <FilterProvider filterType='profile' profileTab={profileTab}>
-        <div className='z-0 mx-auto'>
-          <div className='z-10'>
-            <div className='md:pl-md bg-background border-tertiary relative flex h-[calc(100dvh-62px)] gap-0 overflow-hidden border-t-2 md:h-[calc(100dvh-78px)]'>
+        <div className='w-full'>
+          <div className='z-10 w-full'>
+            <div className='md:pl-md bg-background border-tertiary relative flex h-[calc(100dvh-62px)] w-full gap-0 overflow-hidden border-t-2 md:h-[calc(100dvh-78px)]'>
               <FilterPanel />
               <div className='bg-tertiary ml-2 hidden h-full w-0.5 lg:block' />
               <div

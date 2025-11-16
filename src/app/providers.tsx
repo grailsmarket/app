@@ -36,9 +36,13 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
               <ReduxProvider store={store}>
                 <UserProvider>
                   <SeaportProvider>
-                    <Navigation />
-                    <Cart />
-                    {children}
+                    <div className='relative flex min-h-screen flex-col'>
+                      <Navigation />
+                      <Cart />
+                      <div className='xxl:border-2 border-tertiary app-container mx-auto w-full max-w-[2340px]'>
+                        {children}
+                      </div>
+                    </div>
                     <TransactionModal />
                     <Modals />
                     <div id='modal-root' />

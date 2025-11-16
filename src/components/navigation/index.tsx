@@ -14,8 +14,8 @@ import SearchIcon from './searchIcon'
 
 const Navigation = () => {
   return (
-    <header className='px-lg bg-background border-tertiary fixed top-0 left-0 z-50 h-16 w-full border-b-2 backdrop-blur-md md:h-20'>
-      <nav className='mx-auto flex h-full max-w-7xl items-center justify-between'>
+    <header className='bg-background border-tertiary fixed top-0 left-[50%] z-50 mx-auto h-16 w-full max-w-[2340px] -translate-x-1/2 border-b-2 backdrop-blur-md md:h-20'>
+      <nav className='px-lg mx-auto flex h-full max-w-[2340px] items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>
             <Image

@@ -37,7 +37,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
         className
       )}
     >
-      <div className='xs:max-h-[240px] relative flex max-h-[340px] w-full flex-col justify-between overflow-hidden'>
+      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between overflow-hidden'>
         <NameImage
           name={domain.name}
           tokenId={domain.token_id}

@@ -122,13 +122,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         if (success || isLoading) return
         onClose()
       }}
-      className='fixed inset-0 z-50 flex h-screen w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100vh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
         {success && !poapClaimed ? (

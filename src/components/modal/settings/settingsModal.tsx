@@ -38,41 +38,50 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className={cn('fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-end justify-end md:items-center md:justify-center bg-black/40 md:px-2 md:py-12 backdrop-blur-sm starting:translate-y-[100vh] md:starting:translate-y-0 transition-all duration-250', isOpen ? 'translate-y-0' : 'translate-y-[100vh]')}
+      className={cn(
+        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
+        isOpen ? 'translate-y-0' : 'translate-y-[100vh]'
+      )}
       onClick={(e) => {
         e.stopPropagation()
         onClose()
       }}
     >
       <div
-        className='bg-background border-tertiary p-lg md:p-xl relative max-h-[calc(100dvh-62px)] md:max-h-[calc(100dvh-80px)] flex w-full md:max-w-xl flex-col sm:gap-4 gap-2 rounded-md border-t md:border-2 shadow-lg'
+        className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-62px)] w-full flex-col gap-2 rounded-md border-t shadow-lg sm:gap-4 md:max-w-xl md:border-2'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='flex items-center min-h-6 justify-center'>
+        <div className='flex min-h-6 items-center justify-center'>
           <h2 className='font-sedan-sc text-foreground text-3xl'>Settings</h2>
           {/* <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
           </button> */}
         </div>
         <div>
-          <div className='p-md md:p-lg border-tertiary relative flex items-center justify-between md:gap-2 gap-1 overflow-hidden rounded-md border'>
+          <div className='p-md md:p-lg border-tertiary relative flex items-center justify-between gap-1 overflow-hidden rounded-md border md:gap-2'>
             {ensProfile.header && <HeaderImage src={ensProfile.header} isLoading={false} style={{ opacity: 0.2 }} />}
-            <div className='relative z-10 flex max-w-[calc(100%-80px)] truncate items-center gap-2'>
-              <Avatar src={ensProfile.avatar} name={ensProfile.name} className='sm:w-10 sm:h-10 min-w-9 h-9 md:w-12 md:h-12 overflow-hidden rounded-full' />
-              <p className='xs:text-xl text-lg sm:text-xl md:text-2xl font-semibold truncate line-clamp-2'>{ensProfile.name}</p>
+            <div className='relative z-10 flex max-w-[calc(100%-80px)] items-center gap-2 truncate'>
+              <Avatar
+                src={ensProfile.avatar}
+                name={ensProfile.name}
+                className='h-9 min-w-9 overflow-hidden rounded-full sm:h-10 sm:w-10 md:h-12 md:w-12'
+              />
+              <p className='xs:text-xl line-clamp-2 truncate text-lg font-semibold sm:text-xl md:text-2xl'>
+                {ensProfile.name}
+              </p>
             </div>
             <Link
               href={`https://app.ens.domains/name/${ensProfile.name}`}
               target='_blank'
-              className='sm:px-md relative min-w-[92px] z-10 flex h-9 sm:h-10 items-center justify-center sm:gap-1.5 gap-1 rounded-md bg-[#0080bc] transition-opacity hover:opacity-80'
+              className='sm:px-md relative z-10 flex h-9 min-w-[92px] items-center justify-center gap-1 rounded-md bg-[#0080bc] transition-opacity hover:opacity-80 sm:h-10 sm:gap-1.5'
             >
-              <ENS className='sm:h-5 sm:w-5 h-4 w-4' />
-              <p className='text-md sm:text-lg font-semibold'>Edit Profile</p>
+              <ENS className='h-4 w-4 sm:h-5 sm:w-5' />
+              <p className='text-md font-semibold sm:text-lg'>Edit Profile</p>
             </Link>
           </div>
         </div>
-        <div className='flex flex-col sm:gap-4 gap-2'>
+        <div className='flex flex-col gap-2 sm:gap-4'>
           <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
             <p className='text-md text-neutral font-medium'>
               Your email is going to be used to send you notifications and updates from Grails.
@@ -131,10 +140,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           >
             {updateUserProfileMutationLoading ? 'Saving...' : 'Save Changes'}
           </PrimaryButton>
-          <SecondaryButton
-            className='w-full'
-            onClick={onClose}
-          >
+          <SecondaryButton className='w-full' onClick={onClose}>
             Close
           </SecondaryButton>
         </div>

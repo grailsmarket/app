@@ -109,7 +109,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   return (
     <div
       className={cn(
-        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:py-12 xl:items-center starting:translate-y-[100vh] md:starting:translate-y-0',
+        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:py-12 xl:items-center starting:translate-y-[100vh] md:starting:translate-y-0',
         isOpen && !isClosing ? 'translate-y-0' : 'translate-y-[100vh] md:translate-y-0'
       )}
       onClick={(e) => {

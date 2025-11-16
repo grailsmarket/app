@@ -39,7 +39,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
 
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center bg-black/50 px-2 py-12 backdrop-blur-sm'
+      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-center justify-center bg-black/50 px-2 py-12 backdrop-blur-sm'
       onClick={onClose}
     >
       <div

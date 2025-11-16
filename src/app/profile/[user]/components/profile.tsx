@@ -25,11 +25,11 @@ const Profile: React.FC<Props> = ({ user }) => {
             showPoaps={false}
             showFollowButton={true}
             style={{ paddingLeft: '10px' }}
-            // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+          // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
           />
         )}
       </div>
-      <div>
+      <div className='w-screen'>
         <MainPanel user={user} />
       </div>
     </div>

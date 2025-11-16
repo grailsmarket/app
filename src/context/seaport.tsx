@@ -6,12 +6,13 @@ import { OrderStatus, OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import React, { createContext, useContext, ReactNode, useMemo } from 'react'
 import { mainnet } from 'viem/chains'
 import { ContractTransaction } from 'ethers'
+import { DomainOfferType } from '@/types/domains'
 
 type SeaportContextValue = {
   isInitialized: boolean
   reinitializeSeaport: () => Promise<void>
   cancelListings: (listingIds: number[]) => Promise<void>
-  cancelOffer: (offerId: number) => Promise<void>
+  cancelOffer: (offer: DomainOfferType) => Promise<void>
   validateOrder: (order: OrderWithCounter) => Promise<boolean>
   getOrderStatus: (orderHash: string) => Promise<OrderStatus | null>
   createListing: (params: {

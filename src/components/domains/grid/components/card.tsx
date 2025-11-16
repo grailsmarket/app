@@ -97,7 +97,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
           {portfolioTab === 'domains' && filterType === 'portfolio' && domain.expiry_date && (
             <div className='flex items-center gap-1'>
               <p className='text-md text-neutral truncate font-semibold'>
-                {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}
+                Expiry: {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}
               </p>
             </div>
           )}

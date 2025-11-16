@@ -6,6 +6,7 @@ import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offer
 import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 import { useUserContext } from '@/context/user'
+import { DomainOfferType } from '@/types/domains'
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
@@ -401,7 +402,7 @@ export function useSeaportClient() {
   )
 
   const cancelOffer = useCallback(
-    async (offerId: number) => {
+    async (offer: DomainOfferType) => {
       if (!address) {
         throw new Error('Wallet not connected')
       }
@@ -413,6 +414,31 @@ export function useSeaportClient() {
 
       setIsLoading(true)
       setError(null)
+
+      const offerId = offer.id
+
+      if (offer.source === 'opensea') {
+        console.log('Cancelling OpenSea offer:', offer)
+
+        // Build the order component
+        const onchaincancelParams = {
+          offerer: offer.buyer_address,
+          zone: offer.order_data.protocol_data.parameters.zone,
+          orderType: offer.order_data.protocol_data.parameters.orderType,
+          startTime: offer.order_data.protocol_data.parameters.startTime,
+          endTime: offer.order_data.protocol_data.parameters.endTime,
+          zoneHash: offer.order_data.protocol_data.parameters.zoneHash,
+          salt: offer.order_data.protocol_data.parameters.salt,
+          offer: offer.order_data.protocol_data.parameters.offer,
+          consideration: offer.order_data.protocol_data.parameters.consideration,
+          totalOriginalConsiderationItems: offer.order_data.protocol_data.parameters.totalOriginalConsiderationItems,
+          conduitKey: offer.order_data.protocol_data.parameters.conduitKey,
+          counter: offer.order_data.protocol_data.parameters.counter,
+        }
+
+        const openseaResponse = await seaportClient.cancelOrders([onchaincancelParams], address)
+        console.log('OpenSea response:', openseaResponse)
+      }
 
       try {
         // Re-initialize to ensure we have the wallet client

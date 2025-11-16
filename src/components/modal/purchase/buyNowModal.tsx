@@ -193,7 +193,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
-              // @ts-expect-error AdvancedOrder is of the correct type
               advancedOrder,
               [], // criteriaResolvers
               fulfillerConduitKey,
@@ -386,7 +385,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
-              // @ts-expect-error AdvancedOrder is of the correct type
               advancedOrder,
               [], // criteriaResolvers - empty for basic orders
               fulfillerConduitKey,
@@ -408,7 +406,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
-            // @ts-expect-error AdvancedOrder is of the correct type
             advancedOrder,
             [], // criteriaResolvers
             fulfillerConduitKey,

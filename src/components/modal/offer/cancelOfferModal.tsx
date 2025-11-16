@@ -32,7 +32,7 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
     setStatus('pending')
 
     try {
-      await cancelOffer(offer.id)
+      await cancelOffer(offer)
       setStatus('success')
     } catch (err) {
       console.error('Failed to cancel listing:', err)

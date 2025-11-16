@@ -47,7 +47,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='p-lg flex items-center justify-between pt-6 md:p-6'>
+        <div className='p-lg flex items-center justify-between md:p-6'>
           <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
           <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
@@ -55,13 +55,13 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         </div>
 
         {/* Notifications list */}
-        <div className='flex-1 overflow-hidden'>
+        <div className=''>
           <VirtualList
-            listHeight='auto'
+            listHeight='calc(100dvh - 150px)'
             ref={virtualListRef}
             items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
             visibleCount={20}
-            rowHeight={60}
+            rowHeight={54}
             overscanCount={10}
             paddingBottom='0'
             useLocalScrollTop={true}

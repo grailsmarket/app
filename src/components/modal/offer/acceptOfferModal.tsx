@@ -741,7 +741,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
-            // @ts-expect-error AdvancedOrder is of the correct type
             advancedOrder,
             [], // criteriaResolvers
             fulfillerConduitKey,
@@ -908,7 +907,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
-            // @ts-expect-error AdvancedOrder is of the correct type
             advancedOrder,
             [], // criteriaResolvers
             fulfillerConduitKey,
@@ -930,7 +928,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         abi: SEAPORT_ABI,
         functionName: 'fulfillAdvancedOrder',
         args: [
-          // @ts-expect-error AdvancedOrder is of the correct type
           advancedOrder,
           [], // criteriaResolvers
           fulfillerConduitKey,

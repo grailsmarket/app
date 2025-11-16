@@ -22,7 +22,6 @@ interface NotificationRowProps {
 }
 
 const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick }) => {
-  console.log('Notification:', notification)
   // Get icon based on notification type
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -95,22 +94,22 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     <Link
       href={`/${notification.ensName}`}
       className={cn(
-        'p-lg flex w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
+        'p-md sm:p-lg flex w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
       )}
       onClick={onClick}
     >
-      <div className='flex w-2/5 items-center gap-3'>
+      <div className='flex w-2/5 items-center gap-2 sm:gap-3'>
         {!notification.isRead && <div className='bg-primary h-2 w-2 rounded-full' />}
         <div className=''>
-          <Image src={icon} alt={eventName} width={26} height={26} />
+          <Image src={icon} alt={eventName} width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6' />
         </div>
         <div className='flex flex-col gap-px'>
-          <p className='text-foreground text-lg font-medium'>{eventName}</p>
-          <div className='text-md text-neutral font-medium'>{timeAgo}</div>
+          <p className='text-foreground text-md font-medium sm:text-lg'>{eventName}</p>
+          <div className='sm:text-md text-neutral text-sm font-medium'>{timeAgo}</div>
         </div>
       </div>
 
-      <div className='flex w-2/5 items-center gap-2'>
+      <div className='flex w-2/5 items-center gap-1.5 sm:gap-2'>
         <NameImage
           name={notification.ensName}
           tokenId={notification.ensTokenId}
@@ -118,7 +117,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
           height={32}
           width={32}
         />
-        <span className='text-foreground font-semibold'>{notification.ensName}</span>
+        <span className='text-foreground text-lg font-semibold sm:text-xl'>{notification.ensName}</span>
       </div>
 
       <div className='flex w-1/5 justify-end'>{getContextualData()}</div>

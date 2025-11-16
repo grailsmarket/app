@@ -91,7 +91,7 @@ const Activity: React.FC<ActivityProps> = ({
       style={{ maxHeight }}
     >
       {showHeaders && !noResults && (
-        <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
+        <div className='px-sm pb-sm md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             return (
               <div

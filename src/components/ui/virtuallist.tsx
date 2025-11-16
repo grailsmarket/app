@@ -126,7 +126,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
         WebkitOverflowScrolling: 'touch',
       }}
       id='virtual-list'
-      className={clsx(containerClassName, 'hide-scrollbar')}
+      className={clsx(containerClassName, 'hide-scrollbar w-full')}
     >
       <div style={{ width: '100%', height: totalHeight, position: 'relative' }}>
         <div

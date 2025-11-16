@@ -111,7 +111,7 @@ const LiveActivity = () => {
 
   return (
     <div className='bg-secondary p-md sm:p-md border-tertiary mx-auto w-full rounded-none border-t-2 border-r sm:pb-0'>
-      <div className='p-md sm:px-lg sm:py-lg flex items-center justify-between'>
+      <div className='p-sm pt-md sm:p-lg flex items-center justify-between'>
         <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
         <div className='flex items-center justify-end gap-1 sm:gap-2'>
           <div

@@ -87,10 +87,10 @@ const Domains: React.FC<DomainsProps> = ({
   const containerWidth = useMemo(() => {
     if (!width) return 1200
 
-    if (width >= 1728) return width - 340
-
+    if (width >= 2340) return 2340 - 340
     if (width < 768) return width - 8
     if (width < 1024) return width - 38
+
     // Account for sidebar (280px) and padding
     return width - (width < 1024 ? 48 : 344)
   }, [width])

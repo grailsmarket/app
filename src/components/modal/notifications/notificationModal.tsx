@@ -39,11 +39,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
 
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-center justify-center bg-black/50 px-2 py-12 backdrop-blur-sm'
+      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/50 md:px-2 md:py-12 backdrop-blur-sm md:items-center md:justify-center'
       onClick={onClose}
     >
       <div
-        className='bg-background border-secondary relative flex h-[600px] w-full max-w-xl flex-col rounded-md border-2'
+        className='bg-background border-secondary relative flex md:h-[600px] w-full md:max-w-xl flex-col rounded-md border-2 max-h-[calc(100dvh-80px)]'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

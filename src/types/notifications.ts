@@ -1,4 +1,4 @@
-export type NotificationType = 'new-listing' | 'price-change' | 'sale' | 'new-offer' | 'offer-received'
+export type NotificationType = 'new-listing' | 'price-change' | 'sale' | 'new-offer' | 'offer-received' | 'listing-sold'
 
 export interface NotificationMetadata {
   priceWei?: string

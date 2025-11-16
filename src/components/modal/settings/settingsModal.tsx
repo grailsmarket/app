@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Avatar, Cross, ENS, HeaderImage } from 'ethereum-identity-kit'
+import { Avatar, ENS, HeaderImage } from 'ethereum-identity-kit'
 import { useSettings } from './useSettings'
 import Input from '@/components/ui/input'
 import Link from 'next/link'
@@ -11,6 +11,7 @@ import AlertCircle from 'public/icons/alert-circle.svg'
 import ErrorIcon from 'public/icons/cancelled.svg'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import CheckCircle from 'public/icons/check-circle.svg'
+import { cn } from '@/utils/tailwind'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -35,42 +36,43 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     sendVerificationEmail,
   } = useSettings()
 
-  if (!isOpen) return null
-
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center bg-black/50 px-2 py-12 backdrop-blur-sm'
-      onClick={onClose}
+      className={cn('fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-end justify-end md:items-center md:justify-center bg-black/40 md:px-2 md:py-12 backdrop-blur-sm starting:translate-y-[100vh] md:starting:translate-y-0 transition-all duration-250', isOpen ? 'translate-y-0' : 'translate-y-[100vh]')}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClose()
+      }}
     >
       <div
-        className='bg-background border-primary p-xl relative flex w-full max-w-xl flex-col gap-4 rounded-md border-2 shadow-lg'
+        className='bg-background border-tertiary p-lg md:p-xl relative max-h-[calc(100dvh-62px)] md:max-h-[calc(100dvh-80px)] flex w-full md:max-w-xl flex-col sm:gap-4 gap-2 rounded-md border-t md:border-2 shadow-lg'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='flex items-center justify-between'>
+        <div className='flex items-center min-h-6 justify-center'>
           <h2 className='font-sedan-sc text-foreground text-3xl'>Settings</h2>
-          <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
+          {/* <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
-          </button>
+          </button> */}
         </div>
         <div>
-          <div className='p-lg border-primary relative flex items-center justify-between gap-2 overflow-hidden rounded-md border'>
+          <div className='p-md md:p-lg border-tertiary relative flex items-center justify-between md:gap-2 gap-1 overflow-hidden rounded-md border'>
             {ensProfile.header && <HeaderImage src={ensProfile.header} isLoading={false} style={{ opacity: 0.2 }} />}
-            <div className='relative z-10 flex items-center gap-2'>
-              <Avatar src={ensProfile.avatar} name={ensProfile.name} style={{ width: '48px', height: '48px' }} />
-              <p className='text-2xl font-semibold'>{ensProfile.name}</p>
+            <div className='relative z-10 flex max-w-[calc(100%-80px)] truncate items-center gap-2'>
+              <Avatar src={ensProfile.avatar} name={ensProfile.name} className='sm:w-10 sm:h-10 min-w-9 h-9 md:w-12 md:h-12 overflow-hidden rounded-full' />
+              <p className='xs:text-xl text-lg sm:text-xl md:text-2xl font-semibold truncate line-clamp-2'>{ensProfile.name}</p>
             </div>
             <Link
               href={`https://app.ens.domains/name/${ensProfile.name}`}
               target='_blank'
-              className='px-md relative z-10 flex h-10 items-center justify-center gap-1.5 rounded-md bg-[#0080bc] transition-opacity hover:opacity-80'
+              className='sm:px-md relative min-w-[92px] z-10 flex h-9 sm:h-10 items-center justify-center sm:gap-1.5 gap-1 rounded-md bg-[#0080bc] transition-opacity hover:opacity-80'
             >
-              <ENS height={20} width={20} />
-              <p className='text-lg font-semibold'>Edit Profile</p>
+              <ENS className='sm:h-5 sm:w-5 h-4 w-4' />
+              <p className='text-md sm:text-lg font-semibold'>Edit Profile</p>
             </Link>
           </div>
         </div>
-        <div className='flex flex-col gap-4'>
+        <div className='flex flex-col sm:gap-4 gap-2'>
           <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
             <p className='text-md text-neutral font-medium'>
               Your email is going to be used to send you notifications and updates from Grails.
@@ -121,13 +123,21 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </p>
           </div>
         )}
-        <PrimaryButton
-          className='w-full'
-          onClick={() => updateUserProfileMutation()}
-          disabled={!haveChanges || !isEmailValid || updateUserProfileMutationLoading}
-        >
-          {updateUserProfileMutationLoading ? 'Saving...' : 'Save Changes'}
-        </PrimaryButton>
+        <div className='flex flex-col gap-2'>
+          <PrimaryButton
+            className='w-full'
+            onClick={() => updateUserProfileMutation()}
+            disabled={!haveChanges || !isEmailValid || updateUserProfileMutationLoading}
+          >
+            {updateUserProfileMutationLoading ? 'Saving...' : 'Save Changes'}
+          </PrimaryButton>
+          <SecondaryButton
+            className='w-full'
+            onClick={onClose}
+          >
+            Close
+          </SecondaryButton>
+        </div>
       </div>
     </div>
   )

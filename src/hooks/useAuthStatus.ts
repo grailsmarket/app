@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
@@ -14,8 +14,10 @@ import {
   setUserId,
   setUserTelegram,
 } from '@/state/reducers/portfolio/profile'
+import { Address } from 'viem'
 
 export const useAuth = () => {
+  const [currAddress, setCurrAddress] = useState<Address | null>(null)
   const { address } = useAccount()
   const dispatch = useAppDispatch()
 
@@ -26,6 +28,12 @@ export const useAuth = () => {
   } = useQuery<AuthenticationStatus>({
     queryKey: ['auth', 'status'],
     queryFn: async () => {
+      const token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('token='))
+        ?.split('=')[1]
+      if (!token) return 'unauthenticated'
+
       const authenticateRes = await checkAuthentication()
 
       if (authenticateRes.success) {
@@ -47,9 +55,17 @@ export const useAuth = () => {
   })
 
   useEffect(() => {
-    if (address) {
+    if (!address) return
+
+    if (currAddress && address !== currAddress) {
+      logout()
+      dispatch(resetUserProfile())
+      document.cookie = `token=; path=/; max-age=0;`
       refetchAuthStatus()
     }
+
+    setCurrAddress(address)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])
 
   const verify = async (message: string, _: string, signature: string) => {
@@ -62,7 +78,6 @@ export const useAuth = () => {
     }
 
     document.cookie = `token=${token}; path=/; max-age=${WEEK_IN_SECONDS};`
-    await refetchAuthStatus()
     return
   }
 

@@ -34,9 +34,9 @@ const MainPanel: React.FC<Props> = ({ user }) => {
               <FilterPanel />
               <div className='bg-tertiary ml-2 hidden h-full w-0.5 lg:block' />
               <div
-                className='flex flex-col gap-2'
+                className='flex flex-col gap-2 w-full'
                 style={{
-                  width: windowWidth && windowWidth < 1024 ? 'calc(100vw - 0px)' : 'calc(100vw - 280px)',
+                  width: windowWidth && windowWidth > 1024 ? 'calc(100% - 280px)' : 'calc(100% - 0px)',
                 }}
               >
                 <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />

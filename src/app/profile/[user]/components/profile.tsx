@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Address } from 'viem'
-import { FullWidthProfile } from 'ethereum-identity-kit'
+import { FullWidthProfile, useIsClient } from 'ethereum-identity-kit'
 import MainPanel from './main-panel'
 import { useUserContext } from '@/context/user'
 
@@ -11,19 +11,23 @@ interface Props {
 }
 
 const Profile: React.FC<Props> = ({ user }) => {
+  const isClient = useIsClient()
   const { userAddress } = useUserContext()
 
   return (
     <div className='dark relative z-0 pt-16 md:pt-20'>
-      <div className='z-20 w-full'>
-        <FullWidthProfile
-          connectedAddress={userAddress}
-          addressOrName={user}
-          showPoaps={false}
-          showFollowButton={true}
-          style={{ paddingLeft: '10px' }}
-          // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
-        />
+      <div className='z-20 w-full' suppressHydrationWarning={true}>
+        {/* Issues inside of EIK, so having to render on the client */}
+        {isClient && (
+          <FullWidthProfile
+            connectedAddress={userAddress}
+            addressOrName={user}
+            showPoaps={false}
+            showFollowButton={true}
+            style={{ paddingLeft: '10px' }}
+            // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+          />
+        )}
       </div>
       <div>
         <MainPanel user={user} />

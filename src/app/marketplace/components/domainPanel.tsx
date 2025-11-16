@@ -8,11 +8,12 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 const DomainPanel = () => {
+  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
@@ -24,8 +25,12 @@ const DomainPanel = () => {
     <div
       className='sm:pt-lg flex w-full flex-col gap-3 overflow-hidden pt-3 sm:gap-4'
       style={{
-        width: windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
-        maxHeight: windowWidth && windowWidth < 768 ? 'calc(100dvh - 62px)' : 'calc(100dvh - 80px)',
+        width: isClient ? (windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%') : '100%',
+        maxHeight: isClient
+          ? windowWidth && windowWidth < 768
+            ? 'calc(100dvh - 62px)'
+            : 'calc(100dvh - 80px)'
+          : 'calc(100dvh - 62px)',
       }}
     >
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>

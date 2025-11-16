@@ -25,7 +25,7 @@ const Portfolio = () => {
   return (
     <Suspense>
       <FilterProvider filterType='portfolio' portfolioTab={selectedTab.value}>
-        <main className='relative'>
+        <main className='relative max-h-[100dvh]! overflow-hidden'>
           {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
           <Image
             src={heroBackground}

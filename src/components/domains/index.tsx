@@ -67,7 +67,7 @@ const Domains: React.FC<DomainsProps> = ({
     if (!width) return allColumns
 
     const maxColumns = () => {
-      if (width < 400) return 0
+      if (width < 320) return 0
       if (width < 640) return 1
       if (width < 768) return 2
       if (width < 1024) return 3

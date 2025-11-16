@@ -241,13 +241,13 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         if (success || isLoading) return
         onClose()
       }}
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'
+      className='fixed inset-0 z-50 flex h-screen w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='bg-background border-primary p-lg sm:p-xl relative flex h-fit w-full max-w-2xl flex-col gap-4 rounded-md border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100vh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-sm md:rounded-md md:border-2'
         style={{ margin: '0 auto', maxWidth: '32rem' }}
       >
         {success && !poapClaimed ? (
@@ -255,7 +255,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         ) : (
           <>
             {/* Header with close button */}
-            <div className='flex items-center justify-center'>
+            <div className='z-10 flex min-h-6 items-center justify-center pb-2'>
               <h2 className='font-sedan-sc text-center text-3xl'>Extend Names</h2>
               {/* <Cross
               onClick={onClose}
@@ -302,27 +302,27 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                 </div>
               </div>
             ) : (
-              <div className='flex w-full flex-col gap-4'>
+              <div className='flex w-full flex-col gap-2 sm:gap-4'>
                 {/* Domain list */}
                 <div>
                   <div className='bg-secondary border-tertiary max-h-32 overflow-y-auto rounded-lg border p-3'>
                     <div className='text-md space-y-1'>
-                      <div className='text-neutral flex w-full flex-row items-center justify-between gap-1 text-sm'>
-                        <p className='w-1/2'>Name</p>
-                        <div className='flex w-1/2 flex-row items-center justify-between'>
+                      <div className='text-neutral flex w-full flex-row items-center justify-between gap-1 text-xs sm:text-sm'>
+                        <p className='w-[40%] sm:w-1/2'>Name</p>
+                        <div className='flex w-[60%] flex-row items-center justify-between sm:w-1/2'>
                           <p className='w-1/2 text-right'>Old Expiration</p>
                           <p className='w-1/2 text-right'>New Expiration</p>
                         </div>
                       </div>
                       {domains.map((domain, index) => (
                         <div key={index} className='flex justify-between'>
-                          <span className='w-1/2 max-w-1/2 truncate font-semibold'>{domain.name}</span>
-                          <div className='flex w-1/2 flex-row items-center justify-between'>
+                          <span className='w-[40%] truncate font-semibold sm:w-1/2 sm:max-w-1/2'>{domain.name}</span>
+                          <div className='flex w-[60%] flex-row items-center justify-between sm:w-1/2'>
                             <p className='text-neutral w-1/2 text-right font-medium'>
                               {domain.expiry_date ? new Date(domain.expiry_date).toLocaleDateString() : 'Unknown'}
                             </p>
-                            <div className='flex w-1/2 flex-row items-center justify-end gap-3'>
-                              <p className='text-neutral text-md pb-px text-center'>&rarr;</p>
+                            <div className='flex w-1/2 flex-row items-center justify-end'>
+                              <p className='text-neutral text-md mx-auto pb-px text-center'>&rarr;</p>
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
@@ -414,15 +414,14 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   {/* Pricing display */}
                   {calculationResults && (
                     <div className='bg-secondary border-tertiary rounded-lg border p-3'>
-                      <h3 className='mb-2 text-lg font-medium'>Cost Breakdown</h3>
+                      {/* <h3 className='mb-2 text-lg font-medium'>Cost Breakdown</h3> */}
                       <div className='text-md space-y-2'>
-                        <div className='flex justify-between'>
-                          <span>Total Cost (USD):</span>
-                          <span className='font-medium'>${calculationResults.totalPriceUSD.toFixed(2)}</span>
-                        </div>
-                        <div className='flex justify-between'>
-                          <span>Total Cost (ETH):</span>
-                          <span className='font-medium'>{calculationResults.totalPriceETH.toFixed(6)} ETH</span>
+                        <div className='flex items-center justify-between'>
+                          <p>Total Cost (ETH):</p>
+                          <div className='flex flex-col items-end'>
+                            <p className='font-medium'>{calculationResults.totalPriceETH.toFixed(6)} ETH</p>
+                            <p className='text-neutral text-xs'>(${calculationResults.totalPriceUSD.toFixed(2)})</p>
+                          </div>
                         </div>
                         {/* <div className='flex justify-between'>
                         <span>Your ETH Balance:</span>

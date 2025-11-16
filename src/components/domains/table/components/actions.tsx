@@ -17,7 +17,7 @@ import {
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
 import { Check } from 'ethereum-identity-kit'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -30,6 +30,7 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, index, watchlistId, isBulkRenewing }) => {
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const { filterType } = useFilterContext()
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
   const { selectedTab } = useAppSelector(selectUserProfile)
@@ -98,9 +99,15 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
               <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
             </div>
             <div className={cn('flex flex-row justify-end sm:hidden', width)}>
-              <Link href={`/${domain.name}`}>
-                <SecondaryButton>Edit</SecondaryButton>
-              </Link>
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  router.push(`/${domain.name}`)
+                }}
+              >
+                Edit
+              </SecondaryButton>
             </div>
           </>
         )

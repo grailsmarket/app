@@ -1138,13 +1138,13 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative flex w-full flex-col border-t p-6 md:max-w-md md:rounded-md md:border-2'
+        className='border-tertiary bg-background relative flex max-h-[calc(100vh-80px)] w-full flex-col overflow-y-auto border-t p-6 md:max-w-md md:rounded-md md:border-2'
       >
         {step === 'success' && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>
-            <h2 className='font-sedan-sc mb-6 text-center text-3xl'>Accept Offer</h2>
+            <h2 className='font-sedan-sc mb-6 min-h-6 text-center text-3xl'>Accept Offer</h2>
             {getModalContent()}
           </>
         )}

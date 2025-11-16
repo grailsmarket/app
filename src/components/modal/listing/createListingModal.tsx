@@ -128,14 +128,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[90vh] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100vh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
         {success && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>
-            <h2 className='font-sedan-sc max-w-full truncate text-center text-3xl text-white'>List Name</h2>
+            <h2 className='font-sedan-sc min-h-6 max-w-full truncate text-center text-3xl text-white'>List Name</h2>
 
             {success ? (
               <>

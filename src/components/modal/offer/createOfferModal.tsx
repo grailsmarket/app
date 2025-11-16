@@ -155,14 +155,14 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative flex w-full flex-col gap-2 border-t p-4 md:max-w-md md:rounded-md md:border-2'
+        className='border-tertiary bg-background relative flex max-h-[calc(100vh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
         {success && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>
-            <h2 className='font-sedan-sc pb-2 text-center text-2xl'>Make Offer</h2>
+            <h2 className='font-sedan-sc min-h-6 pb-2 text-center text-2xl'>Make Offer</h2>
 
             {success ? (
               <>

@@ -8,7 +8,7 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import TabSwitcher from './tabSwitcher'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -17,6 +17,7 @@ import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { selectBulkRenewalModal } from '@/state/reducers/modals/bulkRenewalModal'
 
 const DomainPanel = () => {
+  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { selectors, actions } = useFilterRouter()
@@ -40,7 +41,7 @@ const DomainPanel = () => {
     <div
       className='flex flex-col gap-3 sm:gap-4'
       style={{
-        width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
+        width: isClient ? (windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
       }}
     >
       <TabSwitcher />

@@ -49,10 +49,10 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='bg-background border-tertiary p-lg sm:p-xl relative flex h-fit w-full max-w-md flex-col gap-2 border-t md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100vh-80px)] w-full flex-col gap-2 overflow-y-auto border-t md:max-w-md md:rounded-md md:border-2'
       >
-        <div className='mb-4 flex items-center justify-center'>
-          <h2 className='font-sedan-sc text-3xl'>Cancel Listing</h2>
+        <div className='z-10 mb-4 flex min-h-6 items-center justify-center'>
+          <h2 className='font-sedan-sc min-h-6 text-3xl'>Cancel Listing</h2>
         </div>
 
         {status === 'success' ? (

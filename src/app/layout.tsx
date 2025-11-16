@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/react"
 import { Sedan_SC, Inter } from 'next/font/google'
 import './globals.css'
 import 'ethereum-identity-kit/css'
 import '@rainbow-me/rainbowkit/styles.css'
 import Providers from './providers'
+import { Production } from './production'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -29,6 +32,10 @@ export default function RootLayout({
     <html lang='en' className='dark'>
       <body className={`${inter.variable} ${sedanSC.variable} antialiased`}>
         <Providers>{children}</Providers>
+        <Production>
+          <Analytics />
+          <SpeedInsights />
+        </Production>
       </body>
     </html>
   )

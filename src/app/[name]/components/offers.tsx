@@ -113,7 +113,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
     if (!domain) return
 
     if (offer.source === 'opensea') {
-      window.open(`https://opensea.io/item/ethereum/${offer.order_data.protocol_data.parameters.consideration[0].token}/${offer.order_data.protocol_data.parameters.consideration[0].identifierOrCriteria}`, '_blank')
+      window.open(
+        `https://opensea.io/item/ethereum/${offer.order_data.protocol_data.parameters.consideration[0].token}/${offer.order_data.protocol_data.parameters.consideration[0].identifierOrCriteria}`,
+        '_blank'
+      )
       return
     }
 

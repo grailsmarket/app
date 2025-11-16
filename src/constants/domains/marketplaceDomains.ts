@@ -24,53 +24,42 @@ export const PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = 
 export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, MarketplaceHeaderItem> = {
   domain: {
     label: 'Name',
-    sort: null,
-    value: { asc: 'alphabetical_asc', desc: 'alphabetical_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DOMAIN_COLUMN_WIDTHS[columnsLength]
     },
   },
   listed_price: {
     label: 'Listing',
-    sort: null,
-    value: { asc: 'price_asc', desc: 'price_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
   },
   highest_offer: {
     label: 'Highest Offer',
-    sort: null,
-    value: { asc: 'offer_asc', desc: 'offer_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
   },
   registry_price: {
     label: 'Registry Price',
-    sort: 'none',
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
   },
   last_sale: {
     label: 'Last Sale',
-    sort: null,
-    value: { asc: 'last_sale_price_asc', desc: 'last_sale_price_desc' },
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
   },
   expires: {
     label: 'Expiry Date',
-    sort: 'none',
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
   },
   actions: {
     label: 'Actions',
-    sort: 'none',
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_ACTIONS_COLUMN_WIDTHS[columnsLength]
     },

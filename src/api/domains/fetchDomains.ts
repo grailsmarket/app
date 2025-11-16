@@ -26,11 +26,12 @@ export const fetchDomains = async ({
   category,
 }: FetchDomainsOptions) => {
   try {
+    const search = searchTerm.replace('.eth', '').toLowerCase().trim()
     const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
     const paramString = buildQueryParamString({
       limit,
       page: pageParam,
-      q: searchTerm?.length > 0 ? searchTerm.replace('.eth', '') : undefined,
+      q: search?.length > 0 ? search : undefined,
       'filters[owner]': ownerAddress || null,
       'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
       'filters[maxLength]': filters.length.max || null,
@@ -79,8 +80,8 @@ export const fetchDomains = async ({
       filters.priceRange.max
 
     if (pageParam === 1) {
-      if (searchTerm.length >= 3 && !areExcludingFiltersPresent) {
-        const name = searchTerm.replace('.eth', '').trim() + '.eth'
+      if (search.length >= 3 && !areExcludingFiltersPresent) {
+        const name = search + '.eth'
         if (!domains.map((domain) => domain.name).includes(name)) {
           const tokenId = hexToBigInt(namehash(name))
           domains.unshift({

@@ -1,5 +1,4 @@
 import { Address, Hex } from 'viem'
-import { SortFilterType } from '../state/reducers/filters/marketplaceFilters'
 import { ALL_REGISTRATION_STATUSES } from '@/constants/domains/registrationStatuses'
 
 export type MarketplaceDomainType = {
@@ -367,11 +366,6 @@ export type MarketplaceHeaderColumn =
 
 export type MarketplaceHeaderItem = {
   label: string
-  sort: 'asc' | 'desc' | 'none' | null
-  value?: {
-    asc?: SortFilterType
-    desc?: SortFilterType
-  }
   getWidth: (columnsLength: number) => string
 }
 

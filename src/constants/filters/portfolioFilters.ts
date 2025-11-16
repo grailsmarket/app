@@ -33,9 +33,9 @@ export const MY_DOMAINS_SORT_FILTERS = [
 export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
 
 export const ALL_SORT_FILTERS = [
-  'alphabetical_asc',
-  'alphabetical_desc',
-  'last_sale_price_asc',
+  // 'alphabetical_asc',
+  // 'alphabetical_desc',
+  // 'last_sale_price_asc',
   'last_sale_price_desc',
   'last_sale_date_asc',
   'last_sale_date_desc',
@@ -44,7 +44,7 @@ export const ALL_SORT_FILTERS = [
   'offer_asc',
   'offer_desc',
   'expiry_date_asc',
-  'expiry_date_desc',
+  // 'expiry_date_desc',
 ] as const
 
 export const MY_DOMAINS_CATEGORIES = [

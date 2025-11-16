@@ -5,7 +5,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import VirtualList from '@/components/ui/virtuallist'
 import { fetchNotifications } from '@/api/notifications/fetchNotifications'
 import NotificationRow from './notificationRow'
-import { Cross } from 'ethereum-identity-kit'
+import { Cross, useWindowSize } from 'ethereum-identity-kit'
 import NotificationLoadingRow from './loadingRow'
 import NoResults from '@/components/ui/noResults'
 
@@ -16,6 +16,7 @@ interface NotificationModalProps {
 
 const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }) => {
   const virtualListRef = useRef<HTMLDivElement>(null)
+  const { width } = useWindowSize()
 
   // Fetch notifications with infinite query
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
@@ -43,7 +44,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       onClick={onClose}
     >
       <div
-        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col rounded-md border-2 md:h-[600px] md:max-w-xl'
+        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-scroll rounded-md border-2 md:h-[600px] md:max-h-[600px] md:max-w-xl'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -57,7 +58,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         {/* Notifications list */}
         <div className=''>
           <VirtualList
-            listHeight='calc(100dvh - 150px)'
+            listHeight={width && width < 768 ? 'calc(100dvh - 150px)' : '520px'}
             ref={virtualListRef}
             items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
             visibleCount={20}

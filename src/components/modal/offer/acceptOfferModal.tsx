@@ -1053,7 +1053,16 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
-              {approveTxHash && <p className='text-neutral mt-2 font-mono text-xs break-all'>{approveTxHash}</p>}
+              {approveTxHash && (
+                <a
+                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+                >
+                  View on Etherscan
+                </a>
+              )}
             </div>
           </>
         )
@@ -1076,7 +1085,16 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Transaction submitted</p>
-              {txHash && <p className='text-neutral mt-2 font-mono text-xs break-all'>{txHash}</p>}
+              {txHash && (
+                <a
+                  href={`https://etherscan.io/tx/${txHash}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+                >
+                  View on Etherscan
+                </a>
+              )}{' '}
             </div>
           </>
         )
@@ -1089,8 +1107,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                 <Check className='text-background h-6 w-6' />
               </div>
               <div className='mb-2 text-xl font-bold'>Offer Accepted!</div>
-              <p className='text-gray-400'>
-                You have successfully sold {domain.name} for{' '}
+              <p className='flex flex-row items-center gap-1 text-gray-400'>
+                You have successfully sold {domain.name} for
                 <Price
                   price={offer.offer_amount_wei}
                   currencyAddress={offer.currency_address}

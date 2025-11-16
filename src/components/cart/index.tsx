@@ -83,8 +83,8 @@ const Cart = () => {
                 <Label label={registerDomains.length} />
               </div>
               <div className='flex flex-col gap-4'>
-                {registerDomains.map((domain) => (
-                  <DomainItem key={domain.name} domain={domain} />
+                {registerDomains.map((domain, index) => (
+                  <DomainItem key={domain.name + index} domain={domain} />
                 ))}
               </div>
             </div>

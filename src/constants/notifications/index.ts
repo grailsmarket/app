@@ -10,6 +10,7 @@ export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.R
   'price-change': alarmClock,
   sale: cartSold,
   'offer-received': cartAccepted,
+  'listing-sold': cartSold,
 }
 
 export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> = {
@@ -18,4 +19,5 @@ export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> 
   'price-change': 'Price changed',
   sale: 'Sold',
   'offer-received': 'Offer received',
+  'listing-sold': 'Sold',
 }

@@ -49,7 +49,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Status'],
-  sort: null,
+  sort: 'expiry_date_asc',
   scrollTop: 0,
 }
 

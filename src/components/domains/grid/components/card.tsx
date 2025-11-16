@@ -12,6 +12,8 @@ import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
 import Price from '@/components/ui/price'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
+import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { useFilterContext } from '@/context/filters'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -23,6 +25,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkRenewing }) => {
   const { address } = useAccount()
+  const { filterType, portfolioTab } = useFilterContext()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
@@ -58,21 +61,22 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
       </div>
       <div className='p-lg flex w-full flex-1 flex-col justify-between gap-1'>
         <div className='flex w-full flex-col'>
-          {registrationStatus !== GRACE_PERIOD &&
-            (registrationStatus === REGISTERED ? (
-              domainListing?.price ? (
-                <div className='flex items-center gap-1'>
-                  <Price
-                    price={domainListing.price}
-                    currencyAddress={domainListing.currency_address}
-                    iconSize='16px'
-                    fontSize='text-lg font-semibold'
-                  />
-                </div>
-              ) : (
-                <p className='text-md leading-[18px] font-bold'>Unlisted</p>
-              )
-            ) : null)}
+          {registrationStatus === GRACE_PERIOD ? (
+            <p className='text-md truncate font-semibold text-yellow-500'>Grace Period</p>
+          ) : registrationStatus === REGISTERED ? (
+            domainListing?.price ? (
+              <div className='flex items-center gap-1'>
+                <Price
+                  price={domainListing.price}
+                  currencyAddress={domainListing.currency_address}
+                  iconSize='16px'
+                  fontSize='text-lg font-semibold'
+                />
+              </div>
+            ) : (
+              <p className='text-md leading-[18px] font-bold'>Unlisted</p>
+            )
+          ) : null}
           {domain.last_sale_price ? (
             <div className='mt-0.5 flex items-center gap-[6px]'>
               <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p>
@@ -89,6 +93,13 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             <p className='text-md text-neutral truncate font-semibold'>
               {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
             </p>
+          )}
+          {portfolioTab === 'domains' && filterType === 'portfolio' && domain.expiry_date && (
+            <div className='flex items-center gap-1'>
+              <p className='text-md text-neutral truncate font-semibold'>
+                {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}
+              </p>
+            </div>
           )}
         </div>
         <div className='flex justify-between'>

@@ -567,7 +567,16 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             <div className='py-8 text-center'>
               <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-purple-500'></div>
               <p className='mt-4 text-gray-400'>Approving USDC for Seaport</p>
-              {approveTxHash && <p className='mt-2 font-mono text-xs break-all text-gray-500'>{approveTxHash}</p>}
+              {approveTxHash && (
+                <a
+                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+                >
+                  View on Etherscan
+                </a>
+              )}
             </div>
           </>
         )
@@ -590,7 +599,16 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='text-neutral text-lg'>Transaction submitted</p>
-              {txHash && <p className='mt-2 font-mono text-xs break-all text-gray-500'>{txHash}</p>}
+              {txHash && (
+                <a
+                  href={`https://etherscan.io/tx/${txHash}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+                >
+                  View on Etherscan
+                </a>
+              )}
             </div>
           </>
         )

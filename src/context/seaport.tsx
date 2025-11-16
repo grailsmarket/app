@@ -15,6 +15,7 @@ type SeaportContextValue = {
   validateOrder: (order: OrderWithCounter) => Promise<boolean>
   getOrderStatus: (orderHash: string) => Promise<OrderStatus | null>
   createListing: (params: {
+    ensName: string
     tokenId: string
     priceInEth: string
     expiryDate: number

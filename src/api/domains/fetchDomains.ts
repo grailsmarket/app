@@ -69,8 +69,17 @@ export const fetchDomains = async ({
     }>
     const domains = json.data.names || json.data.results
 
+    const areExcludingFiltersPresent =
+      statusFilter.length > 0 ||
+      ownerAddress ||
+      category ||
+      filters.length.min ||
+      filters.length.max ||
+      filters.priceRange.min ||
+      filters.priceRange.max
+
     if (pageParam === 1) {
-      if (searchTerm.length >= 3) {
+      if (searchTerm.length >= 3 && !areExcludingFiltersPresent) {
         const name = searchTerm.replace('.eth', '').trim() + '.eth'
         if (!domains.map((domain) => domain.name).includes(name)) {
           const tokenId = hexToBigInt(namehash(name))

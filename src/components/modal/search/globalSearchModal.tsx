@@ -19,6 +19,7 @@ import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/category
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { useQuery } from '@tanstack/react-query'
 import { searchProfiles } from '@/api/search-profiles'
+import { cn } from '@/utils/tailwind'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -31,10 +32,16 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   const dispatch = useAppDispatch()
 
   const [query, setQuery] = useState(initialQuery)
+  const [isClosing, setIsClosing] = useState(false)
 
   const handleClose = () => {
-    setQuery('')
-    onClose()
+    setIsClosing(true)
+    // Wait for animation to complete before actually closing
+    setTimeout(() => {
+      setQuery('')
+      onClose()
+      setIsClosing(false)
+    }, 250) // Match the duration-250 class
   }
 
   const { categories } = useCategories()
@@ -52,7 +59,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
       })
       return domains
     },
-    enabled: debouncedQuery.length >= 3,
+    enabled: debouncedQuery.length >= 1,
   })
 
   const displayedCategories = useMemo(() => {
@@ -73,7 +80,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
       const profiles = await searchProfiles({ search: debouncedQuery })
       return profiles
     },
-    enabled: debouncedQuery.length >= 3,
+    enabled: debouncedQuery.length >= 1,
   })
 
   const handleViewAllDomains = () => {
@@ -101,23 +108,29 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
 
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-start justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm xl:items-center'
-      onClick={handleClose}
+      className={cn(
+        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:py-12 xl:items-center starting:translate-y-[100vh] md:starting:translate-y-0',
+        isOpen && !isClosing ? 'translate-y-0' : 'translate-y-[100vh] md:translate-y-0'
+      )}
+      onClick={(e) => {
+        e.stopPropagation()
+        handleClose()
+      }}
     >
       <div
-        className='bg-background border-primary relative flex h-fit w-full max-w-2xl flex-col rounded-md border-2 shadow-lg'
+        className='bg-background border-tertiary relative flex h-[calc(100dvh-80px)] w-full flex-col border-t shadow-lg md:h-fit md:max-w-2xl md:rounded-md md:border-2'
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
         {/* Header */}
-        <div className='border-primary/20 flex items-center gap-3 border-b p-6'>
+        <div className='border-tertiary flex items-center gap-3 border-b px-4 py-5 md:p-6'>
           <MagnifyingGlass className='text-foreground/60 h-6 w-6' />
           <input
             type='text'
             placeholder='Search names, categories, and profiles...'
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className='text-foreground placeholder:text-foreground/40 flex-1 bg-transparent text-2xl font-medium outline-none'
+            className='text-foreground placeholder:text-foreground/40 flex-1 bg-transparent font-medium outline-none md:text-2xl'
             autoFocus
             onKeyDown={(e) => {
               if (e.key === 'Escape') {
@@ -131,25 +144,20 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
               }
             }}
           />
-          {query.trim() && (
-            <button
-              onClick={() => setQuery('')}
-              className='hover:bg-primary/10 cursor-pointer rounded-md p-1 transition-colors'
-            >
-              <Cross className='text-foreground/90 h-5 w-5' />
-            </button>
-          )}
+          <button onClick={handleClose} className='hover:bg-primary/10 cursor-pointer rounded-md p-1 transition-colors'>
+            <Cross className='text-foreground/90 h-4 w-4 md:h-5 md:w-5' />
+          </button>
         </div>
 
         {/* Results */}
-        <div className='max-h-[80vh] overflow-y-auto'>
+        <div className='h-[calc(100dvh-160px)] overflow-y-auto md:max-h-[80vh]'>
           {query.trim() && (
             <>
               {/* Names */}
               {(isFetchedDomainsLoading || (fetchedDomains?.domains && fetchedDomains.domains.length > 0)) && (
-                <div className='p-lg flex flex-col gap-1'>
+                <div className='p-md pt-lg md:p-lg flex flex-col gap-1'>
                   <div className='flex items-center'>
-                    <h3 className='text-foreground px-3 text-2xl font-bold'>Names</h3>
+                    <h3 className='text-foreground px-3 font-bold md:text-2xl'>Names</h3>
                   </div>
                   <div className='flex flex-col'>
                     {isFetchedDomainsLoading
@@ -193,9 +201,9 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
 
               {/* Categories */}
               {(isFetchedDomainsLoading || displayedCategories.length > 0) && (
-                <div className='p-lg border-primary/20 flex flex-col gap-1 border-t'>
+                <div className='p-md pt-lg md:p-lg border-primary/20 flex flex-col gap-1 border-t'>
                   <div className='flex items-center'>
-                    <h3 className='text-foreground px-3 text-2xl font-bold'>Categories</h3>
+                    <h3 className='text-foreground px-3 font-bold md:text-2xl'>Categories</h3>
                   </div>
                   <div className='flex flex-col'>
                     {isFetchedDomainsLoading
@@ -233,9 +241,9 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
 
               {/* Profiles */}
               {(isFetchedProfilesLoading || (fetchedProfiles && fetchedProfiles.length > 0)) && (
-                <div className='p-lg border-primary/20 flex flex-col gap-1 border-t'>
+                <div className='p-md pt-lg md:p-lg border-primary/20 flex flex-col gap-1 border-t'>
                   <div className='flex items-center'>
-                    <h3 className='text-foreground px-3 text-2xl font-bold'>Users</h3>
+                    <h3 className='text-foreground px-3 font-bold md:text-2xl'>Users</h3>
                   </div>
                   <div className='flex flex-col'>
                     {isFetchedProfilesLoading

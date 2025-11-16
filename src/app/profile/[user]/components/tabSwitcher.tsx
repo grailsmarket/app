@@ -41,7 +41,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ profileTab, setProfileTab }) 
 
   // After mount, render with proper active state
   return (
-    <div className='px-md py-0.5 md:py-md md:px-xl border-tertiary flex gap-4 border-b-2'>
+    <div className='px-md md:py-md md:px-xl border-tertiary flex gap-4 border-b-2 py-0.5'>
       {profileTabs.map((tab) => (
         <button
           key={tab.value}

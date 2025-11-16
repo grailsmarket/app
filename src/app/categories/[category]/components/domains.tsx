@@ -24,21 +24,21 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
 
   return (
     <>
-      <div className='px-sm md:px-md lg:px-lg pt-3 md:pt-lg flex w-full items-center justify-between gap-2'>
+      <div className='px-sm md:px-md lg:px-lg md:pt-lg flex w-full items-center justify-between gap-2 pt-3'>
         <div className='flex w-auto items-center gap-2'>
           <button
-            className='border-foreground flex md:h-10 h-9 md:w-10 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
             onClick={() => dispatch(actions.setFiltersOpen(true))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group border-tertiary h-9 md:h-10 flex items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50'>
+          <div className='w-ful group border-tertiary flex h-9 items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 md:h-10'>
             <input
               type='text'
               placeholder='Search'
               value={selectors.filters.search}
               onChange={(e) => dispatch(actions.setSearch(e.target.value))}
-              className='sm:w-[200px] w-[160px] bg-transparent text-lg outline-none lg:w-[260px]'
+              className='w-[160px] bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
             <Image
               src={MagnifyingGlass}

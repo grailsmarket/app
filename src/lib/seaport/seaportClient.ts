@@ -702,6 +702,7 @@ export class SeaportClient {
    * Create a listing order for an ENS name
    */
   async createListingOrder(params: {
+    ensName: string
     tokenId: string
     priceInEth: string
     expiryDate: number
@@ -746,6 +747,7 @@ export class SeaportClient {
    */
   private async createListingOrderForMarketplace(params: {
     tokenId: string
+    ensName: string
     priceInEth: string
     expiryDate: number
     offererAddress: string
@@ -761,37 +763,14 @@ export class SeaportClient {
     // First, check if the user owns the ENS NFT
     // ENS names can be either unwrapped (owned directly) or wrapped (owned through NameWrapper)
     let actualOwner: Address | null = null
-    let isWrapped = false
+    const isWrapped = await checkIfWrapped(params.ensName)
 
     try {
-      // First, check the base registrar
-      const registrarOwner = (await this.publicClient.readContract({
-        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-        abi: [
-          {
-            name: 'ownerOf',
-            type: 'function',
-            inputs: [{ name: 'tokenId', type: 'uint256' }],
-            outputs: [{ name: '', type: 'address' }],
-            stateMutability: 'view',
-          },
-        ],
-        functionName: 'ownerOf',
-        args: [BigInt(params.tokenId)],
-      })) as Address
-
-      console.log('registrarOwner:', registrarOwner)
-
       // If the NameWrapper owns it, check the wrapper for the actual owner
-      if (registrarOwner.toLowerCase() === ENS_NAME_WRAPPER_ADDRESS.toLowerCase()) {
-        isWrapped = true
+      if (isWrapped) {
         console.log('ENS name is wrapped, checking NameWrapper for actual owner...')
 
         try {
-          // The NameWrapper uses namehash instead of labelhash as tokenId
-          const namehash = this.labelhashToNamehash(params.tokenId)
-          console.log('Converting labelhash to namehash:', params.tokenId, '->', namehash)
-
           actualOwner = (await this.publicClient.readContract({
             address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
             abi: [
@@ -804,7 +783,7 @@ export class SeaportClient {
               },
             ],
             functionName: 'ownerOf',
-            args: [BigInt(namehash)],
+            args: [BigInt(params.tokenId)],
           })) as Address
         } catch (wrapperError) {
           console.error('Failed to get owner from NameWrapper:', wrapperError)
@@ -812,7 +791,24 @@ export class SeaportClient {
         }
       } else {
         // Not wrapped, the registrar owner is the actual owner
+        const registrarOwner = (await this.publicClient.readContract({
+          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+          abi: [
+            {
+              name: 'ownerOf',
+              type: 'function',
+              inputs: [{ name: 'tokenId', type: 'uint256' }],
+              outputs: [{ name: '', type: 'address' }],
+              stateMutability: 'view',
+            },
+          ],
+          functionName: 'ownerOf',
+          args: [BigInt(params.tokenId)],
+        })) as Address
+
         actualOwner = registrarOwner
+
+        console.log('registrarOwner:', registrarOwner)
       }
 
       if (actualOwner.toLowerCase() !== params.offererAddress.toLowerCase()) {
@@ -995,7 +991,7 @@ export class SeaportClient {
     // const itemType = isWrapped ? ItemType.ERC1155 : ItemType.ERC721
 
     // For wrapped names, use namehash; for unwrapped, use labelhash
-    const tokenIdentifier = isWrapped ? this.labelhashToNamehash(params.tokenId) : params.tokenId
+    const tokenIdentifier = params.tokenId
 
     console.log('Token details for offer:', {
       tokenContract,

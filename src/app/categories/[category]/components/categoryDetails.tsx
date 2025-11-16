@@ -84,16 +84,16 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
         alt={`${categoryName} header`}
         width={1000}
         height={1000}
-        className='bg-foreground absolute top-0 md:block hidden left-0 h-full w-full object-cover opacity-20'
+        className='bg-foreground absolute top-0 left-0 hidden h-full w-full object-cover opacity-20 md:block'
       />
-      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between md:py-4 md:flex-row md:gap-8'>
-        <div className='relative z-10 w-full md:w-fit flex items-center py-6 md:py-0'>
+      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between md:flex-row md:gap-8 md:py-4'>
+        <div className='relative z-10 flex w-full items-center py-6 md:w-fit md:py-0'>
           <Image
             src={categoryImage.header}
             alt={`${categoryName} header`}
             width={1000}
             height={1000}
-            className='bg-foreground absolute top-0 left-0 h-full w-full object-cover opacity-20 md:hidden block'
+            className='bg-foreground absolute top-0 left-0 block h-full w-full object-cover opacity-20 md:hidden'
           />
           <div className='relative z-20 flex items-start gap-4 px-4 md:px-0'>
             <Image
@@ -122,7 +122,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
             </div>
           </div>
         </div>
-        <div className='bg-background relative z-20 p-lg border-tertiary flex w-full flex-col items-center gap-2 md:rounded-md md:border-2 border-t-2 md:w-72'>
+        <div className='bg-background p-lg border-tertiary relative z-20 flex w-full flex-col items-center gap-2 border-t-2 md:w-72 md:rounded-md md:border-2'>
           <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
             <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>

@@ -90,6 +90,20 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
+  // const { width: windowWidth } = useWindowSize()
+  // const [isClosing, setIsClosing] = useState(false)
+  // const handleClose = () => {
+  //   if (windowWidth && windowWidth < 768) {
+  //     setIsClosing(true)
+  //     setTimeout(() => {
+  //       onClose()
+  //       setIsClosing(false)
+  //     }, 250)
+  //   } else {
+  //     onClose()
+  //   }
+  // }
+
   const [step, setStep] = useState<TransactionStep>('review')
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -622,15 +636,14 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         if (step === 'review' || step === 'error') {
           onClose()
         }
-        onClose()
       }}
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
+      className='fixed inset-0 z-50 flex h-screen w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-primary bg-background relative flex w-full max-w-md flex-col rounded-md border-2 p-6'
+        className='border-tertiary bg-background relative flex w-full flex-col border-t p-6 md:max-w-md md:rounded-md md:border-2'
       >
         {!poapClaimed && step === 'success' ? (
           <ClaimPoap />

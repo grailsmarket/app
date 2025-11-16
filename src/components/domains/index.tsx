@@ -106,7 +106,9 @@ const Domains: React.FC<DomainsProps> = ({
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
               <div key={index} className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
-                <p className='w-fit text-left text-sm text-neutral font-medium'>{item.label === 'Actions' ? '' : item.label}</p>
+                <p className='text-neutral w-fit text-left text-sm font-medium'>
+                  {item.label === 'Actions' ? '' : item.label}
+                </p>
               </div>
             )
           })}

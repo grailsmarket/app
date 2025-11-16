@@ -14,7 +14,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const { userAddress } = useUserContext()
 
   return (
-    <div className='dark relative z-0 md:pt-20 pt-16'>
+    <div className='dark relative z-0 pt-16 md:pt-20'>
       <div className='z-20 w-full'>
         <FullWidthProfile
           connectedAddress={userAddress}
@@ -22,7 +22,7 @@ const Profile: React.FC<Props> = ({ user }) => {
           showPoaps={false}
           showFollowButton={true}
           style={{ paddingLeft: '10px' }}
-        // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+          // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
         />
       </div>
       <div>

@@ -81,6 +81,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
     try {
       const params: any = {
+        ensName,
         tokenId,
         priceInEth: price.toString(),
         expiryDate,
@@ -121,13 +122,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         if (success || isLoading) return
         onClose()
       }}
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-screen w-screen items-center justify-center overflow-scroll bg-black/50 px-2 py-12 backdrop-blur-sm sm:px-4'
+      className='fixed inset-0 z-50 flex h-screen w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='bg-background border-primary p-lg sm:p-xl relative flex h-fit w-full max-w-sm flex-col gap-4 rounded-md border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[90vh] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
         {success && !poapClaimed ? (
@@ -154,7 +155,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   <p className='font-sedan-sc text-2xl'>Name</p>
                   <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
                 </div>
-                <div className='border-primary p-md flex flex-col gap-1 rounded-md border'>
+                <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
                   <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
                   <div className='flex flex-col gap-0.5'>
                     <div
@@ -165,7 +166,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                             : [...selectedMarketplace, 'grails']
                         )
                       }}
-                      className='p-md hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
+                      className='p-md hover:bg-secondary flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
                     >
                       <div className='flex items-center gap-2'>
                         <Image src={GrailsIcon} alt='Grails' width={24} height={24} />

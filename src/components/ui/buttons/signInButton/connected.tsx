@@ -21,7 +21,7 @@ const Connected = () => {
     <div ref={dropdownWalletRef} className='group relative'>
       <button
         onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
-        className='bg-background border-tertiary hover:border-white/50 focus:border-white/50 p-sm relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-sm border-2 transition-colors hover:bg-secondary focus:bg-secondary'
+        className='bg-background border-tertiary p-sm hover:bg-secondary focus:bg-secondary relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-sm border-2 transition-colors hover:border-white/50 focus:border-white/50'
       >
         <HeaderImage
           src={ensProfile?.header || ''}

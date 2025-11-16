@@ -68,6 +68,7 @@ export function useSeaportClient() {
   // Create a listing
   const createListing = useCallback(
     async (params: {
+      ensName: string
       tokenId: string
       priceInEth: string
       expiryDate: number

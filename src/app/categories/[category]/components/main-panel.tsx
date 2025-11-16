@@ -18,9 +18,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
     <Suspense>
       <FilterProvider filterType='category'>
         <div className='z-10 w-full'>
-          <div
-            className='px-md border-tertiary bg-background relative z-10 mx-auto flex gap-2 overflow-hidden border-t-2 h-[calc(100dvh-62px)] md:h-[calc(100dvh-78px)]'
-          >
+          <div className='px-md border-tertiary bg-background relative z-10 mx-auto flex h-[calc(100dvh-62px)] gap-2 overflow-hidden border-t-2 md:h-[calc(100dvh-78px)]'>
             <FilterPanel />
             <div className='bg-tertiary hidden h-full w-0.5 lg:block' />
             <div

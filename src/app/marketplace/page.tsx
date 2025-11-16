@@ -8,7 +8,7 @@ const Marketplace = () => {
   return (
     <Suspense>
       <FilterProvider filterType='marketplace'>
-        <main className='overflow-hidden max-h-[100dvh]'>
+        <main className='max-h-[100dvh] overflow-hidden'>
           {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
           <Image
             src={heroBackground}
@@ -19,8 +19,8 @@ const Marketplace = () => {
           />
           <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
         </div> */}
-          <div className='relative z-10 mx-auto flex w-full flex-col md:pt-20 pt-16 max-h-[100dvh] overflow-hidden'>
-            <div className='px-md pl-[5px] bg-background relative mx-auto flex h-[calc(100dvh-62px)] md:h-[calc(100dvh-78px)] w-full flex-row gap-0 lg:gap-2 overflow-hidden sm:px-3 lg:px-0 lg:pl-2'>
+          <div className='relative z-10 mx-auto flex max-h-[100dvh] w-full flex-col overflow-hidden pt-16 md:pt-20'>
+            <div className='px-md bg-background relative mx-auto flex h-[calc(100dvh-62px)] w-full flex-row gap-0 overflow-hidden pl-[5px] sm:px-3 md:h-[calc(100dvh-78px)] lg:gap-2 lg:px-0 lg:pl-2'>
               <FilterPanel />
               <div className='bg-tertiary hidden h-full w-0.5 lg:block' />
               <DomainPanel />

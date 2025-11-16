@@ -68,7 +68,7 @@ const OfferPanel = () => {
           </div>
         </div>
         <Offers
-          maxHeight='calc(100dvh - 220px)'
+          maxHeight='calc(100dvh - 160px)'
           offers={offers}
           loadingRowCount={20}
           noResults={!offersLoading && offers?.length === 0}

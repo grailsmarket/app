@@ -23,7 +23,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
   const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
-    <div className='px-md md:pt-md flex flex-col gap-2'>
+    <div className='px-md md:pt-md flex w-full flex-col gap-2'>
       <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button

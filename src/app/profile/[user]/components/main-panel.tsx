@@ -36,7 +36,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
               <div
                 className='flex flex-col gap-2'
                 style={{
-                  width: windowWidth && windowWidth < 1024 ? 'calc(100vw - 16px)' : 'calc(100vw - 280px)',
+                  width: windowWidth && windowWidth < 1024 ? 'calc(100vw - 0px)' : 'calc(100vw - 280px)',
                 }}
               >
                 <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />

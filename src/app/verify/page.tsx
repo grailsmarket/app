@@ -2,14 +2,14 @@ import { Suspense } from 'react'
 import Verify from './verify'
 
 export const metadata = {
-  title: `Categories | Grails`,
-  description: `Browse all categories on Grails`,
+  title: `Verify Email | Grails`,
+  description: `Verify your email address on Grails`,
   openGraph: {
-    title: `Categories | Grails`,
-    siteName: `Categories | Grails`,
-    description: `Browse all categories on Grails`,
-    url: `https://grails.app/categories`,
-    images: [{ url: `https://grails.app/categories/og` }],
+    title: `Verify Email | Grails`,
+    siteName: `Verify Email | Grails`,
+    description: `Verify your email address on Grails`,
+    url: `https://grails.app/verify`,
+    images: [{ url: `https://grails.app/verify/og` }],
   },
 }
 

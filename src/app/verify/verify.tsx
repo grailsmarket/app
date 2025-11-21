@@ -3,10 +3,12 @@
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useMutation } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
-import router from 'next/router'
 import { verifyEmail } from '@/api/user/verifyEmail'
+import { useRouter } from 'next/navigation'
+import SecondaryButton from '@/components/ui/buttons/secondary'
 
 const Verify = () => {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
@@ -36,16 +38,26 @@ const Verify = () => {
     <main className='flex min-h-[calc(100dvh-62px)] flex-col items-center justify-center gap-4 md:min-h-[calc(100dvh-78px)]'>
       <h1 className='font-sedan-sc text-4xl'>Verify Email</h1>
       {isVerifyingEmail ? (
-        <p className='text-neutral'>Verifying your email address on Grails</p>
+        <div className='flex items-center flex-col gap-4 pt-4 w-full justify-center'>
+          <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+          <p className='text-neutral'>Verifying your email address on Grails...</p>
+        </div>
+      ) : isSuccess ? (
+        <p className='text-green-500'>Email verified successfully! Redirecting to home page...</p>
+      ) : verifyEmailError ? (
+        <p className='text-red-500'>Failed to verify email</p>
       ) : (
-        <p className='text-neutral'>Verifying your email address on Grails</p>
+        <p className='text-neutral'>Please verify your email address on Grails</p>
       )}
-      {verifyEmailError && <p className='text-red-500'>Failed to verify email</p>}
-      {!isSuccess && (
-        <PrimaryButton onClick={() => verifyEmailMutation()} disabled={isVerifyingEmail} className='mt-2 w-64'>
-          {isVerifyingEmail ? 'Verifying...' : 'Verify'}
-        </PrimaryButton>
-      )}
+      {isSuccess ?
+        <SecondaryButton onClick={() => router.push('/')} className='mt-2 w-64'>
+          Back Home
+        </SecondaryButton>
+        : (
+          <PrimaryButton onClick={() => verifyEmailMutation()} disabled={isVerifyingEmail} className='mt-2 w-64'>
+            {isVerifyingEmail ? 'Verifying...' : 'Verify'}
+          </PrimaryButton>
+        )}
     </main>
   )
 }

@@ -20,6 +20,7 @@ interface SettingsModalProps {
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const {
+    email,
     emailAddress,
     setEmailAddress,
     // discordUsername,
@@ -34,6 +35,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,
     sendVerificationEmail,
+    verificationEmailStatus,
   } = useSettings()
 
   return (
@@ -82,48 +84,68 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
         <div className='flex flex-col gap-2 sm:gap-4'>
-          <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
-            <p className='text-md text-neutral font-medium'>
-              Your email is going to be used to send you notifications and updates from Grails.
-            </p>
-          </div>
-          <Input
-            label='Email'
-            value={emailAddress || ''}
-            onChange={(e) => setEmailAddress(e.target.value)}
-            placeholder='mymail@example.com'
-          />
           {/* <Input
             label='Discord'
             value={discordUsername || ''}
             onChange={(e) => setDiscordUsername(e.target.value)}
             placeholder='Username'
-          />
-          <Input
+            />
+            <Input
             label='Telegram'
             value={telegramUsername || ''}
             onChange={(e) => setTelegramUsername(e.target.value)}
             placeholder='@telegramusername'
-          /> */}
-        </div>
-        {isEmailVerified ? (
-          <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
-            <Image src={CheckCircle} alt='Email Verified' height={20} width={20} />
-            <p className='text-md max-w-full font-medium text-[#16A34A]'>Your email address is verified.</p>
-          </div>
-        ) : (
-          <div className='flex flex-row gap-2'>
-            <div className='p-md flex items-center gap-2 rounded-md bg-yellow-400/10'>
-              <Image src={AlertCircle} alt='Email Verified' height={32} width={32} />
-              <p className='text-md max-w-full font-medium text-[#E79339]'>
-                Your email address is not verified. You have received an email to verify your email.
+            /> */}
+          <div className='flex flex-col gap-2'>
+            <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
+              <p className='text-md text-neutral font-medium'>
+                Your email is going to be used to send you notifications and updates from Grails.
               </p>
             </div>
-            <SecondaryButton className='w-40 px-0!' onClick={() => sendVerificationEmail()}>
-              Resend Email
-            </SecondaryButton>
+            <Input
+              label='Email'
+              value={emailAddress || ''}
+              onChange={(e) => setEmailAddress(e.target.value)}
+              placeholder='myemail@example.com'
+            />
+            {email &&
+              (isEmailVerified ? (
+                <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
+                  <Image src={CheckCircle} alt='Email Verified' height={20} width={20} />
+                  <p className='text-md max-w-full font-medium text-[#16A34A]'>Your email address is verified.</p>
+                </div>
+              ) : (
+                <div className='flex flex-row gap-2'>
+                  <div className='p-md flex items-center gap-2 rounded-md bg-yellow-400/10'>
+                    <Image src={AlertCircle} alt='Email Verified' height={32} width={32} />
+                    <p className='text-md max-w-full font-medium text-[#E79339]'>
+                      Your email address is not verified. You have received an email to verify your email.
+                    </p>
+                  </div>
+                  <SecondaryButton
+                    className={cn(
+                      'h-auto! w-40 px-0!',
+                      verificationEmailStatus === 'error'
+                        ? 'pointer-events-none bg-red-500'
+                        : verificationEmailStatus === 'success'
+                          ? 'pointer-events-none bg-green-700'
+                          : ''
+                    )}
+                    onClick={sendVerificationEmail}
+                    disabled={verificationEmailStatus === 'pending'}
+                  >
+                    {verificationEmailStatus === 'pending'
+                      ? 'Sending...'
+                      : verificationEmailStatus === 'success'
+                        ? 'Email Sent!'
+                        : verificationEmailStatus === 'error'
+                          ? 'Error, try again.'
+                          : 'Resend Email'}
+                  </SecondaryButton>
+                </div>
+              ))}
           </div>
-        )}
+        </div>
         {updateUserProfileMutationError && (
           <div className='bg-secondary p-md flex items-center gap-2 rounded-md'>
             <Image src={ErrorIcon} alt='Error' height={24} width={24} />

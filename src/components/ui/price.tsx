@@ -28,7 +28,6 @@ const Price: React.FC<PriceProps> = ({
   alignTooltip = 'center',
 }) => {
   const asset = TOKENS[currencyAddress as keyof typeof TOKENS]
-
   const { ethPrice } = useETHPrice()
 
   const diffCurrencyPrice = useMemo(() => {

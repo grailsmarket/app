@@ -1,7 +1,7 @@
 import { API_URL } from '@/constants/api'
 
 export const verifyEmail = async (token: string) => {
-  const response = await fetch(`${API_URL}/verification/verify`, {
+  const response = await fetch(`${API_URL}/verification/email`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

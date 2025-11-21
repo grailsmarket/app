@@ -17,6 +17,7 @@ export const useSettings = () => {
   const queryClient = useQueryClient()
   const { email, discord, telegram, ensProfile } = useAppSelector(selectUserProfile)
 
+  const [verificationEmailStatus, setVerificationEmailStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
   const [emailAddress, setEmailAddress] = useState(email.address)
   const [discordUsername, setDiscordUsername] = useState(discord)
   const [telegramUsername, setTelegramUsername] = useState(telegram)
@@ -42,10 +43,28 @@ export const useSettings = () => {
     },
   })
 
-  const sendVerificationEmail = () => {
-    authFetch(`${API_URL}/verification/resend`, {
-      method: 'POST',
-    })
+  const sendVerificationEmail = async () => {
+    setVerificationEmailStatus('pending')
+
+    try {
+      const response = await authFetch(`${API_URL}/verification/resend`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification email')
+      }
+
+      setVerificationEmailStatus('success')
+    } catch (error) {
+      console.error('Error sending verification email', error)
+      setVerificationEmailStatus('error')
+      return
+    } finally {
+      setTimeout(() => {
+        setVerificationEmailStatus(null)
+      }, 3000)
+    }
   }
 
   const isEmailVerified = useMemo(() => {
@@ -76,6 +95,7 @@ export const useSettings = () => {
   }, [emailAddress, discordUsername, telegramUsername, email.address, discord, telegram])
 
   return {
+    email,
     ensProfile,
     emailAddress,
     setEmailAddress,
@@ -90,5 +110,6 @@ export const useSettings = () => {
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,
     sendVerificationEmail,
+    verificationEmailStatus,
   }
 }

@@ -3,7 +3,7 @@ import { useUserContext } from '@/context/user'
 import { useQuery } from '@tanstack/react-query'
 
 export const usePoap = () => {
-  const { userAddress, authStatus } = useUserContext()
+  const { userAddress } = useUserContext()
 
   const { data: poapLink, isLoading: poapLoading } = useQuery({
     queryKey: ['poap', userAddress],
@@ -13,7 +13,11 @@ export const usePoap = () => {
       const data = await claimPoap()
       return data
     },
-    enabled: !!userAddress && authStatus === 'authenticated',
+    enabled: !!userAddress,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   })
 
   return { poapLink, poapLoading }

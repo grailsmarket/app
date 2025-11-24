@@ -30,7 +30,7 @@ const Modals: React.FC = () => {
     offer: acceptOfferModalOffer,
     domain: acceptOfferModalDomain,
   } = useAppSelector(selectAcceptOfferModal)
-  const { open: createListingModalOpen, domain: createListingModalDomain } = useAppSelector(selectMakeListingModal)
+  const { open: createListingModalOpen, domain: createListingModalDomain, previousListing } = useAppSelector(selectMakeListingModal)
   const { open: makeOfferModalOpen, domain: makeOfferModalDomain } = useAppSelector(selectMakeOfferModal)
   const {
     open: cancelOfferModalOpen,
@@ -64,6 +64,7 @@ const Modals: React.FC = () => {
         <CreateListingModal
           onClose={() => dispatch(setMakeListingModalOpen(false))}
           domain={createListingModalDomain}
+          previousListing={previousListing}
         />
       )}
       {cancelListingModalOpen && (

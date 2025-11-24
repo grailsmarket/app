@@ -19,9 +19,10 @@ import NameImage from '@/components/ui/nameImage'
 interface NotificationRowProps {
   notification: Notification
   onClick?: () => void
+  index: number
 }
 
-const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick }) => {
+const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick, index }) => {
   // Get icon based on notification type
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -65,7 +66,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     if (type === 'sale' || type === 'new-listing' || type === 'new-offer' || type === 'price-change') {
       const price = metadata.priceWei || metadata.offerAmountWei
       if (price) {
-        return <Price price={price} currencyAddress={TOKEN_ADDRESSES.ETH} />
+        return <Price price={price} currencyAddress={TOKEN_ADDRESSES.ETH} alignTooltip='right' tooltipPosition={index === 0 ? 'bottom' : 'top'} />
       }
     }
 
@@ -94,7 +95,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     <Link
       href={`/${notification.ensName}`}
       className={cn(
-        'p-md sm:p-lg flex w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
+        'p-md sm:p-lg max-h-16 flex w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
       )}
       onClick={onClick}
     >

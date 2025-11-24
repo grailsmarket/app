@@ -41,6 +41,7 @@ type userContextType = {
   isSettingsOpen: boolean
   setIsSettingsOpen: Dispatch<SetStateAction<boolean>>
   isPoapClaimed: boolean
+  claimedPoapLink?: string
 }
 
 type Props = {
@@ -75,18 +76,22 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
     enabled: !!address && authStatus === 'authenticated',
   })
 
-  const { data: isPoapClaimed } = useQuery({
+  const { data: poapClaimData } = useQuery({
     queryKey: ['isPoapClaimed', address],
     queryFn: async () => {
-      if (!address) return false
+      if (!address) return { has_claimed: false }
 
       const result = await checkPoap()
-      dispatch(setUserPoapClaimed(result))
+      dispatch(setUserPoapClaimed(result.has_claimed))
+
       return result
     },
     enabled: !!address && authStatus === 'authenticated',
-    initialData: false,
+    initialData: { has_claimed: false },
   })
+
+  const isPoapClaimed = poapClaimData?.has_claimed
+  const claimedPoapLink = poapClaimData?.link
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')
@@ -148,6 +153,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         isSettingsOpen,
         setIsSettingsOpen,
         isPoapClaimed,
+        claimedPoapLink
       }}
     >
       {children}

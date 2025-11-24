@@ -11,7 +11,7 @@ import useCartDomains from '@/hooks/useCartDomains'
 import { useAccount } from 'wagmi'
 import { useAppDispatch } from '@/state/hooks'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
+import { setMakeListingModalDomain, setMakeListingModalOpen, setMakeListingModalPreviousListing } from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setBuyNowModalListing, setBuyNowModalDomain, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 
@@ -31,11 +31,19 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
     () => domain?.owner?.toLowerCase() === userAddress?.toLowerCase(),
     [domain?.owner, userAddress]
   )
+  const grailsListings = listings.filter((listing) => listing.source === 'grails')
+
 
   const openMakeListingModal = () => {
     if (!domain) return
     dispatch(setMakeListingModalOpen(true))
     dispatch(setMakeListingModalDomain(domain))
+
+    if (grailsListings.length > 0) {
+      dispatch(setMakeListingModalPreviousListing(grailsListings[0]))
+    } else {
+      dispatch(setMakeListingModalPreviousListing(null))
+    }
   }
 
   return (
@@ -44,7 +52,7 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
         <h3 className='font-sedan-sc text-3xl'>Listings</h3>
         {isMyDomain && (
           <PrimaryButton onClick={openMakeListingModal}>
-            <p>Add Listing +</p>
+            <p>{grailsListings.length > 0 ? 'Edit Listing' : 'Add Listing +'}</p>
           </PrimaryButton>
         )}
       </div>
@@ -105,6 +113,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
     if (!domain) return
     dispatch(setMakeListingModalDomain(domain))
     dispatch(setMakeListingModalOpen(true))
+    dispatch(setMakeListingModalPreviousListing(listing))
   }
 
   const openCancelListingModal = () => {

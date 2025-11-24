@@ -24,6 +24,10 @@ type SeaportContextValue = {
     royaltyRecipient?: string
     marketplace: ('opensea' | 'grails')[]
     currency?: 'ETH' | 'USDC'
+    setStatus?: (status: 'success' | 'pending' | 'error' | 'review' | 'approving') => void
+    setApproveTxHash?: (txHash: string | null) => void
+    setCreateListingTxHash?: (txHash: string | null) => void
+    setError?: (error: string | null) => void
   }) => Promise<any>
   createOffer: (params: {
     tokenId: string
@@ -102,23 +106,23 @@ export const useSeaportContext = (): SeaportContextValue => {
     // Default to marketplace if no context is provided (backwards compatibility)
     return {
       isInitialized: false,
-      reinitializeSeaport: async () => {},
-      cancelListings: async () => {},
-      cancelOffer: async () => {},
+      reinitializeSeaport: async () => { },
+      cancelListings: async () => { },
+      cancelOffer: async () => { },
       validateOrder: async () => false,
       getOrderStatus: async () => null,
       conduitConfig: null,
-      createListing: async () => {},
-      createOffer: async () => {},
+      createListing: async () => { },
+      createOffer: async () => { },
       // @ts-expect-error - fulfillOrder is not implemented
-      fulfillOrder: async () => {},
+      fulfillOrder: async () => { },
       error: null,
       isLoading: false,
       currentChainId: 0,
       // @ts-expect-error - checkChain is not implemented
-      checkChain: async () => {},
+      checkChain: async () => { },
       isCorrectChain: false,
-      getCurrentChain: async () => {},
+      getCurrentChain: async () => { },
     }
   }
   return context

@@ -8,11 +8,15 @@ export const checkPoap = async () => {
       method: 'GET',
     })
 
-    const json = (await response.json()) as APIResponseType<{ has_claimed: boolean }>
-    if (!json.data) return false
-    return json.data.has_claimed
+    const json = (await response.json()) as APIResponseType<{
+      has_claimed: boolean
+      link?: string
+      claimed_at?: string
+    }>
+    if (!json.data) return { has_claimed: false }
+    return json.data
   } catch (error) {
     console.error(error)
-    return false
+    return { has_claimed: false }
   }
 }

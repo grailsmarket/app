@@ -77,20 +77,36 @@ export function useSeaportClient() {
       royaltyRecipient?: string
       marketplace: ('opensea' | 'grails')[]
       currency?: 'ETH' | 'USDC'
+      setStatus?: (status: 'success' | 'pending' | 'error' | 'review' | 'approving') => void
+      setApproveTxHash?: (txHash: string | null) => void
+      setCreateListingTxHash?: (txHash: string | null) => void
+      setError?: (error: string | null) => void
     }) => {
       if (!isInitialized || !address) {
+        params.setError?.('Wallet not connected or Seaport not initialized')
         throw new Error('Wallet not connected or Seaport not initialized')
+      }
+
+      // Ensure wallet client and public client are available
+      if (!walletClient || !publicClient) {
+        throw new Error('Wallet client not available. Please ensure your wallet is connected.')
       }
 
       setIsLoading(true)
       setError(null)
 
       try {
+        await seaportClient.initialize(publicClient, walletClient)
+
         const order = await seaportClient.createListingOrder({
           ...params,
           offererAddress: address,
           marketplace: params.marketplace,
           currency: params.currency,
+          setStatus: params.setStatus,
+          setApproveTxHash: params.setApproveTxHash,
+          setCreateListingTxHash: params.setCreateListingTxHash,
+          setError: params.setError,
         })
 
         console.log('Params:', params)
@@ -146,6 +162,8 @@ export function useSeaportClient() {
               const grailsError = await grailsResponse.json()
               errors.push('Grails: ' + (grailsError.error || 'Unknown error'))
             }
+
+            params.setError?.('Failed to save orders: ' + errors.join(', '))
             throw new Error('Failed to save orders: ' + errors.join(', '))
           }
 
@@ -158,6 +176,7 @@ export function useSeaportClient() {
           if (warnings.length > 0) {
             console.warn('Listing warnings:', warnings)
             setError(warnings.join(' | '))
+            params.setError?.(warnings.join(' | '))
           }
 
           return { opensea: openSeaResult, grails: grailsResult }
@@ -207,7 +226,7 @@ export function useSeaportClient() {
         refetchListingQueries()
       }
     },
-    [isInitialized, address, refetchListingQueries]
+    [isInitialized, address, refetchListingQueries, walletClient, publicClient]
   )
 
   // Create an offer

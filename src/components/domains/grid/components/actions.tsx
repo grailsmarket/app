@@ -7,7 +7,11 @@ import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
-import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
+import {
+  setMakeListingModalDomain,
+  setMakeListingModalOpen,
+  setMakeListingModalPreviousListing,
+} from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 import Watchlist from '@/components/ui/watchlist'
 import { cn } from '@/utils/tailwind'
@@ -42,6 +46,7 @@ const Actions: React.FC<ActionsProps> = ({
   const { selectedTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
+  const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
 
   const openBuyNowModal = () => {
     dispatch(setBuyNowModalDomain(domain))
@@ -58,6 +63,11 @@ const Actions: React.FC<ActionsProps> = ({
     if (!domain) return
     dispatch(setMakeListingModalDomain(domain))
     dispatch(setMakeListingModalOpen(true))
+    if (grailsListings.length > 0) {
+      dispatch(setMakeListingModalPreviousListing(grailsListings[0]))
+    } else {
+      dispatch(setMakeListingModalPreviousListing(null))
+    }
   }
 
   const openCancelListingModal = () => {

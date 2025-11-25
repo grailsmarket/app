@@ -7,6 +7,7 @@ import React, { createContext, useContext, ReactNode, useMemo } from 'react'
 import { mainnet } from 'viem/chains'
 import { ContractTransaction } from 'ethers'
 import { DomainOfferType } from '@/types/domains'
+import { ListingStatus } from '@/components/modal/listing/createListingModal'
 
 type SeaportContextValue = {
   isInitialized: boolean
@@ -24,7 +25,11 @@ type SeaportContextValue = {
     royaltyRecipient?: string
     marketplace: ('opensea' | 'grails')[]
     currency?: 'ETH' | 'USDC'
-  }) => Promise<any>
+    setStatus?: (status: ListingStatus) => void
+    setApproveTxHash?: (txHash: string | null) => void
+    setCreateListingTxHash?: (txHash: string | null) => void
+    setError?: (error: string | null) => void
+  }) => Promise<{ success: boolean; error?: string; result?: any }>
   createOffer: (params: {
     tokenId: string
     ensName: string
@@ -108,7 +113,9 @@ export const useSeaportContext = (): SeaportContextValue => {
       validateOrder: async () => false,
       getOrderStatus: async () => null,
       conduitConfig: null,
-      createListing: async () => {},
+      createListing: async () => {
+        return { success: false, error: 'Not implemented' }
+      },
       createOffer: async () => {},
       // @ts-expect-error - fulfillOrder is not implemented
       fulfillOrder: async () => {},

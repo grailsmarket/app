@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import Image from 'next/image'
 import React, { useState } from 'react'
 import { truncateAddress, Avatar, HeaderImage, ShortArrow } from 'ethereum-identity-kit'
 import { useClickAway } from '@/hooks/useClickAway'
@@ -5,7 +7,7 @@ import { cn } from '@/utils/tailwind'
 import { useUserContext } from '@/context/user'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import Link from 'next/link'
+import GrailsPoap from 'public/art/grails-poap.webp'
 
 const Connected = () => {
   const [walletDropdownOpen, setWalletDropdownOpen] = useState(false)
@@ -14,8 +16,8 @@ const Connected = () => {
   })
 
   const { ensProfile } = useAppSelector(selectUserProfile)
-  const { profileIsLoading } = useUserContext()
-  const { userAddress, handleSignOut, setIsSettingsOpen } = useUserContext()
+  const { profileIsLoading, userAddress, handleSignOut, setIsSettingsOpen, isPoapClaimed, claimedPoapLink } =
+    useUserContext()
 
   return (
     <div ref={dropdownWalletRef} className='group relative'>
@@ -64,6 +66,17 @@ const Connected = () => {
         >
           My Profile
         </Link>
+        {isPoapClaimed && claimedPoapLink ? (
+          <Link
+            href={claimedPoapLink}
+            target='_blank'
+            onClick={() => setWalletDropdownOpen(false)}
+            className='flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+          >
+            <p>My POAP</p>
+            <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} />
+          </Link>
+        ) : null}
         <Link
           href={`https://discord.com/invite/ZUyG3mSXFD`}
           target='_blank'

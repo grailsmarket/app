@@ -61,15 +61,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
             listHeight={width && width < 768 ? 'calc(100dvh - 150px)' : '520px'}
             ref={virtualListRef}
             items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
-            visibleCount={20}
-            rowHeight={54}
-            overscanCount={10}
-            paddingBottom='0'
+            visibleCount={30}
+            rowHeight={64}
+            overscanCount={20}
+            paddingBottom='0px'
+            gap={0}
             useLocalScrollTop={true}
-            renderItem={(notification) => {
+            renderItem={(notification, index) => {
               if (!notification) return <NotificationLoadingRow />
 
-              return <NotificationRow notification={notification} onClick={() => onClose()} />
+              return <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
             }}
             onScrollNearBottom={() => {
               if (hasNextPage && !isFetchingNextPage) {
@@ -79,7 +80,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
             containerClassName='h-full'
           />
           {allNotifications.length === 0 && !isNotificationsLoading && (
-            <NoResults label='No notifications' height='50vh' />
+            <NoResults label='No notifications' height='500px' />
           )}
         </div>
       </div>

@@ -2,14 +2,13 @@
 
 import { useState } from 'react'
 import { useSeaportClient } from '@/hooks/useSeaportClient'
-import { Check } from 'ethereum-identity-kit'
+import { Address, Check } from 'ethereum-identity-kit'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { formatPrice } from '@/utils/formatPrice'
-import { TOKENS } from '@/constants/web3/tokens'
 import { CancelListingListing } from '@/state/reducers/modals/cancelListingModal'
 import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import Price from '@/components/ui/price'
 
 interface CancelListingModalProps {
   onClose: () => void
@@ -21,8 +20,6 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
   const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle')
 
   if (!listing) return null
-
-  const currency = TOKENS[listing.currency as keyof typeof TOKENS]
 
   const handleCancelListing = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,7 +73,13 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Price</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>{formatPrice(listing.price, currency)}</p>
+                <Price
+                  price={listing.price}
+                  currencyAddress={listing.currency as Address}
+                  fontSize='text-xl font-semibold'
+                  iconSize='16px'
+                  alignTooltip='right'
+                />
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Expires</p>

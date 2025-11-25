@@ -35,6 +35,7 @@ import {
 } from '@/constants/web3/contracts'
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
+import { ListingStatus } from '@/components/modal/listing/createListingModal'
 
 // Type definitions for ethers compatibility
 interface EthersTransaction {
@@ -711,6 +712,10 @@ export class SeaportClient {
     royaltyRecipient?: string
     marketplace: ('opensea' | 'grails')[]
     currency?: 'ETH' | 'USDC' // Payment currency
+    setStatus?: (status: ListingStatus) => void
+    setApproveTxHash?: (txHash: string | null) => void
+    setCreateListingTxHash?: (txHash: string | null) => void
+    setError?: (error: string | null) => void
   }): Promise<OrderWithCounter | { opensea: OrderWithCounter; grails: OrderWithCounter }> {
     if (!this.seaport) {
       throw new Error('Seaport client not initialized')
@@ -726,10 +731,14 @@ export class SeaportClient {
       const openSeaOrder = await this.createListingOrderForMarketplace({
         ...params,
         marketplace: 'opensea',
+        setStatus: params.setStatus,
+        setApproveTxHash: params.setApproveTxHash,
       })
       const grailsOrder = await this.createListingOrderForMarketplace({
         ...params,
         marketplace: 'grails',
+        setStatus: params.setStatus,
+        setApproveTxHash: params.setApproveTxHash,
       })
       return { opensea: openSeaOrder, grails: grailsOrder }
     } else {
@@ -755,6 +764,10 @@ export class SeaportClient {
     royaltyRecipient?: string
     marketplace: 'opensea' | 'grails'
     currency?: 'ETH' | 'USDC'
+    setStatus?: (status: ListingStatus) => void
+    setApproveTxHash?: (txHash: string | null) => void
+    setCreateListingTxHash?: (txHash: string | null) => void
+    setError?: (error: string | null) => void
   }): Promise<OrderWithCounter> {
     if (!this.seaport || !this.publicClient || !this.walletClient) {
       throw new Error('Seaport client not initialized')
@@ -879,6 +892,7 @@ export class SeaportClient {
       console.log(`Approval status for ${operatorToApprove}:`, isApproved)
       // If not approved, request approval
       if (!isApproved) {
+        params.setStatus?.('approving')
         console.log(
           `${approvalTarget} not approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}, requesting approval...`
         )
@@ -910,6 +924,7 @@ export class SeaportClient {
           args: [operatorToApprove as Address, true],
         })
 
+        params.setApproveTxHash?.(approvalHash)
         // Wait for approval transaction to be confirmed
         console.log('Waiting for approval transaction...', approvalHash)
         await this.publicClient.waitForTransactionReceipt({
@@ -921,6 +936,7 @@ export class SeaportClient {
         console.log(`${approvalTarget} already approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}`)
       }
     } catch (error: any) {
+      params.setStatus?.('error')
       throw new Error(`Failed to approve ${approvalTarget}: ${error.message}`)
     }
 
@@ -1076,6 +1092,7 @@ export class SeaportClient {
       throw new Error('Consideration item missing recipient')
     }
 
+    // Create the order to be submitted to the blockchain
     let executeAllActions
     try {
       const result = await this.seaport.createOrder(orderInput, params.offererAddress as `0x${string}`)
@@ -1091,8 +1108,10 @@ export class SeaportClient {
       throw error
     }
 
-    // Execute all actions (including getting signature)
+    params.setStatus?.('submitting')
+    // Execute all actions onchain (including getting the signature)
     const order = await executeAllActions()
+    console.log('Order:', order)
 
     // Add metadata to order
     ;(order as any).isWrapped = isWrapped

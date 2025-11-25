@@ -8,7 +8,11 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { setMakeListingModalDomain, setMakeListingModalOpen } from '@/state/reducers/modals/makeListingModal'
+import {
+  setMakeListingModalDomain,
+  setMakeListingModalOpen,
+  setMakeListingModalPreviousListing,
+} from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import Watchlist from '@/components/ui/watchlist'
 import {
@@ -37,11 +41,17 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
 
-  const openListModal: MouseEventHandler<HTMLButtonElement> = (e) => {
+  const openListModal = (e: React.MouseEvent<Element, MouseEvent>, editListing: boolean) => {
     e.preventDefault()
     e.stopPropagation()
     dispatch(setMakeListingModalDomain(domain))
     dispatch(setMakeListingModalOpen(true))
+
+    if (editListing && domainListing) {
+      dispatch(setMakeListingModalPreviousListing(domainListing))
+    } else {
+      dispatch(setMakeListingModalPreviousListing(null))
+    }
   }
 
   const openCancelListingModal: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -95,7 +105,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
         return (
           <>
             <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
-              <SecondaryButton onClick={openListModal}>Edit</SecondaryButton>
+              <SecondaryButton onClick={(e) => openListModal(e, true)}>Edit</SecondaryButton>
               <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
             </div>
             <div className={cn('flex flex-row justify-end sm:hidden', width)}>
@@ -120,7 +130,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
             dispatch(setBulkRenewalModalOpen(true))
             dispatch(setBulkRenewalModalDomains([domain]))
           }}>Extend</SecondaryButton> */}
-          <PrimaryButton onClick={openListModal}>List</PrimaryButton>
+          <PrimaryButton onClick={(e) => openListModal(e, false)}>List</PrimaryButton>
         </div>
       )
     }

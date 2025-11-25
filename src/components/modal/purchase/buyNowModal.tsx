@@ -562,7 +562,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           <>
             <h2 className='mb-6 text-2xl font-bold text-white'>Approve USDC</h2>
             <div className='py-8 text-center'>
-              <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <p className='mt-4 text-gray-400'>Approving USDC for Seaport</p>
               {approveTxHash && (
                 <a

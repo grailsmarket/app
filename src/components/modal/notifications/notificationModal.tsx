@@ -79,7 +79,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
             }}
             containerClassName='h-full'
           />
-          {(allNotifications.length === 0 && !isNotificationsLoading) && (
+          {allNotifications.length === 0 && !isNotificationsLoading && (
             <NoResults label='No notifications' height='500px' />
           )}
         </div>

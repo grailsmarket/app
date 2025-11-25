@@ -3,7 +3,6 @@ import type { SearchParams } from 'next/dist/server/request/search-params'
 import NamePage from './components/name'
 import { beautifyName } from '@/lib/ens'
 
-
 interface Props {
   params: Promise<{ name: string }>
   searchParams: Promise<SearchParams>

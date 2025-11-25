@@ -16,7 +16,8 @@ const Connected = () => {
   })
 
   const { ensProfile } = useAppSelector(selectUserProfile)
-  const { profileIsLoading, userAddress, handleSignOut, setIsSettingsOpen, isPoapClaimed, claimedPoapLink } = useUserContext()
+  const { profileIsLoading, userAddress, handleSignOut, setIsSettingsOpen, isPoapClaimed, claimedPoapLink } =
+    useUserContext()
 
   return (
     <div ref={dropdownWalletRef} className='group relative'>
@@ -65,20 +66,17 @@ const Connected = () => {
         >
           My Profile
         </Link>
-        {isPoapClaimed && claimedPoapLink ?
+        {isPoapClaimed && claimedPoapLink ? (
           <Link
             href={claimedPoapLink}
             target='_blank'
             onClick={() => setWalletDropdownOpen(false)}
-            className='flex cursor-pointer items-center gap-2 w-full justify-between rounded-sm px-1 transition-opacity hover:opacity-80'
+            className='flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
           >
-            <p>
-              My POAP
-            </p>
+            <p>My POAP</p>
             <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} />
           </Link>
-          : null
-        }
+        ) : null}
         <Link
           href={`https://discord.com/invite/ZUyG3mSXFD`}
           target='_blank'

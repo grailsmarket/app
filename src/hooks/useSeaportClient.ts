@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 import { useUserContext } from '@/context/user'
 import { DomainOfferType } from '@/types/domains'
+import { ListingStatus } from '@/components/modal/listing/createListingModal'
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
@@ -77,19 +78,19 @@ export function useSeaportClient() {
       royaltyRecipient?: string
       marketplace: ('opensea' | 'grails')[]
       currency?: 'ETH' | 'USDC'
-      setStatus?: (status: 'success' | 'pending' | 'error' | 'review' | 'approving') => void
+      setStatus?: (status: ListingStatus) => void
       setApproveTxHash?: (txHash: string | null) => void
       setCreateListingTxHash?: (txHash: string | null) => void
       setError?: (error: string | null) => void
-    }) => {
+    }): Promise<{ success: boolean; error?: string; result?: any }> => {
       if (!isInitialized || !address) {
         params.setError?.('Wallet not connected or Seaport not initialized')
-        throw new Error('Wallet not connected or Seaport not initialized')
+        return { success: false, error: 'Wallet not connected or Seaport not initialized' }
       }
 
       // Ensure wallet client and public client are available
       if (!walletClient || !publicClient) {
-        throw new Error('Wallet client not available. Please ensure your wallet is connected.')
+        return { success: false, error: 'Wallet client not available. Please ensure your wallet is connected.' }
       }
 
       setIsLoading(true)
@@ -109,12 +110,14 @@ export function useSeaportClient() {
           setError: params.setError,
         })
 
-        console.log('Params:', params)
-        console.log('Marketplace:', params.marketplace)
-        console.log('Currency:', params.currency)
-        console.log('Offerer Address:', address)
-        console.log('Order:', order)
+        // console.log('Params:', params)
+        // console.log('Marketplace:', params.marketplace)
+        // console.log('Currency:', params.currency)
+        // console.log('Offerer Address:', address)
+        // console.log('Order:', order)
 
+        // Submitting created orders to the marketplace APIs
+        params.setStatus?.('submitting')
         // Handle "both" marketplace case
         if (params.marketplace.length > 1 && 'opensea' in order && 'grails' in order) {
           // Create two separate listings - one for each platform
@@ -179,7 +182,7 @@ export function useSeaportClient() {
             params.setError?.(warnings.join(' | '))
           }
 
-          return { opensea: openSeaResult, grails: grailsResult }
+          return { success: true, result: { openSea: openSeaResult, grails: grailsResult } }
         }
 
         // Single marketplace case
@@ -214,12 +217,13 @@ export function useSeaportClient() {
           console.warn('OpenSea submission warning:', result.warning)
           // Set error to show warning to user
           setError(result.warning)
+          return { success: false, error: result.warning }
         }
 
-        return result
+        return { success: true, result }
       } catch (err: any) {
         setError(err.message || 'Failed to create listing')
-        throw err
+        return { success: false, error: err.message || 'Failed to create listing' }
       } finally {
         console.log('Refetching listing queries')
         setIsLoading(false)

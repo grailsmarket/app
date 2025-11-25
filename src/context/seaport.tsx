@@ -7,6 +7,7 @@ import React, { createContext, useContext, ReactNode, useMemo } from 'react'
 import { mainnet } from 'viem/chains'
 import { ContractTransaction } from 'ethers'
 import { DomainOfferType } from '@/types/domains'
+import { ListingStatus } from '@/components/modal/listing/createListingModal'
 
 type SeaportContextValue = {
   isInitialized: boolean
@@ -24,11 +25,11 @@ type SeaportContextValue = {
     royaltyRecipient?: string
     marketplace: ('opensea' | 'grails')[]
     currency?: 'ETH' | 'USDC'
-    setStatus?: (status: 'success' | 'pending' | 'error' | 'review' | 'approving') => void
+    setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
-  }) => Promise<any>
+  }) => Promise<{ success: boolean; error?: string; result?: any }>
   createOffer: (params: {
     tokenId: string
     ensName: string
@@ -106,23 +107,25 @@ export const useSeaportContext = (): SeaportContextValue => {
     // Default to marketplace if no context is provided (backwards compatibility)
     return {
       isInitialized: false,
-      reinitializeSeaport: async () => { },
-      cancelListings: async () => { },
-      cancelOffer: async () => { },
+      reinitializeSeaport: async () => {},
+      cancelListings: async () => {},
+      cancelOffer: async () => {},
       validateOrder: async () => false,
       getOrderStatus: async () => null,
       conduitConfig: null,
-      createListing: async () => { },
-      createOffer: async () => { },
+      createListing: async () => {
+        return { success: false, error: 'Not implemented' }
+      },
+      createOffer: async () => {},
       // @ts-expect-error - fulfillOrder is not implemented
-      fulfillOrder: async () => { },
+      fulfillOrder: async () => {},
       error: null,
       isLoading: false,
       currentChainId: 0,
       // @ts-expect-error - checkChain is not implemented
-      checkChain: async () => { },
+      checkChain: async () => {},
       isCorrectChain: false,
-      getCurrentChain: async () => { },
+      getCurrentChain: async () => {},
     }
   }
   return context

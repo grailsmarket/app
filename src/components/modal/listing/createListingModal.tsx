@@ -24,6 +24,14 @@ import ClaimPoap from '../poap/claimPoap'
 import { useUserContext } from '@/context/user'
 import Price from '@/components/ui/price'
 
+export type ListingStatus =
+  | 'review'
+  | 'checking_approval'
+  | 'approving'
+  | 'submitting'
+  | 'cancelling'
+  | 'success'
+  | 'error'
 const currentTimestamp = Math.floor(Date.now() / 1000)
 
 interface CreateListingModalProps {
@@ -42,7 +50,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [status, setStatus] = useState<'success' | 'pending' | 'error' | 'review' | 'approving' | 'cancelling'>('review')
+  const [status, setStatus] = useState<ListingStatus>('review')
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
   const [createListingTxHash, setCreateListingTxHash] = useState<string | null>(null)
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 30)
@@ -70,7 +78,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setStatus('pending')
+    setStatus('checking_approval')
     setError(null)
 
     if (!userAddress) {
@@ -105,19 +113,27 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         setError,
       }
 
-      await createListing(params)
+      const result = await createListing(params)
+
+      if (!result.success) {
+        setError(result.error || 'Failed to create listing')
+        setStatus('error')
+        throw new Error(result.error || 'Failed to create listing')
+      }
+
       if (previousListing) {
         setStatus('cancelling')
+
         try {
           const result = await cancelListings([previousListing.id])
           console.log('Cancellation result:', result)
         } catch (err) {
-          console.error('Failed to cancel listing:', err)
           setError('Failed to cancel listing')
           setStatus('error')
-          return
+          throw new Error(`Failed to cancel listing: ${err}`)
         }
       }
+
       setStatus('success')
     } catch (err) {
       console.error('Failed to create listing:', err)
@@ -162,16 +178,18 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 <p className='font-sedan-sc text-2xl'>Name</p>
                 <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
               </div>
-              {previousListing && <div className='flex w-full items-center justify-between gap-2'>
-                <p className='font-sedan-sc text-2xl'>Current Price</p>
-                <Price
-                  price={previousListing.price}
-                  currencyAddress={previousListing.currency_address as Address}
-                  fontSize='text-xl font-semibold'
-                  iconSize='16px'
-                  alignTooltip='right'
-                />
-              </div>}
+              {previousListing && (
+                <div className='flex w-full items-center justify-between gap-2'>
+                  <p className='font-sedan-sc text-2xl'>Current Price</p>
+                  <Price
+                    price={previousListing.price}
+                    currencyAddress={previousListing.currency_address as Address}
+                    fontSize='text-xl font-semibold'
+                    iconSize='16px'
+                    alignTooltip='right'
+                  />
+                </div>
+              )}
             </div>
             <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
               <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
@@ -320,7 +338,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               )} */}
             <div className='flex flex-col gap-2'>
               <PrimaryButton
-                disabled={isLoading || !price || selectedMarketplace.length === 0 || expiryDate < currentTimestamp || !userAddress}
+                disabled={
+                  isLoading ||
+                  !price ||
+                  selectedMarketplace.length === 0 ||
+                  expiryDate < currentTimestamp ||
+                  !userAddress
+                }
                 onClick={
                   isCorrectChain
                     ? handleSubmit
@@ -341,6 +365,24 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </SecondaryButton>
             </div>
           </div>
+        )
+
+      case 'checking_approval':
+        return (
+          <>
+            <h2 className='mt-4 text-center text-xl font-bold'>Checking Approval</h2>
+            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
+              <p className='text-neutral text-lg'>
+                Checking if you have approved the NFT collection for{' '}
+                {selectedMarketplace.length > 1
+                  ? 'Grails and OpenSea'
+                  : selectedMarketplace[0] === 'grails'
+                    ? 'Grails'
+                    : 'OpenSea'}
+              </p>
+            </div>
+          </>
         )
 
       case 'approving':
@@ -364,13 +406,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           </>
         )
 
-      case 'pending':
+      case 'submitting':
         return (
           <>
             <h2 className='mt-4 text-center text-xl font-bold'>Confirm in Wallet</h2>
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Confirm creation of the listing onchain</p>
+              <p className='text-neutral text-lg'>Submitting listing to the blockchain</p>
               {createListingTxHash && (
                 <a
                   href={`https://etherscan.io/tx/${createListingTxHash}`}
@@ -388,10 +430,12 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       case 'cancelling':
         return (
           <>
-            <h2 className='mt-4 text-center text-xl font-bold'>Cancelling Listing</h2>
+            <h2 className='mt-4 text-center text-xl font-bold'>Cancelling Old Listing</h2>
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>You might be asked to sign a transaction to cancel the listing. (depends on the marketplace)</p>
+              <p className='text-neutral text-lg'>
+                You might be asked to sign a transaction to cancel the old listing. (depends on the marketplace)
+              </p>
             </div>
           </>
         )
@@ -434,8 +478,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   return (
     <div
       onClick={() => {
-        if (status === 'success' || status === 'pending' || isLoading) return
-        onClose()
+        if (status === 'error' || status === 'review' || status === 'success') {
+          onClose()
+        }
       }}
       className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
@@ -446,11 +491,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
         style={{ margin: '0 auto', maxWidth: '28rem' }}
       >
-        {(status === 'success' && !poapClaimed) ? (
+        {status === 'success' && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>
-            <h2 className='font-sedan-sc min-h-6 max-w-full truncate text-center text-3xl text-white'>{previousListing ? 'Edit Listing' : 'List Name'}</h2>
+            <h2 className='font-sedan-sc min-h-6 max-w-full truncate text-center text-3xl text-white'>
+              {previousListing ? 'Edit Listing' : 'List Name'}
+            </h2>
             {getModalContent()}
           </>
         )}

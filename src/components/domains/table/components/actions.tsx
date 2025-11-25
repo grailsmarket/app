@@ -8,7 +8,11 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { setMakeListingModalDomain, setMakeListingModalOpen, setMakeListingModalPreviousListing } from '@/state/reducers/modals/makeListingModal'
+import {
+  setMakeListingModalDomain,
+  setMakeListingModalOpen,
+  setMakeListingModalPreviousListing,
+} from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import Watchlist from '@/components/ui/watchlist'
 import {

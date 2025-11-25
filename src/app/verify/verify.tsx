@@ -38,8 +38,8 @@ const Verify = () => {
     <main className='flex min-h-[calc(100dvh-62px)] flex-col items-center justify-center gap-4 md:min-h-[calc(100dvh-78px)]'>
       <h1 className='font-sedan-sc text-4xl'>Verify Email</h1>
       {isVerifyingEmail ? (
-        <div className='flex items-center flex-col gap-4 pt-4 w-full justify-center'>
-          <div className='inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-primary'></div>
+        <div className='flex w-full flex-col items-center justify-center gap-4 pt-4'>
+          <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
           <p className='text-neutral'>Verifying your email address on Grails...</p>
         </div>
       ) : isSuccess ? (
@@ -49,15 +49,15 @@ const Verify = () => {
       ) : (
         <p className='text-neutral'>Please verify your email address on Grails</p>
       )}
-      {isSuccess ?
+      {isSuccess ? (
         <SecondaryButton onClick={() => router.push('/')} className='mt-2 w-64'>
           Back Home
         </SecondaryButton>
-        : (
-          <PrimaryButton onClick={() => verifyEmailMutation()} disabled={isVerifyingEmail} className='mt-2 w-64'>
-            {isVerifyingEmail ? 'Verifying...' : 'Verify'}
-          </PrimaryButton>
-        )}
+      ) : (
+        <PrimaryButton onClick={() => verifyEmailMutation()} disabled={isVerifyingEmail} className='mt-2 w-64'>
+          {isVerifyingEmail ? 'Verifying...' : 'Verify'}
+        </PrimaryButton>
+      )}
     </main>
   )
 }

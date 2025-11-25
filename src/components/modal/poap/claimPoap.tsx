@@ -19,7 +19,7 @@ const ClaimPoap: React.FC = () => {
     <div className='flex w-full flex-col items-center justify-center gap-4'>
       <h2 className='font-sedan-sc text-3xl'>Claim POAP!</h2>
       {poapLoading ? (
-        <div className='flex flex-col items-center justify-center gap-6 w-full pt-8 pb-4'>
+        <div className='flex w-full flex-col items-center justify-center gap-6 pt-8 pb-4'>
           <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
           <p className='text-neutral'>Creating your POAP</p>
         </div>
@@ -30,7 +30,9 @@ const ClaimPoap: React.FC = () => {
             <p className='text-center text-lg font-medium'>
               Congrats! 👏 Here&apos;s your &quot;Early Grails&quot; POAP.
             </p>
-            <p className='text-center text-neutral text-sm font-medium'>You can always claim the POAP at a later date in the wallet menu.</p>
+            <p className='text-neutral text-center text-sm font-medium'>
+              You can always claim the POAP at a later date in the wallet menu.
+            </p>
           </div>
           <div className='flex w-full items-center justify-between gap-2'>
             <Link

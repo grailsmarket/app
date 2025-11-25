@@ -35,6 +35,7 @@ import {
 } from '@/constants/web3/contracts'
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
+import { ListingStatus } from '@/components/modal/listing/createListingModal'
 
 // Type definitions for ethers compatibility
 interface EthersTransaction {
@@ -711,7 +712,7 @@ export class SeaportClient {
     royaltyRecipient?: string
     marketplace: ('opensea' | 'grails')[]
     currency?: 'ETH' | 'USDC' // Payment currency
-    setStatus?: (status: 'success' | 'pending' | 'error' | 'review' | 'approving') => void
+    setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
@@ -763,7 +764,7 @@ export class SeaportClient {
     royaltyRecipient?: string
     marketplace: 'opensea' | 'grails'
     currency?: 'ETH' | 'USDC'
-    setStatus?: (status: 'success' | 'pending' | 'error' | 'review' | 'approving') => void
+    setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
@@ -1091,7 +1092,7 @@ export class SeaportClient {
       throw new Error('Consideration item missing recipient')
     }
 
-    params.setStatus?.('pending')
+    // Create the order to be submitted to the blockchain
     let executeAllActions
     try {
       const result = await this.seaport.createOrder(orderInput, params.offererAddress as `0x${string}`)
@@ -1107,8 +1108,10 @@ export class SeaportClient {
       throw error
     }
 
-    // Execute all actions (including getting signature)
+    params.setStatus?.('submitting')
+    // Execute all actions onchain (including getting the signature)
     const order = await executeAllActions()
+    console.log('Order:', order)
 
     // Add metadata to order
     ;(order as any).isWrapped = isWrapped

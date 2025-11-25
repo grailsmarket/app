@@ -7,7 +7,11 @@ import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
-import { setMakeListingModalDomain, setMakeListingModalOpen, setMakeListingModalPreviousListing } from '@/state/reducers/modals/makeListingModal'
+import {
+  setMakeListingModalDomain,
+  setMakeListingModalOpen,
+  setMakeListingModalPreviousListing,
+} from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 import Watchlist from '@/components/ui/watchlist'
 import { cn } from '@/utils/tailwind'
@@ -181,7 +185,7 @@ const Actions: React.FC<ActionsProps> = ({
       )}
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => { })} className='flex flex-row items-center gap-0'>
+          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'

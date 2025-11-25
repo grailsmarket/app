@@ -153,7 +153,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         isSettingsOpen,
         setIsSettingsOpen,
         isPoapClaimed,
-        claimedPoapLink
+        claimedPoapLink,
       }}
     >
       {children}

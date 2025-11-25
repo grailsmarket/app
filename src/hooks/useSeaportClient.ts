@@ -8,6 +8,7 @@ import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 import { useUserContext } from '@/context/user'
 import { DomainOfferType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+import { MarketplaceType } from '@/lib/seaport/seaportClient'
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
@@ -26,7 +27,7 @@ export function useSeaportClient() {
         return
       }
 
-      if (!walletClient || !address || authStatus !== 'authenticated') {
+      if (!walletClient || !address) {
         console.log('Skipping Seaport init - no walletClient')
         return
       }
@@ -38,7 +39,7 @@ export function useSeaportClient() {
           authStatus,
         })
         // Pass viem clients directly
-        await seaportClient.initialize(publicClient, walletClient || undefined)
+        await seaportClient.initialize(publicClient, walletClient)
         setIsInitialized(true)
         console.log('Seaport initialized successfully')
       } catch (err) {
@@ -76,21 +77,31 @@ export function useSeaportClient() {
       expiryDate: number
       royaltyBps?: number
       royaltyRecipient?: string
-      marketplace: ('opensea' | 'grails')[]
+      marketplace: MarketplaceType[]
       currency?: 'ETH' | 'USDC'
       setStatus?: (status: ListingStatus) => void
       setApproveTxHash?: (txHash: string | null) => void
       setCreateListingTxHash?: (txHash: string | null) => void
       setError?: (error: string | null) => void
     }): Promise<{ success: boolean; error?: string; result?: any }> => {
-      if (!isInitialized || !address) {
-        params.setError?.('Wallet not connected or Seaport not initialized')
-        return { success: false, error: 'Wallet not connected or Seaport not initialized' }
+      if (!address) {
+        return { success: false, error: 'Wallet not connected' }
       }
 
       // Ensure wallet client and public client are available
       if (!walletClient || !publicClient) {
         return { success: false, error: 'Wallet client not available. Please ensure your wallet is connected.' }
+      }
+
+      if (!isInitialized) {
+        // We attempt to initialize the seaport client again
+        const seaport = await seaportClient.initialize(publicClient, walletClient)
+
+        // If the seaport client is not initialized, we return an error
+        if (!seaport) {
+          params.setError?.('Wallet not connected or Seaport not initialized')
+          return { success: false, error: 'Wallet not connected or Seaport not initialized' }
+        }
       }
 
       setIsLoading(true)
@@ -243,7 +254,7 @@ export function useSeaportClient() {
       currency: 'WETH' | 'USDC'
       expiryDate: number
       currentOwner?: string
-      marketplace: ('opensea' | 'grails')[]
+      marketplace: MarketplaceType[]
     }) => {
       if (!address) {
         throw new Error('Wallet not connected')
@@ -254,12 +265,20 @@ export function useSeaportClient() {
         throw new Error('Wallet client not available. Please ensure your wallet is connected.')
       }
 
+      if (!isInitialized) {
+        // We attempt to initialize the seaport client again
+        const seaport = await seaportClient.initialize(publicClient, walletClient)
+
+        // If the seaport client is not initialized, we return an error
+        if (!seaport) {
+          throw new Error('Wallet not connected or Seaport not initialized')
+        }
+      }
+
       setIsLoading(true)
       setError(null)
 
       try {
-        // Always initialize seaport client with wallet client before creating offer
-        await seaportClient.initialize(publicClient, walletClient)
         console.log('Seaport initialized for offer creation')
 
         const result = await seaportClient.createOffer({
@@ -288,7 +307,7 @@ export function useSeaportClient() {
           console.log('Creating offer for marketplace:', marketplace)
           const formattedOrder = seaportClient.formatOrderForStorage(order)
           const response = await createOfferApi({
-            marketplace: marketplace as 'opensea' | 'grails',
+            marketplace: marketplace as MarketplaceType,
             tokenId: params.tokenId,
             ensName: params.ensName,
             price: params.price,
@@ -314,14 +333,28 @@ export function useSeaportClient() {
         refetchOfferQueries()
       }
     },
-    [address, walletClient, publicClient, refetchOfferQueries]
+    [address, walletClient, publicClient, refetchOfferQueries, isInitialized]
   )
 
   // Fulfill an order
   const fulfillOrder = useCallback(
     async (order: OrderWithCounter) => {
-      if (!isInitialized || !address) {
-        throw new Error('Wallet not connected or Seaport not initialized')
+      if (!address) {
+        throw new Error('Wallet not connected')
+      }
+
+      if (!walletClient || !publicClient) {
+        throw new Error('Wallet client not available. Please ensure your wallet is connected.')
+      }
+
+      if (!isInitialized) {
+        // We attempt to initialize the seaport client again
+        const seaport = await seaportClient.initialize(publicClient, walletClient)
+
+        // If the seaport client is not initialized, we return an error
+        if (!seaport) {
+          throw new Error('Wallet not connected or Seaport not initialized')
+        }
       }
 
       setIsLoading(true)
@@ -337,7 +370,7 @@ export function useSeaportClient() {
         setIsLoading(false)
       }
     },
-    [isInitialized, address]
+    [isInitialized, address, walletClient, publicClient]
   )
 
   // Cancel orders
@@ -352,13 +385,20 @@ export function useSeaportClient() {
         throw new Error('Wallet client not available')
       }
 
+      if (!isInitialized) {
+        // We attempt to initialize the seaport client again
+        const seaport = await seaportClient.initialize(publicClient, walletClient)
+
+        // If the seaport client is not initialized, we return an error
+        if (!seaport) {
+          throw new Error('Wallet not connected or Seaport not initialized')
+        }
+      }
+
       setIsLoading(true)
       setError(null)
 
       try {
-        // Re-initialize to ensure we have the wallet client
-        await seaportClient.initialize(publicClient, walletClient)
-        console.log('Seaport re-initialized with wallet client for cancellation')
         // Step 1: Fetch order components from API
         const fetchResponse = await fetch('/api/listings/cancel', {
           method: 'POST',
@@ -421,7 +461,7 @@ export function useSeaportClient() {
         refetchListingQueries()
       }
     },
-    [address, walletClient, publicClient, refetchListingQueries]
+    [address, walletClient, publicClient, refetchListingQueries, isInitialized]
   )
 
   const cancelOffer = useCallback(

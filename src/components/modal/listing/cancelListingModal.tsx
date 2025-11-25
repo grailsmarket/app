@@ -9,6 +9,10 @@ import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import Price from '@/components/ui/price'
+import { formatPrice } from '@/utils/formatPrice'
+import { TOKENS } from '@/constants/web3/tokens'
+import { SOURCE_ICONS } from '@/constants/domains/sources'
+import Image from 'next/image'
 
 interface CancelListingModalProps {
   onClose: () => void
@@ -20,6 +24,10 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
   const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle')
 
   if (!listing) return null
+
+  const ensName = beautifyName(listing.name)
+  const currency = TOKENS[listing.currency as keyof typeof TOKENS]
+  const price = formatPrice(listing.price, currency)
 
   const handleCancelListing = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,7 +66,13 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
               <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
                 <Check className='text-background h-6 w-6' />
               </div>
-              <div className='mb-2 text-xl font-bold'>Listing Cancelled Successfully!</div>
+              <div className='mb-2 w-4/5 text-center text-xl font-bold'>
+                Listing for{' '}
+                <span className='text-nowrap'>
+                  {price} {currency}
+                </span>{' '}
+                on <span className='capitalize'>{listing.source}</span> was cancelled successfully!
+              </div>
             </div>
             <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
               <p className='text-label text-lg font-bold'>Close</p>
@@ -69,7 +83,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
             <div className='flex flex-col gap-2'>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Name</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>{beautifyName(listing.name)}</p>
+                <p className='max-w-2/3 truncate text-lg font-medium'>{ensName}</p>
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Price</p>
@@ -85,13 +99,26 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
                 <p className='font-sedan-sc text-label text-xl'>Expires</p>
                 <p className='max-w-2/3 truncate text-lg font-medium'>{formatExpiryDate(listing.expires)}</p>
               </div>
+              <div className='flex justify-between'>
+                <p className='font-sedan-sc text-label text-xl'>Marketplace</p>
+                <div className='flex items-center gap-1'>
+                  <Image
+                    src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
+                    alt={listing.source}
+                    width={24}
+                    height={24}
+                    className='h-5 w-auto'
+                  />
+                  <p className='text-lg font-medium capitalize'>{listing.source}</p>
+                </div>
+              </div>
             </div>
             {status === 'error' && (
               <div className='flex flex-col gap-2'>
                 <p className='text-lg font-medium text-red-500'>Error: Failed to cancel listing</p>
               </div>
             )}
-            <div className='flex flex-col gap-2'>
+            <div className='mt-2 flex flex-col gap-2'>
               <PrimaryButton onClick={handleCancelListing} disabled={isLoading} className='w-full'>
                 <p className='text-label text-lg font-bold'>{isLoading ? 'Cancelling Listing...' : 'Confirm'}</p>
               </PrimaryButton>

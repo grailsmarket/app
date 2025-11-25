@@ -247,8 +247,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-sm md:rounded-md md:border-2'
-        style={{ margin: '0 auto', maxWidth: '32rem' }}
+        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2'
       >
         {success && !poapClaimed ? (
           <ClaimPoap />

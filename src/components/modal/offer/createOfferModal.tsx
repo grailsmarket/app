@@ -24,6 +24,7 @@ import { WETH_ADDRESS, USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tok
 import ClaimPoap from '../poap/claimPoap'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppSelector } from '@/state/hooks'
+import { beautifyName } from '@/lib/ens'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -39,7 +40,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [currency, setCurrency] = useState<'WETH' | 'USDC'>('WETH')
-  const [price, setPrice] = useState<number>()
+  const [price, setPrice] = useState<number | ''>('')
   const [success, setSuccess] = useState(false)
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
@@ -87,7 +88,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
     const decimals = TOKEN_DECIMALS[currency]
     const balance = Number(selectedBalance.value) / Math.pow(10, decimals)
-    return balance.toFixed(4)
+    return balance.toFixed(6)
   }, [currency, wethBalance, usdcBalance])
 
   useEffect(() => {
@@ -97,7 +98,8 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
   if (!domain) return null
 
-  const { id: domainId, token_id: tokenId, name: ensName, owner: currentOwner } = domain
+  const ensName = beautifyName(domain.name)
+  const { id: domainId, token_id: tokenId, owner: currentOwner } = domain
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -155,8 +157,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2'
-        style={{ margin: '0 auto', maxWidth: '28rem' }}
+        className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2'
       >
         {success && !poapClaimed ? (
           <ClaimPoap />
@@ -238,7 +239,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                   </div>
                 </div>
 
-                <div className='relative z-20'>
+                <div className='z-20'>
                   <Dropdown
                     label='Duration'
                     placeholder='Select a duration'
@@ -250,17 +251,19 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                     }}
                   />
                   {expiryDate === 0 && showDatePicker && (
-                    <DatePicker
-                      onSelect={(timestamp) => setExpiryDate(timestamp)}
-                      onClose={() => {
-                        setShowDatePicker(false)
-                      }}
-                      className='absolute top-14 left-0 w-full'
-                    />
+                    <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-start justify-start bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+                      <DatePicker
+                        onSelect={(timestamp) => setExpiryDate(timestamp)}
+                        onClose={() => {
+                          setShowDatePicker(false)
+                        }}
+                        className='w-full'
+                      />
+                    </div>
                   )}
                 </div>
 
-                <div>
+                <div className='z-0'>
                   <Dropdown
                     label='Currency'
                     options={currencyOptions}
@@ -276,20 +279,26 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                     value={price}
                     onChange={(e) => {
                       const value = e.target.value
-                      if (value === '') setPrice(undefined)
+                      if (value === '') setPrice('')
+                      else if (Number(value) > parseFloat(currentBalanceFormatted))
+                        setPrice(parseFloat(currentBalanceFormatted))
                       else setPrice(Number(value))
                     }}
                     placeholder='0.1'
                     min={0}
                     step={0.001}
+                    max={parseFloat(currentBalanceFormatted)}
                   />
                   <div className='py-sm px-md mt-1 flex items-center justify-between'>
                     <p className='text-md text-gray-400'>
                       Balance: {currentBalanceFormatted} {currency}
                     </p>
-                    {price && !hasSufficientBalance && (
-                      <p className='text-md font-semibold text-red-400'>Insufficient balance</p>
-                    )}
+                    <button
+                      className='flex items-center justify-center text-sm font-bold'
+                      onClick={() => setPrice(parseFloat(currentBalanceFormatted))}
+                    >
+                      Max Offer
+                    </button>
                   </div>
                 </div>
 

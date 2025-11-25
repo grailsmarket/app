@@ -21,3 +21,5 @@ export const TOKEN_DECIMALS = {
   WETH: 18,
   USDC: 6,
 } as const
+
+export const MAX_ETH_SUPPLY = 120700000

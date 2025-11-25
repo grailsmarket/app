@@ -14,10 +14,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
   today.setHours(0, 0, 0, 0)
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [viewMonth, setViewMonth] = useState(today.getMonth())
-  const [viewYear, setViewYear] = useState(today.getFullYear())
-  const [hours, setHours] = useState(new Date().getHours())
-  const [minutes, setMinutes] = useState(new Date().getMinutes())
+  const [viewMonth, setViewMonth] = useState(today.getUTCMonth())
+  const [viewYear, setViewYear] = useState(today.getUTCFullYear())
+  const [hours, setHours] = useState<number | ''>(new Date().getUTCHours())
+  const [minutes, setMinutes] = useState<number | ''>(new Date().getUTCMinutes())
   const [showMonthDropdown, setShowMonthDropdown] = useState(false)
   const [showYearDropdown, setShowYearDropdown] = useState(false)
 
@@ -108,7 +108,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
   const handleDateClick = (day: { date: number; month: 'prev' | 'current' | 'next'; disabled: boolean }) => {
     if (day.disabled) return
 
-    const newDate = new Date(viewYear, viewMonth, day.date, hours, minutes)
+    const newDate = new Date(viewYear, viewMonth, day.date, hours || 0, minutes || 0)
     setSelectedDate(newDate)
 
     // Return timestamp in seconds
@@ -157,7 +157,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
   return (
     <div
       ref={datePickerRef as React.RefObject<HTMLDivElement>}
-      className={cn('bg-background border-primary w-[320px] rounded-lg border-2 p-4', className)}
+      className={cn('bg-background border-tertiary w-[296px] rounded-lg border p-3 sm:p-4', className)}
     >
       {/* Header with month/year navigation */}
       <div className='mb-2 flex items-center justify-between'>
@@ -173,7 +173,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
           <div ref={monthRef as React.RefObject<HTMLDivElement>} className='relative'>
             <button
               onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-              className='hover:bg-tertiary bg-secondary rounded px-3 py-2 text-white transition-colors'
+              className='hover:bg-tertiary bg-secondary rounded px-3 py-1.5 text-white transition-colors'
             >
               {months[viewMonth]}
             </button>
@@ -201,7 +201,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
           <div ref={yearRef as React.RefObject<HTMLDivElement>} className='relative'>
             <button
               onClick={() => setShowYearDropdown(!showYearDropdown)}
-              className='hover:bg-tertiary bg-secondary rounded px-3 py-2 text-white transition-colors'
+              className='hover:bg-tertiary bg-secondary rounded px-3 py-1.5 text-white transition-colors'
             >
               {viewYear}
             </button>
@@ -235,9 +235,9 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
       </div>
 
       {/* Weekday headers */}
-      <div className='mb-2 grid grid-cols-7 gap-1'>
+      <div className='mt-4 mb-2 grid grid-cols-7 gap-1'>
         {weekDays.map((day) => (
-          <div key={day} className='py-1 text-center text-lg font-semibold text-gray-400'>
+          <div key={day} className='text-center text-lg font-semibold text-gray-400'>
             {day}
           </div>
         ))}
@@ -271,19 +271,25 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className })
         {/* <label className='text-lg text-gray-400'>Time:</label> */}
         <input
           type='number'
-          value={hours.toString().padStart(2, '0')}
-          onChange={(e) => handleHoursChange(e.target.value)}
-          min='0'
-          max='23'
+          value={hours.toString()}
+          onChange={(e) => {
+            if (e.target.value === '') setHours('')
+            handleHoursChange(e.target.value)
+          }}
+          min={0}
+          max={23}
           className='bg-secondary focus:border-primary w-12 rounded border border-gray-700 px-2 py-1 text-center text-white focus:outline-none'
         />
         <span className='text-white'>:</span>
         <input
           type='number'
-          value={minutes.toString().padStart(2, '0')}
-          onChange={(e) => handleMinutesChange(e.target.value)}
-          min='0'
-          max='59'
+          value={minutes.toString()}
+          onChange={(e) => {
+            if (e.target.value === '') setMinutes('')
+            handleMinutesChange(e.target.value)
+          }}
+          min={0}
+          max={59}
           className='bg-secondary focus:border-primary w-12 rounded border border-gray-700 px-2 py-1 text-center text-white focus:outline-none'
         />
       </div>

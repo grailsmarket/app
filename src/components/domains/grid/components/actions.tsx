@@ -78,6 +78,7 @@ const Actions: React.FC<ActionsProps> = ({
         id: domainListing.id,
         name: domain.name,
         price: domainListing.price,
+        source: domainListing.source,
       })
     )
     dispatch(setCancelListingModalOpen(true))

@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { useSeaportClient } from '@/hooks/useSeaportClient'
 import { Check } from 'ethereum-identity-kit'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { formatPrice } from '@/utils/formatPrice'
-import { TOKENS } from '@/constants/web3/tokens'
 import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { DomainOfferType } from '@/types/domains'
 import { useQueryClient } from '@tanstack/react-query'
+import Price from '@/components/ui/price'
+import { formatPrice } from '@/utils/formatPrice'
+import { TOKENS } from '@/constants/web3/tokens'
 
 interface CancelOfferModalProps {
   onClose: () => void
@@ -25,6 +26,7 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
 
   if (!offer) return null
 
+  const ensName = beautifyName(name)
   const currency = TOKENS[offer.currency_address as keyof typeof TOKENS]
 
   const handleCancelOffer = async (e: React.FormEvent) => {
@@ -71,7 +73,13 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
               <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
                 <Check className='text-background h-6 w-6' />
               </div>
-              <div className='mb-2 text-xl font-bold'>Offer Cancelled Successfully!</div>
+              <div className='mb-2 max-w-4/5 text-center text-xl font-bold'>
+                Offer on {ensName} for{' '}
+                <span className='text-nowrap'>
+                  {formatPrice(offer.offer_amount_wei, currency)} {currency}
+                </span>{' '}
+                was cancelled successfully!
+              </div>
             </div>
             <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
               <p className='text-label text-lg font-bold'>Close</p>
@@ -82,13 +90,17 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
             <div className='flex flex-col gap-2'>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Name</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>{beautifyName(name)}</p>
+                <p className='max-w-2/3 truncate text-lg font-medium'>{ensName}</p>
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Price</p>
-                <p className='max-w-2/3 truncate text-lg font-medium'>
-                  {formatPrice(offer.offer_amount_wei, currency)}
-                </p>
+                <Price
+                  price={offer.offer_amount_wei}
+                  currencyAddress={offer.currency_address}
+                  fontSize='text-xl font-semibold'
+                  iconSize='16px'
+                  alignTooltip='right'
+                />
               </div>
               <div className='flex justify-between'>
                 <p className='font-sedan-sc text-label text-xl'>Expires</p>

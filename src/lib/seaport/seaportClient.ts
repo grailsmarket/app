@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+// import { ethers } from 'ethers'
 import { Seaport } from '@opensea/seaport-js'
 import { ItemType } from '@opensea/seaport-js/lib/constants'
 import {
@@ -36,6 +36,8 @@ import {
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+
+export type MarketplaceType = 'grails' | 'opensea'
 
 // Type definitions for ethers compatibility
 interface EthersTransaction {
@@ -112,6 +114,9 @@ export class SeaportClient {
   private seaport: Seaport | null = null
   private publicClient: PublicClient | null = null
   private walletClient: WalletClient | null = null
+  private initializationRetries: number = 0
+  private MAX_INITIALIZATION_RETRIES: number = 3
+
   /**
    * Initialize Seaport client with viem clients
    */
@@ -121,31 +126,28 @@ export class SeaportClient {
 
     try {
       // Try to use ethers directly with window.ethereum if available and wallet is connected
-      if (typeof window !== 'undefined' && (window as any).ethereum && walletClient && walletClient.account) {
-        console.log('Attempting to use ethers BrowserProvider for Seaport')
-        try {
-          const provider = new ethers.BrowserProvider((window as any).ethereum)
-          // Try to get the signer for the specific account
-          const signer = await provider.getSigner(walletClient.account.address)
+      // if (typeof window !== 'undefined' && (window as any).ethereum && walletClient && walletClient.account) {
+      //   try {
+      //     const provider = new ethers.BrowserProvider((window as any).ethereum)
+      //     // Try to get the signer for the specific account
+      //     const signer = await provider.getSigner(walletClient.account.address)
 
-          this.seaport = new Seaport(signer, {
-            overrides: {
-              contractAddress: SEAPORT_ADDRESS,
-            },
-            conduitKeyToConduit: {
-              [MARKETPLACE_CONDUIT_KEY]: MARKETPLACE_CONDUIT_ADDRESS,
-              [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
-            },
-          })
-          console.log('Successfully initialized Seaport with ethers provider')
-        } catch (ethersError) {
-          console.log('Failed to use ethers provider, falling back to custom wrapper:', ethersError)
-          throw ethersError // Re-throw to fall into the catch block below
-        }
-      } else if (walletClient) {
+      //     this.seaport = new Seaport(signer, {
+      //       overrides: {
+      //         contractAddress: SEAPORT_ADDRESS,
+      //       },
+      //       conduitKeyToConduit: {
+      //         [MARKETPLACE_CONDUIT_KEY]: MARKETPLACE_CONDUIT_ADDRESS,
+      //         [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
+      //       },
+      //     })
+      //   } catch (ethersError) {
+      //     throw ethersError // Re-throw to fall into the catch block below
+      //   }
+      // } else
+      if (walletClient) {
         // Fallback to our custom wrapper
         const signer = this.createViemSigner(publicClient, walletClient)
-        console.log('Initializing Seaport with custom signer, contract:', SEAPORT_ADDRESS)
         // @ts-expect-error the signer does exist
         this.seaport = new Seaport(signer, {
           overrides: {
@@ -171,8 +173,7 @@ export class SeaportClient {
         })
       }
     } catch (error) {
-      console.log('Error initializing Seaport, falling back to custom wrapper:', error)
-
+      console.error('Error initializing Seaport, falling back to custom wrapper:', error)
       if (walletClient && walletClient.account) {
         console.log('Using custom viem signer wrapper for Seaport')
         const signer = this.createViemSigner(publicClient, walletClient)
@@ -186,7 +187,6 @@ export class SeaportClient {
             [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
           },
         })
-        console.log('Successfully initialized Seaport with custom wrapper')
       } else {
         const provider = this.createViemProvider(publicClient)
         // @ts-expect-error the provider does exist
@@ -200,6 +200,16 @@ export class SeaportClient {
           },
         })
       }
+    } finally {
+      if (!this.seaport) {
+        this.initializationRetries++
+
+        if (this.initializationRetries <= this.MAX_INITIALIZATION_RETRIES) {
+          this.initialize(publicClient, walletClient)
+        }
+      }
+
+      return this.seaport
     }
   }
 
@@ -225,6 +235,7 @@ export class SeaportClient {
       },
       signTypedData: async (domain: TypedDataDomain, types: EthersTypedDataTypes, value: Record<string, unknown>) => {
         if (!walletClient.account) throw new Error('No account connected')
+
         return await walletClient.signTypedData({
           account: walletClient.account,
           domain,
@@ -235,6 +246,7 @@ export class SeaportClient {
       },
       sendTransaction: async (tx: EthersTransaction) => {
         if (!walletClient.account) throw new Error('No account connected')
+
         const toAddress = tx.to || tx.target
         const hash = await walletClient.sendTransaction({
           account: walletClient.account,
@@ -244,6 +256,7 @@ export class SeaportClient {
           value: tx.value ? BigInt(tx.value) : undefined,
           gas: tx.gasLimit ? BigInt(tx.gasLimit) : undefined,
         })
+
         return {
           hash,
           wait: async () => await publicClient.waitForTransactionReceipt({ hash }),
@@ -710,7 +723,7 @@ export class SeaportClient {
     offererAddress: string
     royaltyBps?: number // Basis points for royalty (e.g., 250 = 2.5%)
     royaltyRecipient?: string
-    marketplace: ('opensea' | 'grails')[]
+    marketplace: MarketplaceType[]
     currency?: 'ETH' | 'USDC' // Payment currency
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
@@ -762,7 +775,7 @@ export class SeaportClient {
     offererAddress: string
     royaltyBps?: number
     royaltyRecipient?: string
-    marketplace: 'opensea' | 'grails'
+    marketplace: MarketplaceType
     currency?: 'ETH' | 'USDC'
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void

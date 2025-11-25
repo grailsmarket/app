@@ -23,6 +23,10 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { useUserContext } from '@/context/user'
 import Price from '@/components/ui/price'
+import { MAX_ETH_SUPPLY } from '@/constants/web3/tokens'
+import { beautifyName } from '@/lib/ens'
+import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { SOURCE_ICONS } from '@/constants/domains/sources'
 
 export type ListingStatus =
   | 'review'
@@ -32,6 +36,7 @@ export type ListingStatus =
   | 'cancelling'
   | 'success'
   | 'error'
+
 const currentTimestamp = Math.floor(Date.now() / 1000)
 
 interface CreateListingModalProps {
@@ -61,7 +66,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   }, [])
 
   if (!domain) return null
-  const { token_id: tokenId, name: ensName } = domain
+
+  const ensName = beautifyName(domain.name)
+  const tokenId = domain.token_id
 
   const durationOptions: DropdownOption[] = [
     { value: currentTimestamp + DAY_IN_SECONDS, label: '1 Day' },
@@ -162,9 +169,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
   const successMessage = () => {
     if (previousListing) {
-      return `Listing for ${domain.name} was edited successfully. The new listing is now active on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
+      return `Listing for ${ensName} was edited successfully. The new listing is now active on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
     } else {
-      return `${domain.name} was listed successfully on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
+      return `${ensName} was listed successfully on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
     }
   }
 
@@ -175,20 +182,41 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-2'>
               <div className='flex w-full items-center justify-between gap-2'>
-                <p className='font-sedan-sc text-2xl'>Name</p>
+                <p className='font-sedan-sc text-xl'>Name</p>
                 <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
               </div>
               {previousListing && (
-                <div className='flex w-full items-center justify-between gap-2'>
-                  <p className='font-sedan-sc text-2xl'>Current Price</p>
-                  <Price
-                    price={previousListing.price}
-                    currencyAddress={previousListing.currency_address as Address}
-                    fontSize='text-xl font-semibold'
-                    iconSize='16px'
-                    alignTooltip='right'
-                  />
-                </div>
+                <>
+                  <div className='flex w-full items-center justify-between gap-2'>
+                    <p className='font-sedan-sc text-xl'>Price</p>
+                    <Price
+                      price={previousListing.price}
+                      currencyAddress={previousListing.currency_address as Address}
+                      fontSize='text-xl font-semibold'
+                      iconSize='16px'
+                      alignTooltip='right'
+                    />
+                  </div>
+                  <div className='flex justify-between'>
+                    <p className='font-sedan-sc text-xl'>Marketplace</p>
+                    <div className='flex items-center gap-1'>
+                      <Image
+                        src={SOURCE_ICONS[previousListing.source as keyof typeof SOURCE_ICONS]}
+                        alt={previousListing.source}
+                        width={24}
+                        height={24}
+                        className='h-5 w-auto'
+                      />
+                      <p className='font-medium capitalize'>{previousListing.source}</p>
+                    </div>
+                  </div>
+                  <div className='flex justify-between'>
+                    <p className='font-sedan-sc text-xl'>Expiry Date</p>
+                    <p className='max-w-2/3 truncate text-lg font-medium'>
+                      {formatExpiryDate(previousListing.expires_at)}
+                    </p>
+                  </div>
+                </>
               )}
             </div>
             <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
@@ -247,7 +275,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </div>
             </div>
 
-            <div className='relative z-20'>
+            <div className='z-20'>
               <Dropdown
                 label='Duration'
                 placeholder='Select a duration'
@@ -259,14 +287,22 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 }}
               />
               {expiryDate === 0 && showDatePicker && (
-                <DatePicker
-                  onSelect={(timestamp) => setExpiryDate(timestamp)}
-                  onClose={() => {
-                    setShowDatePicker(false)
-                  }}
-                  className='absolute top-14 left-0 w-full'
-                />
+                <div className='xs:p-4 absolute top-0 right-0 flex h-full w-full items-start justify-start bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+                  <DatePicker
+                    onSelect={(timestamp) => setExpiryDate(timestamp)}
+                    onClose={() => {
+                      setShowDatePicker(false)
+                    }}
+                    className='w-full'
+                  />
+                </div>
               )}
+              {expiryDate === 0 ||
+                (durationOptions.findIndex((option) => option.value === expiryDate) === -1 && (
+                  <p className='text-neutral mt-2 text-center text-xs'>
+                    Duration will be set in UTC timezone, please make sure to adjust accordingly.
+                  </p>
+                ))}
             </div>
 
             <div>
@@ -286,11 +322,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 onChange={(e) => {
                   const value = e.target.value
                   if (value === '') setPrice('')
+                  else if (Number(value) > (currency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY))
+                    setPrice(currency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
                   else setPrice(Number(value))
                 }}
                 placeholder='0.1'
                 min={0}
                 step={0.001}
+                max={currency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
               />
             </div>
 
@@ -488,8 +527,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-sm md:rounded-md md:border-2'
-        style={{ margin: '0 auto', maxWidth: '28rem' }}
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-md md:overflow-visible md:rounded-md md:border-2'
+        style={{ margin: '0 auto' }}
       >
         {status === 'success' && !poapClaimed ? (
           <ClaimPoap />

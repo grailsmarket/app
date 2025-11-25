@@ -8,6 +8,7 @@ export type CancelListingListing = {
   price: string
   currency: string
   expires: string
+  source: string
 }
 
 type CancelListingModalState = {

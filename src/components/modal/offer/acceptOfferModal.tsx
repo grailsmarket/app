@@ -28,6 +28,7 @@ import ClaimPoap from '../poap/claimPoap'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
+import { beautifyName } from '@/lib/ens'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -710,6 +711,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
   if (!offer || !domain) return null
 
+  const ensName = beautifyName(domain.name)
+
   const estimateGas = async () => {
     try {
       if (!address || !walletClient || !publicClient) return
@@ -768,7 +771,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       if (!address || !publicClient || !domain) return
 
       // Determine which NFT contract to check based on if the name is wrapped
-      const isWrapped = await checkIfWrapped(domain.name)
+      const isWrapped = await checkIfWrapped(ensName)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
       console.log('Parameters:', offer)
@@ -809,7 +812,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       }
 
       // Determine which NFT contract to approve based on if the name is wrapped
-      const isWrapped = await checkIfWrapped(domain.name)
+      const isWrapped = await checkIfWrapped(ensName)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
       const conduitKey = offer.order_data.protocol_data.parameters.conduitKey
       const conduitAddress =
@@ -972,7 +975,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             <div className='mb-4 space-y-4'>
               <div className='flex flex-row items-center justify-between rounded-lg'>
                 <p className='font-sedan-sc text-xl'>Name</p>
-                <p className='text-xl font-semibold'>{domain.name || `Token #${domain.tokenId}`}</p>
+                <p className='text-xl font-semibold'>{ensName || `Token #${domain.tokenId}`}</p>
               </div>
 
               <div className='flex flex-row items-center justify-between rounded-lg'>
@@ -1105,7 +1108,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               </div>
               <div className='mb-2 text-xl font-bold'>Offer Accepted!</div>
               <p className='flex flex-row items-center gap-1 text-gray-400'>
-                You have successfully sold {domain.name} for
+                You have successfully sold {ensName} for
                 <Price
                   price={offer.offer_amount_wei}
                   currencyAddress={offer.currency_address}

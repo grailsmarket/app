@@ -15,6 +15,7 @@ import Sold from 'public/icons/sold.svg'
 import PriceChange from 'public/icons/transfer.svg'
 // import Expired from 'public/icons/expiring.svg' // Using burn icon for expiration
 import NameImage from '@/components/ui/nameImage'
+import { beautifyName } from '@/lib/ens'
 
 interface NotificationRowProps {
   notification: Notification
@@ -125,7 +126,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
           height={32}
           width={32}
         />
-        <span className='text-foreground text-lg font-semibold sm:text-xl'>{notification.ensName}</span>
+        <span className='text-foreground text-lg font-semibold sm:text-xl'>{beautifyName(notification.ensName)}</span>
       </div>
 
       <div className='flex w-1/5 justify-end'>{getContextualData()}</div>

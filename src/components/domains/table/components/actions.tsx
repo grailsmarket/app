@@ -64,6 +64,7 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
         price: domainListing.price,
         currency: domainListing.currency_address,
         expires: domainListing.expires_at,
+        source: domainListing.source,
       })
     )
     dispatch(setCancelListingModalOpen(true))

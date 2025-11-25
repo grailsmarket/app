@@ -39,9 +39,9 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
 
   const openMakeListingModal = () => {
     if (!domain) return
-    dispatch(setMakeListingModalOpen(true))
     dispatch(setMakeListingModalDomain(domain))
     dispatch(setMakeListingModalPreviousListing(null))
+    dispatch(setMakeListingModalOpen(true))
 
     // if (grailsListings.length > 0) {
     //   dispatch(setMakeListingModalPreviousListing(grailsListings[0]))
@@ -116,8 +116,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
   const openEditListingModal = () => {
     if (!domain) return
     dispatch(setMakeListingModalDomain(domain))
-    dispatch(setMakeListingModalOpen(true))
     dispatch(setMakeListingModalPreviousListing(listing))
+    dispatch(setMakeListingModalOpen(true))
   }
 
   const openCancelListingModal = () => {
@@ -129,8 +129,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
         price: listing.price,
         currency: listing.currency_address,
         expires: listing.expires_at,
+        source: listing.source,
       })
     )
+    dispatch(setMakeListingModalPreviousListing(null))
     dispatch(setCancelListingModalOpen(true))
   }
 

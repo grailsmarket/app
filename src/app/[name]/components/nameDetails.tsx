@@ -20,6 +20,11 @@ import NameImage from '@/components/ui/nameImage'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import Link from 'next/link'
 import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
+import PrimaryButton from '@/components/ui/buttons/primary'
+import { useAppDispatch } from '@/state/hooks'
+import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import { useUserContext } from '@/context/user'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 type Row = {
   label: string
@@ -121,6 +126,19 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     },
   ]
 
+  const dispatch = useAppDispatch()
+  const { userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
+  const openExtendNameModal = () => {
+    if (!userAddress) {
+      openConnectModal?.()
+      return
+    }
+    if (!nameDetails) return
+    dispatch(setBulkRenewalModalDomains([nameDetails]))
+    dispatch(setBulkRenewalModalOpen(true))
+  }
+
   return (
     <div className='flex flex-col'>
       <div className='bg-tertiary h-fit w-full'>
@@ -145,6 +163,12 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
             )}
           </div>
         ))}
+        <div className='flex w-full flex-col gap-2'>
+          {/* <SecondaryButton onClick={openTransferModal} className='w-full text-md h-8!'>Transfer</SecondaryButton> */}
+          <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
+            Extend Registration
+          </PrimaryButton>
+        </div>
       </div>
     </div>
   )

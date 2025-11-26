@@ -42,6 +42,7 @@ export const useProfileDomains = (user: Address | string) => {
       if (!profile?.address)
         return {
           domains: [],
+          total: 0,
           nextPageParam: pageParam,
           hasNextPage: false,
         }
@@ -57,6 +58,7 @@ export const useProfileDomains = (user: Address | string) => {
 
       return {
         domains: domains.domains,
+        total: domains.total,
         nextPageParam: domains.nextPageParam,
         hasNextPage: domains.hasNextPage,
       }
@@ -74,11 +76,13 @@ export const useProfileDomains = (user: Address | string) => {
     )
   }, [domains])
   const domainsLoading = isLoading || isFetchingNextPage
+  const totalDomains = domains?.pages[0]?.total || 0
 
   return {
     domains: domainsData,
     domainsLoading,
     fetchMoreDomains,
     hasMoreDomains,
+    totalDomains,
   }
 }

@@ -49,7 +49,7 @@ const Connected = () => {
       </button>
       <div
         className={cn(
-          'bg-secondary p-lg border-tertiary absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border font-semibold shadow-sm sm:w-full sm:items-start',
+          'bg-secondary p-lg border-tertiary absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border text-lg font-semibold shadow-sm sm:w-full sm:items-start md:text-xl',
           walletDropdownOpen && 'flex'
         )}
       >
@@ -71,10 +71,10 @@ const Connected = () => {
             href={claimedPoapLink}
             target='_blank'
             onClick={() => setWalletDropdownOpen(false)}
-            className='flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+            className='flex w-full cursor-pointer flex-row-reverse items-center justify-start gap-1.5 rounded-sm px-1 transition-opacity hover:opacity-80 sm:flex-row sm:justify-between sm:gap-2'
           >
             <p>My POAP</p>
-            <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} />
+            <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />
           </Link>
         ) : null}
         <Link

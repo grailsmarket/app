@@ -34,6 +34,7 @@ export const useReceivedOffers = () => {
       if (!userAddress)
         return {
           offers: [],
+          total: 0,
           nextPageParam: pageParam,
           hasNextPage: false,
         }
@@ -48,6 +49,7 @@ export const useReceivedOffers = () => {
 
       return {
         offers: response.offers,
+        total: response.total,
         nextPageParam: response.nextPageParam,
         hasNextPage: response.hasNextPage,
       }
@@ -57,11 +59,14 @@ export const useReceivedOffers = () => {
     enabled: !!userAddress && authStatus === 'authenticated',
   })
 
+  const totalReceivedOffers = receivedOffers?.pages[0]?.total || 0
+
   return {
     receivedOffers,
     isReceivedOffersLoading,
     isReceivedOffersFetchingNextPage,
     fetchMoreReceivedOffers,
     hasMoreReceivedOffers,
+    totalReceivedOffers,
   }
 }

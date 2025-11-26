@@ -38,6 +38,7 @@ export const useWatchlistDomains = () => {
       if (!userAddress)
         return {
           domains: [],
+          total: 0,
           nextPageParam: 0,
           hasNextPage: false,
         }
@@ -82,6 +83,7 @@ export const useWatchlistDomains = () => {
 
       return {
         domains,
+        total: response.total,
         nextPageParam: response.nextPageParam,
         hasNextPage: response.hasNextPage,
       }
@@ -91,11 +93,14 @@ export const useWatchlistDomains = () => {
     enabled: !!userAddress && authStatus === 'authenticated',
   })
 
+  const totalWatchlistDomains = watchlistDomains?.pages[0]?.total || 0
+
   return {
     watchlistDomains,
     isWatchlistDomainsLoading,
     isWatchlistDomainsFetchingNextPage,
     fetchMoreWatchlistDomains,
     hasMoreWatchlistDomains,
+    totalWatchlistDomains,
   }
 }

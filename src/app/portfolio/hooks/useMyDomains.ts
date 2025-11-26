@@ -32,6 +32,14 @@ export const useMyDomains = () => {
       filters.sort,
     ],
     queryFn: async ({ pageParam = 1 }) => {
+      if (!userAddress)
+        return {
+          domains: [],
+          total: 0,
+          nextPageParam: pageParam,
+          hasNextPage: false,
+        }
+
       const response = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
@@ -47,11 +55,14 @@ export const useMyDomains = () => {
     enabled: !!userAddress && authStatus === 'authenticated',
   })
 
+  const totalDomains = myDomains?.pages[0]?.total || 0
+
   return {
     myDomains,
     isMyDomainsLoading,
     isMyDomainsFetchingNextPage,
     fetchMoreMyDomains,
     hasMoreMyDomains,
+    totalDomains,
   }
 }

@@ -31,6 +31,7 @@ const fetchReceivedOffers = async ({ limit, pageParam, ownerAddress }: FetchRece
 
   return {
     offers: data.data.offers,
+    total: data.data.pagination.total,
     nextPageParam: data.data.pagination.page,
     hasNextPage: data.data.pagination.hasNext,
   }

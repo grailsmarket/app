@@ -11,11 +11,11 @@ interface PagesProps {
 const Pages = ({ className, onClick }: PagesProps) => {
   const pathname = usePathname()
   return (
-    <div className={cn('flex flex-col gap-4 md:flex-row md:items-center', className)}>
+    <div className={cn('text-md flex flex-col gap-4 text-lg md:flex-row md:items-center', className)}>
       <Link
         href='/'
         className={cn(
-          'text-lg font-semibold transition-all',
+          'font-semibold transition-all',
           pathname === '/' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -25,7 +25,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/marketplace'
         className={cn(
-          'text-lg font-semibold transition-all',
+          'font-semibold transition-all',
           pathname === '/marketplace' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -35,7 +35,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/categories'
         className={cn(
-          'text-lg font-semibold transition-all',
+          'font-semibold transition-all',
           pathname === '/categories' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -45,7 +45,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/portfolio'
         className={cn(
-          'text-lg font-semibold transition-all',
+          'font-semibold transition-all',
           pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}

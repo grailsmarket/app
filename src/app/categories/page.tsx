@@ -14,7 +14,7 @@ export const metadata = {
 
 const UserPage = () => {
   return (
-    <main className='px-lg min-h-[calc(100dvh-62px)] w-full pt-16 md:min-h-[calc(100dvh-78px)] md:pt-20'>
+    <main className='md:p-lg p-md min-h-[calc(100dvh-62px)] w-full pt-14 md:min-h-[calc(100dvh-78px)] md:pt-20'>
       <Categories />
     </main>
   )

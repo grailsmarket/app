@@ -39,7 +39,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                   width: windowWidth && windowWidth > 1024 ? 'calc(100% - 280px)' : '100%',
                 }}
               >
-                <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} />
+                <TabSwitcher profileTab={profileTab} setProfileTab={setProfileTab} user={user} />
                 {profileTab === 'domains' && <DomainPanel user={user} />}
                 {profileTab === 'activity' && <ActivityPanel user={user} userAddress={userAccount?.address} />}
               </div>

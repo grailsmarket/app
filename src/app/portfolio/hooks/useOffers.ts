@@ -15,12 +15,14 @@ export const useOffers = () => {
   const { selectedTab } = useAppSelector(selectUserProfile)
   const {
     receivedOffers,
+    totalReceivedOffers,
     isReceivedOffersLoading,
     isReceivedOffersFetchingNextPage,
     fetchMoreReceivedOffers,
     hasMoreReceivedOffers,
   } = useReceivedOffers()
-  const { myOffers, isMyOffersLoading, isMyOffersFetchingNextPage, fetchMoreMyOffers, hasMoreMyOffers } = useMyOffers()
+  const { myOffers, totalMyOffers, isMyOffersLoading, isMyOffersFetchingNextPage, fetchMoreMyOffers, hasMoreMyOffers } =
+    useMyOffers()
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {
@@ -97,5 +99,7 @@ export const useOffers = () => {
     offersLoading,
     fetchMoreOffers,
     hasMoreOffers,
+    totalReceivedOffers,
+    totalMyOffers,
   }
 }

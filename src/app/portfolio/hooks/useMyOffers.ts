@@ -34,6 +34,7 @@ export const useMyOffers = () => {
       if (!userAddress)
         return {
           offers: [],
+          total: 0,
           nextPageParam: pageParam,
           hasNextPage: false,
         }
@@ -48,6 +49,7 @@ export const useMyOffers = () => {
 
       return {
         offers: response.offers,
+        total: response.total,
         nextPageParam: response.nextPageParam,
         hasNextPage: response.hasNextPage,
       }
@@ -57,11 +59,14 @@ export const useMyOffers = () => {
     enabled: !!userAddress && authStatus === 'authenticated',
   })
 
+  const totalMyOffers = myOffers?.pages[0]?.total || 0
+
   return {
     myOffers,
     isMyOffersLoading,
     isMyOffersFetchingNextPage,
     fetchMoreMyOffers,
     hasMoreMyOffers,
+    totalMyOffers,
   }
 }

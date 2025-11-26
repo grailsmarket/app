@@ -14,11 +14,18 @@ import {
 export const useDomains = () => {
   const { selectedTab } = useAppSelector(selectUserProfile)
 
-  const { myDomains, isMyDomainsLoading, isMyDomainsFetchingNextPage, fetchMoreMyDomains, hasMoreMyDomains } =
-    useMyDomains()
+  const {
+    myDomains,
+    totalDomains: totalMyDomains,
+    isMyDomainsLoading,
+    isMyDomainsFetchingNextPage,
+    fetchMoreMyDomains,
+    hasMoreMyDomains,
+  } = useMyDomains()
 
   const {
     watchlistDomains,
+    totalWatchlistDomains,
     isWatchlistDomainsLoading,
     isWatchlistDomainsFetchingNextPage,
     fetchMoreWatchlistDomains,
@@ -100,5 +107,7 @@ export const useDomains = () => {
     domainsLoading,
     fetchMoreDomains,
     hasMoreDomains,
+    totalMyDomains,
+    totalWatchlistDomains,
   }
 }

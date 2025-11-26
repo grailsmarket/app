@@ -783,7 +783,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
             ? (MARKETPLACE_CONDUIT_ADDRESS as `0x${string}`)
             : (SEAPORT_ADDRESS as `0x${string}`)
 
-      console.log('Conduit address:', conduitAddress)
+      // console.log('Conduit address:', conduitAddress)
 
       // Check if Seaport is approved to transfer the NFT
       const isApproved = await publicClient.readContract({
@@ -793,7 +793,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         args: [address, conduitAddress],
       })
 
-      console.log('Is approved:', isApproved)
+      // console.log('Is approved:', isApproved)
 
       setNeedsApproval(!isApproved)
     } catch (err) {

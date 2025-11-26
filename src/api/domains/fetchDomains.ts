@@ -115,6 +115,7 @@ export const fetchDomains = async ({
 
     return {
       domains,
+      total: json.data.pagination.total,
       nextPageParam: json.data.pagination.page + 1,
       hasNextPage: json.data.pagination.hasNext,
     }

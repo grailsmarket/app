@@ -52,6 +52,7 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
 
   return {
     watchlist: data.data.watchlist,
+    total: data.data.pagination.total,
     nextPageParam: data.data.pagination.page + 1,
     hasNextPage: data.data.pagination.hasNext,
   }

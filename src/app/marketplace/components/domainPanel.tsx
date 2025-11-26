@@ -23,14 +23,14 @@ const DomainPanel = () => {
 
   return (
     <div
-      className='sm:pt-lg flex w-full flex-col gap-3 overflow-hidden pt-3 sm:gap-4'
+      className='sm:pt-lg pt-md flex w-full flex-col gap-2 overflow-hidden sm:gap-4'
       style={{
         width: isClient ? (windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%') : '100%',
         maxHeight: isClient
           ? windowWidth && windowWidth < 768
-            ? 'calc(100dvh - 62px)'
+            ? 'calc(100dvh - 56px)'
             : 'calc(100dvh - 80px)'
-          : 'calc(100dvh - 62px)',
+          : 'calc(100dvh - 56px)',
       }}
     >
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
@@ -61,7 +61,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 120px)' : 'calc(100dvh - 90px)'}
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 120px)' : 'calc(100dvh - 84px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom='80px'

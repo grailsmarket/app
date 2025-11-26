@@ -22,8 +22,8 @@ const NamePage: React.FC<Props> = ({ name }) => {
   const isRegistered = registrationStatus === REGISTERED
 
   return (
-    <div className='dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-[74px] sm:pb-4 md:pt-[90px]'>
-      <div className='px-lg sm:px-md flex w-full flex-row justify-between'>
+    <div className='dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-[64px] sm:pb-4 md:pt-[90px]'>
+      <div className='px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
       <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>

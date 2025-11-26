@@ -39,13 +39,13 @@ const DomainPanel = () => {
 
   return (
     <div
-      className='flex flex-col gap-3 sm:gap-4'
+      className='flex flex-col gap-2 sm:gap-4'
       style={{
         width: isClient ? (windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%',
       }}
     >
       <TabSwitcher />
-      <div className='px-sm sm:px-md flex flex-col gap-3 sm:gap-4'>
+      <div className='px-sm sm:px-md flex flex-col gap-2 sm:gap-4'>
         <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
           <div className='flex w-auto items-center gap-2'>
             <button
@@ -74,7 +74,7 @@ const DomainPanel = () => {
           <ViewSelector />
         </div>
         <Domains
-          maxHeight='calc(100dvh - 140px)'
+          maxHeight='calc(100dvh - 126px)'
           domains={domains}
           loadingRowCount={20}
           paddingBottom={selectedTab.value === 'watchlist' ? '300px' : '140px'}

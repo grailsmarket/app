@@ -14,7 +14,7 @@ import SearchIcon from './searchIcon'
 
 const Navigation = () => {
   return (
-    <header className='bg-background border-tertiary app:border-r-2 app:border-l-2 fixed top-0 left-[50%] z-50 mx-auto h-16 w-full max-w-[2340px] -translate-x-1/2 border-b-2 backdrop-blur-md md:h-20'>
+    <header className='bg-background border-tertiary app:border-r-2 app:border-l-2 fixed top-0 left-[50%] z-50 mx-auto h-14 w-full max-w-[2340px] -translate-x-1/2 border-b-2 backdrop-blur-md md:h-18'>
       <nav className='px-md md:px-lg mx-auto flex h-full max-w-[2340px] items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>
@@ -23,7 +23,7 @@ const Navigation = () => {
               alt='Grails Market'
               width={32}
               height={32}
-              className='cursor-pointer transition-all hover:opacity-80 lg:hidden'
+              className='h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 lg:hidden'
             />
             <Image
               src={logo}
@@ -38,8 +38,8 @@ const Navigation = () => {
           </div>
           <Pages className='hidden md:flex' />
         </div>
-        <div className='flex items-center justify-end gap-5'>
-          <div className='flex items-center gap-4'>
+        <div className='flex items-center justify-end gap-3 md:gap-5'>
+          <div className='flex items-center gap-3 md:gap-4'>
             <SearchIcon />
             <Cart />
             <Notifications />

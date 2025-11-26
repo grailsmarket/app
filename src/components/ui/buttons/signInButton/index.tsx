@@ -17,12 +17,14 @@ const SignInButton = () => {
   const isAuthloading = authStatus === 'loading' || authStatusIsLoading || authStatusIsRefetching
 
   return userAddress && isAuthloading ? (
-    <LoadingCell style={{ width: width && width < 768 ? '80px' : '180px', height: '44px' }} />
+    <LoadingCell
+      style={{ width: width && width < 768 ? '80px' : '180px', height: width && width < 768 ? '40px' : '44px' }}
+    />
   ) : (
     <PrimaryButton
       onClick={() => openConnectModal?.()}
       disabled={isSigningIn}
-      className='px-md sm:px-lg flex flex-row items-center gap-2'
+      className='px-md sm:px-lg flex h-9 flex-row items-center gap-2 md:h-11'
     >
       <EthereumIcon className='h-4 w-3! md:h-5' />
       <p className='font-sedan-sc text-lg font-medium md:text-xl'>{isSigningIn ? 'Signing In...' : 'Sign In'}</p>

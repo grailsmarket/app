@@ -50,7 +50,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
       }}
     >
       <div
-        className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-62px)] w-full flex-col gap-2 rounded-md border-t shadow-lg sm:gap-4 md:max-w-xl md:border-2'
+        className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col gap-2 rounded-md border-t shadow-lg sm:gap-4 md:max-w-xl md:border-2'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

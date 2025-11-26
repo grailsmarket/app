@@ -35,7 +35,7 @@ const Verify = () => {
   })
 
   return (
-    <main className='flex min-h-[calc(100dvh-62px)] flex-col items-center justify-center gap-4 md:min-h-[calc(100dvh-78px)]'>
+    <main className='flex min-h-[calc(100dvh-56px)] flex-col items-center justify-center gap-4 md:min-h-[calc(100dvh-78px)]'>
       <h1 className='font-sedan-sc text-4xl'>Verify Email</h1>
       {isVerifyingEmail ? (
         <div className='flex w-full flex-col items-center justify-center gap-4 pt-4'>

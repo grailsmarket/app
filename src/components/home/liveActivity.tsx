@@ -125,7 +125,7 @@ const LiveActivity = () => {
 
       {/* Live Activity Section */}
       <Activity
-        maxHeight={width && width < 1024 ? 'calc(100dvh - 90px)' : 'calc(100dvh - 120px)'}
+        maxHeight={width && width < 1024 ? 'calc(100dvh - 82px)' : 'calc(100dvh - 120px)'}
         activity={allActivities}
         paddingBottom='10px'
         loadingRowCount={16}

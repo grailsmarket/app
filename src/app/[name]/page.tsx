@@ -10,7 +10,6 @@ interface Props {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  console.log(params.name)
   const name = beautifyName(decodeURI(params.name))
 
   return {
@@ -37,7 +36,7 @@ const Name = async (props: Props) => {
   const decodedName = decodeURI(name)
 
   return (
-    <main className='min-h-[calc(100dvh-62px)] w-full sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+    <main className='min-h-[calc(100dvh-56px)] w-full sm:px-4 md:min-h-[calc(100dvh-78px)]'>
       <NamePage name={decodedName} />
     </main>
   )

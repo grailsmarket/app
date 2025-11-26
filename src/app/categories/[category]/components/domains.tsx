@@ -24,7 +24,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
 
   return (
     <>
-      <div className='px-sm md:px-md lg:px-lg md:pt-lg flex w-full items-center justify-between gap-2 pt-3'>
+      <div className='px-sm md:px-md lg:px-lg md:pt-lg pt-md flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
@@ -52,10 +52,10 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100dvh - 100px)'
+        maxHeight='calc(100dvh - 86px)'
         domains={domains}
         loadingRowCount={20}
-        paddingBottom='100px'
+        paddingBottom='120px'
         noResults={!categoryDomainsLoading && domains?.length === 0}
         isLoading={categoryDomainsLoading}
         hasMoreDomains={hasMoreCategoryDomains}

@@ -23,7 +23,7 @@ const Connected = () => {
     <div ref={dropdownWalletRef} className='group relative'>
       <button
         onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
-        className='bg-background border-tertiary p-sm hover:bg-secondary focus:bg-secondary relative flex cursor-pointer items-center gap-2 overflow-hidden rounded-sm border-2 transition-colors hover:border-white/50 focus:border-white/50'
+        className='bg-background border-tertiary pr-sm md:p-sm hover:bg-secondary focus:bg-secondary relative flex h-10 cursor-pointer items-center gap-1 overflow-hidden rounded-sm border-2 transition-colors hover:border-white/50 focus:border-white/50 md:h-12 md:gap-2'
       >
         <HeaderImage
           src={ensProfile?.header || ''}
@@ -34,7 +34,7 @@ const Connected = () => {
           key={ensProfile?.avatar}
           src={ensProfile?.avatar}
           name={ensProfile?.name}
-          className='z-10 h-9 w-9 overflow-hidden rounded-sm'
+          className='z-10 h-9 w-9 overflow-hidden rounded-sm md:h-9 md:w-9'
         />
         <div className='z-10 hidden sm:block'>
           {profileIsLoading ? (
@@ -49,7 +49,7 @@ const Connected = () => {
       </button>
       <div
         className={cn(
-          'bg-secondary p-lg border-tertiary absolute right-0 mt-2 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border text-lg font-semibold shadow-sm sm:w-full sm:items-start md:text-xl',
+          'bg-secondary p-lg border-tertiary absolute right-0 mt-1 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border text-lg font-semibold shadow-sm sm:w-full sm:items-start md:text-xl',
           walletDropdownOpen && 'flex'
         )}
       >
@@ -71,7 +71,7 @@ const Connected = () => {
             href={claimedPoapLink}
             target='_blank'
             onClick={() => setWalletDropdownOpen(false)}
-            className='flex w-full cursor-pointer flex-row-reverse items-center justify-start gap-1.5 rounded-sm px-1 transition-opacity hover:opacity-80 sm:flex-row sm:justify-between sm:gap-2'
+            className='flex w-full cursor-pointer flex-row-reverse items-center justify-start gap-1.5 rounded-sm px-1 transition-opacity hover:opacity-80 sm:flex-row sm:gap-2'
           >
             <p>My POAP</p>
             <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />

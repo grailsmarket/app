@@ -44,7 +44,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       onClick={onClose}
     >
       <div
-        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-scroll rounded-md border-2 md:h-[600px] md:max-h-[600px] md:max-w-xl'
+        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-scroll border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -60,7 +60,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
           <VirtualList
             listHeight={width && width < 768 ? 'calc(100dvh - 150px)' : '520px'}
             ref={virtualListRef}
-            items={isNotificationsLoading ? [...allNotifications, ...Array(6).fill(null)] : [...allNotifications]}
+            items={isNotificationsLoading ? [...allNotifications, ...Array(10).fill(null)] : [...allNotifications]}
             visibleCount={30}
             rowHeight={64}
             overscanCount={20}

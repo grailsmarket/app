@@ -20,6 +20,11 @@ import {
   removeBulkRenewalModalDomain,
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
+import {
+  addTransferModalDomain,
+  removeTransferModalDomain,
+  selectTransferModal,
+} from '@/state/reducers/modals/transferModal'
 import { Check } from 'ethereum-identity-kit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -31,6 +36,7 @@ interface ActionsProps {
   isFirstInRow?: boolean
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
+  isBulkTransferring?: boolean
 }
 
 const Actions: React.FC<ActionsProps> = ({
@@ -39,6 +45,7 @@ const Actions: React.FC<ActionsProps> = ({
   canAddToCart,
   watchlistId,
   isBulkRenewing,
+  isBulkTransferring,
   isFirstInRow,
 }) => {
   const dispatch = useAppDispatch()
@@ -46,6 +53,7 @@ const Actions: React.FC<ActionsProps> = ({
   const { selectedTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
+  const { domains: bulkTransferDomains } = useAppSelector(selectTransferModal)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
 
   const openBuyNowModal = () => {
@@ -115,6 +123,53 @@ const Actions: React.FC<ActionsProps> = ({
                   e.preventDefault()
                   e.stopPropagation()
                   dispatch(addBulkRenewalModalDomain(domain))
+                }}
+              >
+                Select
+              </SecondaryButton>
+            )}
+          </div>
+        )
+      }
+      if (isBulkTransferring) {
+        const isSelected = bulkTransferDomains.some((d) => d.name === domain.name)
+        const isWrapped = domain.owner?.toLowerCase() === '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401'
+        return (
+          <div className='flex flex-row justify-end gap-4 opacity-100'>
+            {isSelected ? (
+              <PrimaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(
+                    removeTransferModalDomain({
+                      name: domain.name,
+                      tokenId: domain.token_id,
+                      owner: domain.owner,
+                      isWrapped,
+                      expiry_date: domain.expiry_date,
+                    })
+                  )
+                }}
+                className='flex flex-row items-center gap-1'
+              >
+                Selected
+                <Check className='h-3 w-3' />
+              </PrimaryButton>
+            ) : (
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(
+                    addTransferModalDomain({
+                      name: domain.name,
+                      tokenId: domain.token_id,
+                      owner: domain.owner,
+                      isWrapped,
+                      expiry_date: domain.expiry_date,
+                    })
+                  )
                 }}
               >
                 Select

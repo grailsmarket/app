@@ -22,6 +22,8 @@ import ExtendModal from '@/components/modal/renewal/extendModal'
 import { selectBulkRenewalModal, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import SettingsModal from '@/components/modal/settings/settingsModal'
 import { useUserContext } from '@/context/user'
+import TransferModal from '@/components/modal/transfer/transferModal'
+import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 
 const Modals: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -50,6 +52,7 @@ const Modals: React.FC = () => {
   const { open: searchModalOpen, query: searchModalQuery } = useAppSelector(selectSearchModal)
   const { open: notificationModalOpen } = useAppSelector(selectNotificationModal)
   const { open: bulkRenewalModalOpen } = useAppSelector(selectBulkRenewalModal)
+  const { open: transferModalOpen, domains: transferModalDomains } = useAppSelector(selectTransferModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
 
   return (
@@ -98,6 +101,14 @@ const Modals: React.FC = () => {
       />
       <NotificationModal isOpen={notificationModalOpen} onClose={() => dispatch(setNotificationModalOpen(false))} />
       {bulkRenewalModalOpen && <ExtendModal onClose={() => dispatch(setBulkRenewalModalOpen(false))} />}
+      {transferModalOpen && (
+        <TransferModal
+          domains={transferModalDomains}
+          onClose={() => {
+            dispatch(setTransferModalOpen(false))
+          }}
+        />
+      )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
     </div>
   )

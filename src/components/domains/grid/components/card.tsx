@@ -21,9 +21,17 @@ interface CardProps {
   isFirstInRow?: boolean
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
+  isBulkTransferring?: boolean
 }
 
-const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkRenewing }) => {
+const Card: React.FC<CardProps> = ({
+  domain,
+  className,
+  isFirstInRow,
+  watchlistId,
+  isBulkRenewing,
+  isBulkTransferring,
+}) => {
   const { address } = useAccount()
   const { filterType, portfolioTab } = useFilterContext()
   const domainIsValid = checkNameValidity(domain.name)
@@ -110,6 +118,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             isFirstInRow={isFirstInRow}
             watchlistId={watchlistId}
             isBulkRenewing={isBulkRenewing}
+            isBulkTransferring={isBulkTransferring}
           />
         </div>
       </div>

@@ -20,6 +20,11 @@ import {
   removeBulkRenewalModalDomain,
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
+import {
+  addTransferModalDomain,
+  removeTransferModalDomain,
+  selectTransferModal,
+} from '@/state/reducers/modals/transferModal'
 import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
 
@@ -30,13 +35,23 @@ interface ActionsProps {
   canAddToCart: boolean
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
+  isBulkTransferring?: boolean
 }
 
-const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, index, watchlistId, isBulkRenewing }) => {
+const Actions: React.FC<ActionsProps> = ({
+  domain,
+  columnCount,
+  canAddToCart,
+  index,
+  watchlistId,
+  isBulkRenewing,
+  isBulkTransferring,
+}) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { filterType } = useFilterContext()
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
+  const { domains: bulkTransferDomains } = useAppSelector(selectTransferModal)
   const { selectedTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
@@ -94,6 +109,52 @@ const Actions: React.FC<ActionsProps> = ({ domain, columnCount, canAddToCart, in
                   e.preventDefault()
                   e.stopPropagation()
                   dispatch(addBulkRenewalModalDomain(domain))
+                }}
+              >
+                Select
+              </SecondaryButton>
+            )}
+          </div>
+        )
+      }
+
+      if (isBulkTransferring) {
+        const isSelected = bulkTransferDomains.some((d) => d.name === domain.name)
+
+        return (
+          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
+            {isSelected ? (
+              <PrimaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(
+                    removeTransferModalDomain({
+                      name: domain.name,
+                      tokenId: domain.token_id,
+                      owner: domain.owner,
+                      expiry_date: domain.expiry_date,
+                    })
+                  )
+                }}
+                className='flex flex-row items-center gap-1'
+              >
+                <p>Selected</p>
+                <Check className='text-background h-3 w-3' />
+              </PrimaryButton>
+            ) : (
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(
+                    addTransferModalDomain({
+                      name: domain.name,
+                      tokenId: domain.token_id,
+                      owner: domain.owner,
+                      expiry_date: domain.expiry_date,
+                    })
+                  )
                 }}
               >
                 Select

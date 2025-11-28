@@ -14,6 +14,12 @@ import {
   setBulkRenewalModalDomains,
   setBulkRenewalModalOpen,
 } from '@/state/reducers/modals/bulkRenewalModal'
+import {
+  selectTransferModal,
+  setTransferModalCanAddDomains,
+  setTransferModalDomains,
+  setTransferModalOpen,
+} from '@/state/reducers/modals/transferModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import React from 'react'
@@ -26,13 +32,14 @@ const ActionButtons = () => {
   const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { canAddDomains, domains: domainsToRenew } = useAppSelector(selectBulkRenewalModal)
+  const { canAddDomains: canTransferDomains, domains: domainsToTransfer } = useAppSelector(selectTransferModal)
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
 
   return (
     <div
       className={cn(
-        'border-tertiary bg-background p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 transition-transform duration-300 lg:justify-between starting:translate-y-full',
+        'border-tertiary bg-background p-md md:p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 transition-transform duration-300 lg:justify-between starting:translate-y-full',
         selectedTab.value === 'domains' || (selectedTab.value === 'watchlist' && !cartIsEmpty) || filtersOpen
           ? 'translate-y-0'
           : 'translate-y-full'
@@ -57,7 +64,15 @@ const ActionButtons = () => {
             Extend
           </PrimaryButton>
         )}
-        {selectedTab.value === 'domains' && (
+        {selectedTab.value === 'domains' && canTransferDomains && (
+          <PrimaryButton
+            onClick={() => dispatch(setTransferModalOpen(true))}
+            disabled={domainsToTransfer?.length === 0}
+          >
+            Transfer
+          </PrimaryButton>
+        )}
+        {selectedTab.value === 'domains' && !canTransferDomains && (
           <SecondaryButton
             onClick={() => {
               if (canAddDomains) {
@@ -70,6 +85,21 @@ const ActionButtons = () => {
             }}
           >
             {canAddDomains ? 'Cancel' : 'Bulk Extend'}
+          </SecondaryButton>
+        )}
+        {selectedTab.value === 'domains' && !canAddDomains && (
+          <SecondaryButton
+            onClick={() => {
+              if (canTransferDomains) {
+                dispatch(setTransferModalDomains([]))
+                dispatch(setTransferModalCanAddDomains(false))
+                return
+              }
+
+              dispatch(setTransferModalCanAddDomains(true))
+            }}
+          >
+            {canTransferDomains ? 'Cancel' : 'Bulk Transfer'}
           </SecondaryButton>
         )}
         {selectedTab.value === 'watchlist' && (

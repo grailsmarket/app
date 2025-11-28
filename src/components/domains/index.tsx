@@ -30,6 +30,7 @@ interface DomainsProps {
   scrollEnabled?: boolean
   showWatchlist?: boolean
   isBulkRenewing?: boolean
+  isBulkTransferring?: boolean
   useLocalScrollTop?: boolean
 }
 
@@ -50,6 +51,7 @@ const Domains: React.FC<DomainsProps> = ({
   scrollEnabled = true,
   showWatchlist = false,
   isBulkRenewing = false,
+  isBulkTransferring = false,
   useLocalScrollTop = false,
 }) => {
   const { viewType } = useAppSelector(selectMarketplaceDomains)
@@ -89,7 +91,7 @@ const Domains: React.FC<DomainsProps> = ({
 
     if (width >= 2340) return 2340 - 340
     if (width < 768) return width - 12
-    if (width < 1024) return width - 38
+    if (width < 1024) return width - 36
 
     // Account for sidebar (280px) and padding
     return width - (width < 1024 ? 48 : 344)
@@ -145,6 +147,7 @@ const Domains: React.FC<DomainsProps> = ({
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
                     isBulkRenewing={isBulkRenewing}
+                    isBulkTransferring={isBulkTransferring}
                   />
                 )
               }}
@@ -179,6 +182,7 @@ const Domains: React.FC<DomainsProps> = ({
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
                     isBulkRenewing={isBulkRenewing}
+                    isBulkTransferring={isBulkTransferring}
                   />
                 )
               }}

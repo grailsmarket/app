@@ -10,6 +10,7 @@ import cancelListingModal from './cancelListingModal'
 import buyNowModal from './buyNowModal'
 import notificationModal from './notificationModal'
 import bulkRenewalModal from './bulkRenewalModal'
+import transferModal from './transferModal'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
@@ -22,6 +23,7 @@ const modalReducer = combineReducers({
   buyNowReducer: buyNowModal,
   notificationReducer: notificationModal,
   bulkRenewalReducer: bulkRenewalModal,
+  transferReducer: transferModal,
 })
 
 export default modalReducer

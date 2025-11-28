@@ -15,6 +15,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useUserContext } from '@/context/user'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { selectBulkRenewalModal } from '@/state/reducers/modals/bulkRenewalModal'
+import { selectTransferModal } from '@/state/reducers/modals/transferModal'
 
 const DomainPanel = () => {
   const isClient = useIsClient()
@@ -26,6 +27,7 @@ const DomainPanel = () => {
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, displayedDetails } = useDomains()
   const isAtBottom = useScrollToBottom({ threshold: 30 })
   const { canAddDomains } = useAppSelector(selectBulkRenewalModal)
+  const { canAddDomains: canTransferDomains } = useAppSelector(selectTransferModal)
 
   const disconnectMessage = {
     domains: 'Sign in to view your domains.',
@@ -91,6 +93,7 @@ const DomainPanel = () => {
           scrollEnabled={isAtBottom}
           showWatchlist={selectedTab.value === 'watchlist'}
           isBulkRenewing={selectedTab.value === 'domains' && canAddDomains}
+          isBulkTransferring={selectedTab.value === 'domains' && canTransferDomains}
         />
       </div>
     </div>

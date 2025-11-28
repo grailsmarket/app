@@ -27,7 +27,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   label,
   align,
   showTooltip = true,
-  showOnMobile = false,
+  showOnMobile = true,
 }) => {
   const { setTooltipHovered, tooltipHovered, tooltipStyle, pointStyle } = useTooltip({
     padding,

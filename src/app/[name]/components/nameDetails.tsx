@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 import React, { ReactNode, useState } from 'react'
 import { Address, numberToHex } from 'viem'
@@ -23,8 +25,10 @@ import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/category
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useAppDispatch } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import SecondaryButton from '@/components/ui/buttons/secondary'
 
 type Row = {
   label: string
@@ -127,8 +131,9 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
   ]
 
   const dispatch = useAppDispatch()
-  const { userAddress } = useUserContext()
+  const { userAddress, authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
+
   const openExtendNameModal = () => {
     if (!userAddress) {
       openConnectModal?.()
@@ -137,6 +142,27 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     if (!nameDetails) return
     dispatch(setBulkRenewalModalDomains([nameDetails]))
     dispatch(setBulkRenewalModalOpen(true))
+  }
+
+  const openTransferModal = () => {
+    if (!userAddress || authStatus !== 'authenticated') {
+      openConnectModal?.()
+      return
+    }
+
+    if (!nameDetails) return
+
+    dispatch(
+      setTransferModalDomains([
+        {
+          name: nameDetails.name,
+          tokenId: nameDetails.token_id,
+          owner: nameDetails.owner,
+          expiry_date: nameDetails.expiry_date,
+        },
+      ])
+    )
+    dispatch(setTransferModalOpen(true))
   }
 
   return (
@@ -164,7 +190,15 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
           </div>
         ))}
         <div className='flex w-full flex-col gap-2'>
-          {/* <SecondaryButton onClick={openTransferModal} className='w-full text-md h-8!'>Transfer</SecondaryButton> */}
+          {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+            <SecondaryButton
+              onClick={openTransferModal}
+              className='text-md h-8! w-full'
+              disabled={authStatus !== 'authenticated'}
+            >
+              Transfer
+            </SecondaryButton>
+          )}
           <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
             Extend Registration
           </PrimaryButton>

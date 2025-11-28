@@ -14,6 +14,17 @@ import Price from '@/components/ui/price'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { useFilterContext } from '@/context/filters'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import {
+  removeTransferModalDomain,
+  addTransferModalDomain,
+  selectTransferModal,
+} from '@/state/reducers/modals/transferModal'
+import {
+  removeBulkRenewalModalDomain,
+  addBulkRenewalModalDomain,
+  selectBulkRenewalModal,
+} from '@/state/reducers/modals/bulkRenewalModal'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -21,22 +32,65 @@ interface CardProps {
   isFirstInRow?: boolean
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
+  isBulkTransferring?: boolean
 }
 
-const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkRenewing }) => {
+const Card: React.FC<CardProps> = ({
+  domain,
+  className,
+  isFirstInRow,
+  watchlistId,
+  isBulkRenewing,
+  isBulkTransferring,
+}) => {
   const { address } = useAccount()
+  const dispatch = useAppDispatch()
   const { filterType, portfolioTab } = useFilterContext()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
   const domainListing = domain.listings[0]
+  const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
+  const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
+  const isBulkAction = isBulkRenewing || isBulkTransferring
 
   return (
     <Link
       href={`/${domain.name}`}
+      onClick={(e) => {
+        if (isBulkAction) {
+          e.preventDefault()
+          e.stopPropagation()
+
+          if (isBulkTransferring) {
+            const domainItem = {
+              name: domain.name,
+              tokenId: domain.token_id,
+              owner: domain.owner,
+              expiry_date: domain.expiry_date,
+            }
+
+            if (transferModalDomains.some((d) => d.name === domain.name)) {
+              dispatch(removeTransferModalDomain(domainItem))
+            } else {
+              dispatch(addTransferModalDomain(domainItem))
+            }
+          } else if (isBulkRenewing) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            if (bulkRenewalDomains.some((d) => d.name === domain.name)) {
+              dispatch(removeBulkRenewalModalDomain(domain))
+            } else {
+              dispatch(addBulkRenewalModalDomain(domain))
+            }
+          }
+        }
+      }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-80 transition hover:opacity-100',
+        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 md:opacity-80 transition hover:opacity-100',
         !domainIsValid && 'pointer-events-none opacity-40',
+        isBulkAction ? 'hover:bg-primary/10' : 'hover:bg-foreground/10',
         className
       )}
     >
@@ -59,7 +113,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
           </div>
         )}
       </div>
-      <div className='p-lg flex w-full flex-1 flex-col justify-between gap-1'>
+      <div className={cn('p-lg flex w-full flex-1 flex-col justify-between gap-1', isBulkAction && 'pointer-events-none')}>
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
             <p className='text-md truncate font-semibold text-yellow-500'>Grace Period</p>
@@ -110,6 +164,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             isFirstInRow={isFirstInRow}
             watchlistId={watchlistId}
             isBulkRenewing={isBulkRenewing}
+            isBulkTransferring={isBulkTransferring}
           />
         </div>
       </div>

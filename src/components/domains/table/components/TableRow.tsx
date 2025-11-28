@@ -138,7 +138,7 @@ const TableRow: React.FC<TableRowProps> = ({
         isBulkAction ? 'hover:bg-primary/10' : 'hover:bg-foreground/10'
       )}
     >
-      <div className={cn('flex flex-row w-full items-center justify-between h-full', isBulkAction ? 'pointer-events-none md:pointer-events-auto' : '')}>{displayedColumns.map((column) => columns[column])}</div>
+      <div className={cn('flex flex-row w-full items-center justify-between h-full', isBulkAction && 'pointer-events-none')}>{displayedColumns.map((column) => columns[column])}</div>
     </Link>
   )
 }

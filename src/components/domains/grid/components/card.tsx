@@ -113,7 +113,7 @@ const Card: React.FC<CardProps> = ({
           </div>
         )}
       </div>
-      <div className={cn('p-lg flex w-full flex-1 flex-col justify-between gap-1', isBulkAction && 'pointer-events-none md:pointer-events-auto')}>
+      <div className={cn('p-lg flex w-full flex-1 flex-col justify-between gap-1', isBulkAction && 'pointer-events-none')}>
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
             <p className='text-md truncate font-semibold text-yellow-500'>Grace Period</p>

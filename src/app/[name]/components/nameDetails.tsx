@@ -152,16 +152,12 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
 
     if (!nameDetails) return
 
-    // Check if the domain is wrapped
-    const isWrapped = nameDetails.owner?.toLowerCase() === '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401'
-
     dispatch(
       setTransferModalDomains([
         {
           name: nameDetails.name,
           tokenId: nameDetails.token_id,
           owner: nameDetails.owner,
-          isWrapped,
           expiry_date: nameDetails.expiry_date,
         },
       ])

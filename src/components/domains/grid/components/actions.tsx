@@ -133,7 +133,6 @@ const Actions: React.FC<ActionsProps> = ({
       }
       if (isBulkTransferring) {
         const isSelected = bulkTransferDomains.some((d) => d.name === domain.name)
-        const isWrapped = domain.owner?.toLowerCase() === '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401'
         return (
           <div className='flex flex-row justify-end gap-4 opacity-100'>
             {isSelected ? (
@@ -146,7 +145,6 @@ const Actions: React.FC<ActionsProps> = ({
                       name: domain.name,
                       tokenId: domain.token_id,
                       owner: domain.owner,
-                      isWrapped,
                       expiry_date: domain.expiry_date,
                     })
                   )
@@ -166,7 +164,6 @@ const Actions: React.FC<ActionsProps> = ({
                       name: domain.name,
                       tokenId: domain.token_id,
                       owner: domain.owner,
-                      isWrapped,
                       expiry_date: domain.expiry_date,
                     })
                   )
@@ -241,7 +238,7 @@ const Actions: React.FC<ActionsProps> = ({
       )}
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
+          <div onClick={(e) => clickHandler(e, () => { })} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'

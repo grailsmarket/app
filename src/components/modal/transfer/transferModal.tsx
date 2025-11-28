@@ -101,14 +101,22 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       setTxHashes(hashes.map((hash, index) => ({ name: domains[index].name, hash }))) // Store the first transaction hash
       setStep('processing')
 
+      const erroredNames = []
       // Wait for all transactions
       await Promise.all(
-        hashes.map((hash) =>
-          publicClient.waitForTransactionReceipt({
+        hashes.map(async (hash, index) => {
+          const receipt = await publicClient.waitForTransactionReceipt({
             hash,
-            confirmations: 1,
           })
-        )
+
+          console.log('receipt', receipt)
+
+          if (receipt.status !== 'success') {
+            erroredNames.push(domains[index].name ?? 'one of the names')
+          }
+
+          return receipt
+        })
       )
 
       setStep('success')
@@ -117,7 +125,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
           queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
         })
         queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
-      }, 1000)
+      }, 2000)
     } catch (error) {
       console.error('Transfer error:', error)
       setError((error as Error).message)
@@ -182,9 +190,6 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               {error && !isResolving && <p className='text-sm text-red-500'>{error}</p>}
             </div>
             <div className='flex flex-col gap-2'>
-              <SecondaryButton onClick={onClose} className='w-full'>
-                Cancel
-              </SecondaryButton>
               <PrimaryButton
                 onClick={handleTransfer}
                 disabled={!account?.address || isResolving || !!error}
@@ -192,6 +197,9 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               >
                 Transfer
               </PrimaryButton>
+              <SecondaryButton onClick={onClose} className='w-full'>
+                Cancel
+              </SecondaryButton>
             </div>
           </>
         )

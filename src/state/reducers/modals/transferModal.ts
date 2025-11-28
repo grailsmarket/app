@@ -5,7 +5,6 @@ export type TransferDomainType = {
   name: string
   tokenId: string
   owner?: string | null
-  isWrapped?: boolean
   expiry_date?: string | null
 }
 

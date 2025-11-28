@@ -117,9 +117,10 @@ const Actions: React.FC<ActionsProps> = ({
           </div>
         )
       }
+
       if (isBulkTransferring) {
         const isSelected = bulkTransferDomains.some((d) => d.name === domain.name)
-        const isWrapped = domain.owner?.toLowerCase() === '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401'
+
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
             {isSelected ? (
@@ -132,7 +133,6 @@ const Actions: React.FC<ActionsProps> = ({
                       name: domain.name,
                       tokenId: domain.token_id,
                       owner: domain.owner,
-                      isWrapped,
                       expiry_date: domain.expiry_date,
                     })
                   )
@@ -152,7 +152,6 @@ const Actions: React.FC<ActionsProps> = ({
                       name: domain.name,
                       tokenId: domain.token_id,
                       owner: domain.owner,
-                      isWrapped,
                       expiry_date: domain.expiry_date,
                     })
                   )

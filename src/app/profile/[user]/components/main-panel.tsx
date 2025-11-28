@@ -30,7 +30,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       <FilterProvider filterType='profile' profileTab={profileTab}>
         <div className='w-full'>
           <div className='z-10 w-full'>
-            <div className='lg:pl-md bg-background border-tertiary relative flex h-[calc(100dvh-56px)] w-full gap-0 overflow-hidden border-t-2 md:h-[calc(100dvh-70px)]'>
+            <div className='lg:pl-md bg-background border-tertiary relative flex h-[calc(100dvh-52px)] w-full gap-0 overflow-hidden border-t-2 md:h-[calc(100dvh-70px)]'>
               <FilterPanel />
               <div className='bg-tertiary ml-2 hidden h-full w-0.5 lg:block' />
               <div

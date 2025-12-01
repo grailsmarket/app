@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { Address, Hex } from 'viem'
+import { MarketplaceDomainType } from '@/types/domains'
 
 export type RegistrationFlowState = 'review' | 'committing' | 'waiting' | 'registering' | 'success' | 'error'
 export type RegistrationMode = 'register_for' | 'register_to'
@@ -8,6 +9,7 @@ export type TimeUnit = 'days' | 'weeks' | 'months' | 'years'
 
 export interface RegistrationModalState {
   name: string | null
+  domain: MarketplaceDomainType | null
   isOpen: boolean
   flowState: RegistrationFlowState
   secret: Address | null
@@ -27,6 +29,7 @@ export interface RegistrationModalState {
 
 const initialState: RegistrationModalState = {
   name: null,
+  domain: null,
   isOpen: false,
   flowState: 'review',
   secret: null,
@@ -47,8 +50,9 @@ const registrationSlice = createSlice({
   name: 'registration',
   initialState,
   reducers: {
-    openRegistrationModal: (state, action: PayloadAction<{ name: string }>) => {
+    openRegistrationModal: (state, action: PayloadAction<{ name: string; domain: MarketplaceDomainType }>) => {
       state.name = action.payload.name
+      state.domain = action.payload.domain
       state.isOpen = true
       // Don't reset other settings to allow resuming interrupted registrations
       if (state.flowState === 'success' || state.flowState === 'error') {

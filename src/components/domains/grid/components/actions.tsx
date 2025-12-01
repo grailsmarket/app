@@ -28,6 +28,7 @@ import {
 import { Check } from 'ethereum-identity-kit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
+import { openRegistrationModal } from '@/state/reducers/registration'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -215,9 +216,7 @@ const Actions: React.FC<ActionsProps> = ({
     >
       {registrationStatus === UNREGISTERED ? (
         <button
-          onClick={(e) =>
-            clickHandler(e, () => window.open(`https://app.ens.domains/${domain.name}/register`, '_blank'))
-          }
+          onClick={(e) => clickHandler(e, () => dispatch(openRegistrationModal({ name: domain.name, domain: domain })))}
         >
           <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Register

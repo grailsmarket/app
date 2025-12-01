@@ -9,6 +9,7 @@ import { modifyCart } from '@/api/cart/modifyCart'
 import {
   addModifyingCartTokenId,
   addToCartRegisteredDomains,
+  addToCartUnregisteredDomains,
   clearMarketplaceDomainsCart,
   removeFromMarketplaceDomainsCart,
   removeModifyingCartTokenId,
@@ -51,7 +52,11 @@ const useModifyCart = () => {
         if (data.inCart) {
           dispatch(removeFromMarketplaceDomainsCart([data.cartItem.name]))
         } else {
-          dispatch(addToCartRegisteredDomains([data.cartItem]))
+          if (data.cartType === 'sales') {
+            dispatch(addToCartRegisteredDomains([data.cartItem]))
+          } else {
+            dispatch(addToCartUnregisteredDomains([data.cartItem]))
+          }
         }
       }, 10)
     },

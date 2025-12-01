@@ -77,7 +77,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <PrimaryButton
             onClick={() => {
               if (nameDetails?.name && nameDetails?.name.length > 0) {
-                dispatch(openRegistrationModal({ name: nameDetails?.name || '' }))
+                dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
               } else {
                 window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
               }
@@ -103,7 +103,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
         <PrimaryButton
           onClick={() => {
             if (name && name.length > 0) {
-              dispatch(openRegistrationModal({ name: name || '' }))
+              dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
             } else {
               window.open(`https://app.ens.domains/${name}/register`, '_blank')
             }

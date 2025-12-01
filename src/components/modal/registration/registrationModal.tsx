@@ -37,12 +37,15 @@ import { beautifyName } from '@/lib/ens'
 import { useQueryClient } from '@tanstack/react-query'
 import { Hex } from 'viem'
 import { useIsClient } from 'ethereum-identity-kit'
+import useModifyCart from '@/hooks/useModifyCart'
+import Link from 'next/link'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
 const RegistrationModal: React.FC = () => {
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
+  const { modifyCart } = useModifyCart()
   const registrationState = useAppSelector(selectRegistration)
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
@@ -139,12 +142,13 @@ const RegistrationModal: React.FC = () => {
     if (
       !registrationState.isOpen &&
       registrationState.name &&
+      registrationState.domain &&
       registrationState.flowState !== 'review' &&
       registrationState.flowState !== 'success' &&
       registrationState.flowState !== 'error'
     ) {
       console.log('Restoring in-progress registration for:', registrationState.name)
-      dispatch(openRegistrationModal({ name: registrationState.name }))
+      dispatch(openRegistrationModal({ name: registrationState.name, domain: registrationState.domain }))
     }
   }, [registrationState, dispatch])
 
@@ -181,9 +185,6 @@ const RegistrationModal: React.FC = () => {
     const priceUSD = calculateDomainPriceUSD(registrationState.name, durationYears)
     const priceETH = ethPrice ? priceUSD / ethPrice : 0
 
-    // Store the calculated duration in Redux for persistence
-    dispatch(setCalculatedDuration(durationBigInt.toString()))
-
     return {
       durationSeconds: durationBigInt,
       durationYears,
@@ -191,16 +192,14 @@ const RegistrationModal: React.FC = () => {
       priceETH,
       isBelowMinimum: durationSeconds < MIN_REGISTRATION_DURATION,
     }
-  }, [
-    registrationState.name,
-    registrationMode,
-    quantity,
-    timeUnit,
-    customDuration,
-    ethPrice,
-    calculateDomainPriceUSD,
-    dispatch,
-  ])
+  }, [registrationState.name, registrationMode, quantity, timeUnit, customDuration, ethPrice, calculateDomainPriceUSD])
+
+  // Store calculated duration in Redux for persistence
+  useEffect(() => {
+    if (calculationResults) {
+      dispatch(setCalculatedDuration(calculationResults.durationSeconds.toString()))
+    }
+  }, [calculationResults, dispatch])
 
   const gasEstimate = useMemo(() => {
     return BigInt(300000)
@@ -278,16 +277,8 @@ const RegistrationModal: React.FC = () => {
   }
 
   const checkForExistingCommitment = async () => {
-    console.log(
-      'checkForExistingCommitment',
-      registrationState.flowState,
-      registrationState.name,
-      address,
-      secret,
-      calculationResults
-    )
-    // Only check if we're in review state and have all required data
-    if (!registrationState.name || !address || !secret || !calculationResults) {
+    // Only check if we have all required data
+    if (!registrationState.name || !registrationState.domain || !address || !secret || !calculationResults) {
       return
     }
 
@@ -298,13 +289,18 @@ const RegistrationModal: React.FC = () => {
         confirmations: 1,
       })
 
-      if (receipt?.status !== 'success') {
-        throw new Error('Registration transaction failed')
-      }
+      console.log('receipt', receipt)
 
-      dispatch(setRegistrationFlowState('success'))
-      refetchQueries()
-      return
+      if (receipt?.status !== 'reverted') {
+        if (receipt?.status !== 'success') {
+          throw new Error('Registration transaction failed')
+        }
+
+        dispatch(setRegistrationFlowState('success'))
+        refetchQueries()
+        modifyCart({ domain: registrationState.domain, inCart: true, cartType: 'registrations' })
+        return
+      }
     }
 
     const existingCommitment = await checkExistingCommitment()
@@ -325,7 +321,7 @@ const RegistrationModal: React.FC = () => {
     dispatch(setRegistrationFlowState('review'))
   }
 
-  // Check for existing valid commitment when reloaded or when critical parameters change (address, secret, name)
+  // Check for existing valid commitment when reloaded or when critical parameters change (address, name)
   useEffect(() => {
     checkForExistingCommitment()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- we want to check when relevant registration parameters change
@@ -376,6 +372,12 @@ const RegistrationModal: React.FC = () => {
         confirmations: 1,
       })
 
+      if (receipt?.status === 'reverted') {
+        dispatch(setRegistrationFlowState('error'))
+        dispatch(setRegistrationError('Commitment transaction failed'))
+        throw new Error('Commitment transaction failed')
+      }
+
       if (receipt?.status !== 'success') {
         throw new Error('Commitment transaction failed')
       }
@@ -396,7 +398,15 @@ const RegistrationModal: React.FC = () => {
       calculationResults?.durationSeconds ||
       (registrationState.calculatedDuration ? BigInt(registrationState.calculatedDuration) : null)
 
-    if (!address || !registrationState.name || !duration || !secret || !registrationState.commitmentHash) return
+    if (
+      !address ||
+      !registrationState.name ||
+      !duration ||
+      !secret ||
+      !registrationState.commitmentHash ||
+      !registrationState.domain
+    )
+      return
 
     dispatch(setRegistrationFlowState('registering'))
 
@@ -428,11 +438,18 @@ const RegistrationModal: React.FC = () => {
         confirmations: 1,
       })
 
+      if (receipt?.status === 'reverted') {
+        dispatch(setRegistrationFlowState('error'))
+        dispatch(setRegistrationError('Registration transaction failed'))
+        throw new Error('Registration transaction failed')
+      }
+
       if (receipt?.status !== 'success') {
         throw new Error('Registration transaction failed')
       }
 
       dispatch(setRegistrationFlowState('success'))
+      modifyCart({ domain: registrationState.domain, inCart: true, cartType: 'registrations' })
       refetchQueries()
     } catch (error: any) {
       console.error('Failed to register:', error)
@@ -506,7 +523,7 @@ const RegistrationModal: React.FC = () => {
           <div className='flex flex-col items-center gap-4'>
             <div className='flex flex-col items-center gap-4 text-center'>
               <h3 className='text-2xl font-bold'>Registration Successful!</h3>
-              <div className='flex justify-center py-1'>
+              <Link href={`/${registrationState.name}`} className='py-1' onClick={handleClose}>
                 <NameImage
                   name={registrationState.name}
                   tokenId={registrationState.name.replace('.eth', '')}
@@ -515,7 +532,7 @@ const RegistrationModal: React.FC = () => {
                   height={192}
                   width={192}
                 />
-              </div>
+              </Link>
               {registrationState.registerTxHash && (
                 <a
                   href={`https://etherscan.io/tx/${registrationState.registerTxHash}`}
@@ -701,9 +718,9 @@ const RegistrationModal: React.FC = () => {
                 <PrimaryButton onClick={() => setShowDatePicker(true)} className='w-full'>
                   {customDuration
                     ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
                     : 'Select Date'}
                 </PrimaryButton>
                 {showDatePicker && (

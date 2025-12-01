@@ -255,7 +255,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           <>
             {/* Header with close button */}
             <div className='z-10 flex min-h-6 items-center justify-center pb-2'>
-              <h2 className='font-sedan-sc text-center text-3xl'>Extend Names</h2>
+              <h2 className='font-sedan-sc text-center text-3xl'>Extend Name{domains.length > 1 ? 's' : ''}</h2>
               {/* <Cross
               onClick={onClose}
               className='h-4 w-4 cursor-pointer opacity-70 hover:opacity-100'
@@ -325,9 +325,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                      new Date(domain.expiry_date).getTime() +
-                                        quantity * getSecondsPerUnit(timeUnit) * 1000
-                                    ).toLocaleDateString()
+                                    new Date(domain.expiry_date).getTime() +
+                                    quantity * getSecondsPerUnit(timeUnit) * 1000
+                                  ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>

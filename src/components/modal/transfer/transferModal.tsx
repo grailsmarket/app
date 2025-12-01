@@ -319,7 +319,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         }}
         className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-4 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2 md:p-6'
       >
-        <h2 className='font-sedan-sc min-h-6 text-center text-3xl'>Transfer Name</h2>
+        <h2 className='font-sedan-sc min-h-6 text-center text-3xl'>Transfer Name{domains.length > 1 ? 's' : ''}</h2>
         {renderContent()}
       </div>
     </div>

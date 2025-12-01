@@ -104,7 +104,7 @@ const Cart = () => {
           )}
           {cartIsEmpty && <NoResults label='No Grails in your cart' height='calc(100vh - 110px)' />}
         </div>
-        <div className='border-tertiary bg-background p-md md:p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 lg:justify-between'>
+        <div className='border-tertiary bg-background px-md md:px-lg absolute right-0 bottom-0 z-20 flex h-16 w-full flex-row items-center justify-end rounded-b-lg border-t-2 lg:justify-between'>
           <div className='flex w-fit flex-row gap-x-2'>
             <SecondaryButton onClick={handleClearCart} disabled={cartIsEmpty}>
               Clear Cart

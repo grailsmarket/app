@@ -18,11 +18,16 @@ interface Props {
 const NamePage: React.FC<Props> = ({ name }) => {
   const { nameDetails, nameDetailsIsLoading, nameOffers, nameOffersIsLoading } = useName(name)
 
-  const registrationStatus = nameDetails ? getRegistrationStatus(nameDetails.expiry_date) : UNREGISTERED
+  const isSubname = name.split('.').length > 2
+  const registrationStatus = nameDetails
+    ? isSubname
+      ? REGISTERED
+      : getRegistrationStatus(nameDetails.expiry_date)
+    : UNREGISTERED
   const isRegistered = registrationStatus === REGISTERED
 
   return (
-    <div className='dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-[64px] sm:pb-4 md:pt-[90px]'>
+    <div className='dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-[64px] sm:pb-4 md:pt-[82px]'>
       <div className='px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
@@ -33,6 +38,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             nameDetails={nameDetails}
             nameDetailsIsLoading={nameDetailsIsLoading}
             registrationStatus={registrationStatus}
+            isSubname={isSubname}
           />
         </div>
         <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>

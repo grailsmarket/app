@@ -88,7 +88,7 @@ const Card: React.FC<CardProps> = ({
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 md:opacity-80 transition hover:opacity-100',
+        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition hover:opacity-100 md:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
         isBulkAction ? 'hover:bg-primary/10' : 'hover:bg-foreground/10',
         className
@@ -113,7 +113,9 @@ const Card: React.FC<CardProps> = ({
           </div>
         )}
       </div>
-      <div className={cn('p-lg flex w-full flex-1 flex-col justify-between gap-1', isBulkAction && 'pointer-events-none')}>
+      <div
+        className={cn('p-lg flex w-full flex-1 flex-col justify-between gap-1', isBulkAction && 'pointer-events-none')}
+      >
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
             <p className='text-md truncate font-semibold text-yellow-500'>Grace Period</p>

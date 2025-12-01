@@ -21,6 +21,7 @@ import {
   setCancelOfferModalOffer,
   setCancelOfferModalOpen,
 } from '@/state/reducers/modals/cancelOfferModal'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 interface OffersProps {
   domain?: MarketplaceDomainType
@@ -31,6 +32,7 @@ interface OffersProps {
 const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   const dispatch = useAppDispatch()
   const { address: userAddress } = useAccount()
+  const { openConnectModal } = useConnectModal()
   const [viewAll, setViewAll] = useState(false)
   const showViewAllButton = offers.length > 2
   const displayedOffers = viewAll ? offers : offers.slice(0, 2)
@@ -40,6 +42,8 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   )
 
   const openOfferModal = () => {
+    if (!userAddress) return openConnectModal?.()
+
     if (!domain) return
     dispatch(setMakeOfferModalOpen(true))
     dispatch(setMakeOfferModalDomain(domain))

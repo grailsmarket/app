@@ -5,6 +5,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setBuyNowModalDomain, setBuyNowModalOpen, setBuyNowModalListing } from '@/state/reducers/modals/buyNowModal'
 import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { openRegistrationModal } from '@/state/reducers/registration'
 
 interface ActionButtonsProps {
   domain: MarketplaceDomainType
@@ -27,6 +28,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
     dispatch(setMakeOfferModalOpen(true))
   }
 
+  const openRegistrationModalHandler = () => {
+    if (!domain.name || !domain) return
+    dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
+  }
+
   const clickHandler = (e: React.MouseEvent, handler: () => void) => {
     e.preventDefault()
     e.stopPropagation()
@@ -35,10 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   if (registrationStatus === UNREGISTERED) {
     return (
-      <PrimaryButton
-        onClick={(e) => clickHandler(e, () => window.open(`https://app.ens.domains/${domain.name}/register`, '_blank'))}
-        className='w-24'
-      >
+      <PrimaryButton onClick={(e) => clickHandler(e, openRegistrationModalHandler)} className='w-24'>
         Register
       </PrimaryButton>
     )
@@ -54,7 +57,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   return (
     <PrimaryButton
-      className={`h-14 w-20 cursor-pointer rounded-sm p-1.5 sm:w-24 md:h-16`}
+      className={`w-20 cursor-pointer rounded-sm sm:w-24`}
       onClick={(e) => clickHandler(e, openMakeOfferModal)}
     >
       Offer

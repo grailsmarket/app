@@ -14,6 +14,7 @@ export type CartDomainType = MarketplaceDomainType & {
 export type CartUnregisteredDomainType = CartDomainType & {
   registrationPeriod?: number
 }
+
 export type CartRegisteredDomainType = CartDomainType & {
   offerValue?: number
 }

@@ -15,6 +15,7 @@ import {
   GRACE_PERIOD,
   UNREGISTERED,
   REGISTERED,
+  REGISTERED_STATUSES,
 } from '@/constants/domains/registrationStatuses'
 import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
@@ -38,12 +39,19 @@ type Row = {
 
 interface NameDetailsProps {
   name: string
-  nameDetails: MarketplaceDomainType | undefined
+  nameDetails?: MarketplaceDomainType | null
   nameDetailsIsLoading: boolean
   registrationStatus: RegistrationStatus
+  isSubname: boolean
 }
 
-const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetailsIsLoading, registrationStatus }) => {
+const NameDetails: React.FC<NameDetailsProps> = ({
+  name,
+  nameDetails,
+  nameDetailsIsLoading,
+  registrationStatus,
+  isSubname,
+}) => {
   const rows: Row[] = [
     {
       label: 'Name',
@@ -165,6 +173,8 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
     dispatch(setTransferModalOpen(true))
   }
 
+  const isOwner = userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase()
+
   return (
     <div className='flex flex-col'>
       <div className='bg-tertiary h-fit w-full'>
@@ -179,30 +189,39 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
       <div className='p-lg lg:p-xl flex flex-col items-center gap-3'>
-        {rows.map((row) => (
-          <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
-            <p className='font-sedan-sc text-2xl'>{row.label}</p>
-            {typeof row.value === 'string' ? (
-              <CopyValue value={row.value} canCopy={row.canCopy} />
-            ) : (
-              <div className='max-w-2/3'>{row.value}</div>
+        {rows.map((row) => {
+          // Subnames don't have a status
+          if (isSubname && row.label === 'Status') return null
+
+          return (
+            <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
+              <p className='font-sedan-sc text-2xl'>{row.label}</p>
+              {typeof row.value === 'string' ? (
+                <CopyValue value={row.value} canCopy={row.canCopy} />
+              ) : (
+                <div className='max-w-2/3'>{row.value}</div>
+              )}
+            </div>
+          )
+        })}
+        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
+          <div className='flex w-full flex-col gap-2'>
+            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+              <SecondaryButton
+                onClick={openTransferModal}
+                className='text-md h-8! w-full'
+                disabled={authStatus !== 'authenticated'}
+              >
+                Transfer
+              </SecondaryButton>
+            )}
+            {!isSubname && (
+              <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
+                Extend Registration
+              </PrimaryButton>
             )}
           </div>
-        ))}
-        <div className='flex w-full flex-col gap-2'>
-          {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
-            <SecondaryButton
-              onClick={openTransferModal}
-              className='text-md h-8! w-full'
-              disabled={authStatus !== 'authenticated'}
-            >
-              Transfer
-            </SecondaryButton>
-          )}
-          <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
-            Extend Registration
-          </PrimaryButton>
-        </div>
+        )}
       </div>
     </div>
   )

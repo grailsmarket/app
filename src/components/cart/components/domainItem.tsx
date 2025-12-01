@@ -64,7 +64,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
       <div className='flex w-fit flex-row items-center justify-end gap-2 sm:w-[30%]'>
         <ActionButtons domain={domain} registrationStatus={registrationStatus} />
         <Trash
-          className='text-neutral hover:text-foreground border-neutral hover:border-foreground box-border h-[36px] w-[36px] cursor-pointer rounded-sm border p-2.5 transition-all duration-300 md:h-[38px] md:w-[38px]'
+          className='text-neutral hover:text-foreground border-neutral hover:border-foreground box-border h-9 w-9 cursor-pointer rounded-sm border p-2.5 transition-all duration-300 md:h-10 md:w-10'
           onClick={() =>
             modifyCart({
               domain,

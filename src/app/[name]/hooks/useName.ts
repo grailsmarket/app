@@ -5,14 +5,21 @@ import { useQuery } from '@tanstack/react-query'
 export const useName = (name: string) => {
   const { data: nameDetails, isLoading: nameDetailsIsLoading } = useQuery({
     queryKey: ['name', 'details', name],
-    queryFn: async () => await fetchNameDetails(name),
+    queryFn: async () => {
+      const details = await fetchNameDetails(name)
+      return details
+    },
     enabled: !!name,
     refetchOnWindowFocus: true,
+    refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
 
   const { data: nameOffers, isLoading: nameOffersIsLoading } = useQuery({
     queryKey: ['name', 'offers', name],
-    queryFn: async () => await fetchNameOffers(name),
+    queryFn: async () => {
+      const offers = await fetchNameOffers(name)
+      return offers
+    },
     enabled: !!name,
     refetchOnWindowFocus: true,
   })

@@ -238,7 +238,7 @@ const Actions: React.FC<ActionsProps> = ({
       )}
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => { })} className='flex flex-row items-center gap-0'>
+          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'

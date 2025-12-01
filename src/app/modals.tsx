@@ -24,6 +24,8 @@ import SettingsModal from '@/components/modal/settings/settingsModal'
 import { useUserContext } from '@/context/user'
 import TransferModal from '@/components/modal/transfer/transferModal'
 import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
+import RegistrationModal from '@/components/modal/registration/registrationModal'
+import { selectRegistrationModal } from '@/state/reducers/modals/registrationModal'
 
 const Modals: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -53,6 +55,7 @@ const Modals: React.FC = () => {
   const { open: notificationModalOpen } = useAppSelector(selectNotificationModal)
   const { open: bulkRenewalModalOpen } = useAppSelector(selectBulkRenewalModal)
   const { open: transferModalOpen, domains: transferModalDomains } = useAppSelector(selectTransferModal)
+  const registrationModalState = useAppSelector(selectRegistrationModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
 
   return (
@@ -109,6 +112,7 @@ const Modals: React.FC = () => {
           }}
         />
       )}
+      <RegistrationModal />
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
     </div>
   )

@@ -1,119 +1,206 @@
-import { useWalletClient } from 'wagmi'
-import { BigNumber } from '@ethersproject/bignumber'
+import { Address, Hex, toHex } from 'viem'
+import { useWalletClient, usePublicClient } from 'wagmi'
+import {
+  ENS_HOLIDAY_REFERRER_ADDRESS,
+  ENS_HOLIDAY_REGISTRAR_ADDRESS,
+  ENS_PUBLIC_RESOLVER_ADDRESS,
+} from '@/constants/web3/contracts'
+import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 
-import { getDomainStringId } from '@/utils/web3/getDomainId'
-
-import { MarketplaceDomainType } from '@/types/domains'
-import { CartRegisteredDomainType, CartUnregisteredDomainType } from '@/state/reducers/domains/marketplaceDomains'
-
-import { YEAR_IN_SECONDS } from '@/constants/time'
-import { createPublicClient, http } from 'viem'
-import { mainnet } from 'viem/chains'
-import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import { ENS_REGISTRAR_ADDRESS, ENS_REGISTRAR_CONTROLLER_ADDRESS } from '@/constants/web3/contracts'
-import { RegistrarControllerAbi } from '@/constants/abi/RegistrarControllerAbi'
+type RegistrationParams = {
+  label: string
+  owner: Address
+  duration: bigint
+  secret: Hex
+  resolver?: Address
+  data?: Hex[]
+  reverseRecord: boolean
+  referrer?: Hex
+}
 
 const useRegisterDomain = () => {
-  const walletClient = useWalletClient()
-  const publicClient = createPublicClient({
-    chain: mainnet,
-    transport: http(),
-  })
+  const { data: walletClient } = useWalletClient()
+  const publicClient = usePublicClient()
 
-  const checkOnChainDomainExpirations = async (
-    domains: CartUnregisteredDomainType[] | CartRegisteredDomainType[] | MarketplaceDomainType[]
-  ) => {
-    const expirations = await publicClient.multicall({
-      contracts: domains.map((domain) => ({
-        abi: BaseRegistrarAbi,
-        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-        functionName: 'nameExpires',
-        args: [getDomainStringId(domain.name)],
-      })),
-    })
-
-    const expirationTimestamps = expirations.map((expiration) => Number(expiration.result))
-    return expirationTimestamps
+  const generateSecret = (): `0x${string}` => {
+    const randomBytes = new Uint8Array(32)
+    crypto.getRandomValues(randomBytes)
+    return toHex(randomBytes)
   }
 
-  const getRegistrationPriceEstimate = async (domains: CartUnregisteredDomainType[]) => {
-    if (!domains) return
+  const makeCommitment = async (params: RegistrationParams): Promise<Hex> => {
+    if (!publicClient) throw new Error('Public client not available')
 
-    const results = await publicClient.multicall({
-      contracts: domains.map((domain) => ({
-        abi: RegistrarControllerAbi,
-        address: ENS_REGISTRAR_CONTROLLER_ADDRESS as `0x${string}`,
+    const registrationData = {
+      label: params.label,
+      owner: params.owner,
+      duration: params.duration,
+      secret: params.secret,
+      resolver: params.resolver || ENS_PUBLIC_RESOLVER_ADDRESS,
+      data: params.data || ([] as `0x${string}`[]),
+      reverseRecord: params.reverseRecord ? 1 : 0,
+      referrer: params.referrer || ENS_HOLIDAY_REFERRER_ADDRESS,
+    }
+
+    try {
+      const commitment = await publicClient.readContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
+        functionName: 'makeCommitment',
+        args: [registrationData],
+      })
+      return commitment as Hex
+    } catch (error) {
+      console.error('Error making commitment:', error)
+      throw error
+    }
+  }
+
+  const checkAvailable = async (label: string): Promise<boolean> => {
+    if (!publicClient) return false
+
+    try {
+      const available = (await publicClient.readContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
+        functionName: 'available',
+        args: [label],
+      })) as boolean
+      return available
+    } catch (error) {
+      console.error('Error checking availability:', error)
+      return false
+    }
+  }
+
+  const getRentPrice = async (label: string, duration: bigint) => {
+    if (!publicClient) return null
+
+    try {
+      const result = (await publicClient.readContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
         functionName: 'rentPrice',
-        args: [domain.name, (domain.registrationPeriod || 1) * YEAR_IN_SECONDS],
-      })),
-    })
+        args: [label, duration],
+      })) as { base: bigint; premium: bigint }
 
-    const totalPrice = results
-      .map((result) =>
-        BigNumber.from(result?.result || 0)
-          .mul(1150)
-          .div(1000)
-      )
-      .reduce((acc, curr) => {
-        return acc.add(curr)
-      }, BigNumber.from(0))
-
-    return totalPrice
+      return {
+        base: result.base,
+        premium: result.premium,
+        total: result.base + result.premium,
+      }
+    } catch (error) {
+      console.error('Error getting rent price:', error)
+      return null
+    }
   }
 
-  const checkCommitments = async (secrets: string[]) => {
-    const commitments = await publicClient.multicall({
-      contracts: secrets.map((secret) => ({
-        abi: RegistrarControllerAbi,
-        address: ENS_REGISTRAR_CONTROLLER_ADDRESS as `0x${string}`,
+  const calculateDomainPriceUSD = (name: string, years: number): number => {
+    const nameLength = name.replace('.eth', '').length
+    const yearlyPrice = nameLength === 3 ? 640 : nameLength === 4 ? 160 : 5
+    return yearlyPrice * years
+  }
+
+  const submitCommit = async (commitmentHash: Hex) => {
+    if (!walletClient) {
+      throw new Error('Wallet not connected')
+    }
+
+    try {
+      const tx = await walletClient.writeContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
+        functionName: 'commit',
+        args: [commitmentHash],
+      })
+      return tx
+    } catch (error) {
+      console.error('Error submitting commitment:', error)
+      throw error
+    }
+  }
+
+  const checkCommitmentAge = async (commitmentHash: Hex) => {
+    if (!publicClient) return null
+
+    try {
+      const timestamp = await publicClient.readContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
         functionName: 'commitments',
-        args: [secret],
-      })),
-    })
-
-    const results = commitments.map((commitment) => parseInt(commitment.result as string))
-
-    return results
+        args: [commitmentHash],
+      })
+      return Number(timestamp)
+    } catch (error) {
+      console.error('Error checking commitment:', error)
+      return null
+    }
   }
 
-  // const commit = async (domain: CartUnregisteredDomainType, account: `0x${string}`, secret: `0x${string}`) => {
-  const commit = async (domain: CartUnregisteredDomainType) => {
-    const commitment = await walletClient.data?.writeContract({
-      address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-      abi: BaseRegistrarAbi,
-      functionName: 'approve',
-      args: [walletClient.data?.account.address, BigInt(domain.token_id)],
-    })
+  const getCommitmentAges = async () => {
+    if (!publicClient) return { min: 60, max: 86400 }
 
-    return commitment
+    try {
+      const [min, max] = await Promise.all([
+        publicClient.readContract({
+          address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+          abi: ENS_HOLIDAY_REGISTRAR_ABI,
+          functionName: 'minCommitmentAge',
+        }),
+        publicClient.readContract({
+          address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+          abi: ENS_HOLIDAY_REGISTRAR_ABI,
+          functionName: 'maxCommitmentAge',
+        }),
+      ])
+      return { min: Number(min), max: Number(max) }
+    } catch (error) {
+      console.error('Error getting commitment ages:', error)
+      return { min: 60, max: 86400 }
+    }
   }
 
-  const register = async (domain: CartUnregisteredDomainType) => {
-    const registrationPrice = await getRegistrationPriceEstimate([domain])
+  const submitRegister = async (params: RegistrationParams, value: bigint) => {
+    if (!walletClient) {
+      throw new Error('Wallet not connected')
+    }
 
-    if (!registrationPrice) return
+    const registrationData = {
+      label: params.label,
+      owner: params.owner,
+      duration: params.duration,
+      secret: params.secret,
+      resolver: params.resolver || ENS_PUBLIC_RESOLVER_ADDRESS,
+      data: params.data || ([] as `0x${string}`[]),
+      reverseRecord: params.reverseRecord ? 1 : 0,
+      referrer: params.referrer || ENS_HOLIDAY_REFERRER_ADDRESS,
+    }
 
-    // try {
-    //   const registration = await walletClient.data?.writeContract({
-    //     address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-    //     abi: BaseRegistrarAbi,
-    //     functionName: 'register',
-    //     args: [],
-    //   })
-
-    //   return registration
-    // } catch (e: any) {
-    //   console.error(e)
-    //   return false
-    // }
+    try {
+      const tx = await walletClient.writeContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
+        functionName: 'register',
+        args: [registrationData],
+        value,
+      })
+      return tx
+    } catch (error) {
+      console.error('Error registering name:', error)
+      throw error
+    }
   }
 
   return {
-    commit,
-    register,
-    checkCommitments,
-    getRegistrationPriceEstimate,
-    checkOnChainDomainExpirations,
+    generateSecret,
+    makeCommitment,
+    checkAvailable,
+    getRentPrice,
+    calculateDomainPriceUSD,
+    submitCommit,
+    checkCommitmentAge,
+    getCommitmentAges,
+    submitRegister,
   }
 }
 

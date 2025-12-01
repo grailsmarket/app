@@ -12,6 +12,8 @@ import { DAY_IN_SECONDS } from '@/constants/time'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { BigNumber } from '@ethersproject/bignumber'
+import { useAppDispatch } from '@/state/hooks'
+import { openRegistrationModal } from '@/state/reducers/modals/registrationModal'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -20,6 +22,7 @@ interface RegisterProps {
 
 const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) => {
   const { ethPrice } = useETHPrice()
+  const dispatch = useAppDispatch()
 
   if (registrationStatus === GRACE_PERIOD) {
     const expiryDateTimestamp = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() : 0
@@ -44,6 +47,9 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
       </div>
     )
   }
+
+  const name = nameDetails?.name
+  const price = nameDetails && ethPrice ? calculateRegistrationPrice(nameDetails.name, ethPrice).eth : 0
 
   if (registrationStatus === PREMIUM) {
     const expireTime = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() / 1000 : 0
@@ -70,7 +76,11 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           />
           <PrimaryButton
             onClick={() => {
-              window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+              if (nameDetails?.name && nameDetails?.name.length > 0) {
+                dispatch(openRegistrationModal({ name: nameDetails?.name || '' }))
+              } else {
+                window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+              }
             }}
           >
             Register
@@ -79,9 +89,6 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
       </div>
     )
   }
-
-  const name = nameDetails?.name
-  const price = nameDetails && ethPrice ? calculateRegistrationPrice(nameDetails.name, ethPrice).eth : 0
 
   return (
     <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -95,7 +102,11 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
         </div>
         <PrimaryButton
           onClick={() => {
-            window.open(`https://app.ens.domains/${name}/register`, '_blank')
+            if (name && name.length > 0) {
+              dispatch(openRegistrationModal({ name: name || '' }))
+            } else {
+              window.open(`https://app.ens.domains/${name}/register`, '_blank')
+            }
           }}
         >
           Register

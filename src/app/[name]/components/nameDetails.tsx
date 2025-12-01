@@ -15,6 +15,7 @@ import {
   GRACE_PERIOD,
   UNREGISTERED,
   REGISTERED,
+  REGISTERED_STATUSES,
 } from '@/constants/domains/registrationStatuses'
 import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
@@ -189,20 +190,22 @@ const NameDetails: React.FC<NameDetailsProps> = ({ name, nameDetails, nameDetail
             )}
           </div>
         ))}
-        <div className='flex w-full flex-col gap-2'>
-          {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
-            <SecondaryButton
-              onClick={openTransferModal}
-              className='text-md h-8! w-full'
-              disabled={authStatus !== 'authenticated'}
-            >
-              Transfer
-            </SecondaryButton>
-          )}
-          <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
-            Extend Registration
-          </PrimaryButton>
-        </div>
+        {REGISTERED_STATUSES.includes(registrationStatus) && (
+          <div className='flex w-full flex-col gap-2'>
+            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+              <SecondaryButton
+                onClick={openTransferModal}
+                className='text-md h-8! w-full'
+                disabled={authStatus !== 'authenticated'}
+              >
+                Transfer
+              </SecondaryButton>
+            )}
+            <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
+              Extend Registration
+            </PrimaryButton>
+          </div>
+        )}
       </div>
     </div>
   )

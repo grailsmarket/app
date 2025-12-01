@@ -13,7 +13,7 @@ import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { BigNumber } from '@ethersproject/bignumber'
 import { useAppDispatch } from '@/state/hooks'
-import { openRegistrationModal } from '@/state/reducers/modals/registrationModal'
+import { openRegistrationModal } from '@/state/reducers/registration'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType

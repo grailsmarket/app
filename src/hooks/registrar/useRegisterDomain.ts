@@ -68,7 +68,7 @@ const useRegisterDomain = () => {
       })) as boolean
       return available
     } catch (error) {
-      console.error('Error checking availability:', error)
+      console.log('Error checking availability:', error)
       return false
     }
   }

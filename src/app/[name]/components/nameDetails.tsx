@@ -39,7 +39,7 @@ type Row = {
 
 interface NameDetailsProps {
   name: string
-  nameDetails: MarketplaceDomainType | undefined
+  nameDetails?: MarketplaceDomainType | null
   nameDetailsIsLoading: boolean
   registrationStatus: RegistrationStatus
 }

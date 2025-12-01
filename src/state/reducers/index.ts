@@ -9,8 +9,9 @@ import domainsReducer from './domains'
 import filtersReducer from './filters'
 import profileReducer from './portfolio'
 import transactionReducer from './transactions'
+import registrationReducer from './registration'
 
-const PERSISTED_KEYS: string[] = ['cache']
+const PERSISTED_KEYS: string[] = ['cache', 'registration']
 
 const persistConfig = {
   key: 'root',
@@ -27,6 +28,7 @@ const reducer = combineReducers({
   transactions: transactionReducer,
   cache: cacheReducer,
   scroll: scrollPosition,
+  registration: registrationReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, reducer)

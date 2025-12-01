@@ -4,15 +4,23 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useBalance, useGasPrice, usePublicClient } from 'wagmi'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
-  selectRegistrationModal,
-  closeRegistrationModal,
+  selectRegistration,
+  openRegistrationModal,
   setRegistrationFlowState,
   setCommitmentData,
   setCommitTxHash,
   setRegisterTxHash,
   setRegistrationError,
   setSecret,
-} from '@/state/reducers/modals/registrationModal'
+  setRegistrationMode,
+  setQuantity,
+  setTimeUnit,
+  setCustomDuration,
+  setCalculatedDuration,
+  setNameAvailable,
+  TimeUnit,
+  resetRegistrationModal,
+} from '@/state/reducers/registration'
 import useRegisterDomain from '@/hooks/registrar/useRegisterDomain'
 import useETHPrice from '@/hooks/useETHPrice'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -27,15 +35,15 @@ import { ENS_HOLIDAY_REFERRER_ADDRESS, ENS_PUBLIC_RESOLVER_ADDRESS } from '@/con
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useQueryClient } from '@tanstack/react-query'
+import { Hex } from 'viem'
+import { useIsClient } from 'ethereum-identity-kit'
 
-type RegistrationMode = 'register_for' | 'register_to'
-type TimeUnit = 'days' | 'weeks' | 'months' | 'years'
-
-const currentTime = Math.floor(Date.now() / 1000)
+const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
 const RegistrationModal: React.FC = () => {
+  const isClient = useIsClient()
   const dispatch = useAppDispatch()
-  const modalState = useAppSelector(selectRegistrationModal)
+  const registrationState = useAppSelector(selectRegistration)
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
@@ -48,18 +56,18 @@ const RegistrationModal: React.FC = () => {
     getRentPrice,
     calculateDomainPriceUSD,
     submitCommit,
+    checkCommitmentAge,
     getCommitmentAges,
     submitRegister,
   } = useRegisterDomain()
 
-  const [registrationMode, setRegistrationMode] = useState<RegistrationMode>('register_for')
-  const [quantity, setQuantity] = useState<number>(1)
-  const [timeUnit, setTimeUnit] = useState<TimeUnit>('years')
-  const [customDate, setCustomDate] = useState<number>(0)
+  // UI-only states (not persisted)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
-  const [isNameAvailable, setIsNameAvailable] = useState<boolean | null>(null)
-  const secret = modalState.secret
+
+  // Get persisted state from Redux
+  const { registrationMode, quantity, timeUnit, customDuration, isNameAvailable } = registrationState
+  const secret = registrationState.secret
 
   const { data: ethBalance } = useBalance({
     address,
@@ -88,28 +96,31 @@ const RegistrationModal: React.FC = () => {
   }
 
   useEffect(() => {
+    if (!isClient) return
+
     const checkNameAvailability = async () => {
       // do not check availability if the modal is in a success (was just registered) or registering state (we know it's reserved)
-      if (modalState.flowState === 'success' || modalState.flowState === 'registering') return
+      if (registrationState.flowState === 'success') return
 
-      if (modalState.name && modalState.isOpen) {
-        const nameLabel = modalState.name.replace('.eth', '')
+      if (registrationState.name && registrationState.isOpen) {
+        const nameLabel = registrationState.name.replace('.eth', '')
         const available = await checkAvailable(nameLabel)
-        setIsNameAvailable(available)
+        dispatch(setNameAvailable(available))
       }
     }
 
     checkNameAvailability()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- we only want to check availability when the modal is open and the name is changed, while the flow state is just a precaution to prevent accidental state changes and re-checking availability
-  }, [modalState.name, modalState.isOpen, checkAvailable])
+  }, [registrationState.name, registrationState.isOpen, checkAvailable, isClient])
 
+  // Handle wait timer and auto-advance when ready
   useEffect(() => {
-    if (modalState.flowState === 'waiting' && modalState.commitmentTimestamp) {
+    if (registrationState.flowState === 'waiting' && registrationState.commitmentTimestamp) {
       const interval = setInterval(async () => {
         const ages = await getCommitmentAges()
         const currentTime = Math.floor(Date.now() / 1000)
-        const timePassed = currentTime - (modalState.commitmentTimestamp || 0)
+        const timePassed = currentTime - (registrationState.commitmentTimestamp || 0)
         const timeRemaining = Math.max(0, ages.min - timePassed)
 
         setWaitTimeRemaining(timeRemaining)
@@ -121,51 +132,75 @@ const RegistrationModal: React.FC = () => {
 
       return () => clearInterval(interval)
     }
-  }, [modalState.flowState, modalState.commitmentTimestamp, getCommitmentAges])
+  }, [registrationState.flowState, registrationState.commitmentTimestamp, getCommitmentAges])
+
+  // Auto-open modal if we have an in-progress registration after page refresh
+  useEffect(() => {
+    if (
+      !registrationState.isOpen &&
+      registrationState.name &&
+      registrationState.flowState !== 'review' &&
+      registrationState.flowState !== 'success' &&
+      registrationState.flowState !== 'error'
+    ) {
+      console.log('Restoring in-progress registration for:', registrationState.name)
+      dispatch(openRegistrationModal({ name: registrationState.name }))
+    }
+  }, [registrationState, dispatch])
 
   const handleClose = () => {
     if (
-      modalState.flowState === 'committing' ||
-      modalState.flowState === 'registering' ||
-      modalState.flowState === 'waiting'
+      registrationState.flowState === 'committing' ||
+      registrationState.flowState === 'registering' ||
+      registrationState.flowState === 'waiting'
     )
       return
-    dispatch(closeRegistrationModal())
+
+    dispatch(resetRegistrationModal())
   }
 
   const calculationResults = useMemo(() => {
-    if (!modalState.name) return null
+    if (!registrationState.name) return null
 
     let durationSeconds: number
 
     if (registrationMode === 'register_for') {
       durationSeconds = quantity * getSecondsPerUnit(timeUnit)
     } else {
-      if (customDate === 0) return null
-      durationSeconds = customDate - currentTime
+      if (!customDuration || customDuration === 0) return null
+      durationSeconds = customDuration
 
       if (durationSeconds <= 0) {
         console.error('Selected date is in the past')
         return null
       }
-
-      const maxDuration = 100 * YEAR_IN_SECONDS
-      if (durationSeconds > maxDuration) {
-        durationSeconds = maxDuration
-      }
     }
 
+    const durationBigInt = BigInt(durationSeconds)
     const durationYears = durationSeconds / YEAR_IN_SECONDS
-    const priceUSD = calculateDomainPriceUSD(modalState.name, durationYears)
+    const priceUSD = calculateDomainPriceUSD(registrationState.name, durationYears)
     const priceETH = ethPrice ? priceUSD / ethPrice : 0
 
+    // Store the calculated duration in Redux for persistence
+    dispatch(setCalculatedDuration(durationBigInt.toString()))
+
     return {
-      durationSeconds: BigInt(durationSeconds),
+      durationSeconds: durationBigInt,
       durationYears,
       priceUSD,
       priceETH,
+      isBelowMinimum: durationSeconds < MIN_REGISTRATION_DURATION,
     }
-  }, [modalState.name, registrationMode, quantity, timeUnit, customDate, ethPrice, calculateDomainPriceUSD])
+  }, [
+    registrationState.name,
+    registrationMode,
+    quantity,
+    timeUnit,
+    customDuration,
+    ethPrice,
+    calculateDomainPriceUSD,
+    dispatch,
+  ])
 
   const gasEstimate = useMemo(() => {
     return BigInt(300000)
@@ -181,8 +216,138 @@ const RegistrationModal: React.FC = () => {
     return ethBalance.value >= totalRequired
   }, [ethBalance, calculationResults, gasPrice, gasEstimate])
 
+  // Check if we already have a valid commitment for current parameters
+  const checkExistingCommitment = async (): Promise<{ isValid: boolean; hash?: Hex; timestamp?: number }> => {
+    if (!address || !registrationState.name || !calculationResults || !secret) {
+      return { isValid: false }
+    }
+
+    try {
+      const nameLabel = registrationState.name.replace('.eth', '')
+
+      // Generate commitment hash with current parameters
+      const expectedCommitment = await makeCommitment({
+        label: nameLabel,
+        owner: address,
+        duration: calculationResults.durationSeconds,
+        secret: secret,
+        resolver: ENS_PUBLIC_RESOLVER_ADDRESS,
+        data: [],
+        reverseRecord: false,
+        referrer: ENS_HOLIDAY_REFERRER_ADDRESS,
+      })
+
+      // Check if this commitment exists and is still valid
+      const commitmentTimestamp = await checkCommitmentAge(expectedCommitment)
+
+      if (commitmentTimestamp && commitmentTimestamp > 0) {
+        const ages = await getCommitmentAges()
+        const currentTime = Math.floor(Date.now() / 1000)
+        const age = currentTime - commitmentTimestamp
+
+        // Check if commitment is within valid age range
+        if (age >= ages.min && age <= ages.max) {
+          console.log('Found valid existing commitment:', {
+            hash: expectedCommitment,
+            age,
+            minAge: ages.min,
+            maxAge: ages.max,
+          })
+          return {
+            isValid: true,
+            hash: expectedCommitment,
+            timestamp: commitmentTimestamp,
+          }
+        }
+      }
+
+      return { isValid: false }
+    } catch (error) {
+      console.error('Error checking existing commitment:', error)
+      return { isValid: false }
+    }
+  }
+
+  const refetchQueries = () => {
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
+      queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
+      queryClient.refetchQueries({ queryKey: ['name', 'details', registrationState.name] })
+      queryClient.refetchQueries({ queryKey: ['name', 'activity', registrationState.name] })
+    }, 2000)
+  }
+
+  const checkForExistingCommitment = async () => {
+    console.log(
+      'checkForExistingCommitment',
+      registrationState.flowState,
+      registrationState.name,
+      address,
+      secret,
+      calculationResults
+    )
+    // Only check if we're in review state and have all required data
+    if (!registrationState.name || !address || !secret || !calculationResults) {
+      return
+    }
+
+    if (registrationState.registerTxHash) {
+      dispatch(setRegistrationFlowState('registering'))
+      const receipt = await publicClient?.waitForTransactionReceipt({
+        hash: registrationState.registerTxHash,
+        confirmations: 1,
+      })
+
+      if (receipt?.status !== 'success') {
+        throw new Error('Registration transaction failed')
+      }
+
+      dispatch(setRegistrationFlowState('success'))
+      refetchQueries()
+      return
+    }
+
+    const existingCommitment = await checkExistingCommitment()
+    console.log('existingCommitment', existingCommitment)
+
+    if (existingCommitment.isValid && existingCommitment.hash && existingCommitment.timestamp) {
+      console.log('Auto-detected existing valid commitment, moving to waiting state')
+      dispatch(
+        setCommitmentData({
+          hash: existingCommitment.hash,
+          timestamp: existingCommitment.timestamp,
+        })
+      )
+      dispatch(setRegistrationFlowState('waiting'))
+      return
+    }
+
+    dispatch(setRegistrationFlowState('review'))
+  }
+
+  // Check for existing valid commitment when reloaded or when critical parameters change (address, secret, name)
+  useEffect(() => {
+    checkForExistingCommitment()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- we want to check when relevant registration parameters change
+  }, [address, registrationState.name])
+
   const handleCommit = async () => {
-    if (!address || !modalState.name || !calculationResults) return
+    if (!address || !registrationState.name || !calculationResults) return
+
+    // First check if we already have a valid commitment
+    const existingCommitment = await checkExistingCommitment()
+
+    if (existingCommitment.isValid && existingCommitment.hash && existingCommitment.timestamp) {
+      console.log('Using existing valid commitment instead of creating new one')
+      dispatch(
+        setCommitmentData({
+          hash: existingCommitment.hash,
+          timestamp: existingCommitment.timestamp,
+        })
+      )
+      dispatch(setRegistrationFlowState('waiting'))
+      return
+    }
 
     dispatch(setRegistrationFlowState('committing'))
 
@@ -190,18 +355,7 @@ const RegistrationModal: React.FC = () => {
       const commitSecret = secret || generateSecret()
       if (!secret) dispatch(setSecret(commitSecret))
 
-      const nameLabel = modalState.name.replace('.eth', '')
-
-      console.log('Registration parameters:', {
-        label: nameLabel,
-        owner: address,
-        duration: calculationResults.durationSeconds.toString(),
-        durationYears: calculationResults.durationYears,
-        registrationMode,
-        customDate,
-        secret: commitSecret,
-        currentTime: Math.floor(Date.now() / 1000),
-      })
+      const nameLabel = registrationState.name.replace('.eth', '')
 
       const commitment = await makeCommitment({
         label: nameLabel,
@@ -237,13 +391,18 @@ const RegistrationModal: React.FC = () => {
 
   // Handle register phase
   const handleRegister = async () => {
-    if (!address || !modalState.name || !calculationResults || !secret || !modalState.commitmentHash) return
+    // Use persisted duration if calculation results are not available (e.g., after page refresh)
+    const duration =
+      calculationResults?.durationSeconds ||
+      (registrationState.calculatedDuration ? BigInt(registrationState.calculatedDuration) : null)
+
+    if (!address || !registrationState.name || !duration || !secret || !registrationState.commitmentHash) return
 
     dispatch(setRegistrationFlowState('registering'))
 
     try {
-      const nameLabel = modalState.name.replace('.eth', '')
-      const rentPrice = await getRentPrice(nameLabel, calculationResults.durationSeconds)
+      const nameLabel = registrationState.name.replace('.eth', '')
+      const rentPrice = await getRentPrice(nameLabel, duration)
 
       if (!rentPrice) {
         throw new Error('Failed to get registration price')
@@ -253,7 +412,7 @@ const RegistrationModal: React.FC = () => {
         {
           label: nameLabel,
           owner: address,
-          duration: calculationResults.durationSeconds,
+          duration: duration,
           secret,
           resolver: ENS_PUBLIC_RESOLVER_ADDRESS,
           data: [],
@@ -274,20 +433,14 @@ const RegistrationModal: React.FC = () => {
       }
 
       dispatch(setRegistrationFlowState('success'))
-
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
-        queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
-        queryClient.refetchQueries({ queryKey: ['name', 'details', modalState.name] })
-        queryClient.refetchQueries({ queryKey: ['name', 'activity', modalState.name] })
-      }, 2000)
+      refetchQueries()
     } catch (error: any) {
       console.error('Failed to register:', error)
       dispatch(setRegistrationError(error.message || 'Failed to register name'))
     }
   }
 
-  if (!modalState.isOpen || !modalState.name) return null
+  if (!registrationState.isOpen || !registrationState.name || !isClient) return null
 
   if (isNameAvailable === false) {
     return (
@@ -304,11 +457,11 @@ const RegistrationModal: React.FC = () => {
           </div>
           <div className='flex flex-col items-center gap-4 py-8'>
             <p className='text-center text-lg'>
-              The name <span className='font-bold'>{beautifyName(modalState.name)}</span> is not available for
+              The name <span className='font-bold'>{beautifyName(registrationState.name)}</span> is not available for
               registration.
             </p>
           </div>
-          <SecondaryButton onClick={handleClose} className='w-full'>
+          <SecondaryButton onClick={() => dispatch(resetRegistrationModal())} className='w-full'>
             Close
           </SecondaryButton>
         </div>
@@ -322,9 +475,9 @@ const RegistrationModal: React.FC = () => {
         e.stopPropagation()
         e.preventDefault()
         if (
-          modalState.flowState === 'success' ||
-          modalState.flowState === 'committing' ||
-          modalState.flowState === 'registering'
+          registrationState.flowState === 'success' ||
+          registrationState.flowState === 'committing' ||
+          registrationState.flowState === 'registering'
         )
           return
         handleClose()
@@ -342,30 +495,30 @@ const RegistrationModal: React.FC = () => {
           <h2 className='font-sedan-sc text-center text-3xl'>Register Name</h2>
         </div>
 
-        {modalState.flowState === 'review' && (
+        {registrationState.flowState === 'review' && (
           <div className='flex items-center justify-between gap-2'>
             <p className='font-sedan-sc text-center text-2xl'>Name</p>
-            <p className='text-center text-xl font-bold'>{beautifyName(modalState.name)}</p>
+            <p className='text-center text-xl font-bold'>{beautifyName(registrationState.name)}</p>
           </div>
         )}
 
-        {modalState.flowState === 'success' ? (
+        {registrationState.flowState === 'success' ? (
           <div className='flex flex-col items-center gap-4'>
             <div className='flex flex-col items-center gap-4 text-center'>
               <h3 className='text-2xl font-bold'>Registration Successful!</h3>
               <div className='flex justify-center py-1'>
                 <NameImage
-                  name={modalState.name}
-                  tokenId={modalState.name.replace('.eth', '')}
-                  expiryDate={null}
+                  name={registrationState.name}
+                  tokenId={registrationState.name.replace('.eth', '')}
+                  expiryDate={new Date(Number(calculationResults?.durationSeconds) * 1000 + Date.now()).toISOString()}
                   className='h-48 w-48 rounded-lg'
                   height={192}
                   width={192}
                 />
               </div>
-              {modalState.registerTxHash && (
+              {registrationState.registerTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${modalState.registerTxHash}`}
+                  href={`https://etherscan.io/tx/${registrationState.registerTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -378,23 +531,29 @@ const RegistrationModal: React.FC = () => {
               Close
             </SecondaryButton>
           </div>
-        ) : modalState.flowState === 'error' ? (
+        ) : registrationState.flowState === 'error' ? (
           <div className='flex flex-col gap-4'>
             <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-              <p className='text-sm text-red-400'>{modalState.errorMessage}</p>
+              <p className='text-sm text-red-400'>{registrationState.errorMessage}</p>
             </div>
-            <SecondaryButton onClick={() => dispatch(setRegistrationFlowState('review'))} className='w-full'>
+            <SecondaryButton
+              onClick={() => {
+                dispatch(setRegistrationFlowState('review'))
+                checkForExistingCommitment()
+              }}
+              className='w-full'
+            >
               Try Again
             </SecondaryButton>
           </div>
-        ) : modalState.flowState === 'committing' ? (
+        ) : registrationState.flowState === 'committing' ? (
           <div className='flex w-full flex-col gap-4'>
             <h2 className='mt-4 text-center text-xl font-bold'>Submitting Commitment</h2>
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              {modalState.commitTxHash ? (
+              {registrationState.commitTxHash ? (
                 <a
-                  href={`https://etherscan.io/tx/${modalState.commitTxHash}`}
+                  href={`https://etherscan.io/tx/${registrationState.commitTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -406,7 +565,7 @@ const RegistrationModal: React.FC = () => {
               )}
             </div>
           </div>
-        ) : modalState.flowState === 'waiting' ? (
+        ) : registrationState.flowState === 'waiting' ? (
           <div className='flex w-full flex-col gap-4'>
             <h2 className='text-center text-xl font-bold'>Waiting Period</h2>
             {waitTimeRemaining > 0 ? (
@@ -442,9 +601,9 @@ const RegistrationModal: React.FC = () => {
                   <p className='text-center text-lg'>
                     Please wait for the commitment to mature. This prevents others from front-running your registration.
                   </p>
-                  {modalState.commitTxHash && (
+                  {registrationState.commitTxHash && (
                     <a
-                      href={`https://etherscan.io/tx/${modalState.commitTxHash}`}
+                      href={`https://etherscan.io/tx/${registrationState.commitTxHash}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-md underline transition-colors'
@@ -457,7 +616,7 @@ const RegistrationModal: React.FC = () => {
             ) : (
               <div className='flex flex-col items-center justify-center gap-4 pb-4'>
                 <p className='font-medium'>
-                  <span className='font-bold'>{beautifyName(modalState.name)}</span> is ready for registration.
+                  <span className='font-bold'>{beautifyName(registrationState.name)}</span> is ready for registration.
                 </p>
               </div>
             )}
@@ -465,14 +624,14 @@ const RegistrationModal: React.FC = () => {
               {waitTimeRemaining > 0 ? `Wait ${waitTimeRemaining} seconds...` : 'Complete Registration'}
             </PrimaryButton>
           </div>
-        ) : modalState.flowState === 'registering' ? (
+        ) : registrationState.flowState === 'registering' ? (
           <div className='flex w-full flex-col gap-4'>
             <h2 className='mt-4 text-center text-xl font-bold'>Completing Registration</h2>
             <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              {modalState.registerTxHash ? (
+              {registrationState.registerTxHash ? (
                 <a
-                  href={`https://etherscan.io/tx/${modalState.registerTxHash}`}
+                  href={`https://etherscan.io/tx/${registrationState.registerTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -489,7 +648,7 @@ const RegistrationModal: React.FC = () => {
             <div>
               <div className='p-sm border-primary flex w-full gap-1 rounded-md border'>
                 <div
-                  onClick={() => setRegistrationMode('register_for')}
+                  onClick={() => dispatch(setRegistrationMode('register_for'))}
                   className={cn(
                     'flex h-9 w-1/2 cursor-pointer items-center justify-center rounded-sm',
                     registrationMode === 'register_for'
@@ -500,7 +659,7 @@ const RegistrationModal: React.FC = () => {
                   <p className='text-xl font-semibold'>Register For</p>
                 </div>
                 <div
-                  onClick={() => setRegistrationMode('register_to')}
+                  onClick={() => dispatch(setRegistrationMode('register_to'))}
                   className={cn(
                     'flex h-9 w-1/2 cursor-pointer items-center justify-center rounded-sm',
                     registrationMode === 'register_to'
@@ -519,7 +678,7 @@ const RegistrationModal: React.FC = () => {
                   hideLabel={true}
                   options={timeUnitOptions}
                   value={timeUnit}
-                  onSelect={(value) => setTimeUnit(value as TimeUnit)}
+                  onSelect={(value) => dispatch(setTimeUnit(value as TimeUnit))}
                   className='w-2/5'
                 />
                 <Input
@@ -530,7 +689,7 @@ const RegistrationModal: React.FC = () => {
                   hideLabel={true}
                   className='w-3/5'
                   value={quantity || ''}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  onChange={(e) => dispatch(setQuantity(Number(e.target.value)))}
                 />
               </div>
             ) : (
@@ -540,18 +699,19 @@ const RegistrationModal: React.FC = () => {
                   <p className='text-neutral text-sm'>Select the date when your registration will expire</p>
                 </div>
                 <PrimaryButton onClick={() => setShowDatePicker(true)} className='w-full'>
-                  {customDate
-                    ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                  {customDuration
+                    ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                     : 'Select Date'}
                 </PrimaryButton>
                 {showDatePicker && (
                   <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
                     <DatePicker
                       onSelect={(timestamp) => {
-                        setCustomDate(timestamp)
+                        const timeDelta = timestamp - Math.floor(Date.now() / 1000)
+                        dispatch(setCustomDuration(timeDelta))
                         setShowDatePicker(false)
                       }}
                       onClose={() => setShowDatePicker(false)}
@@ -587,6 +747,13 @@ const RegistrationModal: React.FC = () => {
                   </div>
                 </div>
               )}
+              {calculationResults && calculationResults.isBelowMinimum && (
+                <div className='rounded-lg border border-amber-500/20 bg-amber-900/20 p-3'>
+                  <p className='text-md text-amber-400'>
+                    ⚠️ Minimum registration duration is 28 days. Please select a longer duration.
+                  </p>
+                </div>
+              )}
               {calculationResults && !hasSufficientBalance && (
                 <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
                   <p className='text-md text-red-400'>
@@ -602,16 +769,19 @@ const RegistrationModal: React.FC = () => {
                 disabled={
                   !calculationResults ||
                   !hasSufficientBalance ||
-                  (registrationMode === 'register_to' && customDate === 0) ||
-                  isNameAvailable === null
+                  (registrationMode === 'register_to' && customDuration === 0) ||
+                  isNameAvailable === null ||
+                  calculationResults?.isBelowMinimum
                 }
                 className='w-full'
               >
                 {!hasSufficientBalance
                   ? 'Insufficient ETH Balance'
-                  : isNameAvailable === null
-                    ? 'Checking Availability...'
-                    : `Register ${beautifyName(modalState.name)}`}
+                  : calculationResults?.isBelowMinimum
+                    ? 'Duration Too Short (28 days minimum)'
+                    : isNameAvailable === null
+                      ? 'Checking Availability...'
+                      : `Register ${beautifyName(registrationState.name)}`}
               </PrimaryButton>
               <SecondaryButton onClick={handleClose} className='w-full'>
                 Close

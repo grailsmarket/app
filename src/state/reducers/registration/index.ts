@@ -43,8 +43,8 @@ const initialState: RegistrationModalState = {
   isNameAvailable: null,
 }
 
-const registrationModalSlice = createSlice({
-  name: 'registrationModal',
+const registrationSlice = createSlice({
+  name: 'registration',
   initialState,
   reducers: {
     openRegistrationModal: (state, action: PayloadAction<{ name: string }>) => {
@@ -124,8 +124,8 @@ export const {
   setCalculatedDuration,
   setNameAvailable,
   resetRegistrationModal,
-} = registrationModalSlice.actions
+} = registrationSlice.actions
 
-export const selectRegistrationModal = (state: RootState) => state.modals.registrationReducer
+export const selectRegistration = (state: RootState) => state.registration
 
-export default registrationModalSlice.reducer
+export default registrationSlice.reducer

@@ -1,4 +1,8 @@
+'use client'
+
+import { useUserContext } from '@/context/user'
 import { cn } from '@/utils/tailwind'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
@@ -10,6 +14,9 @@ interface PagesProps {
 
 const Pages = ({ className, onClick }: PagesProps) => {
   const pathname = usePathname()
+  const { userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
+
   return (
     <div className={cn('text-md flex flex-col gap-4 text-lg md:flex-row md:items-center', className)}>
       <Link
@@ -48,7 +55,15 @@ const Pages = ({ className, onClick }: PagesProps) => {
           'font-semibold transition-all',
           pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
         )}
-        onClick={onClick}
+        onClick={(e) => {
+          if (!userAddress) {
+            e.preventDefault()
+            e.stopPropagation()
+            return openConnectModal?.()
+          }
+
+          onClick?.()
+        }}
       >
         Portfolio
       </Link>

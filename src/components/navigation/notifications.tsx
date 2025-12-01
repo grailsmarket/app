@@ -10,8 +10,10 @@ import notifications from 'public/icons/bell.svg'
 import { cn } from '@/utils/tailwind'
 import { markAllAsRead } from '@/api/notifications/markAllAsRead'
 import { useUserContext } from '@/context/user'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 const Notifications = () => {
+  const { openConnectModal } = useConnectModal()
   const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
 
@@ -33,6 +35,7 @@ const Notifications = () => {
   })
 
   const handleClick = () => {
+    if (!userAddress) return openConnectModal?.()
     markAllAsReadMutation.mutate()
     dispatch(setNotificationModalOpen(true))
   }

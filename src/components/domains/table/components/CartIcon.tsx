@@ -5,6 +5,8 @@ import inCart from 'public/icons/cart-added.svg'
 import addToCart from 'public/icons/cart-add.svg'
 import { cn } from '@/utils/tailwind'
 import { MarketplaceDomainType } from '@/types/domains'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useUserContext } from '@/context/user'
 
 interface CartIconProps {
   domain?: MarketplaceDomainType
@@ -14,6 +16,8 @@ interface CartIconProps {
 }
 
 const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder = false }) => {
+  const { userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
   const { isAddedToCart: isAddedToCartDomains, isModifyingDomain, isCartDomainsLoading, onSelect } = useCartDomains()
   const isAddedToCart = domain ? isAddedToCartDomains(domain.token_id) : false
   const isDomainModifying = domain ? isModifyingDomain(domain.token_id) : false
@@ -35,6 +39,8 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder 
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
+
+        if (!userAddress) return openConnectModal?.()
         if (domain) {
           onSelect(e, domain)
         }

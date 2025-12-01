@@ -29,6 +29,8 @@ import { Check } from 'ethereum-identity-kit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { openRegistrationModal } from '@/state/reducers/registration'
+import { useUserContext } from '@/context/user'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -50,6 +52,8 @@ const Actions: React.FC<ActionsProps> = ({
   isFirstInRow,
 }) => {
   const dispatch = useAppDispatch()
+  const { userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
@@ -93,9 +97,17 @@ const Actions: React.FC<ActionsProps> = ({
     dispatch(setCancelListingModalOpen(true))
   }
 
+  const handleOpenRegistrationModal = () => {
+    dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
+  }
+
   const clickHandler = (e: React.MouseEvent, handler: () => void) => {
     e.preventDefault()
     e.stopPropagation()
+
+    // User needs to be connected to make any actions on the domain
+    if (!userAddress) return openConnectModal?.()
+
     handler()
   }
 
@@ -216,7 +228,7 @@ const Actions: React.FC<ActionsProps> = ({
     >
       {registrationStatus === UNREGISTERED ? (
         <button
-          onClick={(e) => clickHandler(e, () => dispatch(openRegistrationModal({ name: domain.name, domain: domain })))}
+          onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}
         >
           <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Register
@@ -237,7 +249,7 @@ const Actions: React.FC<ActionsProps> = ({
       )}
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
+          <div onClick={(e) => clickHandler(e, () => { })} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'

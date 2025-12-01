@@ -14,6 +14,8 @@ import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { BigNumber } from '@ethersproject/bignumber'
 import { useAppDispatch } from '@/state/hooks'
 import { openRegistrationModal } from '@/state/reducers/registration'
+import { useUserContext } from '@/context/user'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -23,6 +25,8 @@ interface RegisterProps {
 const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) => {
   const { ethPrice } = useETHPrice()
   const dispatch = useAppDispatch()
+  const { userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
 
   if (registrationStatus === GRACE_PERIOD) {
     const expiryDateTimestamp = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() : 0
@@ -76,10 +80,14 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           />
           <PrimaryButton
             onClick={() => {
-              if (nameDetails?.name && nameDetails?.name.length > 0) {
-                dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
+              if (userAddress) {
+                if (nameDetails?.name && nameDetails?.name.length > 0) {
+                  dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
+                } else {
+                  window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+                }
               } else {
-                window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+                openConnectModal?.()
               }
             }}
           >
@@ -102,10 +110,14 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
         </div>
         <PrimaryButton
           onClick={() => {
-            if (name && name.length > 0) {
-              dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
+            if (userAddress) {
+              if (name && name.length > 0) {
+                dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
+              } else {
+                window.open(`https://app.ens.domains/${name}/register`, '_blank')
+              }
             } else {
-              window.open(`https://app.ens.domains/${name}/register`, '_blank')
+              openConnectModal?.()
             }
           }}
         >

@@ -85,7 +85,7 @@ export const fetchDomains = async ({
         if (!domains.map((domain) => domain.name).includes(name)) {
           const tokenId = hexToBigInt(namehash(name))
           domains.unshift({
-            id: 2229391,
+            id: 2229391, // random valid ID for now
             name,
             token_id: tokenId.toString(),
             expiry_date: null,

@@ -457,7 +457,7 @@ const RegistrationModal: React.FC = () => {
     }
   }
 
-  if (!registrationState.isOpen || !registrationState.name || !isClient) return null
+  if (!registrationState.isOpen || !registrationState.name || !registrationState.domain || !isClient) return null
 
   if (isNameAvailable === false) {
     return (
@@ -526,7 +526,7 @@ const RegistrationModal: React.FC = () => {
               <Link href={`/${registrationState.name}`} className='py-1' onClick={handleClose}>
                 <NameImage
                   name={registrationState.name}
-                  tokenId={registrationState.name.replace('.eth', '')}
+                  tokenId={registrationState.domain?.token_id}
                   expiryDate={new Date(Number(calculationResults?.durationSeconds) * 1000 + Date.now()).toISOString()}
                   className='h-48 w-48 rounded-lg'
                   height={192}

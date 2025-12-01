@@ -18,7 +18,12 @@ interface Props {
 const NamePage: React.FC<Props> = ({ name }) => {
   const { nameDetails, nameDetailsIsLoading, nameOffers, nameOffersIsLoading } = useName(name)
 
-  const registrationStatus = nameDetails ? getRegistrationStatus(nameDetails.expiry_date) : UNREGISTERED
+  const isSubname = name.split('.').length > 2
+  const registrationStatus = nameDetails
+    ? isSubname
+      ? REGISTERED
+      : getRegistrationStatus(nameDetails.expiry_date)
+    : UNREGISTERED
   const isRegistered = registrationStatus === REGISTERED
 
   return (
@@ -33,6 +38,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             nameDetails={nameDetails}
             nameDetailsIsLoading={nameDetailsIsLoading}
             registrationStatus={registrationStatus}
+            isSubname={isSubname}
           />
         </div>
         <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>

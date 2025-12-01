@@ -277,6 +277,7 @@ const RegistrationModal: React.FC = () => {
   }
 
   const checkForExistingCommitment = async () => {
+    console.log('checkForExistingCommitment', registrationState)
     // Only check if we have all required data
     if (!registrationState.name || !registrationState.domain || !address || !secret || !calculationResults) {
       return
@@ -303,10 +304,40 @@ const RegistrationModal: React.FC = () => {
       }
     }
 
+    const timeSinceCommit = registrationState.commitmentTimestamp
+      ? Math.floor(Date.now() / 1000) - registrationState.commitmentTimestamp
+      : 0
+    if (timeSinceCommit > 0 && timeSinceCommit < 60) {
+      dispatch(setRegistrationFlowState('waiting'))
+      return
+    }
+
     const existingCommitment = await checkExistingCommitment()
     console.log('existingCommitment', existingCommitment)
 
-    if (existingCommitment.isValid && existingCommitment.hash && existingCommitment.timestamp) {
+    if (!existingCommitment.isValid && registrationState.commitTxHash && registrationState.commitmentHash) {
+      const receipt = await publicClient?.waitForTransactionReceipt({
+        hash: registrationState.commitTxHash,
+        confirmations: 1,
+      })
+
+      if (receipt?.status === 'reverted') {
+        dispatch(setRegistrationFlowState('error'))
+        dispatch(setRegistrationError('Commitment transaction failed'))
+        throw new Error('Commitment transaction failed')
+      }
+
+      if (receipt?.status !== 'success') {
+        throw new Error('Commitment transaction failed')
+      }
+
+      const timestamp = Math.floor(Date.now() / 1000)
+      dispatch(setCommitmentData({ hash: registrationState.commitmentHash, timestamp }))
+      dispatch(setRegistrationFlowState('waiting'))
+      return
+    }
+
+    if (existingCommitment.hash && existingCommitment.timestamp) {
       console.log('Auto-detected existing valid commitment, moving to waiting state')
       dispatch(
         setCommitmentData({
@@ -366,6 +397,7 @@ const RegistrationModal: React.FC = () => {
 
       const tx = await submitCommit(commitment)
       dispatch(setCommitTxHash(tx))
+      dispatch(setCommitmentData({ hash: commitment, timestamp: 0 }))
 
       const receipt = await publicClient?.waitForTransactionReceipt({
         hash: tx,
@@ -523,7 +555,11 @@ const RegistrationModal: React.FC = () => {
           <div className='flex flex-col items-center gap-4'>
             <div className='flex flex-col items-center gap-4 text-center'>
               <h3 className='text-2xl font-bold'>Registration Successful!</h3>
-              <Link href={`/${registrationState.name}`} className='py-1' onClick={handleClose}>
+              <Link
+                href={`/${registrationState.name}`}
+                className='py-1 transition-opacity hover:opacity-70'
+                onClick={handleClose}
+              >
                 <NameImage
                   name={registrationState.name}
                   tokenId={registrationState.domain?.token_id}
@@ -615,9 +651,7 @@ const RegistrationModal: React.FC = () => {
                       <span className='text-4xl font-bold'>{waitTimeRemaining}s</span>
                     </div>
                   </div>
-                  <p className='text-center text-lg'>
-                    Please wait for the commitment to mature. This prevents others from front-running your registration.
-                  </p>
+                  <p className='text-center text-lg'>This prevents others from front-running your registration.</p>
                   {registrationState.commitTxHash && (
                     <a
                       href={`https://etherscan.io/tx/${registrationState.commitTxHash}`}
@@ -718,9 +752,9 @@ const RegistrationModal: React.FC = () => {
                 <PrimaryButton onClick={() => setShowDatePicker(true)} className='w-full'>
                   {customDuration
                     ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                     : 'Select Date'}
                 </PrimaryButton>
                 {showDatePicker && (
@@ -771,6 +805,11 @@ const RegistrationModal: React.FC = () => {
                   </p>
                 </div>
               )}
+              <div className='bg-secondary border-tertiary rounded-lg border p-3'>
+                <p className='text-md text-neutral'>
+                  Note: You will have to make 2 transactions to complete your registration.
+                </p>
+              </div>
               {calculationResults && !hasSufficientBalance && (
                 <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
                   <p className='text-md text-red-400'>

@@ -86,7 +86,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   key={option.value}
                   onClick={() => handleSelect(option.value)}
                   className={cn(
-                    'hover:bg-tertiary flex w-full items-center gap-2 px-4 py-2.5 text-left text-white transition-colors md:py-3',
+                    'hover:bg-tertiary flex w-full items-center gap-2 px-4 py-2.5 text-left text-white transition-colors',
                     option.value === value && 'bg-secondary'
                   )}
                 >

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useBalance, useGasPrice, usePublicClient } from 'wagmi'
 import { Check } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -21,13 +21,17 @@ import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { useQueryClient } from '@tanstack/react-query'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
+import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
+import { BigNumber } from '@ethersproject/bignumber'
+import { cn } from '@/utils/tailwind'
+import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
 
 interface ExtendModalProps {
   onClose: () => void
 }
 
 type ExtensionMode = 'extend_for' | 'extend_to'
-type TimeUnit = 'days' | 'weeks' | 'months' | 'years'
+type TimeUnit = 'days' | 'weeks' | 'months' | 'years' | 'custom'
 
 const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const dispatch = useAppDispatch()
@@ -41,7 +45,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const { poapClaimed } = useAppSelector(selectUserProfile)
 
   // Component state
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [extensionMode, setExtensionMode] = useState<ExtensionMode>('extend_for')
   const [quantity, setQuantity] = useState<number>(1)
   const [timeUnit, setTimeUnit] = useState<TimeUnit>('years')
@@ -63,6 +66,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     { value: 'weeks', label: 'Weeks' },
     { value: 'months', label: 'Months' },
     { value: 'years', label: 'Years' },
+    { value: 'custom', label: 'Custom' },
   ]
 
   // Calculate seconds per unit
@@ -76,6 +80,8 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         return DAY_IN_SECONDS * 30
       case 'years':
         return DAY_IN_SECONDS * 365
+      case 'custom':
+        return 0
       default:
         return DAY_IN_SECONDS * 365
     }
@@ -92,13 +98,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     onClose()
   }
 
-  // Get domain pricing based on length
-  const getDomainPrice = (domain: string, years: number): number => {
-    const nameLength = domain.replace('.eth', '').length
-    const basePrice = nameLength === 3 ? 640 : nameLength === 4 ? 160 : 5
-    return basePrice * years
-  }
-
   // Find the longest expiration date among domains
   const longestExpirationDate = useMemo(() => {
     if (domains.length === 0) return 0
@@ -110,47 +109,73 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     )
   }, [domains])
 
-  // Calculate total pricing and extension details
-  const calculationResults = useMemo(() => {
-    if (domains.length === 0) return null
+  const [calculationResults, setCalculationResults] = useState<{
+    totalPriceUSD: number
+    totalPriceETH: number
+    extensionDetails: { domain: string; currentExpiry: number; duration: number }[]
+  } | null>(null)
 
-    let totalPriceUSD = 0
-    const extensionDetails = []
+  useEffect(() => {
+    const calculate = async () => {
+      if (domains.length === 0 || !publicClient) return null
 
-    for (const domain of domains) {
-      let extensionYears = 0
+      const extensionDetails = []
 
-      if (extensionMode === 'extend_for') {
-        // Convert quantity and time unit to years
-        const secondsToAdd = quantity * getSecondsPerUnit(timeUnit)
-        extensionYears = secondsToAdd / (DAY_IN_SECONDS * 365)
-      } else {
-        // Calculate from longest expiry to custom date
-        if (customDate === 0) return null
-        const secondsToAdd = Math.max(0, customDate - longestExpirationDate)
-        extensionYears = secondsToAdd / (DAY_IN_SECONDS * 365)
+      for (const domain of domains) {
+        let duration = 0
+
+        if (extensionMode === 'extend_for') {
+          const secondsToAdd = quantity * getSecondsPerUnit(timeUnit)
+          duration = secondsToAdd
+        } else {
+          if (customDate === 0) return null
+          const currentExpiry = Math.floor(new Date(domain.expiry_date || 0).getTime() / 1000)
+          const duration = Math.max(0, customDate - currentExpiry)
+
+          extensionDetails.push({
+            domain: domain.name,
+            currentExpiry,
+            duration,
+          })
+
+          continue
+        }
+
+        extensionDetails.push({
+          domain: domain.name,
+          currentExpiry: domain.expiry_date ? Math.floor(new Date(domain.expiry_date).getTime() / 1000) : 0,
+          duration,
+        })
       }
 
-      const domainPriceUSD = getDomainPrice(domain.name, extensionYears)
-      totalPriceUSD += domainPriceUSD
+      const names = domains.map((item) => item.name.replace('.eth', ''))
+      const durations = extensionDetails.map((detail) => BigInt(detail.duration))
 
-      extensionDetails.push({
-        domain: domain.name,
-        currentExpiry: domain.expiry_date ? Math.floor(new Date(domain.expiry_date).getTime() / 1000) : 0,
-        extensionYears,
-        priceUSD: domainPriceUSD,
+      const rentPrice = (await publicClient?.readContract({
+        address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+        abi: ENS_HOLIDAY_RENEWAL_ABI,
+        functionName: 'bulkRentPrice',
+        args: [names, durations],
+      })) as bigint
+
+      if (!rentPrice) return null
+
+      const totalPriceETH =
+        BigNumber.from(rentPrice)
+          .div(BigNumber.from(10).pow(TOKEN_DECIMALS.ETH - 8))
+          .toNumber() /
+        10 ** 8
+      const totalPriceUSD = totalPriceETH * (ethPrice || 0)
+
+      setCalculationResults({
+        totalPriceUSD,
+        totalPriceETH,
+        extensionDetails,
       })
     }
 
-    // Convert USD to ETH
-    const totalPriceETH = ethPrice ? totalPriceUSD / ethPrice : 0
-
-    return {
-      totalPriceUSD,
-      totalPriceETH,
-      extensionDetails,
-    }
-  }, [domains, extensionMode, quantity, timeUnit, customDate, longestExpirationDate, ethPrice])
+    calculate()
+  }, [domains, extensionMode, quantity, timeUnit, customDate, longestExpirationDate, ethPrice, publicClient])
 
   // Calculate gas estimate (rough estimate for bulk renewal)
   const gasEstimate = useMemo(() => {
@@ -169,13 +194,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
 
     return ethBalance.value >= totalRequired
   }, [ethBalance, calculationResults, gasPrice, gasEstimate])
-
-  // Current balance formatted
-  // const currentBalanceFormatted = useMemo(() => {
-  //   if (!ethBalance) return '0'
-  //   const balance = Number(ethBalance.value) / Math.pow(10, TOKEN_DECIMALS.ETH)
-  //   return balance.toFixed(4)
-  // }, [ethBalance])
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -196,15 +214,24 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     }
 
     try {
-      let expireTime: number
+      let durations: bigint[]
 
       if (extensionMode === 'extend_for') {
-        expireTime = quantity * getSecondsPerUnit(timeUnit)
+        durations = new Array(domains.length).fill(BigInt(quantity * getSecondsPerUnit(timeUnit)))
       } else {
-        expireTime = Math.max(0, customDate - longestExpirationDate)
+        durations = new Array(domains.length).fill(BigInt(Math.max(0, customDate - longestExpirationDate)))
       }
 
-      const tx = await extend(domains, expireTime, calculationResults.totalPriceETH)
+      const names = domains.map((item) => item.name.replace('.eth', ''))
+
+      const rentPrice = (await publicClient?.readContract({
+        address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+        abi: ENS_HOLIDAY_RENEWAL_ABI,
+        functionName: 'bulkRentPrice',
+        args: [names, durations],
+      })) as bigint
+
+      const tx = await extend(names, durations, rentPrice)
 
       if (!tx) {
         throw new Error('Transaction failed')
@@ -221,8 +248,13 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       }
 
       setSuccess(true)
-      queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
+        queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+        domains.forEach((domain) => {
+          queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
+        })
+      }, 2500)
     } catch (err: any) {
       console.error('Failed to extend domains:', err)
       setError(err.message || 'Transaction failed')
@@ -247,23 +279,20 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2'
+        className={cn(
+          'border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2',
+          showDatePicker && 'min-h-[480px]'
+        )}
       >
         {success && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>
-            {/* Header with close button */}
             <div className='z-10 flex min-h-6 items-center justify-center pb-2'>
               <h2 className='font-sedan-sc text-center text-3xl'>Extend Name{domains.length > 1 ? 's' : ''}</h2>
-              {/* <Cross
-              onClick={onClose}
-              className='h-4 w-4 cursor-pointer opacity-70 hover:opacity-100'
-            /> */}
             </div>
 
             {success ? (
-              // Success state
               <div className='flex flex-col items-center gap-4 py-8'>
                 <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-3'>
                   <Check className='text-background h-8 w-8' />
@@ -325,9 +354,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                      new Date(domain.expiry_date).getTime() +
-                                        quantity * getSecondsPerUnit(timeUnit) * 1000
-                                    ).toLocaleDateString()
+                                    extensionMode === 'extend_for'
+                                      ? new Date(domain.expiry_date).getTime() +
+                                      quantity * getSecondsPerUnit(timeUnit) * 1000
+                                      : customDate * 1000
+                                  ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -338,76 +369,72 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   </div>
                 </div>
 
-                {/* Extension mode selection */}
-                {/* <div>
-                <div className='flex w-full gap-1 p-sm border border-primary rounded-md'>
-                  <div
-                    onClick={() => setExtensionMode('extend_for')}
-                    className={cn('w-1/2 h-9 flex items-center justify-center rounded-sm cursor-pointer', extensionMode === 'extend_for' ? 'bg-primary text-background' : 'bg-transparent hover:bg-primary/10')}
-                  >
-                    <p className='font-semibold text-xl'>Extend For</p>
-                  </div>
-                  <div
-                    onClick={() => setExtensionMode('extend_to')}
-                    className={cn('w-1/2 h-9 flex items-center justify-center rounded-sm cursor-pointer', extensionMode === 'extend_to' ? 'bg-primary text-background' : 'bg-transparent hover:bg-primary/10')}
-                  >
-                    <p className='font-semibold text-xl'>Extend To</p>
-                  </div>
-                </div>
-              </div> */}
-
-                {/* Extension parameters */}
-                {extensionMode === 'extend_for' ? (
+                <div className='flex flex-col gap-2'>
                   <div className='flex w-full flex-row gap-2'>
                     <Dropdown
                       label='Unit'
                       hideLabel={true}
                       options={timeUnitOptions}
                       value={timeUnit}
-                      onSelect={(value) => setTimeUnit(value as TimeUnit)}
+                      onSelect={(value) => {
+                        setTimeUnit(value as TimeUnit)
+                        if (value === 'custom') {
+                          setShowDatePicker(true)
+                          setExtensionMode('extend_to')
+                        } else {
+                          setShowDatePicker(false)
+                          setExtensionMode('extend_for')
+                        }
+                      }}
                       className='w-2/5'
                     />
-                    <Input
-                      type='number'
-                      label='Quantity'
-                      placeholder='Number'
-                      min={0}
-                      hideLabel={true}
-                      className='w-3/5'
-                      value={quantity || ''}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                    />
-                  </div>
-                ) : (
-                  <div className='relative'>
-                    <div className='mb-2'>
-                      <label className='block text-lg font-medium'>Extend To Date</label>
-                      <p className='text-neutral text-sm'>
-                        Extensions will be calculated from the longest expiry date:{' '}
-                        {longestExpirationDate
-                          ? new Date(longestExpirationDate * 1000).toLocaleDateString()
-                          : 'Unknown'}
-                      </p>
-                    </div>
-                    <PrimaryButton
-                      onClick={() => setShowDatePicker(true)}
-                      className='w-full'
-                      disabled={!customDate || isLoading || !hasSufficientBalance}
-                    >
-                      {customDate ? new Date(customDate * 1000).toLocaleDateString() : 'Select Date'}
-                    </PrimaryButton>
-                    {showDatePicker && (
-                      <DatePicker
-                        onSelect={(timestamp) => {
-                          setCustomDate(timestamp)
-                          setShowDatePicker(false)
-                        }}
-                        onClose={() => setShowDatePicker(false)}
-                        className='absolute top-20 left-0 z-10 w-full'
+                    {timeUnit === 'custom' ? (
+                      <PrimaryButton
+                        onClick={() => setShowDatePicker(true)}
+                        className='h-12! w-full'
+                        disabled={isLoading}
+                      >
+                        {customDate
+                          ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                          : 'Select Date'}
+                      </PrimaryButton>
+                    ) : (
+                      <Input
+                        type='number'
+                        label='Quantity'
+                        placeholder='Number'
+                        min={0}
+                        hideLabel={true}
+                        className='w-3/5'
+                        value={quantity || ''}
+                        onChange={(e) => setQuantity(Number(e.target.value))}
                       />
                     )}
+                    {showDatePicker && (
+                      <div className='absolute top-0 left-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-6 backdrop-blur-sm'>
+                        <DatePicker
+                          onSelect={(timestamp) => {
+                            setCustomDate(timestamp)
+                            setShowDatePicker(false)
+                          }}
+                          onClose={() => setShowDatePicker(false)}
+                          className='w-full max-w-sm'
+                          minDate={new Date(longestExpirationDate * 1000)}
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  <div className='border-tertiary bg-secondary rounded-lg border p-2'>
+                    <p className='text-md text-neutral'>
+                      When setting a custom date, you will only be able to select a date after the longest expiration
+                      date of your domains.
+                    </p>
+                  </div>
+                </div>
 
                 <div className='flex flex-col gap-2'>
                   {/* Pricing display */}
@@ -422,12 +449,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                             <p className='text-neutral text-xs'>(${calculationResults.totalPriceUSD.toFixed(2)})</p>
                           </div>
                         </div>
-                        {/* <div className='flex justify-between'>
-                        <span>Your ETH Balance:</span>
-                        <span className={`font-medium ${!hasSufficientBalance ? 'text-red-400' : ''}`}>
-                          {currentBalanceFormatted} ETH
-                        </span>
-                      </div> */}
                         {gasEstimate && gasPrice && (
                           <div className='flex justify-between'>
                             <span>Estimated Gas:</span>

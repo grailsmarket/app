@@ -7,11 +7,16 @@ interface DatePickerProps {
   onSelect: (timestamp: number) => void
   onClose?: () => void
   className?: string
+  minDate?: Date
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className }) => {
+const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, minDate }) => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+
+  if (minDate) {
+    today.setTime(minDate.getTime() + 1000)
+  }
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [viewMonth, setViewMonth] = useState(today.getUTCMonth())

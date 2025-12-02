@@ -51,16 +51,34 @@ export async function GET(req: NextRequest) {
   }
 
   if (isVercel) {
-    const chromium = (await import('@sparticuz/chromium')).default
-    puppeteer = await import('puppeteer-core')
+    try {
+      const chromium = (await import('@sparticuz/chromium')).default
+      puppeteer = await import('puppeteer-core')
 
-    // Add font rendering arguments for better emoji support
-    const customArgs = [...chromium.args, '--disable-web-security', '--no-sandbox', '--font-render-hinting=none']
-
-    launchOptions = {
-      ...launchOptions,
-      args: customArgs,
-      executablePath: await chromium.executablePath(),
+      // Set up chromium with proper configuration for Vercel
+      launchOptions = {
+        args: [
+          ...chromium.args,
+          '--disable-web-security',
+          '--disable-features=VizDisplayCompositor',
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--no-first-run',
+          '--disable-default-apps',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+        ],
+        executablePath: await chromium.executablePath(),
+        headless: true,
+        ignoreHTTPSErrors: true,
+      }
+    } catch (error) {
+      console.error('Failed to load chromium, falling back to basic implementation:', error)
+      // Fall back to basic implementation without Puppeteer
+      return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
     }
   } else {
     puppeteer = await import('puppeteer')

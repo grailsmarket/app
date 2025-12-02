@@ -1,0 +1,9 @@
+{
+  "functions": {
+    "src/app/api/og/name/route.tsx": {
+      "maxDuration": 30
+    }
+  },
+  "buildCommand": "npm run build",
+  "installCommand": "bun install && npx @sparticuz/chromium"
+}

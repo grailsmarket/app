@@ -74,47 +74,43 @@ export async function GET(req: NextRequest) {
   const displayName = name.includes('.') ? name : `${name}.eth`
 
   // Launch Puppeteer browser with environment detection
-  const isVercel = !!process.env.VERCEL_ENV
-  let puppeteer: any
-  let launchOptions: any = {
-    headless: true,
-  }
+  // const isVercel = !!process.env.VERCEL_ENV
+  // let launchOptions: any = {
+  //   headless: true,
+  // }
 
-  if (isVercel) {
-    try {
-      puppeteer = puppeteerCore
-
-      launchOptions = {
-        ...launchOptions,
-        args: chromium.args,
-        executablePath: await chromium.executablePath(),
-        headless: true,
-      }
-    } catch (error) {
-      console.error('Chromium failed to load, falling back to @vercel/og:', error)
-      // Fall back to @vercel/og approach
-      return await generateSimpleImage(ensSVG, displayName)
-    }
-  } else {
-    puppeteer = await import('puppeteer')
-    launchOptions = {
-      ...launchOptions,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--run-all-compositor-stages-before-draw',
-        '--disable-background-timer-throttling',
-        '--disable-renderer-backgrounding',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-ipc-flooding-protection',
-      ],
-      executablePath: process.env.CHROME_BIN || undefined,
-    }
-  }
+  // if (isVercel) {
+  //   try {
+  //     launchOptions = {
+  //       ...launchOptions,
+  //       args: chromium.args,
+  //       executablePath: await chromium.executablePath(),
+  //       headless: true,
+  //     }
+  //   } catch (error) {
+  //     console.error('Chromium failed to load, falling back to @vercel/og:', error)
+  //     // Fall back to @vercel/og approach
+  //     return await generateSimpleImage(ensSVG, displayName)
+  //   }
+  // } else {
+  //   launchOptions = {
+  //     ...launchOptions,
+  //     args: [
+  //       '--no-sandbox',
+  //       '--disable-setuid-sandbox',
+  //       '--disable-dev-shm-usage',
+  //       '--disable-gpu',
+  //       '--disable-web-security',
+  //       '--disable-features=VizDisplayCompositor',
+  //       '--run-all-compositor-stages-before-draw',
+  //       '--disable-background-timer-throttling',
+  //       '--disable-renderer-backgrounding',
+  //       '--disable-backgrounding-occluded-windows',
+  //       '--disable-ipc-flooding-protection',
+  //     ],
+  //     executablePath: process.env.CHROME_BIN || undefined,
+  //   }
+  // }
 
   let browser
   try {

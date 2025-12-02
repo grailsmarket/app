@@ -5,7 +5,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 
 export type RegistrationFlowState = 'review' | 'committing' | 'waiting' | 'registering' | 'success' | 'error'
 export type RegistrationMode = 'register_for' | 'register_to'
-export type TimeUnit = 'days' | 'weeks' | 'months' | 'years'
+export type TimeUnit = 'days' | 'weeks' | 'months' | 'years' | 'custom'
 
 export interface RegistrationModalState {
   name: string | null

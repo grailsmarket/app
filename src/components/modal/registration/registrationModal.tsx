@@ -81,6 +81,7 @@ const RegistrationModal: React.FC = () => {
     { value: 'weeks', label: 'Weeks' },
     { value: 'months', label: 'Months' },
     { value: 'years', label: 'Years' },
+    { value: 'custom', label: 'Custom' },
   ]
 
   const getSecondsPerUnit = (unit: TimeUnit): number => {
@@ -93,6 +94,8 @@ const RegistrationModal: React.FC = () => {
         return DAY_IN_SECONDS * 30
       case 'years':
         return DAY_IN_SECONDS * 365
+      case 'custom':
+        return 0
       default:
         return DAY_IN_SECONDS * 365
     }
@@ -696,42 +699,26 @@ const RegistrationModal: React.FC = () => {
           </div>
         ) : (
           <div className='flex w-full flex-col gap-2 sm:gap-4'>
-            <div>
-              <div className='p-sm border-primary flex w-full gap-1 rounded-md border'>
-                <div
-                  onClick={() => dispatch(setRegistrationMode('register_for'))}
-                  className={cn(
-                    'flex h-9 w-1/2 cursor-pointer items-center justify-center rounded-sm',
-                    registrationMode === 'register_for'
-                      ? 'bg-primary text-background'
-                      : 'hover:bg-primary/10 bg-transparent'
-                  )}
-                >
-                  <p className='text-xl font-semibold'>Register For</p>
-                </div>
-                <div
-                  onClick={() => dispatch(setRegistrationMode('register_to'))}
-                  className={cn(
-                    'flex h-9 w-1/2 cursor-pointer items-center justify-center rounded-sm',
-                    registrationMode === 'register_to'
-                      ? 'bg-primary text-background'
-                      : 'hover:bg-primary/10 bg-transparent'
-                  )}
-                >
-                  <p className='text-xl font-semibold'>Register To</p>
-                </div>
-              </div>
-            </div>
-            {registrationMode === 'register_for' ? (
-              <div className='flex w-full flex-row gap-2'>
-                <Dropdown
-                  label='Unit'
-                  hideLabel={true}
-                  options={timeUnitOptions}
-                  value={timeUnit}
-                  onSelect={(value) => dispatch(setTimeUnit(value as TimeUnit))}
-                  className='w-2/5'
-                />
+            <div className='flex w-full flex-row gap-2'>
+              <Dropdown
+                label='Unit'
+                hideLabel={true}
+                options={timeUnitOptions}
+                value={timeUnit}
+                onSelect={(value) => {
+                  dispatch(setTimeUnit(value as TimeUnit))
+
+                  if (value === 'custom') {
+                    setShowDatePicker(true)
+                    dispatch(setRegistrationMode('register_to'))
+                  } else {
+                    setShowDatePicker(false)
+                    dispatch(setRegistrationMode('register_for'))
+                  }
+                }}
+                className='w-2/5'
+              />
+              {registrationMode === 'register_for' ? (
                 <Input
                   type='number'
                   label='Quantity'
@@ -742,36 +729,32 @@ const RegistrationModal: React.FC = () => {
                   value={quantity || ''}
                   onChange={(e) => dispatch(setQuantity(Number(e.target.value)))}
                 />
-              </div>
-            ) : (
-              <div className='z-10'>
-                <div className='mb-2'>
-                  <label className='block text-lg font-medium'>Register To Date</label>
-                  <p className='text-neutral text-sm'>Select the date when your registration will expire</p>
-                </div>
-                <PrimaryButton onClick={() => setShowDatePicker(true)} className='w-full'>
-                  {customDuration
-                    ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : 'Select Date'}
-                </PrimaryButton>
-                {showDatePicker && (
-                  <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
-                    <DatePicker
-                      onSelect={(timestamp) => {
-                        const timeDelta = timestamp - Math.floor(Date.now() / 1000)
-                        dispatch(setCustomDuration(timeDelta))
-                        setShowDatePicker(false)
-                      }}
-                      onClose={() => setShowDatePicker(false)}
-                      className='w-full max-w-sm'
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+              ) : (
+                <>
+                  <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
+                    {customDuration
+                      ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : 'Select Date'}
+                  </PrimaryButton>
+                  {showDatePicker && (
+                    <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+                      <DatePicker
+                        onSelect={(timestamp) => {
+                          const timeDelta = timestamp - Math.floor(Date.now() / 1000)
+                          dispatch(setCustomDuration(timeDelta))
+                          setShowDatePicker(false)
+                        }}
+                        onClose={() => setShowDatePicker(false)}
+                        className='w-full max-w-sm'
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
             <div className='flex flex-col gap-2'>
               {calculationResults && (
                 <div className='bg-secondary border-tertiary rounded-lg border p-3'>

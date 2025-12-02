@@ -354,11 +354,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                    extensionMode === 'extend_for'
-                                      ? new Date(domain.expiry_date).getTime() +
-                                      quantity * getSecondsPerUnit(timeUnit) * 1000
-                                      : customDate * 1000
-                                  ).toLocaleDateString()
+                                      extensionMode === 'extend_for'
+                                        ? new Date(domain.expiry_date).getTime() +
+                                          quantity * getSecondsPerUnit(timeUnit) * 1000
+                                        : customDate * 1000
+                                    ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -396,9 +396,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       >
                         {customDate
                           ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
                           : 'Select Date'}
                       </PrimaryButton>
                     ) : (

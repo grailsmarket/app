@@ -47,7 +47,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const avatarResponse = ensAvatar && isLinkValid(ensAvatar) ? await fetch(ensAvatar) : null
 
   const pageUrl = `https://grails.app/profile/${user}`
-  const ogImageUrl = `https://grails.app/api/profile/og?user=${user}`
+  const ogImageUrl = `https://grails.app/api/og/profile?user=${user}`
 
   return {
     title: `${displayUser}`,

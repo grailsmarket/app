@@ -22,13 +22,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       siteName: `${categoryLabel} Category`,
       description: `${categoryLabel} Category on Grails Marketplace`,
       url: `https://grails.app/categories/${category}`,
-      images: [{ url: `https://grails.app/categories/og?category=${category}` }],
+      images: [{ url: `https://grails.app/api/og/category?category=${category}` }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${categoryLabel} Category | Grails`,
       description: `${categoryLabel} Category on Grails Marketplace`,
-      images: `https://grails.app/categories/og?category=${category}`,
+      images: `https://grails.app/api/og/category?category=${category}`,
     },
   }
 }

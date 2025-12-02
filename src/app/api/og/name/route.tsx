@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash } from 'viem'
-import puppeteer from 'puppeteer'
 
 // Configure for Node.js runtime (required for Puppeteer)
 export const runtime = 'nodejs'
@@ -47,11 +46,29 @@ export async function GET(req: NextRequest) {
   const ensSVG = await getENSSVG()
   const displayName = name.includes('.') ? name : `${name}.eth`
 
-  let browser
-  try {
-    // Try to launch Puppeteer with better configuration for server environments
-    browser = await puppeteer.launch({
-      headless: true,
+  // Launch Puppeteer browser with environment detection
+  const isVercel = !!process.env.VERCEL_ENV
+  let puppeteer: any
+  let launchOptions: any = {
+    headless: true,
+  }
+
+  if (isVercel) {
+    const chromium = (await import('@sparticuz/chromium')).default
+    puppeteer = await import('puppeteer-core')
+
+    // Add font rendering arguments for better emoji support
+    const customArgs = [...chromium.args, '--disable-web-security', '--no-sandbox', '--font-render-hinting=none']
+
+    launchOptions = {
+      ...launchOptions,
+      args: customArgs,
+      executablePath: await chromium.executablePath(),
+    }
+  } else {
+    puppeteer = await import('puppeteer')
+    launchOptions = {
+      ...launchOptions,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -65,15 +82,19 @@ export async function GET(req: NextRequest) {
         '--disable-backgrounding-occluded-windows',
         '--disable-ipc-flooding-protection',
       ],
-      // Use system Chrome if available, otherwise use downloaded Chrome
       executablePath: process.env.CHROME_BIN || undefined,
-    })
+    }
+  }
+
+  let browser
+  try {
+    browser = await puppeteer.launch(launchOptions)
 
     const page = await browser.newPage()
 
     // Optimize page for faster rendering
     await page.setRequestInterception(true)
-    page.on('request', (req) => {
+    page.on('request', (req: any) => {
       // Block unnecessary resource types for faster loading
       const resourceType = req.resourceType()
       if (resourceType === 'stylesheet' || resourceType === 'script' || resourceType === 'font') {

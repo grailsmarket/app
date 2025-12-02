@@ -19,26 +19,38 @@ export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/
 async function getBrowser() {
   const REMOTE_PATH = process.env.CHROMIUM_REMOTE_EXEC_PATH
   const LOCAL_PATH = process.env.CHROMIUM_LOCAL_EXEC_PATH
+  const isVercel = !!process.env.VERCEL_ENV
 
-  if (!REMOTE_PATH && !LOCAL_PATH) {
-    throw new Error('Missing a path for Chromium executable')
-  }
-
-  if (REMOTE_PATH) {
+  if (isVercel && REMOTE_PATH) {
     // ✅ Use the remote tarball (for Vercel)
-    return await puppeteerCore.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(REMOTE_PATH),
-      defaultViewport: { width: size.width, height: size.height },
-      headless: true,
-    })
+    try {
+      return await puppeteerCore.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath(REMOTE_PATH),
+        defaultViewport: { width: size.width, height: size.height },
+        headless: true,
+      })
+    } catch (error) {
+      console.error('Failed to launch with remote path:', error)
+      throw error
+    }
   }
 
-  // ✅ Local fallback (for dev)
-  return await puppeteerCore.launch({
-    executablePath: LOCAL_PATH,
-    headless: true,
-  })
+  if (LOCAL_PATH) {
+    // ✅ Local fallback (for dev)
+    try {
+      return await puppeteerCore.launch({
+        executablePath: LOCAL_PATH,
+        headless: true,
+        defaultViewport: { width: size.width, height: size.height },
+      })
+    } catch (error) {
+      console.error('Failed to launch with local path:', error)
+      throw error
+    }
+  }
+
+  throw new Error('Missing a path for Chromium executable')
 }
 
 export async function GET(req: NextRequest) {
@@ -187,7 +199,6 @@ export async function GET(req: NextRequest) {
     // Set content and wait for network to be idle (with timeout)
     await page.setContent(htmlContent, {
       waitUntil: ['domcontentloaded', 'networkidle2'],
-      timeout: 10000,
     })
 
     // Wait an additional 1 second for any final rendering
@@ -222,75 +233,75 @@ export async function GET(req: NextRequest) {
 }
 
 // Fallback function using @vercel/og when Puppeteer fails
-async function generateSimpleImage(ensSVG: string | null, displayName: string) {
-  const { ImageResponse } = await import('@vercel/og')
+// async function generateSimpleImage(ensSVG: string | null, displayName: string) {
+//   const { ImageResponse } = await import('@vercel/og')
 
-  // Extract text from SVG if available
-  let extractedText = displayName
-  let backgroundColor = '#5298FF'
+//   // Extract text from SVG if available
+//   let extractedText = displayName
+//   let backgroundColor = '#5298FF'
 
-  if (ensSVG) {
-    const textMatch = ensSVG.match(/<text[^>]*>([^<]*)<\/text>/)
-    if (textMatch && textMatch[1]) {
-      extractedText = textMatch[1].trim()
-    }
+//   if (ensSVG) {
+//     const textMatch = ensSVG.match(/<text[^>]*>([^<]*)<\/text>/)
+//     if (textMatch && textMatch[1]) {
+//       extractedText = textMatch[1].trim()
+//     }
 
-    const bgColorMatch = ensSVG.match(/fill="([^"]*)"/)
-    if (bgColorMatch && bgColorMatch[1] && bgColorMatch[1] !== 'none') {
-      backgroundColor = bgColorMatch[1]
-    }
-  }
+//     const bgColorMatch = ensSVG.match(/fill="([^"]*)"/)
+//     if (bgColorMatch && bgColorMatch[1] && bgColorMatch[1] !== 'none') {
+//       backgroundColor = bgColorMatch[1]
+//     }
+//   }
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          display: 'flex',
-          height: '100%',
-          width: '100%',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '36px',
-          background: 'radial-gradient(circle, #444444, #222222)',
-          fontFamily: 'Inter, system-ui, sans-serif',
-          color: '#f4f4f4',
-        }}
-      >
-        <div
-          style={{
-            width: '300px',
-            height: '300px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: backgroundColor,
-            borderRadius: '12px',
-            fontSize: '32px',
-            fontWeight: '700',
-            color: 'white',
-            textAlign: 'center',
-            padding: '20px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          }}
-        >
-          {extractedText}
-        </div>
+//   return new ImageResponse(
+//     (
+//       <div
+//         style={{
+//           display: 'flex',
+//           height: '100%',
+//           width: '100%',
+//           alignItems: 'center',
+//           justifyContent: 'center',
+//           gap: '36px',
+//           background: 'radial-gradient(circle, #444444, #222222)',
+//           fontFamily: 'Inter, system-ui, sans-serif',
+//           color: '#f4f4f4',
+//         }}
+//       >
+//         <div
+//           style={{
+//             width: '300px',
+//             height: '300px',
+//             display: 'flex',
+//             alignItems: 'center',
+//             justifyContent: 'center',
+//             backgroundColor: backgroundColor,
+//             borderRadius: '12px',
+//             fontSize: '32px',
+//             fontWeight: '700',
+//             color: 'white',
+//             textAlign: 'center',
+//             padding: '20px',
+//             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+//           }}
+//         >
+//           {extractedText}
+//         </div>
 
-        <div
-          style={{
-            height: '80px',
-            width: '2px',
-            backgroundColor: '#ffffff',
-            opacity: 0.3,
-          }}
-        />
+//         <div
+//           style={{
+//             height: '80px',
+//             width: '2px',
+//             backgroundColor: '#ffffff',
+//             opacity: 0.3,
+//           }}
+//         />
 
-        <img src='https://grails.app/your-ens-market-logo.png' alt='Grails' width='232' height='71' />
-      </div>
-    ),
-    {
-      width: 800,
-      height: 418,
-    }
-  )
-}
+//         <img src='https://grails.app/your-ens-market-logo.png' alt='Grails' width='232' height='71' />
+//       </div>
+//     ),
+//     {
+//       width: 800,
+//       height: 418,
+//     }
+//   )
+// }

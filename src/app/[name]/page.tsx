@@ -13,20 +13,20 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const name = beautifyName(decodeURI(params.name))
 
   return {
-    title: `${name} | Grails`,
+    title: `${name}`,
     description: `${name}`,
     openGraph: {
-      title: `${name} | Grails`,
-      siteName: `${name} | Grails`,
+      title: `${name}`,
+      siteName: `${name}`,
       description: `${name}`,
-      url: `https://grails.app/names/${name}`,
-      images: [{ url: `https://grails.app/names/og?name=${name}` }],
+      url: `https://grails.app/${name}`,
+      images: [{ url: `https://grails.app/api/name/og?name=${name}` }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${name}`,
       description: `${name}`,
-      images: `https://grails.app/names/og?name=${name}`,
+      images: `https://grails.app/api/name/og?name=${name}`,
     },
   }
 }

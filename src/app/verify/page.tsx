@@ -2,15 +2,8 @@ import { Suspense } from 'react'
 import Verify from './verify'
 
 export const metadata = {
-  title: `Verify Email | Grails`,
+  title: `Verify Email`,
   description: `Verify your email address on Grails`,
-  openGraph: {
-    title: `Verify Email | Grails`,
-    siteName: `Verify Email | Grails`,
-    description: `Verify your email address on Grails`,
-    url: `https://grails.app/verify`,
-    images: [{ url: `https://grails.app/verify/og` }],
-  },
 }
 
 const UserPage = () => {

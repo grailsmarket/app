@@ -3,6 +3,25 @@ import FilterPanel from '@/components/filters'
 import DomainPanel from './components/domainPanel'
 import { FilterProvider } from '@/context/filters'
 import ActionButtons from './components/actionButtons'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Explore',
+  description: 'Find your next Grail on the Grails ENS Market',
+  openGraph: {
+    title: 'Marketplace | Grails',
+    description: 'Find your next Grail on the Grails ENS Market',
+    siteName: 'Marketplace',
+    url: 'https://grails.app/marketplace',
+    images: [{ url: 'https://grails.app/banners/marketplace.jpeg' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Marketplace | Grails',
+    description: 'Find your next Grail on the Grails ENS Market',
+    images: 'https://grails.app/banners/marketplace.jpeg',
+  },
+}
 
 const Marketplace = () => {
   return (

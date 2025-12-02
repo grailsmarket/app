@@ -227,9 +227,7 @@ const Actions: React.FC<ActionsProps> = ({
       className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
     >
       {registrationStatus === UNREGISTERED ? (
-        <button
-          onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}
-        >
+        <button onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}>
           <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Register
           </p>
@@ -249,7 +247,7 @@ const Actions: React.FC<ActionsProps> = ({
       )}
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => { })} className='flex flex-row items-center gap-0'>
+          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
             <Watchlist
               domain={domain}
               tooltipPosition='top'

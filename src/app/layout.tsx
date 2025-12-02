@@ -7,6 +7,7 @@ import 'ethereum-identity-kit/css'
 import '@rainbow-me/rainbowkit/styles.css'
 import Providers from './providers'
 import { Production } from './production'
+import { sharedMetadata } from '@/lib/metadata'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -18,10 +19,7 @@ const sedanSC = Sedan_SC({
   weight: '400',
 })
 
-export const metadata: Metadata = {
-  title: 'Grails Market',
-  description: 'Find your next Grail on the Grails ENS Market',
-}
+export const metadata: Metadata = sharedMetadata
 
 export default function RootLayout({
   children,

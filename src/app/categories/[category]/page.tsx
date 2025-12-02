@@ -15,19 +15,19 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const categoryLabel = CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS]
 
   return {
-    title: `${categoryLabel} Category | Grails`,
-    description: `${categoryLabel}`,
+    title: `${categoryLabel} Category`,
+    description: `${categoryLabel} Category on Grails Marketplace`,
     openGraph: {
       title: `${categoryLabel} Category | Grails`,
-      siteName: `${categoryLabel} Category | Grails`,
-      description: `${categoryLabel}`,
+      siteName: `${categoryLabel} Category`,
+      description: `${categoryLabel} Category on Grails Marketplace`,
       url: `https://grails.app/categories/${category}`,
       images: [{ url: `https://grails.app/categories/og?category=${category}` }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${categoryLabel}`,
-      description: `${categoryLabel}`,
+      title: `${categoryLabel} Category | Grails`,
+      description: `${categoryLabel} Category on Grails Marketplace`,
       images: `https://grails.app/categories/og?category=${category}`,
     },
   }

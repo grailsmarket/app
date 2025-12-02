@@ -9,17 +9,15 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "checks": "npm run format && npm run lint && npm run typecheck",
-    "postinstall": "node -e \"try { require('@sparticuz/chromium') } catch (e) { console.log('Chromium not available') }\""
+    "checks": "npm run format && npm run lint && npm run typecheck"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.8.0",
     "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@reduxjs/toolkit": "^2.9.0",
-    "@sparticuz/chromium": "127.0.0",
+    "@sparticuz/chromium": "^141.0.0",
     "@tanstack/react-query": "^5.90.2",
-    "@types/puppeteer": "^5.4.7",
     "@vercel/analytics": "^1.5.0",
     "@vercel/og": "^0.8.5",
     "@vercel/speed-insights": "^1.2.0",

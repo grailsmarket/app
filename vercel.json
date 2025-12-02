@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "src/app/api/og/name/route.tsx": {
-      "maxDuration": 30
-    }
-  }
-}

@@ -10,23 +10,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  redirects: async () => [
-    {
-      source: '/(twitter|x)',
-      destination: 'https://x.com/grailsmarket',
-      permanent: true,
-    },
-    {
-      source: '/github',
-      destination: 'https://github.com/grailsmarket',
-      permanent: true,
-    },
-    {
-      source: '/(chat|discord)',
-      destination: 'https://discord.com/invite/ZUyG3mSXFD',
-      permanent: true,
-    },
-  ],
 }
 
 export default nextConfig

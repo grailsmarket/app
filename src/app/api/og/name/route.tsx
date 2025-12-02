@@ -3,9 +3,6 @@ import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash } from 'viem'
 
-// Configure for Node.js runtime (required for Puppeteer)
-export const runtime = 'nodejs'
-
 const size = {
   width: 800,
   height: 418,

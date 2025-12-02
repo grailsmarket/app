@@ -54,16 +54,22 @@ export async function GET(req: NextRequest) {
   }
 
   if (isVercel) {
-    const chromium = (await import('@sparticuz/chromium')).default
-    puppeteer = await import('puppeteer-core')
+    try {
+      const chromium = (await import('@sparticuz/chromium')).default
+      puppeteer = await import('puppeteer-core')
 
-    // Add font rendering arguments for better emoji support
-    const customArgs = [...chromium.args, '--disable-web-security', '--no-sandbox', '--font-render-hinting=none']
+      // Add font rendering arguments for better emoji support
+      const customArgs = [...chromium.args, '--disable-web-security', '--no-sandbox', '--font-render-hinting=none']
 
-    launchOptions = {
-      ...launchOptions,
-      args: customArgs,
-      executablePath: await chromium.executablePath(),
+      launchOptions = {
+        ...launchOptions,
+        args: customArgs,
+        executablePath: await chromium.executablePath(),
+      }
+    } catch (error) {
+      console.error('Chromium failed to load, falling back to @vercel/og:', error)
+      // Fall back to @vercel/og approach
+      return await generateSimpleImage(ensSVG, displayName)
     }
   } else {
     puppeteer = await import('puppeteer')
@@ -211,4 +217,83 @@ export async function GET(req: NextRequest) {
     // Fallback to a simple error response
     return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
   }
+}
+
+// Fallback function using @vercel/og when Puppeteer fails
+async function generateSimpleImage(ensSVG: string | null, displayName: string) {
+  const { ImageResponse } = await import('@vercel/og')
+  
+  // Extract text from SVG if available
+  let extractedText = displayName
+  let backgroundColor = '#5298FF'
+  
+  if (ensSVG) {
+    const textMatch = ensSVG.match(/<text[^>]*>([^<]*)<\/text>/)
+    if (textMatch && textMatch[1]) {
+      extractedText = textMatch[1].trim()
+    }
+    
+    const bgColorMatch = ensSVG.match(/fill="([^"]*)"/)
+    if (bgColorMatch && bgColorMatch[1] && bgColorMatch[1] !== 'none') {
+      backgroundColor = bgColorMatch[1]
+    }
+  }
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          width: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '36px',
+          background: 'radial-gradient(circle, #444444, #222222)',
+          fontFamily: 'Inter, system-ui, sans-serif',
+          color: '#f4f4f4',
+        }}
+      >
+        <div
+          style={{
+            width: '300px',
+            height: '300px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: backgroundColor,
+            borderRadius: '12px',
+            fontSize: '32px',
+            fontWeight: '700',
+            color: 'white',
+            textAlign: 'center',
+            padding: '20px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          {extractedText}
+        </div>
+        
+        <div
+          style={{
+            height: '80px',
+            width: '2px',
+            backgroundColor: '#ffffff',
+            opacity: 0.3,
+          }}
+        />
+        
+        <img
+          src="https://grails.app/your-ens-market-logo.png"
+          alt="Grails"
+          width="232"
+          height="71"
+        />
+      </div>
+    ),
+    {
+      width: 800,
+      height: 418,
+    }
+  )
 }

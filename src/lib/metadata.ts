@@ -29,6 +29,11 @@ export const sharedMetadataOpenGraph: Metadata['openGraph'] = {
   siteName: metadataSiteName,
   url: 'https://grails.app',
   emails: ['contact@ethid.org'],
+  images: [
+    {
+      url: 'https://grails.app/previews/home.jpeg',
+    },
+  ],
 }
 
 export const sharedMetadataTwitter: Metadata['twitter'] = {
@@ -36,6 +41,11 @@ export const sharedMetadataTwitter: Metadata['twitter'] = {
   site: '@grailsmarket',
   creator: '@grailsmarket',
   description: metadataDescription,
+  images: [
+    {
+      url: 'https://grails.app/previews/home.jpeg',
+    },
+  ],
 }
 
 export const sharedMetadata: Metadata = {

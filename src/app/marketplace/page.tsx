@@ -13,13 +13,13 @@ export const metadata: Metadata = {
     description: 'Find your next Grail on the Grails ENS Market',
     siteName: 'Marketplace',
     url: 'https://grails.app/marketplace',
-    images: [{ url: 'https://grails.app/banners/marketplace.jpeg' }],
+    images: [{ url: 'https://grails.app/previews/marketplace.jpeg' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Marketplace | Grails',
     description: 'Find your next Grail on the Grails ENS Market',
-    images: 'https://grails.app/banners/marketplace.jpeg',
+    images: 'https://grails.app/previews/marketplace.jpeg',
   },
 }
 

@@ -1,11 +1,6 @@
 import HeroSearch from '@/components/home/heroSearch'
 import LiveActivity from '@/components/home/liveActivity'
 import RecentContainer from '@/components/home/recent-container'
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Grails Market',
-}
 
 const Home = () => {
   return (

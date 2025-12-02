@@ -8,13 +8,13 @@ export const metadata = {
     siteName: `Categories`,
     description: `Browse all ENS categories on Grails`,
     url: `https://grails.app/categories`,
-    images: [{ url: `https://grails.app/banners/categories.jpeg` }],
+    images: [{ url: `https://grails.app/previews/categories.jpeg` }],
   },
   twitter: {
     card: 'summary_large_image',
     title: `Categories | Grails`,
     description: `Browse all ENS categories on Grails`,
-    images: `https://grails.app/banners/categories.jpeg`,
+    images: `https://grails.app/previews/categories.jpeg`,
   },
 }
 

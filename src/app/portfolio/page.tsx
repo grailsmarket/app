@@ -9,13 +9,13 @@ export const metadata: Metadata = {
     description: 'Manage your ENS portfolio on Grails',
     siteName: 'Portfolio',
     url: 'https://grails.app/portfolio',
-    images: [{ url: 'https://grails.app/banners/portfolio.jpeg' }],
+    images: [{ url: 'https://grails.app/previews/portfolio.jpeg' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Portfolio | Grails',
     description: 'Manage your ENS portfolio on Grails',
-    images: 'https://grails.app/banners/portfolio.jpeg',
+    images: 'https://grails.app/previews/portfolio.jpeg',
   },
 }
 

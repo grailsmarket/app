@@ -3,6 +3,9 @@ import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash } from 'viem'
 
+// Configure for Node.js runtime (required for Puppeteer)
+export const runtime = 'nodejs'
+
 const size = {
   width: 800,
   height: 418,
@@ -51,34 +54,16 @@ export async function GET(req: NextRequest) {
   }
 
   if (isVercel) {
-    try {
-      const chromium = (await import('@sparticuz/chromium')).default
-      puppeteer = await import('puppeteer-core')
+    const chromium = (await import('@sparticuz/chromium')).default
+    puppeteer = await import('puppeteer-core')
 
-      // Set up chromium with proper configuration for Vercel
-      launchOptions = {
-        args: [
-          ...chromium.args,
-          '--disable-web-security',
-          '--disable-features=VizDisplayCompositor',
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--no-first-run',
-          '--disable-default-apps',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding',
-        ],
-        executablePath: await chromium.executablePath(),
-        headless: true,
-        ignoreHTTPSErrors: true,
-      }
-    } catch (error) {
-      console.error('Failed to load chromium, falling back to basic implementation:', error)
-      // Fall back to basic implementation without Puppeteer
-      return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
+    // Add font rendering arguments for better emoji support
+    const customArgs = [...chromium.args, '--disable-web-security', '--no-sandbox', '--font-render-hinting=none']
+
+    launchOptions = {
+      ...launchOptions,
+      args: customArgs,
+      executablePath: await chromium.executablePath(),
     }
   } else {
     puppeteer = await import('puppeteer')
@@ -191,9 +176,13 @@ export async function GET(req: NextRequest) {
       </html>
     `
 
-    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' })
+    // Set content and wait for network to be idle (with timeout)
+    await page.setContent(htmlContent, {
+      waitUntil: ['domcontentloaded', 'networkidle2'],
+      timeout: 6000, // 6 second timeout for entire page load
+    })
 
-    // Wait a bit for any async rendering
+    // Wait an additional 1 second for any final rendering
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     // Generate screenshot

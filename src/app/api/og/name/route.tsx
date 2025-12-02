@@ -16,6 +16,31 @@ const size = {
 export const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
 
+async function getBrowser() {
+  const REMOTE_PATH = process.env.CHROMIUM_REMOTE_EXEC_PATH
+  const LOCAL_PATH = process.env.CHROMIUM_LOCAL_EXEC_PATH
+
+  if (!REMOTE_PATH && !LOCAL_PATH) {
+    throw new Error('Missing a path for Chromium executable')
+  }
+
+  if (REMOTE_PATH) {
+    // ✅ Use the remote tarball (for Vercel)
+    return await puppeteerCore.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(REMOTE_PATH),
+      defaultViewport: { width: size.width, height: size.height },
+      headless: true,
+    })
+  }
+
+  // ✅ Local fallback (for dev)
+  return await puppeteerCore.launch({
+    executablePath: LOCAL_PATH,
+    headless: true,
+  })
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const name = searchParams.get('name') || 'Unknown'
@@ -93,26 +118,8 @@ export async function GET(req: NextRequest) {
 
   let browser
   try {
-    browser = await puppeteer.launch(launchOptions)
-
+    browser = await getBrowser()
     const page = await browser.newPage()
-
-    // Optimize page for faster rendering
-    await page.setRequestInterception(true)
-    page.on('request', (req: any) => {
-      // Block unnecessary resource types for faster loading
-      const resourceType = req.resourceType()
-      if (resourceType === 'stylesheet' || resourceType === 'script' || resourceType === 'font') {
-        req.continue()
-      } else if (resourceType === 'image' && req.url().includes('grails.app')) {
-        req.continue() // Allow our logo
-      } else if (resourceType === 'image') {
-        req.abort() // Block other images
-      } else {
-        req.continue()
-      }
-    })
-
     await page.setViewport({ width: size.width, height: size.height })
 
     // Create HTML content
@@ -184,7 +191,7 @@ export async function GET(req: NextRequest) {
     // Set content and wait for network to be idle (with timeout)
     await page.setContent(htmlContent, {
       waitUntil: ['domcontentloaded', 'networkidle2'],
-      timeout: 6000, // 6 second timeout for entire page load
+      timeout: 10000,
     })
 
     // Wait an additional 1 second for any final rendering
@@ -221,17 +228,17 @@ export async function GET(req: NextRequest) {
 // Fallback function using @vercel/og when Puppeteer fails
 async function generateSimpleImage(ensSVG: string | null, displayName: string) {
   const { ImageResponse } = await import('@vercel/og')
-  
+
   // Extract text from SVG if available
   let extractedText = displayName
   let backgroundColor = '#5298FF'
-  
+
   if (ensSVG) {
     const textMatch = ensSVG.match(/<text[^>]*>([^<]*)<\/text>/)
     if (textMatch && textMatch[1]) {
       extractedText = textMatch[1].trim()
     }
-    
+
     const bgColorMatch = ensSVG.match(/fill="([^"]*)"/)
     if (bgColorMatch && bgColorMatch[1] && bgColorMatch[1] !== 'none') {
       backgroundColor = bgColorMatch[1]
@@ -272,7 +279,7 @@ async function generateSimpleImage(ensSVG: string | null, displayName: string) {
         >
           {extractedText}
         </div>
-        
+
         <div
           style={{
             height: '80px',
@@ -281,13 +288,8 @@ async function generateSimpleImage(ensSVG: string | null, displayName: string) {
             opacity: 0.3,
           }}
         />
-        
-        <img
-          src="https://grails.app/your-ens-market-logo.png"
-          alt="Grails"
-          width="232"
-          height="71"
-        />
+
+        <img src='https://grails.app/your-ens-market-logo.png' alt='Grails' width='232' height='71' />
       </div>
     ),
     {

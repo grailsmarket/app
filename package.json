@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "checks": "npm run format && npm run lint && npm run typecheck",
-    "postinstall": "node -e \"console.log('Environment:', process.env.VERCEL_ENV ? 'Vercel' : 'Local')\""
+    "postinstall": "node scripts/postinstall.mjs"
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.8.0",

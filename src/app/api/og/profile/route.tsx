@@ -7,6 +7,8 @@ import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
 
 export async function GET(req: NextRequest) {
   const user = req.url.split('user=')[1] || ''
+  const defaultAvatar = 'https://efp.app/assets/art/default-avatar.svg'
+  const defaultHeader = 'https://efp.app/assets/art/default-header.svg'
 
   const getResponse = async () => {
     try {
@@ -17,9 +19,9 @@ export async function GET(req: NextRequest) {
           address: user,
           ens: {
             name: user,
-            avatar: 'https://efp.app/assets/art/default-avatar.svg',
+            avatar: defaultAvatar,
             records: {
-              header: 'https://efp.app/assets/art/default-header.svg',
+              header: defaultHeader,
             },
           },
         }
@@ -30,9 +32,9 @@ export async function GET(req: NextRequest) {
         address: user,
         ens: {
           name: user,
-          avatar: 'https://efp.app/assets/art/default-avatar.svg',
+          avatar: defaultAvatar,
           records: {
-            header: 'https://efp.app/assets/art/default-header.svg',
+            header: defaultHeader,
           },
         },
       }
@@ -47,9 +49,9 @@ export async function GET(req: NextRequest) {
     : isAddress(address)
       ? truncateAddress(address)
       : ens_beautify(address)
-  const fetchedAvatar = response.ens?.avatar
+  const fetchedAvatar = response.ens?.avatar || defaultAvatar
   // @ts-expect-error the records do exist
-  const fetchedHeader = response.ens?.records?.header
+  const fetchedHeader = response.ens?.records?.header || defaultHeader
 
   return new ImageResponse(
     (

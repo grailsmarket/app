@@ -1,5 +1,5 @@
 import { useWalletClient } from 'wagmi'
-import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS, ENS_HOLIDAY_REFERRER_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
 import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
 import { mainnet } from 'viem/chains'
 
@@ -17,7 +17,7 @@ const useExtendDomains = () => {
         address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
         abi: ENS_HOLIDAY_RENEWAL_ABI,
         functionName: 'bulkRenew',
-        args: [names, durations, ENS_HOLIDAY_REFERRER_ADDRESS],
+        args: [names, durations],
         value: totalPrice,
         chain: mainnet,
       })

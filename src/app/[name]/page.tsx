@@ -11,22 +11,33 @@ interface Props {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const name = beautifyName(decodeURI(params.name))
+  const imageUrl = `https://grails.app/api/og/name?name=${encodeURIComponent(name)}`
 
   return {
     title: `${name}`,
-    description: `${name}`,
+    description: `${name} - Available on Grails`,
     openGraph: {
       title: `${name}`,
-      siteName: `${name}`,
-      description: `${name}`,
-      url: `https://grails.app/${name}`,
-      images: [{ url: `https://grails.app/api/og/name?name=${name}` }],
+      siteName: 'Grails',
+      description: `${name} - Available on Grails`,
+      url: `https://grails.app/${encodeURIComponent(name)}`,
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 418,
+          alt: `${name} preview`,
+        }
+      ],
+      type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
       title: `${name}`,
-      description: `${name}`,
-      images: `https://grails.app/api/og/name?name=${name}`,
+      description: `${name} - Available on Grails`,
+      images: [imageUrl],
+      creator: '@grailsapp',
+      site: 'https://grails.app',
     },
   }
 }

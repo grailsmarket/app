@@ -67,6 +67,7 @@ export const sharedMetadata: Metadata = {
   ],
   icons: sharedMetadataIcons,
   openGraph: sharedMetadataOpenGraph,
+  twitter: sharedMetadataTwitter,
   authors: {
     name: 'EthID Org',
     url: 'https://ethid.org',

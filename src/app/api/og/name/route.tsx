@@ -198,13 +198,18 @@ export async function GET(req: NextRequest) {
     await page.close()
     await browser.close()
 
-    return new NextResponse(Buffer.from(screenshot), {
+    const response = new Response(screenshot, {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
-        'CDN-Cache-Control': 'max-age=86400',
       },
     })
+
+    // Add caching headers to improve performance
+    response.headers.set('Cache-Control', 'public, max-age=100000, s-maxage=100000, stale-while-revalidate=86400')
+    response.headers.set('CDN-Cache-Control', 'max-age=100000')
+    response.headers.set('Vercel-CDN-Cache-Control', 'max-age=100000')
+
+    return response
   } catch (error) {
     console.error('Error generating image with Puppeteer:', error)
 

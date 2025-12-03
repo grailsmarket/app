@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
+import { EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
 import Name from './name'
 import ListPrice from './listPrice'
 import RegistryPrice from './RegistryPrice'
@@ -47,7 +47,7 @@ const TableRow: React.FC<TableRowProps> = ({
   const domainListing = domain.listings[0]
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase())
   const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
   const isBulkAction = isBulkRenewing || isBulkTransferring

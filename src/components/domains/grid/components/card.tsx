@@ -5,7 +5,7 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import { REGISTERED, GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import Link from 'next/link'
@@ -48,7 +48,7 @@ const Card: React.FC<CardProps> = ({
   const { filterType, portfolioTab } = useFilterContext()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(registrationStatus === GRACE_PERIOD || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase())
   const domainListing = domain.listings[0]
   const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)

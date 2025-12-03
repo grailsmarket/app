@@ -16,41 +16,67 @@ const size = {
 export const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
 
-async function getBrowser() {
-  const REMOTE_PATH = process.env.CHROMIUM_REMOTE_EXEC_PATH
-  const LOCAL_PATH = process.env.CHROMIUM_LOCAL_EXEC_PATH
-  const isVercel = !!process.env.VERCEL_ENV
+// async function getBrowser() {
+//   const REMOTE_PATH = process.env.CHROMIUM_REMOTE_EXEC_PATH
+//   const LOCAL_PATH = process.env.CHROMIUM_LOCAL_EXEC_PATH
+//   const isVercel = !!process.env.VERCEL_ENV
 
-  if (isVercel && REMOTE_PATH) {
-    // ✅ Use the remote tarball (for Vercel)
-    try {
-      return await puppeteerCore.launch({
-        args: chromium.args,
-        executablePath: await chromium.executablePath(REMOTE_PATH),
-        defaultViewport: { width: size.width, height: size.height },
-        headless: true,
+//   if (isVercel && REMOTE_PATH) {
+//     // ✅ Use the remote tarball (for Vercel)
+//     try {
+//       return await puppeteerCore.launch({
+//         args: chromium.args,
+//         executablePath: await chromium.executablePath(REMOTE_PATH),
+//         defaultViewport: { width: size.width, height: size.height },
+//         headless: true,
+//       })
+//     } catch (error) {
+//       console.error('Failed to launch with remote path:', error)
+//       throw error
+//     }
+//   }
+
+//   if (LOCAL_PATH) {
+//     // ✅ Local fallback (for dev)
+//     try {
+//       return await puppeteerCore.launch({
+//         executablePath: LOCAL_PATH,
+//         headless: true,
+//         defaultViewport: { width: size.width, height: size.height },
+//       })
+//     } catch (error) {
+//       console.error('Failed to launch with local path:', error)
+//       throw error
+//     }
+//   }
+
+//   throw new Error('Missing a path for Chromium executable')
+// }
+
+const CHROMIUM_PACK_URL = `https://${process.env.VERCEL_URL}/chromium-pack.tar`
+
+let cachedExecutablePath: string | null = null
+let downloadPromise: Promise<string> | null = null
+
+async function getChromiumPath(): Promise<string> {
+  if (cachedExecutablePath) return cachedExecutablePath
+
+  if (!downloadPromise) {
+    downloadPromise = chromium
+      .executablePath(CHROMIUM_PACK_URL)
+      .then((path) => {
+        cachedExecutablePath = path
+        console.log('Chromium path resolved:', path)
+        return path
       })
-    } catch (error) {
-      console.error('Failed to launch with remote path:', error)
-      throw error
-    }
+      .catch((error) => {
+        console.error('Failed to get Chromium path:', error)
+        downloadPromise = null
+        throw error
+      })
   }
 
-  if (LOCAL_PATH) {
-    // ✅ Local fallback (for dev)
-    try {
-      return await puppeteerCore.launch({
-        executablePath: LOCAL_PATH,
-        headless: true,
-        defaultViewport: { width: size.width, height: size.height },
-      })
-    } catch (error) {
-      console.error('Failed to launch with local path:', error)
-      throw error
-    }
-  }
-
-  throw new Error('Missing a path for Chromium executable')
+  return downloadPromise
 }
 
 export async function GET(req: NextRequest) {
@@ -126,7 +152,14 @@ export async function GET(req: NextRequest) {
 
   let browser
   try {
-    browser = await getBrowser()
+    const executablePath = await getChromiumPath()
+    const launchOptions = {
+      executablePath,
+      args: chromium.args,
+    }
+
+    console.log('Launching browser with executable path:', executablePath)
+    browser = await puppeteerCore.launch(launchOptions)
     const page = await browser.newPage()
     await page.setViewport({ width: size.width, height: size.height })
 
@@ -211,8 +244,6 @@ export async function GET(req: NextRequest) {
       clip: { x: 0, y: 0, width: size.width, height: size.height },
     })
 
-    await browser.close()
-
     return new NextResponse(Buffer.from(screenshot), {
       headers: {
         'Content-Type': 'image/png',
@@ -229,6 +260,10 @@ export async function GET(req: NextRequest) {
 
     // Fallback to a simple error response
     return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
+  } finally {
+    if (browser) {
+      await browser.close()
+    }
   }
 }
 

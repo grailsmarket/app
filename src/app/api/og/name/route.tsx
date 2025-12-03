@@ -67,7 +67,7 @@ async function getChromiumPath(): Promise<string> {
         return path
       })
       .catch((error) => {
-        console.error('Failed to get Chromium path:', error)
+        console.error('Failed to get Chromium path:', 'trying to use chromium pack from:', CHROMIUM_PACK_URL, error)
         downloadPromise = null
         throw error
       })

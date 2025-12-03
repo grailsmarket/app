@@ -10,13 +10,14 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "checks": "npm run format && npm run lint && npm run typecheck",
-    "postinstall": "node scripts/postinstall.mjs"
+    "postinstall": "node -e \"process.env.VERCEL_ENV === 'production' ? require('child_process').execSync('node scripts/postinstall.mjs', {stdio: 'inherit'}) : console.log('Skipping postinstall')\""
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.8.0",
     "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@reduxjs/toolkit": "^2.9.0",
+    "@sparticuz/chromium": "^141.0.0",
     "@sparticuz/chromium-min": "^141.0.0",
     "@tanstack/react-query": "^5.90.2",
     "@vercel/analytics": "^1.5.0",

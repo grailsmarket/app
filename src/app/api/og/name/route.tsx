@@ -49,7 +49,7 @@ async function getChromiumPath(): Promise<string> {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const name = searchParams.get('name') || 'Unknown'
+  const name = (decodeURIComponent(searchParams.get('name')) || 'Unknown')
 
   const getENSSVG = async () => {
     try {
@@ -198,12 +198,13 @@ export async function GET(req: NextRequest) {
     await page.close()
     await browser.close()
 
+    // Cache for 7 days
     return new NextResponse(Buffer.from(screenshot), {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=100000, s-maxage=100000, stale-while-revalidate=86400',
-        'CDN-Cache-Control': 'max-age=100000',
-        'Vercel-CDN-Cache-Control': 'max-age=100000',
+        'Cache-Control': 'public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400',
+        'CDN-Cache-Control': 'max-age=604800',
+        'Vercel-CDN-Cache-Control': 'max-age=604800',
       },
     })
   } catch (error) {

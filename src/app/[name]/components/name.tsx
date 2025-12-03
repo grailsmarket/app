@@ -23,11 +23,15 @@ const NamePage: React.FC<Props> = ({ name }) => {
     if (typeof window !== 'undefined' && name) {
       // Small delay to not block initial page load
       const timer = setTimeout(() => {
-        const img = new Image()
-        img.src = `/api/og/name?name=${encodeURIComponent(name)}`
-        // We don't need to do anything with the image, just trigger the request
+        try {
+          const img = new Image()
+          img.src = `/api/og/name?name=${encodeURIComponent(name)}`
+          // We don't need to do anything with the image, just trigger the request
+        } catch (error) {
+          console.error('Error pre-warming OG image cache:', error)
+        }
       }, 1000)
-      
+
       return () => clearTimeout(timer)
     }
   }, [name])

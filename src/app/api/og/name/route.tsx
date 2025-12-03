@@ -3,7 +3,7 @@ import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash } from 'viem'
 import puppeteerCore from 'puppeteer-core'
-import chromium from '@sparticuz/chromium-min'
+import chromium from '@sparticuz/chromium'
 
 const size = {
   width: 800,

@@ -111,9 +111,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          }),
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        }),
     }
 
     console.log('Launching browser with executable path:', executablePath)
@@ -195,7 +195,7 @@ export async function GET(req: NextRequest) {
     try {
       await page.setContent(htmlContent, {
         waitUntil: 'domcontentloaded',
-        timeout: 10000,
+        timeout: 20000,
       })
     } catch (error) {
       console.error('Error setting page content:', error)

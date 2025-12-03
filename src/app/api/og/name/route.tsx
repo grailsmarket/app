@@ -104,7 +104,13 @@ export async function GET(req: NextRequest) {
     const executablePath = await getChromiumPath()
     const launchOptions = {
       executablePath,
-      args: chromium.args,
+      args: [
+        ...chromium.args,
+        '--disable-blink-features=AutomationControlled',
+        '--disable-web-security',
+        '--no-first-run',
+        '--no-default-browser-check',
+      ],
       headless: true,
       defaultViewport: { width: size.width, height: size.height },
       ignoreHTTPSErrors: true,
@@ -120,11 +126,6 @@ export async function GET(req: NextRequest) {
     console.log('Launching browser with executable path:', executablePath)
     browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
     page = await browser.newPage()
-
-    // Set user agent to avoid detection issues
-    await page.setUserAgent(
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    )
 
     // Create HTML content
     const htmlContent = `
@@ -192,23 +193,22 @@ export async function GET(req: NextRequest) {
       </html>
     `
 
-    // Set content with more robust error handling
+    // Set content with optimized settings
     try {
       await page.setContent(htmlContent, {
-        waitUntil: 'domcontentloaded',
-        timeout: 12000,
+        waitUntil: 'networkidle0',  // More efficient, waits for all network requests to finish
+        timeout: 10000,
       })
     } catch (error) {
       console.error('Error setting page content:', error)
-      // Try a simpler approach
+      // Try a simpler approach with reduced timeout
       await page.goto(`data:text/html,${encodeURIComponent(htmlContent)}`, {
-        waitUntil: 'domcontentloaded',
-        timeout: 12000,
+        waitUntil: 'networkidle0',
+        timeout: 10000,
       })
     }
 
-    // Wait a bit for any final rendering
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // Removed 500ms wait - networkidle0 ensures page is ready
 
     // Generate screenshot with error handling
     const screenshot = await page.screenshot({

@@ -5,9 +5,6 @@ import { labelhash, namehash } from 'viem'
 import puppeteerCore from 'puppeteer-core'
 import chromium from '@sparticuz/chromium-min'
 
-// Configure for Node.js runtime (required for Puppeteer)
-export const runtime = 'nodejs'
-
 const size = {
   width: 800,
   height: 418,

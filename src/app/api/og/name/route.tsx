@@ -49,7 +49,25 @@ async function getChromiumPath(): Promise<string> {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const name = (decodeURIComponent(searchParams.get('name')) || 'Unknown')
+  const name = decodeURIComponent(searchParams.get('name') || '')
+
+  if (name === '') {
+    return NextResponse.json(
+      { error: 'Name is required' },
+      {
+        status: 400,
+      }
+    )
+  }
+
+  if (name.replace('.eth', '').length < 3) {
+    return NextResponse.json(
+      { error: 'Invalid ENS name' },
+      {
+        status: 400,
+      }
+    )
+  }
 
   const getENSSVG = async () => {
     try {
@@ -90,10 +108,12 @@ export async function GET(req: NextRequest) {
       defaultViewport: { width: size.width, height: size.height },
       ignoreHTTPSErrors: true,
       // Add these for better stability locally
-      ...(process.env.VERCEL_ENV ? {} : {
-        headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-      })
+      ...(process.env.VERCEL_ENV
+        ? {}
+        : {
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          }),
     }
 
     console.log('Launching browser with executable path:', executablePath)
@@ -101,7 +121,9 @@ export async function GET(req: NextRequest) {
     page = await browser.newPage()
 
     // Set user agent to avoid detection issues
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+    await page.setUserAgent(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    )
 
     // Create HTML content
     const htmlContent = `
@@ -173,14 +195,14 @@ export async function GET(req: NextRequest) {
     try {
       await page.setContent(htmlContent, {
         waitUntil: 'domcontentloaded',
-        timeout: 10000
+        timeout: 10000,
       })
     } catch (error) {
       console.error('Error setting page content:', error)
       // Try a simpler approach
       await page.goto(`data:text/html,${encodeURIComponent(htmlContent)}`, {
         waitUntil: 'domcontentloaded',
-        timeout: 10000
+        timeout: 10000,
       })
     }
 

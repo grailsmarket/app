@@ -27,7 +27,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
           width: 800,
           height: 418,
           alt: `${name} preview`,
-        }
+        },
       ],
       type: 'website',
     },

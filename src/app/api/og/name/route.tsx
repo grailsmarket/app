@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash } from 'viem'
-import puppeteerCore from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
+import puppeteerCore, { LaunchOptions } from 'puppeteer-core'
+import chromium from '@sparticuz/chromium-min'
 
 const size = {
   width: 800,
@@ -80,6 +80,7 @@ export async function GET(req: NextRequest) {
   const displayName = name.includes('.') ? name : `${name}.eth`
 
   let browser
+  let page
   try {
     const executablePath = await getChromiumPath()
     const launchOptions = {
@@ -87,11 +88,20 @@ export async function GET(req: NextRequest) {
       args: chromium.args,
       headless: true,
       defaultViewport: { width: size.width, height: size.height },
+      ignoreHTTPSErrors: true,
+      // Add these for better stability locally
+      ...(process.env.VERCEL_ENV ? {} : {
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      })
     }
 
     console.log('Launching browser with executable path:', executablePath)
-    browser = await puppeteerCore.launch(launchOptions)
-    const page = await browser.newPage()
+    browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
+    page = await browser.newPage()
+
+    // Set user agent to avoid detection issues
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
     // Create HTML content
     const htmlContent = `
@@ -159,21 +169,33 @@ export async function GET(req: NextRequest) {
       </html>
     `
 
-    // Set content and wait for network to be idle (with timeout)
-    await page.setContent(htmlContent, {
-      waitUntil: ['domcontentloaded', 'networkidle2'],
-    })
+    // Set content with more robust error handling
+    try {
+      await page.setContent(htmlContent, {
+        waitUntil: 'domcontentloaded',
+        timeout: 10000
+      })
+    } catch (error) {
+      console.error('Error setting page content:', error)
+      // Try a simpler approach
+      await page.goto(`data:text/html,${encodeURIComponent(htmlContent)}`, {
+        waitUntil: 'domcontentloaded',
+        timeout: 10000
+      })
+    }
 
-    // Wait an additional 1 second for any final rendering
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Wait a bit for any final rendering
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
-    // Generate screenshot
+    // Generate screenshot with error handling
     const screenshot = await page.screenshot({
       type: 'png',
       fullPage: false,
       clip: { x: 0, y: 0, width: size.width, height: size.height },
     })
 
+    // Close page before browser
+    await page.close()
     await browser.close()
 
     return new NextResponse(Buffer.from(screenshot), {
@@ -186,8 +208,21 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Error generating image with Puppeteer:', error)
 
+    // Clean up resources
+    if (page) {
+      try {
+        await page.close()
+      } catch (e) {
+        console.error('Error closing page:', e)
+      }
+    }
+
     if (browser) {
-      await browser.close()
+      try {
+        await browser.close()
+      } catch (e) {
+        console.error('Error closing browser:', e)
+      }
     }
 
     return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { labelhash, namehash } from 'viem'
+import { hexToBigInt, labelhash, namehash } from 'viem'
 import puppeteerCore, { LaunchOptions } from 'puppeteer-core'
 import chromium from '@sparticuz/chromium-min'
+import { WEEK_IN_SECONDS } from '@/constants/time'
 
 const size = {
   width: 800,
@@ -71,23 +72,23 @@ export async function GET(req: NextRequest) {
 
   const getENSSVG = async () => {
     try {
-      // Try wrapped domain first
+      // Calculate both hashes upfront
       const nameHash = namehash(name)
-      const wrappedResponse = await fetch(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
-
-      if (wrappedResponse.status === 200) {
-        return await wrappedResponse.text()
-      }
-
-      // Try unwrapped domain
       const labelHash = labelhash(name.replace('.eth', ''))
-      const unwrappedResponse = await fetch(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`)
 
-      if (unwrappedResponse.status === 200) {
-        return await unwrappedResponse.text()
-      }
+      // Make both requests in parallel
+      const [wrappedResult, unwrappedResult] = await Promise.all([
+        fetch(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
+          .then(res => res.status === 200 ? res.text() : null)
+          .catch(() => null),
+        fetch(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`)
+          .then(res => res.status === 200 ? res.text() : null)
+          .catch(() => null)
+      ])
 
-      return null
+      // Return the first successful result
+      const tokenId = hexToBigInt(labelHash).toString()
+      return wrappedResult || unwrappedResult || `https://grails.app/api/og/ens-name/${tokenId}?name=${name}?expires=${encodeURIComponent(new Date().getTime() + WEEK_IN_SECONDS * 1000)}`
     } catch (error) {
       console.error('Error fetching ENS SVG:', error)
       return null
@@ -95,7 +96,7 @@ export async function GET(req: NextRequest) {
   }
 
   const ensSVG = await getENSSVG()
-  const displayName = name.includes('.') ? name : `${name}.eth`
+  const displayName = name.endsWith('.eth') ? name : `${name}.eth`
 
   let browser
   let page
@@ -195,14 +196,14 @@ export async function GET(req: NextRequest) {
     try {
       await page.setContent(htmlContent, {
         waitUntil: 'domcontentloaded',
-        timeout: 20000,
+        timeout: 12000,
       })
     } catch (error) {
       console.error('Error setting page content:', error)
       // Try a simpler approach
       await page.goto(`data:text/html,${encodeURIComponent(htmlContent)}`, {
         waitUntil: 'domcontentloaded',
-        timeout: 10000,
+        timeout: 12000,
       })
     }
 

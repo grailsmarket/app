@@ -8,7 +8,7 @@ const projectRoot = dirname(__dirname)
 async function main() {
   try {
     // Resolve chromium package location
-    const chromiumResolvedPath = import.meta.resolve('@sparticuz/chromium-min')
+    const chromiumResolvedPath = import.meta.resolve('@sparticuz/chromium')
 
     // Convert file:// URL to regular path
     const chromiumPath = chromiumResolvedPath.replace(/^file:\/\//, '')

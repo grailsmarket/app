@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
+    localPatterns: [
+      {
+        pathname: '/api/og/**',
+      },
+    ],
   },
 }
 

@@ -6,7 +6,7 @@ import { OrderStatus, OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import React, { createContext, useContext, ReactNode, useMemo } from 'react'
 import { mainnet } from 'viem/chains'
 import { ContractTransaction } from 'ethers'
-import { DomainOfferType } from '@/types/domains'
+import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
 
 type SeaportContextValue = {
@@ -17,8 +17,7 @@ type SeaportContextValue = {
   validateOrder: (order: OrderWithCounter) => Promise<boolean>
   getOrderStatus: (orderHash: string) => Promise<OrderStatus | null>
   createListing: (params: {
-    ensName: string
-    tokenId: string
+    domains: MarketplaceDomainType[]
     priceInEth: string
     expiryDate: number
     royaltyBps?: number

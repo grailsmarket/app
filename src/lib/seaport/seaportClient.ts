@@ -13,6 +13,7 @@ import {
   keccak256,
   encodePacked,
   toHex,
+  Abi,
 } from 'viem'
 import {
   CreateOrderInput,
@@ -36,6 +37,9 @@ import {
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+import { MarketplaceDomainType } from '@/types/domains'
+import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
+import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
 
 export type MarketplaceType = 'grails' | 'opensea'
 
@@ -716,8 +720,7 @@ export class SeaportClient {
    * Create a listing order for an ENS name
    */
   async createListingOrder(params: {
-    ensName: string
-    tokenId: string
+    domains: MarketplaceDomainType[]
     priceInEth: string
     expiryDate: number
     offererAddress: string
@@ -729,7 +732,7 @@ export class SeaportClient {
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
-  }): Promise<OrderWithCounter | { opensea: OrderWithCounter; grails: OrderWithCounter }> {
+  }): Promise<OrderWithCounter[] | { opensea: OrderWithCounter[]; grails: OrderWithCounter[] }> {
     if (!this.seaport) {
       throw new Error('Seaport client not initialized')
     }
@@ -760,6 +763,7 @@ export class SeaportClient {
         ...params,
         marketplace: params.marketplace[0],
       }
+
       return await this.createListingOrderForMarketplace(singleMarketplaceParams)
     }
   }
@@ -768,8 +772,7 @@ export class SeaportClient {
    * Internal method to create a listing order for a specific marketplace
    */
   private async createListingOrderForMarketplace(params: {
-    tokenId: string
-    ensName: string
+    domains: MarketplaceDomainType[]
     priceInEth: string
     expiryDate: number
     offererAddress: string
@@ -781,77 +784,81 @@ export class SeaportClient {
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
-  }): Promise<OrderWithCounter> {
+  }): Promise<OrderWithCounter[]> {
     if (!this.seaport || !this.publicClient || !this.walletClient) {
       throw new Error('Seaport client not initialized')
     }
 
-    // First, check if the user owns the ENS NFT
+    // First, check if the user owns all the ENS NFTs
     // ENS names can be either unwrapped (owned directly) or wrapped (owned through NameWrapper)
-    let actualOwner: Address | null = null
-    const isWrapped = await checkIfWrapped(params.ensName)
+    const wrappedResponses = await Promise.all(params.domains.map((domain) => checkIfWrapped(domain.name)))
+    const wrappedNames = params.domains.filter((domain, index) => wrappedResponses[index])
+    const unwrappedNames = params.domains.filter((domain, index) => !wrappedResponses[index])
+    const isWrapped = wrappedResponses.some((response) => response)
+    const areAllNamesWrapped = wrappedResponses.every((response) => response)
+
+    console.log('Wrapped names:', wrappedNames)
+    console.log('Unwrapped names:', unwrappedNames)
 
     try {
       // If the NameWrapper owns it, check the wrapper for the actual owner
       if (isWrapped) {
         console.log('ENS name is wrapped, checking NameWrapper for actual owner...')
 
+        const multicallContracts = wrappedNames.map((domain) => ({
+          address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
+          abi: NAME_WRAPPER_ABI as Abi,
+          functionName: 'ownerOf',
+          args: [BigInt(domain.token_id)],
+        }))
+
         try {
-          actualOwner = (await this.publicClient.readContract({
-            address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
-            abi: [
-              {
-                name: 'ownerOf',
-                type: 'function',
-                inputs: [{ name: 'id', type: 'uint256' }],
-                outputs: [{ name: 'owner', type: 'address' }],
-                stateMutability: 'view',
-              },
-            ],
-            functionName: 'ownerOf',
-            args: [BigInt(params.tokenId)],
-          })) as Address
+          const actualOwners = await this.publicClient.multicall({ contracts: multicallContracts })
+          const isSuccess = actualOwners.every((owner) => owner.status === 'success')
+          if (!isSuccess) {
+            throw new Error('Failed to get owner for all names from NameWrapper')
+          }
+          const actualOwner = actualOwners.map((owner) => owner.result as Address)
+
+          if (actualOwner.some((owner) => owner.toLowerCase() !== params.offererAddress.toLowerCase())) {
+            throw new Error(
+              `You are not the owner of all ENS names. Current owner: ${actualOwner}${isWrapped ? ' (wrapped)' : ''}`
+            )
+          }
         } catch (wrapperError) {
           console.error('Failed to get owner from NameWrapper:', wrapperError)
           throw new Error('This ENS name appears to be wrapped but we could not verify ownership')
         }
-      } else {
-        // Not wrapped, the registrar owner is the actual owner
-        const registrarOwner = (await this.publicClient.readContract({
-          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-          abi: [
-            {
-              name: 'ownerOf',
-              type: 'function',
-              inputs: [{ name: 'tokenId', type: 'uint256' }],
-              outputs: [{ name: '', type: 'address' }],
-              stateMutability: 'view',
-            },
-          ],
-          functionName: 'ownerOf',
-          args: [BigInt(params.tokenId)],
-        })) as Address
-
-        actualOwner = registrarOwner
-
-        console.log('registrarOwner:', registrarOwner)
       }
 
-      if (actualOwner.toLowerCase() !== params.offererAddress.toLowerCase()) {
-        throw new Error(`You don't own this ENS name. Current owner: ${actualOwner}${isWrapped ? ' (wrapped)' : ''}`)
+      const multicallContracts = unwrappedNames.map((domain) => ({
+        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+        abi: BaseRegistrarAbi,
+        functionName: 'ownerOf',
+        args: [BigInt(domain.token_id)],
+      }))
+      // Not wrapped, the registrar owner is the actual owner
+      const registrarOwners = await this.publicClient.multicall({ contracts: multicallContracts })
+      const isSuccess = registrarOwners.every((owner) => owner.status === 'success')
+
+      if (!isSuccess) {
+        throw new Error('Failed to get owner for all names from ENS Registrar')
       }
 
-      console.log(`ENS ownership verified. Name is ${isWrapped ? 'wrapped' : 'unwrapped'}`)
+      const registrarOwner = registrarOwners.map((owner) => owner.result as Address)
+
+      console.log('registrarOwner:', registrarOwner)
+      if (registrarOwner.some((owner) => owner.toLowerCase() !== params.offererAddress.toLowerCase())) {
+        throw new Error(
+          `You are not the owner of all ENS names. Current owner: ${registrarOwner}${isWrapped ? ' (wrapped)' : ''}`
+        )
+      }
     } catch (error: any) {
       if (error.message?.includes("don't own")) {
         throw error
       }
       throw new Error(`Failed to verify ENS ownership: ${error.message}`)
     }
-
-    // Check if token transfer is approved
-    // When using conduits, we approve the conduit address instead of Seaport directly
-    const contractToApprove = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
     // Determine which conduit/operator to approve based on marketplace
     let operatorToApprove: string
@@ -884,27 +891,59 @@ export class SeaportClient {
       isSeaportAddress: operatorToApprove.toLowerCase() === SEAPORT_ADDRESS.toLowerCase(),
     })
 
+    let wrappedNamesApproved = true
+    let unwrappedNamesApproved = true
+
     try {
-      const isApproved = (await this.publicClient.readContract({
-        address: contractToApprove as `0x${string}`,
-        abi: [
-          {
-            name: 'isApprovedForAll',
-            type: 'function',
-            inputs: [
-              { name: 'owner', type: 'address' },
-              { name: 'operator', type: 'address' },
-            ],
-            outputs: [{ name: '', type: 'bool' }],
-            stateMutability: 'view',
-          },
-        ],
-        functionName: 'isApprovedForAll',
-        args: [params.offererAddress as Address, operatorToApprove as Address],
-      })) as boolean
-      console.log(`Approval status for ${operatorToApprove}:`, isApproved)
-      // If not approved, request approval
-      if (!isApproved) {
+      if (isWrapped) {
+        const areWrappedNamesApproved = (await this.publicClient.readContract({
+          address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
+          abi: [
+            {
+              name: 'isApprovedForAll',
+              type: 'function',
+              inputs: [
+                { name: 'owner', type: 'address' },
+                { name: 'operator', type: 'address' },
+              ],
+              outputs: [{ name: '', type: 'bool' }],
+              stateMutability: 'view',
+            },
+          ],
+          functionName: 'isApprovedForAll',
+          args: [params.offererAddress as Address, operatorToApprove as Address],
+        })) as boolean
+
+        if (!areWrappedNamesApproved) {
+          wrappedNamesApproved = false
+        }
+      }
+
+      if (!areAllNamesWrapped) {
+        const areUnwrappedNamesApproved = (await this.publicClient.readContract({
+          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+          abi: [
+            {
+              name: 'isApprovedForAll',
+              type: 'function',
+              inputs: [
+                { name: 'owner', type: 'address' },
+                { name: 'operator', type: 'address' },
+              ],
+              outputs: [{ name: '', type: 'bool' }],
+              stateMutability: 'view',
+            },
+          ],
+          functionName: 'isApprovedForAll',
+          args: [params.offererAddress as Address, operatorToApprove as Address],
+        })) as boolean
+
+        if (!areUnwrappedNamesApproved) {
+          unwrappedNamesApproved = false
+        }
+      }
+
+      if (!wrappedNamesApproved || !unwrappedNamesApproved) {
         params.setStatus?.('approving')
         console.log(
           `${approvalTarget} not approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}, requesting approval...`
@@ -917,36 +956,47 @@ export class SeaportClient {
           throw new Error('No account connected')
         }
 
-        const approvalHash = await this.walletClient.writeContract({
-          account: this.walletClient.account,
-          chain: this.publicClient.chain,
-          address: contractToApprove as `0x${string}`,
-          abi: [
-            {
-              name: 'setApprovalForAll',
-              type: 'function',
-              inputs: [
-                { name: 'operator', type: 'address' },
-                { name: 'approved', type: 'bool' },
-              ],
-              outputs: [],
-              stateMutability: 'nonpayable',
-            },
-          ],
-          functionName: 'setApprovalForAll',
-          args: [operatorToApprove as Address, true],
-        })
+        if (!wrappedNamesApproved) {
+          const approvalHash = await this.walletClient.writeContract({
+            account: this.walletClient.account,
+            chain: this.publicClient.chain,
+            address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
+            abi: NAME_WRAPPER_ABI,
+            functionName: 'setApprovalForAll',
+            args: [operatorToApprove as Address, true],
+          })
 
-        params.setApproveTxHash?.(approvalHash)
-        // Wait for approval transaction to be confirmed
-        console.log('Waiting for approval transaction...', approvalHash)
-        await this.publicClient.waitForTransactionReceipt({
-          hash: approvalHash,
-          confirmations: 1,
-        })
-        console.log('Approval confirmed')
+          params.setApproveTxHash?.(approvalHash)
+          // Wait for approval transaction to be confirmed
+          console.log('Waiting for approval transaction for wrapped names...', approvalHash)
+          await this.publicClient.waitForTransactionReceipt({
+            hash: approvalHash,
+            confirmations: 1,
+          })
+          console.log('Approval for wrapped names confirmed')
+        }
+
+        if (!unwrappedNamesApproved) {
+          const approvalHash = await this.walletClient.writeContract({
+            account: this.walletClient.account,
+            chain: this.publicClient.chain,
+            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+            abi: BaseRegistrarAbi,
+            functionName: 'setApprovalForAll',
+            args: [operatorToApprove as Address, true],
+          })
+
+          params.setApproveTxHash?.(approvalHash)
+          // Wait for approval transaction to be confirmed
+          console.log('Waiting for approval transaction for unwrapped names...', approvalHash)
+          await this.publicClient.waitForTransactionReceipt({
+            hash: approvalHash,
+            confirmations: 1,
+          })
+          console.log('Approval for unwrapped names confirmed')
+        }
       } else {
-        console.log(`${approvalTarget} already approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}`)
+        console.log(`${approvalTarget} already approved`)
       }
     } catch (error: any) {
       params.setStatus?.('error')
@@ -1013,46 +1063,6 @@ export class SeaportClient {
       }
     }
 
-    // Use the appropriate contract address and item type for the offer
-    // Wrapped names are ERC-1155 tokens on NameWrapper
-    // Unwrapped names are ERC-721 tokens on base registrar
-    const tokenContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-    // const itemType = isWrapped ? ItemType.ERC1155 : ItemType.ERC721
-
-    // For wrapped names, use namehash; for unwrapped, use labelhash
-    const tokenIdentifier = params.tokenId
-
-    console.log('Token details for offer:', {
-      tokenContract,
-      tokenIdentifier,
-      isWrapped,
-      originalTokenId: params.tokenId,
-      ENS_REGISTRAR_ADDRESS,
-      ENS_NAME_WRAPPER_ADDRESS,
-    })
-
-    // Validate token contract address
-    if (!tokenContract) {
-      throw new Error('Token contract address is undefined')
-    }
-
-    const offer: CreateInputItem[] = isWrapped
-      ? [
-          {
-            itemType: ItemType.ERC1155,
-            token: tokenContract,
-            identifier: tokenIdentifier,
-            amount: '1',
-          },
-        ]
-      : [
-          {
-            itemType: ItemType.ERC721,
-            token: tokenContract,
-            identifier: tokenIdentifier,
-          },
-        ]
-
     // Determine conduit key based on marketplace
     let conduitKey: string | undefined
     if (params.marketplace === 'opensea') {
@@ -1061,54 +1071,97 @@ export class SeaportClient {
       conduitKey = MARKETPLACE_CONDUIT_KEY
     }
 
-    // Include conduit key in order so Seaport knows to use the conduit
-    const orderInput: CreateOrderInput = {
-      offer,
-      consideration,
-      startTime,
-      endTime,
-      // Allow partial fills for bundle purchases
-      allowPartialFills: false,
-      // Restrict order to prevent unwanted transfers
-      restrictedByZone: false,
-      // Include conduit key so Seaport uses the conduit for transfers
-      ...(conduitKey && { conduitKey }),
-    }
+    const orderInputs = params.domains.map((domain) => {
+      // Use the appropriate contract address and item type for the offer
+      const isNameWrapped = wrappedNames.includes(domain)
+      const tokenContract = isNameWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+      console.log('Token contract:', tokenContract)
 
-    // Create the order
-    console.log('Creating order with:', {
-      marketplace: params.marketplace,
-      offererAddress: params.offererAddress,
-      conduitKey,
-      seaportInitialized: !!this.seaport,
-      isWrapped,
-      tokenContract,
+      // For wrapped names, use namehash; for unwrapped, use labelhash
+      const tokenIdentifier = domain.token_id
+
+      console.log('Token details for offer:', {
+        tokenContract,
+        tokenIdentifier,
+        isNameWrapped,
+        originalTokenId: domain.token_id,
+        ENS_REGISTRAR_ADDRESS,
+        ENS_NAME_WRAPPER_ADDRESS,
+      })
+
+      // Validate token contract address
+      if (!tokenContract) {
+        throw new Error('Token contract address is undefined')
+      }
+
+      const offer: CreateInputItem[] = isNameWrapped
+        ? [
+            {
+              itemType: ItemType.ERC1155,
+              token: tokenContract,
+              identifier: tokenIdentifier,
+              amount: '1',
+            },
+          ]
+        : [
+            {
+              itemType: ItemType.ERC721,
+              token: tokenContract,
+              identifier: tokenIdentifier,
+            },
+          ]
+
+      // Include conduit key in order so Seaport knows to use the conduit
+      const orderInput: CreateOrderInput = {
+        offer,
+        consideration,
+        startTime,
+        endTime,
+        // Allow partial fills for bundle purchases
+        allowPartialFills: false,
+        // Restrict order to prevent unwanted transfers
+        restrictedByZone: false,
+        // Include conduit key so Seaport uses the conduit for transfers
+        ...(conduitKey && { conduitKey }),
+      }
+
+      // Create the order
+      console.log('Creating order with:', {
+        marketplace: params.marketplace,
+        offererAddress: params.offererAddress,
+        conduitKey,
+        seaportInitialized: !!this.seaport,
+        isNameWrapped,
+        tokenContract,
+      })
+
+      console.log('Order input:', JSON.stringify(orderInput, null, 2))
+      console.log('Seaport instance check:', {
+        hasSeaport: !!this.seaport,
+        seaportType: typeof this.seaport,
+        hasPublicClient: !!this.publicClient,
+        hasWalletClient: !!this.walletClient,
+      })
+
+      if (!params.offererAddress) {
+        throw new Error('Offerer address is required')
+      }
+
+      // Extra validation to ensure no null/undefined values
+      if (orderInput.offer.some((item) => !item.token)) {
+        throw new Error('Offer item missing token address')
+      }
+      if (orderInput.consideration.some((item) => !item.recipient)) {
+        throw new Error('Consideration item missing recipient')
+      }
+
+      return orderInput
     })
-
-    console.log('Order input:', JSON.stringify(orderInput, null, 2))
-    console.log('Seaport instance check:', {
-      hasSeaport: !!this.seaport,
-      seaportType: typeof this.seaport,
-      hasPublicClient: !!this.publicClient,
-      hasWalletClient: !!this.walletClient,
-    })
-
-    if (!params.offererAddress) {
-      throw new Error('Offerer address is required')
-    }
-
-    // Extra validation to ensure no null/undefined values
-    if (orderInput.offer.some((item) => !item.token)) {
-      throw new Error('Offer item missing token address')
-    }
-    if (orderInput.consideration.some((item) => !item.recipient)) {
-      throw new Error('Consideration item missing recipient')
-    }
 
     // Create the order to be submitted to the blockchain
     let executeAllActions
     try {
-      const result = await this.seaport.createOrder(orderInput, params.offererAddress as `0x${string}`)
+      const result = await this.seaport.createBulkOrders(orderInputs, params.offererAddress as `0x${string}`)
       executeAllActions = result.executeAllActions
     } catch (error: any) {
       console.error('Seaport createOrder failed:', error)
@@ -1123,17 +1176,21 @@ export class SeaportClient {
 
     params.setStatus?.('submitting')
     // Execute all actions onchain (including getting the signature)
-    const order = await executeAllActions()
-    console.log('Order:', order)
+    const orders = await executeAllActions()
+    console.log('Orders:', orders)
 
     // Add metadata to order
-    ;(order as any).isWrapped = isWrapped
-    ;(order as any).tokenContract = tokenContract
-    ;(order as any).marketplace = params.marketplace
-    // Store conduit key for reference but don't include in order parameters
-    ;(order as any).conduitKey = conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
+    const formattedOrders = orders.map((order, index) => {
+      const isNameWrapped = wrappedNames.includes(params.domains[index])
+      return {
+        ...order,
+        isNameWrapped,
+        marketplace: params.marketplace,
+        conduitKey: conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000',
+      }
+    })
 
-    return order
+    return formattedOrders
   }
 
   /**
@@ -1515,48 +1572,52 @@ export class SeaportClient {
    * Format order for storage in database
    * Handles BigInt serialization to prevent JSON.stringify errors
    */
-  formatOrderForStorage(order: OrderWithCounter): SeaportStoredOrder {
+  formatOrderForStorage(orders: OrderWithCounter[]): SeaportStoredOrder[] {
     // Check if order has marketplace metadata
-    const marketplace = (order as any).marketplace || 'grails'
-    const storedConduitKey = (order as any).conduitKey
+    const formattedOrders = orders.map((order) => {
+      const marketplace = (order as any).marketplace || 'grails'
+      const storedConduitKey = (order as any).conduitKey
 
-    // Determine which conduit info to store based on marketplace
-    let conduitKey = '0x0000000000000000000000000000000000000000000000000000000000000000'
-    let conduitAddress = null
+      // Determine which conduit info to store based on marketplace
+      let conduitKey = '0x0000000000000000000000000000000000000000000000000000000000000000'
+      let conduitAddress = null
 
-    if (marketplace === 'opensea') {
-      conduitKey = OPENSEA_CONDUIT_KEY
-      conduitAddress = OPENSEA_CONDUIT_ADDRESS
-    } else if (marketplace === 'grails' && USE_CONDUIT) {
-      conduitKey = MARKETPLACE_CONDUIT_KEY
-      conduitAddress = MARKETPLACE_CONDUIT_ADDRESS
-    }
+      if (marketplace === 'opensea') {
+        conduitKey = OPENSEA_CONDUIT_KEY
+        conduitAddress = OPENSEA_CONDUIT_ADDRESS
+      } else if (marketplace === 'grails' && USE_CONDUIT) {
+        conduitKey = MARKETPLACE_CONDUIT_KEY
+        conduitAddress = MARKETPLACE_CONDUIT_ADDRESS
+      }
 
-    // Use stored conduit key if available
-    if (storedConduitKey) {
-      conduitKey = storedConduitKey
-    }
+      // Use stored conduit key if available
+      if (storedConduitKey) {
+        conduitKey = storedConduitKey
+      }
 
-    // Serialize BigInt values to strings for JSON compatibility
-    const serializedParameters = this.serializeBigInts(order.parameters)
+      // Serialize BigInt values to strings for JSON compatibility
+      const serializedParameters = this.serializeBigInts(order.parameters)
 
-    return {
-      parameters: serializedParameters,
-      signature: order.signature,
-      // Include protocol metadata
-      protocol_data: {
+      return {
         parameters: serializedParameters,
         signature: order.signature,
-        // Always include conduit key (even if zero)
-        conduitKey,
-        ...(conduitAddress && { conduitAddress }),
-      },
-      // Calculate order hash
-      orderHash: this.seaport ? this.seaport.getOrderHash(order.parameters) : null,
-      // Store marketplace and conduit info
-      marketplace,
-      usesConduit: conduitKey !== '0x0000000000000000000000000000000000000000000000000000000000000000',
-    }
+        // Include protocol metadata
+        protocol_data: {
+          parameters: serializedParameters,
+          signature: order.signature,
+          // Always include conduit key (even if zero)
+          conduitKey,
+          ...(conduitAddress && { conduitAddress }),
+        },
+        // Calculate order hash
+        orderHash: this.seaport ? this.seaport.getOrderHash(order.parameters) : null,
+        // Store marketplace and conduit info
+        marketplace,
+        usesConduit: conduitKey !== '0x0000000000000000000000000000000000000000000000000000000000000000',
+      }
+    })
+
+    return formattedOrders
   }
 
   /**

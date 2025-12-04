@@ -25,6 +25,13 @@ import {
   addBulkRenewalModalDomain,
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
+import {
+  removeMakeListingModalDomain,
+  addMakeListingModalDomain,
+  selectMakeListingModal,
+  addMakeListingModalPreviousListing,
+  removeMakeListingModalPreviousListing,
+} from '@/state/reducers/modals/makeListingModal'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -33,6 +40,7 @@ interface CardProps {
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
   isBulkTransferring?: boolean
+  isBulkListing?: boolean
 }
 
 const Card: React.FC<CardProps> = ({
@@ -42,17 +50,22 @@ const Card: React.FC<CardProps> = ({
   watchlistId,
   isBulkRenewing,
   isBulkTransferring,
+  isBulkListing,
 }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { filterType, portfolioTab } = useFilterContext()
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !(
+    EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
+  )
   const domainListing = domain.listings[0]
+  const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
-  const isBulkAction = isBulkRenewing || isBulkTransferring
+  const { domains: listingModalDomains } = useAppSelector(selectMakeListingModal)
+  const isBulkAction = isBulkRenewing || isBulkTransferring || isBulkListing
 
   return (
     <Link
@@ -83,6 +96,19 @@ const Card: React.FC<CardProps> = ({
               dispatch(removeBulkRenewalModalDomain(domain))
             } else {
               dispatch(addBulkRenewalModalDomain(domain))
+            }
+          } else if (isBulkListing) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            if (registrationStatus !== REGISTERED) return
+
+            if (listingModalDomains.some((d) => d.name === domain.name)) {
+              dispatch(removeMakeListingModalDomain(domain))
+              if (grailsListings.length > 0) dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
+            } else {
+              dispatch(addMakeListingModalDomain(domain))
+              if (grailsListings.length > 0) dispatch(addMakeListingModalPreviousListing(grailsListings[0]))
             }
           }
         }
@@ -167,6 +193,7 @@ const Card: React.FC<CardProps> = ({
             watchlistId={watchlistId}
             isBulkRenewing={isBulkRenewing}
             isBulkTransferring={isBulkTransferring}
+            isBulkListing={isBulkListing}
           />
         </div>
       </div>

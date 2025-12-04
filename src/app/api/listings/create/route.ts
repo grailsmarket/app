@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { API_URL } from '@/constants/api'
+import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 
 const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
@@ -11,9 +12,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate required fields based on order type
-    const { type, order_data, tokenId, price, currency } = body
+    const { type, orders, domains, price, currency } = body
 
-    if (!type || !order_data) {
+    if (!type || !orders || !orders.length || !domains || !domains.length) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     const buyerAddress = normalizeAddress(body.buyer_address)
 
     // Determine marketplace from order_data metadata
-    const marketplace = order_data.marketplace || 'grails'
+    const marketplace = orders[0].marketplace || 'grails'
 
     // Determine currency address and decimals
     let currencyAddress = ZERO_ADDRESS // Default to native ETH
@@ -45,9 +46,11 @@ export async function POST(request: NextRequest) {
     let openSeaSubmissionError = null
     if (marketplace === 'opensea') {
       try {
-        const openSeaResponse = await submitOrderToOpenSea(order_data)
+        const openSeaResponses = await Promise.all(
+          orders.map(async (order: SeaportStoredOrder) => await submitOrderToOpenSea(order))
+        )
         console.log('Successfully submitted order to OpenSea')
-        return NextResponse.json(openSeaResponse)
+        return NextResponse.json({ openSea: openSeaResponses })
       } catch (openSeaError: any) {
         console.error('Failed to submit to OpenSea:', openSeaError)
         openSeaSubmissionError = openSeaError.message || String(openSeaError)
@@ -64,43 +67,48 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Forward to backend API
-    const response = await fetch(`${API_URL}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        type,
-        token_id: tokenId,
-        price_wei: priceInSmallestUnit,
-        currency_address: currencyAddress.toLowerCase(),
-        order_data: JSON.stringify(order_data),
-        order_hash: order_data.orderHash,
-        seller_address: type === 'listing' ? sellerAddress : null,
-        buyer_address: type === 'offer' || type === 'collection_offer' ? buyerAddress : null,
-        traits: body.traits,
-        status: 'active',
-        source: marketplace, // Track where the order is listed
-      }),
-    })
+    try {
+      const responses = await Promise.all(
+        orders.map(async (order: SeaportStoredOrder, index: number) => {
+          // Forward to backend API
+          const response = await fetch(`${API_URL}/orders`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type,
+              token_id: domains[index].token_id,
+              price_wei: priceInSmallestUnit,
+              currency_address: currencyAddress.toLowerCase(),
+              order_data: JSON.stringify(order),
+              order_hash: order.orderHash,
+              seller_address: type === 'listing' ? sellerAddress : null,
+              buyer_address: type === 'offer' || type === 'collection_offer' ? buyerAddress : null,
+              traits: body.traits,
+              status: 'active',
+              source: marketplace, // Track where the order is listed
+            }),
+          })
 
-    if (!response.ok) {
-      const error = await response.text()
-      return NextResponse.json({ error: `Failed to save order: ${error}` }, { status: response.status })
+          if (!response.ok) {
+            const error = await response.text()
+            return NextResponse.json({ error: `Failed to save order: ${error}` }, { status: response.status })
+          }
+
+          const result = await response.json()
+          return result
+        })
+      )
+
+      return NextResponse.json({ grails: responses })
+    } catch (error: any) {
+      console.error('Error creating orders on Grails marketplace:', error)
+      return NextResponse.json(
+        { error: error.message || 'Failed to create orders on Grails marketplace' },
+        { status: 500 }
+      )
     }
-
-    const result = await response.json()
-
-    // If there was an OpenSea error during cross-listing, include it in response
-    if (openSeaSubmissionError && marketplace === 'both') {
-      return NextResponse.json({
-        ...result,
-        warning: `Listing saved to Grails marketplace, but failed to submit to OpenSea: ${openSeaSubmissionError}`,
-      })
-    }
-
-    return NextResponse.json(result)
   } catch (error: any) {
     console.error('Error creating order:', error)
     return NextResponse.json({ error: error.message || 'Failed to create order' }, { status: 500 })

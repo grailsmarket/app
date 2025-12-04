@@ -34,7 +34,7 @@ export type DomainListingType = {
   status: string
   seller_address: string
   order_hash: string
-  order_data: Record<string, unknown>
+  order_data: DomainOfferOrderDataType
   expires_at: string
   created_at: string
   source: string

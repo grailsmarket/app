@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
       const categoryData = response.find((c) => c.name === category)
       return categoryData
     } catch (error) {
+      console.error(error)
       return null
     }
   }

@@ -8,9 +8,14 @@ import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatus
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import {
-  setMakeListingModalDomain,
+  setMakeListingModalDomains,
   setMakeListingModalOpen,
-  setMakeListingModalPreviousListing,
+  setMakeListingModalPreviousListings,
+  addMakeListingModalPreviousListing,
+  removeMakeListingModalPreviousListing,
+  addMakeListingModalDomain,
+  removeMakeListingModalDomain,
+  selectMakeListingModal,
 } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 import Watchlist from '@/components/ui/watchlist'
@@ -40,6 +45,7 @@ interface ActionsProps {
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
   isBulkTransferring?: boolean
+  isBulkListing?: boolean
 }
 
 const Actions: React.FC<ActionsProps> = ({
@@ -49,6 +55,7 @@ const Actions: React.FC<ActionsProps> = ({
   watchlistId,
   isBulkRenewing,
   isBulkTransferring,
+  isBulkListing,
   isFirstInRow,
 }) => {
   const dispatch = useAppDispatch()
@@ -59,6 +66,7 @@ const Actions: React.FC<ActionsProps> = ({
   const domainListing = domain.listings[0]
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
   const { domains: bulkTransferDomains } = useAppSelector(selectTransferModal)
+  const { domains: bulkListingDomains } = useAppSelector(selectMakeListingModal)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
 
   const openBuyNowModal = () => {
@@ -74,12 +82,12 @@ const Actions: React.FC<ActionsProps> = ({
 
   const openMakeListingModal = () => {
     if (!domain) return
-    dispatch(setMakeListingModalDomain(domain))
+    dispatch(setMakeListingModalDomains([domain]))
     dispatch(setMakeListingModalOpen(true))
     if (grailsListings.length > 0) {
-      dispatch(setMakeListingModalPreviousListing(grailsListings[0]))
+      dispatch(setMakeListingModalPreviousListings(grailsListings))
     } else {
-      dispatch(setMakeListingModalPreviousListing(null))
+      dispatch(setMakeListingModalPreviousListings([]))
     }
   }
 
@@ -144,6 +152,7 @@ const Actions: React.FC<ActionsProps> = ({
           </div>
         )
       }
+
       if (isBulkTransferring) {
         const isSelected = bulkTransferDomains.some((d) => d.name === domain.name)
         return (
@@ -188,6 +197,47 @@ const Actions: React.FC<ActionsProps> = ({
           </div>
         )
       }
+
+      if (isBulkListing) {
+        if (registrationStatus !== REGISTERED) return null
+
+        const isSelected = bulkListingDomains.some((d) => d.name === domain.name)
+
+        return (
+          <div className='flex flex-row justify-end gap-4 opacity-100'>
+            {isSelected ? (
+              <PrimaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(removeMakeListingModalDomain(domain))
+                  if (grailsListings.length > 0) {
+                    dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
+                  }
+                }}
+                className='flex flex-row items-center gap-1'
+              >
+                Selected
+                <Check className='h-3 w-3' />
+              </PrimaryButton>
+            ) : (
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(addMakeListingModalDomain(domain))
+                  if (grailsListings.length > 0) {
+                    dispatch(addMakeListingModalPreviousListing(grailsListings[0]))
+                  }
+                }}
+              >
+                Select
+              </SecondaryButton>
+            )}
+          </div>
+        )
+      }
+
       if (registrationStatus !== REGISTERED) return null
 
       if (domainListing?.price) {

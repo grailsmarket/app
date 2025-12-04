@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         }
       return response
     } catch (error) {
+      console.error(error)
       return {
         primary_list: null,
         address: user,

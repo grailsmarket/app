@@ -18,15 +18,19 @@ import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
 import { cn } from '@/utils/tailwind'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { useUserContext } from '@/context/user'
 import Price from '@/components/ui/price'
 import { MAX_ETH_SUPPLY } from '@/constants/web3/tokens'
-import { beautifyName } from '@/lib/ens'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
+import {
+  setMakeListingModalCanAddDomains,
+  setMakeListingModalDomains,
+  setMakeListingModalPreviousListings,
+} from '@/state/reducers/modals/makeListingModal'
 
 export type ListingStatus =
   | 'review'
@@ -41,13 +45,14 @@ const currentTimestamp = Math.floor(Date.now() / 1000)
 
 interface CreateListingModalProps {
   onClose: () => void
-  domain: MarketplaceDomainType | null
-  previousListing: DomainListingType | null
+  domains: MarketplaceDomainType[]
+  previousListings: DomainListingType[]
 }
 
-const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain, previousListing }) => {
-  const { poapClaimed } = useAppSelector(selectUserProfile)
+const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domains, previousListings }) => {
+  const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
+  const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
 
   const [price, setPrice] = useState<number | ''>('')
@@ -65,10 +70,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (!domain) return null
-
-  const ensName = beautifyName(domain.name)
-  const tokenId = domain.token_id
+  if (!domains.length) return null
 
   const durationOptions: DropdownOption[] = [
     { value: currentTimestamp + DAY_IN_SECONDS, label: '1 Day' },
@@ -108,8 +110,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
     try {
       const params: any = {
-        ensName,
-        tokenId,
+        domains,
         priceInEth: price.toString(),
         expiryDate,
         marketplace: selectedMarketplace,
@@ -128,11 +129,11 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         throw new Error(result.error || 'Failed to create listing')
       }
 
-      if (previousListing) {
+      if (previousListings.length > 0) {
         setStatus('cancelling')
 
         try {
-          const result = await cancelListings([previousListing.id])
+          const result = await cancelListings(previousListings.map((listing) => listing.id))
           console.log('Cancellation result:', result)
         } catch (err) {
           setError('Failed to cancel listing')
@@ -168,11 +169,21 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   }
 
   const successMessage = () => {
-    if (previousListing) {
-      return `Listing for ${ensName} was edited successfully. The new listing is now active on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
+    if (previousListings.length > 0) {
+      return `Listings for ${domains.map((domain) => domain.name).join(', ')} were edited successfully. The new listings are now active on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
     } else {
-      return `${ensName} was listed successfully on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
+      return `Listings for ${domains.map((domain) => domain.name).join(', ')} were listed successfully on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
     }
+  }
+
+  const handleClose = () => {
+    if (status === 'success') {
+      dispatch(setMakeListingModalCanAddDomains(false))
+      dispatch(setMakeListingModalDomains([]))
+      dispatch(setMakeListingModalPreviousListings([]))
+    }
+
+    onClose()
   }
 
   const getModalContent = () => {
@@ -180,44 +191,59 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       case 'review':
         return (
           <div className='flex flex-col gap-4'>
-            <div className='flex flex-col gap-2'>
-              <div className='flex w-full items-center justify-between gap-2'>
-                <p className='font-sedan-sc text-xl'>Name</p>
-                <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
+            <div className='px-lg bg-secondary border-tertiary flex max-h-[200px] flex-col overflow-y-auto rounded-md border py-1'>
+              <div className='flex items-center justify-between gap-2 py-2'>
+                <p className='font-sedan-sc text-2xl'>Names:</p>
+                <p className='text-xl font-medium'>{domains.length}</p>
               </div>
-              {previousListing && (
-                <>
-                  <div className='flex w-full items-center justify-between gap-2'>
-                    <p className='font-sedan-sc text-xl'>Price</p>
-                    <Price
-                      price={previousListing.price}
-                      currencyAddress={previousListing.currency_address as Address}
-                      fontSize='text-xl font-semibold'
-                      iconSize='16px'
-                      alignTooltip='right'
-                    />
-                  </div>
-                  <div className='flex justify-between'>
-                    <p className='font-sedan-sc text-xl'>Marketplace</p>
-                    <div className='flex items-center gap-1'>
-                      <Image
-                        src={SOURCE_ICONS[previousListing.source as keyof typeof SOURCE_ICONS]}
-                        alt={previousListing.source}
-                        width={24}
-                        height={24}
-                        className='h-5 w-auto'
-                      />
-                      <p className='font-medium capitalize'>{previousListing.source}</p>
+              {domains.map((domain) => {
+                const previousListing = previousListings.find((listing) =>
+                  listing.source === 'grails'
+                    ? listing.order_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+                    : listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+                )
+                return (
+                  <div key={domain.token_id} className='flex flex-col gap-2 border-t border-t-white/30 py-2'>
+                    <div className='flex w-full items-center justify-between gap-2'>
+                      <p className='font-sedan-sc text-xl'>Name</p>
+                      <p className='max-w-2/3 truncate font-semibold'>{domain.name}</p>
                     </div>
+                    {previousListing && (
+                      <>
+                        <div className='flex w-full items-center justify-between gap-2'>
+                          <p className='font-sedan-sc text-xl'>Price</p>
+                          <Price
+                            price={previousListing.price}
+                            currencyAddress={previousListing.currency_address as Address}
+                            fontSize='text-xl font-semibold'
+                            iconSize='16px'
+                            alignTooltip='right'
+                          />
+                        </div>
+                        <div className='flex justify-between'>
+                          <p className='font-sedan-sc text-xl'>Marketplace</p>
+                          <div className='flex items-center gap-1'>
+                            <Image
+                              src={SOURCE_ICONS[previousListing.source as keyof typeof SOURCE_ICONS]}
+                              alt={previousListing.source}
+                              width={24}
+                              height={24}
+                              className='h-5 w-auto'
+                            />
+                            <p className='font-medium capitalize'>{previousListing.source}</p>
+                          </div>
+                        </div>
+                        <div className='flex justify-between'>
+                          <p className='font-sedan-sc text-xl'>Expiry Date</p>
+                          <p className='max-w-2/3 truncate text-lg font-medium'>
+                            {formatExpiryDate(previousListing.expires_at)}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <div className='flex justify-between'>
-                    <p className='font-sedan-sc text-xl'>Expiry Date</p>
-                    <p className='max-w-2/3 truncate text-lg font-medium'>
-                      {formatExpiryDate(previousListing.expires_at)}
-                    </p>
-                  </div>
-                </>
-              )}
+                )
+              })}
             </div>
             <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
               <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
@@ -368,13 +394,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 </div>
               </div>
             ) : null}
-            {/* {status && (
-                <div className="text-blue-500 text-sm">{status}</div>
-              )} */}
-
-            {/* {error && (
-                <div className="text-red-500 text-sm">{error}</div>
-              )} */}
             <div className='flex flex-col gap-2'>
               <PrimaryButton
                 disabled={
@@ -399,7 +418,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                       : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}`
                   : 'Switch Chain'}
               </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='h-10 w-full'>
+              <SecondaryButton onClick={handleClose} className='h-10 w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -488,7 +507,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </div>
               <div className='text-xl font-bold'>{successMessage()}</div>
             </div>
-            <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
+            <SecondaryButton onClick={handleClose} disabled={isLoading} className='w-full'>
               <p className='text-label text-lg font-bold'>Close</p>
             </SecondaryButton>
           </>
@@ -505,7 +524,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <PrimaryButton onClick={() => setStatus('review')} className='w-full'>
                 Try Again
               </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
+              <SecondaryButton onClick={handleClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -518,10 +537,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     <div
       onClick={() => {
         if (status === 'error' || status === 'review' || status === 'success') {
-          onClose()
+          handleClose()
         }
       }}
-      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end overflow-y-auto bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:justify-start md:p-4 md:pt-20 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {
@@ -535,7 +554,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         ) : (
           <>
             <h2 className='font-sedan-sc min-h-6 max-w-full truncate text-center text-3xl text-white'>
-              {previousListing ? 'Edit Listing' : 'List Name'}
+              {previousListings.length > 0
+                ? domains.length > 1
+                  ? 'Edit Listings'
+                  : 'Edit Listing'
+                : domains.length > 1
+                  ? 'List Names'
+                  : 'List Name'}
             </h2>
             {getModalContent()}
           </>

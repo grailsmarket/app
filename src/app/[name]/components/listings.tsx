@@ -12,9 +12,9 @@ import { useAccount } from 'wagmi'
 import { useAppDispatch } from '@/state/hooks'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import {
-  setMakeListingModalDomain,
+  setMakeListingModalDomains,
   setMakeListingModalOpen,
-  setMakeListingModalPreviousListing,
+  setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setBuyNowModalListing, setBuyNowModalDomain, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
@@ -39,8 +39,8 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
 
   const openMakeListingModal = () => {
     if (!domain) return
-    dispatch(setMakeListingModalDomain(domain))
-    dispatch(setMakeListingModalPreviousListing(null))
+    dispatch(setMakeListingModalDomains([domain]))
+    dispatch(setMakeListingModalPreviousListings([]))
     dispatch(setMakeListingModalOpen(true))
 
     // if (grailsListings.length > 0) {
@@ -115,8 +115,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
 
   const openEditListingModal = () => {
     if (!domain) return
-    dispatch(setMakeListingModalDomain(domain))
-    dispatch(setMakeListingModalPreviousListing(listing))
+    dispatch(setMakeListingModalDomains([domain]))
+    dispatch(setMakeListingModalPreviousListings([listing]))
     dispatch(setMakeListingModalOpen(true))
   }
 
@@ -132,7 +132,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
         source: listing.source,
       })
     )
-    dispatch(setMakeListingModalPreviousListing(null))
+    dispatch(setMakeListingModalPreviousListings([]))
     dispatch(setCancelListingModalOpen(true))
   }
 

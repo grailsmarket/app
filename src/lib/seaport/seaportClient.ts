@@ -814,6 +814,10 @@ export class SeaportClient {
 
         try {
           const actualOwners = await this.publicClient.multicall({ contracts: multicallContracts })
+          const isSuccess = actualOwners.every((owner) => owner.status === 'success')
+          if (!isSuccess) {
+            throw new Error('Failed to get owner for all names from NameWrapper')
+          }
           const actualOwner = actualOwners.map((owner) => owner.result as Address)
 
           if (actualOwner.some((owner) => owner.toLowerCase() !== params.offererAddress.toLowerCase())) {
@@ -835,6 +839,12 @@ export class SeaportClient {
       }))
       // Not wrapped, the registrar owner is the actual owner
       const registrarOwners = await this.publicClient.multicall({ contracts: multicallContracts })
+      const isSuccess = registrarOwners.every((owner) => owner.status === 'success')
+
+      if (!isSuccess) {
+        throw new Error('Failed to get owner for all names from ENS Registrar')
+      }
+
       const registrarOwner = registrarOwners.map((owner) => owner.result as Address)
 
       console.log('registrarOwner:', registrarOwner)

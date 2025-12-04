@@ -1,5 +1,5 @@
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { MarketplaceDomainType } from '@/types/domains'
+import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 import React, { MouseEventHandler } from 'react'
 import CartIcon from './CartIcon'
@@ -34,11 +34,13 @@ import {
 } from '@/state/reducers/modals/makeListingModal'
 import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
+import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
   index: number
   columnCount: number
+  registrationStatus: RegistrationStatus
   canAddToCart: boolean
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
@@ -48,9 +50,10 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({
   domain,
-  columnCount,
+  registrationStatus,
   canAddToCart,
   index,
+  columnCount,
   watchlistId,
   isBulkRenewing,
   isBulkTransferring,
@@ -175,6 +178,8 @@ const Actions: React.FC<ActionsProps> = ({
       }
 
       if (isBulkListing) {
+        if (registrationStatus !== REGISTERED) return null
+
         const isSelected = bulkListingDomains.some((d) => d.name === domain.name)
 
         return (

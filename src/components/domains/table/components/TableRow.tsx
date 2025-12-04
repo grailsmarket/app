@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
+import { EXPIRED_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
 import Name from './name'
 import ListPrice from './listPrice'
 import RegistryPrice from './RegistryPrice'
@@ -102,6 +102,7 @@ const TableRow: React.FC<TableRowProps> = ({
       <Actions
         key={`${domain.name}-actions`}
         domain={domain}
+        registrationStatus={registrationStatus}
         index={index}
         columnCount={columnCount}
         canAddToCart={canAddToCart}
@@ -146,6 +147,8 @@ const TableRow: React.FC<TableRowProps> = ({
           } else if (isBulkListing) {
             e.preventDefault()
             e.stopPropagation()
+
+            if (registrationStatus !== REGISTERED) return
 
             if (listingModalDomains.some((d) => d.name === domain.name)) {
               dispatch(removeMakeListingModalDomain(domain))

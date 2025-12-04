@@ -199,6 +199,8 @@ const Actions: React.FC<ActionsProps> = ({
       }
 
       if (isBulkListing) {
+        if (registrationStatus !== REGISTERED) return null
+
         const isSelected = bulkListingDomains.some((d) => d.name === domain.name)
 
         return (

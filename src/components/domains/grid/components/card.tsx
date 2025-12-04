@@ -101,6 +101,8 @@ const Card: React.FC<CardProps> = ({
             e.preventDefault()
             e.stopPropagation()
 
+            if (registrationStatus !== REGISTERED) return
+
             if (listingModalDomains.some((d) => d.name === domain.name)) {
               dispatch(removeMakeListingModalDomain(domain))
               if (grailsListings.length > 0) dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))

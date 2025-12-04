@@ -9,9 +9,11 @@ import { useFilterContext } from '@/context/filters'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import {
-  setMakeListingModalDomain,
+  setMakeListingModalDomains,
   setMakeListingModalOpen,
-  setMakeListingModalPreviousListing,
+  setMakeListingModalPreviousListings,
+  addMakeListingModalPreviousListing,
+  removeMakeListingModalPreviousListing,
 } from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import Watchlist from '@/components/ui/watchlist'
@@ -25,6 +27,11 @@ import {
   removeTransferModalDomain,
   selectTransferModal,
 } from '@/state/reducers/modals/transferModal'
+import {
+  addMakeListingModalDomain,
+  removeMakeListingModalDomain,
+  selectMakeListingModal,
+} from '@/state/reducers/modals/makeListingModal'
 import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
 
@@ -36,6 +43,7 @@ interface ActionsProps {
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
   isBulkTransferring?: boolean
+  isBulkListing?: boolean
 }
 
 const Actions: React.FC<ActionsProps> = ({
@@ -46,12 +54,14 @@ const Actions: React.FC<ActionsProps> = ({
   watchlistId,
   isBulkRenewing,
   isBulkTransferring,
+  isBulkListing,
 }) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { filterType } = useFilterContext()
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
   const { domains: bulkTransferDomains } = useAppSelector(selectTransferModal)
+  const { domains: bulkListingDomains } = useAppSelector(selectMakeListingModal)
   const { selectedTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
@@ -59,13 +69,13 @@ const Actions: React.FC<ActionsProps> = ({
   const openListModal = (e: React.MouseEvent<Element, MouseEvent>, editListing: boolean) => {
     e.preventDefault()
     e.stopPropagation()
-    dispatch(setMakeListingModalDomain(domain))
+    dispatch(setMakeListingModalDomains([domain]))
     dispatch(setMakeListingModalOpen(true))
 
     if (editListing && domainListing) {
-      dispatch(setMakeListingModalPreviousListing(domainListing))
+      dispatch(addMakeListingModalPreviousListing(domainListing))
     } else {
-      dispatch(setMakeListingModalPreviousListing(null))
+      dispatch(setMakeListingModalPreviousListings([]))
     }
   }
 
@@ -163,6 +173,45 @@ const Actions: React.FC<ActionsProps> = ({
           </div>
         )
       }
+
+      if (isBulkListing) {
+        const isSelected = bulkListingDomains.some((d) => d.name === domain.name)
+
+        return (
+          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
+            {isSelected ? (
+              <PrimaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(removeMakeListingModalDomain(domain))
+                  if (domainListing) {
+                    dispatch(removeMakeListingModalPreviousListing(domainListing))
+                  }
+                }}
+                className='flex flex-row items-center gap-1'
+              >
+                <p>Selected</p>
+                <Check className='text-background h-3 w-3' />
+              </PrimaryButton>
+            ) : (
+              <SecondaryButton
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  dispatch(addMakeListingModalDomain(domain))
+                  if (domainListing) {
+                    dispatch(addMakeListingModalPreviousListing(domainListing))
+                  }
+                }}
+              >
+                Select
+              </SecondaryButton>
+            )}
+          </div>
+        )
+      }
+
       if (domainListing?.price) {
         return (
           <>

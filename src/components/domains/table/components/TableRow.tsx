@@ -24,6 +24,13 @@ import {
   removeBulkRenewalModalDomain,
   selectBulkRenewalModal,
 } from '@/state/reducers/modals/bulkRenewalModal'
+import {
+  addMakeListingModalDomain,
+  removeMakeListingModalDomain,
+  selectMakeListingModal,
+  removeMakeListingModalPreviousListing,
+  addMakeListingModalPreviousListing,
+} from '@/state/reducers/modals/makeListingModal'
 
 interface TableRowProps {
   domain: MarketplaceDomainType
@@ -32,6 +39,7 @@ interface TableRowProps {
   watchlistId?: number | undefined
   isBulkRenewing?: boolean
   isBulkTransferring?: boolean
+  isBulkListing?: boolean
 }
 
 const TableRow: React.FC<TableRowProps> = ({
@@ -41,16 +49,21 @@ const TableRow: React.FC<TableRowProps> = ({
   watchlistId,
   isBulkRenewing,
   isBulkTransferring,
+  isBulkListing,
 }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const domainListing = domain.listings[0]
+  const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !(
+    EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
+  )
   const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
-  const isBulkAction = isBulkRenewing || isBulkTransferring
+  const { domains: listingModalDomains } = useAppSelector(selectMakeListingModal)
+  const isBulkAction = isBulkRenewing || isBulkTransferring || isBulkListing
 
   const columnCount = displayedColumns.length
   const columns: Record<MarketplaceHeaderColumn, React.ReactNode> = {
@@ -95,6 +108,7 @@ const TableRow: React.FC<TableRowProps> = ({
         watchlistId={watchlistId}
         isBulkRenewing={isBulkRenewing}
         isBulkTransferring={isBulkTransferring}
+        isBulkListing={isBulkListing}
       />
     ),
   }
@@ -128,6 +142,17 @@ const TableRow: React.FC<TableRowProps> = ({
               dispatch(removeBulkRenewalModalDomain(domain))
             } else {
               dispatch(addBulkRenewalModalDomain(domain))
+            }
+          } else if (isBulkListing) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            if (listingModalDomains.some((d) => d.name === domain.name)) {
+              dispatch(removeMakeListingModalDomain(domain))
+              if (grailsListings.length > 0) dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
+            } else {
+              dispatch(addMakeListingModalDomain(domain))
+              if (grailsListings.length > 0) dispatch(addMakeListingModalPreviousListing(grailsListings[0]))
             }
           }
         }

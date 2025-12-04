@@ -6,7 +6,7 @@ import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offer
 import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 import { useUserContext } from '@/context/user'
-import { DomainOfferType } from '@/types/domains'
+import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
 import { MarketplaceType } from '@/lib/seaport/seaportClient'
 
@@ -71,8 +71,7 @@ export function useSeaportClient() {
   // Create a listing
   const createListing = useCallback(
     async (params: {
-      ensName: string
-      tokenId: string
+      domains: MarketplaceDomainType[]
       priceInEth: string
       expiryDate: number
       royaltyBps?: number
@@ -110,7 +109,7 @@ export function useSeaportClient() {
       try {
         await seaportClient.initialize(publicClient, walletClient)
 
-        const order = await seaportClient.createListingOrder({
+        const orders = await seaportClient.createListingOrder({
           ...params,
           offererAddress: address,
           marketplace: params.marketplace,
@@ -121,6 +120,8 @@ export function useSeaportClient() {
           setError: params.setError,
         })
 
+        console.log('Orders:', orders)
+
         // console.log('Params:', params)
         // console.log('Marketplace:', params.marketplace)
         // console.log('Currency:', params.currency)
@@ -130,13 +131,17 @@ export function useSeaportClient() {
         // Submitting created orders to the marketplace APIs
         params.setStatus?.('submitting')
         // Handle "both" marketplace case
-        if (params.marketplace.length > 1 && 'opensea' in order && 'grails' in order) {
+        if (params.marketplace.length > 1 && 'opensea' in orders && 'grails' in orders) {
           // Create two separate listings - one for each platform
-          const openSeaOrder = seaportClient.formatOrderForStorage(order.opensea)
-          openSeaOrder.marketplace = 'opensea'
+          const openSeaOrders = seaportClient.formatOrderForStorage(orders.opensea)
+          openSeaOrders.forEach((order) => {
+            order.marketplace = 'opensea'
+          })
 
-          const grailsOrder = seaportClient.formatOrderForStorage(order.grails)
-          grailsOrder.marketplace = 'grails'
+          const grailsOrders = seaportClient.formatOrderForStorage(orders.grails)
+          grailsOrders.forEach((order) => {
+            order.marketplace = 'grails'
+          })
 
           // Submit both orders
           const [openSeaResponse, grailsResponse] = await Promise.all([
@@ -145,10 +150,10 @@ export function useSeaportClient() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 type: 'listing',
-                tokenId: params.tokenId,
+                domains: params.domains,
                 price: params.priceInEth,
                 currency: params.currency,
-                order_data: openSeaOrder,
+                orders: openSeaOrders,
                 seller_address: address,
               }),
             }),
@@ -157,10 +162,10 @@ export function useSeaportClient() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 type: 'listing',
-                tokenId: params.tokenId,
+                domains: params.domains,
                 price: params.priceInEth,
                 currency: params.currency,
-                order_data: grailsOrder,
+                orders: grailsOrders,
                 seller_address: address,
               }),
             }),
@@ -197,8 +202,7 @@ export function useSeaportClient() {
         }
 
         // Single marketplace case
-        const formattedOrder = seaportClient.formatOrderForStorage(order as any)
-        formattedOrder.marketplace = params.marketplace[0]
+        const formattedOrders = seaportClient.formatOrderForStorage(orders as OrderWithCounter[])
 
         // Send to API
         const response = await fetch('/api/listings/create', {
@@ -208,10 +212,10 @@ export function useSeaportClient() {
           },
           body: JSON.stringify({
             type: 'listing',
-            tokenId: params.tokenId,
+            domains: params.domains,
             price: params.priceInEth,
             currency: params.currency,
-            order_data: formattedOrder,
+            orders: formattedOrders,
             seller_address: address,
           }),
         })
@@ -305,7 +309,7 @@ export function useSeaportClient() {
 
           // Here we handle creating the offer for the Grails marketplace
           console.log('Creating offer for marketplace:', marketplace)
-          const formattedOrder = seaportClient.formatOrderForStorage(order)
+          const formattedOrder = seaportClient.formatOrderForStorage([order])[0]
           const response = await createOfferApi({
             marketplace: marketplace as MarketplaceType,
             tokenId: params.tokenId,

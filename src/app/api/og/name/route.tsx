@@ -79,16 +79,20 @@ export async function GET(req: NextRequest) {
       // Make both requests in parallel
       const [wrappedResult, unwrappedResult] = await Promise.all([
         fetch(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
-          .then(res => res.status === 200 ? res.text() : null)
+          .then((res) => (res.status === 200 ? res.text() : null))
           .catch(() => null),
         fetch(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`)
-          .then(res => res.status === 200 ? res.text() : null)
-          .catch(() => null)
+          .then((res) => (res.status === 200 ? res.text() : null))
+          .catch(() => null),
       ])
 
       // Return the first successful result
       const tokenId = hexToBigInt(labelHash).toString()
-      return wrappedResult || unwrappedResult || `https://grails.app/api/og/ens-name/${tokenId}?name=${name}?expires=${encodeURIComponent(new Date().getTime() + WEEK_IN_SECONDS * 1000)}`
+      return (
+        wrappedResult ||
+        unwrappedResult ||
+        `https://grails.app/api/og/ens-name/${tokenId}?name=${name}?expires=${encodeURIComponent(new Date().getTime() + WEEK_IN_SECONDS * 1000)}`
+      )
     } catch (error) {
       console.error('Error fetching ENS SVG:', error)
       return null
@@ -118,9 +122,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-          headless: 'new',
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        }),
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          }),
     }
 
     console.log('Launching browser with executable path:', executablePath)
@@ -196,7 +200,7 @@ export async function GET(req: NextRequest) {
     // Set content with optimized settings
     try {
       await page.setContent(htmlContent, {
-        waitUntil: 'networkidle0',  // More efficient, waits for all network requests to finish
+        waitUntil: 'networkidle0', // More efficient, waits for all network requests to finish
         timeout: 10000,
       })
     } catch (error) {

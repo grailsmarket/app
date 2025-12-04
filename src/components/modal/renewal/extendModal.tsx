@@ -333,7 +333,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
               <div className='flex w-full flex-col gap-2 sm:gap-4'>
                 {/* Domain list */}
                 <div>
-                  <div className='bg-secondary border-tertiary max-h-32 overflow-y-auto rounded-lg border p-3'>
+                  <div className='bg-secondary border-tertiary max-h-[160px] overflow-y-auto rounded-lg border p-3'>
                     <div className='text-md space-y-1'>
                       <div className='text-neutral flex w-full flex-row items-center justify-between gap-1 text-xs sm:text-sm'>
                         <p className='w-[40%] sm:w-1/2'>Name</p>

@@ -13,13 +13,13 @@ export type CancelListingListing = {
 
 type CancelListingModalState = {
   open: boolean
-  listing: CancelListingListing | null
+  listings: CancelListingListing[]
 }
 
 // Initial State ------------------------------------
 const initialState: CancelListingModalState = {
   open: false,
-  listing: null,
+  listings: [],
 }
 
 // Slice -------------------------------------------
@@ -30,14 +30,14 @@ export const CancelListingModalSlice = createSlice({
     setCancelListingModalOpen(state, { payload }: PayloadAction<boolean>) {
       state.open = payload
     },
-    setCancelListingModalListing(state, { payload }: PayloadAction<CancelListingListing | null>) {
-      state.listing = payload
+    setCancelListingModalListings(state, { payload }: PayloadAction<CancelListingListing[]>) {
+      state.listings = payload
     },
   },
 })
 
 // Actions --------------------------------------------
-export const { setCancelListingModalOpen, setCancelListingModalListing } = CancelListingModalSlice.actions
+export const { setCancelListingModalOpen, setCancelListingModalListings } = CancelListingModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectCancelListingModal = (state: RootState) => state.modals.cancelListingReducer

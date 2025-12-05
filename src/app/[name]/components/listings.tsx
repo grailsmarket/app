@@ -16,7 +16,7 @@ import {
   setMakeListingModalOpen,
   setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
-import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
+import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setBuyNowModalListing, setBuyNowModalDomain, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 
 interface ListingsProps {
@@ -123,14 +123,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
   const openCancelListingModal = () => {
     if (!domain) return
     dispatch(
-      setCancelListingModalListing({
-        id: listing.id,
-        name: domain?.name,
-        price: listing.price,
-        currency: listing.currency_address,
-        expires: listing.expires_at,
-        source: listing.source,
-      })
+      setCancelListingModalListings([
+        {
+          id: listing.id,
+          name: domain?.name,
+          price: listing.price,
+          currency: listing.currency_address,
+          expires: listing.expires_at,
+          source: listing.source,
+        },
+      ])
     )
     dispatch(setMakeListingModalPreviousListings([]))
     dispatch(setCancelListingModalOpen(true))

@@ -44,7 +44,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, m
   const weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
   // Generate array of years from current year to 10 years in the future
-  const years = Array.from({ length: 10 }, (_, i) => today.getFullYear() + i)
+  const years = Array.from({ length: 1000 }, (_, i) => today.getFullYear() + i)
 
   const datePickerRef = useClickAway(() => {
     setShowMonthDropdown(false)

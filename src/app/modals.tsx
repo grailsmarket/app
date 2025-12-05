@@ -44,7 +44,8 @@ const Modals: React.FC = () => {
     offer: cancelOfferModalOffer,
     name: cancelOfferModalName,
   } = useAppSelector(selectCancelOfferModal)
-  const { open: cancelListingModalOpen, listing: cancelListingModalListing } = useAppSelector(selectCancelListingModal)
+  const { open: cancelListingModalOpen, listings: cancelListingModalListings } =
+    useAppSelector(selectCancelListingModal)
   const {
     open: buyNowModalOpen,
     listing: buyNowModalListing,
@@ -78,7 +79,7 @@ const Modals: React.FC = () => {
       {cancelListingModalOpen && (
         <CancelListingModal
           onClose={() => dispatch(setCancelListingModalOpen(false))}
-          listing={cancelListingModalListing}
+          listings={cancelListingModalListings}
         />
       )}
       {buyNowModalOpen && (

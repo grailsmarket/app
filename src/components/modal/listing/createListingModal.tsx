@@ -27,7 +27,6 @@ import { MAX_ETH_SUPPLY } from '@/constants/web3/tokens'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import {
-  selectMakeListingModal,
   setMakeListingModalCanAddDomains,
   setMakeListingModalDomains,
   setMakeListingModalPreviousListings,
@@ -55,7 +54,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
-  const { canAddDomains } = useAppSelector(selectMakeListingModal)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
 
@@ -202,10 +200,12 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         return (
           <div className='flex flex-col gap-4'>
             <div className='px-lg bg-secondary border-tertiary flex max-h-[200px] flex-col overflow-y-auto rounded-md border py-1'>
-              <div className='flex items-center justify-between gap-2 py-2'>
-                <p className='font-sedan-sc text-2xl'>Names:</p>
-                <p className='text-xl font-medium'>{domains.length}</p>
-              </div>
+              {domains.length > 1 && (
+                <div className='flex items-center justify-between gap-2 border-b border-b-white/30 py-2'>
+                  <p className='font-sedan-sc text-2xl'>Names:</p>
+                  <p className='text-xl font-bold'>{domains.length}</p>
+                </div>
+              )}
               {domains.map((domain) => {
                 const previousListing = previousListings.find((listing) =>
                   listing.source === 'grails'
@@ -213,7 +213,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     : listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
                 )
                 return (
-                  <div key={domain.token_id} className='flex flex-col gap-2 border-t border-t-white/30 py-2'>
+                  <div
+                    key={domain.token_id}
+                    className={cn('flex flex-col gap-2 py-2', domains.length > 1 ? 'border-t border-t-white/30' : '')}
+                  >
                     <div className='flex w-full items-center justify-between gap-2'>
                       <p className='font-sedan-sc text-xl'>Name</p>
                       <p className='max-w-2/3 truncate font-semibold'>{domain.name}</p>
@@ -425,7 +428,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     ? 'Submitting Listing...'
                     : selectedMarketplace.length === 0
                       ? 'Select a marketplace'
-                      : `List on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}`
+                      : `List ${domains.length > 1 ? domains.length + ' Names' : domains[0].name} on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}`
                   : 'Switch Chain'}
               </PrimaryButton>
               <SecondaryButton onClick={handleClose} className='h-10 w-full'>

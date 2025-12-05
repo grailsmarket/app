@@ -14,7 +14,7 @@ import {
   setMakeListingModalPreviousListings,
   addMakeListingModalPreviousListing,
 } from '@/state/reducers/modals/makeListingModal'
-import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
+import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import Watchlist from '@/components/ui/watchlist'
 import {
   selectBulkSelect,
@@ -70,14 +70,16 @@ const Actions: React.FC<ActionsProps> = ({
     e.preventDefault()
     e.stopPropagation()
     dispatch(
-      setCancelListingModalListing({
-        id: domainListing.id,
-        name: domain.name,
-        price: domainListing.price,
-        currency: domainListing.currency_address,
-        expires: domainListing.expires_at,
-        source: domainListing.source,
-      })
+      setCancelListingModalListings([
+        {
+          id: domainListing.id,
+          name: domain.name,
+          price: domainListing.price,
+          currency: domainListing.currency_address,
+          expires: domainListing.expires_at,
+          source: domainListing.source,
+        },
+      ])
     )
     dispatch(setCancelListingModalOpen(true))
   }

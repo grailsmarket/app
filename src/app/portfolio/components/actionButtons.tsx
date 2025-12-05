@@ -16,23 +16,17 @@ import {
   setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
 import {
-  selectBulkSelect,
-  setBulkSelectIsSelecting,
-  setBulkSelectDomains,
-  setBulkSelectPreviousListings,
-  clearBulkSelect,
-} from '@/state/reducers/modals/bulkSelectModal'
+  CancelListingListing,
+  setCancelListingModalListings,
+  setCancelListingModalOpen,
+} from '@/state/reducers/modals/cancelListingModal'
+import { selectBulkSelect, setBulkSelectIsSelecting, clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
-import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 
-interface ActionButtonsProps {
-  visibleDomains?: MarketplaceDomainType[]
-}
-
-const ActionButtons: React.FC<ActionButtonsProps> = ({ visibleDomains = [] }) => {
+const ActionButtons = () => {
   const dispatch = useAppDispatch()
   const { cartIsEmpty, clearCart } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
@@ -42,20 +36,20 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ visibleDomains = [] }) =>
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
 
-  const handleSelectAll = () => {
-    dispatch(setBulkSelectDomains(visibleDomains))
-    // Also collect previous listings from visible domains that have grails listings
-    const allPreviousListings: DomainListingType[] = []
-    visibleDomains.forEach((domain) => {
-      const grailsListings = domain.listings?.filter((listing) => listing.source === 'grails') || []
-      grailsListings.forEach((listing) => {
-        if (!allPreviousListings.some((l) => l.id === listing.id)) {
-          allPreviousListings.push(listing)
-        }
-      })
-    })
-    dispatch(setBulkSelectPreviousListings(allPreviousListings))
-  }
+  // const handleSelectAll = () => {
+  //   dispatch(setBulkSelectDomains(visibleDomains))
+  //   // Also collect previous listings from visible domains that have grails listings
+  //   const allPreviousListings: DomainListingType[] = []
+  //   visibleDomains.forEach((domain) => {
+  //     const grailsListings = domain.listings?.filter((listing) => listing.source === 'grails') || []
+  //     grailsListings.forEach((listing) => {
+  //       if (!allPreviousListings.some((l) => l.id === listing.id)) {
+  //         allPreviousListings.push(listing)
+  //       }
+  //     })
+  //   })
+  //   dispatch(setBulkSelectPreviousListings(allPreviousListings))
+  // }
 
   const handleListAction = () => {
     dispatch(setMakeListingModalDomains(selectedDomains))
@@ -77,6 +71,25 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ visibleDomains = [] }) =>
     }))
     dispatch(setTransferModalDomains(transferDomains))
     dispatch(setTransferModalOpen(true))
+  }
+
+  const handleCancelListingsAction = () => {
+    // Transform previousListings (DomainListingType) to CancelListingListing format
+    // We need to match each listing with its domain name
+    const cancelListings: CancelListingListing[] = previousListings.map((listing) => {
+      // Find the domain that has this listing
+      const domain = selectedDomains.find((d) => d.listings?.some((l) => l.id === listing.id))
+      return {
+        id: listing.id,
+        name: domain?.name ?? '',
+        price: listing.price,
+        currency: listing.currency_address,
+        expires: listing.expires_at,
+        source: listing.source,
+      }
+    })
+    dispatch(setCancelListingModalListings(cancelListings))
+    dispatch(setCancelListingModalOpen(true))
   }
 
   const handleCancel = () => {
@@ -109,11 +122,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ visibleDomains = [] }) =>
       <div className={cn('flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
         {selectedTab.value === 'domains' && isSelecting && (
           <>
-            <SecondaryButton onClick={handleSelectAll} disabled={visibleDomains.length === 0}>
+            {/* <SecondaryButton onClick={handleSelectAll} disabled={visibleDomains.length === 0}>
               Select All
-            </SecondaryButton>
+            </SecondaryButton> */}
             <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
               List
+            </PrimaryButton>
+            <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
+              Cancel Listings ({previousListings.length})
             </PrimaryButton>
             <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
               Extend

@@ -6,7 +6,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
-import { setCancelListingModalListing, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
+import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import {
   setMakeListingModalDomains,
   setMakeListingModalOpen,
@@ -80,14 +80,16 @@ const Actions: React.FC<ActionsProps> = ({
 
   const openCancelListingModal = () => {
     dispatch(
-      setCancelListingModalListing({
-        currency: domainListing.currency_address,
-        expires: domainListing.expires_at,
-        id: domainListing.id,
-        name: domain.name,
-        price: domainListing.price,
-        source: domainListing.source,
-      })
+      setCancelListingModalListings([
+        {
+          currency: domainListing.currency_address,
+          expires: domainListing.expires_at,
+          id: domainListing.id,
+          name: domain.name,
+          price: domainListing.price,
+          source: domainListing.source,
+        },
+      ])
     )
     dispatch(setCancelListingModalOpen(true))
   }

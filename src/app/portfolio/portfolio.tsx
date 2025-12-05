@@ -53,7 +53,7 @@ const Portfolio = () => {
                   displayedDetails={displayedDetails}
                 />
               )}
-              <ActionButtons visibleDomains={selectedTab.value === 'domains' ? domains : []} />
+              <ActionButtons />
             </div>
           </div>
         </main>

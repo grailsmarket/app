@@ -11,7 +11,6 @@ import { GRACE_PERIOD, PREMIUM } from '@/constants/domains/registrationStatuses'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
-import { BigNumber } from '@ethersproject/bignumber'
 import { useAppDispatch } from '@/state/hooks'
 import { openRegistrationModal } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
@@ -60,9 +59,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     const currentTime = Math.floor(new Date().getTime() / 1000)
     const registrationPrice = calculateRegistrationPrice(nameDetails?.name || '', ethPrice || 3300).usd
     const priceOracle = new PremiumPriceOracle(expireTime)
-    const premiumPrice =
-      Math.floor(priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice)
-
+    const premiumPrice = Math.floor(priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice)
 
     return (
       <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -102,7 +99,9 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <Image src={ENS_LOGO} alt='ENS Logo' width={32} height={32} />
           {nameDetails?.name && (
             <div className='flex flex-row items-center gap-1 text-3xl font-bold'>
-              <p className=''>${price}&nbsp;<span className='text-neutral'>/&nbsp;Year</span></p>
+              <p className=''>
+                ${price}&nbsp;<span className='text-neutral'>/&nbsp;Year</span>
+              </p>
             </div>
           )}
         </div>

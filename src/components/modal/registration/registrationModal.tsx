@@ -39,6 +39,8 @@ import { Hex } from 'viem'
 import { useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import Link from 'next/link'
+import ClaimPoap from '../poap/claimPoap'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -47,6 +49,7 @@ const RegistrationModal: React.FC = () => {
   const dispatch = useAppDispatch()
   const { modifyCart } = useModifyCart()
   const registrationState = useAppSelector(selectRegistration)
+  const { poapClaimed } = useAppSelector(selectUserProfile)
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
@@ -66,6 +69,7 @@ const RegistrationModal: React.FC = () => {
 
   // UI-only states (not persisted)
   const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
 
   // Get persisted state from Redux
@@ -521,13 +525,59 @@ const RegistrationModal: React.FC = () => {
     )
   }
 
+  if (showCancelWarning) {
+    return (
+      <div
+        onClick={handleClose}
+        className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4'
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-4 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2'
+        >
+          <h2 className='font-sedan-sc text-center text-3xl'>Cancel Registration</h2>
+          <p className='text-center font-medium'>
+            Are you sure you want to cancel this registration? You will lose your commitment and have to start over.
+          </p>
+          <div className='flex flex-col items-center gap-2'>
+            <SecondaryButton onClick={() => setShowCancelWarning(false)} className='w-full'>
+              Continue
+            </SecondaryButton>
+            <SecondaryButton
+              onClick={() => {
+                dispatch(resetRegistrationModal())
+                setShowCancelWarning(false)
+              }}
+              className='w-full bg-red-500!'
+            >
+              Cancel Registration
+            </SecondaryButton>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (registrationState.flowState === 'success' && !poapClaimed) {
+    return (
+      <div className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4'>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-4 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2'
+        >
+          <ClaimPoap />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
         if (
-          registrationState.flowState === 'success' ||
+          registrationState.flowState === 'waiting' ||
           registrationState.flowState === 'committing' ||
           registrationState.flowState === 'registering'
         )
@@ -601,6 +651,9 @@ const RegistrationModal: React.FC = () => {
             >
               Try Again
             </SecondaryButton>
+            <SecondaryButton onClick={handleClose} className='w-full'>
+              Close
+            </SecondaryButton>
           </div>
         ) : registrationState.flowState === 'committing' ? (
           <div className='flex w-full flex-col gap-4'>
@@ -620,6 +673,9 @@ const RegistrationModal: React.FC = () => {
                 <p className='text-neutral text-lg'>Please confirm the transaction in your wallet</p>
               )}
             </div>
+            <SecondaryButton onClick={() => setShowCancelWarning(true)} className='w-full'>
+              Cancel
+            </SecondaryButton>
           </div>
         ) : registrationState.flowState === 'waiting' ? (
           <div className='flex w-full flex-col gap-4'>
@@ -674,9 +730,14 @@ const RegistrationModal: React.FC = () => {
                 </p>
               </div>
             )}
-            <PrimaryButton onClick={handleRegister} disabled={waitTimeRemaining > 0} className='w-full'>
-              {waitTimeRemaining > 0 ? `Wait ${waitTimeRemaining} seconds...` : 'Complete Registration'}
-            </PrimaryButton>
+            <div className='flex flex-col gap-2'>
+              <PrimaryButton onClick={handleRegister} disabled={waitTimeRemaining > 0} className='w-full'>
+                {waitTimeRemaining > 0 ? `Wait ${waitTimeRemaining} seconds...` : 'Complete Registration'}
+              </PrimaryButton>
+              <SecondaryButton onClick={() => setShowCancelWarning(true)} className='w-full'>
+                Cancel
+              </SecondaryButton>
+            </div>
           </div>
         ) : registrationState.flowState === 'registering' ? (
           <div className='flex w-full flex-col gap-4'>
@@ -696,6 +757,9 @@ const RegistrationModal: React.FC = () => {
                 <p className='text-neutral text-lg'>Please confirm the registration transaction</p>
               )}
             </div>
+            <SecondaryButton onClick={() => setShowCancelWarning(true)} className='w-full'>
+              Cancel
+            </SecondaryButton>
           </div>
         ) : (
           <div className='flex w-full flex-col gap-2 sm:gap-4'>

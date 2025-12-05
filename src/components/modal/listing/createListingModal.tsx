@@ -27,6 +27,7 @@ import { MAX_ETH_SUPPLY } from '@/constants/web3/tokens'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import {
+  selectMakeListingModal,
   setMakeListingModalCanAddDomains,
   setMakeListingModalDomains,
   setMakeListingModalPreviousListings,
@@ -53,6 +54,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
+  const { canAddDomains } = useAppSelector(selectMakeListingModal)
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
 
   const [price, setPrice] = useState<number | ''>('')
@@ -179,6 +181,11 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const handleClose = () => {
     if (status === 'success') {
       dispatch(setMakeListingModalCanAddDomains(false))
+      dispatch(setMakeListingModalDomains([]))
+      dispatch(setMakeListingModalPreviousListings([]))
+    }
+
+    if (!canAddDomains) {
       dispatch(setMakeListingModalDomains([]))
       dispatch(setMakeListingModalPreviousListings([]))
     }
@@ -540,14 +547,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           handleClose()
         }
       }}
-      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end overflow-y-auto bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:justify-start md:p-4 md:pt-20 starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex min-h-[100dvh] w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dh-80px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-w-md md:overflow-visible md:rounded-md md:border-2'
-        style={{ margin: '0 auto' }}
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-h-none md:max-w-md md:rounded-md md:border-2'
       >
         {status === 'success' && !poapClaimed ? (
           <ClaimPoap />

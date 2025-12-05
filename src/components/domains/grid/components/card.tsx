@@ -66,6 +66,10 @@ const Card: React.FC<CardProps> = ({
   const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
   const { domains: listingModalDomains } = useAppSelector(selectMakeListingModal)
   const isBulkAction = isBulkRenewing || isBulkTransferring || isBulkListing
+  const isAddedToTransferModal = isBulkTransferring && transferModalDomains.some((d) => d.name === domain.name)
+  const isAddedToBulkRenewalModal = isBulkRenewing && bulkRenewalDomains.some((d) => d.name === domain.name)
+  const isAddedToListingModal = isBulkListing && listingModalDomains.some((d) => d.name === domain.name)
+  const isAddedToBulkAction = isAddedToTransferModal || isAddedToBulkRenewalModal || isAddedToListingModal
 
   return (
     <Link
@@ -83,7 +87,7 @@ const Card: React.FC<CardProps> = ({
               expiry_date: domain.expiry_date,
             }
 
-            if (transferModalDomains.some((d) => d.name === domain.name)) {
+            if (isAddedToTransferModal) {
               dispatch(removeTransferModalDomain(domainItem))
             } else {
               dispatch(addTransferModalDomain(domainItem))
@@ -92,7 +96,7 @@ const Card: React.FC<CardProps> = ({
             e.preventDefault()
             e.stopPropagation()
 
-            if (bulkRenewalDomains.some((d) => d.name === domain.name)) {
+            if (isAddedToBulkRenewalModal) {
               dispatch(removeBulkRenewalModalDomain(domain))
             } else {
               dispatch(addBulkRenewalModalDomain(domain))
@@ -103,7 +107,7 @@ const Card: React.FC<CardProps> = ({
 
             if (registrationStatus !== REGISTERED) return
 
-            if (listingModalDomains.some((d) => d.name === domain.name)) {
+            if (isAddedToListingModal) {
               dispatch(removeMakeListingModalDomain(domain))
               if (grailsListings.length > 0) dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
             } else {
@@ -116,7 +120,11 @@ const Card: React.FC<CardProps> = ({
       className={cn(
         'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition hover:opacity-100 md:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
-        isBulkAction ? 'hover:bg-primary/10' : 'hover:bg-foreground/10',
+        isBulkAction
+          ? isAddedToBulkAction
+            ? 'bg-primary/20 hover:bg-foreground/30 opacity-100!'
+            : 'hover:bg-primary/10'
+          : 'hover:bg-foreground/10',
         className
       )}
     >

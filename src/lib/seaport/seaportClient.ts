@@ -797,14 +797,9 @@ export class SeaportClient {
     const isWrapped = wrappedResponses.some((response) => response)
     const areAllNamesWrapped = wrappedResponses.every((response) => response)
 
-    console.log('Wrapped names:', wrappedNames)
-    console.log('Unwrapped names:', unwrappedNames)
-
     try {
       // If the NameWrapper owns it, check the wrapper for the actual owner
       if (isWrapped) {
-        console.log('ENS name is wrapped, checking NameWrapper for actual owner...')
-
         const multicallContracts = wrappedNames.map((domain) => ({
           address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
           abi: NAME_WRAPPER_ABI as Abi,
@@ -847,7 +842,6 @@ export class SeaportClient {
 
       const registrarOwner = registrarOwners.map((owner) => owner.result as Address)
 
-      console.log('registrarOwner:', registrarOwner)
       if (registrarOwner.some((owner) => owner.toLowerCase() !== params.offererAddress.toLowerCase())) {
         throw new Error(
           `You are not the owner of all ENS names. Current owner: ${registrarOwner}${isWrapped ? ' (wrapped)' : ''}`
@@ -864,13 +858,13 @@ export class SeaportClient {
     let operatorToApprove: string
     let approvalTarget: string
 
-    console.log('Determining approval target:', {
-      marketplace: params.marketplace,
-      USE_CONDUIT,
-      MARKETPLACE_CONDUIT_ADDRESS,
-      SEAPORT_ADDRESS,
-      OPENSEA_CONDUIT_ADDRESS,
-    })
+    // console.log('Determining approval target:', {
+    //   marketplace: params.marketplace,
+    //   USE_CONDUIT,
+    //   MARKETPLACE_CONDUIT_ADDRESS,
+    //   SEAPORT_ADDRESS,
+    //   OPENSEA_CONDUIT_ADDRESS,
+    // })
 
     if (params.marketplace === 'opensea') {
       operatorToApprove = OPENSEA_CONDUIT_ADDRESS
@@ -880,7 +874,7 @@ export class SeaportClient {
       // The conduit at 0x73E9cD721a79C208E2F944910c27196307a2a05D is deployed and ready
       operatorToApprove = MARKETPLACE_CONDUIT_ADDRESS // Always use conduit for Grails
       approvalTarget = 'Grails conduit'
-      console.log('Forcing Grails conduit usage:', MARKETPLACE_CONDUIT_ADDRESS)
+      // console.log('Forcing Grails conduit usage:', MARKETPLACE_CONDUIT_ADDRESS)
     } else {
       throw new Error('Invalid marketplace specified')
     }
@@ -945,12 +939,12 @@ export class SeaportClient {
 
       if (!wrappedNamesApproved || !unwrappedNamesApproved) {
         params.setStatus?.('approving')
-        console.log(
-          `${approvalTarget} not approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}, requesting approval...`
-        )
-        if (USE_CONDUIT) {
-          console.log(`Approving conduit at: ${operatorToApprove}`)
-        }
+        // console.log(
+        //   `${approvalTarget} not approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}, requesting approval...`
+        // )
+        // if (USE_CONDUIT) {
+        //   console.log(`Approving conduit at: ${operatorToApprove}`)
+        // }
 
         if (!this.walletClient.account) {
           throw new Error('No account connected')
@@ -968,7 +962,7 @@ export class SeaportClient {
 
           params.setApproveTxHash?.(approvalHash)
           // Wait for approval transaction to be confirmed
-          console.log('Waiting for approval transaction for wrapped names...', approvalHash)
+          // console.log('Waiting for approval transaction for wrapped names...', approvalHash)
           await this.publicClient.waitForTransactionReceipt({
             hash: approvalHash,
             confirmations: 1,
@@ -988,7 +982,7 @@ export class SeaportClient {
 
           params.setApproveTxHash?.(approvalHash)
           // Wait for approval transaction to be confirmed
-          console.log('Waiting for approval transaction for unwrapped names...', approvalHash)
+          // console.log('Waiting for approval transaction for unwrapped names...', approvalHash)
           await this.publicClient.waitForTransactionReceipt({
             hash: approvalHash,
             confirmations: 1,
@@ -1075,19 +1069,19 @@ export class SeaportClient {
       // Use the appropriate contract address and item type for the offer
       const isNameWrapped = wrappedNames.includes(domain)
       const tokenContract = isNameWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-      console.log('Token contract:', tokenContract)
+      // console.log('Token contract:', tokenContract)
 
       // For wrapped names, use namehash; for unwrapped, use labelhash
       const tokenIdentifier = domain.token_id
 
-      console.log('Token details for offer:', {
-        tokenContract,
-        tokenIdentifier,
-        isNameWrapped,
-        originalTokenId: domain.token_id,
-        ENS_REGISTRAR_ADDRESS,
-        ENS_NAME_WRAPPER_ADDRESS,
-      })
+      // console.log('Token details for offer:', {
+      //   tokenContract,
+      //   tokenIdentifier,
+      //   isNameWrapped,
+      //   originalTokenId: domain.token_id,
+      //   ENS_REGISTRAR_ADDRESS,
+      //   ENS_NAME_WRAPPER_ADDRESS,
+      // })
 
       // Validate token contract address
       if (!tokenContract) {
@@ -1126,22 +1120,22 @@ export class SeaportClient {
       }
 
       // Create the order
-      console.log('Creating order with:', {
-        marketplace: params.marketplace,
-        offererAddress: params.offererAddress,
-        conduitKey,
-        seaportInitialized: !!this.seaport,
-        isNameWrapped,
-        tokenContract,
-      })
+      // console.log('Creating order with:', {
+      //   marketplace: params.marketplace,
+      //   offererAddress: params.offererAddress,
+      //   conduitKey,
+      //   seaportInitialized: !!this.seaport,
+      //   isNameWrapped,
+      //   tokenContract,
+      // })
 
-      console.log('Order input:', JSON.stringify(orderInput, null, 2))
-      console.log('Seaport instance check:', {
-        hasSeaport: !!this.seaport,
-        seaportType: typeof this.seaport,
-        hasPublicClient: !!this.publicClient,
-        hasWalletClient: !!this.walletClient,
-      })
+      // console.log('Order input:', JSON.stringify(orderInput, null, 2))
+      // console.log('Seaport instance check:', {
+      //   hasSeaport: !!this.seaport,
+      //   seaportType: typeof this.seaport,
+      //   hasPublicClient: !!this.publicClient,
+      //   hasWalletClient: !!this.walletClient,
+      // })
 
       if (!params.offererAddress) {
         throw new Error('Offerer address is required')
@@ -1177,7 +1171,7 @@ export class SeaportClient {
     params.setStatus?.('submitting')
     // Execute all actions onchain (including getting the signature)
     const orders = await executeAllActions()
-    console.log('Orders:', orders)
+    // console.log('Orders:', orders)
 
     // Add metadata to order
     const formattedOrders = orders.map((order, index) => {

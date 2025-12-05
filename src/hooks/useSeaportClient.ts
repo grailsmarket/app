@@ -120,7 +120,7 @@ export function useSeaportClient() {
           setError: params.setError,
         })
 
-        console.log('Orders:', orders)
+        // console.log('Orders:', orders)
 
         // console.log('Params:', params)
         // console.log('Marketplace:', params.marketplace)
@@ -129,7 +129,7 @@ export function useSeaportClient() {
         // console.log('Order:', order)
 
         // Submitting created orders to the marketplace APIs
-        params.setStatus?.('submitting')
+        // params.setStatus?.('submitting')
         // Handle "both" marketplace case
         if (params.marketplace.length > 1 && 'opensea' in orders && 'grails' in orders) {
           // Create two separate listings - one for each platform

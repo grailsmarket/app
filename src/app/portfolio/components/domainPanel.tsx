@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { useDomains } from '../hooks/useDomains'
 import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
 import FilterIcon from 'public/icons/filter.svg'
@@ -14,22 +13,32 @@ import TabSwitcher from './tabSwitcher'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useUserContext } from '@/context/user'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
-import { selectBulkRenewalModal } from '@/state/reducers/modals/bulkRenewalModal'
-import { selectTransferModal } from '@/state/reducers/modals/transferModal'
-import { selectMakeListingModal } from '@/state/reducers/modals/makeListingModal'
+import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 
-const DomainPanel = () => {
+interface DomainPanelProps {
+  domains: MarketplaceDomainType[]
+  domainsLoading: boolean
+  fetchMoreDomains: () => void
+  hasMoreDomains: boolean
+  displayedDetails: MarketplaceHeaderColumn[]
+}
+
+const DomainPanel: React.FC<DomainPanelProps> = ({
+  domains,
+  domainsLoading,
+  fetchMoreDomains,
+  hasMoreDomains,
+  displayedDetails,
+}) => {
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { selectors, actions } = useFilterRouter()
   const { width: windowWidth } = useWindowSize()
   const { selectedTab } = useAppSelector(selectUserProfile)
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, displayedDetails } = useDomains()
   const isAtBottom = useScrollToBottom({ threshold: 30 })
-  const { canAddDomains } = useAppSelector(selectBulkRenewalModal)
-  const { canAddDomains: canTransferDomains } = useAppSelector(selectTransferModal)
-  const { canAddDomains: canListDomains } = useAppSelector(selectMakeListingModal)
+  const { isSelecting } = useAppSelector(selectBulkSelect)
 
   const disconnectMessage = {
     domains: 'Sign in to view your domains.',
@@ -94,9 +103,7 @@ const DomainPanel = () => {
           displayedDetails={displayedDetails}
           scrollEnabled={isAtBottom}
           showWatchlist={selectedTab.value === 'watchlist'}
-          isBulkRenewing={selectedTab.value === 'domains' && canAddDomains}
-          isBulkTransferring={selectedTab.value === 'domains' && canTransferDomains}
-          isBulkListing={selectedTab.value === 'domains' && canListDomains}
+          isBulkSelecting={selectedTab.value === 'domains' && isSelecting}
         />
       </div>
     </div>

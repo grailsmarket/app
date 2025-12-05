@@ -9,6 +9,7 @@ import {
   setBulkRenewalModalCanAddDomains,
   setBulkRenewalModalDomains,
 } from '@/state/reducers/modals/bulkRenewalModal'
+import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import useExtendDomains from '@/hooks/registrar/useExtendDomains'
 import useETHPrice from '@/hooks/useETHPrice'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -36,6 +37,7 @@ type TimeUnit = 'days' | 'weeks' | 'months' | 'years' | 'custom'
 const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const dispatch = useAppDispatch()
   const { domains } = useAppSelector(selectBulkRenewalModal)
+  const { isSelecting } = useAppSelector(selectBulkSelect)
   const { address } = useAccount()
   const { extend } = useExtendDomains()
   const { ethPrice } = useETHPrice()
@@ -90,10 +92,16 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const handleClose = () => {
     if (isLoading) return
 
+    // Clear bulk selection only on success
     if (success) {
-      dispatch(setBulkRenewalModalDomains([]))
       dispatch(setBulkRenewalModalCanAddDomains(false))
+      if (isSelecting) {
+        dispatch(clearBulkSelect())
+      }
     }
+
+    // Always clear modal data when closing to prevent stale data
+    dispatch(setBulkRenewalModalDomains([]))
 
     onClose()
   }

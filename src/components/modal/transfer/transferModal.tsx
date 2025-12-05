@@ -6,7 +6,9 @@ import { ENS_REGISTRAR_ADDRESS, ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { TransferDomainType } from '@/state/reducers/modals/transferModal'
+import { setTransferModalDomains, TransferDomainType } from '@/state/reducers/modals/transferModal'
+import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { formatAddress } from '@/utils/formatAddress'
 import { isAddress, Address } from 'viem'
 import Input from '@/components/ui/input'
@@ -26,6 +28,7 @@ interface TransferModalProps {
 type TransactionStep = 'review' | 'confirming' | 'processing' | 'success' | 'error'
 
 const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
+  const dispatch = useAppDispatch()
   const [step, setStep] = useState<TransactionStep>('review')
   const [txHashes, setTxHashes] = useState<{ name: string; hash: string }[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -36,6 +39,21 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
   const queryClient = useQueryClient()
+  const { isSelecting } = useAppSelector(selectBulkSelect)
+
+  const handleClose = () => {
+    // Clear bulk selection only on success
+    if (step === 'success') {
+      if (isSelecting) {
+        dispatch(clearBulkSelect())
+      }
+    }
+
+    // Always clear modal data when closing to prevent stale data
+    dispatch(setTransferModalDomains([]))
+
+    onClose()
+  }
 
   const { data: account, isLoading: isResolving } = useQuery({
     queryKey: ['account', debouncedRecipientInput],
@@ -197,7 +215,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               >
                 Transfer
               </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
+              <SecondaryButton onClick={handleClose} className='w-full'>
                 Cancel
               </SecondaryButton>
             </div>
@@ -236,7 +254,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
                 </div>
               )}
             </div>
-            <SecondaryButton onClick={onClose} disabled={true} className='w-full'>
+            <SecondaryButton onClick={handleClose} disabled={true} className='w-full'>
               Close
             </SecondaryButton>
           </>
@@ -271,7 +289,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
                 </div>
               )}
             </div>
-            <SecondaryButton onClick={onClose} className='w-full'>
+            <SecondaryButton onClick={handleClose} className='w-full'>
               Close
             </SecondaryButton>
           </>
@@ -295,7 +313,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               >
                 Try Again
               </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
+              <SecondaryButton onClick={handleClose} className='w-full'>
                 Close
               </SecondaryButton>
             </div>
@@ -308,7 +326,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
     <div
       onClick={() => {
         if (step === 'review' || step === 'error') {
-          onClose()
+          handleClose()
         }
       }}
       className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'

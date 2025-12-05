@@ -53,20 +53,16 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   }
 
   const name = nameDetails?.name
-  const price = nameDetails && ethPrice ? calculateRegistrationPrice(nameDetails.name, ethPrice).eth : 0
+  const price = nameDetails ? calculateRegistrationPrice(nameDetails.name, ethPrice || 0).usd : 0
 
   if (registrationStatus === PREMIUM) {
     const expireTime = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() / 1000 : 0
     const currentTime = Math.floor(new Date().getTime() / 1000)
     const registrationPrice = calculateRegistrationPrice(nameDetails?.name || '', ethPrice || 3300).usd
     const priceOracle = new PremiumPriceOracle(expireTime)
-    const premiumPrice = BigNumber.from(
-      Math.floor(
-        ((priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice) / (ethPrice || 3300)) * 10000
-      )
-    )
-      .mul(BigNumber.from(10).pow(14))
-      .toString()
+    const premiumPrice =
+      Math.floor(priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice)
+
 
     return (
       <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -105,7 +101,9 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
         <div className='flex flex-row items-center gap-3'>
           <Image src={ENS_LOGO} alt='ENS Logo' width={32} height={32} />
           {nameDetails?.name && (
-            <Price price={price} currencyAddress={TOKEN_ADDRESSES.ETH} iconSize='24px' fontSize='text-2xl font-bold' />
+            <div className='flex flex-row items-center gap-1 text-3xl font-bold'>
+              <p className=''>${price}&nbsp;<span className='text-neutral'>/&nbsp;Year</span></p>
+            </div>
           )}
         </div>
         <PrimaryButton

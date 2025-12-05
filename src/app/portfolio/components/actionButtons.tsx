@@ -8,41 +8,84 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import useCartDomains from '@/hooks/useCartDomains'
 import { persistor } from '@/state'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import {
-  selectBulkRenewalModal,
-  setBulkRenewalModalCanAddDomains,
-  setBulkRenewalModalDomains,
-  setBulkRenewalModalOpen,
-} from '@/state/reducers/modals/bulkRenewalModal'
-import {
-  selectTransferModal,
-  setTransferModalCanAddDomains,
-  setTransferModalDomains,
-  setTransferModalOpen,
-} from '@/state/reducers/modals/transferModal'
-import {
-  selectMakeListingModal,
-  setMakeListingModalCanAddDomains,
   setMakeListingModalDomains,
   setMakeListingModalOpen,
   setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
+import {
+  selectBulkSelect,
+  setBulkSelectIsSelecting,
+  setBulkSelectDomains,
+  setBulkSelectPreviousListings,
+  clearBulkSelect,
+} from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
+import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 
-const ActionButtons = () => {
+interface ActionButtonsProps {
+  visibleDomains?: MarketplaceDomainType[]
+}
+
+const ActionButtons: React.FC<ActionButtonsProps> = ({ visibleDomains = [] }) => {
   const dispatch = useAppDispatch()
   const { cartIsEmpty, clearCart } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
   const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
   const { selectedTab } = useAppSelector(selectUserProfile)
-  const { canAddDomains, domains: domainsToRenew } = useAppSelector(selectBulkRenewalModal)
-  const { canAddDomains: canTransferDomains, domains: domainsToTransfer } = useAppSelector(selectTransferModal)
-  const { canAddDomains: canListDomains, domains: domainsToList } = useAppSelector(selectMakeListingModal)
+  const { isSelecting, domains: selectedDomains, previousListings } = useAppSelector(selectBulkSelect)
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
+
+  const handleSelectAll = () => {
+    dispatch(setBulkSelectDomains(visibleDomains))
+    // Also collect previous listings from visible domains that have grails listings
+    const allPreviousListings: DomainListingType[] = []
+    visibleDomains.forEach((domain) => {
+      const grailsListings = domain.listings?.filter((listing) => listing.source === 'grails') || []
+      grailsListings.forEach((listing) => {
+        if (!allPreviousListings.some((l) => l.id === listing.id)) {
+          allPreviousListings.push(listing)
+        }
+      })
+    })
+    dispatch(setBulkSelectPreviousListings(allPreviousListings))
+  }
+
+  const handleListAction = () => {
+    dispatch(setMakeListingModalDomains(selectedDomains))
+    dispatch(setMakeListingModalPreviousListings(previousListings))
+    dispatch(setMakeListingModalOpen(true))
+  }
+
+  const handleExtendAction = () => {
+    dispatch(setBulkRenewalModalDomains(selectedDomains))
+    dispatch(setBulkRenewalModalOpen(true))
+  }
+
+  const handleTransferAction = () => {
+    const transferDomains = selectedDomains.map((domain) => ({
+      name: domain.name,
+      tokenId: domain.token_id,
+      owner: domain.owner,
+      expiry_date: domain.expiry_date,
+    }))
+    dispatch(setTransferModalDomains(transferDomains))
+    dispatch(setTransferModalOpen(true))
+  }
+
+  const handleCancel = () => {
+    dispatch(clearBulkSelect())
+  }
+
+  const handleBulkSelect = () => {
+    dispatch(setBulkSelectIsSelecting(true))
+  }
 
   return (
     <div
@@ -64,76 +107,29 @@ const ActionButtons = () => {
         </PersistGate>
       </div>
       <div className={cn('flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
-        {selectedTab.value === 'domains' && canAddDomains && (
-          <PrimaryButton
-            onClick={() => dispatch(setBulkRenewalModalOpen(true))}
-            disabled={domainsToRenew?.length === 0}
-          >
-            Extend
-          </PrimaryButton>
+        {selectedTab.value === 'domains' && isSelecting && (
+          <>
+            <SecondaryButton onClick={handleSelectAll} disabled={visibleDomains.length === 0}>
+              Select All
+            </SecondaryButton>
+            <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
+              List
+            </PrimaryButton>
+            <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
+              Extend
+            </PrimaryButton>
+            <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
+              Transfer
+            </PrimaryButton>
+            <SecondaryButton onClick={handleCancel}>Cancel</SecondaryButton>
+          </>
         )}
-        {selectedTab.value === 'domains' && canTransferDomains && (
-          <PrimaryButton
-            onClick={() => dispatch(setTransferModalOpen(true))}
-            disabled={domainsToTransfer?.length === 0}
-          >
-            Transfer
-          </PrimaryButton>
-        )}
-        {selectedTab.value === 'domains' && canListDomains && (
-          <PrimaryButton onClick={() => dispatch(setMakeListingModalOpen(true))} disabled={domainsToList?.length === 0}>
-            List
-          </PrimaryButton>
-        )}
-        {selectedTab.value === 'domains' && !canTransferDomains && !canListDomains && (
-          <SecondaryButton
-            onClick={() => {
-              if (canAddDomains) {
-                dispatch(setBulkRenewalModalDomains([]))
-                dispatch(setBulkRenewalModalCanAddDomains(false))
-                return
-              }
-
-              dispatch(setBulkRenewalModalCanAddDomains(true))
-            }}
-          >
-            {canAddDomains ? 'Cancel' : 'Bulk Extend'}
-          </SecondaryButton>
-        )}
-        {selectedTab.value === 'domains' && !canAddDomains && !canListDomains && (
-          <SecondaryButton
-            onClick={() => {
-              if (canTransferDomains) {
-                dispatch(setTransferModalDomains([]))
-                dispatch(setTransferModalCanAddDomains(false))
-                return
-              }
-
-              dispatch(setTransferModalCanAddDomains(true))
-            }}
-          >
-            {canTransferDomains ? 'Cancel' : 'Bulk Transfer'}
-          </SecondaryButton>
-        )}
-        {selectedTab.value === 'domains' && !canAddDomains && !canTransferDomains && (
-          <SecondaryButton
-            onClick={() => {
-              if (canListDomains) {
-                dispatch(setMakeListingModalDomains([]))
-                dispatch(setMakeListingModalPreviousListings([]))
-                dispatch(setMakeListingModalCanAddDomains(false))
-                return
-              }
-
-              dispatch(setMakeListingModalCanAddDomains(true))
-            }}
-          >
-            {canListDomains ? 'Cancel' : 'Bulk List'}
-          </SecondaryButton>
+        {selectedTab.value === 'domains' && !isSelecting && (
+          <SecondaryButton onClick={handleBulkSelect}>Bulk Select</SecondaryButton>
         )}
         {selectedTab.value === 'watchlist' && (
           <>
-            <SecondaryButton onClick={() => clearCart()}>ClearCart</SecondaryButton>
+            <SecondaryButton onClick={() => clearCart()}>Clear Cart</SecondaryButton>
             <PrimaryButton onClick={() => setIsCartOpen(true)}>Open Cart</PrimaryButton>
           </>
         )}

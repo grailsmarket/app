@@ -16,42 +16,22 @@ import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { useFilterContext } from '@/context/filters'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
-  removeTransferModalDomain,
-  addTransferModalDomain,
-  selectTransferModal,
-} from '@/state/reducers/modals/transferModal'
-import {
-  removeBulkRenewalModalDomain,
-  addBulkRenewalModalDomain,
-  selectBulkRenewalModal,
-} from '@/state/reducers/modals/bulkRenewalModal'
-import {
-  removeMakeListingModalDomain,
-  addMakeListingModalDomain,
-  selectMakeListingModal,
-  addMakeListingModalPreviousListing,
-  removeMakeListingModalPreviousListing,
-} from '@/state/reducers/modals/makeListingModal'
+  selectBulkSelect,
+  addBulkSelectDomain,
+  removeBulkSelectDomain,
+  addBulkSelectPreviousListing,
+  removeBulkSelectPreviousListing,
+} from '@/state/reducers/modals/bulkSelectModal'
 
 interface CardProps {
   domain: MarketplaceDomainType
   className?: string
   isFirstInRow?: boolean
   watchlistId?: number | undefined
-  isBulkRenewing?: boolean
-  isBulkTransferring?: boolean
-  isBulkListing?: boolean
+  isBulkSelecting?: boolean
 }
 
-const Card: React.FC<CardProps> = ({
-  domain,
-  className,
-  isFirstInRow,
-  watchlistId,
-  isBulkRenewing,
-  isBulkTransferring,
-  isBulkListing,
-}) => {
+const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkSelecting }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { filterType, portfolioTab } = useFilterContext()
@@ -62,57 +42,26 @@ const Card: React.FC<CardProps> = ({
   )
   const domainListing = domain.listings[0]
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
-  const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
-  const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
-  const { domains: listingModalDomains } = useAppSelector(selectMakeListingModal)
-  const isBulkAction = isBulkRenewing || isBulkTransferring || isBulkListing
-  const isAddedToTransferModal = isBulkTransferring && transferModalDomains.some((d) => d.name === domain.name)
-  const isAddedToBulkRenewalModal = isBulkRenewing && bulkRenewalDomains.some((d) => d.name === domain.name)
-  const isAddedToListingModal = isBulkListing && listingModalDomains.some((d) => d.name === domain.name)
-  const isAddedToBulkAction = isAddedToTransferModal || isAddedToBulkRenewalModal || isAddedToListingModal
+  const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
+  const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   return (
     <Link
       href={`/${domain.name}`}
       onClick={(e) => {
-        if (isBulkAction) {
+        if (isBulkSelecting) {
           e.preventDefault()
           e.stopPropagation()
 
-          if (isBulkTransferring) {
-            const domainItem = {
-              name: domain.name,
-              tokenId: domain.token_id,
-              owner: domain.owner,
-              expiry_date: domain.expiry_date,
+          if (isSelected) {
+            dispatch(removeBulkSelectDomain(domain))
+            if (grailsListings.length > 0) {
+              grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
             }
-
-            if (isAddedToTransferModal) {
-              dispatch(removeTransferModalDomain(domainItem))
-            } else {
-              dispatch(addTransferModalDomain(domainItem))
-            }
-          } else if (isBulkRenewing) {
-            e.preventDefault()
-            e.stopPropagation()
-
-            if (isAddedToBulkRenewalModal) {
-              dispatch(removeBulkRenewalModalDomain(domain))
-            } else {
-              dispatch(addBulkRenewalModalDomain(domain))
-            }
-          } else if (isBulkListing) {
-            e.preventDefault()
-            e.stopPropagation()
-
-            if (registrationStatus !== REGISTERED) return
-
-            if (isAddedToListingModal) {
-              dispatch(removeMakeListingModalDomain(domain))
-              if (grailsListings.length > 0) dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
-            } else {
-              dispatch(addMakeListingModalDomain(domain))
-              if (grailsListings.length > 0) dispatch(addMakeListingModalPreviousListing(grailsListings[0]))
+          } else {
+            dispatch(addBulkSelectDomain(domain))
+            if (grailsListings.length > 0) {
+              grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
             }
           }
         }
@@ -120,8 +69,8 @@ const Card: React.FC<CardProps> = ({
       className={cn(
         'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition hover:opacity-100 md:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
-        isBulkAction
-          ? isAddedToBulkAction
+        isBulkSelecting
+          ? isSelected
             ? 'bg-primary/20 hover:bg-foreground/30 opacity-100!'
             : 'hover:bg-primary/10'
           : 'hover:bg-foreground/10',
@@ -148,7 +97,10 @@ const Card: React.FC<CardProps> = ({
         )}
       </div>
       <div
-        className={cn('p-lg flex w-full flex-1 flex-col justify-between gap-1', isBulkAction && 'pointer-events-none')}
+        className={cn(
+          'p-lg flex w-full flex-1 flex-col justify-between gap-1',
+          isBulkSelecting && 'pointer-events-none'
+        )}
       >
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
@@ -199,9 +151,7 @@ const Card: React.FC<CardProps> = ({
             canAddToCart={canAddToCart}
             isFirstInRow={isFirstInRow}
             watchlistId={watchlistId}
-            isBulkRenewing={isBulkRenewing}
-            isBulkTransferring={isBulkTransferring}
-            isBulkListing={isBulkListing}
+            isBulkSelecting={isBulkSelecting}
           />
         </div>
       </div>

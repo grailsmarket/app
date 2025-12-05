@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { EXPIRED_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
+import { EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
 import Name from './name'
 import ListPrice from './listPrice'
 import RegistryPrice from './RegistryPrice'
@@ -15,42 +15,22 @@ import Actions from './actions'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { cn } from '@/utils/tailwind'
 import {
-  addTransferModalDomain,
-  removeTransferModalDomain,
-  selectTransferModal,
-} from '@/state/reducers/modals/transferModal'
-import {
-  addBulkRenewalModalDomain,
-  removeBulkRenewalModalDomain,
-  selectBulkRenewalModal,
-} from '@/state/reducers/modals/bulkRenewalModal'
-import {
-  addMakeListingModalDomain,
-  removeMakeListingModalDomain,
-  selectMakeListingModal,
-  removeMakeListingModalPreviousListing,
-  addMakeListingModalPreviousListing,
-} from '@/state/reducers/modals/makeListingModal'
+  selectBulkSelect,
+  addBulkSelectDomain,
+  removeBulkSelectDomain,
+  addBulkSelectPreviousListing,
+  removeBulkSelectPreviousListing,
+} from '@/state/reducers/modals/bulkSelectModal'
 
 interface TableRowProps {
   domain: MarketplaceDomainType
   index: number
   displayedColumns: MarketplaceHeaderColumn[]
   watchlistId?: number | undefined
-  isBulkRenewing?: boolean
-  isBulkTransferring?: boolean
-  isBulkListing?: boolean
+  isBulkSelecting?: boolean
 }
 
-const TableRow: React.FC<TableRowProps> = ({
-  domain,
-  index,
-  displayedColumns,
-  watchlistId,
-  isBulkRenewing,
-  isBulkTransferring,
-  isBulkListing,
-}) => {
+const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, watchlistId, isBulkSelecting }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const domainListing = domain.listings[0]
@@ -60,10 +40,8 @@ const TableRow: React.FC<TableRowProps> = ({
   const canAddToCart = !(
     EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
   )
-  const { domains: transferModalDomains } = useAppSelector(selectTransferModal)
-  const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
-  const { domains: listingModalDomains } = useAppSelector(selectMakeListingModal)
-  const isBulkAction = isBulkRenewing || isBulkTransferring || isBulkListing
+  const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
+  const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   const columnCount = displayedColumns.length
   const columns: Record<MarketplaceHeaderColumn, React.ReactNode> = {
@@ -102,14 +80,11 @@ const TableRow: React.FC<TableRowProps> = ({
       <Actions
         key={`${domain.name}-actions`}
         domain={domain}
-        registrationStatus={registrationStatus}
         index={index}
         columnCount={columnCount}
         canAddToCart={canAddToCart}
         watchlistId={watchlistId}
-        isBulkRenewing={isBulkRenewing}
-        isBulkTransferring={isBulkTransferring}
-        isBulkListing={isBulkListing}
+        isBulkSelecting={isBulkSelecting}
       />
     ),
   }
@@ -118,44 +93,19 @@ const TableRow: React.FC<TableRowProps> = ({
     <Link
       href={`/${domain.name}`}
       onClick={(e) => {
-        if (isBulkAction) {
+        if (isBulkSelecting) {
           e.preventDefault()
           e.stopPropagation()
 
-          if (isBulkTransferring) {
-            const domainItem = {
-              name: domain.name,
-              tokenId: domain.token_id,
-              owner: domain.owner,
-              expiry_date: domain.expiry_date,
+          if (isSelected) {
+            dispatch(removeBulkSelectDomain(domain))
+            if (grailsListings.length > 0) {
+              grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
             }
-
-            if (transferModalDomains.some((d) => d.name === domain.name)) {
-              dispatch(removeTransferModalDomain(domainItem))
-            } else {
-              dispatch(addTransferModalDomain(domainItem))
-            }
-          } else if (isBulkRenewing) {
-            e.preventDefault()
-            e.stopPropagation()
-
-            if (bulkRenewalDomains.some((d) => d.name === domain.name)) {
-              dispatch(removeBulkRenewalModalDomain(domain))
-            } else {
-              dispatch(addBulkRenewalModalDomain(domain))
-            }
-          } else if (isBulkListing) {
-            e.preventDefault()
-            e.stopPropagation()
-
-            if (registrationStatus !== REGISTERED) return
-
-            if (listingModalDomains.some((d) => d.name === domain.name)) {
-              dispatch(removeMakeListingModalDomain(domain))
-              if (grailsListings.length > 0) dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
-            } else {
-              dispatch(addMakeListingModalDomain(domain))
-              if (grailsListings.length > 0) dispatch(addMakeListingModalPreviousListing(grailsListings[0]))
+          } else {
+            dispatch(addBulkSelectDomain(domain))
+            if (grailsListings.length > 0) {
+              grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
             }
           }
         }
@@ -163,13 +113,17 @@ const TableRow: React.FC<TableRowProps> = ({
       className={cn(
         'group px-sm md:p-md lg:p-lg flex h-[60px] w-full flex-row items-center justify-between rounded-sm transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
-        isBulkAction ? 'hover:bg-primary/10' : 'hover:bg-foreground/10'
+        isBulkSelecting
+          ? isSelected
+            ? 'bg-primary/20 hover:bg-foreground/30'
+            : 'hover:bg-primary/10'
+          : 'hover:bg-foreground/10'
       )}
     >
       <div
         className={cn(
           'flex h-full w-full flex-row items-center justify-between',
-          isBulkAction && 'pointer-events-none'
+          isBulkSelecting && 'pointer-events-none'
         )}
       >
         {displayedColumns.map((column) => columns[column])}

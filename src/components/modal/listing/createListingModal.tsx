@@ -32,6 +32,7 @@ import {
   setMakeListingModalDomains,
   setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
+import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 export type ListingStatus =
   | 'review'
@@ -55,6 +56,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { canAddDomains } = useAppSelector(selectMakeListingModal)
+  const { isSelecting } = useAppSelector(selectBulkSelect)
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
 
   const [price, setPrice] = useState<number | ''>('')
@@ -179,16 +181,17 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   }
 
   const handleClose = () => {
+    // Clear bulk selection only on success
     if (status === 'success') {
       dispatch(setMakeListingModalCanAddDomains(false))
-      dispatch(setMakeListingModalDomains([]))
-      dispatch(setMakeListingModalPreviousListings([]))
+      if (isSelecting) {
+        dispatch(clearBulkSelect())
+      }
     }
 
-    if (!canAddDomains) {
-      dispatch(setMakeListingModalDomains([]))
-      dispatch(setMakeListingModalPreviousListings([]))
-    }
+    // Always clear modal data when closing to prevent stale data
+    dispatch(setMakeListingModalDomains([]))
+    dispatch(setMakeListingModalPreviousListings([]))
 
     onClose()
   }

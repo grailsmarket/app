@@ -11,25 +11,17 @@ import {
   setMakeListingModalDomains,
   setMakeListingModalOpen,
   setMakeListingModalPreviousListings,
-  addMakeListingModalPreviousListing,
-  removeMakeListingModalPreviousListing,
-  addMakeListingModalDomain,
-  removeMakeListingModalDomain,
-  selectMakeListingModal,
 } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 import Watchlist from '@/components/ui/watchlist'
 import { cn } from '@/utils/tailwind'
 import {
-  addBulkRenewalModalDomain,
-  removeBulkRenewalModalDomain,
-  selectBulkRenewalModal,
-} from '@/state/reducers/modals/bulkRenewalModal'
-import {
-  addTransferModalDomain,
-  removeTransferModalDomain,
-  selectTransferModal,
-} from '@/state/reducers/modals/transferModal'
+  selectBulkSelect,
+  addBulkSelectDomain,
+  removeBulkSelectDomain,
+  addBulkSelectPreviousListing,
+  removeBulkSelectPreviousListing,
+} from '@/state/reducers/modals/bulkSelectModal'
 import { Check } from 'ethereum-identity-kit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -43,9 +35,7 @@ interface ActionsProps {
   canAddToCart: boolean
   isFirstInRow?: boolean
   watchlistId?: number | undefined
-  isBulkRenewing?: boolean
-  isBulkTransferring?: boolean
-  isBulkListing?: boolean
+  isBulkSelecting?: boolean
 }
 
 const Actions: React.FC<ActionsProps> = ({
@@ -53,9 +43,7 @@ const Actions: React.FC<ActionsProps> = ({
   registrationStatus,
   canAddToCart,
   watchlistId,
-  isBulkRenewing,
-  isBulkTransferring,
-  isBulkListing,
+  isBulkSelecting,
   isFirstInRow,
 }) => {
   const dispatch = useAppDispatch()
@@ -64,10 +52,9 @@ const Actions: React.FC<ActionsProps> = ({
   const { filterType } = useFilterContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
-  const { domains: bulkRenewalDomains } = useAppSelector(selectBulkRenewalModal)
-  const { domains: bulkTransferDomains } = useAppSelector(selectTransferModal)
-  const { domains: bulkListingDomains } = useAppSelector(selectMakeListingModal)
+  const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
+  const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   const openBuyNowModal = () => {
     dispatch(setBuyNowModalDomain(domain))
@@ -121,8 +108,7 @@ const Actions: React.FC<ActionsProps> = ({
 
   if (filterType === 'portfolio') {
     if (selectedTab.value === 'domains') {
-      if (isBulkRenewing) {
-        const isSelected = bulkRenewalDomains.some((d) => d.name === domain.name)
+      if (isBulkSelecting) {
         return (
           <div className='flex flex-row justify-end gap-4 opacity-100'>
             {isSelected ? (
@@ -130,89 +116,9 @@ const Actions: React.FC<ActionsProps> = ({
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-
-                  dispatch(removeBulkRenewalModalDomain(domain))
-                }}
-                className='flex flex-row items-center gap-1'
-              >
-                Selected
-                <Check className='h-3 w-3' />
-              </PrimaryButton>
-            ) : (
-              <SecondaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(addBulkRenewalModalDomain(domain))
-                }}
-              >
-                Select
-              </SecondaryButton>
-            )}
-          </div>
-        )
-      }
-
-      if (isBulkTransferring) {
-        const isSelected = bulkTransferDomains.some((d) => d.name === domain.name)
-        return (
-          <div className='flex flex-row justify-end gap-4 opacity-100'>
-            {isSelected ? (
-              <PrimaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(
-                    removeTransferModalDomain({
-                      name: domain.name,
-                      tokenId: domain.token_id,
-                      owner: domain.owner,
-                      expiry_date: domain.expiry_date,
-                    })
-                  )
-                }}
-                className='flex flex-row items-center gap-1'
-              >
-                Selected
-                <Check className='h-3 w-3' />
-              </PrimaryButton>
-            ) : (
-              <SecondaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(
-                    addTransferModalDomain({
-                      name: domain.name,
-                      tokenId: domain.token_id,
-                      owner: domain.owner,
-                      expiry_date: domain.expiry_date,
-                    })
-                  )
-                }}
-              >
-                Select
-              </SecondaryButton>
-            )}
-          </div>
-        )
-      }
-
-      if (isBulkListing) {
-        if (registrationStatus !== REGISTERED) return null
-
-        const isSelected = bulkListingDomains.some((d) => d.name === domain.name)
-
-        return (
-          <div className='flex flex-row justify-end gap-4 opacity-100'>
-            {isSelected ? (
-              <PrimaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(removeMakeListingModalDomain(domain))
+                  dispatch(removeBulkSelectDomain(domain))
                   if (grailsListings.length > 0) {
-                    dispatch(removeMakeListingModalPreviousListing(grailsListings[0]))
+                    grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
                   }
                 }}
                 className='flex flex-row items-center gap-1'
@@ -225,9 +131,9 @@ const Actions: React.FC<ActionsProps> = ({
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  dispatch(addMakeListingModalDomain(domain))
+                  dispatch(addBulkSelectDomain(domain))
                   if (grailsListings.length > 0) {
-                    dispatch(addMakeListingModalPreviousListing(grailsListings[0]))
+                    grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
                   }
                 }}
               >

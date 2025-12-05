@@ -74,21 +74,21 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         <div className='flex flex-row gap-2'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-                <Link
-                  key={club}
-                  href={`/categories/${club}`}
-                  className='text-primary flex gap-1 font-medium transition-colors hover:opacity-80'
-                >
-                  <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                    alt={club}
-                    width={24}
-                    height={24}
-                    className='rounded-full'
-                  />
-                  <div>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</div>
-                </Link>
-              ))
+              <Link
+                key={club}
+                href={`/categories/${club}`}
+                className='text-primary flex gap-1 font-medium transition-colors hover:opacity-80'
+              >
+                <Image
+                  src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                  alt={club}
+                  width={24}
+                  height={24}
+                  className='rounded-full'
+                />
+                <div>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</div>
+              </Link>
+            ))
             : 'None'}
         </div>
       ),
@@ -209,14 +209,14 @@ const NameDetails: React.FC<NameDetailsProps> = ({
             {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
               <SecondaryButton
                 onClick={openTransferModal}
-                className='text-md h-8! w-full'
+                className='text-lg w-full'
                 disabled={authStatus !== 'authenticated'}
               >
                 Transfer
               </SecondaryButton>
             )}
             {!isSubname && (
-              <PrimaryButton onClick={openExtendNameModal} className='text-md h-8! w-full'>
+              <PrimaryButton onClick={openExtendNameModal} className='text-lg w-full'>
                 Extend
               </PrimaryButton>
             )}

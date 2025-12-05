@@ -205,18 +205,18 @@ const NameDetails: React.FC<NameDetailsProps> = ({
           )
         })}
         {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
-          <div className='flex w-full flex-col gap-2'>
+          <div className='flex w-full flex-row gap-2'>
             {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
               <SecondaryButton
                 onClick={openTransferModal}
-                className='text-lg w-full'
+                className='text-lg w-1/2'
                 disabled={authStatus !== 'authenticated'}
               >
                 Transfer
               </SecondaryButton>
             )}
             {!isSubname && (
-              <PrimaryButton onClick={openExtendNameModal} className='text-lg w-full'>
+              <PrimaryButton onClick={openExtendNameModal} className='text-lg w-1/2'>
                 Extend
               </PrimaryButton>
             )}

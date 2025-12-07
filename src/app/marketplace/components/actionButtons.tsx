@@ -17,7 +17,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
   const { selectors } = useFilterRouter()
-  const { clearCart, cartIsEmpty, modifyingCartTokenIds } = useCartDomains()
+  const { clearCart, cartIsEmpty } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
   const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
   const filtersOpen = selectors.filters.open
@@ -26,7 +26,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
     <div
       className={cn(
         'border-tertiary bg-background absolute bottom-0 left-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
-        ((cartIsEmpty && modifyingCartTokenIds.length === 0) || hideDomainActions) && !filtersOpen
+        (cartIsEmpty || hideDomainActions) && !filtersOpen
           ? 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
           : 'w-full translate-y-0'
       )}
@@ -46,7 +46,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
           </SecondaryButton>
         </PersistGate>
       </div>
-      {(!cartIsEmpty || modifyingCartTokenIds.length > 0) && (
+      {!cartIsEmpty && (
         <div className={cn('px-md md:px-lg flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
           <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
             Clear Cart

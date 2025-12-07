@@ -25,6 +25,7 @@ import ClaimPoap from '../poap/claimPoap'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppSelector } from '@/state/hooks'
 import { beautifyName } from '@/lib/ens'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -36,6 +37,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const { createOffer, isLoading, isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
   const { address } = useAccount()
   const { poapClaimed } = useAppSelector(selectUserProfile)
+  const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
@@ -139,7 +141,12 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
 
       setSuccess(true)
 
-      modifyCart({ domain, inCart: true, cartType: 'sales' })
+      const cartDomain =
+        cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
+        cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)
+      if (cartDomain) {
+        modifyCart({ domain: cartDomain, inCart: true, cartType: cartDomain.cartType })
+      }
     } catch (err) {
       console.error('Failed to create offer:', err)
     }

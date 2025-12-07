@@ -41,6 +41,7 @@ import useModifyCart from '@/hooks/useModifyCart'
 import Link from 'next/link'
 import ClaimPoap from '../poap/claimPoap'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -50,6 +51,7 @@ const RegistrationModal: React.FC = () => {
   const { modifyCart } = useModifyCart()
   const registrationState = useAppSelector(selectRegistration)
   const { poapClaimed } = useAppSelector(selectUserProfile)
+  const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
@@ -306,7 +308,13 @@ const RegistrationModal: React.FC = () => {
 
         dispatch(setRegistrationFlowState('success'))
         refetchQueries()
-        modifyCart({ domain: registrationState.domain, inCart: true, cartType: 'registrations' })
+
+        const cartDomain =
+          cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === registrationState.domain?.token_id) ||
+          cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === registrationState.domain?.token_id)
+        if (cartDomain) {
+          modifyCart({ domain: cartDomain, inCart: true, cartType: cartDomain.cartType })
+        }
         return
       }
     }

@@ -24,6 +24,7 @@ import { mainnet } from 'viem/chains'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
+import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -89,6 +90,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const { data: walletClient } = useWalletClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
+  const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
   // const { width: windowWidth } = useWindowSize()
   // const [isClosing, setIsClosing] = useState(false)
@@ -459,7 +461,12 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       if (receipt.status === 'success') {
         setStep('success')
         refetchDomainQueries()
-        modifyCart({ domain, inCart: true, cartType: 'sales' })
+        const cartDomain =
+          cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
+          cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)
+        if (cartDomain) {
+          modifyCart({ domain: cartDomain, inCart: true, cartType: cartDomain.cartType })
+        }
       } else {
         throw new Error('Transaction failed')
       }

@@ -39,10 +39,16 @@ const useCartDomains = () => {
     if (getRegistrationStatus(expireTime) === GRACE_PERIOD) return
 
     const registered = getRegistrationStatus(expireTime) === REGISTERED
-    const inCart = isAddedToCart(domain.token_id)
+    const domainInCart =
+      cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
+      cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)
+
+    if (domainInCart) {
+      return modifyCart({ domain: domainInCart, inCart: true, cartType: domainInCart.cartType })
+    }
 
     const cartType = registered ? 'sales' : 'registrations'
-    return modifyCart({ domain, inCart, cartType })
+    return modifyCart({ domain, inCart: false, cartType })
   }
 
   const onSelect = (e: MouseEvent, domain: MarketplaceDomainType) => {

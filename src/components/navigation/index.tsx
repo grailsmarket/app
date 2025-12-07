@@ -11,10 +11,16 @@ import Notifications from './notifications'
 import Hamburger from './hamburger'
 import Watchlist from './watchlist'
 import SearchIcon from './searchIcon'
+import { cn } from '@/utils/tailwind'
 
-const Navigation = () => {
+const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   return (
-    <header className='bg-background border-tertiary app:border-r-2 app:border-l-2 fixed top-0 left-[50%] z-50 mx-auto h-14 w-full max-w-[2340px] -translate-x-1/2 border-b-2 backdrop-blur-md md:h-18'>
+    <header
+      className={cn(
+        'bg-background border-tertiary app:border-r-2 app:border-l-2 sticky top-0 left-0 z-50 mx-auto h-14 w-full max-w-[2340px] border-b-2 backdrop-blur-md md:h-18',
+        showInfo ? 'mt-6' : ''
+      )}
+    >
       <nav className='px-md md:px-lg mx-auto flex h-full max-w-[2340px] items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>

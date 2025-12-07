@@ -15,7 +15,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const { userAddress } = useUserContext()
 
   return (
-    <div className='dark relative z-0 w-full pt-14 md:pt-18'>
+    <div className='dark relative z-0 w-full'>
       <div className='z-20 w-full' suppressHydrationWarning={true}>
         {/* Issues inside of EIK, so having to render on the client */}
         {isClient && (

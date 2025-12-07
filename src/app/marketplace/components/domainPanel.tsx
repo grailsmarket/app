@@ -29,7 +29,7 @@ const DomainPanel = () => {
         maxHeight: isClient
           ? windowWidth && windowWidth < 768
             ? 'calc(100dvh - 56px)'
-            : 'calc(100dvh - 80px)'
+            : 'calc(100dvh - 70px)'
           : 'calc(100dvh - 56px)',
       }}
     >
@@ -61,7 +61,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 120px)' : 'calc(100dvh - 84px)'}
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 110px)' : 'calc(100dvh - 84px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom='80px'

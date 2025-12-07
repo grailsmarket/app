@@ -26,7 +26,7 @@ const Portfolio = () => {
     <Suspense>
       <FilterProvider filterType='portfolio' portfolioTab={selectedTab.value}>
         <main className='relative max-h-[100dvh]! overflow-hidden'>
-          <div className='relative z-10 mx-auto flex w-full flex-col gap-32 pt-14 md:pt-18'>
+          <div className='relative z-10 mx-auto flex w-full flex-col gap-32'>
             <div className='bg-background relative mx-auto flex h-[calc(100dvh-56px)] w-full flex-row overflow-hidden md:h-[calc(100dvh-72px)] lg:pl-2'>
               <FilterPanel />
               <div className='bg-tertiary ml-1.5 hidden h-full w-0.5 lg:block' />

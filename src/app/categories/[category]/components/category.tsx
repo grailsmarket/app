@@ -35,7 +35,7 @@ const CategoryPage: React.FC<Props> = ({ category }) => {
   }
 
   return (
-    <div className='flex w-full flex-col pt-14 md:pt-18'>
+    <div className='flex w-full flex-col'>
       <CategoryDetails categoryDetails={categoryDetails} />
       <MainPanel category={category} />
     </div>

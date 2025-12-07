@@ -25,6 +25,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
+import { Cross } from 'ethereum-identity-kit'
 
 const ActionButtons = () => {
   const dispatch = useAppDispatch()
@@ -119,7 +120,7 @@ const ActionButtons = () => {
           </SecondaryButton>
         </PersistGate>
       </div>
-      <div className={cn('flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
+      <div className={cn('flex w-fit flex-row gap-x-2 overflow-x-scroll', filtersOpen ? 'hidden lg:flex' : 'flex')}>
         {selectedTab.value === 'domains' && isSelecting && (
           <>
             {/* <SecondaryButton onClick={handleSelectAll} disabled={visibleDomains.length === 0}>
@@ -129,7 +130,7 @@ const ActionButtons = () => {
               List
             </PrimaryButton>
             <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
-              Cancel Listings ({previousListings.length})
+              <p className='text-nowrap'>Cancel ({previousListings.length})</p>
             </PrimaryButton>
             <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
               Extend
@@ -137,7 +138,9 @@ const ActionButtons = () => {
             <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
               Transfer
             </PrimaryButton>
-            <SecondaryButton onClick={handleCancel}>Cancel</SecondaryButton>
+            <SecondaryButton onClick={handleCancel} className='px-2.5!'>
+              <Cross className='h-4 w-4' />
+            </SecondaryButton>
           </>
         )}
         {selectedTab.value === 'domains' && !isSelecting && (

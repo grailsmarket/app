@@ -15,8 +15,8 @@ const Home = () => {
         />
         <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
       </div> */}
-      <div className='lg:pt-homeDesktop z-10 mx-auto flex h-full w-full flex-col items-center gap-4 pt-18 md:pt-28'>
-        <div className='mb-2 flex w-full max-w-[1296px] flex-col items-start justify-start gap-4 px-4 md:mb-12 md:px-8 xl:px-4'>
+      <div className='z-10 mx-auto flex h-full w-full flex-col items-center gap-4 pt-6 md:pt-12'>
+        <div className='mb-2 flex w-full max-w-[1296px] flex-col items-start justify-start gap-4 px-4 md:mb-12 md:px-8 xl:px-8'>
           <h1 className='font-sedan-sc text-5xl sm:text-9xl'>Your ENS Market</h1>
           <HeroSearch />
         </div>

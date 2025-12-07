@@ -145,7 +145,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
   if (isMyDomain) {
     return (
       <div className='flex flex-row items-center gap-2'>
-        <User address={offer.buyer_address} className='xs:max-w-full max-w-32' />
+        <User address={offer.buyer_address} className='xs:max-w-full max-w-32' wrapperClassName='justify-start!' />
         <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
       </div>
     )
@@ -161,7 +161,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
 
   return (
     <div className='flex flex-row items-center gap-2'>
-      <User address={offer.buyer_address} />
+      <User address={offer.buyer_address} wrapperClassName='justify-start!' />
     </div>
   )
 }

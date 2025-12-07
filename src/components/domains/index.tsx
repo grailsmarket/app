@@ -88,11 +88,12 @@ const Domains: React.FC<DomainsProps> = ({
     if (!width) return 1200
 
     if (width >= 2340) return 2340 - 340
-    if (width < 768) return width - 12
-    if (width < 1024) return width - 36
+    if (width < 640) return width - 9
+    if (width < 768) return width - 20
+    if (width < 1024) return width - 30
 
     // Account for sidebar (280px) and padding
-    return width - (width < 1024 ? 48 : 344)
+    return width - (width < 1024 ? 48 : 340)
   }, [width])
 
   const isClient = useIsClient()

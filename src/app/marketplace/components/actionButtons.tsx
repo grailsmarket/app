@@ -25,10 +25,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
   return (
     <div
       className={cn(
-        'border-tertiary bg-background absolute right-0 bottom-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
+        'border-tertiary bg-background absolute bottom-0 left-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
         ((cartIsEmpty && modifyingCartTokenIds.length === 0) || hideDomainActions) && !filtersOpen
-          ? 'translate-y-full'
-          : 'translate-y-0'
+          ? 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
+          : 'w-full translate-y-0'
       )}
     >
       <div
@@ -46,12 +46,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
           </SecondaryButton>
         </PersistGate>
       </div>
-      <div className={cn('px-md md:px-lg flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
-        <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
-          Clear Cart
-        </SecondaryButton>
-        <PrimaryButton onClick={() => setIsCartOpen(true)}>Open Cart</PrimaryButton>
-      </div>
+      {(!cartIsEmpty || modifyingCartTokenIds.length > 0) && (
+        <div className={cn('px-md md:px-lg flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
+          <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
+            Clear Cart
+          </SecondaryButton>
+          <PrimaryButton onClick={() => setIsCartOpen(true)}>Open Cart</PrimaryButton>
+        </div>
+      )}
     </div>
   )
 }

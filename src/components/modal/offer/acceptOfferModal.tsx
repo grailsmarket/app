@@ -991,7 +991,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <div className='flex flex-row items-center justify-between rounded-lg'>
                 <p className='font-sedan-sc text-xl'>From</p>
                 <div className='max-w-2/3 text-xl'>
-                  <User address={offer.buyer_address} />
+                  <User address={offer.buyer_address} wrapperClassName='justify-start!' />
                 </div>
               </div>
 

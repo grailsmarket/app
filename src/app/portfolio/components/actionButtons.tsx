@@ -104,10 +104,12 @@ const ActionButtons = () => {
   return (
     <div
       className={cn(
-        'border-tertiary bg-background p-md md:p-lg absolute right-0 bottom-0 z-20 flex w-full flex-row justify-end rounded-b-lg border-t-2 transition-transform duration-300 lg:justify-between starting:translate-y-full',
+        'border-tertiary bg-background p-md md:px-lg absolute bottom-0 left-0 z-20 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
         selectedTab.value === 'domains' || (selectedTab.value === 'watchlist' && !cartIsEmpty) || filtersOpen
-          ? 'translate-y-0'
-          : 'translate-y-full'
+          ? selectedTab.value === 'domains' && !isSelecting && !filtersOpen
+            ? 'w-full translate-y-0 sm:translate-y-full lg:w-[298px] lg:translate-y-0'
+            : 'w-full translate-y-0'
+          : 'w-full translate-y-full lg:w-[298px] lg:translate-y-0'
       )}
     >
       <div className={cn('flex-row justify-end gap-2 lg:w-[262px]', filtersOpen ? 'flex' : 'hidden lg:flex')}>
@@ -138,15 +140,17 @@ const ActionButtons = () => {
             <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
               Transfer
             </PrimaryButton>
-            <SecondaryButton onClick={handleCancel} className='px-2.5!'>
+            <SecondaryButton onClick={handleCancel} className='block px-2.5! sm:hidden'>
               <Cross className='h-4 w-4' />
             </SecondaryButton>
           </>
         )}
         {selectedTab.value === 'domains' && !isSelecting && (
-          <SecondaryButton onClick={handleBulkSelect}>Bulk Select</SecondaryButton>
+          <SecondaryButton onClick={handleBulkSelect} className='block sm:hidden'>
+            Bulk Select
+          </SecondaryButton>
         )}
-        {selectedTab.value === 'watchlist' && (
+        {selectedTab.value === 'watchlist' && !cartIsEmpty && (
           <>
             <SecondaryButton onClick={() => clearCart()}>Clear Cart</SecondaryButton>
             <PrimaryButton onClick={() => setIsCartOpen(true)}>Open Cart</PrimaryButton>

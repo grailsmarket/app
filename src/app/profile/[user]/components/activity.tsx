@@ -32,7 +32,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group border-tertiary md:p-md flex h-9 items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/50! hover:border-white/50'>
+          <div className='w-ful group border-tertiary md:p-md flex h-9 items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/50! hover:border-white/50 md:h-10'>
             <input
               type='text'
               placeholder='Search'

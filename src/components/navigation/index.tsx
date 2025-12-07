@@ -21,7 +21,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         showInfo ? 'mt-6' : ''
       )}
     >
-      <nav className='px-md md:px-lg mx-auto flex h-full max-w-[2340px] items-center justify-between'>
+      <nav className='px-md md:px-lg lg:px-xl mx-auto flex h-full max-w-[2340px] items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>
             <Image

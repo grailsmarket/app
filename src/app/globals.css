@@ -211,3 +211,8 @@ body {
   z-index: 1000 !important;
   padding-top: 90px !important;
 }
+
+.profile-tooltip-content {
+  z-index: 1000 !important;
+  right: 0 !important;
+}

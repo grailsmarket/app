@@ -34,22 +34,22 @@ const OfferPanel = () => {
 
   return (
     <div
-      className='flex flex-col gap-4'
+      className='flex flex-col gap-2 sm:gap-4'
       style={{
         width: windowWidth && windowWidth < 1024 ? '100%' : 'calc(100% - 280px)',
       }}
     >
       <TabSwitcher />
-      <div className='px-md flex flex-col gap-4'>
+      <div className='px-sm sm:px-md flex flex-col gap-2 sm:gap-4'>
         <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
           <div className='flex w-auto items-center gap-2'>
             <button
-              className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 lg:hidden'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
               onClick={() => dispatch(actions.setFiltersOpen(true))}
             >
               <Image src={FilterIcon} alt='Filter' width={16} height={16} />
             </button>
-            <div className='group border-tertiary p-md flex w-full items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40'>
+            <div className='w-ful group border-tertiary flex h-9 items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40 md:h-10'>
               <input
                 type='text'
                 placeholder='Search'
@@ -71,6 +71,7 @@ const OfferPanel = () => {
           maxHeight='calc(100dvh - 160px)'
           offers={offers}
           loadingRowCount={20}
+          paddingBottom='120px'
           noResults={!offersLoading && offers?.length === 0}
           noResultsLabel={authStatus === 'unauthenticated' ? disconnectMessage : noResultMessage}
           isLoading={offersLoading}

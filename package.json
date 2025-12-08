@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "checks": "npm run format && npm run lint && npm run typecheck",
-    "postinstall": "node -e \"process.env.VERCEL_ENV === 'preview' ? require('child_process').execSync('node scripts/postinstall.mjs', {stdio: 'inherit'}) : console.log('Skipping postinstall')\""
+    "postinstall": "node -e \"process.env.VERCEL_ENV === 'production' ? require('child_process').execSync('node scripts/postinstall.mjs', {stdio: 'inherit'}) : console.log('Skipping postinstall')\""
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.8.0",

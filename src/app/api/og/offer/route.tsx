@@ -213,7 +213,6 @@ export async function POST(req: NextRequest) {
     page = await browser.newPage()
 
     const htmlContent = `
-      <!DOCTYPE html>
       <html>
         <head>
           <style>

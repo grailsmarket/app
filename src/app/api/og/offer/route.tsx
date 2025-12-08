@@ -246,7 +246,9 @@ export async function POST(req: NextRequest) {
               text-transform: uppercase;
               letter-spacing: 1px;
               border-radius: 24px;
-              padding: 14px 0px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
               text-align: center;
               width: 560px;
               height: 108px;

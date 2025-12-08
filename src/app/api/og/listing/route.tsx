@@ -135,8 +135,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const ownerProfile = await getOwnerProfile()
-
     // Get ENS SVG
     const getENSSVG = async () => {
       try {
@@ -159,7 +157,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const ensSVG = await getENSSVG()
+    // Fetch all data in parallel
+    const [ownerProfile, ensSVG] = await Promise.all([getOwnerProfile(), getENSSVG()])
 
     const executablePath = await getChromiumPath()
     const launchOptions = {
@@ -177,9 +176,9 @@ export async function POST(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-          headless: 'new',
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        }),
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          }),
     }
 
     browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
@@ -362,13 +361,14 @@ export async function POST(req: NextRequest) {
           <div class="info">
           <div class="price-container"><p class="price">${price} ${currency}</p> <img class="source-logo" src="${sourceLogo}" alt="source" /></div>
             <div class="expires">Expires: ${expiresFormatted}</div>
-            ${ownerProfile.displayName
-        ? `<div class="owner">
+            ${
+              ownerProfile.displayName
+                ? `<div class="owner">
               <img class="owner-avatar" src="${ownerProfile.avatar}" alt="owner" />
               <span class="owner-name">${ownerProfile.displayName}</span>
             </div>`
-        : ''
-      }
+                : ''
+            }
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
               <img class="grails-logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails" />
           </div>

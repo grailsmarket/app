@@ -122,9 +122,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-          headless: 'new',
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        }),
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          }),
     }
 
     console.log('Launching browser with executable path:', executablePath)

@@ -18,6 +18,13 @@ import {
 } from '@/state/reducers/modals/makeListingModal'
 import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setBuyNowModalListing, setBuyNowModalDomain, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
+import {
+  setShareModalOpen,
+  setShareModalType,
+  setShareModalListing,
+  setShareModalDomainInfo,
+} from '@/state/reducers/modals/shareModal'
+import ShareIconWhite from 'public/icons/image.svg'
 
 interface ListingsProps {
   domain?: MarketplaceDomainType
@@ -145,11 +152,32 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
     dispatch(setBuyNowModalOpen(true))
   }
 
+  const openShareModal = () => {
+    if (!domain) return
+    dispatch(setShareModalType('listing'))
+    dispatch(setShareModalListing(listing))
+    dispatch(
+      setShareModalDomainInfo({
+        name: domain.name,
+        tokenId: domain.token_id,
+        expiryDate: domain.expiry_date,
+        ownerAddress: domain.owner,
+      })
+    )
+    dispatch(setShareModalOpen(true))
+  }
+
   if (isMyDomain) {
     return (
       <div className='flex flex-row items-center gap-2'>
         <SecondaryButton onClick={openEditListingModal}>Edit</SecondaryButton>
         <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
+        <SecondaryButton
+          onClick={openShareModal}
+          className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+        >
+          <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
+        </SecondaryButton>
       </div>
     )
   }
@@ -167,9 +195,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
         <CartIcon
           domain={domain}
           hasBorder={true}
-          className='flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm transition-colors'
+          className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
         />
       </button>
+      <SecondaryButton
+        onClick={openShareModal}
+        className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+      >
+        <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
+      </SecondaryButton>
     </div>
   )
 }

@@ -22,6 +22,13 @@ import {
   setCancelOfferModalOpen,
 } from '@/state/reducers/modals/cancelOfferModal'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import {
+  setShareModalOpen,
+  setShareModalType,
+  setShareModalOffer,
+  setShareModalDomainInfo,
+} from '@/state/reducers/modals/shareModal'
+import ShareIconWhite from 'public/icons/image.svg'
 
 interface OffersProps {
   domain?: MarketplaceDomainType
@@ -142,11 +149,34 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
     dispatch(setCancelOfferModalName(domain.name))
   }
 
+  const openShareModal = () => {
+    if (!domain) return
+    dispatch(setShareModalType('offer'))
+    dispatch(setShareModalOffer(offer))
+    dispatch(
+      setShareModalDomainInfo({
+        name: domain.name,
+        tokenId: domain.token_id,
+        expiryDate: domain.expiry_date,
+        ownerAddress: domain.owner,
+      })
+    )
+    dispatch(setShareModalOpen(true))
+  }
+
   if (isMyDomain) {
     return (
-      <div className='flex flex-row items-center gap-2'>
-        <User address={offer.buyer_address} className='xs:max-w-full max-w-32' wrapperClassName='justify-start!' />
-        <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
+      <div className='flex flex-col items-end gap-2 sm:flex-row sm:items-center'>
+        <User address={offer.buyer_address} className='xs:max-w-full max-w-40' wrapperClassName='justify-start!' />
+        <div className='flex flex-row items-center gap-2'>
+          <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
+          <SecondaryButton
+            onClick={openShareModal}
+            className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+          >
+            <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
+          </SecondaryButton>
+        </div>
       </div>
     )
   }
@@ -155,6 +185,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
     return (
       <div className='flex flex-row items-center gap-2'>
         <SecondaryButton onClick={openCancelOfferModal}>Cancel</SecondaryButton>
+        <SecondaryButton
+          onClick={openShareModal}
+          className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+        >
+          <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
+        </SecondaryButton>
       </div>
     )
   }
@@ -162,6 +198,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
   return (
     <div className='flex flex-row items-center gap-2'>
       <User address={offer.buyer_address} wrapperClassName='justify-start!' />
+      <SecondaryButton
+        onClick={openShareModal}
+        className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+      >
+        <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
+      </SecondaryButton>
     </div>
   )
 }

@@ -12,6 +12,7 @@ import notificationModal from './notificationModal'
 import bulkRenewalModal from './bulkRenewalModal'
 import transferModal from './transferModal'
 import bulkSelectModal from './bulkSelectModal'
+import shareModal from './shareModal'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
@@ -26,6 +27,7 @@ const modalReducer = combineReducers({
   bulkRenewalReducer: bulkRenewalModal,
   transferReducer: transferModal,
   bulkSelectReducer: bulkSelectModal,
+  shareReducer: shareModal,
 })
 
 export default modalReducer

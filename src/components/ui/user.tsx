@@ -46,12 +46,13 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
       boundary='scrollParent'
       keepTooltipOnHover={true}
       showFollowButton={true}
+      showDelay={750}
     >
       <div className={cn('flex justify-end', wrapperClassName)}>
         <Link
           href={`/profile/${address}`}
           className={cn(
-            'bg-tertiary border-primary relative flex h-10 w-fit flex-row items-center gap-2 rounded-sm border px-1.5 py-1 transition hover:opacity-70',
+            'bg-tertiary border-primary relative flex h-[37px]! w-fit flex-row items-center gap-2 rounded-sm border px-1.5 py-1 transition hover:opacity-70 sm:h-10',
             className
           )}
         >

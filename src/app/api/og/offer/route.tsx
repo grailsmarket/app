@@ -5,7 +5,6 @@ import { labelhash, namehash, isAddress } from 'viem'
 import puppeteerCore, { LaunchOptions } from 'puppeteer-core'
 import chromium from '@sparticuz/chromium-min'
 import { formatUnits } from 'viem'
-import { DomainOfferType } from '@/types/domains'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
 import { beautifyName } from '@/lib/ens'
 
@@ -50,14 +49,6 @@ async function getChromiumPath(): Promise<string> {
   throw new Error('Missing a path for Chromium executable')
 }
 
-type OfferRequestBody = {
-  offer: DomainOfferType
-  name: string
-  token_id: string
-  expiry_date: string | null
-  owner_address: string | null
-}
-
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
   grails: 'https://grails.app/logo.png',
@@ -91,22 +82,28 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return 'WETH'
 }
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   let browser
   let page
 
   try {
-    const body: OfferRequestBody = await req.json()
-    const { offer, name, owner_address } = body
+    const searchParams = req.nextUrl.searchParams
+    const name = searchParams.get('name')
+    const amountWei = searchParams.get('amount')
+    const currencyAddress = searchParams.get('currency')
+    const source = searchParams.get('source')
+    const expires = searchParams.get('expires')
+    const owner_address = searchParams.get('owner')
+    const offerrer_address = searchParams.get('offerrer')
 
-    if (!offer || !name) {
+    if (!name || !amountWei || !currencyAddress || !source || !expires) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const amount = formatPrice(offer.offer_amount_wei, offer.currency_address)
-    const currency = getCurrencySymbol(offer.currency_address)
-    const sourceLogo = SOURCE_LOGO_URLS[offer.source] || SOURCE_LOGO_URLS.grails
-    const expiresFormatted = formatExpiryDate(offer.expires_at)
+    const amount = formatPrice(amountWei, currencyAddress)
+    const currency = getCurrencySymbol(currencyAddress)
+    const sourceLogo = SOURCE_LOGO_URLS[source] || SOURCE_LOGO_URLS.grails
+    const expiresFormatted = formatExpiryDate(expires)
     const displayName = name.endsWith('.eth') ? name : `${name}.eth`
     const defaultAvatar = 'https://efp.app/assets/art/default-avatar.svg'
 
@@ -135,28 +132,28 @@ export async function POST(req: NextRequest) {
     }
 
     const getOfferrerProfile = async () => {
-      if (!offer.buyer_address) return { avatar: defaultAvatar, displayName: '' }
+      if (!offerrer_address) return { avatar: defaultAvatar, displayName: '' }
       try {
-        const response = await fetchAccount(offer.buyer_address)
+        const response = await fetchAccount(offerrer_address)
         if (response === null) {
           return {
             avatar: defaultAvatar,
-            displayName: isAddress(offer.buyer_address)
-              ? truncateAddress(offer.buyer_address as `0x${string}`)
-              : offer.buyer_address,
+            displayName: isAddress(offerrer_address)
+              ? truncateAddress(offerrer_address as `0x${string}`)
+              : offerrer_address,
           }
         }
         return {
           avatar: response.ens?.avatar || defaultAvatar,
-          displayName: response.ens?.name || truncateAddress(offer.buyer_address as `0x${string}`),
+          displayName: response.ens?.name || truncateAddress(offerrer_address as `0x${string}`),
         }
       } catch (error) {
         console.error('Error fetching offerrer profile:', error)
         return {
           avatar: defaultAvatar,
-          displayName: isAddress(offer.buyer_address)
-            ? truncateAddress(offer.buyer_address as `0x${string}`)
-            : offer.buyer_address,
+          displayName: isAddress(offerrer_address)
+            ? truncateAddress(offerrer_address as `0x${string}`)
+            : offerrer_address,
         }
       }
     }
@@ -206,9 +203,9 @@ export async function POST(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          }),
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        }),
     }
 
     browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
@@ -230,7 +227,7 @@ export async function POST(req: NextRequest) {
               gap: 80px;
               font-family: 'Inter', system-ui, -apple-system, sans-serif;
               color: #f4f4f4;
-              padding: 80px;
+              padding: 70px;
             }
             .ens-image-container {
               display: flex;
@@ -299,7 +296,7 @@ export async function POST(req: NextRequest) {
               flex-direction: column;
               align-items: flex-start;
               gap: 24px;
-              max-width: 700px;
+              max-width: 720px;
             }
             .domain-name {
               font-size: 72px;
@@ -405,28 +402,26 @@ export async function POST(req: NextRequest) {
           <div class="info">
           <div class="price-container"><p class="price">${amount} ${currency}</p><img class="source-logo" src="${sourceLogo}" alt="source" /></div>
             <div class="expires">Expires: ${expiresFormatted}</div>
-            ${
-              offerrerProfile?.displayName
-                ? `<div class="owner">
+            ${offerrerProfile?.displayName
+        ? `<div class="owner">
             <p class="owner-label">Bidder:</p>
               <div class="owner-container">
               <img class="owner-avatar" src="${offerrerProfile.avatar}" alt="owner" />
               <span class="owner-name">${offerrerProfile.displayName}</span>
               </div>
             </div>`
-                : ''
-            }
-            ${
-              ownerProfile.displayName
-                ? `<div class="owner">
+        : ''
+      }
+            ${ownerProfile.displayName
+        ? `<div class="owner">
               <p class="owner-label">Owner:</p>
               <div class="owner-container">
                 <img class="owner-avatar" src="${ownerProfile.avatar}" alt="owner" />
                 <span class="owner-name">${ownerProfile.displayName}</span>
               </div>
             </div>`
-                : ''
-            }
+        : ''
+      }
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
             <img class="grails-logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails" />
           </div>

@@ -159,8 +159,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
     dispatch(
       setShareModalDomainInfo({
         name: domain.name,
-        tokenId: domain.token_id,
-        expiryDate: domain.expiry_date,
         ownerAddress: domain.owner,
       })
     )

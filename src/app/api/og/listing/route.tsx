@@ -5,7 +5,6 @@ import { labelhash, namehash, isAddress } from 'viem'
 import puppeteerCore, { LaunchOptions } from 'puppeteer-core'
 import chromium from '@sparticuz/chromium-min'
 import { formatUnits } from 'viem'
-import { DomainListingType } from '@/types/domains'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { TOKENS } from '@/constants/web3/tokens'
 import { beautifyName } from '@/lib/ens'
@@ -51,14 +50,6 @@ async function getChromiumPath(): Promise<string> {
   throw new Error('Missing a path for Chromium executable')
 }
 
-type ListingRequestBody = {
-  listing: DomainListingType
-  name: string
-  token_id: string
-  expiry_date: string | null
-  owner_address: string | null
-}
-
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
   grails: 'https://grails.app/logo.png',
@@ -92,22 +83,27 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return token || 'ETH'
 }
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   let browser
   let page
 
   try {
-    const body: ListingRequestBody = await req.json()
-    const { listing, name, owner_address } = body
+    const searchParams = req.nextUrl.searchParams
+    const name = searchParams.get('name')
+    const priceWei = searchParams.get('price')
+    const currencyAddress = searchParams.get('currency')
+    const source = searchParams.get('source')
+    const expires = searchParams.get('expires')
+    const owner_address = searchParams.get('owner')
 
-    if (!listing || !name) {
+    if (!name || !priceWei || !currencyAddress || !source || !expires) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const price = formatPrice(listing.price, listing.currency_address)
-    const currency = getCurrencySymbol(listing.currency_address)
-    const sourceLogo = SOURCE_LOGO_URLS[listing.source] || SOURCE_LOGO_URLS.grails
-    const expiresFormatted = formatExpiryDate(listing.expires_at)
+    const price = formatPrice(priceWei, currencyAddress)
+    const currency = getCurrencySymbol(currencyAddress)
+    const sourceLogo = SOURCE_LOGO_URLS[source] || SOURCE_LOGO_URLS.grails
+    const expiresFormatted = formatExpiryDate(expires)
     const displayName = name.endsWith('.eth') ? name : `${name}.eth`
     const defaultAvatar = 'https://efp.app/assets/art/default-avatar.svg'
 

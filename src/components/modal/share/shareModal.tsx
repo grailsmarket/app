@@ -18,8 +18,6 @@ interface ShareModalProps {
   listing: DomainListingType | null
   offer: DomainOfferType | null
   domainName: string | null
-  tokenId: string | null
-  expiryDate: string | null
   ownerAddress: string | null
 }
 
@@ -29,8 +27,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
   listing,
   offer,
   domainName,
-  tokenId,
-  expiryDate,
   ownerAddress,
 }) => {
   const [status, setStatus] = useState<ShareModalStatus>('loading')
@@ -39,7 +35,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const [isCopied, setIsCopied] = useState(false)
 
   const fetchImage = useCallback(async () => {
-    if (!domainName || !tokenId) {
+    if (!domainName) {
       setError('Missing domain information')
       setStatus('error')
       return
@@ -47,17 +43,34 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
     try {
       setStatus('loading')
-      const endpoint = type === 'listing' ? '/api/og/listing' : '/api/og/offer'
-      const body =
-        type === 'listing'
-          ? { listing, name: domainName, token_id: tokenId, expiry_date: expiryDate, owner_address: ownerAddress }
-          : { offer, name: domainName, token_id: tokenId, expiry_date: expiryDate, owner_address: ownerAddress }
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      let endpoint: string
+      if (type === 'listing' && listing) {
+        const params = new URLSearchParams({
+          name: domainName,
+          price: listing.price,
+          currency: listing.currency_address,
+          source: listing.source,
+          expires: listing.expires_at,
+          ...(ownerAddress && { owner: ownerAddress }),
+        })
+        endpoint = `/api/og/listing?${params.toString()}`
+      } else if (type === 'offer' && offer) {
+        const params = new URLSearchParams({
+          name: domainName,
+          amount: offer.offer_amount_wei,
+          currency: offer.currency_address,
+          source: offer.source,
+          expires: offer.expires_at,
+          ...(ownerAddress && { owner: ownerAddress }),
+          ...(offer.buyer_address && { offerrer: offer.buyer_address }),
+        })
+        endpoint = `/api/og/offer?${params.toString()}`
+      } else {
+        throw new Error('Invalid type or missing data')
+      }
+
+      const response = await fetch(endpoint)
 
       if (!response.ok) {
         throw new Error('Failed to generate image')
@@ -71,7 +84,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
       setError((err as Error).message)
       setStatus('error')
     }
-  }, [type, listing, offer, domainName, tokenId, expiryDate, ownerAddress])
+  }, [type, listing, offer, domainName, ownerAddress])
 
   useEffect(() => {
     fetchImage()
@@ -87,25 +100,44 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const handleDownload = async () => {
     if (!imageUrl || !domainName) return
 
-    const a = document.createElement('a')
-    a.href = imageUrl
-    a.download = `${domainName.replace('.eth', '')}-${type}.png`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
+    const filename = `${domainName.replace('.eth', '')}-${type}.png`
+
+    // Check if on mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+    if (isMobile) {
+      // On mobile, open image in new tab so user can long-press to save
+      window.open(imageUrl, '_blank')
+    } else {
+      const a = document.createElement('a')
+      a.href = imageUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    }
   }
 
   const handleCopy = async () => {
     if (!imageUrl) return
 
     try {
+      // Check if clipboard API with images is supported
+      if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
+        // Fallback: open image in new tab so user can save it
+        window.open(imageUrl, '_blank')
+        return
+      }
+
       const response = await fetch(imageUrl)
       const blob = await response.blob()
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 2000)
     } catch (err) {
+      // Fallback: open image in new tab so user can save it
       console.error('Failed to copy image:', err)
+      window.open(imageUrl, '_blank')
     }
   }
 
@@ -124,7 +156,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-2 md:w-fit md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl items-center md:justify-center relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-2 md:w-fit md:rounded-md md:border-2'
       >
         <div className='flex w-full flex-col items-center gap-2 sm:w-[440px]'>
           <h2 className='font-sedan-sc mb-2 text-3xl'>Share {type === 'listing' ? 'Listing' : 'Offer'}</h2>

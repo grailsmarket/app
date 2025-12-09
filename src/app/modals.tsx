@@ -63,8 +63,6 @@ const Modals: React.FC = () => {
     listing: shareModalListing,
     offer: shareModalOffer,
     domainName: shareModalDomainName,
-    tokenId: shareModalTokenId,
-    expiryDate: shareModalExpiryDate,
     ownerAddress: shareModalOwnerAddress,
   } = useAppSelector(selectShareModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
@@ -131,8 +129,6 @@ const Modals: React.FC = () => {
           listing={shareModalListing}
           offer={shareModalOffer}
           domainName={shareModalDomainName}
-          tokenId={shareModalTokenId}
-          expiryDate={shareModalExpiryDate}
           ownerAddress={shareModalOwnerAddress}
         />
       )}

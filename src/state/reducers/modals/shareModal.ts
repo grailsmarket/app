@@ -8,8 +8,6 @@ type ShareModalState = {
   listing: DomainListingType | null
   offer: DomainOfferType | null
   domainName: string | null
-  tokenId: string | null
-  expiryDate: string | null
   ownerAddress: string | null
 }
 
@@ -19,8 +17,6 @@ const initialState: ShareModalState = {
   listing: null,
   offer: null,
   domainName: null,
-  tokenId: null,
-  expiryDate: null,
   ownerAddress: null,
 }
 
@@ -36,8 +32,6 @@ export const ShareModalSlice = createSlice({
         state.listing = null
         state.offer = null
         state.domainName = null
-        state.tokenId = null
-        state.expiryDate = null
         state.ownerAddress = null
       }
     },
@@ -54,11 +48,9 @@ export const ShareModalSlice = createSlice({
       state,
       {
         payload,
-      }: PayloadAction<{ name: string; tokenId: string; expiryDate: string | null; ownerAddress: string | null }>
+      }: PayloadAction<{ name: string; ownerAddress: string | null }>
     ) {
       state.domainName = payload.name
-      state.tokenId = payload.tokenId
-      state.expiryDate = payload.expiryDate
       state.ownerAddress = payload.ownerAddress
     },
   },

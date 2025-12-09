@@ -44,12 +44,7 @@ export const ShareModalSlice = createSlice({
     setShareModalOffer(state, { payload }: PayloadAction<DomainOfferType | null>) {
       state.offer = payload
     },
-    setShareModalDomainInfo(
-      state,
-      {
-        payload,
-      }: PayloadAction<{ name: string; ownerAddress: string | null }>
-    ) {
+    setShareModalDomainInfo(state, { payload }: PayloadAction<{ name: string; ownerAddress: string | null }>) {
       state.domainName = payload.name
       state.ownerAddress = payload.ownerAddress
     },

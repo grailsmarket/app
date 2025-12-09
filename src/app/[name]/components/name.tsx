@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import NameDetails from './nameDetails'
 import { useName } from '../hooks/useName'
 import Listings from './listings'
@@ -18,23 +18,23 @@ interface Props {
 const NamePage: React.FC<Props> = ({ name }) => {
   const { nameDetails, nameDetailsIsLoading, nameOffers, nameOffersIsLoading } = useName(name)
 
-  // Pre-warm the OG image cache in the background
-  useEffect(() => {
-    if (typeof window !== 'undefined' && name) {
-      // Small delay to not block initial page load
-      const timer = setTimeout(() => {
-        try {
-          const img = new Image()
-          img.src = `/api/og/name?name=${encodeURIComponent(name)}`
-          // We don't need to do anything with the image, just trigger the request
-        } catch (error) {
-          console.error('Error pre-warming OG image cache:', error)
-        }
-      }, 1000)
+  // // Pre-warm the OG image cache in the background
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && name) {
+  //     // Small delay to not block initial page load
+  //     const timer = setTimeout(() => {
+  //       try {
+  //         const img = new Image()
+  //         img.src = `/api/og/name?name=${encodeURIComponent(name)}`
+  //         // We don't need to do anything with the image, just trigger the request
+  //       } catch (error) {
+  //         console.error('Error pre-warming OG image cache:', error)
+  //       }
+  //     }, 1000)
 
-      return () => clearTimeout(timer)
-    }
-  }, [name])
+  //     return () => clearTimeout(timer)
+  //   }
+  // }, [name])
 
   const isSubname = name.split('.').length > 2
   const registrationStatus = nameDetails

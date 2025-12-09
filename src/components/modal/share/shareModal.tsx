@@ -9,6 +9,7 @@ import { LoadingCell } from 'ethereum-identity-kit'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import DownloadIcon from 'public/icons/download.svg'
+import ShareIcon from 'public/icons/share-white.svg'
 
 type ShareModalStatus = 'loading' | 'ready' | 'error'
 
@@ -27,6 +28,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
   const [apiEndpoint, setApiEndpoint] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
+  const [canNativeShare, setCanNativeShare] = useState(false)
 
   const fetchImage = useCallback(async () => {
     if (!domainName) {
@@ -84,6 +86,12 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
   useEffect(() => {
     fetchImage()
 
+    // Check if native share with files is supported
+    if ('share' in navigator && 'canShare' in navigator) {
+      const testFile = new File([''], 'test.png', { type: 'image/png' })
+      setCanNativeShare(navigator.canShare({ files: [testFile] }))
+    }
+
     return () => {
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl)
@@ -114,20 +122,41 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
   }
 
   const handleCopy = async () => {
-    if (!imageUrl) return
+    if (!imageUrl || !apiEndpoint) return
 
-    const copyUrl = () => {
-      if (!apiEndpoint) return
-      const fullUrl = `${window.location.origin}${apiEndpoint}`
-      navigator.clipboard.writeText(fullUrl)
-      setIsCopied(true)
-      setTimeout(() => setIsCopied(false), 2000)
+    const fullUrl = `https://grails.app${apiEndpoint}`
+    const isMobileOrTablet = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+    const copyUrl = async () => {
+      try {
+        await navigator.clipboard.writeText(fullUrl)
+        setIsCopied(true)
+        setTimeout(() => setIsCopied(false), 2000)
+      } catch {
+        // Last resort fallback for older browsers
+        const textArea = document.createElement('textarea')
+        textArea.value = fullUrl
+        textArea.style.position = 'fixed'
+        textArea.style.opacity = '0'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+        setIsCopied(true)
+        setTimeout(() => setIsCopied(false), 2000)
+      }
+    }
+
+    // On mobile/tablet, directly copy URL (image clipboard doesn't work reliably)
+    if (isMobileOrTablet) {
+      await copyUrl()
+      return
     }
 
     try {
-      // Check if clipboard API with images is supported
+      // Desktop: try to copy the image first
       if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
-        copyUrl()
+        await copyUrl()
         return
       }
 
@@ -139,7 +168,26 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
     } catch (err) {
       // Fallback: copy the image URL instead
       console.error('Failed to copy image:', err)
-      copyUrl()
+      await copyUrl()
+    }
+  }
+
+  const handleShare = async () => {
+    if (!imageUrl || !domainName) return
+
+    try {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      const filename = `${domainName.replace('.eth', '')}-${type}.png`
+      const file = new File([blob], filename, { type: 'image/png' })
+
+      await navigator.share({
+        files: [file],
+        title: `${domainName} ${type}`,
+      })
+    } catch (err) {
+      // User cancelled or share failed - silently ignore
+      console.error('Failed to share:', err)
     }
   }
 
@@ -192,6 +240,15 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
                 {isCopied ? 'Copied!' : 'Copy'}
               </div>
             </SecondaryButton>
+            {canNativeShare && (
+              <SecondaryButton
+                onClick={handleShare}
+                disabled={status !== 'ready'}
+                className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+              >
+                <Image src={ShareIcon} alt='Share' className='h-5 w-5' />
+              </SecondaryButton>
+            )}
           </div>
 
           <SecondaryButton onClick={onClose} className='w-full'>

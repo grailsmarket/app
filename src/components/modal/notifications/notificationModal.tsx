@@ -33,7 +33,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
   })
 
   // Get all notifications from pages
-  const allNotifications = data?.pages.flatMap((page) => page.notifications) || []
+  const allNotifications =
+    data?.pages
+      .flatMap((page) => page.notifications)
+      .filter((notification) => !!notification.ensName && !!notification.ensTokenId) || []
   const isNotificationsLoading = isLoading || isFetchingNextPage
 
   if (!isOpen) return null

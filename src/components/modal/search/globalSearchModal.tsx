@@ -20,6 +20,7 @@ import { fetchDomains } from '@/api/domains/fetchDomains'
 import { useQuery } from '@tanstack/react-query'
 import { searchProfiles } from '@/api/search-profiles'
 import { cn } from '@/utils/tailwind'
+import { beautifyName } from '@/lib/ens'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -264,7 +265,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                               className='text-foreground flex flex-col gap-px truncate font-semibold'
                               style={{ maxWidth: 'calc(100% - 48px)' }}
                             >
-                              <p className='max-w-full truncate text-lg'>{profile.name}</p>
+                              <p className='max-w-full truncate text-lg'>{beautifyName(profile.name)}</p>
                               {profile.resolvedAddress?.id && (
                                 <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
                                   {profile.resolvedAddress?.id}

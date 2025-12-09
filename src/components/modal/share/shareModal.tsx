@@ -10,6 +10,8 @@ import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import DownloadIcon from 'public/icons/download.svg'
 import ShareIcon from 'public/icons/share-white.svg'
+import { TOKENS } from '@/constants/web3/tokens'
+import { formatPrice } from '@/utils/formatPrice'
 
 type ShareModalStatus = 'loading' | 'ready' | 'error'
 
@@ -180,10 +182,19 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
       const blob = await response.blob()
       const filename = `${domainName.replace('.eth', '')}-${type}.png`
       const file = new File([blob], filename, { type: 'image/png' })
+      let title = ''
+
+      if (listing) {
+        const asset = TOKENS[listing.currency_address as keyof typeof TOKENS]
+        title = `${domainName} listed for ${formatPrice(listing.price, asset)} ${asset} on ${listing.source[0].toUpperCase() + listing.source.slice(1)}`
+      } else if (offer) {
+        const asset = TOKENS[offer.currency_address as keyof typeof TOKENS]
+        title = `Offer on ${domainName} for ${formatPrice(offer.offer_amount_wei, asset)} ${asset} on ${offer.source[0].toUpperCase() + offer.source.slice(1)}`
+      }
 
       await navigator.share({
         files: [file],
-        title: `${domainName} ${type}`,
+        title,
       })
     } catch (err) {
       // User cancelled or share failed - silently ignore

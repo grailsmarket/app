@@ -31,6 +31,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
 }) => {
   const [status, setStatus] = useState<ShareModalStatus>('loading')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [apiEndpoint, setApiEndpoint] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isCopied, setIsCopied] = useState(false)
 
@@ -70,6 +71,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
         throw new Error('Invalid type or missing data')
       }
 
+      setApiEndpoint(endpoint)
       const response = await fetch(endpoint)
 
       if (!response.ok) {
@@ -121,11 +123,18 @@ const ShareModal: React.FC<ShareModalProps> = ({
   const handleCopy = async () => {
     if (!imageUrl) return
 
+    const copyUrl = () => {
+      if (!apiEndpoint) return
+      const fullUrl = `${window.location.origin}${apiEndpoint}`
+      navigator.clipboard.writeText(fullUrl)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    }
+
     try {
       // Check if clipboard API with images is supported
       if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') {
-        // Fallback: open image in new tab so user can save it
-        window.open(imageUrl, '_blank')
+        copyUrl()
         return
       }
 
@@ -135,9 +144,9 @@ const ShareModal: React.FC<ShareModalProps> = ({
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 2000)
     } catch (err) {
-      // Fallback: open image in new tab so user can save it
+      // Fallback: copy the image URL instead
       console.error('Failed to copy image:', err)
-      window.open(imageUrl, '_blank')
+      copyUrl()
     }
   }
 

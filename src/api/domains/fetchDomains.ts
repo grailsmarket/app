@@ -27,12 +27,48 @@ export const fetchDomains = async ({
   category,
 }: FetchDomainsOptions) => {
   try {
-    const search = searchTerm.replace('.eth', '').toLowerCase().trim()
+    const search = searchTerm
+      .replaceAll(' ', ',')
+      .split(',')
+      .filter((name) => name.length > 2)
+      .map((name) => normalize(name.replace('.eth', '').toLowerCase().trim()))
+      .join(',')
+    const isBulkSearching = search.split(',').length > 1
+
+    if (isBulkSearching) {
+      const res = await fetch(`${API_URL}/search/bulk`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          terms: search.split(','),
+        }),
+      })
+
+      const json = (await res.json()) as APIResponseType<{
+        names: MarketplaceDomainType[]
+        results: MarketplaceDomainType[]
+        pagination: PaginationType
+      }>
+
+      const domains = json.data.names || json.data.results
+
+      return {
+        domains,
+        total: json.data.pagination.total,
+        nextPageParam: json.data.pagination.page + 1,
+        hasNextPage: json.data.pagination.hasNext,
+      }
+    }
+
     const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
     const paramString = buildQueryParamString({
       limit,
       page: pageParam,
-      q: search?.length > 0 ? normalize(search) : undefined,
+      q: search?.length > 0 ? search : undefined,
       'filters[owner]': ownerAddress || null,
       'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
       'filters[maxLength]': filters.length.max || null,
@@ -81,35 +117,72 @@ export const fetchDomains = async ({
       filters.priceRange.max
 
     if (pageParam === 1) {
-      if (search.length >= 3 && !areExcludingFiltersPresent) {
-        const name = search + '.eth'
-        if (!domains.map((domain) => domain.name).includes(name)) {
-          const tokenId = hexToBigInt(namehash(name))
-          domains.unshift({
-            id: 1, // random valid ID for now
-            name,
-            token_id: tokenId.toString(),
-            expiry_date: null,
-            registration_date: null,
-            owner: null,
-            metadata: {},
-            has_numbers: nameHasNumbers(name),
-            has_emoji: nameHasEmoji(name),
-            listings: [],
-            clubs: [],
-            highest_offer_wei: null,
-            highest_offer_id: null,
-            highest_offer_currency: null,
-            last_sale_price_usd: null,
-            offer: null,
-            last_sale_price: null,
-            last_sale_currency: null,
-            last_sale_date: null,
-            view_count: 0,
-            watchers_count: 0,
-            downvotes: 0,
-            upvotes: 0,
-          })
+      if (isBulkSearching) {
+        const names = search.split(',')
+        for (const name of names) {
+          if (name.length >= 3 && !areExcludingFiltersPresent) {
+            const domainName = name + '.eth'
+            if (!domains.map((domain) => domain.name).includes(domainName)) {
+              const tokenId = hexToBigInt(namehash(name))
+              domains.unshift({
+                id: 1, // random valid ID for now
+                name: domainName,
+                token_id: tokenId.toString(),
+                expiry_date: null,
+                registration_date: null,
+                owner: null,
+                metadata: {},
+                has_numbers: nameHasNumbers(name),
+                has_emoji: nameHasEmoji(name),
+                listings: [],
+                clubs: [],
+                highest_offer_wei: null,
+                highest_offer_id: null,
+                highest_offer_currency: null,
+                last_sale_price_usd: null,
+                offer: null,
+                last_sale_price: null,
+                last_sale_currency: null,
+                last_sale_date: null,
+                view_count: 0,
+                watchers_count: 0,
+                downvotes: 0,
+                upvotes: 0,
+              })
+            }
+          }
+        }
+      } else {
+        if (search.length >= 3 && !areExcludingFiltersPresent) {
+          const name = search + '.eth'
+          if (!domains.map((domain) => domain.name).includes(name)) {
+            const tokenId = hexToBigInt(namehash(name))
+            domains.unshift({
+              id: 1, // random valid ID for now
+              name,
+              token_id: tokenId.toString(),
+              expiry_date: null,
+              registration_date: null,
+              owner: null,
+              metadata: {},
+              has_numbers: nameHasNumbers(name),
+              has_emoji: nameHasEmoji(name),
+              listings: [],
+              clubs: [],
+              highest_offer_wei: null,
+              highest_offer_id: null,
+              highest_offer_currency: null,
+              last_sale_price_usd: null,
+              offer: null,
+              last_sale_price: null,
+              last_sale_currency: null,
+              last_sale_date: null,
+              view_count: 0,
+              watchers_count: 0,
+              downvotes: 0,
+              upvotes: 0,
+            })
+          }
         }
       }
     }

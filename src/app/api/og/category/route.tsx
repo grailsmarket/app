@@ -28,6 +28,14 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/999/avatar.jpg',
     header: 'https://grails.app/clubs/999/header.jpeg',
   },
+  single_ethmoji: {
+    avatar: 'https://grails.app/clubs/single_ethmoji/avatar.jpg',
+    header: 'https://grails.app/clubs/single_ethmoji/header.jpeg',
+  },
+  triple_ethmoji: {
+    avatar: 'https://grails.app/clubs/triple_ethmoji/avatar.jpg',
+    header: 'https://grails.app/clubs/triple_ethmoji/header.jpeg',
+  },
 }
 
 export async function GET(req: NextRequest) {

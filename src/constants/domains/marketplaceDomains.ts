@@ -119,4 +119,6 @@ export const CATEGORY_LABELS = {
   '1kforenames': '1k Forenames',
   '1ksurnames': '1k Surnames',
   '999': '999 Club',
+  single_ethmoji: 'Single Ethmoji',
+  triple_ethmoji: 'Triple Ethmoji',
 } as const

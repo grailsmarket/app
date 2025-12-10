@@ -17,10 +17,13 @@ const searchQuery = /*GraphQL*/ `
 
 export const searchProfiles = async ({ search }: { search: string }) => {
   try {
-    const searchTerms = search
-      .replaceAll(' ', ',')
-      .split(',')
-      .filter((term) => term.length > 2)
+    const isBulkSearching = search.replaceAll(' ', ',').split(',').length > 1
+    const searchTerms = isBulkSearching
+      ? search
+          .replaceAll(' ', ',')
+          .split(',')
+          .filter((term) => term.length > 2)
+      : [search]
     const maxResultsPerTerm = searchTerms.length > 1 ? 1 : 5
 
     const results = await Promise.all(

@@ -20,8 +20,7 @@ import { fetchDomains } from '@/api/domains/fetchDomains'
 import { useQuery } from '@tanstack/react-query'
 import { searchProfiles } from '@/api/search-profiles'
 import { cn } from '@/utils/tailwind'
-import { beautifyName } from '@/lib/ens'
-import { normalize } from 'viem/ens'
+import { beautifyName, normalizeName } from '@/lib/ens'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -86,8 +85,22 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   })
 
   const handleViewAllDomains = () => {
-    dispatch(setMarketplaceSearch(query))
-    router.push(`/marketplace?search=${normalize(query)}`)
+    const isBulkSearching = query.replaceAll(' ', ',').split(',').length > 1
+    if (isBulkSearching) {
+      const queries = query
+        .replaceAll(' ', ',')
+        .split(',')
+        .map((query) => normalizeName(query.toLowerCase().trim()))
+        .filter((query) => query.length > 2)
+      dispatch(setMarketplaceSearch(queries.join(', ')))
+      router.push(`/marketplace?search=${queries.join(',')}`)
+      handleClose()
+      return
+    }
+
+    const normalizedQuery = normalizeName(query)
+    dispatch(setMarketplaceSearch(normalizedQuery))
+    router.push(`/marketplace?search=${normalizedQuery}`)
     handleClose()
   }
 
@@ -140,9 +153,14 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
               }
 
               if (e.key === 'Enter') {
-                const lookupQuery = query.replace('.eth', '').trim() + '.eth'
-                handleClose()
-                router.push(`/${normalize(lookupQuery)}`)
+                const isBulkSearching = query.replaceAll(' ', ',').split(',').length > 1
+                if (isBulkSearching) {
+                  handleViewAllDomains()
+                } else {
+                  const lookupQuery = query.replace('.eth', '').trim() + '.eth'
+                  handleClose()
+                  router.push(`/${normalizeName(lookupQuery)}`)
+                }
               }
             }}
           />
@@ -165,8 +183,8 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 5 }).map((_, index) => <NameLoadingRow key={index} />)
                       : fetchedDomains?.domains.map((domain) => (
-                          <a
-                            href={`/${domain.name}`}
+                          <Link
+                            href={`/${normalizeName(domain.name)}`}
                             key={domain.id}
                             onClick={handleClose}
                             className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
@@ -191,7 +209,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                 )}
                               </div>
                             </div>
-                          </a>
+                          </Link>
                         ))}
                     <button
                       onClick={handleViewAllDomains}

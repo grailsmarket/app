@@ -11,8 +11,11 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
+import { useRouter } from 'next/navigation'
+import { normalizeName } from '@/lib/ens'
 
 const DomainPanel = () => {
+  const router = useRouter()
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
@@ -46,7 +49,30 @@ const DomainPanel = () => {
               type='text'
               placeholder='Search'
               value={selectors.filters.search || ''}
-              onChange={(e) => dispatch(actions.setSearch(e.target.value))}
+              onChange={(e) => {
+                dispatch(actions.setSearch(e.target.value))
+                // router.push(`/marketplace`)
+
+                const searchTerm = e.target.value.toLowerCase().trim()
+                if (searchTerm.length === 0) {
+                  router.push('/marketplace')
+                  return
+                }
+
+                const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
+                if (isBulkSearching) {
+                  router.push(
+                    `/marketplace?search=${searchTerm
+                      .replaceAll(' ', ',')
+                      .split(',')
+                      .map((query) => normalizeName(query.toLowerCase().trim()))
+                      .filter((query) => query.length > 2)
+                      .join(',')}`
+                  )
+                } else {
+                  router.push(`/marketplace?search=${normalizeName(searchTerm)}`)
+                }
+              }}
               className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
             />
             <Image

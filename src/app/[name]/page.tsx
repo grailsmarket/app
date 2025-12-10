@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
 import NamePage from './components/name'
-import { beautifyName } from '@/lib/ens'
-import { normalize } from 'viem/ens'
+import { beautifyName, normalizeName } from '@/lib/ens'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -46,7 +45,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 const Name = async (props: Props) => {
   const { name } = await props.params
   const decodedName = decodeURI(name)
-  const normalizedName = normalize(decodedName)
+  const normalizedName = normalizeName(decodedName)
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full sm:px-4 md:min-h-[calc(100dvh-78px)]'>

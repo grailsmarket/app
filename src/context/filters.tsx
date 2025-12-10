@@ -34,7 +34,15 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children, filter
 
       const defaultSearch = searchParams.get('search')
       if (defaultSearch) {
-        dispatch(actions.setSearch(beautifyName(defaultSearch)))
+        const isBulkSearching = defaultSearch.replaceAll(' ', ',').split(',').length > 1
+        const searchToApply = isBulkSearching
+          ? defaultSearch
+              .replaceAll(' ', ',')
+              .split(',')
+              .map((query) => beautifyName(query.trim()))
+              .join(', ')
+          : beautifyName(defaultSearch)
+        dispatch(actions.setSearch(searchToApply))
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

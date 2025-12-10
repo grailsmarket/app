@@ -7,7 +7,7 @@ import { PortfolioFiltersState, PortfolioStatusFilterType } from '@/types/filter
 import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import { nameHasEmoji } from '@/utils/nameCharacters'
 import { nameHasNumbers } from '@/utils/nameCharacters'
-import { normalize } from 'viem/ens'
+import { normalizeName } from '@/lib/ens'
 
 interface FetchDomainsOptions {
   limit: number
@@ -27,15 +27,18 @@ export const fetchDomains = async ({
   category,
 }: FetchDomainsOptions) => {
   try {
-    const search = searchTerm
-      .replaceAll(' ', ',')
-      .split(',')
-      .filter((name) => name.length > 2)
-      .map((name) => normalize(name.replace('.eth', '').toLowerCase().trim()))
-      .join(',')
-    const isBulkSearching = search.split(',').length > 1
+    const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
 
     if (isBulkSearching) {
+      const search = searchTerm
+        .replaceAll(' ', ',')
+        .split(',')
+        .map((name) => normalizeName(name.replace('.eth', '').toLowerCase().trim()))
+        .filter((name) => name.length > 2)
+        .join(',')
+
+      console.log('search')
+
       const res = await fetch(`${API_URL}/search/bulk`, {
         method: 'POST',
         mode: 'cors',
@@ -45,6 +48,8 @@ export const fetchDomains = async ({
         },
         body: JSON.stringify({
           terms: search.split(','),
+          page: pageParam,
+          limit,
         }),
       })
 
@@ -64,6 +69,7 @@ export const fetchDomains = async ({
       }
     }
 
+    const search = normalizeName(searchTerm.replace('.eth', '').toLowerCase().trim())
     const statusFilter = filters.status as (MarketplaceStatusFilterType | PortfolioStatusFilterType)[]
     const paramString = buildQueryParamString({
       limit,

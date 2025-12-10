@@ -37,11 +37,22 @@ export const beautifyName = (name: string) => {
       return name
     }
 
-    const normalizedName = ens_normalize(name)
+    const sanitizedName = name.replaceAll(' ', '').trim().toLowerCase()
+    const normalizedName = ens_normalize(sanitizedName)
     const beautifiedName = ens_beautify(normalizedName)
     return beautifiedName
   } catch (error) {
     console.warn('Error beautifying name', error)
+    return name
+  }
+}
+
+export const normalizeName = (name: string) => {
+  try {
+    const sanitizedName = name.replaceAll(' ', '').trim().toLowerCase()
+    return ens_normalize(sanitizedName)
+  } catch (error) {
+    console.error('Error normalizing name:', error)
     return name
   }
 }

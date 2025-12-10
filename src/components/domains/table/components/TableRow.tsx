@@ -20,6 +20,8 @@ import {
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
 } from '@/state/reducers/modals/bulkSelectModal'
+import Link from 'next/link'
+import { normalizeName } from '@/lib/ens'
 
 interface TableRowProps {
   domain: MarketplaceDomainType
@@ -89,8 +91,8 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
   }
 
   return (
-    <a
-      href={`/${domain.name}`}
+    <Link
+      href={`/${normalizeName(domain.name)}`}
       onClick={(e) => {
         if (isBulkSelecting) {
           e.preventDefault()
@@ -127,7 +129,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
       >
         {displayedColumns.map((column) => columns[column])}
       </div>
-    </a>
+    </Link>
   )
 }
 

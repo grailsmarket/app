@@ -21,6 +21,8 @@ import {
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
 } from '@/state/reducers/modals/bulkSelectModal'
+import Link from 'next/link'
+import { normalizeName } from '@/lib/ens'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -45,8 +47,8 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   return (
-    <a
-      href={`/${domain.name}`}
+    <Link
+      href={`/${normalizeName(domain.name)}`}
       onClick={(e) => {
         if (isBulkSelecting) {
           e.preventDefault()
@@ -154,7 +156,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
           />
         </div>
       </div>
-    </a>
+    </Link>
   )
 }
 

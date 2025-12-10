@@ -1,7 +1,7 @@
 import { APP_ENS_ADDRESS } from '@/constants'
 import Image from 'next/image'
 import React, { useState } from 'react'
-import { labelhash, namehash } from 'viem'
+import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 
@@ -17,14 +17,7 @@ interface NameImageProps {
   width?: number
 }
 
-export default function NameImage({
-  name,
-  tokenId,
-  expiryDate,
-  className,
-  height = 1024,
-  width = 1024,
-}: NameImageProps) {
+export default function NameImage({ name, expiryDate, className, height = 1024, width = 1024 }: NameImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [displayFallback, setDisplayFallback] = useState(false)
 
@@ -36,7 +29,7 @@ export default function NameImage({
   const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
-  const fallbackSrc = `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
+  const fallbackSrc = `/api/og/ens-name/${hexToBigInt(labelHash).toString()}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
 
   return (
     <Image

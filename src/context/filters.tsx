@@ -5,6 +5,7 @@ import { FilterContextType, PortfolioTabType, ProfileTabType } from '@/types/fil
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { beautifyName } from '@/lib/ens'
 
 interface FilterContextValue {
   filterType: FilterContextType
@@ -33,7 +34,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children, filter
 
       const defaultSearch = searchParams.get('search')
       if (defaultSearch) {
-        dispatch(actions.setSearch(defaultSearch))
+        dispatch(actions.setSearch(beautifyName(defaultSearch)))
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

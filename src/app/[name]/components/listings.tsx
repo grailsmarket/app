@@ -160,6 +160,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
       setShareModalDomainInfo({
         name: domain.name,
         ownerAddress: domain.owner,
+        categories: domain.clubs,
       })
     )
     dispatch(setShareModalOpen(true))

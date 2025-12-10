@@ -157,6 +157,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
       setShareModalDomainInfo({
         name: domain.name,
         ownerAddress: domain.owner,
+        categories: domain.clubs,
       })
     )
     dispatch(setShareModalOpen(true))
@@ -165,7 +166,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
   if (isMyDomain) {
     return (
       <div className='flex flex-col items-end gap-2 sm:flex-row sm:items-center'>
-        <User address={offer.buyer_address} className='xs:max-w-full max-w-40' wrapperClassName='justify-start!' />
+        <User address={offer.buyer_address} className='max-w-full' wrapperClassName='justify-start! max-w-40' />
         <div className='flex flex-row items-center gap-2'>
           <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
           <SecondaryButton
@@ -195,7 +196,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
 
   return (
     <div className='flex flex-row items-center gap-2'>
-      <User address={offer.buyer_address} wrapperClassName='justify-start!' />
+      <User
+        address={offer.buyer_address}
+        className='max-w-full'
+        wrapperClassName='justify-start! max-w-36 xs:max-w-40!'
+      />
       <SecondaryButton
         onClick={openShareModal}
         className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'

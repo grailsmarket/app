@@ -8,6 +8,7 @@ import { formatUnits } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { TOKENS } from '@/constants/web3/tokens'
 import { beautifyName } from '@/lib/ens'
+import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 
 const size = {
   width: 1600,
@@ -95,6 +96,7 @@ export async function GET(req: NextRequest) {
     const source = searchParams.get('source')
     const expires = searchParams.get('expires')
     const owner_address = searchParams.get('owner')
+    const categories = searchParams.get('categories')?.split(',') || []
 
     if (!name || !priceWei || !currencyAddress || !source || !expires) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -204,20 +206,22 @@ export async function GET(req: NextRequest) {
               flex-direction: column;
               align-items: center;
               justify-content: center;
-              gap: 20px;
+              gap: 0px;
             }
             .listed-label {
-              font-size: 64px;
+              font-size: 60px;
               font-weight: 700;
+              display: flex;
+              align-items: center;
+              justify-content: center;
               color: #222222;
               background-color: #ffdfc0;
               text-transform: uppercase;
               letter-spacing: 1px;
-              border-radius: 20px;
-              padding: 14px 0px;
+              border-radius: 20px 20px 0px 0px;
               text-align: center;
               width: 560px;
-              height: 108px;
+              height: 96px;
             }
             .ens-image {
               width: 560px;
@@ -226,16 +230,16 @@ export async function GET(req: NextRequest) {
               padding: 0;
               align-items: center;
               justify-content: center;
-              border-radius: 32px;
               overflow: hidden;
               flex-shrink: 0;
+              border-radius: ${categories.length > 0 ? '0px' : '0px 0px 20px 20px'} !important;
             }
             .ens-image svg {
               width: 560px !important;
               height: 560px !important;
               width: auto;
               height: auto;
-              border-radius: 32px !important;
+              border-radius: ${categories.length > 0 ? '0px' : '0px 0px 20px 20px'} !important;
             }
             .fallback {
               width: 560px;
@@ -251,6 +255,42 @@ export async function GET(req: NextRequest) {
               text-align: center;
               padding: 40px;
               word-break: break-all;
+            }
+            .categories {
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: center;
+              width: 560px;
+              gap: 24px;
+              overflow-x: scroll;
+              background-color: #444444;
+              border-radius: 0px 0px 20px 20px;
+              padding: ${categories.length > 1 ? '18px 0px 18px 24px' : '18px'};
+            }
+            .category {
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: center;
+              gap: 16px;
+            }
+            .category-divider {
+              font-size: 44px;
+              color: #ffffff;
+              font-weight: 600;
+              padding-right: 16px;
+            }
+            .category-logo {
+              width: 64px;
+              height: 64px;
+              border-radius: 50%;
+              object-fit: cover;
+            }
+            .category-label {
+              font-size: 44px;
+              color: #ffffff;
+              font-weight: 600;
             }
             .divider {
               height: 480px;
@@ -348,10 +388,24 @@ export async function GET(req: NextRequest) {
         </head>
         <body>
           <div class="ens-image-container">
-          <p class="listed-label">LISTING</p>
+            <p class="listed-label">LISTING</p>
             <div class="ens-image">
               ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
             </div>
+            ${
+              categories.length > 0
+                ? `<div class="categories">
+    ${categories
+      .map(
+        (category) => `<div class="category">
+      <img class="category-logo" src="https://grails.app/clubs/${category}/avatar.jpg" alt="category" />
+      <p class="category-label">${CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category}</p>
+    </div>`
+      )
+      .join('')}
+  </div>`
+                : ''
+            }
           </div>
           <div class="divider"></div>
           <div class="info">

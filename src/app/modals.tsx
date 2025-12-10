@@ -64,6 +64,7 @@ const Modals: React.FC = () => {
     offer: shareModalOffer,
     domainName: shareModalDomainName,
     ownerAddress: shareModalOwnerAddress,
+    categories: shareModalCategories,
   } = useAppSelector(selectShareModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
 
@@ -130,6 +131,7 @@ const Modals: React.FC = () => {
           offer={shareModalOffer}
           domainName={shareModalDomainName}
           ownerAddress={shareModalOwnerAddress}
+          categories={shareModalCategories}
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}

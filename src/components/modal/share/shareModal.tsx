@@ -22,9 +22,18 @@ interface ShareModalProps {
   offer: DomainOfferType | null
   domainName: string | null
   ownerAddress: string | null
+  categories: string[] | null
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, domainName, ownerAddress }) => {
+const ShareModal: React.FC<ShareModalProps> = ({
+  onClose,
+  type,
+  listing,
+  offer,
+  domainName,
+  ownerAddress,
+  categories,
+}) => {
   const [status, setStatus] = useState<ShareModalStatus>('loading')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [apiEndpoint, setApiEndpoint] = useState<string | null>(null)
@@ -51,6 +60,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
           source: listing.source,
           expires: listing.expires_at,
           ...(ownerAddress && { owner: ownerAddress }),
+          ...(categories && { categories: categories.join(',') }),
         })
         endpoint = `/api/og/listing?${params.toString()}`
       } else if (type === 'offer' && offer) {
@@ -62,6 +72,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
           expires: offer.expires_at,
           ...(ownerAddress && { owner: ownerAddress }),
           ...(offer.buyer_address && { offerrer: offer.buyer_address }),
+          ...(categories && { categories: categories.join(',') }),
         })
         endpoint = `/api/og/offer?${params.toString()}`
       } else {
@@ -83,7 +94,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ onClose, type, listing, offer, 
       setError((err as Error).message)
       setStatus('error')
     }
-  }, [type, listing, offer, domainName, ownerAddress])
+  }, [type, listing, offer, domainName, ownerAddress, categories])
 
   useEffect(() => {
     fetchImage()

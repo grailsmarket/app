@@ -5,7 +5,7 @@ import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 
 export const CATEGORY_IMAGES = {
   prepunks: {
-    avatar: 'https://grails.app/clubs/prepunks/avatar.png',
+    avatar: 'https://grails.app/clubs/prepunks/avatar.jpg',
     header: 'https://grails.app/clubs/prepunks/header.jpeg',
   },
   '10k': {

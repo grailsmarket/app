@@ -19,6 +19,10 @@ import NineNinetyNineHeader from 'public/clubs/999/header.jpeg'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import TwitterIcon from 'public/logos/x.svg'
 import { localizeNumber } from '@/utils/localizeNumber'
+import SingleEthmojiAvatar from 'public/clubs/single_ethmoji/avatar.jpg'
+import SingleEthmojiHeader from 'public/clubs/single_ethmoji/header.jpeg'
+import TripleEthmojiAvatar from 'public/clubs/triple_ethmoji/avatar.jpg'
+import TripleEthmojiHeader from 'public/clubs/triple_ethmoji/header.jpeg'
 
 export const CATEGORY_IMAGES = {
   prepunks: {
@@ -45,6 +49,14 @@ export const CATEGORY_IMAGES = {
     avatar: NineNinetyNineAvatar,
     header: NineNinetyNineHeader,
   },
+  'single_ethmoji': {
+    avatar: SingleEthmojiAvatar,
+    header: SingleEthmojiHeader,
+  },
+  'triple_ethmoji': {
+    avatar: TripleEthmojiAvatar,
+    header: TripleEthmojiHeader,
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS = {
@@ -65,6 +77,12 @@ export const CATEGORY_SOCIAL_LINKS = {
   },
   '999': {
     twitter: 'https://twitter.com/ens999club',
+  },
+  'single_ethmoji': {
+    twitter: null,
+  },
+  'triple_ethmoji': {
+    twitter: null,
   },
 }
 

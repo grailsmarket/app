@@ -174,9 +174,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          }),
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        }),
     }
 
     browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
@@ -260,7 +260,7 @@ export async function GET(req: NextRequest) {
               display: flex;
               flex-direction: row;
               align-items: center;
-              justify-content: center;
+              justify-content: ${categories.length > 1 ? 'flex-start' : 'center'};
               width: 560px;
               gap: 24px;
               overflow-x: scroll;
@@ -272,7 +272,7 @@ export async function GET(req: NextRequest) {
               display: flex;
               flex-direction: row;
               align-items: center;
-              justify-content: center;
+              justify-content: ${categories.length > 1 ? 'flex-start' : 'center'};
               gap: 16px;
             }
             .category-divider {
@@ -284,6 +284,8 @@ export async function GET(req: NextRequest) {
             .category-logo {
               width: 64px;
               height: 64px;
+              min-width: 64px;
+              min-height: 64px;
               border-radius: 50%;
               object-fit: cover;
             }
@@ -291,6 +293,7 @@ export async function GET(req: NextRequest) {
               font-size: 44px;
               color: #ffffff;
               font-weight: 600;
+              text-wrap: nowrap;
             }
             .divider {
               height: 480px;
@@ -392,33 +395,31 @@ export async function GET(req: NextRequest) {
             <div class="ens-image">
               ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
             </div>
-            ${
-              categories.length > 0
-                ? `<div class="categories">
-    ${categories
-      .map(
-        (category) => `<div class="category">
-      <img class="category-logo" src="https://grails.app/clubs/${category}/avatar.jpg" alt="category" />
-      <p class="category-label">${CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category}</p>
-    </div>`
-      )
-      .join('')}
-  </div>`
-                : ''
-            }
+            ${categories.length > 0
+        ? `<div class="categories">
+                    ${categories
+          .map(
+            (category) => `<div class="category">
+                      <img class="category-logo" src="https://grails.app/clubs/${category}/avatar.jpg" alt="category" />
+                      <p class="category-label">${CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category}</p>
+                    </div>`
+          )
+          .join('')}
+                  </div>`
+        : ''
+      }
           </div>
           <div class="divider"></div>
           <div class="info">
           <div class="price-container"><p class="price">${price} ${currency}</p> <img class="source-logo" src="${sourceLogo}" alt="source" /></div>
-            <div class="expires">Expires: ${expiresFormatted}</div>
-            ${
-              ownerProfile.displayName
-                ? `<div class="owner">
+            <div class="expires">Ends: ${expiresFormatted}</div>
+            ${ownerProfile.displayName
+        ? `<div class="owner">
               <img class="owner-avatar" src="${ownerProfile.avatar}" alt="owner" />
               <span class="owner-name">${ownerProfile.displayName}</span>
             </div>`
-                : ''
-            }
+        : ''
+      }
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
               <img class="grails-logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails" />
           </div>

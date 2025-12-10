@@ -138,11 +138,11 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
         onKeyDown={handleKeyDown}
       >
         {/* Header */}
-        <div className='border-tertiary flex items-center gap-3 border-b px-4 py-5 md:p-6'>
+        <div className='border-tertiary flex items-center gap-3 border-b px-4 py-5 md:p-6 relative'>
           <MagnifyingGlass className='text-foreground/60 h-6 w-6' />
           <input
             type='text'
-            placeholder='Search names, categories, and profiles...'
+            placeholder='Search names, profiles, and categories...'
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className='text-foreground placeholder:text-foreground/40 flex-1 bg-transparent font-medium outline-none md:text-2xl'
@@ -168,9 +168,10 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
             <Cross className='text-foreground/90 h-4 w-4 md:h-5 md:w-5' />
           </button>
         </div>
+        <p className='text-md text-neutral px-5 lg:px-7 pt-3'>Bulk search: Separate terms with commas or spaces</p>
 
         {/* Results */}
-        <div className='h-[calc(100dvh-160px)] overflow-y-auto md:max-h-[80vh]'>
+        <div className='h-[calc(100dvh-160px)] overflow-y-auto md:max-h-[75vh]'>
           {query.trim() && (
             <>
               {/* Names */}
@@ -183,34 +184,34 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 5 }).map((_, index) => <NameLoadingRow key={index} />)
                       : fetchedDomains?.domains.map((domain) => (
-                          <Link
-                            href={`/${normalizeName(domain.name)}`}
-                            key={domain.id}
-                            onClick={handleClose}
-                            className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-                          >
-                            <div className='flex w-full flex-row items-center gap-2'>
-                              <NameImage
-                                name={domain.name}
-                                tokenId={domain.token_id}
-                                expiryDate={domain.expiry_date}
-                                className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
-                              />
-                              <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
-                                <div className='text-foreground truncate font-semibold'>
-                                  {beautifyName(domain.name)}
-                                </div>
-                                {domain.clubs && domain.clubs.length > 0 && (
-                                  <div className='text-md text-foreground/60 font-semibold'>
-                                    {domain.clubs
-                                      .map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS])
-                                      .join(', ')}
-                                  </div>
-                                )}
+                        <Link
+                          href={`/${normalizeName(domain.name)}`}
+                          key={domain.id}
+                          onClick={handleClose}
+                          className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
+                        >
+                          <div className='flex w-full flex-row items-center gap-2'>
+                            <NameImage
+                              name={domain.name}
+                              tokenId={domain.token_id}
+                              expiryDate={domain.expiry_date}
+                              className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
+                            />
+                            <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
+                              <div className='text-foreground truncate font-semibold'>
+                                {beautifyName(domain.name)}
                               </div>
+                              {domain.clubs && domain.clubs.length > 0 && (
+                                <div className='text-md text-foreground/60 font-semibold'>
+                                  {domain.clubs
+                                    .map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS])
+                                    .join(', ')}
+                                </div>
+                              )}
                             </div>
-                          </Link>
-                        ))}
+                          </div>
+                        </Link>
+                      ))}
                     <button
                       onClick={handleViewAllDomains}
                       className='text-primary hover:bg-primary/10 w-full cursor-pointer rounded-md p-3 text-left text-lg font-semibold transition-colors'
@@ -231,32 +232,32 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 3 }).map((_, index) => <CategoryLoadingRow key={index} />)
                       : displayedCategories.map((category) => (
-                          <Link
-                            key={category.name}
-                            href={`/categories/${category.name}`}
-                            onClick={handleClose}
-                            className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-                          >
-                            <div className='flex flex-row items-center gap-3'>
-                              <Image
-                                src={CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].avatar}
-                                alt={`${category.name} avatar`}
-                                width={100}
-                                height={100}
-                                className='h-9 w-9 rounded-full object-cover'
-                              />
-                              <div className='flex flex-col gap-px'>
-                                <div className='text-foreground font-semibold'>
-                                  {CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]}
-                                </div>
-                                <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
-                                  {category.description}
-                                </div>
+                        <Link
+                          key={category.name}
+                          href={`/categories/${category.name}`}
+                          onClick={handleClose}
+                          className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
+                        >
+                          <div className='flex flex-row items-center gap-3'>
+                            <Image
+                              src={CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].avatar}
+                              alt={`${category.name} avatar`}
+                              width={100}
+                              height={100}
+                              className='h-9 w-9 rounded-full object-cover'
+                            />
+                            <div className='flex flex-col gap-px'>
+                              <div className='text-foreground font-semibold'>
+                                {CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]}
+                              </div>
+                              <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
+                                {category.description}
                               </div>
                             </div>
-                            <div className='text-md text-neutral font-semibold'>{category.member_count} names</div>
-                          </Link>
-                        ))}
+                          </div>
+                          <div className='text-md text-neutral font-semibold'>{category.member_count} names</div>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               )}
@@ -271,30 +272,30 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedProfilesLoading
                       ? Array.from({ length: 3 }).map((_, index) => <UserLoadingRow key={index} />)
                       : fetchedProfiles?.map((profile) => (
-                          <Link
-                            prefetch={true}
-                            key={profile.name}
-                            href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
-                            onClick={handleClose}
-                            className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
+                        <Link
+                          prefetch={true}
+                          key={profile.name}
+                          href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
+                          onClick={handleClose}
+                          className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
+                        >
+                          <Avatar
+                            name={profile.name}
+                            style={{ width: '36px', height: '36px', borderRadius: '50%' }}
+                          />
+                          <div
+                            className='text-foreground flex flex-col gap-px truncate font-semibold'
+                            style={{ maxWidth: 'calc(100% - 48px)' }}
                           >
-                            <Avatar
-                              name={profile.name}
-                              style={{ width: '36px', height: '36px', borderRadius: '50%' }}
-                            />
-                            <div
-                              className='text-foreground flex flex-col gap-px truncate font-semibold'
-                              style={{ maxWidth: 'calc(100% - 48px)' }}
-                            >
-                              <p className='max-w-full truncate text-lg'>{beautifyName(profile.name)}</p>
-                              {profile.resolvedAddress?.id && (
-                                <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
-                                  {profile.resolvedAddress?.id}
-                                </p>
-                              )}
-                            </div>
-                          </Link>
-                        ))}
+                            <p className='max-w-full truncate text-lg'>{beautifyName(profile.name)}</p>
+                            {profile.resolvedAddress?.id && (
+                              <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
+                                {profile.resolvedAddress?.id}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               )}

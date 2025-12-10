@@ -164,7 +164,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 5 }).map((_, index) => <NameLoadingRow key={index} />)
                       : fetchedDomains?.domains.map((domain) => (
-                          <Link
+                          <a
                             href={`/${domain.name}`}
                             key={domain.id}
                             onClick={handleClose}
@@ -178,7 +178,9 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                 className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
                               />
                               <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
-                                <div className='text-foreground truncate font-semibold'>{domain.name}</div>
+                                <div className='text-foreground truncate font-semibold'>
+                                  {beautifyName(domain.name)}
+                                </div>
                                 {domain.clubs && domain.clubs.length > 0 && (
                                   <div className='text-md text-foreground/60 font-semibold'>
                                     {domain.clubs
@@ -188,7 +190,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                 )}
                               </div>
                             </div>
-                          </Link>
+                          </a>
                         ))}
                     <button
                       onClick={handleViewAllDomains}

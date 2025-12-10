@@ -7,6 +7,7 @@ import { PortfolioFiltersState, PortfolioStatusFilterType } from '@/types/filter
 import { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import { nameHasEmoji } from '@/utils/nameCharacters'
 import { nameHasNumbers } from '@/utils/nameCharacters'
+import { normalize } from 'viem/ens'
 
 interface FetchDomainsOptions {
   limit: number
@@ -31,7 +32,7 @@ export const fetchDomains = async ({
     const paramString = buildQueryParamString({
       limit,
       page: pageParam,
-      q: search?.length > 0 ? search : undefined,
+      q: search?.length > 0 ? normalize(search) : undefined,
       'filters[owner]': ownerAddress || null,
       'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
       'filters[maxLength]': filters.length.max || null,
@@ -85,7 +86,7 @@ export const fetchDomains = async ({
         if (!domains.map((domain) => domain.name).includes(name)) {
           const tokenId = hexToBigInt(namehash(name))
           domains.unshift({
-            id: 2229391, // random valid ID for now
+            id: 1, // random valid ID for now
             name,
             token_id: tokenId.toString(),
             expiry_date: null,

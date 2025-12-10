@@ -2,10 +2,11 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { MarketplaceDomainType } from '@/types/domains'
 import { hexToBigInt, labelhash } from 'viem'
+import { normalize } from 'viem/ens'
 
 export const fetchNameDetails = async (name: string) => {
   try {
-    const response = await fetch(`${API_URL}/names/${name}`, {
+    const response = await fetch(`${API_URL}/names/${normalize(name)}`, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',

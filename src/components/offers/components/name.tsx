@@ -1,5 +1,4 @@
 import React from 'react'
-import Link from 'next/link'
 import { DomainOfferType } from '@/types/domains'
 import NameImage from '@/components/ui/nameImage'
 
@@ -12,7 +11,7 @@ const Name: React.FC<NameProps> = ({ offer }) => {
   const name = offer.name || 'Unknown'
 
   return (
-    <Link href={`/${name}`} className='flex items-center gap-2 transition-opacity hover:opacity-80'>
+    <a href={`/${name}`} className='flex items-center gap-2 transition-opacity hover:opacity-80'>
       <NameImage
         name={name}
         tokenId={offer.token_id}
@@ -20,7 +19,7 @@ const Name: React.FC<NameProps> = ({ offer }) => {
         className='h-8 w-8 rounded-sm'
       />
       <p className='truncate text-sm font-medium text-white'>{name}</p>
-    </Link>
+    </a>
   )
 }
 

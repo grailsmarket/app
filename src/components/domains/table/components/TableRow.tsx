@@ -1,5 +1,4 @@
 import React from 'react'
-import Link from 'next/link'
 import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
@@ -90,7 +89,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
   }
 
   return (
-    <Link
+    <a
       href={`/${domain.name}`}
       onClick={(e) => {
         if (isBulkSelecting) {
@@ -128,7 +127,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
       >
         {displayedColumns.map((column) => columns[column])}
       </div>
-    </Link>
+    </a>
   )
 }
 

@@ -8,7 +8,6 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
-import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
 import Price from '@/components/ui/price'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
@@ -46,7 +45,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   return (
-    <Link
+    <a
       href={`/${domain.name}`}
       onClick={(e) => {
         if (isBulkSelecting) {
@@ -155,7 +154,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
           />
         </div>
       </div>
-    </Link>
+    </a>
   )
 }
 

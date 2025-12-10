@@ -6,6 +6,7 @@ export const useName = (name: string) => {
   const { data: nameDetails, isLoading: nameDetailsIsLoading } = useQuery({
     queryKey: ['name', 'details', name],
     queryFn: async () => {
+      console.log('fetching name details for', name)
       const details = await fetchNameDetails(name)
       return details
     },

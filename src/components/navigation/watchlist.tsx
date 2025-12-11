@@ -9,9 +9,9 @@ import { useUserContext } from '@/context/user'
 const Watchlist = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const { authStatus } = useUserContext()
+  const { authStatus, userAddress } = useUserContext()
 
-  if (authStatus !== 'authenticated') return null
+  if (!userAddress || authStatus !== 'authenticated') return null
 
   const handleClick = () => {
     dispatch(
@@ -20,7 +20,7 @@ const Watchlist = () => {
         value: 'watchlist',
       })
     )
-    router.push('/portfolio')
+    router.push(`/profile/${userAddress}`)
   }
 
   return (

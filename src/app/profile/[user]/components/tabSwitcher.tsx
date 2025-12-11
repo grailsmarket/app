@@ -109,8 +109,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
 
   // After mount, render with proper active state
   return (
-    <div className='py-sm sm:py-md px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex items-center justify-between gap-2 border-b-2 sm:text-xl lg:gap-8'>
-      <div className='flex gap-4'>
+    <div className='py-sm sm:py-md px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8'>
+      <div className='flex min-h-10 gap-4'>
         {displayedTabs.map((tab) => (
           <button
             key={tab.value}
@@ -137,14 +137,14 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       </div>
       {selectedTab.value === 'domains' &&
         (isSelecting ? (
-          <div className='hidden flex-row items-center gap-3 sm:flex'>
+          <div className='hidden flex-row items-center gap-3 md:flex'>
             <p className='text-lg font-semibold text-nowrap'>Selected: {selectedDomains.length}</p>
             <SecondaryButton onClick={handleCancelBulkSelect} className='hidden h-9! sm:block'>
               Cancel
             </SecondaryButton>
           </div>
         ) : (
-          <SecondaryButton onClick={handleBulkSelect} className='hidden h-9! text-nowrap sm:block'>
+          <SecondaryButton onClick={handleBulkSelect} className='hidden h-9! text-nowrap md:block'>
             Bulk Select
           </SecondaryButton>
         ))}

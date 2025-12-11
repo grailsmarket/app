@@ -19,7 +19,10 @@ import { clearActivityFilters, setFiltersScrollTop } from '@/state/reducers/filt
 import { clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
 import { clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
 import { clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
-import { clearFilters, setFiltersScrollTop as setDomainsScrollTop } from '@/state/reducers/filters/profileDomainsFilters'
+import {
+  clearFilters,
+  setFiltersScrollTop as setDomainsScrollTop,
+} from '@/state/reducers/filters/profileDomainsFilters'
 
 interface Props {
   user: Address | string
@@ -39,7 +42,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     // reset filters when visiting a new profile
-    if (lastVisitedProfile !== user) {
+    if (lastVisitedProfile && lastVisitedProfile !== user) {
       dispatch(setLastVisitedProfile(user))
       dispatch(clearFilters())
       dispatch(clearMyOffersFilters())
@@ -60,16 +63,15 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     if (profileTab === 'watchlist') {
       if (
         !(
-          userAccount?.address &&
           userAddress &&
-          userAccount?.address.toLowerCase() === userAddress?.toLowerCase() &&
+          (userAccount?.address || user).toLowerCase() === userAddress?.toLowerCase() &&
           authStatus === 'authenticated'
         )
       ) {
         dispatch(changeTab(PROFILE_TABS[0]))
       }
     }
-  }, [profileTab, userAccount?.address, userAddress, authStatus, dispatch])
+  }, [profileTab, userAccount?.address, userAddress, authStatus, dispatch, user])
 
   const showDomainsPanel = profileTab === 'domains' || profileTab === 'watchlist'
   const showOfferPanel = profileTab === 'sent_offers' || profileTab === 'received_offers'

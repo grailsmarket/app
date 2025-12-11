@@ -4,14 +4,14 @@ import { DomainOfferType } from '@/types/domains'
 import { PortfolioFiltersState } from '@/types/filters'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 
-interface FetchReceivedOffersOptions {
+interface FetchSentOffersOptions {
   limit: number
   pageParam: number
   filters: PortfolioFiltersState
   ownerAddress: string
   searchTerm: string
 }
-const fetchReceivedOffers = async ({ limit, pageParam, ownerAddress }: FetchReceivedOffersOptions) => {
+const fetchSentOffers = async ({ limit, pageParam, ownerAddress }: FetchSentOffersOptions) => {
   const paramString = buildQueryParamString({
     limit,
     page: pageParam,
@@ -37,4 +37,4 @@ const fetchReceivedOffers = async ({ limit, pageParam, ownerAddress }: FetchRece
   }
 }
 
-export default fetchReceivedOffers
+export default fetchSentOffers

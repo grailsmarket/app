@@ -1,68 +1,71 @@
-import { fetchDomains } from '@/api/domains/fetchDomains'
+import fetchSentOffers from '@/api/offers/sent'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useUserContext } from '@/context/user'
+import { Address } from 'viem'
 
-export const useMyDomains = () => {
-  const { userAddress, authStatus } = useUserContext()
+export const useSentOffers = (user: Address | undefined) => {
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {
-    data: myDomains,
-    isLoading: isMyDomainsLoading,
-    isFetchingNextPage: isMyDomainsFetchingNextPage,
-    fetchNextPage: fetchMoreMyDomains,
-    hasNextPage: hasMoreMyDomains,
+    data: sentOffers,
+    isLoading: isSentOffersLoading,
+    isFetchingNextPage: isSentOffersFetchingNextPage,
+    fetchNextPage: fetchMoreSentOffers,
+    hasNextPage: hasMoreSentOffers,
   } = useInfiniteQuery({
     queryKey: [
-      'portfolio',
-      'domains',
-      userAddress,
-      authStatus,
+      'profile',
+      'sent_offers',
+      user,
       debouncedSearch,
       filters.length,
       filters.priceRange,
-      filters.categories,
+      filters.length,
       filters.type,
       filters.status,
       filters.sort,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      if (!userAddress)
+      if (!user)
         return {
-          domains: [],
+          offers: [],
           total: 0,
           nextPageParam: pageParam,
           hasNextPage: false,
         }
 
-      const response = await fetchDomains({
+      const response = await fetchSentOffers({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        filters: filters as any, // TODO: Create separate portfolio API or adapter
+        filters,
+        ownerAddress: user,
         searchTerm: debouncedSearch,
-        ownerAddress: userAddress,
       })
 
-      return response
+      return {
+        offers: response.offers,
+        total: response.total,
+        nextPageParam: response.nextPageParam,
+        hasNextPage: response.hasNextPage,
+      }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!userAddress && authStatus === 'authenticated',
+    enabled: !!user,
   })
 
-  const totalDomains = myDomains?.pages[0]?.total || 0
+  const totalSentOffers = sentOffers?.pages[0]?.total || 0
 
   return {
-    myDomains,
-    isMyDomainsLoading,
-    isMyDomainsFetchingNextPage,
-    fetchMoreMyDomains,
-    hasMoreMyDomains,
-    totalDomains,
+    sentOffers,
+    isSentOffersLoading,
+    isSentOffersFetchingNextPage,
+    fetchMoreSentOffers,
+    hasMoreSentOffers,
+    totalSentOffers,
   }
 }

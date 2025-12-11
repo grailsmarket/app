@@ -163,7 +163,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
       dispatch(removeUserWatchlistDomain(watchlistId))
       queryClient.setQueryData(
         [
-          'portfolio',
+          'profile',
           'watchlist',
           userAddress,
           filters.search,
@@ -188,7 +188,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
           }
         }
       )
-      // queryClient.refetchQueries({ queryKey: ['portfolio', 'watchlist'] })
+      // queryClient.refetchQueries({ queryKey: ['profile', 'watchlist'] })
       return
     }
 

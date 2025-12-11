@@ -1,15 +1,16 @@
-import { getWatchlist } from '@/api/watchlist/getWatchlist'
-import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import { useUserContext } from '@/context/user'
+import { Address } from 'viem'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useUserContext } from '@/context/user'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { addUserWatchlistDomains } from '@/state/reducers/portfolio/profile'
-import { MarketplaceDomainType } from '@/types/domains'
+import { getWatchlist } from '@/api/watchlist/getWatchlist'
 import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
+import { MarketplaceDomainType } from '@/types/domains'
 
-export const useWatchlistDomains = () => {
+export const useWatchlistDomains = (user: Address | undefined) => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const filters = useAppSelector(selectMyDomainsFilters)
@@ -23,7 +24,7 @@ export const useWatchlistDomains = () => {
     hasNextPage: hasMoreWatchlistDomains,
   } = useInfiniteQuery({
     queryKey: [
-      'portfolio',
+      'profile',
       'watchlist',
       userAddress,
       debouncedSearch,
@@ -35,7 +36,7 @@ export const useWatchlistDomains = () => {
       filters.sort,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      if (!userAddress)
+      if (!user || user.toLowerCase() !== userAddress?.toLowerCase())
         return {
           domains: [],
           total: 0,
@@ -90,7 +91,8 @@ export const useWatchlistDomains = () => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!userAddress && authStatus === 'authenticated',
+    enabled:
+      !!user && !!userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated',
   })
 
   const totalWatchlistDomains = watchlistDomains?.pages[0]?.total || 0

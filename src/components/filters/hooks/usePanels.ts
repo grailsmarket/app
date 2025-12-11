@@ -7,14 +7,14 @@ export enum MarketplaceFiltersPanel {
 }
 
 export const usePanels = () => {
-  const { filterType, portfolioTab, profileTab } = useFilterContext()
+  const { filterType, profileTab } = useFilterContext()
   const [panel, setPanel] = useState(MarketplaceFiltersPanel.All)
 
   const isPanelCategories = panel === MarketplaceFiltersPanel.Categories
 
   useEffect(() => {
     setPanel(MarketplaceFiltersPanel.All)
-  }, [filterType, portfolioTab, profileTab])
+  }, [filterType, profileTab])
 
   const setPanelCategories = () => {
     setPanel(MarketplaceFiltersPanel.Categories)

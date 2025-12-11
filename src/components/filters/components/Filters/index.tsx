@@ -16,7 +16,8 @@ interface FiltersProps {
 }
 
 const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories }) => {
-  const { filterType, portfolioTab, profileTab } = useFilterContext()
+  const { filterType, profileTab } = useFilterContext()
+  const activeProfileTab = profileTab?.value || 'domains'
   const isClient = useIsClient()
   const { categories } = useCategories()
 
@@ -24,10 +25,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
 
   // Use appropriate categories based on filter context
   const showCategoryTab =
-    filterType === 'marketplace' ||
-    portfolioTab === 'domains' ||
-    portfolioTab === 'watchlist' ||
-    profileTab === 'domains' // Only show category tab for marketplace and portfolio domains tab
+    filterType === 'marketplace' || activeProfileTab === 'domains' || activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
 
   return (
     <div className='flex w-full overflow-x-hidden pb-10'>

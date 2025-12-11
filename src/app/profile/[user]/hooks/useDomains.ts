@@ -1,88 +1,107 @@
-import { fetchDomains } from '@/api/domains/fetchDomains'
-import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { MarketplaceDomainType } from '@/types/domains'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { Address } from 'viem'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useMemo } from 'react'
-import { fetchAccount } from 'ethereum-identity-kit'
+import { useWatchlistDomains } from './useWatchlistDomains'
+import { MarketplaceDomainType } from '@/types/domains'
+import {
+  PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS,
+  PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS,
+} from '@/constants/domains/marketplaceDomains'
+import { useProfileDomains } from './useProfileDomains'
+import { Address } from 'viem'
 
-export const useProfileDomains = (user: Address | string) => {
-  const { selectors } = useFilterRouter()
-  const filters = selectors.filters
-  const debouncedSearch = useDebounce(selectors.filters.search, 500)
-
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user],
-    queryFn: () => fetchAccount(user),
-    enabled: !!user,
-  })
+// Router for the portfolio tab content
+// This is done to prevent refetching data when switching tabs
+export const useDomains = (user: Address | undefined) => {
+  const { selectedTab } = useAppSelector(selectUserProfile)
 
   const {
-    data: domains,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage: fetchMoreDomains,
-    hasNextPage: hasMoreDomains,
-  } = useInfiniteQuery({
-    queryKey: [
-      'profile',
-      'domains',
-      profile?.address || user,
-      debouncedSearch,
-      filters.length,
-      filters.priceRange,
-      filters.categories,
-      filters.type,
-      filters.status,
-      filters.sort,
-    ],
-    queryFn: async ({ pageParam = 1 }) => {
-      if (!profile?.address)
-        return {
-          domains: [],
-          total: 0,
-          nextPageParam: pageParam,
-          hasNextPage: false,
-        }
+    domains: profileDomains,
+    domainsLoading: profileDomainsLoading,
+    fetchMoreDomains: profileFetchMoreDomains,
+    hasMoreDomains: profileHasMoreDomains,
+    totalDomains: profileTotalDomains,
+  } = useProfileDomains(user)
 
-      const domains = await fetchDomains({
-        limit: DEFAULT_FETCH_LIMIT,
-        pageParam,
-        // @ts-expect-error the activity filter state will not be used for domains
-        filters,
-        searchTerm: debouncedSearch,
-        ownerAddress: profile?.address,
-      })
+  const {
+    watchlistDomains,
+    totalWatchlistDomains,
+    isWatchlistDomainsLoading,
+    isWatchlistDomainsFetchingNextPage,
+    fetchMoreWatchlistDomains,
+    hasMoreWatchlistDomains,
+  } = useWatchlistDomains(user)
 
-      return {
-        domains: domains.domains,
-        total: domains.total,
-        nextPageParam: domains.nextPageParam,
-        hasNextPage: domains.hasNextPage,
-      }
-    },
-    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 1,
-    enabled: !!profile?.address,
-  })
+  const displayedDetails = useMemo(() => {
+    switch (selectedTab.value) {
+      case 'domains':
+        return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
+      case 'watchlist':
+        return PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS
+      default:
+        return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
+    }
+  }, [selectedTab.value])
 
   const domainsData = useMemo(() => {
+    switch (selectedTab.value) {
+      case 'domains':
+        return profileDomains
+      case 'watchlist':
+        return watchlistDomains
+      default:
+        return profileDomains
+    }
+  }, [selectedTab.value, profileDomains, watchlistDomains])
+
+  const domains = useMemo(() => {
     return (
-      domains?.pages?.reduce((acc, page) => {
+      domainsData?.pages?.reduce((acc, page) => {
         return [...acc, ...page.domains]
       }, [] as MarketplaceDomainType[]) || []
     )
-  }, [domains])
-  const domainsLoading = isLoading || isFetchingNextPage
-  const totalDomains = domains?.pages[0]?.total || 0
+  }, [domainsData])
+
+  const domainsLoading = useMemo(() => {
+    switch (selectedTab.value) {
+      case 'domains':
+        return profileDomainsLoading
+      case 'watchlist':
+        return isWatchlistDomainsLoading || isWatchlistDomainsFetchingNextPage
+      default:
+        return profileDomainsLoading
+    }
+  }, [selectedTab.value, profileDomainsLoading, isWatchlistDomainsLoading, isWatchlistDomainsFetchingNextPage])
+
+  const fetchMoreDomains = useMemo(() => {
+    switch (selectedTab.value) {
+      case 'domains':
+        return profileFetchMoreDomains
+      case 'watchlist':
+        return fetchMoreWatchlistDomains
+      default:
+        return profileFetchMoreDomains
+    }
+  }, [selectedTab.value, profileFetchMoreDomains, fetchMoreWatchlistDomains])
+
+  const hasMoreDomains = useMemo(() => {
+    switch (selectedTab.value) {
+      case 'domains':
+        return profileHasMoreDomains
+      case 'watchlist':
+        return hasMoreWatchlistDomains
+      default:
+        return profileHasMoreDomains
+    }
+  }, [selectedTab.value, profileHasMoreDomains, hasMoreWatchlistDomains])
 
   return {
-    domains: domainsData,
+    displayedDetails,
+    domains,
     domainsLoading,
     fetchMoreDomains,
     hasMoreDomains,
-    totalDomains,
+    profileTotalDomains,
+    totalWatchlistDomains,
   }
 }

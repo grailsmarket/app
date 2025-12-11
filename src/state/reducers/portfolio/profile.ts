@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { portfolioTabs } from '@/constants/domains/portfolio/tabs'
+import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { RootState } from '../../index'
 import { WatchlistItemType } from '@/types/domains'
+import { Address } from 'ethereum-identity-kit'
 
 // Types --------------------------------------------
-type TabType = (typeof portfolioTabs)[number]
+export type ProfileTabType = (typeof PROFILE_TABS)[number]
 
 type EnsProfileType = {
   name: string | null
@@ -17,7 +18,7 @@ type profileState = {
   userId: number | null
   watchlist: WatchlistItemType[]
   pendingWatchlistTokenIds: string[]
-  selectedTab: TabType
+  selectedTab: ProfileTabType
   email: {
     address: string | null
     verified: boolean
@@ -25,6 +26,7 @@ type profileState = {
   discord: string | null
   telegram: string | null
   poapClaimed: boolean
+  lastVisitedProfile: Address | string | null
 }
 
 export const nullEnsProfile = {
@@ -50,7 +52,8 @@ const initialState: profileState = {
   poapClaimed: false,
   watchlist: [],
   pendingWatchlistTokenIds: [],
-  selectedTab: portfolioTabs[0],
+  selectedTab: PROFILE_TABS[0],
+  lastVisitedProfile: null,
 }
 
 // Slice -------------------------------------------
@@ -99,8 +102,11 @@ export const profileSlice = createSlice({
       if (state.pendingWatchlistTokenIds === undefined) state.pendingWatchlistTokenIds = []
       state.pendingWatchlistTokenIds = state.pendingWatchlistTokenIds?.filter((item) => item !== payload)
     },
-    changeTab(state, { payload }: PayloadAction<TabType>) {
+    changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
+    },
+    setLastVisitedProfile(state, { payload }: PayloadAction<Address | string | null>) {
+      state.lastVisitedProfile = payload
     },
     resetUserProfile(state) {
       state.ensProfile = nullEnsProfile
@@ -130,6 +136,7 @@ export const {
   addUserPendingWatchlistDomain,
   removeUserPendingWatchlistDomain,
   changeTab,
+  setLastVisitedProfile,
   resetUserProfile,
 } = profileSlice.actions
 

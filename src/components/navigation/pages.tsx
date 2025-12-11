@@ -1,6 +1,8 @@
 'use client'
 
 import { useUserContext } from '@/context/user'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
@@ -15,7 +17,10 @@ interface PagesProps {
 const Pages = ({ className, onClick }: PagesProps) => {
   const pathname = usePathname()
   const { userAddress } = useUserContext()
+  const { ensProfile } = useAppSelector(selectUserProfile)
   const { openConnectModal } = useConnectModal()
+
+  const isPortfolioPage = pathname === `/profile/${userAddress}` || pathname === `/profile/${ensProfile?.name}`
 
   return (
     <div className={cn('text-md flex flex-col gap-4 text-lg md:flex-row md:items-center', className)}>
@@ -49,24 +54,26 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Categories
       </Link>
-      <Link
-        href='/portfolio'
-        className={cn(
-          'font-semibold transition-all',
-          pathname === '/portfolio' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
-        )}
-        onClick={(e) => {
-          if (!userAddress) {
-            e.preventDefault()
-            e.stopPropagation()
-            return openConnectModal?.()
-          }
+      {userAddress && (
+        <Link
+          href={`/profile/${userAddress}`}
+          className={cn(
+            'font-semibold transition-all',
+            isPortfolioPage ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+          )}
+          onClick={(e) => {
+            if (!userAddress) {
+              e.preventDefault()
+              e.stopPropagation()
+              return openConnectModal?.()
+            }
 
-          onClick?.()
-        }}
-      >
-        Portfolio
-      </Link>
+            onClick?.()
+          }}
+        >
+          My Profile
+        </Link>
+      )}
     </div>
   )
 }

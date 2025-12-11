@@ -278,7 +278,7 @@ const RegistrationModal: React.FC = () => {
 
   const refetchQueries = () => {
     setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
+      queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
       queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
       queryClient.refetchQueries({ queryKey: ['name', 'details', registrationState.name] })
       queryClient.refetchQueries({ queryKey: ['name', 'activity', registrationState.name] })

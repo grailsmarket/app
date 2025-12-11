@@ -50,11 +50,12 @@ const Actions: React.FC<ActionsProps> = ({
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const { filterType } = useFilterContext()
-  const { selectedTab } = useAppSelector(selectUserProfile)
+  const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+  const isMyDomain = userAddress?.toLowerCase() === domain.owner?.toLowerCase()
 
   const openBuyNowModal = () => {
     dispatch(setBuyNowModalDomain(domain))
@@ -108,8 +109,8 @@ const Actions: React.FC<ActionsProps> = ({
     handler()
   }
 
-  if (filterType === 'portfolio') {
-    if (selectedTab.value === 'domains') {
+  if (filterType === 'profile') {
+    if (profileTab.value === 'domains') {
       if (isBulkSelecting) {
         return (
           <div className='flex flex-row justify-end gap-4 opacity-100'>
@@ -146,37 +147,39 @@ const Actions: React.FC<ActionsProps> = ({
         )
       }
 
-      if (registrationStatus !== REGISTERED) return null
+      if (isMyDomain) {
+        if (registrationStatus !== REGISTERED) return null
 
-      if (domainListing?.price) {
+        if (domainListing?.price) {
+          return (
+            <div className='py-md flex flex-row justify-end gap-4 opacity-100'>
+              <p
+                className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'
+                onClick={(e) => clickHandler(e, openMakeListingModal)}
+              >
+                Edit
+              </p>
+              <p
+                className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'
+                onClick={(e) => clickHandler(e, openCancelListingModal)}
+              >
+                Cancel
+              </p>
+            </div>
+          )
+        }
+
         return (
-          <div className='py-md flex flex-row justify-end gap-4 opacity-100'>
+          <div className='py-md flex flex-row justify-end opacity-100'>
             <p
-              className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'
+              className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'
               onClick={(e) => clickHandler(e, openMakeListingModal)}
             >
-              Edit
-            </p>
-            <p
-              className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'
-              onClick={(e) => clickHandler(e, openCancelListingModal)}
-            >
-              Cancel
+              List
             </p>
           </div>
         )
       }
-
-      return (
-        <div className='py-md flex flex-row justify-end opacity-100'>
-          <p
-            className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'
-            onClick={(e) => clickHandler(e, openMakeListingModal)}
-          >
-            List
-          </p>
-        </div>
-      )
     }
   }
 

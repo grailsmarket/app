@@ -257,8 +257,8 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
 
       setSuccess(true)
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
-        queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+        queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
+        queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
         domains.forEach((domain) => {
           queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
         })

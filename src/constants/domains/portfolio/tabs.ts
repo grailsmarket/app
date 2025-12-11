@@ -1,6 +1,6 @@
-export const portfolioTabs = [
+export const PROFILE_TABS = [
   {
-    label: 'My Names',
+    label: 'Names',
     value: 'domains',
   },
   {
@@ -8,15 +8,15 @@ export const portfolioTabs = [
     value: 'received_offers',
   },
   {
-    label: 'My Offers',
-    value: 'my_offers',
+    label: 'Sent Offers',
+    value: 'sent_offers',
   },
   {
     label: 'Watchlist',
     value: 'watchlist',
   },
-  // {
-  //   label: 'Activity',
-  //   value: 'activity',
-  // },
+  {
+    label: 'Activity',
+    value: 'activity',
+  },
 ] as const

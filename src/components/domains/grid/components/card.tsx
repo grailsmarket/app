@@ -23,6 +23,7 @@ import {
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -35,7 +36,8 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkSelecting }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
-  const { filterType, portfolioTab } = useFilterContext()
+  const { filterType } = useFilterContext()
+  const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart = !(
@@ -137,7 +139,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
             </p>
           )}
-          {portfolioTab === 'domains' && filterType === 'portfolio' && domain.expiry_date && (
+          {profileTab.value === 'domains' && filterType === 'profile' && domain.expiry_date && (
             <div className='flex items-center gap-1'>
               <p className='text-md text-neutral truncate font-semibold'>
                 Expiry: {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}

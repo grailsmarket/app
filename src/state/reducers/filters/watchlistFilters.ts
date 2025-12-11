@@ -37,7 +37,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   // Filters are only expandable on mobile and tablet, so this value will get ignored on desktop
   open: false,
   search: '',
-  status: ['Listed'],
+  status: [],
   type: [MARKETPLACE_TYPE_FILTER_LABELS[0]],
   length: {
     min: null,

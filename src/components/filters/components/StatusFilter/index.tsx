@@ -12,7 +12,6 @@ import {
   MY_DOMAINS_FILTER_LABELS,
   RECEIVED_OFFERS_STATUS_FILTER_LABELS,
   MY_OFFERS_STATUS_FILTER_LABELS,
-  PROFILE_DOMAINS_FILTER_LABELS,
   PROFILE_ACTIVITY_FILTER_LABELS,
 } from '@/constants/filters/portfolioFilters'
 import { useFilterContext } from '@/context/filters'
@@ -21,35 +20,29 @@ import { useMemo } from 'react'
 const StatusFilter: React.FC = () => {
   const { open, toggleOpen } = useFilterOpen('Status')
   const { isActive, toggleActive, statusFilter } = useStatusFilters()
-  const { filterType, portfolioTab, profileTab } = useFilterContext()
+  const { filterType, profileTab } = useFilterContext()
+  const activeProfileTab = profileTab?.value || 'domains'
 
   // Determine which labels to use based on context
   const filterLabels = useMemo(() => {
     if (filterType === 'profile') {
-      if (profileTab === 'domains') {
-        return PROFILE_DOMAINS_FILTER_LABELS
-      } else if (profileTab === 'activity') {
-        return PROFILE_ACTIVITY_FILTER_LABELS
-      }
-      return MY_DOMAINS_FILTER_LABELS
-    }
-
-    if (filterType === 'portfolio') {
-      if (portfolioTab === 'domains') {
+      if (activeProfileTab === 'domains') {
         return MY_DOMAINS_FILTER_LABELS
-      } else if (portfolioTab === 'received_offers') {
+      } else if (activeProfileTab === 'received_offers') {
         return RECEIVED_OFFERS_STATUS_FILTER_LABELS
-      } else if (portfolioTab === 'my_offers') {
+      } else if (activeProfileTab === 'sent_offers') {
         return MY_OFFERS_STATUS_FILTER_LABELS
-      } else if (portfolioTab === 'watchlist') {
+      } else if (activeProfileTab === 'watchlist') {
         return MARKETPLACE_STATUS_FILTER_LABELS
+      } else if (activeProfileTab === 'activity') {
+        return PROFILE_ACTIVITY_FILTER_LABELS
       }
 
       return MY_DOMAINS_FILTER_LABELS
     }
 
     return MARKETPLACE_STATUS_FILTER_LABELS
-  }, [filterType, portfolioTab, profileTab])
+  }, [filterType, activeProfileTab])
 
   // Calculate expanded height based on number of labels
   const expandedHeight = 56 + filterLabels.length * 36

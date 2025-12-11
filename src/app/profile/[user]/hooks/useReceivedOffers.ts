@@ -1,37 +1,36 @@
-import fetchMyOffers from '@/api/offers/sent'
+import { Address } from 'viem'
+import fetchReceivedOffers from '@/api/offers/received'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useUserContext } from '@/context/user'
 
-export const useMyOffers = () => {
-  const { userAddress, authStatus } = useUserContext()
+export const useReceivedOffers = (user: Address | undefined) => {
   const filters = useAppSelector(selectMyDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {
-    data: myOffers,
-    isLoading: isMyOffersLoading,
-    isFetchingNextPage: isMyOffersFetchingNextPage,
-    fetchNextPage: fetchMoreMyOffers,
-    hasNextPage: hasMoreMyOffers,
+    data: receivedOffers,
+    isLoading: isReceivedOffersLoading,
+    isFetchingNextPage: isReceivedOffersFetchingNextPage,
+    fetchNextPage: fetchMoreReceivedOffers,
+    hasNextPage: hasMoreReceivedOffers,
   } = useInfiniteQuery({
     queryKey: [
-      'portfolio',
-      'my_offers',
-      userAddress,
+      'profile',
+      'received_offers',
+      user,
       debouncedSearch,
       filters.length,
       filters.priceRange,
-      filters.length,
       filters.type,
       filters.status,
       filters.sort,
+      filters.length,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      if (!userAddress)
+      if (!user)
         return {
           offers: [],
           total: 0,
@@ -39,12 +38,12 @@ export const useMyOffers = () => {
           hasNextPage: false,
         }
 
-      const response = await fetchMyOffers({
+      const response = await fetchReceivedOffers({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
         filters,
-        ownerAddress: userAddress,
         searchTerm: debouncedSearch,
+        ownerAddress: user,
       })
 
       return {
@@ -56,17 +55,17 @@ export const useMyOffers = () => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!userAddress && authStatus === 'authenticated',
+    enabled: !!user,
   })
 
-  const totalMyOffers = myOffers?.pages[0]?.total || 0
+  const totalReceivedOffers = receivedOffers?.pages[0]?.total || 0
 
   return {
-    myOffers,
-    isMyOffersLoading,
-    isMyOffersFetchingNextPage,
-    fetchMoreMyOffers,
-    hasMoreMyOffers,
-    totalMyOffers,
+    receivedOffers,
+    isReceivedOffersLoading,
+    isReceivedOffersFetchingNextPage,
+    fetchMoreReceivedOffers,
+    hasMoreReceivedOffers,
+    totalReceivedOffers,
   }
 }

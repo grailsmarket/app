@@ -1,17 +1,18 @@
+import { Address } from 'viem'
+import { useMemo } from 'react'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { useMemo } from 'react'
+import { useReceivedOffers } from './useReceivedOffers'
+import { useSentOffers } from './useSentOffers'
 import { DomainOfferType } from '@/types/domains'
 import {
   PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS,
   PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS,
 } from '@/constants/domains/marketplaceDomains'
-import { useMyOffers } from './useMyOffers'
-import { useReceivedOffers } from './useReceivedOffers'
 
 // Router for the portfolio tab content
 // This is done to prevent refetching data when switching tabs
-export const useOffers = () => {
+export const useOffers = (user: Address | undefined) => {
   const { selectedTab } = useAppSelector(selectUserProfile)
   const {
     receivedOffers,
@@ -20,13 +21,19 @@ export const useOffers = () => {
     isReceivedOffersFetchingNextPage,
     fetchMoreReceivedOffers,
     hasMoreReceivedOffers,
-  } = useReceivedOffers()
-  const { myOffers, totalMyOffers, isMyOffersLoading, isMyOffersFetchingNextPage, fetchMoreMyOffers, hasMoreMyOffers } =
-    useMyOffers()
+  } = useReceivedOffers(user)
+  const {
+    sentOffers,
+    totalSentOffers,
+    isSentOffersLoading,
+    isSentOffersFetchingNextPage,
+    fetchMoreSentOffers,
+    hasMoreSentOffers,
+  } = useSentOffers(user)
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {
-      case 'my_offers':
+      case 'sent_offers':
         return PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS
       case 'received_offers':
         return PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS
@@ -37,14 +44,14 @@ export const useOffers = () => {
 
   const offersData = useMemo(() => {
     switch (selectedTab.value) {
-      case 'my_offers':
-        return myOffers
+      case 'sent_offers':
+        return sentOffers
       case 'received_offers':
         return receivedOffers
       default:
-        return myOffers
+        return sentOffers
     }
-  }, [selectedTab.value, myOffers, receivedOffers])
+  }, [selectedTab.value, sentOffers, receivedOffers])
 
   const offers = useMemo(() => {
     return (
@@ -56,42 +63,42 @@ export const useOffers = () => {
 
   const offersLoading = useMemo(() => {
     switch (selectedTab.value) {
-      case 'my_offers':
-        return isMyOffersLoading || isMyOffersFetchingNextPage
+      case 'sent_offers':
+        return isSentOffersLoading || isSentOffersFetchingNextPage
       case 'received_offers':
         return isReceivedOffersLoading || isReceivedOffersFetchingNextPage
       default:
-        return isMyOffersLoading || isMyOffersFetchingNextPage
+        return isSentOffersLoading || isSentOffersFetchingNextPage
     }
   }, [
     selectedTab.value,
-    isMyOffersLoading,
-    isMyOffersFetchingNextPage,
+    isSentOffersLoading,
+    isSentOffersFetchingNextPage,
     isReceivedOffersLoading,
     isReceivedOffersFetchingNextPage,
   ])
 
   const fetchMoreOffers = useMemo(() => {
     switch (selectedTab.value) {
-      case 'my_offers':
-        return fetchMoreMyOffers
+      case 'sent_offers':
+        return fetchMoreSentOffers
       case 'received_offers':
         return fetchMoreReceivedOffers
       default:
-        return fetchMoreMyOffers
+        return fetchMoreSentOffers
     }
-  }, [selectedTab.value, fetchMoreMyOffers, fetchMoreReceivedOffers])
+  }, [selectedTab.value, fetchMoreSentOffers, fetchMoreReceivedOffers])
 
   const hasMoreOffers = useMemo(() => {
     switch (selectedTab.value) {
-      case 'my_offers':
-        return hasMoreMyOffers
+      case 'sent_offers':
+        return hasMoreSentOffers
       case 'received_offers':
         return hasMoreReceivedOffers
       default:
-        return hasMoreMyOffers
+        return hasMoreSentOffers
     }
-  }, [selectedTab.value, hasMoreMyOffers, hasMoreReceivedOffers])
+  }, [selectedTab.value, hasMoreSentOffers, hasMoreReceivedOffers])
 
   return {
     displayedDetails,
@@ -100,6 +107,6 @@ export const useOffers = () => {
     fetchMoreOffers,
     hasMoreOffers,
     totalReceivedOffers,
-    totalMyOffers,
+    totalSentOffers,
   }
 }

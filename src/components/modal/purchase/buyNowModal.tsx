@@ -334,8 +334,8 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
   const refetchDomainQueries = () => {
     queryClient.refetchQueries({ queryKey: ['name', 'details'] })
-    queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
-    queryClient.refetchQueries({ queryKey: ['my_offers'] })
+    queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
+    queryClient.refetchQueries({ queryKey: ['sent_offers'] })
   }
 
   const handlePurchase = async () => {
@@ -485,7 +485,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             <div className='space-y-4'>
               <div className='flex flex-row items-center justify-between rounded-lg'>
                 <p className='font-sedan-sc text-xl'>Name</p>
-                <p className='text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
+                <p className='text-right text-xl font-semibold'>{domain.name || `Token #${domain.token_id}`}</p>
               </div>
 
               <div className='flex flex-row items-center justify-between rounded-lg'>

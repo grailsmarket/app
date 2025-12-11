@@ -23,6 +23,8 @@ import SingleEthmojiAvatar from 'public/clubs/single_ethmoji/avatar.jpg'
 import SingleEthmojiHeader from 'public/clubs/single_ethmoji/header.jpeg'
 import TripleEthmojiAvatar from 'public/clubs/triple_ethmoji/avatar.jpg'
 import TripleEthmojiHeader from 'public/clubs/triple_ethmoji/header.jpeg'
+import BaseSingleEthmojiAvatar from 'public/clubs/base_single_ethmoji/avatar.jpg'
+import BaseSingleEthmojiHeader from 'public/clubs/base_single_ethmoji/header.jpeg'
 
 export const CATEGORY_IMAGES = {
   prepunks: {
@@ -57,6 +59,10 @@ export const CATEGORY_IMAGES = {
     avatar: TripleEthmojiAvatar,
     header: TripleEthmojiHeader,
   },
+  base_single_ethmoji: {
+    avatar: BaseSingleEthmojiAvatar,
+    header: BaseSingleEthmojiHeader,
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS = {
@@ -77,6 +83,9 @@ export const CATEGORY_SOCIAL_LINKS = {
   },
   '999': {
     twitter: 'https://x.com/ens999club',
+  },
+  base_single_ethmoji: {
+    twitter: 'https://x.com/EthmojiClub',
   },
   single_ethmoji: {
     twitter: 'https://x.com/EthmojiClub',

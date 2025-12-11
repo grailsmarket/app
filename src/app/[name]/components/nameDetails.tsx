@@ -71,24 +71,24 @@ const NameDetails: React.FC<NameDetailsProps> = ({
     {
       label: 'Category',
       value: (
-        <div className='flex flex-row gap-2'>
+        <div className='flex flex-row gap-2! overflow-visible'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-                <Link
-                  key={club}
-                  href={`/categories/${club}`}
-                  className='text-primary flex gap-1 font-medium transition-colors hover:opacity-80'
-                >
-                  <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                    alt={club}
-                    width={24}
-                    height={24}
-                    className='rounded-full'
-                  />
-                  <div>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</div>
-                </Link>
-              ))
+              <Link
+                key={club}
+                href={`/categories/${club}`}
+                className='text-primary flex gap-1 min-w-fit font-medium transition-colors hover:opacity-80'
+              >
+                <Image
+                  src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                  alt={club}
+                  width={24}
+                  height={24}
+                  className='rounded-full aspect-square!'
+                />
+                <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+              </Link>
+            ))
             : 'None'}
         </div>
       ),
@@ -217,7 +217,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
               {typeof row.value === 'string' ? (
                 <CopyValue value={row.value} canCopy={row.canCopy} />
               ) : (
-                <div className='max-w-2/3'>{row.value}</div>
+                <div className='max-w-3/4 overflow-x-auto'>{row.value}</div>
               )}
             </div>
           )

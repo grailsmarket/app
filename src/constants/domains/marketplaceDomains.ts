@@ -121,4 +121,5 @@ export const CATEGORY_LABELS = {
   '999': '999 Club',
   single_ethmoji: 'Single Ethmoji',
   triple_ethmoji: 'Triple Ethmoji',
+  base_single_ethmoji: 'Base Single Ethmoji',
 } as const

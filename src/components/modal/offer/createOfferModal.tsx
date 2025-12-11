@@ -26,6 +26,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppSelector } from '@/state/hooks'
 import { beautifyName } from '@/lib/ens'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
+import Calendar from 'public/icons/calendar.svg'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -185,7 +186,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                 </SecondaryButton>
               </>
             ) : (
-              <div className='space-y-4'>
+              <div className='space-y-3'>
                 <div className='flex w-full items-center justify-between gap-2'>
                   <p className='font-sedan-sc text-2xl'>Name</p>
                   <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
@@ -246,7 +247,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                   </div>
                 </div>
 
-                <div className='z-20'>
+                <div className='z-20 flex flex-col gap-2'>
                   <Dropdown
                     label='Duration'
                     placeholder='Select a duration'
@@ -268,6 +269,16 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                       />
                     </div>
                   )}
+                  <button
+                    onClick={() => {
+                      setExpiryDate(0)
+                      setShowDatePicker(true)
+                    }}
+                    className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
+                  >
+                    <p>Select a custom date</p>
+                    <Image src={Calendar} alt='calendar' width={18} height={18} />
+                  </button>
                 </div>
 
                 <div className='z-0'>

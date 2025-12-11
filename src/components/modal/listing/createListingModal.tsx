@@ -32,6 +32,7 @@ import {
   setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import Calendar from 'public/icons/calendar.svg'
 
 export type ListingStatus =
   | 'review'
@@ -198,7 +199,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     switch (status) {
       case 'review':
         return (
-          <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-3'>
             <div className='px-lg bg-secondary border-tertiary flex max-h-[200px] flex-col overflow-y-auto rounded-md border py-1'>
               {domains.length > 1 && (
                 <div className='flex items-center justify-between gap-2 border-b border-b-white/30 py-2'>
@@ -314,7 +315,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </div>
             </div>
 
-            <div className='z-20'>
+            <div className='z-20 flex flex-col gap-2'>
               <Dropdown
                 label='Duration'
                 placeholder='Select a duration'
@@ -338,10 +339,20 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               )}
               {expiryDate === 0 ||
                 (durationOptions.findIndex((option) => option.value === expiryDate) === -1 && (
-                  <p className='text-neutral mt-2 text-center text-xs'>
+                  <p className='text-neutral text-center text-xs'>
                     Duration will be set in UTC timezone, please make sure to adjust accordingly.
                   </p>
                 ))}
+              <button
+                onClick={() => {
+                  setExpiryDate(0)
+                  setShowDatePicker(true)
+                }}
+                className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
+              >
+                <p>Select a custom date</p>
+                <Image src={Calendar} alt='calendar' width={18} height={18} />
+              </button>
             </div>
 
             <div>

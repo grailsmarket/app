@@ -26,6 +26,8 @@ import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { cn } from '@/utils/tailwind'
 import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
+import Image from 'next/image'
+import Calendar from 'public/icons/calendar.svg'
 
 interface ExtendModalProps {
   onClose: () => void
@@ -338,7 +340,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                 </div>
               </div>
             ) : (
-              <div className='flex w-full flex-col gap-2 sm:gap-4'>
+              <div className='flex w-full flex-col gap-2 sm:gap-2'>
                 {/* Domain list */}
                 <div>
                   <div className='bg-secondary border-tertiary max-h-[160px] overflow-y-auto rounded-lg border p-3'>
@@ -442,6 +444,17 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       date of your domains.
                     </p>
                   </div>
+                  <button
+                    onClick={() => {
+                      setTimeUnit('custom')
+                      setShowDatePicker(true)
+                      setExtensionMode('extend_to')
+                    }}
+                    className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
+                  >
+                    <p>Select a custom date</p>
+                    <Image src={Calendar} alt='calendar' width={18} height={18} />
+                  </button>
                 </div>
 
                 <div className='flex flex-col gap-2'>

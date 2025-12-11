@@ -42,6 +42,8 @@ import Link from 'next/link'
 import ClaimPoap from '../poap/claimPoap'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
+import Image from 'next/image'
+import Calendar from 'public/icons/calendar.svg'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -770,7 +772,7 @@ const RegistrationModal: React.FC = () => {
             </SecondaryButton>
           </div>
         ) : (
-          <div className='flex w-full flex-col gap-2 sm:gap-4'>
+          <div className='flex w-full flex-col gap-2 sm:gap-2'>
             <div className='flex w-full flex-row gap-2'>
               <Dropdown
                 label='Unit'
@@ -827,6 +829,17 @@ const RegistrationModal: React.FC = () => {
                 </>
               )}
             </div>
+            <button
+              onClick={() => {
+                dispatch(setRegistrationMode('register_to'))
+                dispatch(setTimeUnit('custom'))
+                setShowDatePicker(true)
+              }}
+              className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
+            >
+              <p>Select a custom date</p>
+              <Image src={Calendar} alt='calendar' width={18} height={18} />
+            </button>
             <div className='flex flex-col gap-2'>
               {calculationResults && (
                 <div className='bg-secondary border-tertiary rounded-lg border p-3'>

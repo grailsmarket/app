@@ -23,7 +23,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains(user)
-  const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const isAtBottom = useScrollToBottom({ threshold: 20 })
   const { viewType } = useAppSelector(selectMarketplaceDomains)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)

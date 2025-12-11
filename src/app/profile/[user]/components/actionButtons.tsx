@@ -116,9 +116,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ user }) => {
         'border-tertiary bg-background p-md md:px-lg absolute bottom-0 left-0 z-20 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
         selectedTab.value === 'domains' || (selectedTab.value === 'watchlist' && !cartIsEmpty) || filtersOpen
           ? selectedTab.value === 'domains' && !isSelecting && !filtersOpen
-            ? 'w-full translate-y-0 sm:translate-y-full lg:w-[298px] lg:translate-y-0'
+            ? 'w-full translate-y-0 sm:translate-y-full lg:w-[300px] lg:translate-y-0'
             : 'w-full translate-y-0'
-          : 'w-full translate-y-full lg:w-[298px] lg:translate-y-0'
+          : 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
       )}
     >
       <div className={cn('flex-row justify-end gap-2 lg:w-[262px]', filtersOpen ? 'flex' : 'hidden lg:flex')}>

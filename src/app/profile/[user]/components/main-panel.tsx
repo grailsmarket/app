@@ -15,11 +15,11 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
-import { clearActivityFilters } from '@/state/reducers/filters/profileActivityFilters'
+import { clearActivityFilters, setFiltersScrollTop } from '@/state/reducers/filters/profileActivityFilters'
 import { clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
 import { clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
 import { clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
-import { clearFilters } from '@/state/reducers/filters/profileDomainsFilters'
+import { clearFilters, setFiltersScrollTop as setDomainsScrollTop } from '@/state/reducers/filters/profileDomainsFilters'
 
 interface Props {
   user: Address | string
@@ -38,6 +38,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   })
 
   useEffect(() => {
+    // reset filters when visiting a new profile
     if (lastVisitedProfile !== user) {
       dispatch(setLastVisitedProfile(user))
       dispatch(clearFilters())
@@ -45,6 +46,9 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
       dispatch(clearActivityFilters())
+      dispatch(setFiltersScrollTop(0))
+      dispatch(setDomainsScrollTop(0))
+      document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
     }
 
     dispatch(setLastVisitedProfile(user))

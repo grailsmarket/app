@@ -54,7 +54,7 @@ export function useSeaportClient() {
 
   const refetchListingQueries = useCallback(() => {
     setTimeout(() => {
-      queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+      queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
       queryClient.refetchQueries({ queryKey: ['name', 'details'] })
     }, 1000)
   }, [queryClient])
@@ -63,7 +63,7 @@ export function useSeaportClient() {
     // Timeout to ensure DB is fully updated (does not work without timeout)
     setTimeout(() => {
       queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
-      queryClient.refetchQueries({ queryKey: ['my_offers'] })
+      queryClient.refetchQueries({ queryKey: ['sent_offers'] })
       queryClient.refetchQueries({ queryKey: ['received_offers'] })
     }, 1000)
   }, [queryClient])

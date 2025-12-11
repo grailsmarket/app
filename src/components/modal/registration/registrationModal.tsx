@@ -278,7 +278,7 @@ const RegistrationModal: React.FC = () => {
 
   const refetchQueries = () => {
     setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
+      queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
       queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
       queryClient.refetchQueries({ queryKey: ['name', 'details', registrationState.name] })
       queryClient.refetchQueries({ queryKey: ['name', 'activity', registrationState.name] })
@@ -806,9 +806,9 @@ const RegistrationModal: React.FC = () => {
                   <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
                     {customDuration
                       ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : 'Select Date'}
                   </PrimaryButton>
                   {showDatePicker && (

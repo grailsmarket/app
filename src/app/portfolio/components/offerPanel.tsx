@@ -23,12 +23,12 @@ const OfferPanel = () => {
   const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers()
 
   const disconnectMessage = {
-    my_offers: 'Sign in to view your offers.',
+    sent_offers: 'Sign in to view your offers.',
     received_offers: 'Sign in to view your received offers.',
   }[selectedTab.value as 'my_offers' | 'received_offers']
 
   const noResultMessage = {
-    my_offers: 'No offers found. Try clearing your filters.',
+    sent_offers: 'No offers found. Try clearing your filters.',
     received_offers: 'No offers found. Try clearing your filters.',
   }[selectedTab.value as 'my_offers' | 'received_offers']
 

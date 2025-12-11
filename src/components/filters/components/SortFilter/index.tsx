@@ -14,35 +14,29 @@ import { useMemo } from 'react'
 const SortFilter: React.FC = () => {
   const { open, toggleOpen } = useFilterOpen('Sort')
   const { isActive, toggleActive, sortFilter } = useSortFilters()
-  const { filterType, portfolioTab, profileTab } = useFilterContext()
+  const { filterType, profileTab } = useFilterContext()
+  const activeProfileTab = profileTab?.value || 'domains'
 
   // Determine which labels to use based on context
   const filterLabels = useMemo(() => {
     if (filterType === 'profile') {
-      if (profileTab === 'domains') {
+      if (activeProfileTab === 'domains') {
         return ALL_SORT_FILTERS
-      } else if (profileTab === 'activity') {
+      } else if (activeProfileTab === 'received_offers') {
         return null
-      }
-      return ALL_SORT_FILTERS
-    }
-
-    if (filterType === 'portfolio') {
-      if (portfolioTab === 'domains') {
+      } else if (activeProfileTab === 'sent_offers') {
+        return null
+      } else if (activeProfileTab === 'watchlist') {
         return ALL_SORT_FILTERS
-      } else if (portfolioTab === 'received_offers') {
+      } else if (activeProfileTab === 'activity') {
         return null
-      } else if (portfolioTab === 'my_offers') {
-        return null
-      } else if (portfolioTab === 'watchlist') {
-        return ALL_SORT_FILTERS
       }
 
       return ALL_SORT_FILTERS
     }
 
     return ALL_SORT_FILTERS
-  }, [filterType, portfolioTab, profileTab])
+  }, [filterType, activeProfileTab])
 
   if (!filterLabels) return null
 

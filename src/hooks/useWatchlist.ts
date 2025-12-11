@@ -188,7 +188,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
           }
         }
       )
-      // queryClient.refetchQueries({ queryKey: ['portfolio', 'watchlist'] })
+      // queryClient.refetchQueries({ queryKey: ['profile', 'watchlist'] })
       return
     }
 

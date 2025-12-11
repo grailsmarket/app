@@ -12,11 +12,10 @@ import Activity from '@/components/activity'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
-  user: Address | string
-  userAddress?: Address
+  user: Address | undefined
 }
 
-const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
+const ActivityPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
@@ -58,7 +57,7 @@ const ActivityPanel: React.FC<Props> = ({ user, userAddress }) => {
         isLoading={activityLoading}
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
-        displayedAddress={userAddress}
+        displayedAddress={user}
         scrollEnabled={isAtBottom}
       />
     </div>

@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { portfolioTabs } from '@/constants/domains/portfolio/tabs'
+import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { RootState } from '../../index'
 import { WatchlistItemType } from '@/types/domains'
 
 // Types --------------------------------------------
-type TabType = (typeof portfolioTabs)[number]
+export type ProfileTabType = (typeof PROFILE_TABS)[number]
 
 type EnsProfileType = {
   name: string | null
@@ -17,7 +17,7 @@ type profileState = {
   userId: number | null
   watchlist: WatchlistItemType[]
   pendingWatchlistTokenIds: string[]
-  selectedTab: TabType
+  selectedTab: ProfileTabType
   email: {
     address: string | null
     verified: boolean
@@ -50,7 +50,7 @@ const initialState: profileState = {
   poapClaimed: false,
   watchlist: [],
   pendingWatchlistTokenIds: [],
-  selectedTab: portfolioTabs[0],
+  selectedTab: PROFILE_TABS[0],
 }
 
 // Slice -------------------------------------------
@@ -99,7 +99,7 @@ export const profileSlice = createSlice({
       if (state.pendingWatchlistTokenIds === undefined) state.pendingWatchlistTokenIds = []
       state.pendingWatchlistTokenIds = state.pendingWatchlistTokenIds?.filter((item) => item !== payload)
     },
-    changeTab(state, { payload }: PayloadAction<TabType>) {
+    changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
     },
     resetUserProfile(state) {

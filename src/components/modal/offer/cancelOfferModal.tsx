@@ -41,7 +41,7 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
       setStatus('error')
     } finally {
       queryClient.invalidateQueries({
-        queryKey: ['portfolio', 'my_offers'],
+        queryKey: ['profile', 'sent_offers'],
       })
       queryClient.invalidateQueries({
         queryKey: ['name', 'offers'],

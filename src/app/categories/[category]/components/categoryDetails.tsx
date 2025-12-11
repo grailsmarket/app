@@ -49,11 +49,11 @@ export const CATEGORY_IMAGES = {
     avatar: NineNinetyNineAvatar,
     header: NineNinetyNineHeader,
   },
-  'single_ethmoji': {
+  single_ethmoji: {
     avatar: SingleEthmojiAvatar,
     header: SingleEthmojiHeader,
   },
-  'triple_ethmoji': {
+  triple_ethmoji: {
     avatar: TripleEthmojiAvatar,
     header: TripleEthmojiHeader,
   },
@@ -78,10 +78,10 @@ export const CATEGORY_SOCIAL_LINKS = {
   '999': {
     twitter: 'https://x.com/ens999club',
   },
-  'single_ethmoji': {
+  single_ethmoji: {
     twitter: 'https://x.com/EthmojiClub',
   },
-  'triple_ethmoji': {
+  triple_ethmoji: {
     twitter: 'https://x.com/EthmojiClub',
   },
 }

@@ -20,7 +20,7 @@ const Portfolio = () => {
   }, [])
 
   const showDomainPanel = selectedTab.value === 'domains' || selectedTab.value === 'watchlist'
-  const showOfferPanel = selectedTab.value === 'received_offers' || selectedTab.value === 'my_offers'
+  const showOfferPanel = selectedTab.value === 'received_offers' || selectedTab.value === 'sent_offers'
 
   return (
     <Suspense>

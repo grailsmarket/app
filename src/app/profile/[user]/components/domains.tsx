@@ -9,18 +9,18 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { Address, Cross } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
-import { useProfileDomains } from '../hooks/useDomains'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
+import { useDomains } from '../hooks/useDomains'
 
 interface Props {
-  user: Address | string
+  user: Address | undefined
 }
 
 const DomainPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useProfileDomains(user)
+  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains(user)
   const isAtBottom = useScrollToBottom({ threshold: 100 })
   const { viewType } = useAppSelector(selectMarketplaceDomains)
 

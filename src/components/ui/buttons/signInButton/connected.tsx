@@ -59,13 +59,6 @@ const Connected = () => {
         >
           Settings
         </button>
-        <Link
-          href={`/profile/${userAddress}`}
-          onClick={() => setWalletDropdownOpen(false)}
-          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
-        >
-          My Profile
-        </Link>
         {isPoapClaimed && claimedPoapLink ? (
           <Link
             href={claimedPoapLink}

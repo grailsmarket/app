@@ -25,27 +25,6 @@ import {
   clearMarketplaceFilters,
 } from '@/state/reducers/filters/marketplaceFilters'
 
-// Import myDomains selectors and actions
-import {
-  emptyFilterState as emptyFilterStateMyDomainsFilters,
-  selectMyDomainsFilters,
-  setMyDomainsFiltersOpen,
-  toggleMyDomainsFiltersStatus,
-  setMyDomainsFiltersStatus,
-  toggleMyDomainsFiltersType,
-  setMyDomainsFiltersType,
-  setMyDomainsFiltersLength,
-  setMyDomainsPriceDenomination,
-  setMyDomainsPriceRange,
-  toggleMyDomainsCategory,
-  setMyDomainsFiltersCategory,
-  setMyDomainsSort,
-  setMyDomainsSearch,
-  setMyDomainsScrollTop,
-  toggleMyDomainsFilterOpen,
-  clearMyDomainsFilters,
-} from '@/state/reducers/filters/myDomainsFilters'
-
 // Import myOffers selectors and actions
 import {
   emptyFilterState as emptyFilterStateMyOffersFilters,
@@ -168,11 +147,14 @@ import {
 } from '@/state/reducers/filters/categoryDomainsFilters'
 
 export function useFilterRouter(): FilterRouter<FilterContextType> {
-  const { filterType, portfolioTab, profileTab } = useFilterContext()
+  const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
 
-  // Determine which tab is active in portfolio or profile
-  const activePortfolioTab = portfolioTab || profileState.selectedTab?.value || 'domains'
+  // Determine which tab is active in profile
+  const activeProfileTab = profileState.selectedTab?.value || 'domains'
+
+  console.log('activeProfileTab', activeProfileTab)
+  console.log('filterType', filterType)
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
@@ -181,27 +163,19 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     if (filterType === 'profile') {
-      if (profileTab === 'domains') {
+      if (activeProfileTab === 'domains') {
         return selectProfileDomainsFilters(state)
-      } else if (profileTab === 'activity') {
+      } else if (activeProfileTab === 'received_offers') {
+        return selectReceivedOffersFilters(state)
+      } else if (activeProfileTab === 'sent_offers') {
+        return selectMyOffersFilters(state)
+      } else if (activeProfileTab === 'watchlist') {
+        return selectWatchlistFilters(state)
+      } else if (activeProfileTab === 'activity') {
         return selectProfileActivityFilters(state)
       }
 
       return selectProfileDomainsFilters(state)
-    }
-
-    if (filterType === 'portfolio') {
-      if (activePortfolioTab === 'domains') {
-        return selectMyDomainsFilters(state)
-      } else if (activePortfolioTab === 'received_offers') {
-        return selectReceivedOffersFilters(state)
-      } else if (activePortfolioTab === 'my_offers') {
-        return selectMyOffersFilters(state)
-      } else if (activePortfolioTab === 'watchlist') {
-        return selectWatchlistFilters(state)
-      }
-
-      return selectMyDomainsFilters(state)
     }
 
     return selectMarketplaceFilters(state)
@@ -229,8 +203,58 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       }
     }
 
+    // if (filterType === 'profile') {
+    //   if (profileTab === 'domains') {
+    //     return {
+    //       setFiltersOpen: setProfileDomainsFiltersOpen,
+    //       toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
+    //       setFiltersStatus: setProfileDomainsFiltersStatus,
+    //       toggleFiltersType: toggleProfileDomainsFiltersType,
+    //       setFiltersType: setProfileDomainsFiltersType,
+    //       setFiltersLength: setProfileDomainsFiltersLength,
+    //       setPriceDenomination: setProfileDomainsPriceDenomination,
+    //       setPriceRange: setProfileDomainsPriceRange,
+    //       toggleCategory: toggleProfileDomainsCategory,
+    //       setFiltersCategory: setProfileDomainsFiltersCategory,
+    //       setSort: setProfileDomainsSort,
+    //       setSearch: setProfileDomainsSearch,
+    //       setScrollTop: setProfileDomainsFiltersScrollTop,
+    //       toggleFilterOpen: toggleProfileDomainsFilterOpen,
+    //       clearFilters: clearProfileDomainsFilters,
+    //     }
+    //   } else if (profileTab === 'activity') {
+    //     return {
+    //       setScrollTop: setProfileActivityFiltersScrollTop,
+    //       toggleFilterOpen: toggleProfileActivityFilterOpen,
+    //       toggleFiltersType: toggleActivityFiltersType,
+    //       setFiltersOpen: setProfileActivityFilterOpen,
+    //       setFiltersType: setActivityFiltersType,
+    //       setSearch: setProfileActivitySearch,
+    //       clearFilters: clearActivityFilters,
+    //     } as any
+    //   }
+
+    //   return {
+    //     setFiltersOpen: setProfileDomainsFiltersOpen,
+    //     toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
+    //     setFiltersStatus: setProfileDomainsFiltersStatus,
+    //     toggleFiltersType: toggleProfileDomainsFiltersType,
+    //     setFiltersType: setProfileDomainsFiltersType,
+    //     setFiltersLength: setProfileDomainsFiltersLength,
+    //     setPriceDenomination: setProfileDomainsPriceDenomination,
+    //     setPriceRange: setProfileDomainsPriceRange,
+    //     toggleCategory: toggleProfileDomainsCategory,
+    //     setFiltersCategory: setProfileDomainsFiltersCategory,
+    //     setSort: setProfileDomainsSort,
+    //     setSearch: setProfileDomainsSearch,
+    //     setScrollTop: setProfileDomainsFiltersScrollTop,
+    //     toggleFilterOpen: toggleProfileDomainsFilterOpen,
+    //     clearFilters: clearProfileDomainsFilters,
+    //   }
+    // }
+
     if (filterType === 'profile') {
-      if (profileTab === 'domains') {
+      if (activeProfileTab === 'domains') {
         return {
           setFiltersOpen: setProfileDomainsFiltersOpen,
           toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
@@ -248,7 +272,61 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleFilterOpen: toggleProfileDomainsFilterOpen,
           clearFilters: clearProfileDomainsFilters,
         }
-      } else if (profileTab === 'activity') {
+      } else if (activeProfileTab === 'sent_offers') {
+        return {
+          setFiltersOpen: setMyOffersFiltersOpen,
+          toggleFiltersStatus: toggleMyOffersFiltersStatus,
+          setFiltersStatus: setMyOffersFiltersStatus,
+          toggleFiltersType: toggleMyOffersFiltersType,
+          setFiltersType: setMyOffersFiltersType,
+          setFiltersLength: setMyOffersFiltersLength,
+          setPriceDenomination: setMyOffersPriceDenomination,
+          setPriceRange: setMyOffersPriceRange,
+          toggleCategory: toggleMyOffersCategory,
+          setFiltersCategory: setMyOffersFiltersCategory,
+          setSort: setMyOffersSort,
+          setSearch: setMyOffersSearch,
+          setScrollTop: setMyOffersScrollTop,
+          toggleFilterOpen: toggleMyOffersFilterOpen,
+          clearFilters: clearMyOffersFilters,
+        }
+      } else if (activeProfileTab === 'received_offers') {
+        return {
+          setFiltersOpen: setReceivedOffersFiltersOpen,
+          toggleFiltersStatus: toggleReceivedOffersFiltersStatus,
+          setFiltersStatus: setReceivedOffersFiltersStatus,
+          toggleFiltersType: toggleReceivedOffersFiltersType,
+          setFiltersType: setReceivedOffersFiltersType,
+          setFiltersLength: setReceivedOffersFiltersLength,
+          setPriceDenomination: setReceivedOffersPriceDenomination,
+          setPriceRange: setReceivedOffersPriceRange,
+          toggleCategory: toggleReceivedOffersCategory,
+          setFiltersCategory: setReceivedOffersFiltersCategory,
+          setSort: setReceivedOffersSort,
+          setSearch: setReceivedOffersSearch,
+          setScrollTop: setReceivedOffersScrollTop,
+          toggleFilterOpen: toggleReceivedOffersFilterOpen,
+          clearFilters: clearReceivedOffersFilters,
+        }
+      } else if (activeProfileTab === 'watchlist') {
+        return {
+          setFiltersOpen: setWatchlistFiltersOpen,
+          toggleFiltersStatus: toggleWatchlistFiltersStatus,
+          setFiltersStatus: setWatchlistFiltersStatus,
+          toggleFiltersType: toggleWatchlistFiltersType,
+          setFiltersType: setWatchlistFiltersType,
+          setFiltersLength: setWatchlistFiltersLength,
+          setPriceDenomination: setWatchlistPriceDenomination,
+          setPriceRange: setWatchlistPriceRange,
+          toggleCategory: toggleWatchlistCategory,
+          setFiltersCategory: setWatchlistFiltersCategory,
+          setSort: setWatchlistSort,
+          setSearch: setWatchlistSearch,
+          setScrollTop: setWatchlistFiltersScrollTop,
+          toggleFilterOpen: toggleWatchlistFilterOpen,
+          clearFilters: clearWatchlistFilters,
+        }
+      } else if (activeProfileTab === 'activity') {
         return {
           setScrollTop: setProfileActivityFiltersScrollTop,
           toggleFilterOpen: toggleProfileActivityFilterOpen,
@@ -279,82 +357,6 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       }
     }
 
-    if (filterType === 'portfolio') {
-      if (portfolioTab === 'domains') {
-        return {
-          setFiltersOpen: setMyDomainsFiltersOpen,
-          toggleFiltersStatus: toggleMyDomainsFiltersStatus,
-          setFiltersStatus: setMyDomainsFiltersStatus,
-          toggleFiltersType: toggleMyDomainsFiltersType,
-          setFiltersType: setMyDomainsFiltersType,
-          setFiltersLength: setMyDomainsFiltersLength,
-          setPriceDenomination: setMyDomainsPriceDenomination,
-          setPriceRange: setMyDomainsPriceRange,
-          toggleCategory: toggleMyDomainsCategory,
-          setFiltersCategory: setMyDomainsFiltersCategory,
-          setSort: setMyDomainsSort,
-          setSearch: setMyDomainsSearch,
-          setScrollTop: setMyDomainsScrollTop,
-          toggleFilterOpen: toggleMyDomainsFilterOpen,
-          clearFilters: clearMyDomainsFilters,
-        }
-      } else if (portfolioTab === 'my_offers') {
-        return {
-          setFiltersOpen: setMyOffersFiltersOpen,
-          toggleFiltersStatus: toggleMyOffersFiltersStatus,
-          setFiltersStatus: setMyOffersFiltersStatus,
-          toggleFiltersType: toggleMyOffersFiltersType,
-          setFiltersType: setMyOffersFiltersType,
-          setFiltersLength: setMyOffersFiltersLength,
-          setPriceDenomination: setMyOffersPriceDenomination,
-          setPriceRange: setMyOffersPriceRange,
-          toggleCategory: toggleMyOffersCategory,
-          setFiltersCategory: setMyOffersFiltersCategory,
-          setSort: setMyOffersSort,
-          setSearch: setMyOffersSearch,
-          setScrollTop: setMyOffersScrollTop,
-          toggleFilterOpen: toggleMyOffersFilterOpen,
-          clearFilters: clearMyOffersFilters,
-        }
-      } else if (portfolioTab === 'received_offers') {
-        return {
-          setFiltersOpen: setReceivedOffersFiltersOpen,
-          toggleFiltersStatus: toggleReceivedOffersFiltersStatus,
-          setFiltersStatus: setReceivedOffersFiltersStatus,
-          toggleFiltersType: toggleReceivedOffersFiltersType,
-          setFiltersType: setReceivedOffersFiltersType,
-          setFiltersLength: setReceivedOffersFiltersLength,
-          setPriceDenomination: setReceivedOffersPriceDenomination,
-          setPriceRange: setReceivedOffersPriceRange,
-          toggleCategory: toggleReceivedOffersCategory,
-          setFiltersCategory: setReceivedOffersFiltersCategory,
-          setSort: setReceivedOffersSort,
-          setSearch: setReceivedOffersSearch,
-          setScrollTop: setReceivedOffersScrollTop,
-          toggleFilterOpen: toggleReceivedOffersFilterOpen,
-          clearFilters: clearReceivedOffersFilters,
-        }
-      } else if (portfolioTab === 'watchlist') {
-        return {
-          setFiltersOpen: setWatchlistFiltersOpen,
-          toggleFiltersStatus: toggleWatchlistFiltersStatus,
-          setFiltersStatus: setWatchlistFiltersStatus,
-          toggleFiltersType: toggleWatchlistFiltersType,
-          setFiltersType: setWatchlistFiltersType,
-          setFiltersLength: setWatchlistFiltersLength,
-          setPriceDenomination: setWatchlistPriceDenomination,
-          setPriceRange: setWatchlistPriceRange,
-          toggleCategory: toggleWatchlistCategory,
-          setFiltersCategory: setWatchlistFiltersCategory,
-          setSort: setWatchlistSort,
-          setSearch: setWatchlistSearch,
-          setScrollTop: setWatchlistFiltersScrollTop,
-          toggleFilterOpen: toggleWatchlistFilterOpen,
-          clearFilters: clearWatchlistFilters,
-        }
-      }
-    }
-
     return {
       setFiltersOpen: setMarketplaceFiltersOpen,
       toggleFiltersStatus: toggleMarketplaceFiltersStatus,
@@ -372,7 +374,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
-  }, [filterType, portfolioTab, profileTab])
+  }, [filterType, activeProfileTab])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'category') {
@@ -380,27 +382,23 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     if (filterType === 'profile') {
-      if (profileTab === 'domains') {
+      if (activeProfileTab === 'domains') {
         return emptyFilterStateProfileDomainsFilters
-      } else if (profileTab === 'activity') {
+      } else if (activeProfileTab === 'sent_offers') {
+        return emptyFilterStateMyOffersFilters
+      } else if (activeProfileTab === 'received_offers') {
+        return emptyFilterStateReceivedOffersFilters
+      } else if (activeProfileTab === 'watchlist') {
+        return emptyFilterStateWatchlistFilters
+      } else if (activeProfileTab === 'activity') {
         return emptyFilterStateProfileActivityFilters
       }
-    }
 
-    if (filterType === 'portfolio') {
-      if (portfolioTab === 'domains') {
-        return emptyFilterStateMyDomainsFilters
-      } else if (portfolioTab === 'my_offers') {
-        return emptyFilterStateMyOffersFilters
-      }
-    } else if (portfolioTab === 'received_offers') {
-      return emptyFilterStateReceivedOffersFilters
-    } else if (portfolioTab === 'watchlist') {
-      return emptyFilterStateWatchlistFilters
+      return emptyFilterStateProfileDomainsFilters
     }
 
     return emptyFilterStateMarketplaceFilters
-  }, [filterType, portfolioTab, profileTab])
+  }, [filterType, activeProfileTab])
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
@@ -415,7 +413,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     },
     actions: actions as any,
     context: filterType,
-    portfolioTab: activePortfolioTab,
+    profileTab: profileState.selectedTab,
     isFiltersClear,
   }
 }

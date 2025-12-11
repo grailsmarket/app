@@ -862,7 +862,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
   const refetchDomainQueries = () => {
     queryClient.refetchQueries({ queryKey: ['name', 'details'] })
-    queryClient.refetchQueries({ queryKey: ['portfolio', 'domains'] })
+    queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
     queryClient.refetchQueries({ queryKey: ['received_offers'] })
     queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
   }
@@ -1035,7 +1035,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
                     : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
                 }
                 className='w-full'
-                // disabled={isCorrectChain ? needsApproval : false}
+              // disabled={isCorrectChain ? needsApproval : false}
               >
                 {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
               </PrimaryButton>

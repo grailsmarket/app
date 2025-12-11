@@ -142,7 +142,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         domains.forEach((domain) => {
           queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
         })
-        queryClient.invalidateQueries({ queryKey: ['portfolio', 'domains'] })
+        queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
       }, 2000)
     } catch (error) {
       console.error('Transfer error:', error)

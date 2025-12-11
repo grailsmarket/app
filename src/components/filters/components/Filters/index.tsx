@@ -16,7 +16,8 @@ interface FiltersProps {
 }
 
 const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories }) => {
-  const { filterType, portfolioTab, profileTab } = useFilterContext()
+  const { filterType, profileTab } = useFilterContext()
+  const activeProfileTab = profileTab?.value || 'domains'
   const isClient = useIsClient()
   const { categories } = useCategories()
 
@@ -25,9 +26,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   // Use appropriate categories based on filter context
   const showCategoryTab =
     filterType === 'marketplace' ||
-    portfolioTab === 'domains' ||
-    portfolioTab === 'watchlist' ||
-    profileTab === 'domains' // Only show category tab for marketplace and portfolio domains tab
+    activeProfileTab === 'domains' ||
+    activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
 
   return (
     <div className='flex w-full overflow-x-hidden pb-10'>
@@ -46,9 +46,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       </div>
       {showCategoryTab && (
         <div
-          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-hidden transition-transform lg:min-w-[282px] ${
-            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
-          }`}
+          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-hidden transition-transform lg:min-w-[282px] ${isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+            }`}
         >
           {categories?.map((category, index) => (
             <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />

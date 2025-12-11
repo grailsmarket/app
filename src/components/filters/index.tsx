@@ -89,7 +89,7 @@ const FilterPanel: React.FC = () => {
       </div>
 
       {/* Middle div */}
-      {filterType === 'profile' && profileTab === 'activity' ? (
+      {filterType === 'profile' && profileTab?.value === 'activity' ? (
         <ActivityTypeFilter />
       ) : (
         <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />

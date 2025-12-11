@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
 import NamePage from './components/name'
-import { beautifyName, normalizeName } from '@/lib/ens'
+import { beautifyName } from '@/lib/ens'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -10,7 +10,7 @@ interface Props {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  const name = beautifyName(decodeURI(params.name))
+  const name = beautifyName(decodeURIComponent(params.name))
   const imageUrl = `https://grails.app/api/og/name?name=${encodeURIComponent(name)}`
 
   return {
@@ -44,8 +44,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 const Name = async (props: Props) => {
   const { name } = await props.params
-  const decodedName = decodeURI(name)
-  const normalizedName = normalizeName(decodedName)
+  const decodedName = decodeURIComponent(name)
+  const normalizedName = beautifyName(decodedName)
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full sm:px-4 md:min-h-[calc(100dvh-78px)]'>

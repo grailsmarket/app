@@ -61,13 +61,13 @@ export const CATEGORY_IMAGES = {
 
 export const CATEGORY_SOCIAL_LINKS = {
   prepunks: {
-    twitter: 'https://twitter.com/PrePunkOfficial',
+    twitter: 'https://x.com/PrePunkOfficial',
   },
   '10k': {
-    twitter: 'https://twitter.com/10kClubOfficial',
+    twitter: 'https://x.com/10kClubOfficial',
   },
   pokemon: {
-    twitter: 'https://twitter.com/PokemonENS',
+    twitter: 'https://x.com/PokemonENS',
   },
   '1kforenames': {
     twitter: null,
@@ -76,13 +76,13 @@ export const CATEGORY_SOCIAL_LINKS = {
     twitter: null,
   },
   '999': {
-    twitter: 'https://twitter.com/ens999club',
+    twitter: 'https://x.com/ens999club',
   },
   'single_ethmoji': {
-    twitter: null,
+    twitter: 'https://x.com/EthmojiClub',
   },
   'triple_ethmoji': {
-    twitter: null,
+    twitter: 'https://x.com/EthmojiClub',
   },
 }
 

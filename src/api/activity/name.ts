@@ -1,4 +1,5 @@
 import { API_URL } from '@/constants/api'
+import { normalizeName } from '@/lib/ens'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { ActivityType } from '@/types/profile'
 
@@ -9,7 +10,7 @@ interface FetchNameActivityOptions {
 }
 
 export const fetchNameActivity = async ({ name, limit, pageParam }: FetchNameActivityOptions) => {
-  const response = await fetch(`${API_URL}/activity/${name}?limit=${limit}&page=${pageParam}`)
+  const response = await fetch(`${API_URL}/activity/${normalizeName(name)}?limit=${limit}&page=${pageParam}`)
   const data = (await response.json()) as APIResponseType<{
     results: ActivityType[]
     pagination: PaginationType

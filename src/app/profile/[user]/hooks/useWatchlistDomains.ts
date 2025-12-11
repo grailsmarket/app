@@ -26,7 +26,7 @@ export const useWatchlistDomains = (user: Address | undefined) => {
     queryKey: [
       'profile',
       'watchlist',
-      user,
+      userAddress,
       debouncedSearch,
       filters.length,
       filters.priceRange,

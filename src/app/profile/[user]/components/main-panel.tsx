@@ -23,6 +23,7 @@ import {
   clearFilters,
   setFiltersScrollTop as setDomainsScrollTop,
 } from '@/state/reducers/filters/profileDomainsFilters'
+import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 interface Props {
   user: Address | string
@@ -51,6 +52,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearActivityFilters())
       dispatch(setFiltersScrollTop(0))
       dispatch(setDomainsScrollTop(0))
+      dispatch(clearBulkSelect())
       document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
     }
 

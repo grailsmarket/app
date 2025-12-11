@@ -10,7 +10,6 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { Address, Cross } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
-import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import { useDomains } from '../hooks/useDomains'
 import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -24,7 +23,6 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { selectors, actions } = useFilterRouter()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains(user)
   const isAtBottom = useScrollToBottom({ threshold: 8 })
-  const { viewType } = useAppSelector(selectMarketplaceDomains)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
 
@@ -68,7 +66,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         maxHeight='calc(100dvh - 110px)'
         domains={domains}
         loadingRowCount={20}
-        paddingBottom={viewType === 'list' ? '160px' : '120px'}
+        paddingBottom={selectedTab.value === 'watchlist' ? '320px' : '160px'}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}
@@ -78,6 +76,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
           }
         }}
         scrollEnabled={isAtBottom}
+        showWatchlist={selectedTab.value === 'watchlist'}
         isBulkSelecting={selectedTab.value === 'domains' && isSelecting}
       />
     </div>

@@ -1,7 +1,7 @@
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { MarketplaceDomainType } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
-import React, { MouseEventHandler } from 'react'
+import React, { MouseEventHandler, useMemo } from 'react'
 import CartIcon from './CartIcon'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -25,6 +25,7 @@ import {
 } from '@/state/reducers/modals/bulkSelectModal'
 import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
+import { useUserContext } from '@/context/user'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -46,12 +47,17 @@ const Actions: React.FC<ActionsProps> = ({
   const dispatch = useAppDispatch()
   const router = useRouter()
   const { filterType } = useFilterContext()
+  const { userAddress, authStatus } = useUserContext()
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
-  const { selectedTab } = useAppSelector(selectUserProfile)
+  const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+  const isMyDomain = useMemo(
+    () => userAddress?.toLowerCase() === domain.owner?.toLowerCase() && authStatus === 'authenticated',
+    [userAddress, authStatus, domain.owner]
+  )
 
   const openListModal = (e: React.MouseEvent<Element, MouseEvent>, editListing: boolean) => {
     e.preventDefault()
@@ -84,8 +90,8 @@ const Actions: React.FC<ActionsProps> = ({
     dispatch(setCancelListingModalOpen(true))
   }
 
-  if (filterType === 'portfolio') {
-    if (selectedTab.value === 'domains') {
+  if (filterType === 'profile') {
+    if (profileTab.value === 'domains') {
       if (isBulkSelecting) {
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
@@ -122,32 +128,34 @@ const Actions: React.FC<ActionsProps> = ({
         )
       }
 
-      if (domainListing?.price) {
+      if (isMyDomain) {
+        if (domainListing?.price) {
+          return (
+            <>
+              <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+                <SecondaryButton onClick={(e) => openListModal(e, true)}>Edit</SecondaryButton>
+                <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
+              </div>
+              <div className={cn('flex flex-row justify-end sm:hidden', width)}>
+                <SecondaryButton
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    router.push(`/${domain.name}`)
+                  }}
+                >
+                  Edit
+                </SecondaryButton>
+              </div>
+            </>
+          )
+        }
         return (
-          <>
-            <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
-              <SecondaryButton onClick={(e) => openListModal(e, true)}>Edit</SecondaryButton>
-              <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
-            </div>
-            <div className={cn('flex flex-row justify-end sm:hidden', width)}>
-              <SecondaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  router.push(`/${domain.name}`)
-                }}
-              >
-                Edit
-              </SecondaryButton>
-            </div>
-          </>
+          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
+            <PrimaryButton onClick={(e) => openListModal(e, false)}>List</PrimaryButton>
+          </div>
         )
       }
-      return (
-        <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-          <PrimaryButton onClick={(e) => openListModal(e, false)}>List</PrimaryButton>
-        </div>
-      )
     }
   }
 

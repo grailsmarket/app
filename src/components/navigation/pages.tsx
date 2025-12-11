@@ -54,24 +54,26 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Categories
       </Link>
-      {userAddress && <Link
-        href={`/profile/${userAddress}`}
-        className={cn(
-          'font-semibold transition-all',
-          isPortfolioPage ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
-        )}
-        onClick={(e) => {
-          if (!userAddress) {
-            e.preventDefault()
-            e.stopPropagation()
-            return openConnectModal?.()
-          }
+      {userAddress && (
+        <Link
+          href={`/profile/${userAddress}`}
+          className={cn(
+            'font-semibold transition-all',
+            isPortfolioPage ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+          )}
+          onClick={(e) => {
+            if (!userAddress) {
+              e.preventDefault()
+              e.stopPropagation()
+              return openConnectModal?.()
+            }
 
-          onClick?.()
-        }}
-      >
-        Portfolio
-      </Link>}
+            onClick?.()
+          }}
+        >
+          My Profile
+        </Link>
+      )}
     </div>
   )
 }

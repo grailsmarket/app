@@ -5,7 +5,6 @@ import { FilterProvider } from '@/context/filters'
 import { Address } from 'viem'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
-import ActionButtons from '@/app/marketplace/components/actionButtons'
 import TabSwitcher from './tabSwitcher'
 import { fetchAccount, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
@@ -15,6 +14,7 @@ import { changeTab, selectUserProfile } from '@/state/reducers/portfolio/profile
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
+import ActionButtons from './actionButtons'
 
 interface Props {
   user: Address | string
@@ -71,7 +71,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                 {showOfferPanel && <OfferPanel user={userAccount?.address} />}
                 {showActivityPanel && <ActivityPanel user={userAccount?.address} />}
               </div>
-              <ActionButtons hideDomainActions={profileTab === 'activity'} />
+              <ActionButtons user={userAccount?.address} />
             </div>
           </div>
         </div>

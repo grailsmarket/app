@@ -153,9 +153,6 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   // Determine which tab is active in profile
   const activeProfileTab = profileState.selectedTab?.value || 'domains'
 
-  console.log('activeProfileTab', activeProfileTab)
-  console.log('filterType', filterType)
-
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'category') {

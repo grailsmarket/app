@@ -14,6 +14,7 @@ import {
 } from '@/state/reducers/modals/acceptOfferModal'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import { useUserContext } from '@/context/user'
 
 interface ActionsProps {
   offer: DomainOfferType
@@ -21,6 +22,7 @@ interface ActionsProps {
 }
 
 const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
+  const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
   const openCancelOfferModal = () => {
     dispatch(setCancelOfferModalOpen(true))
@@ -49,14 +51,18 @@ const Actions: React.FC<ActionsProps> = ({ offer, currentUserAddress }) => {
   if (!isActive) return null
 
   // Determine user role
-  const isBuyer = offer.buyer_address.toLowerCase() === currentUserAddress.toLowerCase()
-  // const isSeller = offer.order_data?.parameters?.offerer.toLowerCase() === currentUserAddress.toLowerCase()
+  const isBuyer = offer.buyer_address.toLowerCase() === userAddress?.toLowerCase() && authStatus === 'authenticated'
+  const isSeller = currentUserAddress.toLowerCase() === userAddress?.toLowerCase() && authStatus === 'authenticated'
 
   if (isBuyer) {
     return <SecondaryButton onClick={openCancelOfferModal}>Cancel</SecondaryButton>
   }
 
-  return <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
+  if (isSeller) {
+    return <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
+  }
+
+  return null
 }
 
 export default Actions

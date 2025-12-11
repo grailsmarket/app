@@ -23,12 +23,17 @@ import {
 import { selectBulkSelect, setBulkSelectIsSelecting, clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
-import { Cross } from 'ethereum-identity-kit'
+import { Address, Cross } from 'ethereum-identity-kit'
 
-const ActionButtons = () => {
+interface ActionButtonsProps {
+  user: Address | undefined
+}
+
+const ActionButtons: React.FC<ActionButtonsProps> = ({ user }) => {
   const dispatch = useAppDispatch()
+  const { userAddress, authStatus } = useUserContext()
   const { cartIsEmpty, clearCart } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
   const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
@@ -36,6 +41,10 @@ const ActionButtons = () => {
   const { isSelecting, domains: selectedDomains, previousListings } = useAppSelector(selectBulkSelect)
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
+  const isMyProfile = useMemo(
+    () => user?.toLowerCase() === userAddress?.toLowerCase() && authStatus === 'authenticated',
+    [user, userAddress, authStatus]
+  )
 
   // const handleSelectAll = () => {
   //   dispatch(setBulkSelectDomains(visibleDomains))
@@ -128,18 +137,24 @@ const ActionButtons = () => {
             {/* <SecondaryButton onClick={handleSelectAll} disabled={visibleDomains.length === 0}>
               Select All
             </SecondaryButton> */}
-            <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
-              List
-            </PrimaryButton>
-            <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
-              <p className='text-nowrap'>Cancel ({previousListings.length})</p>
-            </PrimaryButton>
+            {isMyProfile && (
+              <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
+                List
+              </PrimaryButton>
+            )}
+            {isMyProfile && (
+              <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
+                <p className='text-nowrap'>Cancel ({previousListings.length})</p>
+              </PrimaryButton>
+            )}
             <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
               Extend
             </PrimaryButton>
-            <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
-              Transfer
-            </PrimaryButton>
+            {isMyProfile && (
+              <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
+                Transfer
+              </PrimaryButton>
+            )}
             <SecondaryButton onClick={handleCancel} className='block px-2.5! sm:hidden'>
               <Cross className='h-4 w-4' />
             </SecondaryButton>

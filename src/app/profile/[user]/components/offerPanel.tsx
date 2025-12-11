@@ -20,7 +20,6 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { selectors, actions } = useFilterRouter()
-  const { userAddress } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers(user)
 
@@ -73,7 +72,7 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
         hasMoreOffers={hasMoreOffers}
         fetchMoreOffers={fetchMoreOffers}
         columns={displayedDetails}
-        currentUserAddress={userAddress}
+        currentUserAddress={user}
       />
     </div>
   )

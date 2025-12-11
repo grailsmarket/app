@@ -12,6 +12,8 @@ import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import { useDomains } from '../hooks/useDomains'
+import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 interface Props {
   user: Address | undefined
@@ -23,6 +25,8 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains(user)
   const isAtBottom = useScrollToBottom({ threshold: 100 })
   const { viewType } = useAppSelector(selectMarketplaceDomains)
+  const { isSelecting } = useAppSelector(selectBulkSelect)
+  const { selectedTab } = useAppSelector(selectUserProfile)
 
   return (
     <div className='sm:px-md px-sm flex w-full flex-col gap-2'>
@@ -74,6 +78,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
           }
         }}
         scrollEnabled={isAtBottom}
+        isBulkSelecting={selectedTab.value === 'domains' && isSelecting}
       />
     </div>
   )

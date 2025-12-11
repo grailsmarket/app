@@ -84,6 +84,74 @@ const getCurrencySymbol = (currencyAddress: string): string => {
   return token || 'ETH'
 }
 
+// Regex to match emoji characters (excludes variation selectors and other invisible components)
+const emojiRegex = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu
+
+// Replace emojis with Apple emoji images from CDN (for HTML)
+const replaceEmojisWithImages = (text: string, size: number = 48): string => {
+  return text.replace(emojiRegex, (emoji) => {
+    const encodedEmoji = encodeURIComponent(emoji)
+    return `<img src="https://emojicdn.elk.sh/${encodedEmoji}?style=apple" alt="${emoji}" style="height: ${size}px; width: ${size}px; display: inline-block; vertical-align: middle;" />`
+  })
+}
+
+// Process SVG to replace emojis in text elements with image elements
+const processEnsSvgEmojis = (svg: string): string => {
+  // Find text elements and replace emojis with image references
+  // ENS SVGs typically have text content we need to process
+  return svg.replace(/<text([^>]*)>([^<]*)<\/text>/g, (match, attrs, textContent) => {
+    if (!emojiRegex.test(textContent)) {
+      return match // No emojis, return as-is
+    }
+
+    // Reset regex state
+    emojiRegex.lastIndex = 0
+
+    // Extract x, y, and font-size from attributes
+    const xMatch = attrs.match(/x="([^"]*)"/)
+    const yMatch = attrs.match(/y="([^"]*)"/)
+    const fontSizeMatch = attrs.match(/font-size="([^"]*)"/)
+
+    const baseX = xMatch ? parseFloat(xMatch[1]) : 0
+    const baseY = yMatch ? parseFloat(yMatch[1]) : 0
+    const fontSize = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 24
+
+    let result = ''
+    let currentX = baseX
+    let lastIndex = 0
+    let emojiMatch
+
+    // Reset regex
+    emojiRegex.lastIndex = 0
+
+    while ((emojiMatch = emojiRegex.exec(textContent)) !== null) {
+      // Add text before emoji
+      const textBefore = textContent.slice(lastIndex, emojiMatch.index)
+      if (textBefore) {
+        result += `<text${attrs.replace(/x="[^"]*"/, `x="${currentX}"`)}>${textBefore}</text>`
+        currentX += textBefore.length * fontSize * 0.6 // Approximate character width
+      }
+
+      // Add emoji as image
+      const emoji = emojiMatch[0]
+      const encodedEmoji = encodeURIComponent(emoji)
+      const emojiSize = fontSize * 1.1
+      result += `<image href="https://emojicdn.elk.sh/${encodedEmoji}?style=apple" x="${currentX}" y="${baseY - emojiSize * 0.9}" width="${emojiSize}" height="${emojiSize}" preserveAspectRatio="xMidYMid meet" />`
+      currentX += emojiSize * 0.55
+
+      lastIndex = emojiMatch.index + emoji.length
+    }
+
+    // Add remaining text after last emoji
+    const textAfter = '‎ ‎ ' + textContent.slice(lastIndex)
+    if (textAfter) {
+      result += `<text${attrs.replace(/x="[^"]*"/, `x="${currentX}"`)}>${textAfter}</text>`
+    }
+
+    return result
+  })
+}
+
 export async function GET(req: NextRequest) {
   let browser
   let page
@@ -396,7 +464,7 @@ export async function GET(req: NextRequest) {
           <div class="ens-image-container">
             <p class="listed-label">LISTING</p>
             <div class="ens-image">
-              ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
+              ${ensSVG ? processEnsSvgEmojis(ensSVG) : `<div class="fallback">${replaceEmojisWithImages(displayName, 56)}</div>`}
             </div>
             ${categories.length > 0
         ? `<div class="categories">
@@ -423,7 +491,7 @@ export async function GET(req: NextRequest) {
             </div>`
         : ''
       }
-            <p class="domain-link">grails.app/${beautifyName(name)}</p>
+            <p class="domain-link">grails.app/${replaceEmojisWithImages(beautifyName(name), 40)}</p>
               <img class="grails-logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails" />
           </div>
         </body>

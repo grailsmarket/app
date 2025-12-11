@@ -115,7 +115,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ user }) => {
       className={cn(
         'border-tertiary bg-background p-md md:px-lg absolute bottom-0 left-0 z-20 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
         selectedTab.value === 'domains' || (selectedTab.value === 'watchlist' && !cartIsEmpty) || filtersOpen
-          ? selectedTab.value === 'domains' && (isMyProfile ? !isSelecting : cartIsEmpty) && !filtersOpen
+          ? selectedTab.value === 'domains' &&
+            (isMyProfile ? !isSelecting : !isSelecting && cartIsEmpty) &&
+            !filtersOpen
             ? 'w-full translate-y-0 sm:translate-y-full lg:w-[300px] lg:translate-y-0'
             : 'w-full translate-y-0'
           : 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
@@ -165,12 +167,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ user }) => {
             Bulk Select
           </SecondaryButton>
         )}
-        {(isMyProfile ? selectedTab.value === 'watchlist' : selectedTab.value === 'domains') && !cartIsEmpty && (
-          <>
-            <SecondaryButton onClick={() => clearCart()}>Clear Cart</SecondaryButton>
-            <PrimaryButton onClick={() => setIsCartOpen(true)}>Open Cart</PrimaryButton>
-          </>
-        )}
+        {(isMyProfile ? selectedTab.value === 'watchlist' : selectedTab.value === 'domains' && !isSelecting) &&
+          !cartIsEmpty && (
+            <>
+              <SecondaryButton onClick={() => clearCart()}>Clear Cart</SecondaryButton>
+              <PrimaryButton onClick={() => setIsCartOpen(true)}>Open Cart</PrimaryButton>
+            </>
+          )}
       </div>
     </div>
   )

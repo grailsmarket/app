@@ -1,6 +1,6 @@
 export const PROFILE_TABS = [
   {
-    label: 'My Names',
+    label: 'Names',
     value: 'domains',
   },
   {

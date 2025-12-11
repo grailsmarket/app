@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { RootState } from '../../index'
 import { WatchlistItemType } from '@/types/domains'
+import { Address } from 'ethereum-identity-kit'
 
 // Types --------------------------------------------
 export type ProfileTabType = (typeof PROFILE_TABS)[number]
@@ -25,6 +26,7 @@ type profileState = {
   discord: string | null
   telegram: string | null
   poapClaimed: boolean
+  lastVisitedProfile: Address | string | null
 }
 
 export const nullEnsProfile = {
@@ -51,6 +53,7 @@ const initialState: profileState = {
   watchlist: [],
   pendingWatchlistTokenIds: [],
   selectedTab: PROFILE_TABS[0],
+  lastVisitedProfile: null,
 }
 
 // Slice -------------------------------------------
@@ -102,6 +105,9 @@ export const profileSlice = createSlice({
     changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
     },
+    setLastVisitedProfile(state, { payload }: PayloadAction<Address | string | null>) {
+      state.lastVisitedProfile = payload
+    },
     resetUserProfile(state) {
       state.ensProfile = nullEnsProfile
       state.userId = null
@@ -130,6 +136,7 @@ export const {
   addUserPendingWatchlistDomain,
   removeUserPendingWatchlistDomain,
   changeTab,
+  setLastVisitedProfile,
   resetUserProfile,
 } = profileSlice.actions
 

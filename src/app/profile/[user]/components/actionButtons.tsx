@@ -121,7 +121,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ user }) => {
           : 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
       )}
     >
-      <div className={cn('flex-row justify-end gap-2 lg:w-[262px]', filtersOpen ? 'flex' : 'hidden lg:flex')}>
+      <div className={cn('flex-row justify-end gap-2 lg:w-[284px]', filtersOpen ? 'flex' : 'hidden lg:flex')}>
         <PersistGate persistor={persistor}>
           <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
             Clear Filters

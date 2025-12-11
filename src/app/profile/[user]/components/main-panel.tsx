@@ -10,11 +10,16 @@ import { fetchAccount, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
 import { useQuery } from '@tanstack/react-query'
 import OfferPanel from './offerPanel'
-import { changeTab, selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { changeTab, selectUserProfile, setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
+import { clearActivityFilters } from '@/state/reducers/filters/profileActivityFilters'
+import { clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
+import { clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
+import { clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
+import { clearFilters } from '@/state/reducers/filters/profileDomainsFilters'
 
 interface Props {
   user: Address | string
@@ -23,7 +28,7 @@ interface Props {
 const MainPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
-  const { selectedTab } = useAppSelector(selectUserProfile)
+  const { selectedTab, lastVisitedProfile } = useAppSelector(selectUserProfile)
   const profileTab = selectedTab.value
   const { width: windowWidth } = useWindowSize()
   const { data: userAccount } = useQuery({
@@ -31,6 +36,20 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     queryFn: () => fetchAccount(user),
     enabled: !!user,
   })
+
+  useEffect(() => {
+    if (lastVisitedProfile !== user) {
+      dispatch(setLastVisitedProfile(user))
+      dispatch(clearFilters())
+      dispatch(clearMyOffersFilters())
+      dispatch(clearReceivedOffersFilters())
+      dispatch(clearWatchlistFilters())
+      dispatch(clearActivityFilters())
+    }
+
+    dispatch(setLastVisitedProfile(user))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   // ensure that only the owner of the profile can see the watchlist
   useEffect(() => {

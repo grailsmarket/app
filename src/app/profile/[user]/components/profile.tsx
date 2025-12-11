@@ -23,7 +23,7 @@ const Profile: React.FC<Props> = ({ user }) => {
           onClick={() => setIsFollowersAndFollowingOpen(false)}
           className='fixed top-0 left-0 z-50 flex h-screen w-full items-end justify-center overflow-y-auto bg-black/50 backdrop-blur-sm md:items-start'
         >
-          <div className='max-h-[90vh] w-full max-w-2xl overflow-y-auto md:max-h-none md:py-12'>
+          <div className='max-h-[90vh] w-full max-w-2xl overflow-y-auto md:overflow-y-visible md:max-h-none md:py-12'>
             <FollowersAndFollowing connectedAddress={userAddress} user={user} defaultTab={defaultTab} />
           </div>
         </div>
@@ -42,7 +42,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                 setIsFollowersAndFollowingOpen(true)
                 setDefaultTab(stat)
               }}
-              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+            // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
             />
           )}
         </div>

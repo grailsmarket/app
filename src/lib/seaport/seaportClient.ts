@@ -721,13 +721,13 @@ export class SeaportClient {
    */
   async createListingOrder(params: {
     domains: MarketplaceDomainType[]
-    priceInEth: string
+    prices: string[]
     expiryDate: number
     offererAddress: string
     royaltyBps?: number // Basis points for royalty (e.g., 250 = 2.5%)
     royaltyRecipient?: string
     marketplace: MarketplaceType[]
-    currency?: 'ETH' | 'USDC' // Payment currency
+    currencies?: ('ETH' | 'USDC')[] // Payment currencies
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
@@ -773,13 +773,13 @@ export class SeaportClient {
    */
   private async createListingOrderForMarketplace(params: {
     domains: MarketplaceDomainType[]
-    priceInEth: string
+    prices: string[]
     expiryDate: number
     offererAddress: string
     royaltyBps?: number
     royaltyRecipient?: string
     marketplace: MarketplaceType
-    currency?: 'ETH' | 'USDC'
+    currencies?: ('ETH' | 'USDC')[]
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
@@ -1001,61 +1001,61 @@ export class SeaportClient {
     const endTime = params.expiryDate
 
     // Determine currency settings
-    const currency = params.currency || 'ETH'
-    const isUSDC = currency === 'USDC'
-    const decimals = isUSDC ? TOKEN_DECIMALS.USDC : TOKEN_DECIMALS.ETH
-    const currencyToken = isUSDC ? USDC_ADDRESS : ZERO_ADDRESS // ETH uses zero address
+    // const currency = params.currency || 'ETH'
+    // const isUSDC = currency === 'USDC'
+    // const decimals = isUSDC ? TOKEN_DECIMALS.USDC : TOKEN_DECIMALS.ETH
+    // const currencyToken = isUSDC ? USDC_ADDRESS : ZERO_ADDRESS // ETH uses zero address
 
-    // Convert price to smallest unit (wei for ETH, base units for USDC)
-    const priceInSmallestUnit = parseAmount(params.priceInEth, decimals)
+    // // Convert price to smallest unit (wei for ETH, base units for USDC)
+    // const priceInSmallestUnit = parseAmount(params.priceInEth, decimals)
 
-    // Build consideration array (payment to seller + optional royalties + marketplace fees)
-    const consideration: ConsiderationInputItem[] = []
+    // // Build consideration array (payment to seller + optional royalties + marketplace fees)
+    // const consideration: ConsiderationInputItem[] = []
 
-    let sellerAmount = priceInSmallestUnit
+    // let sellerAmount = priceInSmallestUnit
 
-    // Calculate OpenSea fee if listing on OpenSea
-    if (params.marketplace === 'opensea') {
-      const openSeaFee = (priceInSmallestUnit * BigInt(OPENSEA_FEE_BASIS_POINTS)) / BigInt(10000)
-      sellerAmount = sellerAmount - openSeaFee
+    // // Calculate OpenSea fee if listing on OpenSea
+    // if (params.marketplace === 'opensea') {
+    //   const openSeaFee = (priceInSmallestUnit * BigInt(OPENSEA_FEE_BASIS_POINTS)) / BigInt(10000)
+    //   sellerAmount = sellerAmount - openSeaFee
 
-      // Add OpenSea fee consideration
-      consideration.push({
-        token: currencyToken,
-        amount: openSeaFee.toString(),
-        endAmount: openSeaFee.toString(),
-        recipient: OPENSEA_FEE_RECIPIENT,
-      })
-    }
+    //   // Add OpenSea fee consideration
+    //   consideration.push({
+    //     token: currencyToken,
+    //     amount: openSeaFee.toString(),
+    //     endAmount: openSeaFee.toString(),
+    //     recipient: OPENSEA_FEE_RECIPIENT,
+    //   })
+    // }
 
-    // Calculate royalty if specified
-    if (params.royaltyBps && params.royaltyRecipient) {
-      const royaltyAmount = (priceInSmallestUnit * BigInt(params.royaltyBps)) / BigInt(10000)
-      sellerAmount = sellerAmount - royaltyAmount
+    // // Calculate royalty if specified
+    // if (params.royaltyBps && params.royaltyRecipient) {
+    //   const royaltyAmount = (priceInSmallestUnit * BigInt(params.royaltyBps)) / BigInt(10000)
+    //   sellerAmount = sellerAmount - royaltyAmount
 
-      // Add royalty consideration
-      consideration.push({
-        token: currencyToken,
-        amount: royaltyAmount.toString(),
-        endAmount: royaltyAmount.toString(),
-        recipient: params.royaltyRecipient,
-      })
-    }
+    //   // Add royalty consideration
+    //   consideration.push({
+    //     token: currencyToken,
+    //     amount: royaltyAmount.toString(),
+    //     endAmount: royaltyAmount.toString(),
+    //     recipient: params.royaltyRecipient,
+    //   })
+    // }
 
-    // Primary consideration (payment to seller)
-    consideration.unshift({
-      token: currencyToken,
-      amount: sellerAmount.toString(),
-      endAmount: sellerAmount.toString(),
-      recipient: params.offererAddress,
-    })
+    // // Primary consideration (payment to seller)
+    // consideration.unshift({
+    //   token: currencyToken,
+    //   amount: sellerAmount.toString(),
+    //   endAmount: sellerAmount.toString(),
+    //   recipient: params.offererAddress,
+    // })
 
-    // Validate all addresses in consideration
-    for (const item of consideration) {
-      if (!item.recipient) {
-        throw new Error('Consideration item missing recipient address')
-      }
-    }
+    // // Validate all addresses in consideration
+    // for (const item of consideration) {
+    //   if (!item.recipient) {
+    //     throw new Error('Consideration item missing recipient address')
+    //   }
+    // }
 
     // Determine conduit key based on marketplace
     let conduitKey: string | undefined
@@ -1065,7 +1065,57 @@ export class SeaportClient {
       conduitKey = MARKETPLACE_CONDUIT_KEY
     }
 
-    const orderInputs = params.domains.map((domain) => {
+    const orderInputs = params.domains.map((domain, index) => {
+      // Determine currency settings
+      const currency = params.currencies?.[index] || 'ETH'
+      const isUSDC = currency === 'USDC'
+      const decimals = isUSDC ? TOKEN_DECIMALS.USDC : TOKEN_DECIMALS.ETH
+      const currencyToken = isUSDC ? USDC_ADDRESS : ZERO_ADDRESS // ETH uses zero address
+
+      // Convert price to smallest unit (wei for ETH, base units for USDC)
+      const priceInSmallestUnit = parseAmount(params.prices[index], decimals)
+
+      // Build consideration array (payment to seller + optional royalties + marketplace fees)
+      const consideration: ConsiderationInputItem[] = []
+
+      let sellerAmount = priceInSmallestUnit
+
+      // Calculate OpenSea fee if listing on OpenSea
+      if (params.marketplace === 'opensea') {
+        const openSeaFee = (priceInSmallestUnit * BigInt(OPENSEA_FEE_BASIS_POINTS)) / BigInt(10000)
+        sellerAmount = sellerAmount - openSeaFee
+
+        // Add OpenSea fee consideration
+        consideration.push({
+          token: currencyToken,
+          amount: openSeaFee.toString(),
+          endAmount: openSeaFee.toString(),
+          recipient: OPENSEA_FEE_RECIPIENT,
+        })
+      }
+
+      // Calculate royalty if specified
+      if (params.royaltyBps && params.royaltyRecipient) {
+        const royaltyAmount = (priceInSmallestUnit * BigInt(params.royaltyBps)) / BigInt(10000)
+        sellerAmount = sellerAmount - royaltyAmount
+
+        // Add royalty consideration
+        consideration.push({
+          token: currencyToken,
+          amount: royaltyAmount.toString(),
+          endAmount: royaltyAmount.toString(),
+          recipient: params.royaltyRecipient,
+        })
+      }
+
+      // Primary consideration (payment to seller)
+      consideration.unshift({
+        token: currencyToken,
+        amount: sellerAmount.toString(),
+        endAmount: sellerAmount.toString(),
+        recipient: params.offererAddress,
+      })
+
       // Use the appropriate contract address and item type for the offer
       const isNameWrapped = wrappedNames.includes(domain)
       const tokenContract = isNameWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS

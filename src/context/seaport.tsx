@@ -18,12 +18,12 @@ type SeaportContextValue = {
   getOrderStatus: (orderHash: string) => Promise<OrderStatus | null>
   createListing: (params: {
     domains: MarketplaceDomainType[]
-    priceInEth: string
+    prices: string[]
     expiryDate: number
     royaltyBps?: number
     royaltyRecipient?: string
     marketplace: ('opensea' | 'grails')[]
-    currency?: 'ETH' | 'USDC'
+    currencies?: ('ETH' | 'USDC')[]
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void

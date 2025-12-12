@@ -238,22 +238,27 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       case 'review':
         return (
           <div className='flex flex-col gap-3'>
-            <div onClick={(e) => e.stopPropagation()} className='flex flex-col gap-2 rounded-md'>
-              <p className='px-2 text-start text-lg font-bold'>Base Price</p>
+            {domains.length > 1 && <div onClick={(e) => e.stopPropagation()} className='flex flex-col gap-2 rounded-md'>
               <div className='flex flex-row gap-2'>
                 <div className='w-2/3'>
                   <Input
                     type='number'
-                    label='Price'
+                    label='Bulk Price'
                     value={basePricePrice}
                     onChange={(e) => {
                       const value = e.target.value
                       if (value === '') setBasePricePrice('')
                       else if (
                         Number(value) > (basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                      )
+                      ) {
                         setBasePricePrice(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                      else setBasePricePrice(Number(value))
+                        setPrices(new Array(domains.length).fill(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY))
+                        setCurrencies(new Array(domains.length).fill(basePriceCurrency))
+                      } else {
+                        setBasePricePrice(Number(value))
+                        setPrices(new Array(domains.length).fill(Number(value)))
+                        setCurrencies(new Array(domains.length).fill(basePriceCurrency))
+                      }
                     }}
                     placeholder='0.1'
                     min={0}
@@ -266,15 +271,18 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     label='Currency'
                     options={currencyOptions}
                     value={basePriceCurrency}
-                    onSelect={(value) => setBasePriceCurrency(value as 'ETH' | 'USDC')}
+                    onSelect={(value) => {
+                      setBasePriceCurrency(value as 'ETH' | 'USDC')
+                      setCurrencies(new Array(domains.length).fill(value))
+                    }}
                     hideLabel={true}
                   />
                 </div>
               </div>
               <div className='bg-secondary border-tertiary rounded-md border p-2'>
-                <p className='text-md text-neutral'>Setting the base price will override all existing prices.</p>
+                <p className='text-md text-neutral'>Editing the bulk price above will update all individual prices.</p>
               </div>
-              <SecondaryButton
+              {/* <SecondaryButton
                 disabled={basePricePrice === '' || basePricePrice === null}
                 onClick={() => {
                   setPrices(new Array(domains.length).fill(basePricePrice))
@@ -282,9 +290,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 }}
                 className='w-full'
               >
-                Update All
-              </SecondaryButton>
-            </div>
+                Update Prices
+              </SecondaryButton> */}
+            </div>}
 
             <div className='flex flex-col gap-2 rounded-md'>
               {domains.length > 1 && (

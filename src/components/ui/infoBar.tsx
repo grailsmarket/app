@@ -35,7 +35,7 @@ const InfoBar: React.FC<InfoBarProps> = ({ onVisibilityChange }) => {
   return (
     <div className='bg-primary xs:text-md text-background p-sm absolute top-0 left-0 flex w-full items-center justify-center pr-6 text-sm font-bold'>
       <p>
-        🎄Grails Holiday🎄 Win $3k in prizes + Grails swag. &nbsp;
+        🎄 Renew your .ETH names, win $3k in prizes + Grails swag! &nbsp;
         <a
           href='https://x.com/BrantlyMillegan/status/1997016013242556767'
           target='_blank'

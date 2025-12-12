@@ -89,7 +89,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             formatUnits(
               BigInt(previousListing.price),
               TOKEN_DECIMALS[
-                TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
+              TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
               ]
             )
           )
@@ -292,7 +292,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   onClick={() => setShowNames(!showNames)}
                   className='bg-secondary hover:bg-tertiary border-tertiary flex cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 transition-colors'
                 >
-                  <p className='text-xl font-semibold'>Names:</p>
+                  <p className='text-xl font-semibold'>Edit listing prices</p>
                   <div className='flex items-center gap-2'>
                     <p className='text-xl font-bold'>{domains.length}</p>
                     <Image
@@ -305,7 +305,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   </div>
                 </div>
               )}
-              {showNames &&
+              {(showNames || domains.length === 1) &&
                 domains.map((domain, index) => {
                   return (
                     <div key={domain.token_id} className={cn('flex flex-col gap-2', domains.length > 1 ? '' : '')}>

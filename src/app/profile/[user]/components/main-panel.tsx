@@ -6,7 +6,7 @@ import { Address } from 'viem'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
 import TabSwitcher from './tabSwitcher'
-import { fetchAccount, useWindowSize } from 'ethereum-identity-kit'
+import { fetchAccount, useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
 import { useQuery } from '@tanstack/react-query'
 import OfferPanel from './offerPanel'
@@ -30,6 +30,7 @@ interface Props {
 }
 
 const MainPanel: React.FC<Props> = ({ user }) => {
+  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab, lastVisitedProfile } = useAppSelector(selectUserProfile)
@@ -90,7 +91,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
               <div
                 className='flex w-full flex-col gap-2'
                 style={{
-                  width: windowWidth && windowWidth > 1024 ? 'calc(100% - 280px)' : '100%',
+                  width: isClient && (windowWidth && windowWidth > 1024) ? 'calc(100% - 280px)' : '100%',
                 }}
               >
                 <TabSwitcher user={userAccount?.address} />

@@ -31,6 +31,7 @@ import {
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import Calendar from 'public/icons/calendar.svg'
 import { formatUnits } from 'viem'
+import ArrowDownIcon from 'public/icons/arrow-down.svg'
 
 export type ListingStatus =
   | 'review'
@@ -65,9 +66,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
   const [createListingTxHash, setCreateListingTxHash] = useState<string | null>(null)
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 30)
-  const [basePriceModalOpen, setBasePriceModalOpen] = useState(false)
   const [basePriceCurrency, setBasePriceCurrency] = useState<'ETH' | 'USDC'>('ETH')
   const [basePricePrice, setBasePricePrice] = useState<number | ''>('')
+  const [showNames, setShowNames] = useState(false)
 
   useEffect(() => {
     getCurrentChain()
@@ -237,143 +238,134 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       case 'review':
         return (
           <div className='flex flex-col gap-3'>
-            {previousListings.length > 1 && (
-              <p
-                onClick={() => setBasePriceModalOpen(true)}
-                className='text-primary hover:text-primary/75 cursor-pointer text-center text-xl font-bold transition-colors'
-              >
-                Set Base Price for All Names
-              </p>
-            )}
-            {basePriceModalOpen && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setBasePriceModalOpen(false)
-                }}
-                className='p-xl absolute top-0 left-0 z-30 flex h-full w-full flex-col gap-2 bg-black/50 backdrop-blur-sm'
-              >
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className='bg-background border-tertiary p-lg flex flex-col gap-2 rounded-md border'
-                >
-                  <p className='pt-1 pb-2 text-center text-xl font-bold'>Set Base Price for All Names</p>
-                  <div className='flex flex-col gap-2'>
-                    <div>
-                      <Dropdown
-                        label='Currency'
-                        options={currencyOptions}
-                        value={basePriceCurrency}
-                        onSelect={(value) => setBasePriceCurrency(value as 'ETH' | 'USDC')}
-                      />
-                    </div>
-
-                    <div>
-                      <Input
-                        type='number'
-                        label='Price'
-                        value={basePricePrice}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          if (value === '') setBasePricePrice('')
-                          else if (
-                            Number(value) > (basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                          )
-                            setBasePricePrice(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                          else setBasePricePrice(Number(value))
-                        }}
-                        placeholder='0.1'
-                        min={0}
-                        step={0.001}
-                        max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
-                      />
-                    </div>
-                  </div>
-                  <div className='bg-secondary border-tertiary rounded-md border p-2'>
-                    <p className='text-md text-neutral'>
-                      Setting the base price will override any existing previous prices for all names.
-                    </p>
-                  </div>
-                  <PrimaryButton
-                    onClick={() => {
-                      setPrices(new Array(domains.length).fill(basePricePrice))
-                      setCurrencies(new Array(domains.length).fill(basePriceCurrency))
-                      setBasePriceModalOpen(false)
+            <div onClick={(e) => e.stopPropagation()} className='flex flex-col gap-2 rounded-md'>
+              <p className='px-2 text-start text-lg font-bold'>Base Price</p>
+              <div className='flex flex-row gap-2'>
+                <div className='w-2/3'>
+                  <Input
+                    type='number'
+                    label='Price'
+                    value={basePricePrice}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value === '') setBasePricePrice('')
+                      else if (
+                        Number(value) > (basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                      )
+                        setBasePricePrice(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                      else setBasePricePrice(Number(value))
                     }}
-                    className='w-full'
-                  >
-                    Set Base Price
-                  </PrimaryButton>
+                    placeholder='0.1'
+                    min={0}
+                    step={0.001}
+                    max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
+                  />
+                </div>
+                <div className='w-1/3'>
+                  <Dropdown
+                    label='Currency'
+                    options={currencyOptions}
+                    value={basePriceCurrency}
+                    onSelect={(value) => setBasePriceCurrency(value as 'ETH' | 'USDC')}
+                    hideLabel={true}
+                  />
                 </div>
               </div>
-            )}
+              <div className='bg-secondary border-tertiary rounded-md border p-2'>
+                <p className='text-md text-neutral'>Setting the base price will override all existing prices.</p>
+              </div>
+              <SecondaryButton
+                disabled={basePricePrice === '' || basePricePrice === null}
+                onClick={() => {
+                  setPrices(new Array(domains.length).fill(basePricePrice))
+                  setCurrencies(new Array(domains.length).fill(basePriceCurrency))
+                }}
+                className='w-full'
+              >
+                Update All
+              </SecondaryButton>
+            </div>
 
             <div className='flex flex-col gap-2 rounded-md'>
               {domains.length > 1 && (
-                <div className='flex items-center justify-between gap-2 border-b border-b-white/30'>
-                  <p className='font-sedan-sc text-2xl'>Names:</p>
-                  <p className='text-xl font-bold'>{domains.length}</p>
+                <div
+                  onClick={() => setShowNames(!showNames)}
+                  className='bg-secondary hover:bg-tertiary border-tertiary flex cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 transition-colors'
+                >
+                  <p className='text-xl font-semibold'>Names:</p>
+                  <div className='flex items-center gap-2'>
+                    <p className='text-xl font-bold'>{domains.length}</p>
+                    <Image
+                      src={ArrowDownIcon}
+                      alt='Arrow Down'
+                      width={16}
+                      height={16}
+                      className={cn(showNames ? 'rotate-180' : '')}
+                    />
+                  </div>
                 </div>
               )}
-              {domains.map((domain, index) => {
-                return (
-                  <div key={domain.token_id} className={cn('flex flex-col gap-2', domains.length > 1 ? '' : '')}>
-                    <div className='flex w-full items-center justify-between gap-2'>
-                      <p className='max-w-2/3 truncate font-semibold'>{domain.name}</p>
-                    </div>
-                    <div className='flex w-full gap-2'>
-                      <div className='w-2/3'>
-                        <Input
-                          type='number'
-                          label='Price'
-                          value={prices[index]}
-                          onChange={(e) => {
-                            const value = e.target.value
-                            if (value === '')
-                              setPrices((prev) => {
-                                const newPrices = [...prev]
-                                newPrices[index] = ''
-                                return newPrices
-                              })
-                            else if (
-                              Number(value) > (currencies[index] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                            )
-                              setPrices((prev) => {
-                                const newPrices = [...prev]
-                                newPrices[index] =
-                                  currencies[index] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY
-                                return newPrices
-                              })
-                            else
-                              setPrices((prev) => {
-                                const newPrices = [...prev]
-                                newPrices[index] = Number(value)
-                                return newPrices
-                              })
-                          }}
-                          placeholder='0.1'
-                          min={0}
-                          step={0.001}
-                          max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
-                        />
+              {showNames &&
+                domains.map((domain, index) => {
+                  return (
+                    <div key={domain.token_id} className={cn('flex flex-col gap-2', domains.length > 1 ? '' : '')}>
+                      <div className='flex w-full items-center justify-between gap-2 px-2'>
+                        <p className='max-w-2/3 truncate font-semibold'>{domain.name}</p>
                       </div>
-                      <div className='w-1/3'>
-                        <Dropdown
-                          label='Currency'
-                          options={currencyOptions}
-                          value={currencies[index]}
-                          onSelect={(value) =>
-                            setCurrencies((prev) => {
-                              const newCurrencies = [...prev]
-                              newCurrencies[index] = value as 'ETH' | 'USDC'
-                              return newCurrencies
-                            })
-                          }
-                          hideLabel={true}
-                        />
+                      <div className='flex w-full gap-2'>
+                        <div className='w-2/3'>
+                          <Input
+                            type='number'
+                            label='Price'
+                            value={prices[index]}
+                            onChange={(e) => {
+                              const value = e.target.value
+                              if (value === '')
+                                setPrices((prev) => {
+                                  const newPrices = [...prev]
+                                  newPrices[index] = ''
+                                  return newPrices
+                                })
+                              else if (
+                                Number(value) >
+                                (currencies[index] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                              )
+                                setPrices((prev) => {
+                                  const newPrices = [...prev]
+                                  newPrices[index] =
+                                    currencies[index] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY
+                                  return newPrices
+                                })
+                              else
+                                setPrices((prev) => {
+                                  const newPrices = [...prev]
+                                  newPrices[index] = Number(value)
+                                  return newPrices
+                                })
+                            }}
+                            placeholder='0.1'
+                            min={0}
+                            step={0.001}
+                            max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
+                          />
+                        </div>
+                        <div className='w-1/3'>
+                          <Dropdown
+                            label='Currency'
+                            options={currencyOptions}
+                            value={currencies[index]}
+                            onSelect={(value) =>
+                              setCurrencies((prev) => {
+                                const newCurrencies = [...prev]
+                                newCurrencies[index] = value as 'ETH' | 'USDC'
+                                return newCurrencies
+                              })
+                            }
+                            hideLabel={true}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    {/* {previousListing && (
+                      {/* {previousListing && (
                       <>
                         <div className='flex w-full items-center justify-between gap-2'>
                           <p className='font-sedan-sc text-xl'>Price</p>
@@ -406,9 +398,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                         </div>
                       </>
                     )} */}
-                  </div>
-                )
-              })}
+                    </div>
+                  )
+                })}
             </div>
             <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
               <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
@@ -479,13 +471,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 }}
               />
               {expiryDate === 0 && showDatePicker && (
-                <div className='xs:p-4 absolute top-0 right-0 z-20 flex h-full w-full items-start justify-start bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+                <div className='xs:p-4 fixed right-0 bottom-0 z-30 flex h-full w-full items-end justify-center bg-black/40 p-3 backdrop-blur-sm md:absolute md:p-6'>
                   <DatePicker
                     onSelect={(timestamp) => setExpiryDate(timestamp)}
                     onClose={() => {
                       setShowDatePicker(false)
                     }}
-                    className='w-full'
+                    className='w-full max-w-md'
                   />
                 </div>
               )}

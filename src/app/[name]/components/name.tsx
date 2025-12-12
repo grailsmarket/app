@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import NameDetails from './nameDetails'
 import { useName } from '../hooks/useName'
 import Listings from './listings'
@@ -35,6 +35,13 @@ const NamePage: React.FC<Props> = ({ name }) => {
   //     return () => clearTimeout(timer)
   //   }
   // }, [name])
+
+  useEffect(() => {
+    document.scrollingElement?.scrollTo({
+      top: 0,
+      behavior: 'instant',
+    })
+  }, [name])
 
   const isSubname = name.split('.').length > 2
   const registrationStatus = nameDetails

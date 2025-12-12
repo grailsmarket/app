@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate required fields based on order type
-    const { type, orders, domains, price, currency } = body
+    const { type, orders, domains, prices, currencies } = body
 
     if (!type || !orders || !orders.length || !domains || !domains.length) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -26,21 +26,6 @@ export async function POST(request: NextRequest) {
 
     // Determine marketplace from order_data metadata
     const marketplace = orders[0].marketplace || 'grails'
-
-    // Determine currency address and decimals
-    let currencyAddress = ZERO_ADDRESS // Default to native ETH
-    let decimals: number = TOKEN_DECIMALS.ETH
-
-    if (currency === 'USDC') {
-      currencyAddress = USDC_ADDRESS
-      decimals = TOKEN_DECIMALS.USDC
-    } else if (currency === 'ETH') {
-      currencyAddress = ZERO_ADDRESS
-      decimals = TOKEN_DECIMALS.ETH
-    }
-
-    // Calculate price_wei with correct decimals
-    const priceInSmallestUnit = price ? BigInt(Math.floor(parseFloat(price) * Math.pow(10, decimals))).toString() : '0'
 
     // If posting to OpenSea, submit the order to OpenSea API
     let openSeaSubmissionError = null
@@ -70,6 +55,24 @@ export async function POST(request: NextRequest) {
     try {
       const responses = await Promise.all(
         orders.map(async (order: SeaportStoredOrder, index: number) => {
+          let currencyAddress = ZERO_ADDRESS // Default to native ETH
+          let decimals: number = TOKEN_DECIMALS.ETH
+          const currency = currencies?.[index]
+          const price = prices?.[index]
+
+          if (currency === 'USDC') {
+            currencyAddress = USDC_ADDRESS
+            decimals = TOKEN_DECIMALS.USDC
+          } else if (currency === 'ETH') {
+            currencyAddress = ZERO_ADDRESS
+            decimals = TOKEN_DECIMALS.ETH
+          }
+
+          // Calculate price_wei with correct decimals
+          const priceInSmallestUnit = price
+            ? BigInt(Math.floor(parseFloat(price) * Math.pow(10, decimals))).toString()
+            : '0'
+
           // Forward to backend API
           const response = await fetch(`${API_URL}/orders`, {
             method: 'POST',

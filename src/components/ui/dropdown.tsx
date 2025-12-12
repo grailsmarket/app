@@ -18,6 +18,7 @@ interface DropdownProps {
   onSelect: (value: string | number) => void
   className?: string
   placeholder?: string
+  dropdownPosition?: 'top' | 'bottom'
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -28,6 +29,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   onSelect,
   className,
   placeholder = 'Select an option',
+  dropdownPosition = 'bottom',
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -65,7 +67,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             type='button'
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+              'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center justify-between gap-4 rounded-r-md border px-4 py-3 pr-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
               hideLabel && 'rounded-md'
             )}
           >
@@ -80,7 +82,12 @@ const Dropdown: React.FC<DropdownProps> = ({
 
           {/* Dropdown menu */}
           {isOpen && (
-            <div className='bg-background border-tertiary absolute top-full right-0 left-0 z-50 mt-2 max-h-[240px] overflow-y-auto rounded-md border-2 shadow-lg'>
+            <div
+              className={cn(
+                'bg-background border-tertiary absolute right-0 left-0 z-50 mt-2 max-h-[240px] overflow-y-auto rounded-md border-2 shadow-lg',
+                dropdownPosition === 'top' ? 'bottom-14' : 'top-12'
+              )}
+            >
               {options.map((option) => (
                 <button
                   key={option.value}

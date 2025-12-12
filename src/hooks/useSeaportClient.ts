@@ -72,12 +72,12 @@ export function useSeaportClient() {
   const createListing = useCallback(
     async (params: {
       domains: MarketplaceDomainType[]
-      priceInEth: string
+      prices: string[]
       expiryDate: number
       royaltyBps?: number
       royaltyRecipient?: string
       marketplace: MarketplaceType[]
-      currency?: 'ETH' | 'USDC'
+      currencies?: ('ETH' | 'USDC')[]
       setStatus?: (status: ListingStatus) => void
       setApproveTxHash?: (txHash: string | null) => void
       setCreateListingTxHash?: (txHash: string | null) => void
@@ -113,7 +113,7 @@ export function useSeaportClient() {
           ...params,
           offererAddress: address,
           marketplace: params.marketplace,
-          currency: params.currency,
+          currencies: params.currencies,
           setStatus: params.setStatus,
           setApproveTxHash: params.setApproveTxHash,
           setCreateListingTxHash: params.setCreateListingTxHash,
@@ -151,8 +151,8 @@ export function useSeaportClient() {
               body: JSON.stringify({
                 type: 'listing',
                 domains: params.domains,
-                price: params.priceInEth,
-                currency: params.currency,
+                prices: params.prices,
+                currencies: params.currencies,
                 orders: openSeaOrders,
                 seller_address: address,
               }),
@@ -163,8 +163,8 @@ export function useSeaportClient() {
               body: JSON.stringify({
                 type: 'listing',
                 domains: params.domains,
-                price: params.priceInEth,
-                currency: params.currency,
+                prices: params.prices,
+                currencies: params.currencies,
                 orders: grailsOrders,
                 seller_address: address,
               }),
@@ -213,8 +213,8 @@ export function useSeaportClient() {
           body: JSON.stringify({
             type: 'listing',
             domains: params.domains,
-            price: params.priceInEth,
-            currency: params.currency,
+            prices: params.prices,
+            currencies: params.currencies,
             orders: formattedOrders,
             seller_address: address,
           }),

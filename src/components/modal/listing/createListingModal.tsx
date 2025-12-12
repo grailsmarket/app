@@ -6,7 +6,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import DatePicker from '@/components/ui/datepicker'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import Dropdown, { DropdownOption } from '@/components/ui/dropdown'
-import { Address, Check } from 'ethereum-identity-kit'
+import { Check } from 'ethereum-identity-kit'
 import EthereumIcon from 'public/tokens/eth-circle.svg'
 import UsdcIcon from 'public/tokens/usdc.svg'
 import Input from '@/components/ui/input'
@@ -22,10 +22,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { useUserContext } from '@/context/user'
-import Price from '@/components/ui/price'
-import { MAX_ETH_SUPPLY } from '@/constants/web3/tokens'
-import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { SOURCE_ICONS } from '@/constants/domains/sources'
+import { MAX_ETH_SUPPLY, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
 import {
   setMakeListingModalCanAddDomains,
   setMakeListingModalDomains,
@@ -33,6 +30,7 @@ import {
 } from '@/state/reducers/modals/makeListingModal'
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import Calendar from 'public/icons/calendar.svg'
+import { formatUnits } from 'viem'
 
 export type ListingStatus =
   | 'review'
@@ -58,8 +56,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
 
-  const [price, setPrice] = useState<number | ''>('')
-  const [currency, setCurrency] = useState<'ETH' | 'USDC'>('ETH')
+  const [prices, setPrices] = useState<(number | '')[]>(Array(domains.length).fill(''))
+  const [currencies, setCurrencies] = useState<('ETH' | 'USDC')[]>(Array(domains.length).fill('ETH'))
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -67,11 +65,43 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
   const [createListingTxHash, setCreateListingTxHash] = useState<string | null>(null)
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 30)
+  const [basePriceModalOpen, setBasePriceModalOpen] = useState(false)
+  const [basePriceCurrency, setBasePriceCurrency] = useState<'ETH' | 'USDC'>('ETH')
+  const [basePricePrice, setBasePricePrice] = useState<number | ''>('')
 
   useEffect(() => {
     getCurrentChain()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    domains.forEach((domain, index) => {
+      const previousListing = previousListings.find((listing) =>
+        listing.source === 'grails'
+          ? listing.order_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+          : listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+      )
+      if (previousListing) {
+        setPrices((prev) => {
+          const newPrices = [...prev]
+          newPrices[index] = Number(
+            formatUnits(
+              BigInt(previousListing.price),
+              TOKEN_DECIMALS[
+                TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
+              ]
+            )
+          )
+          return newPrices
+        })
+        setCurrencies((prev) => {
+          const newCurrencies = [...prev]
+          newCurrencies[index] = TOKENS[previousListing.currency_address as keyof typeof TOKENS] as 'ETH' | 'USDC'
+          return newCurrencies
+        })
+      }
+    })
+  }, [previousListings, domains])
 
   if (!domains.length) return null
 
@@ -84,8 +114,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   ]
 
   const currencyOptions: DropdownOption[] = [
-    { value: 'ETH', label: 'ETH (Ethereum)', icon: EthereumIcon },
-    { value: 'USDC', label: 'USDC (USD Coin)', icon: UsdcIcon },
+    { value: 'ETH', label: 'ETH', icon: EthereumIcon },
+    { value: 'USDC', label: 'USDC', icon: UsdcIcon },
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,7 +129,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       return
     }
 
-    if (!price) {
+    if (!prices.every((price) => Number(price) > 0)) {
       setError('Price is required')
       setStatus('error')
       return
@@ -114,10 +144,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     try {
       const params: any = {
         domains,
-        priceInEth: price.toString(),
+        prices: prices.map((price) => price.toString()),
         expiryDate,
         marketplace: selectedMarketplace,
-        currency,
+        currencies,
         setStatus,
         setApproveTxHash,
         setCreateListingTxHash,
@@ -153,29 +183,36 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
   // Calculate fees to show user
   const calculateFees = () => {
-    if (!price) return null
+    if (!prices.every((price) => Number(price) > 0)) return null
 
     const fees: { label: string; amount: number }[] = []
+    const totalPrices = prices.reduce((sum, price) => Number(sum) + Number(price), 0) as number
 
     if (selectedMarketplace.includes('opensea')) {
-      fees.push({ label: 'OpenSea Fee (1%)', amount: price * 0.01 })
+      fees.push({
+        label: 'OpenSea Fee (1%)',
+        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * 0.01, 0) as number,
+      })
     }
 
     if (selectedMarketplace.includes('grails')) {
-      fees.push({ label: 'Grails Fee (0%)', amount: price * 0.0 })
+      fees.push({
+        label: 'Grails Fee (0%)',
+        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * 0.0, 0) as number,
+      })
     }
 
     const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0)
-    const netProceeds = price - totalFees
+    const netProceeds = totalPrices - totalFees
 
     return { fees, totalFees, netProceeds }
   }
 
   const successMessage = () => {
     if (previousListings.length > 0) {
-      return `Listings for ${domains.map((domain) => domain.name).join(', ')} were edited successfully. The new listings are now active on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
+      return `Listings for ${domains.map((domain) => domain.name).join(', ')} were edited successfully. The new listings are now active on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}!`
     } else {
-      return `Listings for ${domains.map((domain) => domain.name).join(', ')} were listed successfully on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'} for ${price} ${currency}!`
+      return `Listings for ${domains.map((domain) => domain.name).join(', ')} were listed successfully on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}!`
     }
   }
 
@@ -200,29 +237,143 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       case 'review':
         return (
           <div className='flex flex-col gap-3'>
-            <div className='px-lg bg-secondary border-tertiary flex max-h-[200px] flex-col overflow-y-auto rounded-md border py-1'>
+            {previousListings.length > 1 && (
+              <p
+                onClick={() => setBasePriceModalOpen(true)}
+                className='text-primary hover:text-primary/75 cursor-pointer text-center text-xl font-bold transition-colors'
+              >
+                Set Base Price for All Names
+              </p>
+            )}
+            {basePriceModalOpen && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setBasePriceModalOpen(false)
+                }}
+                className='p-xl absolute top-0 left-0 z-30 flex h-full w-full flex-col gap-2 bg-black/50 backdrop-blur-sm'
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className='bg-background border-tertiary p-lg flex flex-col gap-2 rounded-md border'
+                >
+                  <p className='pt-1 pb-2 text-center text-xl font-bold'>Set Base Price for All Names</p>
+                  <div className='flex flex-col gap-2'>
+                    <div>
+                      <Dropdown
+                        label='Currency'
+                        options={currencyOptions}
+                        value={basePriceCurrency}
+                        onSelect={(value) => setBasePriceCurrency(value as 'ETH' | 'USDC')}
+                      />
+                    </div>
+
+                    <div>
+                      <Input
+                        type='number'
+                        label='Price'
+                        value={basePricePrice}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          if (value === '') setBasePricePrice('')
+                          else if (
+                            Number(value) > (basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                          )
+                            setBasePricePrice(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                          else setBasePricePrice(Number(value))
+                        }}
+                        placeholder='0.1'
+                        min={0}
+                        step={0.001}
+                        max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
+                      />
+                    </div>
+                  </div>
+                  <div className='bg-secondary border-tertiary rounded-md border p-2'>
+                    <p className='text-md text-neutral'>
+                      Setting the base price will override any existing previous prices for all names.
+                    </p>
+                  </div>
+                  <PrimaryButton
+                    onClick={() => {
+                      setPrices(new Array(domains.length).fill(basePricePrice))
+                      setCurrencies(new Array(domains.length).fill(basePriceCurrency))
+                      setBasePriceModalOpen(false)
+                    }}
+                    className='w-full'
+                  >
+                    Set Base Price
+                  </PrimaryButton>
+                </div>
+              </div>
+            )}
+
+            <div className='flex flex-col gap-2 rounded-md'>
               {domains.length > 1 && (
-                <div className='flex items-center justify-between gap-2 border-b border-b-white/30 py-2'>
+                <div className='flex items-center justify-between gap-2 border-b border-b-white/30'>
                   <p className='font-sedan-sc text-2xl'>Names:</p>
                   <p className='text-xl font-bold'>{domains.length}</p>
                 </div>
               )}
-              {domains.map((domain) => {
-                const previousListing = previousListings.find((listing) =>
-                  listing.source === 'grails'
-                    ? listing.order_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-                    : listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-                )
+              {domains.map((domain, index) => {
                 return (
-                  <div
-                    key={domain.token_id}
-                    className={cn('flex flex-col gap-2 py-2', domains.length > 1 ? 'border-t border-t-white/30' : '')}
-                  >
+                  <div key={domain.token_id} className={cn('flex flex-col gap-2', domains.length > 1 ? '' : '')}>
                     <div className='flex w-full items-center justify-between gap-2'>
-                      <p className='font-sedan-sc text-xl'>Name</p>
                       <p className='max-w-2/3 truncate font-semibold'>{domain.name}</p>
                     </div>
-                    {previousListing && (
+                    <div className='flex w-full gap-2'>
+                      <div className='w-2/3'>
+                        <Input
+                          type='number'
+                          label='Price'
+                          value={prices[index]}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            if (value === '')
+                              setPrices((prev) => {
+                                const newPrices = [...prev]
+                                newPrices[index] = ''
+                                return newPrices
+                              })
+                            else if (
+                              Number(value) > (currencies[index] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                            )
+                              setPrices((prev) => {
+                                const newPrices = [...prev]
+                                newPrices[index] =
+                                  currencies[index] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY
+                                return newPrices
+                              })
+                            else
+                              setPrices((prev) => {
+                                const newPrices = [...prev]
+                                newPrices[index] = Number(value)
+                                return newPrices
+                              })
+                          }}
+                          placeholder='0.1'
+                          min={0}
+                          step={0.001}
+                          max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
+                        />
+                      </div>
+                      <div className='w-1/3'>
+                        <Dropdown
+                          label='Currency'
+                          options={currencyOptions}
+                          value={currencies[index]}
+                          onSelect={(value) =>
+                            setCurrencies((prev) => {
+                              const newCurrencies = [...prev]
+                              newCurrencies[index] = value as 'ETH' | 'USDC'
+                              return newCurrencies
+                            })
+                          }
+                          hideLabel={true}
+                        />
+                      </div>
+                    </div>
+                    {/* {previousListing && (
                       <>
                         <div className='flex w-full items-center justify-between gap-2'>
                           <p className='font-sedan-sc text-xl'>Price</p>
@@ -254,7 +405,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                           </p>
                         </div>
                       </>
-                    )}
+                    )} */}
                   </div>
                 )
               })}
@@ -321,13 +472,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 placeholder='Select a duration'
                 options={durationOptions}
                 value={expiryDate}
+                dropdownPosition='top'
                 onSelect={(value) => {
                   setExpiryDate(Number(value))
                   if (Number(value) === 0) setShowDatePicker(true)
                 }}
               />
               {expiryDate === 0 && showDatePicker && (
-                <div className='xs:p-4 absolute top-0 right-0 flex h-full w-full items-start justify-start bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+                <div className='xs:p-4 absolute top-0 right-0 z-20 flex h-full w-full items-start justify-start bg-black/40 p-3 backdrop-blur-sm md:p-6'>
                   <DatePicker
                     onSelect={(timestamp) => setExpiryDate(timestamp)}
                     onClose={() => {
@@ -355,42 +507,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </button>
             </div>
 
-            <div>
-              <Dropdown
-                label='Currency'
-                options={currencyOptions}
-                value={currency}
-                onSelect={(value) => setCurrency(value as 'ETH' | 'USDC')}
-              />
-            </div>
-
-            <div>
-              <Input
-                type='number'
-                label='Price'
-                value={price}
-                onChange={(e) => {
-                  const value = e.target.value
-                  if (value === '') setPrice('')
-                  else if (Number(value) > (currency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY))
-                    setPrice(currency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                  else setPrice(Number(value))
-                }}
-                placeholder='0.1'
-                min={0}
-                step={0.001}
-                max={currency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
-              />
-            </div>
-
             {/* Fee breakdown */}
-            {price && calculateFees() ? (
+            {prices.length === 1 && Number(prices[0]) > 0 && calculateFees() ? (
               <div className='bg-secondary border-tertiary text-md rounded-md border p-3'>
                 <div className='space-y-1'>
                   <div className='flex justify-between text-gray-400'>
                     <span>Listing Price:</span>
                     <span>
-                      {price} {currency}
+                      {prices[0]} {currencies[0]}
                     </span>
                   </div>
                   {calculateFees()!.fees.map((fee, idx) => (
@@ -400,7 +524,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     >
                       <span>- {fee.label}:</span>
                       <span>
-                        {fee.amount.toFixed(currency === 'USDC' ? 2 : 4)} {currency}
+                        {fee.amount.toFixed(currencies[0] === 'USDC' ? 2 : 4)} {currencies[0]}
                       </span>
                     </div>
                   ))}
@@ -412,7 +536,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                         maximumFractionDigits: 6,
                         minimumFractionDigits: 2,
                       })}{' '}
-                      {currency}
+                      {currencies[0]}
                     </span>
                   </div>
                 </div>
@@ -422,7 +546,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <PrimaryButton
                 disabled={
                   isLoading ||
-                  !price ||
+                  !prices.every((price) => Number(price) > 0) ||
                   selectedMarketplace.length === 0 ||
                   expiryDate < currentTimestamp ||
                   !userAddress

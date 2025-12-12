@@ -42,7 +42,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                 setIsFollowersAndFollowingOpen(true)
                 setDefaultTab(stat)
               }}
-            // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
             />
           )}
         </div>

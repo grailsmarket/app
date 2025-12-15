@@ -91,7 +91,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
               <div
                 className='flex w-full flex-col gap-2'
                 style={{
-                  width: isClient && (windowWidth && windowWidth > 1024) ? 'calc(100% - 280px)' : '100%',
+                  width: isClient && windowWidth && windowWidth > 1024 ? 'calc(100% - 280px)' : '100%',
                 }}
               >
                 <TabSwitcher user={userAccount?.address} />

@@ -44,6 +44,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
+import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -193,17 +194,33 @@ const RegistrationModal: React.FC = () => {
 
     const durationBigInt = BigInt(durationSeconds)
     const durationYears = durationSeconds / YEAR_IN_SECONDS
-    const priceUSD = calculateDomainPriceUSD(registrationState.name, durationYears)
-    const priceETH = ethPrice ? priceUSD / ethPrice : 0
+    const expireTime = registrationState.domain?.expiry_date
+      ? new Date(registrationState.domain.expiry_date).getTime() / 1000
+      : 0
+    const currentTime = Math.floor(new Date().getTime() / 1000)
+    const regPriceUSD = calculateDomainPriceUSD(registrationState.name, durationYears)
+    const priceOracle = new PremiumPriceOracle(expireTime)
+    const premiumPriceUSD = priceOracle.getOptimalPrecisionPremiumAmount(currentTime)
+    const totalPriceUSD = premiumPriceUSD + regPriceUSD
+    const totalPriceETH = Math.floor((totalPriceUSD / (ethPrice || 3300)) * 10 ** 6) / 10 ** 6
 
     return {
       durationSeconds: durationBigInt,
       durationYears,
-      priceUSD,
-      priceETH,
+      priceUSD: totalPriceUSD,
+      priceETH: totalPriceETH,
       isBelowMinimum: durationSeconds < MIN_REGISTRATION_DURATION,
     }
-  }, [registrationState.name, registrationMode, quantity, timeUnit, customDuration, ethPrice, calculateDomainPriceUSD])
+  }, [
+    registrationState.name,
+    registrationMode,
+    quantity,
+    timeUnit,
+    customDuration,
+    ethPrice,
+    calculateDomainPriceUSD,
+    registrationState.domain?.expiry_date,
+  ])
 
   // Store calculated duration in Redux for persistence
   useEffect(() => {
@@ -288,7 +305,7 @@ const RegistrationModal: React.FC = () => {
   }
 
   const checkForExistingCommitment = async () => {
-    console.log('checkForExistingCommitment', registrationState)
+    // console.log('checkForExistingCommitment', registrationState)
     // Only check if we have all required data
     if (!registrationState.name || !registrationState.domain || !address || !secret || !calculationResults) {
       return

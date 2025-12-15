@@ -89,7 +89,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             formatUnits(
               BigInt(previousListing.price),
               TOKEN_DECIMALS[
-              TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
+                TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
               ]
             )
           )
@@ -238,51 +238,58 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       case 'review':
         return (
           <div className='flex flex-col gap-3'>
-            {domains.length > 1 && <div onClick={(e) => e.stopPropagation()} className='flex flex-col gap-2 rounded-md'>
-              <div className='flex flex-row gap-2'>
-                <div className='w-2/3'>
-                  <Input
-                    type='number'
-                    label='Bulk Price'
-                    value={basePricePrice}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      if (value === '') setBasePricePrice('')
-                      else if (
-                        Number(value) > (basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                      ) {
-                        setBasePricePrice(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
-                        setPrices(new Array(domains.length).fill(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY))
-                        setCurrencies(new Array(domains.length).fill(basePriceCurrency))
-                      } else {
-                        setBasePricePrice(Number(value))
-                        setPrices(new Array(domains.length).fill(Number(value)))
-                        setCurrencies(new Array(domains.length).fill(basePriceCurrency))
-                      }
-                    }}
-                    placeholder='0.1'
-                    min={0}
-                    step={0.001}
-                    max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
-                  />
+            {domains.length > 1 && (
+              <div onClick={(e) => e.stopPropagation()} className='flex flex-col gap-2 rounded-md'>
+                <div className='flex flex-row gap-2'>
+                  <div className='w-2/3'>
+                    <Input
+                      type='number'
+                      label='Bulk Price'
+                      value={basePricePrice}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (value === '') setBasePricePrice('')
+                        else if (
+                          Number(value) > (basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                        ) {
+                          setBasePricePrice(basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY)
+                          setPrices(
+                            new Array(domains.length).fill(
+                              basePriceCurrency === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY
+                            )
+                          )
+                          setCurrencies(new Array(domains.length).fill(basePriceCurrency))
+                        } else {
+                          setBasePricePrice(Number(value))
+                          setPrices(new Array(domains.length).fill(Number(value)))
+                          setCurrencies(new Array(domains.length).fill(basePriceCurrency))
+                        }
+                      }}
+                      placeholder='0.1'
+                      min={0}
+                      step={0.001}
+                      max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
+                    />
+                  </div>
+                  <div className='w-1/3'>
+                    <Dropdown
+                      label='Currency'
+                      options={currencyOptions}
+                      value={basePriceCurrency}
+                      onSelect={(value) => {
+                        setBasePriceCurrency(value as 'ETH' | 'USDC')
+                        setCurrencies(new Array(domains.length).fill(value))
+                      }}
+                      hideLabel={true}
+                    />
+                  </div>
                 </div>
-                <div className='w-1/3'>
-                  <Dropdown
-                    label='Currency'
-                    options={currencyOptions}
-                    value={basePriceCurrency}
-                    onSelect={(value) => {
-                      setBasePriceCurrency(value as 'ETH' | 'USDC')
-                      setCurrencies(new Array(domains.length).fill(value))
-                    }}
-                    hideLabel={true}
-                  />
+                <div className='bg-secondary border-tertiary rounded-md border p-2'>
+                  <p className='text-md text-neutral'>
+                    Editing the bulk price above will update all individual prices.
+                  </p>
                 </div>
-              </div>
-              <div className='bg-secondary border-tertiary rounded-md border p-2'>
-                <p className='text-md text-neutral'>Editing the bulk price above will update all individual prices.</p>
-              </div>
-              {/* <SecondaryButton
+                {/* <SecondaryButton
                 disabled={basePricePrice === '' || basePricePrice === null}
                 onClick={() => {
                   setPrices(new Array(domains.length).fill(basePricePrice))
@@ -292,7 +299,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               >
                 Update Prices
               </SecondaryButton> */}
-            </div>}
+              </div>
+            )}
 
             <div className='flex flex-col gap-2 rounded-md'>
               {domains.length > 1 && (

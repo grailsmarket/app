@@ -5,7 +5,6 @@ import { Address } from 'viem'
 import { FollowersAndFollowing, FullWidthProfile, ProfileTabType, useIsClient } from 'ethereum-identity-kit'
 import MainPanel from './main-panel'
 import { useUserContext } from '@/context/user'
-import { GRAILS_POAP } from '@/constants/profile'
 
 interface Props {
   user: Address | string
@@ -17,7 +16,6 @@ const Profile: React.FC<Props> = ({ user }) => {
 
   const isClient = useIsClient()
   const { userAddress } = useUserContext()
-  const { isPoapClaimed } = useUserContext()
 
   return (
     <div>
@@ -50,7 +48,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                 hideSocials: ['grails'],
                 hideEFPPoaps: true,
               }}
-            // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
             />
           )}
         </div>

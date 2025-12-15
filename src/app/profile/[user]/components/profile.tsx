@@ -38,16 +38,17 @@ const Profile: React.FC<Props> = ({ user }) => {
             <FullWidthProfile
               connectedAddress={userAddress}
               addressOrName={user}
-              showPoaps={false}
+              showPoaps={true}
               showFollowButton={true}
               style={{ paddingLeft: '10px' }}
               onStatClick={({ stat }) => {
                 setIsFollowersAndFollowingOpen(true)
                 setDefaultTab(stat)
               }}
-              showEmptySocials={true}
               extraOptions={{
-                customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
+                // customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
+                hideSocials: ['grails'],
+                hideEFPPoaps: true,
               }}
             // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
             />

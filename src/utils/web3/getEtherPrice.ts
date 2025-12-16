@@ -19,5 +19,6 @@ export const getEtherPrice = async (short?: boolean) => {
     return (short ? Number(price) / Math.pow(10, 8) : price) as number
   } catch (e) {
     console.error(e, 'error getting usd price oracle')
+    return null
   }
 }

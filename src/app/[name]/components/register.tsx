@@ -1,6 +1,7 @@
+'use client'
+
 import React from 'react'
 import Price from '@/components/ui/price'
-import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
@@ -8,23 +9,52 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { GRACE_PERIOD, PREMIUM } from '@/constants/domains/registrationStatuses'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { useAppDispatch } from '@/state/hooks'
 import { openRegistrationModal } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { BigNumber } from '@ethersproject/bignumber'
+import { usePublicClient } from 'wagmi'
+import { mainnet } from 'wagmi/chains'
+import { useQuery } from '@tanstack/react-query'
+import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
+import { ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { formatPrice } from '@/utils/formatPrice'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
   registrationStatus: RegistrationStatus
 }
 
+const ONE_YEAR_SECONDS = BigInt(365 * 24 * 60 * 60)
+
 const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) => {
   const { ethPrice } = useETHPrice()
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
+  const publicClient = usePublicClient({ chainId: mainnet.id })
+
+  // Fetch rent price (including premium) directly from ENS contract
+  const { data: rentPriceData, isLoading: isLoadingRentPrice } = useQuery({
+    queryKey: ['rentPrice', nameDetails?.name],
+    queryFn: async () => {
+      if (!publicClient || !nameDetails?.name) return null
+
+      const label = nameDetails.name.replace('.eth', '')
+      const result = await publicClient.readContract({
+        address: ENS_HOLIDAY_REGISTRAR_ADDRESS as `0x${string}`,
+        abi: ENS_HOLIDAY_REGISTRAR_ABI,
+        functionName: 'rentPrice',
+        args: [label, ONE_YEAR_SECONDS],
+      })
+
+      return result as { base: bigint; premium: bigint }
+    },
+    enabled: !!publicClient && !!nameDetails?.name,
+    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchOnWindowFocus: true,
+    staleTime: 5000, // Consider data stale after 5 seconds
+  })
 
   if (registrationStatus === GRACE_PERIOD) {
     const expiryDateTimestamp = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() : 0
@@ -51,33 +81,31 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   }
 
   const name = nameDetails?.name
-  const price = nameDetails ? calculateRegistrationPrice(nameDetails.name, ethPrice || 0).usd : 0
+  const baseRentPrice = rentPriceData?.base?.toString() || '0'
+  const price = Math.round(Number(formatPrice(baseRentPrice, 'ETH', true)) * (ethPrice || 3000)) || 0
 
   if (registrationStatus === PREMIUM) {
-    const expireTime = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() / 1000 : 0
-    const currentTime = Math.floor(new Date().getTime() / 1000)
-    const registrationPrice = calculateRegistrationPrice(nameDetails?.name || '', ethPrice || 3300).usd
-    const priceOracle = new PremiumPriceOracle(expireTime)
-    const premiumPrice = Math.ceil(priceOracle.getOptimalPrecisionPremiumAmount(currentTime) + registrationPrice)
-    const premiumPriceETH = BigNumber.from(Math.round((premiumPrice / (ethPrice || 3300)) * 10 ** 6))
-      .mul(BigNumber.from(10).pow(12))
-      .toString()
+    const premiumPriceWei = rentPriceData?.premium?.toString() || '0'
 
     return (
       <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
         <div className='flex w-full flex-row items-center justify-between gap-4'>
           <div className='flex flex-row items-center gap-2'>
-            <Price
-              price={premiumPriceETH}
-              currencyAddress={TOKEN_ADDRESSES.ETH}
-              iconSize='28px'
-              fontSize='text-3xl font-bold pl-0.5'
-            />
+            {isLoadingRentPrice ? (
+              <span className='text-3xl font-bold'>Loading...</span>
+            ) : (
+              <Price
+                price={premiumPriceWei}
+                currencyAddress={TOKEN_ADDRESSES.ETH}
+                iconSize='28px'
+                fontSize='text-3xl font-bold pl-0.5'
+              />
+            )}
             <p className='text-3xl font-bold'>+</p>
             <div className='flex flex-row items-center gap-1 text-3xl font-bold'>
               <p className=''>
-                ${registrationPrice}&nbsp;<span className='text-neutral'>/&nbsp;Year</span>
+                ${price}&nbsp;<span className='text-neutral'>/&nbsp;Year</span>
               </p>
             </div>
           </div>

@@ -56,6 +56,25 @@ export type ChainWithDetails = Chain & {
 // `chainDetail` and `gasFeeDetail` are custom fields to be used in the ChainList component
 export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   {
+    ...mainnet,
+    iconBackground: 'bg-zinc-300',
+    iconUrl: '/assets/icons/chains/ethereum.svg',
+    custom: {
+      chainDetail: '',
+      gasFeeDetail: 'High gas fees',
+    },
+    blockExplorers: {
+      default: {
+        name: 'Blockscout',
+        url: 'https://explorer.base.org',
+      },
+      blockscout: {
+        name: 'Blockscout',
+        url: 'https://eth.blockscout.com/',
+      },
+    },
+  },
+  {
     ...base,
     iconUrl: '/assets/icons/chains/base.svg',
     custom: {
@@ -88,25 +107,6 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
       blockscout: {
         name: 'Blockscout',
         url: 'https://optimistic.blockscout.com/',
-      },
-    },
-  },
-  {
-    ...mainnet,
-    iconBackground: 'bg-zinc-300',
-    iconUrl: '/assets/icons/chains/ethereum.svg',
-    custom: {
-      chainDetail: '',
-      gasFeeDetail: 'High gas fees',
-    },
-    blockExplorers: {
-      default: {
-        name: 'Blockscout',
-        url: 'https://explorer.base.org',
-      },
-      blockscout: {
-        name: 'Blockscout',
-        url: 'https://eth.blockscout.com/',
       },
     },
   },

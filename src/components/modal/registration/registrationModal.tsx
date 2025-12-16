@@ -34,7 +34,7 @@ import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { ENS_HOLIDAY_REFERRER_ADDRESS, ENS_PUBLIC_RESOLVER_ADDRESS } from '@/constants/web3/contracts'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Hex } from 'viem'
 import { useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
@@ -44,7 +44,6 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
-import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -175,34 +174,64 @@ const RegistrationModal: React.FC = () => {
     dispatch(resetRegistrationModal())
   }
 
-  const calculationResults = useMemo(() => {
+  // Calculate duration based on user selection
+  const durationSeconds = useMemo(() => {
     if (!registrationState.name) return null
 
-    let durationSeconds: number
+    let seconds: number
 
     if (registrationMode === 'register_for') {
-      durationSeconds = quantity * getSecondsPerUnit(timeUnit)
+      seconds = quantity * getSecondsPerUnit(timeUnit)
     } else {
       if (!customDuration || customDuration === 0) return null
-      durationSeconds = customDuration
+      seconds = customDuration
 
-      if (durationSeconds <= 0) {
+      if (seconds <= 0) {
         console.error('Selected date is in the past')
         return null
       }
     }
 
+    return seconds
+  }, [registrationState.name, registrationMode, quantity, timeUnit, customDuration])
+
+  // Fetch rent price (including premium) directly from ENS contract
+  const { data: rentPriceData, isLoading: isLoadingRentPrice } = useQuery({
+    queryKey: ['rentPrice', registrationState.name, durationSeconds?.toString()],
+    queryFn: async () => {
+      if (!registrationState.name || !durationSeconds) return null
+
+      const label = registrationState.name.replace('.eth', '')
+      const result = await getRentPrice(label, BigInt(durationSeconds))
+
+      return result
+    },
+    enabled: !!registrationState.name && !!durationSeconds && durationSeconds > 0,
+    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchOnWindowFocus: true,
+    staleTime: 5000, // Consider data stale after 5 seconds
+  })
+
+  const calculationResults = useMemo(() => {
+    if (!registrationState.name || !durationSeconds) return null
+
     const durationBigInt = BigInt(durationSeconds)
     const durationYears = durationSeconds / YEAR_IN_SECONDS
-    const expireTime = registrationState.domain?.expiry_date
-      ? new Date(registrationState.domain.expiry_date).getTime() / 1000
-      : 0
-    const currentTime = Math.floor(new Date().getTime() / 1000)
-    const regPriceUSD = calculateDomainPriceUSD(registrationState.name, durationYears)
-    const priceOracle = new PremiumPriceOracle(expireTime)
-    const premiumPriceUSD = priceOracle.getOptimalPrecisionPremiumAmount(currentTime)
-    const totalPriceUSD = premiumPriceUSD + regPriceUSD
-    const totalPriceETH = Math.floor((totalPriceUSD / (ethPrice || 3300)) * 10 ** 6) / 10 ** 6
+
+    // Use on-chain price if available, otherwise estimate
+    let totalPriceETH: number
+    let totalPriceUSD: number
+
+    if (rentPriceData) {
+      // Convert from wei to ETH
+      totalPriceETH = Number(rentPriceData.total) / 10 ** 18
+      totalPriceUSD = totalPriceETH * (ethPrice || 3300)
+    } else {
+      // Fallback estimate while loading
+      const regPriceUSD = calculateDomainPriceUSD(registrationState.name, durationYears)
+      totalPriceUSD = regPriceUSD
+      totalPriceETH = Math.floor((totalPriceUSD / (ethPrice || 3300)) * 10 ** 6) / 10 ** 6
+    }
 
     return {
       durationSeconds: durationBigInt,
@@ -210,17 +239,9 @@ const RegistrationModal: React.FC = () => {
       priceUSD: totalPriceUSD,
       priceETH: totalPriceETH,
       isBelowMinimum: durationSeconds < MIN_REGISTRATION_DURATION,
+      isLoadingPrice: isLoadingRentPrice,
     }
-  }, [
-    registrationState.name,
-    registrationMode,
-    quantity,
-    timeUnit,
-    customDuration,
-    ethPrice,
-    calculateDomainPriceUSD,
-    registrationState.domain?.expiry_date,
-  ])
+  }, [registrationState.name, durationSeconds, ethPrice, calculateDomainPriceUSD, rentPriceData, isLoadingRentPrice])
 
   // Store calculated duration in Redux for persistence
   useEffect(() => {

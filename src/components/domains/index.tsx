@@ -8,7 +8,7 @@ import TableLoadingRow from './table/components/TableLoadingRow'
 import VirtualList from '@/components/ui/virtuallist'
 import VirtualGrid from '@/components/ui/virtualgrid'
 import { useAppSelector } from '@/state/hooks'
-import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
+import { selectViewType } from '@/state/reducers/view'
 import Card from './grid/components/card'
 import LoadingCard from './grid/components/loadingCard'
 import { cn } from '@/utils/tailwind'
@@ -52,7 +52,7 @@ const Domains: React.FC<DomainsProps> = ({
   isBulkSelecting = false,
   useLocalScrollTop = false,
 }) => {
-  const { viewType } = useAppSelector(selectMarketplaceDomains)
+  const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
 

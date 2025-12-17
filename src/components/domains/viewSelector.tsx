@@ -4,17 +4,17 @@ import React, { useMemo } from 'react'
 import Image from 'next/image'
 import list from 'public/icons/list.svg'
 import grid from 'public/icons/grid.svg'
-import { selectMarketplaceDomains, setViewType } from '@/state/reducers/domains/marketplaceDomains'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { cn } from '@/utils/tailwind'
 import Tooltip from '../ui/tooltip'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
+import { selectViewType, setViewType } from '@/state/reducers/view'
 
 const ViewSelector = () => {
   const dispatch = useAppDispatch()
   const { actions, selectors } = useFilterRouter()
-  const { viewType } = useAppSelector(selectMarketplaceDomains)
+  const viewType = useAppSelector(selectViewType)
   const { width } = useWindowSize()
   const currentScrollTop = selectors.filters.scrollTop
 

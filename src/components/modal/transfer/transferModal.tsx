@@ -1,8 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
-import { ENS_REGISTRAR_ADDRESS, ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
+import {
+  ENS_REGISTRAR_ADDRESS,
+  ENS_NAME_WRAPPER_ADDRESS,
+  BULK_TRANSFER_CONTRACT_ADDRESS,
+  OPENSEA_CONDUIT_KEY,
+  OPENSEA_CONDUIT_ADDRESS,
+} from '@/constants/web3/contracts'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,28 +21,33 @@ import Input from '@/components/ui/input'
 import { mainnet } from 'viem/chains'
 import { beautifyName } from '@/lib/ens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
-import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import { useDebounce } from '@/hooks/useDebounce'
+import { BULK_TRANSFER_ABI } from '@/constants/abi/BulkTransfer'
+import { ItemType } from '@/types/seaport'
 import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
+import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
 
 interface TransferModalProps {
   domains: TransferDomainType[]
   onClose: () => void
 }
 
-type TransactionStep = 'review' | 'confirming' | 'processing' | 'success' | 'error'
+type TransactionStep = 'review' | 'approving' | 'confirming' | 'processing' | 'success' | 'error'
 
 const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   const dispatch = useAppDispatch()
   const [step, setStep] = useState<TransactionStep>('review')
-  const [txHashes, setTxHashes] = useState<{ name: string; hash: string }[]>([])
+  const [txHash, setTxHash] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [recipientInput, setRecipientInput] = useState('')
   const debouncedRecipientInput = useDebounce(recipientInput, 200)
+  const [needsRegistrarApproval, setNeedsRegistrarApproval] = useState(false)
+  const [needsWrapperApproval, setNeedsWrapperApproval] = useState(false)
+  const [approvingContract, setApprovingContract] = useState<string | null>(null)
 
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: mainnet.id })
   const { data: walletClient } = useWalletClient()
   const queryClient = useQueryClient()
   const { isSelecting } = useAppSelector(selectBulkSelect)
@@ -76,66 +87,156 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
     enabled: !!debouncedRecipientInput,
   })
 
+  // Check if approvals are needed
+  const checkApprovals = async () => {
+    if (!address || !publicClient || !domains.length) return
+
+    try {
+      // Check which contracts we need (wrapped vs unwrapped)
+      const wrappedStatuses = await Promise.all(domains.map(async (domain) => checkIfWrapped(domain.name)))
+
+      const hasUnwrapped = wrappedStatuses.some((isWrapped) => !isWrapped)
+      const hasWrapped = wrappedStatuses.some((isWrapped) => isWrapped)
+
+      // Check registrar approval (for unwrapped names)
+      if (hasUnwrapped) {
+        const isApproved = await publicClient.readContract({
+          address: ENS_REGISTRAR_ADDRESS as Address,
+          abi: BaseRegistrarAbi,
+          functionName: 'isApprovedForAll',
+          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
+        })
+        setNeedsRegistrarApproval(!isApproved)
+      } else {
+        setNeedsRegistrarApproval(false)
+      }
+
+      // Check wrapper approval (for wrapped names)
+      if (hasWrapped) {
+        const isApproved = await publicClient.readContract({
+          address: ENS_NAME_WRAPPER_ADDRESS as Address,
+          abi: NAME_WRAPPER_ABI,
+          functionName: 'isApprovedForAll',
+          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
+        })
+        setNeedsWrapperApproval(!isApproved)
+      } else {
+        setNeedsWrapperApproval(false)
+      }
+    } catch (err) {
+      console.error('Error checking approvals:', err)
+    }
+  }
+
+  // Check approvals when domains change
+  useEffect(() => {
+    checkApprovals()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [domains, address])
+
+  const handleApprove = async (contractAddress: Address, contractName: string) => {
+    if (!walletClient || !address || !publicClient) return
+
+    setStep('approving')
+    setApprovingContract(contractName)
+
+    try {
+      await walletClient.switchChain({ id: mainnet.id })
+
+      const hash = await walletClient.writeContract({
+        address: contractAddress,
+        abi: contractName === 'ENS Registrar' ? BaseRegistrarAbi : NAME_WRAPPER_ABI,
+        functionName: 'setApprovalForAll',
+        args: [OPENSEA_CONDUIT_ADDRESS as Address, true],
+        chain: mainnet,
+      })
+
+      await publicClient.waitForTransactionReceipt({ hash })
+
+      // Re-check approvals after successful approval
+      await checkApprovals()
+      setStep('review')
+      setApprovingContract(null)
+    } catch (err) {
+      console.error('Approval error:', err)
+      setError((err as Error).message)
+      setStep('error')
+      setApprovingContract(null)
+    }
+  }
+
   const handleTransfer = async () => {
     if (!walletClient || !address || !account || !publicClient) return
+    if (!domains || domains.length === 0) {
+      setError('No domains selected for transfer')
+      setStep('error')
+      return
+    }
 
     setStep('confirming')
 
     try {
-      const transfers = domains.map(async (domain) => {
-        const tokenId = BigInt(domain.tokenId)
-        const isWrapped = await checkIfWrapped(domain.name)
-        const contractAddress = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-        const abi = isWrapped ? NAME_WRAPPER_ABI : BaseRegistrarAbi
-        const functionName = 'safeTransferFrom'
-        const recipientAddress = account.address
-        const args = isWrapped
-          ? [address, recipientAddress, tokenId, BigInt(1), '0x']
-          : [address, recipientAddress, tokenId]
+      const recipientAddress = account.address as Address
+      const items = await Promise.all(
+        domains.map(async (domain) => {
+          const isWrapped = await checkIfWrapped(domain.name)
 
-        // Simulate the transaction first
-        await publicClient.simulateContract({
-          address: contractAddress as Address,
-          abi,
-          functionName,
-          // @ts-expect-error - ABI types are compatible
-          args,
-          account: address,
-        })
-
-        await walletClient.switchChain({ id: mainnet.id })
-        // Send the transaction
-        return walletClient.writeContract({
-          address: contractAddress as Address,
-          abi,
-          functionName,
-          // @ts-expect-error - ABI types are compatible
-          args,
-          chain: mainnet,
-        })
-      })
-
-      const hashes = await Promise.all(transfers)
-      setTxHashes(hashes.map((hash, index) => ({ name: domains[index].name, hash }))) // Store the first transaction hash
-      setStep('processing')
-
-      const erroredNames = []
-      // Wait for all transactions
-      await Promise.all(
-        hashes.map(async (hash, index) => {
-          const receipt = await publicClient.waitForTransactionReceipt({
-            hash,
-          })
-
-          console.log('receipt', receipt)
-
-          if (receipt.status !== 'success') {
-            erroredNames.push(domains[index].name ?? 'one of the names')
+          return {
+            itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721,
+            token: isWrapped ? ENS_NAME_WRAPPER_ADDRESS : (ENS_REGISTRAR_ADDRESS as Address),
+            identifier: BigInt(domain.tokenId),
+            amount: BigInt(1),
           }
-
-          return receipt
         })
       )
+
+      // Validate items array before calling contract
+      if (!items || items.length === 0) {
+        throw new Error('Failed to prepare items for transfer')
+      }
+
+      // Structure matches TransferHelperItemsWithRecipient[]
+      const transferItems = [
+        {
+          items,
+          recipient: recipientAddress,
+          validateERC721Receiver: true,
+        },
+      ]
+
+      await walletClient.switchChain({ id: mainnet.id })
+
+      // Simulate first to get detailed error
+      try {
+        await publicClient.simulateContract({
+          address: BULK_TRANSFER_CONTRACT_ADDRESS as Address,
+          abi: BULK_TRANSFER_ABI,
+          functionName: 'bulkTransfer',
+          args: [transferItems, OPENSEA_CONDUIT_KEY],
+          account: address,
+        })
+      } catch (simError: any) {
+        throw new Error(simError?.shortMessage || simError?.message || 'Transaction simulation failed')
+      }
+
+      const hash = await walletClient.writeContract({
+        address: BULK_TRANSFER_CONTRACT_ADDRESS as Address,
+        abi: BULK_TRANSFER_ABI,
+        functionName: 'bulkTransfer',
+        args: [transferItems, OPENSEA_CONDUIT_KEY],
+        chain: mainnet,
+      })
+
+      setTxHash(hash) // Store the first transaction hash
+      setStep('processing')
+
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+      })
+
+      if (receipt.status !== 'success') {
+        throw new Error('Transaction failed')
+      }
 
       setStep('success')
       setTimeout(() => {
@@ -144,6 +245,8 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         })
         queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
       }, 2000)
+
+      return receipt
     } catch (error) {
       console.error('Transfer error:', error)
       setError((error as Error).message)
@@ -207,18 +310,65 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               )}
               {error && !isResolving && <p className='text-sm text-red-500'>{error}</p>}
             </div>
+            {/* Show approval buttons if needed */}
+            {/* {(needsRegistrarApproval || needsWrapperApproval) && (
+              <div className='bg-secondary space-y-2 rounded-md p-3'>
+                <p className='text-neutral text-sm'>Approval required before transfer:</p>
+                {needsRegistrarApproval && (
+                  <SecondaryButton
+                    onClick={() => handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')}
+                    className='w-full'
+                  >
+                    Approve ENS Registrar
+                  </SecondaryButton>
+                )}
+                {needsWrapperApproval && (
+                  <SecondaryButton
+                    onClick={() => handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')}
+                    className='w-full'
+                  >
+                    Approve Name Wrapper
+                  </SecondaryButton>
+                )}
+              </div>
+            )} */}
             <div className='flex flex-col gap-2'>
               <PrimaryButton
-                onClick={handleTransfer}
+                onClick={async () => {
+                  if (needsRegistrarApproval && needsWrapperApproval) {
+                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
+                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
+                  } else if (needsRegistrarApproval) {
+                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
+                  } else if (needsWrapperApproval) {
+                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
+                  }
+
+                  handleTransfer()
+                }}
                 disabled={!account?.address || isResolving || !!error}
                 className='w-full'
               >
-                Transfer
+                {needsRegistrarApproval || needsWrapperApproval ? 'Approve Transfer' : 'Transfer'}
               </PrimaryButton>
               <SecondaryButton onClick={handleClose} className='w-full'>
                 Cancel
               </SecondaryButton>
             </div>
+          </>
+        )
+
+      case 'approving':
+        return (
+          <>
+            <p className='text-center font-bold'>Approving {approvingContract}</p>
+            <div className='flex flex-col items-center gap-4'>
+              <div className='border-primary my-2 inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
+              <p className='text-lg'>Please confirm the approval in your wallet...</p>
+            </div>
+            <SecondaryButton onClick={handleClose} disabled={true} className='w-full'>
+              Close
+            </SecondaryButton>
           </>
         )
 
@@ -236,21 +386,16 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
                   ? 'Please confirm the transaction in your wallet...'
                   : `Transferring ${domains.length} name${domains.length > 1 ? 's' : ''}...`}
               </p>
-              {txHashes.length > 0 && (
-                <div className='bg-secondary flex max-h-48 w-full flex-col gap-2 overflow-y-auto rounded-md p-4'>
-                  {txHashes.map(({ name, hash }) => (
-                    <div key={hash} className='flex w-full flex-row items-center justify-between'>
-                      <p className='font-bold'>{name}</p>
-                      <a
-                        href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${hash}`}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-primary hover:underline'
-                      >
-                        View on Etherscan
-                      </a>
-                    </div>
-                  ))}
+              {txHash && (
+                <div className='mx-auto flex w-full items-center justify-center'>
+                  <a
+                    href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-primary hover:underline'
+                  >
+                    View on Etherscan
+                  </a>
                 </div>
               )}
             </div>
@@ -271,21 +416,16 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
                 Transfer of {formatDomainsText()} to {account?.ens.name || formatAddress(account?.address ?? '')} was
                 successful!
               </p>
-              {txHashes.length > 0 && (
-                <div className='bg-secondary flex max-h-48 w-full flex-col gap-2 overflow-y-auto rounded-md p-4'>
-                  {txHashes.map(({ name, hash }) => (
-                    <div key={hash} className='flex w-full flex-row items-center justify-between'>
-                      <p className='font-bold'>{name}</p>
-                      <a
-                        href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${hash}`}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-primary hover:underline'
-                      >
-                        View on Etherscan
-                      </a>
-                    </div>
-                  ))}
+              {txHash && (
+                <div className='flex w-full items-center justify-center'>
+                  <a
+                    href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-primary hover:text-primary/80 underline'
+                  >
+                    View on Etherscan
+                  </a>
                 </div>
               )}
             </div>
@@ -307,7 +447,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
                 onClick={() => {
                   setStep('review')
                   setError(null)
-                  setTxHashes([])
+                  setTxHash(null)
                 }}
                 className='w-full'
               >

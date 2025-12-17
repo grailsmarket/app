@@ -36,6 +36,12 @@
   --shadow-medium: 2px 2px 4px 0px var(--shadow-color);
   --shadow-large: 4px 4px 8px 0px var(--shadow-color);
   --shadow-xl: 4px 8px 16px 0px var(--shadow-color);
+
+  /* Custom Ethereum Identity Kit colors */
+  --ethereum-identity-kit-sign-in-button: #ffdfc0;
+  --ethereum-identity-kit-sign-in-button-dark: #ffdfc0;
+  --ethereum-identity-kit-sign-in-button-hover: #dcc0a5;
+  --ethereum-identity-kit-sign-in-button-hover-dark: #dcc0a5;
 }
 
 @theme inline {
@@ -215,4 +221,14 @@ body {
 .profile-tooltip-content {
   z-index: 1000 !important;
   right: 0 !important;
+}
+
+.sign-in-button-text {
+  font-weight: 500;
+  font-size: 18px;
+  font-family: var(--font-sedan-sc);
+}
+
+.signed-in-user-profile {
+  border-radius: 0 !important;
 }

@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Sedan_SC, Inter } from 'next/font/google'
-import './globals.css'
-import 'ethereum-identity-kit/css'
-import '@rainbow-me/rainbowkit/styles.css'
 import Providers from './providers'
 import { Production } from './production'
 import { sharedMetadata } from '@/lib/metadata'
+import 'ethereum-identity-kit/css'
+import '@rainbow-me/rainbowkit/styles.css'
+import './globals.css'
 
 const inter = Inter({
   variable: '--font-inter',

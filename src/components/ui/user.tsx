@@ -56,10 +56,8 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
             className
           )}
         >
-          {/* @ts-expect-error the records do exist */}
           {profile?.ens?.records?.header && (
             <Image
-              // @ts-expect-error the records do exist
               src={profile?.ens?.records?.header}
               alt='Header'
               width={400}

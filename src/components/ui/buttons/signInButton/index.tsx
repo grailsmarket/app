@@ -1,34 +1,111 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { EthereumIcon, LoadingCell, useWindowSize } from 'ethereum-identity-kit'
-import Connected from './connected'
 import { useUserContext } from '@/context/user'
-import PrimaryButton from '../primary'
+import { SignInButton as SignInButtonComponent } from 'ethereum-identity-kit'
+import { DAY_IN_SECONDS } from '@/constants/time'
+import { useClickAway } from '@/hooks/useClickAway'
+import { cn } from '@/utils/tailwind'
+import Image from 'next/image'
+import ExternalLink from 'public/icons/external-link.svg'
+import GrailsPoap from 'public/art/grails-poap.webp'
+import Link from 'next/link'
 
 const SignInButton = () => {
-  const { width } = useWindowSize()
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownWalletRef = useClickAway<HTMLDivElement>(() => {
+    setIsDropdownOpen(false)
+  })
+
   const { openConnectModal } = useConnectModal()
-  const { userAddress, authStatus, isSigningIn, authStatusIsRefetching, authStatusIsLoading } = useUserContext()
+  const {
+    userAddress,
+    authStatus,
+    isPoapClaimed,
+    claimedPoapLink,
+    setIsSettingsOpen,
+    handleSignOut,
+    handleGetNonce,
+    verify,
+    handleSignInSuccess,
+    handleSignInError,
+  } = useUserContext()
 
-  if (userAddress && authStatus === 'authenticated') return <Connected />
-
-  const isAuthloading = authStatus === 'loading' || authStatusIsLoading || authStatusIsRefetching
-
-  return userAddress && isAuthloading ? (
-    <LoadingCell
-      style={{ width: width && width < 768 ? '80px' : '180px', height: width && width < 768 ? '40px' : '44px' }}
-    />
-  ) : (
-    <PrimaryButton
-      onClick={() => openConnectModal?.()}
-      disabled={isSigningIn}
-      className='px-md sm:px-lg flex h-9 flex-row items-center gap-2 md:h-11'
+  return (
+    <div
+      ref={dropdownWalletRef}
+      className={cn(
+        'group relative',
+        userAddress && authStatus === 'authenticated' ? 'text-foreground' : 'text-background'
+      )}
     >
-      <EthereumIcon className='h-4 w-3! md:h-5' />
-      <p className='font-sedan-sc text-lg font-medium md:text-xl'>{isSigningIn ? 'Signing In...' : 'Sign In'}</p>
-    </PrimaryButton>
+      <SignInButtonComponent
+        autoSignInAfterConnection={true}
+        getNonce={handleGetNonce}
+        verifySignature={verify}
+        onSignInSuccess={handleSignInSuccess}
+        onSignInError={handleSignInError}
+        message='Grails Market wants you to sign in'
+        onDisconnectedClick={() => openConnectModal?.()}
+        darkMode={true}
+        isSignedIn={userAddress && authStatus === 'authenticated'}
+        isDropdown={true}
+        isDropdownOpen={isDropdownOpen}
+        onSignedInClick={() => {
+          setIsDropdownOpen(!isDropdownOpen)
+        }}
+        expirationTime={DAY_IN_SECONDS * 1000}
+      />
+      <div
+        className={cn(
+          'bg-secondary p-lg border-tertiary text-foreground absolute right-0 mt-1 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border text-lg font-semibold shadow-sm sm:w-full sm:items-start md:text-xl',
+          isDropdownOpen && 'flex'
+        )}
+      >
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+        >
+          Settings
+        </button>
+        <button
+          onClick={() => window.open(`https://revoke.cash/address/${userAddress}?chainId=1`, '_blank')}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+        >
+          <p className='text-lg text-nowrap sm:text-xl'>My Approvals</p>
+          <Image src={ExternalLink} alt='External Link' width={20} height={20} className='h-5 w-auto' />
+        </button>
+        {isPoapClaimed && claimedPoapLink ? (
+          <Link
+            href={claimedPoapLink}
+            target='_blank'
+            onClick={() => setIsDropdownOpen(false)}
+            className='flex w-full cursor-pointer flex-row-reverse items-center justify-start gap-1.5 rounded-sm px-1 transition-opacity hover:opacity-80 sm:flex-row sm:gap-2'
+          >
+            <p>My POAP</p>
+            <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />
+          </Link>
+        ) : null}
+        <Link
+          href={`https://discord.com/invite/ZUyG3mSXFD`}
+          target='_blank'
+          onClick={() => setIsDropdownOpen(false)}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
+        >
+          Discord
+        </Link>
+        <button
+          onClick={() => {
+            setIsDropdownOpen(false)
+            handleSignOut()
+          }}
+          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 text-red-400 transition-opacity hover:opacity-80'
+        >
+          <p>Sign out</p>
+        </button>
+      </div>
+    </div>
   )
 }
 

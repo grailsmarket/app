@@ -64,7 +64,7 @@ const Connected = () => {
           onClick={() => window.open(`https://revoke.cash/address/${userAddress}?chainId=1`, '_blank')}
           className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
         >
-          <p className='text-nowrap text-lg sm:text-xl'>My Approvals</p>
+          <p className='text-lg text-nowrap sm:text-xl'>My Approvals</p>
           <Image src={ExternalLink} alt='External Link' width={20} height={20} className='h-5 w-auto' />
         </button>
         {isPoapClaimed && claimedPoapLink ? (

@@ -41,7 +41,6 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const ensName = ensData?.ens?.name
   const ensAvatar = ensData?.ens?.avatar
   const displayUser = ensName || truncatedUser
-  // @ts-expect-error the records do exist
   const description = ensData?.ens?.records?.description
 
   const avatarResponse = ensAvatar && isLinkValid(ensAvatar) ? await fetch(ensAvatar) : null

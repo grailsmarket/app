@@ -42,6 +42,10 @@ type userContextType = {
   setIsSettingsOpen: Dispatch<SetStateAction<boolean>>
   isPoapClaimed: boolean
   claimedPoapLink?: string
+  handleGetNonce: () => Promise<string> | string
+  verify: (message: string, nonce: string, signature: string) => Promise<void> | void
+  handleSignInSuccess: () => void
+  handleSignInError: (error: Error) => void
 }
 
 type Props = {
@@ -99,7 +103,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   }, [address])
 
   const handleSignInSuccess = async () => {
-    refetchAuthStatus()
+    await refetchAuthStatus()
     setIsSigningIn(false)
   }
 
@@ -118,14 +122,14 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
     expirationTime: DAY_IN_SECONDS * 1000, // day in milliseconds
   })
 
-  useEffect(() => {
-    if (address && authStatus === 'unauthenticated') {
-      setIsSigningIn(true)
-      handleSignIn()
-    }
+  // useEffect(() => {
+  //   if (address && authStatus === 'unauthenticated') {
+  //     setIsSigningIn(true)
+  //     handleSignIn()
+  //   }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, authStatus])
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [address, authStatus])
 
   const handleSignOut = () => {
     signOut()
@@ -154,6 +158,10 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         setIsSettingsOpen,
         isPoapClaimed,
         claimedPoapLink,
+        handleGetNonce,
+        verify,
+        handleSignInSuccess,
+        handleSignInError,
       }}
     >
       {children}

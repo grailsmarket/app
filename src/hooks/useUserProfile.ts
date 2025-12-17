@@ -36,7 +36,6 @@ export const useUserProfile = ({ address, authStatus }: UseUserProfileProps) => 
         setUserEnsProfile({
           name: profile?.ens?.name || null,
           avatar: profile?.ens?.avatar || null,
-          // @ts-expect-error the records do exist
           header: profile?.ens?.records?.header || null,
         })
       )

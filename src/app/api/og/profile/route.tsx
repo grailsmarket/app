@@ -51,7 +51,6 @@ export async function GET(req: NextRequest) {
       ? truncateAddress(address)
       : ens_beautify(address)
   const fetchedAvatar = response.ens?.avatar || defaultAvatar
-  // @ts-expect-error the records do exist
   const fetchedHeader = response.ens?.records?.header || defaultHeader
 
   return new ImageResponse(

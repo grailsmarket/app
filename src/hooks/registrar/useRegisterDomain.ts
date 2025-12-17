@@ -1,5 +1,6 @@
 import { Address, Hex, toHex } from 'viem'
 import { useWalletClient, usePublicClient } from 'wagmi'
+import { mainnet } from 'wagmi/chains'
 import {
   ENS_HOLIDAY_REFERRER_ADDRESS,
   ENS_HOLIDAY_REGISTRAR_ADDRESS,
@@ -20,7 +21,7 @@ type RegistrationParams = {
 
 const useRegisterDomain = () => {
   const { data: walletClient } = useWalletClient()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: mainnet.id })
 
   const generateSecret = (): `0x${string}` => {
     const randomBytes = new Uint8Array(32)
@@ -177,12 +178,34 @@ const useRegisterDomain = () => {
     }
 
     try {
+      // Estimate gas and add 25% buffer for safety (seems that registering emoji names needs more gas)
+      let gasLimit = BigInt(500000) // Safe fallback if estimation fails
+
+      try {
+        const estimatedGas = await publicClient?.estimateContractGas({
+          address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+          abi: ENS_HOLIDAY_REGISTRAR_ABI,
+          functionName: 'register',
+          args: [registrationData],
+          value,
+          account: walletClient.account,
+        })
+        if (estimatedGas) {
+          // Add 25% buffer to estimated gas
+          gasLimit = (estimatedGas * BigInt(125)) / BigInt(100)
+          console.log('Estimated gas:', estimatedGas.toString(), 'Using with buffer:', gasLimit.toString())
+        }
+      } catch (estimateError) {
+        console.warn('Gas estimation failed, using fallback:', estimateError)
+      }
+
       const tx = await walletClient.writeContract({
         address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
         abi: ENS_HOLIDAY_REGISTRAR_ABI,
         functionName: 'register',
         args: [registrationData],
         value,
+        gas: gasLimit,
       })
       return tx
     } catch (error) {

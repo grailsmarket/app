@@ -31,9 +31,13 @@ import DatePicker from '@/components/ui/datepicker'
 import NameImage from '@/components/ui/nameImage'
 import { DAY_IN_SECONDS, YEAR_IN_SECONDS } from '@/constants/time'
 import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
-import { ENS_HOLIDAY_REFERRER_ADDRESS, ENS_PUBLIC_RESOLVER_ADDRESS } from '@/constants/web3/contracts'
+import {
+  ENS_HOLIDAY_REFERRER_ADDRESS,
+  ENS_HOLIDAY_REGISTRAR_ADDRESS,
+  ENS_PUBLIC_RESOLVER_ADDRESS,
+} from '@/constants/web3/contracts'
 import { cn } from '@/utils/tailwind'
-import { beautifyName } from '@/lib/ens'
+import { beautifyName, normalizeName } from '@/lib/ens'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Hex } from 'viem'
 import { useIsClient } from 'ethereum-identity-kit'
@@ -44,6 +48,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
+import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -75,6 +80,7 @@ const RegistrationModal: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
+  const [gasEstimate, setGasEstimate] = useState<bigint | null>(BigInt(500000))
 
   // Get persisted state from Redux
   const { registrationMode, quantity, timeUnit, customDuration, isNameAvailable } = registrationState
@@ -250,12 +256,44 @@ const RegistrationModal: React.FC = () => {
     }
   }, [calculationResults, dispatch])
 
-  const gasEstimate = useMemo(() => {
-    return BigInt(300000)
-  }, [])
+  const getGasEstimate = async () => {
+    if (!registrationState.name || !address || !calculationResults || !secret || !rentPriceData) return null
+
+    const registrationData = {
+      label: registrationState.name.replace('.eth', ''),
+      owner: address,
+      duration: calculationResults.durationSeconds,
+      secret: secret,
+      resolver: ENS_PUBLIC_RESOLVER_ADDRESS,
+      data: [],
+      reverseRecord: false,
+      referrer: ENS_HOLIDAY_REFERRER_ADDRESS,
+    }
+
+    const estimatedGas = await publicClient?.estimateContractGas({
+      address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
+      abi: ENS_HOLIDAY_REGISTRAR_ABI,
+      functionName: 'register',
+      args: [registrationData],
+      value: rentPriceData.total,
+      account: address,
+    })
+
+    if (estimatedGas) {
+      setGasEstimate(estimatedGas)
+    } else {
+      // Fallback to 500,000 gas (safe fallback) if estimation fails
+      setGasEstimate(BigInt(500000))
+    }
+  }
+
+  useEffect(() => {
+    getGasEstimate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registrationState.name, address, calculationResults, secret, rentPriceData])
 
   const hasSufficientBalance = useMemo(() => {
-    if (!ethBalance || !calculationResults || !gasPrice) return false
+    if (!ethBalance || !calculationResults || !gasPrice || !gasEstimate) return false
 
     const totalPriceWei = BigInt(Math.floor(calculationResults.priceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
     const gasWei = gasEstimate * gasPrice
@@ -271,7 +309,7 @@ const RegistrationModal: React.FC = () => {
     }
 
     try {
-      const nameLabel = registrationState.name.replace('.eth', '')
+      const nameLabel = normalizeName(registrationState.name.replace('.eth', ''))
 
       // Generate commitment hash with current parameters
       const expectedCommitment = await makeCommitment({
@@ -437,7 +475,7 @@ const RegistrationModal: React.FC = () => {
       const commitSecret = secret || generateSecret()
       if (!secret) dispatch(setSecret(commitSecret))
 
-      const nameLabel = registrationState.name.replace('.eth', '')
+      const nameLabel = normalizeName(registrationState.name.replace('.eth', ''))
 
       const commitment = await makeCommitment({
         label: nameLabel,
@@ -498,7 +536,7 @@ const RegistrationModal: React.FC = () => {
     dispatch(setRegistrationFlowState('registering'))
 
     try {
-      const nameLabel = registrationState.name.replace('.eth', '')
+      const nameLabel = normalizeName(registrationState.name.replace('.eth', ''))
       const rentPrice = await getRentPrice(nameLabel, duration)
 
       if (!rentPrice) {

@@ -60,7 +60,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
     return (
-      <div className='py-sm sm:py-md px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex items-center justify-between gap-2 border-b-2 sm:text-xl lg:gap-8'>
+      <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8'>
         <div className='flex gap-4'>
           {displayedTabs.map((tab) => (
             <button
@@ -92,7 +92,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
 
   // After mount, render with proper active state
   return (
-    <div className='sm:py-md px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 py-0 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8'>
+    <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8'>
       <div className='flex h-10 gap-4'>
         {displayedTabs.map((tab) => (
           <button

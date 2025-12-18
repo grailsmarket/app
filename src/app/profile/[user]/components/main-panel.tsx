@@ -22,7 +22,7 @@ import { clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters
 import {
   clearFilters,
   setFiltersScrollTop as setDomainsScrollTop,
-} from '@/state/reducers/filters/profileDomainsFilters'
+} from '@/state/reducers/filters/profileListingsFilter'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import BulkSelect from '@/components/ui/bulkSelect'
 
@@ -83,7 +83,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     }
   }, [profileTab, userAccount?.address, userAddress, authStatus, dispatch, user])
 
-  const showDomainsPanel = profileTab === 'domains' || profileTab === 'watchlist'
+  const showDomainsPanel = profileTab === 'domains' || profileTab === 'watchlist' || profileTab === 'listings'
   const showOfferPanel = profileTab === 'sent_offers' || profileTab === 'received_offers'
   const showActivityPanel = profileTab === 'activity'
 

@@ -4,6 +4,10 @@ export const PROFILE_TABS = [
     value: 'domains',
   },
   {
+    label: 'Listings',
+    value: 'listings',
+  },
+  {
     label: 'Received Offers',
     value: 'received_offers',
   },

@@ -10,6 +10,8 @@ import Tooltip from '../ui/tooltip'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { selectViewType, setViewType } from '@/state/reducers/view'
+import { PersistGate } from 'redux-persist/integration/react'
+import { persistor } from '@/state'
 
 const ViewSelector = () => {
   const dispatch = useAppDispatch()
@@ -60,30 +62,32 @@ const ViewSelector = () => {
   }
 
   return (
-    <div className='flex gap-x-2'>
-      <Tooltip label='List view'>
-        <button onClick={() => onChangeViewType('list')} className='h-6 w-6'>
-          <Image
-            src={list}
-            alt='List layout'
-            width={24}
-            height={24}
-            className={cn('cursor-pointer', viewType === 'list' ? 'opacity-100' : 'opacity-50 hover:opacity-80')}
-          />
-        </button>
-      </Tooltip>
-      <Tooltip label='Grid view'>
-        <button onClick={() => onChangeViewType('grid')} className='h-6 w-6'>
-          <Image
-            src={grid}
-            alt='Grid layout'
-            width={18}
-            height={18}
-            className={cn('cursor-pointer', viewType === 'grid' ? 'opacity-100' : 'opacity-50 hover:opacity-80')}
-          />
-        </button>
-      </Tooltip>
-    </div>
+    <PersistGate persistor={persistor}>
+      <div className='flex gap-x-2'>
+        <Tooltip label='List view'>
+          <button onClick={() => onChangeViewType('list')} className='h-6 w-6'>
+            <Image
+              src={list}
+              alt='List layout'
+              width={24}
+              height={24}
+              className={cn('cursor-pointer', viewType === 'list' ? 'opacity-100' : 'opacity-50 hover:opacity-80')}
+            />
+          </button>
+        </Tooltip>
+        <Tooltip label='Grid view'>
+          <button onClick={() => onChangeViewType('grid')} className='h-6 w-6'>
+            <Image
+              src={grid}
+              alt='Grid layout'
+              width={18}
+              height={18}
+              className={cn('cursor-pointer', viewType === 'grid' ? 'opacity-100' : 'opacity-50 hover:opacity-80')}
+            />
+          </button>
+        </Tooltip>
+      </div>
+    </PersistGate>
   )
 }
 

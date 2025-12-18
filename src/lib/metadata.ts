@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadataBaseUrl = new URL('https://grails.app')
 
-export const metadataTitle = 'Grails Market'
+export const metadataTitle = 'Grails: ENS Market & Manager'
 export const metadataSiteName = 'Grails Market'
 export const metadataDescription = 'Your ENS Market. Find, sell, buy, and manage your ENS names on Grails Market.'
 

@@ -146,6 +146,13 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               </p>
             </div>
           )}
+          {profileTab.value === 'listings' && filterType === 'profile' && domain.listings[0]?.expires_at && (
+            <div className='flex items-center gap-1'>
+              <p className='text-md text-neutral truncate font-semibold'>
+                Ends: {formatExpiryDate(domain.listings[0]?.expires_at, { includeTime: false, dateDivider: '/' })}
+              </p>
+            </div>
+          )}
         </div>
         <div className='flex justify-between'>
           <Actions

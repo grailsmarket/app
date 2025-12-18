@@ -28,6 +28,8 @@ const StatusFilter: React.FC = () => {
     if (filterType === 'profile') {
       if (activeProfileTab === 'domains') {
         return MY_DOMAINS_FILTER_LABELS
+      } else if (activeProfileTab === 'listings') {
+        return []
       } else if (activeProfileTab === 'received_offers') {
         return RECEIVED_OFFERS_STATUS_FILTER_LABELS
       } else if (activeProfileTab === 'sent_offers') {
@@ -49,6 +51,8 @@ const StatusFilter: React.FC = () => {
 
   const selectedLabel =
     statusFilter.length > 1 ? `${statusFilter[0]} +${statusFilter.length - 1}` : statusFilter[0] || null
+
+  if (filterLabels.length === 0) return null
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Status' />}>

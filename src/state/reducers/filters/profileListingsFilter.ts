@@ -4,7 +4,6 @@ import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import { MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
 import {
   PortfolioFiltersOpenedState,
-  PortfolioStatusFilterType,
   PortfolioTypeFilterType,
   PortfolioOpenableFilterType,
   SortFilterType,
@@ -16,8 +15,8 @@ import {
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
-  status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  status: ['Listed'],
   length: {
     min: null,
     max: null,
@@ -35,8 +34,8 @@ export const emptyFilterState: PortfolioFiltersState = {
 export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
-  status: [],
   type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  status: ['Listed'],
   length: {
     min: null,
     max: null,
@@ -47,14 +46,14 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status'],
-  sort: 'expiry_date_asc',
+  openFilters: ['Sort'],
+  sort: 'price_asc',
   scrollTop: 0,
 }
 
 // Slice
-export const profileDomainsFiltersSlice = createSlice({
-  name: 'profileDomainsFilters',
+export const profileListingsFiltersSlice = createSlice({
+  name: 'profileListingsFilters',
   initialState,
   reducers: {
     setFiltersOpen(state, { payload }: PayloadAction<boolean>) {
@@ -62,16 +61,6 @@ export const profileDomainsFiltersSlice = createSlice({
     },
     setSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
-    },
-    toggleFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
-      if (state.status.includes(payload)) {
-        state.status = state.status.filter((status) => status !== payload)
-      } else {
-        state.status = state.status.concat(payload)
-      }
-    },
-    setFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
-      state.status = [payload]
     },
     toggleFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
       if (state.type.includes(payload)) {
@@ -121,13 +110,12 @@ export const profileDomainsFiltersSlice = createSlice({
     },
     clearFilters(state) {
       state.search = ''
-      state.status = []
       state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status']
+      state.openFilters = ['Sort']
       state.sort = null
     },
   },
@@ -137,8 +125,6 @@ export const profileDomainsFiltersSlice = createSlice({
 export const {
   setFiltersOpen,
   setSearch,
-  toggleFiltersStatus,
-  setFiltersStatus,
   toggleFiltersType,
   setFiltersType,
   setFiltersLength,
@@ -150,10 +136,10 @@ export const {
   setFiltersScrollTop,
   toggleFilterOpen,
   clearFilters,
-} = profileDomainsFiltersSlice.actions
+} = profileListingsFiltersSlice.actions
 
 // Selectors
-export const selectProfileDomainsFilters = (state: RootState) => state.filters.profileDomainsFilters
+export const selectProfileListingsFilters = (state: RootState) => state.filters.profileListingsFilters
 
 // Reducer
-export default profileDomainsFiltersSlice.reducer
+export default profileListingsFiltersSlice.reducer

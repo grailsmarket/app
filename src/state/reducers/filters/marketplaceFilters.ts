@@ -181,7 +181,7 @@ export const marketplaceFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Status']
+      state.openFilters = ['Sort']
       state.sort = null
     },
   },

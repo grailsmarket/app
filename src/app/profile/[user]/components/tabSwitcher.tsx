@@ -20,7 +20,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const dispatch = useAppDispatch()
-  const { profileTotalDomains, totalWatchlistDomains } = useDomains(user)
+  const { profileTotalDomains, totalWatchlistDomains, totalListings } = useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
 
   const setProfileTab = (tab: ProfileTabType) => {
@@ -32,7 +32,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   }, [])
 
   const displayedTabs = useMemo(() => {
-    if (!!user && !!userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated') {
+    if (user && userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated') {
       return PROFILE_TABS
     }
 
@@ -44,6 +44,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       switch (tab.value) {
         case 'domains':
           return profileTotalDomains
+        case 'listings':
+          return totalListings
         case 'watchlist':
           return totalWatchlistDomains
         case 'received_offers':
@@ -54,7 +56,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return 0
       }
     },
-    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers]
+    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers, totalListings]
   )
 
   // During SSR and initial mount, render all tabs without active state

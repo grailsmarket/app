@@ -15,6 +15,7 @@ import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import {
   PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS,
+  PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS,
   PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS,
 } from '@/constants/domains/marketplaceDomains'
 
@@ -34,6 +35,8 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
     switch (selectedTab.value) {
       case 'domains':
         return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
+      case 'listings':
+        return PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS
       case 'watchlist':
         return PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS
     }
@@ -91,7 +94,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         displayedDetails={displayedDetails}
         scrollEnabled={isAtBottom}
         showWatchlist={selectedTab.value === 'watchlist'}
-        isBulkSelecting={selectedTab.value === 'domains' && isSelecting}
+        isBulkSelecting={(selectedTab.value === 'domains' || selectedTab.value === 'listings') && isSelecting}
       />
     </div>
   )

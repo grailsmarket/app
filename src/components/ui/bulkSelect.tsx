@@ -77,7 +77,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
     dispatch(setCancelListingModalOpen(true))
   }
 
-  if (selectedTab.value !== 'domains') return null
+  if (selectedTab.value !== 'domains' && selectedTab.value !== 'listings') return null
 
   return (
     <div className='bulk-select-container fixed right-1 bottom-1 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2 md:right-4 md:bottom-4'>
@@ -104,6 +104,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
                 Extend
               </PrimaryButton>
               {isMyProfile && (
+                <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
+                  Transfer
+                </PrimaryButton>
+              )}
+              {isMyProfile && (
                 <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
                   List
                 </PrimaryButton>
@@ -111,11 +116,6 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
               {isMyProfile && (
                 <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
                   <p className='text-nowrap'>({previousListings.length}) Cancel Listings</p>
-                </PrimaryButton>
-              )}
-              {isMyProfile && (
-                <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
-                  Transfer
                 </PrimaryButton>
               )}
             </div>

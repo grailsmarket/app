@@ -114,6 +114,24 @@ import {
 } from '@/state/reducers/filters/profileDomainsFilters'
 
 import {
+  emptyFilterState as emptyFilterStateProfileListingsFilters,
+  setFiltersOpen as setProfileListingsFiltersOpen,
+  toggleFiltersType as toggleProfileListingsFiltersType,
+  setFiltersType as setProfileListingsFiltersType,
+  setFiltersLength as setProfileListingsFiltersLength,
+  setPriceDenomination as setProfileListingsPriceDenomination,
+  setPriceRange as setProfileListingsPriceRange,
+  toggleCategory as toggleProfileListingsCategory,
+  setFiltersCategory as setProfileListingsFiltersCategory,
+  setSort as setProfileListingsSort,
+  setSearch as setProfileListingsSearch,
+  setFiltersScrollTop as setProfileListingsFiltersScrollTop,
+  toggleFilterOpen as toggleProfileListingsFilterOpen,
+  clearFilters as clearProfileListingsFilters,
+  selectProfileListingsFilters,
+} from '@/state/reducers/filters/profileListingsFilter'
+
+import {
   emptyFilterState as emptyFilterStateProfileActivityFilters,
   selectProfileActivityFilters,
   toggleActivityFiltersType,
@@ -162,6 +180,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     if (filterType === 'profile') {
       if (activeProfileTab === 'domains') {
         return selectProfileDomainsFilters(state)
+      } else if (activeProfileTab === 'listings') {
+        return selectProfileListingsFilters(state)
       } else if (activeProfileTab === 'received_offers') {
         return selectReceivedOffersFilters(state)
       } else if (activeProfileTab === 'sent_offers') {
@@ -268,6 +288,22 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setScrollTop: setProfileDomainsFiltersScrollTop,
           toggleFilterOpen: toggleProfileDomainsFilterOpen,
           clearFilters: clearProfileDomainsFilters,
+        }
+      } else if (activeProfileTab === 'listings') {
+        return {
+          setFiltersOpen: setProfileListingsFiltersOpen,
+          toggleFiltersType: toggleProfileListingsFiltersType,
+          setFiltersType: setProfileListingsFiltersType,
+          setFiltersLength: setProfileListingsFiltersLength,
+          setPriceDenomination: setProfileListingsPriceDenomination,
+          setPriceRange: setProfileListingsPriceRange,
+          toggleCategory: toggleProfileListingsCategory,
+          setFiltersCategory: setProfileListingsFiltersCategory,
+          setSort: setProfileListingsSort,
+          setSearch: setProfileListingsSearch,
+          setScrollTop: setProfileListingsFiltersScrollTop,
+          toggleFilterOpen: toggleProfileListingsFilterOpen,
+          clearFilters: clearProfileListingsFilters,
         }
       } else if (activeProfileTab === 'sent_offers') {
         return {
@@ -381,6 +417,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     if (filterType === 'profile') {
       if (activeProfileTab === 'domains') {
         return emptyFilterStateProfileDomainsFilters
+      } else if (activeProfileTab === 'listings') {
+        return emptyFilterStateProfileListingsFilters
       } else if (activeProfileTab === 'sent_offers') {
         return emptyFilterStateMyOffersFilters
       } else if (activeProfileTab === 'received_offers') {

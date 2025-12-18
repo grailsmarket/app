@@ -32,6 +32,7 @@ import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkS
 import Calendar from 'public/icons/calendar.svg'
 import { formatUnits } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
+import { useQueryClient } from '@tanstack/react-query'
 
 export type ListingStatus =
   | 'review'
@@ -52,6 +53,7 @@ interface CreateListingModalProps {
 
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domains, previousListings }) => {
   const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isSelecting } = useAppSelector(selectBulkSelect)
@@ -177,6 +179,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       }
 
       setStatus('success')
+      queryClient.refetchQueries({ queryKey: ['profile', 'listings'] })
+      queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
     } catch (err) {
       console.error('Failed to create listing:', err)
     }

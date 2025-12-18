@@ -7,6 +7,11 @@ export const PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] =
   'listed_price',
   'last_sale',
 ]
+export const PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
+  'listed_price',
+  'expires',
+  'last_sale',
+]
 export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = [
   'name',
   'offer_amount',

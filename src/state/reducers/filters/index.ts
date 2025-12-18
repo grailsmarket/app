@@ -4,6 +4,7 @@ import myDomainsFiltersReducer from './myDomainsFilters'
 import watchlistFiltersReducer from './watchlistFilters'
 import myOffersFiltersReducer from './myOffersFilters'
 import receivedOffersFiltersReducer from './receivedOffersFilters'
+import profileListingsFiltersReducer from './profileListingsFilter'
 import profileDomainsFiltersReducer from './profileDomainsFilters'
 import profileActivityFiltersReducer from './profileActivityFilters'
 import categoryDomainsFiltersReducer from './categoryDomainsFilters'
@@ -15,6 +16,7 @@ const filtersReducer = combineReducers({
   marketplaceFilters: marketplaceFiltersReducer,
   receivedOffersFilters: receivedOffersFiltersReducer,
   profileDomainsFilters: profileDomainsFiltersReducer,
+  profileListingsFilters: profileListingsFiltersReducer,
   profileActivityFilters: profileActivityFiltersReducer,
   categoryDomainsFilters: categoryDomainsFiltersReducer,
 })

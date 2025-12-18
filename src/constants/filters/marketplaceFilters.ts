@@ -4,7 +4,7 @@ export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] a
 
 export const MARKETPLACE_STATUS_FILTER_LABELS = [
   'Listed',
-  'Premium',
+  // 'Premium',
   // 'Available',
   // 'Unlisted',
   'Expiring Soon',
@@ -20,7 +20,7 @@ export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
   Listed: 'listed',
   // Available: 'available',
   // Unlisted: 'unlisted',
-  Premium: 'premium',
+  // Premium: 'premium',
   'Expiring Soon': 'expiring',
   'Has Last Sale': 'has_last_sale',
 }
@@ -30,12 +30,12 @@ export const MARKETPLACE_SORT_FILTERS = [
   // 'alphabetical_desc',
   // 'last_sale_price_asc',
   'last_sale_price_desc',
-  'last_sale_date_asc',
-  'last_sale_date_desc',
+  // 'last_sale_date_asc',
+  // 'last_sale_date_desc',
   'price_desc',
   'price_asc',
-  'offer_asc',
-  'offer_desc',
+  // 'offer_asc',
+  // 'offer_desc',
   'expiry_date_asc',
   // 'expiry_date_desc',
 ]
@@ -51,20 +51,20 @@ export const ALL_SORT_FILTERS = [
   // 'alphabetical_desc',
   'price_desc',
   'price_asc',
-  'offer_asc',
-  'offer_desc',
+  // 'offer_asc',
+  // 'offer_desc',
   // 'last_sale_price_asc',
   'last_sale_price_desc',
-  'last_sale_date_asc',
+  // 'last_sale_date_asc',
   'last_sale_date_desc',
   'expiry_date_asc',
   // 'expiry_date_desc',
 ] as const
 
 export const SORT_FILTER_LABELS = {
-  // alphabetical_asc: 'Alphabetical (A-Z)',
-  // alphabetical_desc: 'Alphabetical (Z-A)',
-  // last_sale_price_asc: 'Last Sale Price (Low to High)',
+  alphabetical_asc: 'Alphabetical (A-Z)',
+  alphabetical_desc: 'Alphabetical (Z-A)',
+  last_sale_price_asc: 'Last Sale Price (Low to High)',
   last_sale_price_desc: 'Last Sale Price (High to Low)',
   last_sale_date_asc: 'Last Sale Date (Old to New)',
   last_sale_date_desc: 'Last Sale Date (New to Old)',
@@ -73,5 +73,5 @@ export const SORT_FILTER_LABELS = {
   offer_asc: 'Offer (Low to High)',
   offer_desc: 'Offer (High to Low)',
   expiry_date_asc: 'Expiration Date (Soonest First)',
-  // expiry_date_desc: 'Expiration Date (Latest First)',
+  expiry_date_desc: 'Expiration Date (Latest First)',
 }

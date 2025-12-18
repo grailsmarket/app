@@ -47,7 +47,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Status'],
+  openFilters: ['Sort', 'Status'],
   sort: null,
   scrollTop: 0,
 }

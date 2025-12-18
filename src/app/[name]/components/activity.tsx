@@ -27,6 +27,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
       <div className='px-md w-full sm:px-0'>
         <Activity
           maxHeight={width && width < 1024 ? '600px' : '536px'}
+          minHeight='300px'
           paddingBottom='0px'
           activity={activity}
           loadingRowCount={20}

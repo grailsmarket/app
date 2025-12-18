@@ -45,7 +45,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <Pages className='hidden md:flex' />
         </div>
         <div className='flex items-center justify-end gap-3 md:gap-5'>
-          <div className='flex items-center gap-3 md:gap-4'>
+          <div className='flex items-center gap-3'>
             <SearchIcon />
             <Cart />
             <Notifications />

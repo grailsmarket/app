@@ -24,8 +24,8 @@ const Watchlist = () => {
   }
 
   return (
-    <button onClick={handleClick} className='cursor-pointer transition-all hover:opacity-80'>
-      <Image src={watchlist} alt='Watchlist' width={30} height={30} className='h-6 w-6 md:h-7 md:w-7' />
+    <button onClick={handleClick} className='hover:bg-primary/10 cursor-pointer rounded-md p-1 transition-all'>
+      <Image src={watchlist} alt='Watchlist' width={30} height={30} className='h-6 w-6 scale-120' />
     </button>
   )
 }

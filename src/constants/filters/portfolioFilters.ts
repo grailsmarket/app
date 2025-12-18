@@ -1,4 +1,4 @@
-export const MY_DOMAINS_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price Range'] as const
+export const MY_DOMAINS_OPENABLE_FILTERS = ['Sort', 'Status', 'Type', 'Length', 'Price Range'] as const
 
 export const MY_DOMAINS_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 

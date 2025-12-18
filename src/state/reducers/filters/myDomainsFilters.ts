@@ -48,7 +48,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Status'],
+  openFilters: ['Sort'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }

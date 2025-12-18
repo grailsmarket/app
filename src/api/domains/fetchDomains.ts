@@ -90,7 +90,7 @@ export const fetchDomains = async ({
       'filters[clubs][]': category || filters.categories?.join(',') || null,
       // 'filters[isExpired]': statusFilter.includes('Available') ? true : undefined,
       'filters[isGracePeriod]': statusFilter.includes('Grace Period') ? true : undefined,
-      'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : undefined,
+      // 'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : undefined,
       'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? 60 : undefined,
       'filters[hasSales]': statusFilter.includes('Has Last Sale') ? true : undefined,
       sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),

@@ -1,15 +1,16 @@
+import { cn } from '@/utils/tailwind'
 import { RefObject, useCallback, useMemo } from 'react'
 import { Address, useIsClient, useWindowSize } from 'ethereum-identity-kit'
-import NoResults from '@/components/ui/noResults'
-import VirtualList from '@/components/ui/virtuallist'
 import { ActivityType } from '@/types/profile'
 import LoadingRow from './components/loadingRow'
+import NoResults from '@/components/ui/noResults'
 import ActivityRow from './components/activityRow'
+import VirtualList from '@/components/ui/virtuallist'
 import { ActivityColumnType, NameActivityType } from '@/types/domains'
-import { cn } from '@/utils/tailwind'
 
 interface ActivityProps {
   maxHeight?: string
+  minHeight?: string
   activity: ActivityType[] | NameActivityType[]
   isLoading: boolean
   loadingRowCount?: number
@@ -28,6 +29,7 @@ interface ActivityProps {
 
 const Activity: React.FC<ActivityProps> = ({
   maxHeight = 'calc(100dvh - 160px)',
+  minHeight,
   activity,
   isLoading,
   loadingRowCount = 10,
@@ -88,7 +90,7 @@ const Activity: React.FC<ActivityProps> = ({
   return (
     <div
       className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
-      style={{ maxHeight }}
+      style={{ maxHeight, minHeight }}
     >
       {showHeaders && !noResults && (
         <div className='px-sm pb-sm md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
@@ -129,6 +131,7 @@ const Activity: React.FC<ActivityProps> = ({
             rowHeight={60}
             overscanCount={visibleCount}
             listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
+            minListHeight={minHeight}
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}

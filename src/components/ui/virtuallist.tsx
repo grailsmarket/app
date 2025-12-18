@@ -10,6 +10,7 @@ export interface VirtualListProps<T = unknown> {
   overscanCount?: number
   containerClassName?: string
   listHeight?: string
+  minListHeight?: string
   gap?: number
   renderItem: (item: T, index: number) => React.ReactNode
   onScrollNearBottom?: () => void
@@ -34,6 +35,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     renderItem,
     gap = 16,
     listHeight = '100%',
+    minListHeight,
     containerClassName,
     onScrollNearBottom,
     scrollThreshold = 300,
@@ -120,6 +122,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
       onWheel={handleWheel}
       style={{
         maxHeight: listHeight,
+        minHeight: minListHeight,
         overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
         paddingBottom,

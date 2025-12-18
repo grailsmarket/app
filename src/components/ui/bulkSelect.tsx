@@ -99,7 +99,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
             {/* <SecondaryButton className='h-9 min-w-9 items-center justify-center p-0! text-xl text-nowrap md:h-10 md:min-w-10 hidden sm:flex'>
               {selectedDomains.length}
             </SecondaryButton> */}
-            <div className='p-2 sm:p-3 flex flex-row gap-1.5'>
+            <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
+              <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
+                Extend
+              </PrimaryButton>
               {isMyProfile && (
                 <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
                   List
@@ -110,22 +113,19 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
                   <p className='text-nowrap'>({previousListings.length}) Cancel Listings</p>
                 </PrimaryButton>
               )}
-              <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
-                Extend
-              </PrimaryButton>
               {isMyProfile && (
                 <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
                   Transfer
                 </PrimaryButton>
               )}
             </div>
-            <div className='border-l-2 bg-background border-tertiary flex-row gap-1.5 p-3 pl-1.5 sm:flex hidden'>
+            <div className='bg-background border-tertiary hidden flex-row gap-1.5 border-l-2 p-3 pl-1.5 sm:flex'>
               <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
                 {selectedDomains.length}
               </SecondaryButton>
               <SecondaryButton
                 onClick={handleCancelBulkSelect}
-                className='w-28 items-center justify-center hidden sm:flex'
+                className='hidden w-28 items-center justify-center sm:flex'
               >
                 Close
               </SecondaryButton>
@@ -143,11 +143,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
               <Cross className='h-3 w-3' />
             </SecondaryButton> */}
           </div>
-
         </>
       ) : (
-        <div className='shadow-bulk bg-background rounded-md p-3'>
-          <PrimaryButton onClick={handleBulkSelect} className='w-28'>Bulk Select</PrimaryButton>
+        <div className='shadow-bulk bg-background rounded-md p-2 sm:p-3'>
+          <PrimaryButton onClick={handleBulkSelect} className='w-28'>
+            Bulk Select
+          </PrimaryButton>
         </div>
       )}
     </div>

@@ -30,6 +30,7 @@ import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import { cn } from '@/utils/tailwind'
 
 type Row = {
   label: string
@@ -217,7 +218,15 @@ const NameDetails: React.FC<NameDetailsProps> = ({
               {typeof row.value === 'string' ? (
                 <CopyValue value={row.value} canCopy={row.canCopy} />
               ) : (
-                <div className='max-w-3/4 overflow-x-auto'>{row.value}</div>
+                <div
+                  className={cn(
+                    row.label === 'Owner' || row.label === 'Previous Owner'
+                      ? 'overflow-visible'
+                      : 'max-w-3/4 overflow-x-auto'
+                  )}
+                >
+                  {row.value}
+                </div>
               )}
             </div>
           )

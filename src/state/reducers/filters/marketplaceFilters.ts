@@ -91,7 +91,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Status'],
+  openFilters: ['Sort'],
   sort: null,
   scrollTop: 0,
 }

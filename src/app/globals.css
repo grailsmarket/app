@@ -246,3 +246,13 @@ body {
 .signed-in-user-profile {
   border-radius: 0 !important;
 }
+
+.signed-in-user-profile-name {
+  display: none !important;
+}
+
+@media screen and (min-width: 768px) {
+  .signed-in-user-profile-name {
+    display: block !important;
+  }
+}

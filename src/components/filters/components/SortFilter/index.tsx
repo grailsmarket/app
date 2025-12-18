@@ -7,7 +7,7 @@ import { persistor } from '@/state'
 import FilterSelector from '../FilterSelector'
 import ExpandableTab from '@/components/ui/expandableTab'
 import UnexpandedFilter from '../UnexpandedFilter'
-import { ALL_SORT_FILTERS, SORT_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
+import { MARKETPLACE_SORT_FILTERS, SORT_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
 import { useFilterContext } from '@/context/filters'
 import { useMemo } from 'react'
 
@@ -21,21 +21,21 @@ const SortFilter: React.FC = () => {
   const filterLabels = useMemo(() => {
     if (filterType === 'profile') {
       if (activeProfileTab === 'domains') {
-        return ALL_SORT_FILTERS
+        return MARKETPLACE_SORT_FILTERS
       } else if (activeProfileTab === 'received_offers') {
         return null
       } else if (activeProfileTab === 'sent_offers') {
         return null
       } else if (activeProfileTab === 'watchlist') {
-        return ALL_SORT_FILTERS
+        return MARKETPLACE_SORT_FILTERS
       } else if (activeProfileTab === 'activity') {
         return null
       }
 
-      return ALL_SORT_FILTERS
+      return MARKETPLACE_SORT_FILTERS
     }
 
-    return ALL_SORT_FILTERS
+    return MARKETPLACE_SORT_FILTERS
   }, [filterType, activeProfileTab])
 
   if (!filterLabels) return null
@@ -63,7 +63,9 @@ const SortFilter: React.FC = () => {
               className='px-lg py-md hover:bg-secondary flex cursor-pointer justify-between rounded-sm'
               onClick={toggleActive(label as any)}
             >
-              <p className='text-md text-light-200 font-medium'>{SORT_FILTER_LABELS[label]}</p>
+              <p className='text-md text-light-200 font-medium'>
+                {SORT_FILTER_LABELS[label as keyof typeof SORT_FILTER_LABELS]}
+              </p>
               <FilterSelector isActive={isActive(label as any)} onClick={toggleActive(label as any)} isRadio={true} />
             </div>
           ))}

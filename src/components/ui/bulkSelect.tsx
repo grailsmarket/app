@@ -80,39 +80,54 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
   if (selectedTab.value !== 'domains') return null
 
   return (
-    <div className='bulk-select-container bg-secondary shadow-bulk fixed right-1 bottom-1 flex max-w-[calc(100%-8px)] flex-row gap-1.5 overflow-x-scroll rounded-md p-1 sm:right-2 sm:bottom-2 md:right-4 md:bottom-4'>
+    <div className='bulk-select-container fixed right-1 bottom-1 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent p-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2 md:right-4 md:bottom-4'>
       {isSelecting ? (
         <>
-          <SecondaryButton className='flex h-9 min-w-9 items-center justify-center p-0! text-xl text-nowrap md:h-10 md:min-w-10'>
-            {selectedDomains.length}
-          </SecondaryButton>
-          {isMyProfile && (
-            <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
-              List
+          <div className='bg-secondary flex flex-row gap-1.5 rounded-md p-3.5 shadow-md'>
+            <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
+              {selectedDomains.length}
+            </SecondaryButton>
+            <SecondaryButton
+              onClick={handleCancelBulkSelect}
+              className='bg-background flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
+            >
+              <Cross className='h-3 w-3' />
+            </SecondaryButton>
+          </div>
+          <div className='shadow-bulk bg-secondary flex max-w-full flex-row gap-1.5 overflow-x-scroll rounded-md p-3.5'>
+            {/* <SecondaryButton className='h-9 min-w-9 items-center justify-center p-0! text-xl text-nowrap md:h-10 md:min-w-10 hidden sm:flex'>
+              {selectedDomains.length}
+            </SecondaryButton> */}
+            {isMyProfile && (
+              <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
+                List
+              </PrimaryButton>
+            )}
+            {isMyProfile && (
+              <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
+                <p className='text-nowrap'>({previousListings.length}) Cancel Listings</p>
+              </PrimaryButton>
+            )}
+            <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
+              Extend
             </PrimaryButton>
-          )}
-          {isMyProfile && (
-            <PrimaryButton onClick={handleCancelListingsAction} disabled={previousListings.length === 0}>
-              <p className='text-nowrap'>Cancel ({previousListings.length})</p>
-            </PrimaryButton>
-          )}
-          <PrimaryButton onClick={handleExtendAction} disabled={selectedDomains.length === 0}>
-            Extend
-          </PrimaryButton>
-          {isMyProfile && (
-            <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
-              Transfer
-            </PrimaryButton>
-          )}
-          <SecondaryButton
-            onClick={handleCancelBulkSelect}
-            className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
-          >
-            <Cross className='h-3 w-3' />
-          </SecondaryButton>
+            {isMyProfile && (
+              <PrimaryButton onClick={handleTransferAction} disabled={selectedDomains.length === 0}>
+                Transfer
+              </PrimaryButton>
+            )}
+            {/* <SecondaryButton
+              onClick={handleCancelBulkSelect}
+              className='w-9 min-w-9 items-center justify-center p-0! md:w-10 hidden sm:flex'
+            >
+              <Cross className='h-3 w-3' />
+            </SecondaryButton> */}
+          </div>
         </>
       ) : (
-        <PrimaryButton onClick={handleBulkSelect}>Bulk Select</PrimaryButton>
+        <div className='shadow-bulk bg-secondary rounded-md p-3.5'>
+          <PrimaryButton onClick={handleBulkSelect}>Bulk Select</PrimaryButton>
+        </div>
       )}
     </div>
   )

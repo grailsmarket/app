@@ -80,10 +80,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
   if (selectedTab.value !== 'domains') return null
 
   return (
-    <div className='bulk-select-container fixed right-1 bottom-1 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent p-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2 md:right-4 md:bottom-4'>
+    <div className='bulk-select-container fixed right-1 bottom-1 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2 md:right-4 md:bottom-4'>
       {isSelecting ? (
         <>
-          <div className='bg-background bg-secondary flex flex-row gap-1.5 rounded-md p-2.5 shadow-xl sm:hidden'>
+          <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
             <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
               {selectedDomains.length}
             </SecondaryButton>
@@ -99,7 +99,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile }) => {
             {/* <SecondaryButton className='h-9 min-w-9 items-center justify-center p-0! text-xl text-nowrap md:h-10 md:min-w-10 hidden sm:flex'>
               {selectedDomains.length}
             </SecondaryButton> */}
-            <div className='p-2.5 sm:p-3 flex flex-row gap-1.5'>
+            <div className='p-2 sm:p-3 flex flex-row gap-1.5'>
               {isMyProfile && (
                 <PrimaryButton onClick={handleListAction} disabled={selectedDomains.length === 0}>
                   List

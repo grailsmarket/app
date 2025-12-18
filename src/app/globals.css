@@ -8,6 +8,7 @@
   --tertiary: #444444;
   --neutral: #aaaaaa;
   --max-width-domain-panel: 1700px;
+  --max-width-app: 2340px;
   --padding-sm: 4px;
   --padding-md: 8px;
   --padding-lg: 16px;
@@ -36,6 +37,7 @@
   --shadow-medium: 2px 2px 4px 0px var(--shadow-color);
   --shadow-large: 4px 4px 8px 0px var(--shadow-color);
   --shadow-xl: 4px 8px 16px 0px var(--shadow-color);
+  --shadow-bulk: 0 0 8px 0 #ffdfc0;
 
   /* Custom Ethereum Identity Kit colors */
   --ethereum-identity-kit-sign-in-button: #ffdfc0;
@@ -47,6 +49,7 @@
 @theme inline {
   --breakpoint-xs: 420px;
   --breakpoint-app: 2340px;
+  --max-width-app: 2340px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
@@ -83,6 +86,7 @@
   --shadow-md: var(--shadow-medium);
   --shadow-lg: var(--shadow-large);
   --shadow-xl: var(--shadow-xl);
+  --shadow-bulk: var(--shadow-bulk);
 }
 
 body {
@@ -158,6 +162,16 @@ body {
   padding-left: 0 !important;
   padding-right: 0 !important;
   position: relative;
+}
+
+@media screen and (min-width: 2340px) {
+  .bulk-select-container {
+    right: calc((100vw - var(--max-width-app)) / 2 + 24px) !important;
+  }
+
+  .action-buttons-container {
+    left: calc((100vw - var(--max-width-app)) / 2 + 2px) !important;
+  }
 }
 
 /* Got some issue with FullWidthProfile from Ethereum Identity Kit,

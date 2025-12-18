@@ -41,7 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
           <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
             Clear Filters
           </SecondaryButton>
-          <SecondaryButton onClick={closeFilters} className='md:hidden'>
+          <SecondaryButton onClick={closeFilters} className='lg:hidden'>
             Close Filters
           </SecondaryButton>
         </PersistGate>

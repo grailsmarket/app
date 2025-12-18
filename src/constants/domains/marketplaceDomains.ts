@@ -3,9 +3,9 @@ import { MarketplaceHeaderColumn, MarketplaceHeaderItem, OfferColumnType } from 
 
 export const MARKETPLACE_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['listed_price', 'last_sale', 'highest_offer']
 export const PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
+  'expires',
   'listed_price',
   'last_sale',
-  'expires',
 ]
 export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = [
   'name',

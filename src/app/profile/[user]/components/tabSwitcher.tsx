@@ -10,8 +10,6 @@ import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { useDomains } from '../hooks/useDomains'
-import { clearBulkSelect, selectBulkSelect, setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
-import SecondaryButton from '@/components/ui/buttons/secondary'
 
 interface TabSwitcherProps {
   user: Address | undefined
@@ -24,16 +22,6 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { profileTotalDomains, totalWatchlistDomains } = useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
-  const { isSelecting, domains: selectedDomains } = useAppSelector(selectBulkSelect)
-
-  const handleBulkSelect = () => {
-    dispatch(setBulkSelectIsSelecting(true))
-  }
-
-  const handleCancelBulkSelect = () => {
-    dispatch(setBulkSelectIsSelecting(false))
-    dispatch(clearBulkSelect())
-  }
 
   const setProfileTab = (tab: ProfileTabType) => {
     dispatch(changeTab(tab))
@@ -98,11 +86,6 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
             </button>
           ))}
         </div>
-        {selectedTab.value === 'domains' && !isSelecting && (
-          <SecondaryButton onClick={handleBulkSelect} className='hidden sm:block'>
-            Bulk Select
-          </SecondaryButton>
-        )}
       </div>
     )
   }
@@ -135,19 +118,6 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           </button>
         ))}
       </div>
-      {selectedTab.value === 'domains' &&
-        (isSelecting ? (
-          <div className='hidden flex-row items-center gap-3 md:flex'>
-            <p className='text-lg font-semibold text-nowrap'>Selected: {selectedDomains.length}</p>
-            <SecondaryButton onClick={handleCancelBulkSelect} className='hidden h-9! sm:block'>
-              Cancel
-            </SecondaryButton>
-          </div>
-        ) : (
-          <SecondaryButton onClick={handleBulkSelect} className='hidden h-9! text-nowrap md:block'>
-            Bulk Select
-          </SecondaryButton>
-        ))}
     </div>
   )
 }

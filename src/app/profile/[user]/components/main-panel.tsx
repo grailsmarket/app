@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Suspense, useEffect } from 'react'
+import React, { Suspense, useEffect, useMemo } from 'react'
 import { FilterProvider } from '@/context/filters'
 import { Address } from 'viem'
 import FilterPanel from '@/components/filters'
@@ -24,6 +24,7 @@ import {
   setFiltersScrollTop as setDomainsScrollTop,
 } from '@/state/reducers/filters/profileDomainsFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import BulkSelect from '@/components/ui/bulkSelect'
 
 interface Props {
   user: Address | string
@@ -41,6 +42,12 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     queryFn: () => fetchAccount(user),
     enabled: !!user,
   })
+
+  const isMyProfile = useMemo(
+    () =>
+      (userAccount?.address || user)?.toLowerCase() === userAddress?.toLowerCase() && authStatus === 'authenticated',
+    [user, userAddress, authStatus, userAccount?.address]
+  )
 
   useEffect(() => {
     // reset filters when visiting a new profile
@@ -87,7 +94,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
           <div className='z-10 w-full'>
             <div className='lg:pl-md bg-background border-tertiary relative flex h-[calc(100dvh-52px)] w-full gap-0 overflow-hidden border-t-2 md:h-[calc(100dvh-70px)]'>
               <FilterPanel />
-              <div className='bg-tertiary ml-2 hidden h-full w-0.5 lg:block' />
+              <div className='bg-tertiary ml-2 hidden h-full w-[3px] lg:block' />
               <div
                 className='flex w-full flex-col gap-2'
                 style={{
@@ -99,7 +106,8 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                 {showOfferPanel && <OfferPanel user={userAccount?.address} />}
                 {showActivityPanel && <ActivityPanel user={userAccount?.address} />}
               </div>
-              <ActionButtons user={userAccount?.address} />
+              <ActionButtons />
+              <BulkSelect isMyProfile={isMyProfile} />
             </div>
           </div>
         </div>

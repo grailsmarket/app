@@ -47,7 +47,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                       <InfoBar onVisibilityChange={handleInfoBarVisibilityChange} />
                       <Navigation showInfo={showInfoBar} />
                       <Cart />
-                      <div className='app:border-r-2 app:border-l-2 border-tertiary app:min-h-[100dvh]! mx-auto w-full max-w-[2340px]'>
+                      <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
                         {children}
                       </div>
                     </div>

@@ -12,14 +12,14 @@ const TopCategories = () => {
 
   return (
     <div className='w-full'>
-      <div className='p-xl flex items-center justify-between'>
-        <h2 className='font-sedan-sc text-center text-5xl md:text-6xl lg:text-left'>Top Categories</h2>
+      <div className=' px-md py-lg sm:p-xl flex items-center justify-between'>
+        <h2 className='font-sedan-sc text-4xl sm:text-5xl md:text-6xl'>Top Categories</h2>
         <Link
           href='/categories'
-          className='text-primary hover:text-primary/80 flex items-center gap-2 text-center text-2xl font-semibold md:text-left'
+          className='text-primary hover:text-primary/80 flex justify-end items-center gap-2 text-center text-xl sm:text-2xl font-semibold'
         >
           <p>View All</p>
-          <Arrow className='text-primary h-4 w-4 rotate-180' />
+          <Arrow className='text-primary h-3 w-3 sm:h-4 sm:w-4 rotate-180' />
         </Link>
       </div>
       <div className='flex w-full flex-wrap justify-center gap-4 lg:flex-nowrap'>

@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import logo from 'public/logo-w-text-w-fees.png'
+import logo from 'public/logo-w-text.png'
 import logoMobile from 'public/logo.png'
 import Link from 'next/link'
 import Searchbar from '../ui/searchbar'

@@ -6,14 +6,12 @@ import { NameActivityType } from '@/types/domains'
 import { fetchAllActivity } from '@/api/activity/all'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { API_URL } from '@/constants/api'
-import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { useWindowSize } from 'ethereum-identity-kit'
 
 const LiveActivity = () => {
   const [liveActivities, setLiveActivities] = useState<NameActivityType[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
-  const isAtBottom = useScrollToBottom({ threshold: 20, enabled: true })
   const { width } = useWindowSize()
 
   useEffect(() => {
@@ -110,8 +108,9 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary p-md border-tertiary mx-auto w-full rounded-none border-t-2 border-r lg:pb-0'>
-      <div className='p-sm pt-md sm:p-lg flex items-center justify-between'>
+    <div className='bg-secondary p-sm border-tertiary h-[516px] w-full rounded-md border-2 pb-0 lg:max-w-[700px]'>
+      <div className='pt-md p-md lg:p-lg flex items-center justify-between'>
+        {/* <div className='flex items-center gap-2'> */}
         <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
         <div className='flex items-center justify-end gap-1 sm:gap-2'>
           <div
@@ -121,11 +120,16 @@ const LiveActivity = () => {
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
+        {/* </div>
+        <button className='flex items-center gap-2'>
+          <p className='text-md text-primary text-right font-medium sm:text-lg'>View All</p>
+          <Arrow className='w-3 h-3 rotate-180 text-primary' />
+        </button> */}
       </div>
 
       {/* Live Activity Section */}
       <Activity
-        maxHeight={width && width < 1024 ? 'calc(100dvh - 82px)' : 'calc(100dvh - 120px)'}
+        maxHeight={'472px'}
         activity={allActivities}
         paddingBottom='10px'
         loadingRowCount={16}
@@ -133,7 +137,7 @@ const LiveActivity = () => {
         noResults={!isActivityLoading && allActivities.length === 0}
         fetchMoreActivity={fetchNextPageHistoricalActivities}
         hasMoreActivity={hasNextPageHistoricalActivities}
-        scrollEnabled={isAtBottom}
+        scrollEnabled={width && width > 1024 ? true : false}
         useLocalScrollTop={true}
       />
     </div>

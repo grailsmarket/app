@@ -23,7 +23,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
   const isPortfolioPage = pathname === `/profile/${userAddress}` || pathname === `/profile/${ensProfile?.name}`
 
   return (
-    <div className={cn('text-md flex flex-col gap-4 text-lg md:flex-row md:items-center', className)}>
+    <div className={cn('text-md flex flex-col gap-4 text-lg', className)}>
       <Link
         href='/'
         className={cn(
@@ -58,7 +58,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
         <Link
           href={`/profile/${userAddress}`}
           className={cn(
-            'font-semibold text-nowrap transition-all',
+            'font-semibold transition-all',
             isPortfolioPage ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
           )}
           onClick={(e) => {

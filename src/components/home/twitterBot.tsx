@@ -40,7 +40,7 @@ const TwitterBot = () => {
     <div className='flex w-full flex-col-reverse gap-10 md:flex-row md:items-center md:justify-center'>
       <iframe
         loading='lazy'
-        className='mx-auto aspect-[400/638] w-full max-w-[400px] md:mx-0 md:w-[340px] lg:w-[380px]'
+        className='mx-auto aspect-[400/642] w-full max-w-[400px] md:mx-0 md:w-[340px] lg:w-[380px]'
         src='https://platform.twitter.com/embed/Tweet.html?frame=false&hideCard=false&hideThread=true&id=1990916043254972604&origin=YOUR_DOMAIN_HERE&theme=dark&width=500px'
         scrolling='no'
       ></iframe>

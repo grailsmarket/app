@@ -14,10 +14,14 @@ const HeroSearch: React.FC = () => {
   }
 
   return (
-    <div className='flex w-full max-w-[380px] items-center gap-4 sm:w-3/4 md:w-1/2 md:max-w-[500px]'>
-      <Searchbar className='border-primary/20 h-10 w-full scale-[1.01] border-2 md:h-12' onSearch={openSearchModal} />
+    <div className='flex w-full max-w-[410px] items-center gap-0 md:max-w-[540px]'>
+      <Searchbar
+        className='border-primary/20 sm:px-lg h-10 w-full scale-[1.01] rounded-r-none border-2 px-3 text-lg sm:text-xl md:h-12'
+        placeholder='Search names, profiles, and categories...'
+        onSearch={openSearchModal}
+      />
       <PrimaryButton
-        className='font-sedan-sc h-10 w-28 text-xl font-medium md:h-12 md:w-36 md:text-2xl'
+        className='font-sedan-sc h-10 w-24 rounded-l-none text-xl font-medium sm:w-28 md:h-12 md:w-36 md:text-2xl'
         onClick={openSearchModal}
       >
         Search

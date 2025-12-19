@@ -41,7 +41,11 @@ const Price: React.FC<PriceProps> = ({
   }, [price, ethPrice, asset, usdPrice])
 
   return (
-    <Tooltip label={`${diffCurrencyPrice} USD`} position={tooltipPosition} align={alignTooltip}>
+    <Tooltip
+      label={`${diffCurrencyPrice?.toLocaleString(navigator?.language ?? 'en-US', { maximumFractionDigits: 2 })} USD`}
+      position={tooltipPosition}
+      align={alignTooltip}
+    >
       <div className='flex flex-row items-center gap-1'>
         <Asset currencyAddress={currencyAddress} iconSize={iconSize} />
         <p className={cn(fontSize)}>{formatPrice(price, asset)}</p>

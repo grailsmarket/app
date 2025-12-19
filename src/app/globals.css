@@ -25,12 +25,12 @@
   --font-size-xl: 16px;
   --font-size-2xl: 20px;
   --font-size-3xl: 24px;
-  --font-size-4xl: 32px;
+  --font-size-4xl: 30px;
   --font-size-5xl: 40px;
   --font-size-6xl: 48px;
   --font-size-7xl: 56px;
   --font-size-8xl: 64px;
-  --font-size-9xl: 72px;
+  --font-size-9xl: 68px;
   --font-size-10xl: 80px;
   --shadow-color: #8885;
   --shadow-small: 1px 1px 2px 0px var(--shadow-color);
@@ -38,6 +38,7 @@
   --shadow-large: 4px 4px 8px 0px var(--shadow-color);
   --shadow-xl: 4px 8px 16px 0px var(--shadow-color);
   --shadow-bulk: 0 0 8px 0 #ffdfc0;
+  --shadow-footer: 0 -4px 40px 4px #ffdfc0;
 
   /* Custom Ethereum Identity Kit colors */
   --ethereum-identity-kit-sign-in-button: #ffdfc0;
@@ -87,6 +88,7 @@
   --shadow-lg: var(--shadow-large);
   --shadow-xl: var(--shadow-xl);
   --shadow-bulk: var(--shadow-bulk);
+  --shadow-footer: var(--shadow-footer);
 }
 
 body {
@@ -129,6 +131,12 @@ body {
     -moz-appearance: textfield;
     appearance: textfield;
   }
+}
+
+.background-radial-primary {
+  /* background: radial-gradient(circle at center, #ffdfc0 0%, transparent 100%); */
+  background: #ffdfc05a;
+  box-shadow: 0 0 600px 30px #ffdfc0;
 }
 
 /* Name Gradients */
@@ -255,4 +263,12 @@ body {
   .signed-in-user-profile-name {
     display: block !important;
   }
+}
+
+.user-profile-content {
+  position: inherit !important;
+}
+
+.user-profile-status-container {
+  z-index: 1000 !important;
 }

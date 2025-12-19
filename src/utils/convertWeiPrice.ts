@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { TOKENS } from '@/constants/web3/tokens'
 
-export const convertLastSalePrice = (price: string, currency: string, ethPrice?: number | null) => {
+export const convertWeiPrice = (price: string, currency: string, ethPrice?: number | null) => {
   const lastSaleCurrency = TOKENS[currency as keyof typeof TOKENS]
   return lastSaleCurrency === 'USDC'
     ? BigNumber.from(price)

@@ -24,6 +24,8 @@ import {
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { convertWeiPrice } from '@/utils/convertWeiPrice'
+import useETHPrice from '@/hooks/useETHPrice'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -36,6 +38,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkSelecting }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
+  const { ethPrice } = useETHPrice()
   const { filterType } = useFilterContext()
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const domainIsValid = checkNameValidity(domain.name)
@@ -122,12 +125,12 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               <p className='text-md leading-[18px] font-bold'>Unlisted</p>
             )
           ) : null}
-          {domain.last_sale_price ? (
+          {domain.last_sale_price && domain.last_sale_currency ? (
             <div className='mt-0.5 flex items-center gap-[6px]'>
               <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p>
               <div className='flex items-center gap-1'>
                 <Price
-                  price={domain.last_sale_price}
+                  price={convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)}
                   currencyAddress={domain.last_sale_currency as Address}
                   iconSize='16px'
                   fontSize='text-md'

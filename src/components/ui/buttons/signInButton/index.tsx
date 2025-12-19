@@ -87,14 +87,6 @@ const SignInButton = () => {
             <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />
           </Link>
         ) : null}
-        <Link
-          href={`https://discord.com/invite/ZUyG3mSXFD`}
-          target='_blank'
-          onClick={() => setIsDropdownOpen(false)}
-          className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
-        >
-          Discord
-        </Link>
         <button
           onClick={() => {
             setIsDropdownOpen(false)

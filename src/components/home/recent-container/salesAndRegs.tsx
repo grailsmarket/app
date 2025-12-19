@@ -24,7 +24,7 @@ const SalesAndRegs = () => {
 
   return (
     <div className='flex flex-col'>
-      <h2 className='p-sm md:p-md lg:p-lg text-2xl font-bold'>Recent Sales</h2>
+      <h2 className='p-md lg:p-lg text-2xl font-bold'>Recent Sales</h2>
       <div className='flex flex-col gap-0'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (

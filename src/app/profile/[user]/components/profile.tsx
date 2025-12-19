@@ -5,6 +5,8 @@ import { Address } from 'viem'
 import { FollowersAndFollowing, FullWidthProfile, ProfileTabType, useIsClient } from 'ethereum-identity-kit'
 import MainPanel from './main-panel'
 import { useUserContext } from '@/context/user'
+import { useQuery } from '@tanstack/react-query'
+import { getPoap } from '@/api/user/getPoap'
 
 interface Props {
   user: Address | string
@@ -16,6 +18,20 @@ const Profile: React.FC<Props> = ({ user }) => {
 
   const isClient = useIsClient()
   const { userAddress } = useUserContext()
+  const { data: userPoap } = useQuery({
+    queryKey: ['userPoap', user],
+    queryFn: async () => {
+      if (!user) return null
+
+      const result = await getPoap(user)
+      console.log('result', result)
+
+      if (result?.badges.length === 0) return null
+
+      return result
+    },
+    enabled: !!user,
+  })
 
   return (
     <div>
@@ -47,6 +63,13 @@ const Profile: React.FC<Props> = ({ user }) => {
                 // customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
                 hideSocials: ['grails'],
                 hideEFPPoaps: true,
+                customPoaps: userPoap?.badges
+                  ? userPoap.badges.map((badge) => ({
+                      eventId: badge.event.id.toString(),
+                      participated: true,
+                      collection: badge,
+                    }))
+                  : undefined,
               }}
               // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
             />

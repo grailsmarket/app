@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
@@ -9,6 +9,7 @@ import DomainPanel from './domainPanel'
 import ActivityPanel from './activityPanel'
 
 const MainPanel: React.FC = () => {
+  const [isLiveActivityConnected, setIsLiveActivityConnected] = useState(false)
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
   const { selectedTab } = useAppSelector(selectMarketplace)
@@ -23,9 +24,14 @@ const MainPanel: React.FC = () => {
         width: isClient ? (windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%') : '100%',
       }}
     >
-      <TabSwitcher />
+      <TabSwitcher isLiveActivityConnected={isLiveActivityConnected} />
       {showNamesPanel && <DomainPanel />}
-      {showActivityPanel && <ActivityPanel />}
+      {showActivityPanel && (
+        <ActivityPanel
+          isLiveActivityConnected={isLiveActivityConnected}
+          setIsLiveActivityConnected={setIsLiveActivityConnected}
+        />
+      )}
     </div>
   )
 }

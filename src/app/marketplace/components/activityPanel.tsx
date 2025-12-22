@@ -10,10 +10,16 @@ import { useMarketplaceActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 
-const ActivityPanel: React.FC = () => {
+interface ActivityPanelProps {
+  isLiveActivityConnected: boolean
+  setIsLiveActivityConnected: (isConnected: boolean) => void
+}
+
+const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, setIsLiveActivityConnected }) => {
   const dispatch = useAppDispatch()
   const { actions } = useFilterRouter()
-  const { activity, activityLoading, fetchMoreActivity, hasMoreActivity, isConnected } = useMarketplaceActivity()
+  const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } =
+    useMarketplaceActivity(setIsLiveActivityConnected)
   const isAtBottom = useScrollToBottom({ threshold: 100 })
   const { width: windowWidth } = useWindowSize()
 
@@ -29,10 +35,10 @@ const ActivityPanel: React.FC = () => {
           </button>
           <div className='flex items-center justify-end gap-1 sm:gap-2'>
             <div
-              className={`h-2.5 w-2.5 animate-pulse rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
+              className={`h-2.5 w-2.5 animate-pulse rounded-full ${isLiveActivityConnected ? 'bg-green-500' : 'bg-red-500'}`}
             ></div>
             <span className='text-md text-right font-medium sm:text-lg'>
-              {isConnected ? 'Connected' : 'Disconnected'}
+              {isLiveActivityConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
         </div>

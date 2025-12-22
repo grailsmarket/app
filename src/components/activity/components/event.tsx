@@ -54,21 +54,22 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
   }[platform as 'opensea' | 'grails']
 
   return (
-    <div className='flex w-full flex-row items-center gap-2'>
-      <div className='flex h-8 w-8 items-center justify-center'>
+    <div className='flex w-full flex-row items-center gap-1.5 sm:gap-2'>
+      <div className='flex h-7 w-7 items-center justify-center sm:h-8 sm:w-8'>
         <Image
           src={platformIcon || ETHGray}
           alt='Opensea'
           width={platformIcon ? 32 : 24}
           height={platformIcon ? 32 : 24}
+          className='h-full w-auto'
         />
       </div>
       <div className='flex flex-col items-start'>
         <div className='flex items-center gap-1'>
-          {icon && <Image src={icon} alt={event} width={15} height={15} />}
-          <p className='text-lg font-semibold capitalize'>{eventName}</p>
+          {icon && <Image src={icon} alt={event} width={15} height={15} className='h-3 w-3 sm:h-4 sm:w-4' />}
+          <p className='text-md font-semibold capitalize sm:text-lg'>{eventName}</p>
         </div>
-        <p className='text-md text-neutral mt-px font-medium'>{formatTimeAgo(timestamp)}</p>
+        <p className='sm:text-md text-neutral mt-px text-sm font-medium'>{formatTimeAgo(timestamp)}</p>
       </div>
     </div>
   )

@@ -132,27 +132,30 @@ const LiveActivity = () => {
             </span>
           </div>
         </div>
-        <button className='flex items-center hover:opacity-80 cursor-pointer gap-2 transition-opacity' onClick={handleViewAll}>
+        <button
+          className='flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-80'
+          onClick={handleViewAll}
+        >
           <p className='text-md text-primary text-right font-semibold sm:text-lg'>View All</p>
-          <Arrow className='w-3 h-3 rotate-180 text-primary' />
+          <Arrow className='text-primary h-3 w-3 rotate-180' />
         </button>
       </div>
-
-      {/* Live Activity Section */}
-      <Activity
-        maxHeight={'466px'}
-        activity={allActivities}
-        paddingBottom='10px'
-        loadingRowCount={16}
-        isLoading={isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities}
-        noResults={!isActivityLoading && allActivities.length === 0}
-        fetchMoreActivity={fetchNextPageHistoricalActivities}
-        hasMoreActivity={hasNextPageHistoricalActivities}
-        scrollEnabled={width && width > 1024 ? true : false}
-        useLocalScrollTop={true}
-        columns={['event', 'name', 'price', 'user']}
-      />
-    </div >
+      <div className='px-md pt-md sm:p-sm md:p-0'>
+        <Activity
+          maxHeight={'466px'}
+          activity={allActivities}
+          paddingBottom='10px'
+          loadingRowCount={16}
+          isLoading={isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities}
+          noResults={!isActivityLoading && allActivities.length === 0}
+          fetchMoreActivity={fetchNextPageHistoricalActivities}
+          hasMoreActivity={hasNextPageHistoricalActivities}
+          scrollEnabled={width && width > 1024 ? true : false}
+          useLocalScrollTop={true}
+          columns={['event', 'name', 'price', 'user']}
+        />
+      </div>
+    </div>
   )
 }
 

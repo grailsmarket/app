@@ -8,9 +8,8 @@ import { ActivityType } from '@/types/profile'
 import { MarketplaceActivityTypeFilterType } from '@/state/reducers/filters/marketplaceActivityFilters'
 import { NameActivityType } from '@/types/domains'
 
-export const useMarketplaceActivity = () => {
+export const useMarketplaceActivity = (setIsLiveActivityConnected: (isConnected: boolean) => void) => {
   const [liveActivities, setLiveActivities] = useState<NameActivityType[]>([])
-  const [isConnected, setIsConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -22,7 +21,7 @@ export const useMarketplaceActivity = () => {
 
     ws.onopen = () => {
       console.log('Activity WebSocket connected')
-      setIsConnected(true)
+      setIsLiveActivityConnected(true)
 
       // Subscribe to all activity
       ws.send(
@@ -58,12 +57,12 @@ export const useMarketplaceActivity = () => {
 
     ws.onerror = (error) => {
       console.log('WebSocket error:', error)
-      setIsConnected(false)
+      setIsLiveActivityConnected(false)
     }
 
     ws.onclose = () => {
       console.log('Activity WebSocket disconnected')
-      setIsConnected(false)
+      setIsLiveActivityConnected(false)
     }
 
     return () => {
@@ -72,6 +71,8 @@ export const useMarketplaceActivity = () => {
       }
       ws.close()
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const { selectors } = useFilterRouter()
@@ -120,6 +121,5 @@ export const useMarketplaceActivity = () => {
     activityLoading,
     fetchMoreActivity,
     hasMoreActivity,
-    isConnected,
   }
 }

@@ -6,7 +6,11 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeMarketplaceTab, MarketplaceTabType, selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 
-const MarketplaceTabSwitcher: React.FC = () => {
+interface MarketplaceTabSwitcherProps {
+  isLiveActivityConnected: boolean
+}
+
+const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveActivityConnected }) => {
   const [mounted, setMounted] = useState(false)
   const { selectedTab } = useAppSelector(selectMarketplace)
   const dispatch = useAppDispatch()
@@ -53,7 +57,7 @@ const MarketplaceTabSwitcher: React.FC = () => {
   if (!mounted) {
     return (
       <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:min-h-14 lg:gap-8'>
-        <div ref={containerRef} className='relative flex h-10 gap-4'>
+        <div ref={containerRef} className='relative flex h-10 w-full justify-between gap-4'>
           <div
             className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
             style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -74,6 +78,14 @@ const MarketplaceTabSwitcher: React.FC = () => {
               </button>
             ))}
           </div>
+          <div className='flex items-center justify-end gap-1 sm:gap-2'>
+            <div
+              className={`h-2.5 w-2.5 animate-pulse rounded-full ${isLiveActivityConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            ></div>
+            <span className='text-md text-right font-medium sm:text-lg'>
+              {isLiveActivityConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
         </div>
       </div>
     )
@@ -82,7 +94,7 @@ const MarketplaceTabSwitcher: React.FC = () => {
   // After mount, render with proper active state
   return (
     <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:min-h-14 lg:gap-8'>
-      <div ref={containerRef} className='relative flex h-10 gap-4'>
+      <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
         <div
           className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
           style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -102,6 +114,16 @@ const MarketplaceTabSwitcher: React.FC = () => {
           </button>
         ))}
       </div>
+      {selectedTab.value === 'activity' && (
+        <div className='hidden items-center justify-end gap-1 sm:gap-2 lg:flex'>
+          <div
+            className={`h-2.5 w-2.5 animate-pulse rounded-full ${isLiveActivityConnected ? 'bg-green-500' : 'bg-red-500'}`}
+          ></div>
+          <span className='text-md text-right font-medium sm:text-lg'>
+            {isLiveActivityConnected ? 'Connected' : 'Disconnected'}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

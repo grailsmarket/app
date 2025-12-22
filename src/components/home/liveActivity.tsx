@@ -6,13 +6,19 @@ import { NameActivityType } from '@/types/domains'
 import { fetchAllActivity } from '@/api/activity/all'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { API_URL } from '@/constants/api'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { Arrow, useWindowSize } from 'ethereum-identity-kit'
+import { useRouter } from 'next/navigation'
+import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
+import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
+import { useAppDispatch } from '@/state/hooks'
 
 const LiveActivity = () => {
   const [liveActivities, setLiveActivities] = useState<NameActivityType[]>([])
   const [isConnected, setIsConnected] = useState(false)
-  const wsRef = useRef<WebSocket | null>(null)
+  const router = useRouter()
   const { width } = useWindowSize()
+  const dispatch = useAppDispatch()
+  const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
     const baseUrl = API_URL.replace(/\/api\/v1$/, '')
@@ -103,6 +109,11 @@ const LiveActivity = () => {
     initialPageParam: 1,
   })
 
+  const handleViewAll = () => {
+    dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
+    router.push('/marketplace')
+  }
+
   const historicalActivities = fetchHistoricalActivityData?.pages.flatMap((page) => page.activity) || []
   const allActivities = [...liveActivities, ...historicalActivities]
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
@@ -110,26 +121,26 @@ const LiveActivity = () => {
   return (
     <div className='bg-secondary p-sm border-tertiary h-[516px] w-full rounded-md border-2 pb-0 lg:max-w-[700px]'>
       <div className='pt-md p-md lg:p-lg flex items-center justify-between'>
-        {/* <div className='flex items-center gap-2'> */}
-        <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
-        <div className='flex items-center justify-end gap-1 sm:gap-2'>
-          <div
-            className={`h-2.5 w-2.5 animate-pulse rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
-          ></div>
-          <span className='text-md text-right font-medium sm:text-lg'>
-            {isConnected ? 'Connected' : 'Disconnected'}
-          </span>
+        <div className='flex items-center gap-4'>
+          <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
+          <div className='flex items-center justify-end gap-1 sm:gap-2'>
+            <div
+              className={`h-2.5 w-2.5 animate-pulse rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            ></div>
+            <span className='text-md text-right font-medium sm:text-lg'>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </span>
+          </div>
         </div>
-        {/* </div>
-        <button className='flex items-center gap-2'>
-          <p className='text-md text-primary text-right font-medium sm:text-lg'>View All</p>
+        <button className='flex items-center hover:opacity-80 cursor-pointer gap-2 transition-opacity' onClick={handleViewAll}>
+          <p className='text-md text-primary text-right font-semibold sm:text-lg'>View All</p>
           <Arrow className='w-3 h-3 rotate-180 text-primary' />
-        </button> */}
+        </button>
       </div>
 
       {/* Live Activity Section */}
       <Activity
-        maxHeight={'472px'}
+        maxHeight={'466px'}
         activity={allActivities}
         paddingBottom='10px'
         loadingRowCount={16}
@@ -141,7 +152,7 @@ const LiveActivity = () => {
         useLocalScrollTop={true}
         columns={['event', 'name', 'price', 'user']}
       />
-    </div>
+    </div >
   )
 }
 

@@ -6,7 +6,7 @@ import search from 'public/icons/search-primary.svg'
 import listings from 'public/icons/tag.svg'
 import extend from 'public/icons/extend.svg'
 import transfer from 'public/icons/transfer-primary.svg'
-import bulkToolsImage from 'public/art/bulk-tools.png'
+import bulkToolsImage from 'public/art/bulk-tools.svg'
 import { setSearchModalOpen } from '@/state/reducers/modals/searchModal'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
@@ -61,9 +61,9 @@ const BulkTools = () => {
     openConnectModal?.()
   }
   return (
-    <div className='flex w-full flex-col justify-between gap-6 xl:flex-row'>
-      <div className='flex flex-col items-center gap-5 lg:items-start xl:min-w-[596px]'>
-        <div className='flex flex-col gap-3'>
+    <div className='flex w-full flex-col justify-between gap-8 xl:flex-row'>
+      <div className='flex flex-col items-center gap-7 lg:items-start xl:min-w-[596px]'>
+        <div className='flex flex-col gap-4'>
           <h2 className='font-sedan-sc text-center text-5xl md:text-6xl lg:text-left'>Bulk Tools</h2>
           <p className='text-center font-semibold sm:text-2xl lg:text-left'>
             Save gas and time. For serious domainers.

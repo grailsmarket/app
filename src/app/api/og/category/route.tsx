@@ -40,6 +40,46 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/triple_ethmoji/avatar.jpg',
     header: 'https://grails.app/clubs/triple_ethmoji/header.jpeg',
   },
+  prepunk_100: {
+    avatar: 'https://grails.app/clubs/prepunk_100/avatar.jpg',
+    header: 'https://grails.app/clubs/prepunk_100/header.jpeg',
+  },
+  prepunk_1k: {
+    avatar: 'https://grails.app/clubs/prepunk_1k/avatar.jpg',
+    header: 'https://grails.app/clubs/prepunk_1k/header.jpeg',
+  },
+  prepunk_10k: {
+    avatar: 'https://grails.app/clubs/prepunk_10k/avatar.jpg',
+    header: 'https://grails.app/clubs/prepunk_10k/header.jpeg',
+  },
+  bip_39: {
+    avatar: 'https://grails.app/clubs/bip_39/avatar.jpg',
+    header: 'https://grails.app/clubs/bip_39/header.jpeg',
+  },
+  periodic_table_natural: {
+    avatar: 'https://grails.app/clubs/periodic_table_natural/avatar.jpg',
+    header: 'https://grails.app/clubs/periodic_table_natural/header.jpeg',
+  },
+  english_adjectives: {
+    avatar: 'https://grails.app/clubs/english_adjectives/avatar.jpg',
+    header: 'https://grails.app/clubs/english_adjectives/header.jpeg',
+  },
+  wikidata_top_nouns: {
+    avatar: 'https://grails.app/clubs/wikidata_top_nouns/avatar.jpg',
+    header: 'https://grails.app/clubs/wikidata_top_nouns/header.jpeg',
+  },
+  wikidata_top_fantasy_char: {
+    avatar: 'https://grails.app/clubs/wikidata_top_fantasy_char/avatar.jpg',
+    header: 'https://grails.app/clubs/wikidata_top_fantasy_char/header.jpeg',
+  },
+  un_capital_cities: {
+    avatar: 'https://grails.app/clubs/un_capital_cities/avatar.jpg',
+    header: 'https://grails.app/clubs/un_capital_cities/header.jpeg',
+  },
+  un_countries: {
+    avatar: 'https://grails.app/clubs/un_countries/avatar.jpg',
+    header: 'https://grails.app/clubs/un_countries/header.jpeg',
+  },
 }
 
 export async function GET(req: NextRequest) {

@@ -118,7 +118,7 @@ export const MARKETPLACE_GRID_ROW_COUNT_WIDTHS: Record<number, number> = {
 }
 
 export const CATEGORY_LABELS = {
-  prepunks: 'Prepunks',
+  prepunks: 'Prepunk',
   '10k': '10k Club',
   pokemon: 'Pokemon',
   '1kforenames': '1k Forenames',
@@ -127,4 +127,14 @@ export const CATEGORY_LABELS = {
   single_ethmoji: 'Single Ethmoji',
   triple_ethmoji: 'Triple Ethmoji',
   base_single_ethmoji: 'Base Single Ethmoji',
+  prepunk_100: 'Prepunk 100',
+  prepunk_1k: 'Prepunk 1k',
+  prepunk_10k: 'Prepunk 10k',
+  un_capital_cities: 'Un Capital Cities',
+  un_countries: 'Un Countries',
+  bip_39: 'BIP 39',
+  periodic_table_natural: 'Periodic Table',
+  english_adjectives: 'English Adjectives',
+  wikidata_top_nouns: 'Top Nouns',
+  wikidata_top_fantasy_char: 'Top Fantasy',
 } as const

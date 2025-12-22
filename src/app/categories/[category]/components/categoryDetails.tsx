@@ -25,8 +25,41 @@ import TripleEthmojiAvatar from 'public/clubs/triple_ethmoji/avatar.jpg'
 import TripleEthmojiHeader from 'public/clubs/triple_ethmoji/header.jpeg'
 import BaseSingleEthmojiAvatar from 'public/clubs/base_single_ethmoji/avatar.jpg'
 import BaseSingleEthmojiHeader from 'public/clubs/base_single_ethmoji/header.jpeg'
+import Prepunk100Avatar from 'public/clubs/prepunk_100/avatar.jpg'
+import Prepunk100Header from 'public/clubs/prepunk_100/header.jpeg'
+import Prepunk1kAvatar from 'public/clubs/prepunk_1k/avatar.jpg'
+import Prepunk1kHeader from 'public/clubs/prepunk_1k/header.jpeg'
+import Prepunk10kAvatar from 'public/clubs/prepunk_10k/avatar.jpg'
+import Prepunk10kHeader from 'public/clubs/prepunk_10k/header.jpeg'
+import BIP39Avatar from 'public/clubs/bip_39/avatar.jpg'
+import BIP39Header from 'public/clubs/bip_39/header.jpeg'
+import PeriodicTableNaturalAvatar from 'public/clubs/periodic_table_natural/avatar.jpg'
+import PeriodicTableNaturalHeader from 'public/clubs/periodic_table_natural/header.jpeg'
+import EnglishAdjectivesAvatar from 'public/clubs/english_adjectives/avatar.jpg'
+import EnglishAdjectivesHeader from 'public/clubs/english_adjectives/header.jpeg'
+import WikidataTopNounsAvatar from 'public/clubs/wikidata_top_nouns/avatar.jpg'
+import WikidataTopNounsHeader from 'public/clubs/wikidata_top_nouns/header.jpeg'
+import WikidataTopFantasyCharAvatar from 'public/clubs/wikidata_top_fantasy_char/avatar.jpg'
+import WikidataTopFantasyCharHeader from 'public/clubs/wikidata_top_fantasy_char/header.jpeg'
+import UnCapitalCitiesAvatar from 'public/clubs/un_capital_cities/avatar.jpg'
+import UnCapitalCitiesHeader from 'public/clubs/un_capital_cities/header.jpeg'
+import UnCountriesAvatar from 'public/clubs/un_countries/avatar.jpg'
+import UnCountriesHeader from 'public/clubs/un_countries/header.jpeg'
+import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
 export const CATEGORY_IMAGES = {
+  prepunk_100: {
+    avatar: Prepunk100Avatar,
+    header: Prepunk100Header,
+  },
+  prepunk_1k: {
+    avatar: Prepunk1kAvatar,
+    header: Prepunk1kHeader,
+  },
+  prepunk_10k: {
+    avatar: Prepunk10kAvatar,
+    header: Prepunk10kHeader,
+  },
   prepunks: {
     avatar: PrepunksAvatar,
     header: PrepunksHeader,
@@ -63,10 +96,47 @@ export const CATEGORY_IMAGES = {
     avatar: BaseSingleEthmojiAvatar,
     header: BaseSingleEthmojiHeader,
   },
+  bip_39: {
+    avatar: BIP39Avatar,
+    header: BIP39Header,
+  },
+  periodic_table_natural: {
+    avatar: PeriodicTableNaturalAvatar,
+    header: PeriodicTableNaturalHeader,
+  },
+  english_adjectives: {
+    avatar: EnglishAdjectivesAvatar,
+    header: EnglishAdjectivesHeader,
+  },
+  wikidata_top_nouns: {
+    avatar: WikidataTopNounsAvatar,
+    header: WikidataTopNounsHeader,
+  },
+  wikidata_top_fantasy_char: {
+    avatar: WikidataTopFantasyCharAvatar,
+    header: WikidataTopFantasyCharHeader,
+  },
+  un_capital_cities: {
+    avatar: UnCapitalCitiesAvatar,
+    header: UnCapitalCitiesHeader,
+  },
+  un_countries: {
+    avatar: UnCountriesAvatar,
+    header: UnCountriesHeader,
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS = {
   prepunks: {
+    twitter: 'https://x.com/PrePunkOfficial',
+  },
+  prepunk_100: {
+    twitter: 'https://x.com/PrePunkOfficial',
+  },
+  prepunk_1k: {
+    twitter: 'https://x.com/PrePunkOfficial',
+  },
+  prepunk_10k: {
     twitter: 'https://x.com/PrePunkOfficial',
   },
   '10k': {
@@ -100,8 +170,11 @@ interface Props {
 }
 
 const CategoryDetails = ({ categoryDetails }: Props) => {
-  const categoryName = CATEGORY_LABELS[categoryDetails.name as keyof typeof CATEGORY_LABELS]
-  const categoryImage = CATEGORY_IMAGES[categoryDetails.name as keyof typeof CATEGORY_IMAGES]
+  const categoryName = CATEGORY_LABELS[categoryDetails.name as keyof typeof CATEGORY_LABELS] || categoryDetails.name
+  const categoryImage = CATEGORY_IMAGES[categoryDetails.name as keyof typeof CATEGORY_IMAGES] || {
+    avatar: DEFAULT_FALLBACK_AVATAR,
+    header: DEFAULT_FALLBACK_HEADER,
+  }
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS].twitter
 
   return (

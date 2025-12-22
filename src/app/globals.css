@@ -272,3 +272,14 @@ body {
 .user-profile-status-container {
   z-index: 1000 !important;
 }
+
+@media screen and (max-width: 768px) {
+  .sign-in-button {
+    height: 40px;
+  }
+
+  .sign-in-button-content {
+    padding: 0 12px;
+    gap: 4px;
+  }
+}

@@ -18,6 +18,7 @@ import NineNinetyNineAvatar from 'public/clubs/999/avatar.jpg'
 import NineNinetyNineHeader from 'public/clubs/999/header.jpeg'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import TwitterIcon from 'public/logos/x.svg'
+import GithubIcon from 'public/logos/github.svg'
 import { localizeNumber } from '@/utils/localizeNumber'
 import SingleEthmojiAvatar from 'public/clubs/single_ethmoji/avatar.jpg'
 import SingleEthmojiHeader from 'public/clubs/single_ethmoji/header.jpeg'
@@ -138,7 +139,7 @@ export const CATEGORY_IMAGES = {
   },
 }
 
-export const CATEGORY_SOCIAL_LINKS = {
+export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {
   prepunks: {
     twitter: 'https://x.com/PrePunkOfficial',
   },
@@ -169,6 +170,15 @@ export const CATEGORY_SOCIAL_LINKS = {
   triple_ethmoji: {
     twitter: 'https://x.com/EthmojiClub',
   },
+  ethmoji_999: {
+    twitter: 'https://x.com/Ethmoji999',
+  },
+  ethmoji_99: {
+    twitter: 'https://x.com/Ethmoji99',
+  },
+  wikidata_top_fantasy_char: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main/wikidata_top_fantasy_char',
+  },
 }
 
 interface Props {
@@ -182,6 +192,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
     header: DEFAULT_FALLBACK_HEADER,
   }
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.twitter || null
+  const githubLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.github || null
 
   return (
     <div className='relative w-full items-center justify-center md:px-4'>
@@ -217,6 +228,17 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                     <Image
                       src={TwitterIcon}
                       alt='Twitter'
+                      width={28}
+                      height={28}
+                      className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'
+                    />
+                  </Link>
+                )}
+                {githubLink && (
+                  <Link href={githubLink} target='_blank' rel='noopener noreferrer'>
+                    <Image
+                      src={GithubIcon}
+                      alt='Github'
                       width={28}
                       height={28}
                       className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'

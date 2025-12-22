@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Avatar, ENS, HeaderImage } from 'ethereum-identity-kit'
+import { Avatar, ENS, HeaderImage, truncateAddress } from 'ethereum-identity-kit'
 import { useSettings } from './useSettings'
 import Input from '@/components/ui/input'
 import Link from 'next/link'
@@ -12,6 +12,8 @@ import ErrorIcon from 'public/icons/cancelled.svg'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
+import { beautifyName } from '@/lib/ens'
+import { useUserContext } from '@/context/user'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -37,6 +39,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     sendVerificationEmail,
     verificationEmailStatus,
   } = useSettings()
+  const { userAddress } = useUserContext()
+
+  if (!userAddress) return null
 
   return (
     <div
@@ -70,7 +75,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 className='h-9 w-9 min-w-9 overflow-hidden rounded-full sm:h-10 sm:w-10 md:h-12 md:w-12'
               />
               <p className='xs:text-xl line-clamp-2 truncate text-lg font-semibold sm:text-xl md:text-2xl'>
-                {ensProfile.name}
+                {ensProfile.name ? beautifyName(ensProfile.name) : truncateAddress(userAddress)}
               </p>
             </div>
             <Link

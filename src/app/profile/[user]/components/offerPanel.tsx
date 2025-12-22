@@ -11,6 +11,7 @@ import Offers from '@/components/offers'
 import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { Address } from 'viem'
+import { useWindowSize } from 'ethereum-identity-kit'
 
 interface OfferPanelProps {
   user: Address | undefined
@@ -19,6 +20,7 @@ interface OfferPanelProps {
 const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
+  const { width: windowWidth } = useWindowSize()
   const { selectors, actions } = useFilterRouter()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers(user)
@@ -62,7 +64,7 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
         </div>
       </div>
       <Offers
-        maxHeight='calc(100dvh - 160px)'
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 160px)' : 'calc(100dvh - 76px)'}
         offers={offers}
         loadingRowCount={20}
         paddingBottom='120px'

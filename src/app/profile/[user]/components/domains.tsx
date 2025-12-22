@@ -7,7 +7,7 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { Address, Cross } from 'ethereum-identity-kit'
+import { Address, Cross, useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { useDomains } from '../hooks/useDomains'
@@ -30,6 +30,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const isAtBottom = useScrollToBottom({ threshold: 8 })
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
+  const { width: windowWidth } = useWindowSize()
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {
@@ -79,7 +80,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight='calc(100dvh - 110px)'
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 110px)' : 'calc(100dvh - 76px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom={selectedTab.value === 'watchlist' ? '320px' : '160px'}

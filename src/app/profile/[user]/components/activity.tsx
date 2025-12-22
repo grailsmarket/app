@@ -5,7 +5,7 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { Address } from 'ethereum-identity-kit'
+import { Address, useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useProfileActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
@@ -20,6 +20,7 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
   const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
   const isAtBottom = useScrollToBottom({ threshold: 100 })
+  const { width: windowWidth } = useWindowSize()
 
   return (
     <div className='px-md md:pt-md flex w-full flex-col gap-2'>
@@ -50,7 +51,7 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
         </div>
       </div>
       <Activity
-        maxHeight='calc(100dvh - 150px)'
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 150px)' : 'calc(100dvh - 76px)'}
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}

@@ -54,8 +54,13 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
   }[platform as 'opensea' | 'grails']
 
   return (
-    <div className='flex w-full flex-row items-center gap-[5px]'>
-      <Image src={platformIcon || ETHGray} alt='Opensea' width={32} height={32} className='mr-1' />
+    <div className='flex w-full flex-row items-center gap-2'>
+      <Image
+        src={platformIcon || ETHGray}
+        alt='Opensea'
+        width={platformIcon ? 32 : 24}
+        height={platformIcon ? 32 : 24}
+      />
       <div className='flex flex-col items-start'>
         <div className='flex items-center gap-1'>
           {icon && <Image src={icon} alt={event} width={15} height={15} />}

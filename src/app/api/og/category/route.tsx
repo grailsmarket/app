@@ -28,6 +28,14 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/999/avatar.jpg',
     header: 'https://grails.app/clubs/999/header.jpeg',
   },
+  ethmoji_99: {
+    avatar: 'https://grails.app/clubs/ethmoji_99/avatar.jpg',
+    header: 'https://grails.app/clubs/ethmoji_99/header.jpeg',
+  },
+  ethmoji_999: {
+    avatar: 'https://grails.app/clubs/ethmoji_999/avatar.jpg',
+    header: 'https://grails.app/clubs/ethmoji_999/header.jpeg',
+  },
   base_single_ethmoji: {
     avatar: 'https://grails.app/clubs/base_single_ethmoji/avatar.jpg',
     header: 'https://grails.app/clubs/base_single_ethmoji/header.jpeg',

@@ -23,6 +23,10 @@ import SingleEthmojiAvatar from 'public/clubs/single_ethmoji/avatar.jpg'
 import SingleEthmojiHeader from 'public/clubs/single_ethmoji/header.jpeg'
 import TripleEthmojiAvatar from 'public/clubs/triple_ethmoji/avatar.jpg'
 import TripleEthmojiHeader from 'public/clubs/triple_ethmoji/header.jpeg'
+import Ethmoji99Avatar from 'public/clubs/ethmoji_99/avatar.jpg'
+import Ethmoji99Header from 'public/clubs/ethmoji_99/header.jpeg'
+import Ethmoji999Avatar from 'public/clubs/ethmoji_999/avatar.jpg'
+import Ethmoji999Header from 'public/clubs/ethmoji_999/header.jpeg'
 import BaseSingleEthmojiAvatar from 'public/clubs/base_single_ethmoji/avatar.jpg'
 import BaseSingleEthmojiHeader from 'public/clubs/base_single_ethmoji/header.jpeg'
 import Prepunk100Avatar from 'public/clubs/prepunk_100/avatar.jpg'
@@ -91,6 +95,14 @@ export const CATEGORY_IMAGES = {
   triple_ethmoji: {
     avatar: TripleEthmojiAvatar,
     header: TripleEthmojiHeader,
+  },
+  ethmoji_99: {
+    avatar: Ethmoji99Avatar,
+    header: Ethmoji99Header,
+  },
+  ethmoji_999: {
+    avatar: Ethmoji999Avatar,
+    header: Ethmoji999Header,
   },
   base_single_ethmoji: {
     avatar: BaseSingleEthmojiAvatar,

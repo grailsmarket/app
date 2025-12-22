@@ -16,6 +16,7 @@ interface FetchDomainsOptions {
   searchTerm: string
   ownerAddress?: Address
   category?: string
+  enableBulkSearch?: boolean
 }
 
 export const fetchDomains = async ({
@@ -25,11 +26,12 @@ export const fetchDomains = async ({
   searchTerm,
   ownerAddress,
   category,
+  enableBulkSearch = false,
 }: FetchDomainsOptions) => {
   try {
     const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
 
-    if (isBulkSearching) {
+    if (isBulkSearching && enableBulkSearch) {
       const search = searchTerm
         .replaceAll(' ', ',')
         .split(',')

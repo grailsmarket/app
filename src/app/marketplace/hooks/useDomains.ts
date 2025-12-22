@@ -35,6 +35,7 @@ export const useDomains = () => {
         pageParam,
         filters,
         searchTerm: debouncedSearch,
+        enableBulkSearch: true,
       })
 
       return {

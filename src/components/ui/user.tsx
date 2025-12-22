@@ -13,6 +13,7 @@ import {
 import { cn } from '@/utils/tailwind'
 import LoadingCell from './loadingCell'
 import { useUserContext } from '@/context/user'
+import { beautifyName } from '@/lib/ens'
 
 interface UserProps {
   address: Address
@@ -73,7 +74,9 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
             style={{ width: '30px', height: '30px', zIndex: 10 }}
           />
           <div className='relative' style={{ maxWidth: 'calc(100% - 38px)' }}>
-            <p className='z-10 truncate text-xl font-semibold'>{profile?.ens?.name || truncateAddress(address)}</p>
+            <p className='z-10 truncate text-xl font-semibold'>
+              {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+            </p>
           </div>
         </Link>
       </div>

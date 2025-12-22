@@ -10,13 +10,15 @@ import Listed from 'public/icons/listed.svg'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
 import ETHGray from 'public/icons/eth-gray.svg'
+import formatTimeAgo from '@/utils/time/formatTimeAgo'
 
 interface EventProps {
   event: ProfileActivityEventType
   platform: string
+  timestamp: string
 }
 
-const Event: React.FC<EventProps> = ({ event, platform }) => {
+const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
   const icon = {
     listed: Listed,
     offer_made: OfferMade,
@@ -52,11 +54,14 @@ const Event: React.FC<EventProps> = ({ event, platform }) => {
   }[platform as 'opensea' | 'grails']
 
   return (
-    <div className='flex w-full flex-row items-center gap-2'>
-      <Image src={platformIcon || ETHGray} alt='Opensea' width={20} height={20} className='mr-1' />
-      {icon && <Image src={icon} alt={event} width={20} height={20} />}
-      <div>
-        <p className='text-lg font-medium capitalize'>{eventName}</p>
+    <div className='flex w-full flex-row items-center gap-[5px]'>
+      <Image src={platformIcon || ETHGray} alt='Opensea' width={32} height={32} className='mr-1' />
+      <div className='flex flex-col items-start'>
+        <div className='flex items-center gap-1'>
+          {icon && <Image src={icon} alt={event} width={15} height={15} />}
+          <p className='text-lg font-semibold capitalize'>{eventName}</p>
+        </div>
+        <p className='text-md text-neutral mt-px font-medium'>{formatTimeAgo(timestamp)}</p>
       </div>
     </div>
   )

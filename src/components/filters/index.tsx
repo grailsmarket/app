@@ -6,13 +6,14 @@ import Filters from './components/Filters'
 import backArrow from 'public/icons/arrow-back.svg'
 import FilterIcon from 'public/icons/filter.svg'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
 import CloseIcon from 'public/icons/cross.svg'
 import { useFilterContext } from '@/context/filters'
 import ActivityTypeFilter from './ActivityFilter/TypeFilter'
 import { useEffect, useRef } from 'react'
+import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
@@ -27,6 +28,7 @@ const FilterPanel: React.FC = () => {
   }, [isPanelCategories])
 
   const dispatch = useAppDispatch()
+  const { search } = useAppSelector(selectMarketplaceFilters)
   const { selectors, actions } = useFilterRouter()
   const { profileTab, filterType } = useFilterContext()
   const filtersOpen = selectors.filters.open
@@ -38,6 +40,8 @@ const FilterPanel: React.FC = () => {
   if (!isClient || !windowWidth) return null
 
   const isOpen = windowWidth < 1024 ? filtersOpen : true
+  const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
+  const isDisabled = filterType === 'marketplace' && isBulkSearch
 
   return (
     <div
@@ -45,7 +49,8 @@ const FilterPanel: React.FC = () => {
       className={cn(
         'bg-background absolute top-0 left-0 z-20 h-[calc(100dvh-80px)] w-full shadow-md transition-transform duration-300 md:max-w-[284px] md:min-w-[284px] lg:relative lg:shadow-none',
         isOpen ? 'translate-x-0' : '-translate-x-[110%]',
-        isPanelCategories ? 'overflow-hidden' : 'overflow-y-scroll'
+        isPanelCategories ? 'overflow-hidden' : 'overflow-y-scroll',
+        isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'
       )}
     >
       <div

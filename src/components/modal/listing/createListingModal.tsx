@@ -59,6 +59,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
 
+  const [cancelOldListings, setCancelOldListings] = useState(true)
   const [prices, setPrices] = useState<(number | '')[]>(Array(domains.length).fill(''))
   const [currencies, setCurrencies] = useState<('ETH' | 'USDC')[]>(Array(domains.length).fill('ETH'))
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
@@ -165,7 +166,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         throw new Error(result.error || 'Failed to create listing')
       }
 
-      if (previousListings.length > 0) {
+      if (previousListings.length > 0 && cancelOldListings) {
         setStatus('cancelling')
 
         try {
@@ -518,6 +519,31 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 <Image src={Calendar} alt='calendar' width={18} height={18} />
               </button>
             </div>
+
+            {/* Cancel old listings toggle */}
+            {previousListings.length > 0 && (
+              <div className='border-tertiary flex items-center justify-between rounded-md border p-3'>
+                <div className='flex flex-col'>
+                  <p className='text-lg font-medium'>Cancel old listings</p>
+                  <p className='text-neutral text-sm'>Cancel existing listings after creating new ones</p>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => setCancelOldListings(!cancelOldListings)}
+                  className={cn(
+                    'group relative h-6 w-11 cursor-pointer rounded-full transition-colors duration-200',
+                    cancelOldListings ? 'bg-primary' : 'bg-tertiary'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
+                      cancelOldListings ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+              </div>
+            )}
 
             {/* Fee breakdown */}
             {prices.length === 1 && Number(prices[0]) > 0 && calculateFees() ? (

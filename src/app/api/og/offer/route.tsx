@@ -234,6 +234,10 @@ export async function GET(req: NextRequest) {
               color: #f4f4f4;
               padding: 70px;
             }
+            .price, .expires, .owner-name, .owner-label, .category-label, .source-label, .label, .listed-label {
+              font-variant-emoji: text;
+              text-rendering: optimizeLegibility;
+            }
             .ens-image-container {
               display: flex;
               flex-direction: column;

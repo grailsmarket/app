@@ -203,6 +203,10 @@ export async function GET(req: NextRequest) {
               padding: 80px;
               font-family: 'Inter', system-ui, -apple-system, sans-serif;
             }
+            .price, .expires, .owner-name, .category-label, .source-label, .label, .listed-label {
+              font-variant-emoji: text;
+              text-rendering: optimizeLegibility;
+            }
             .ens-image-container {
               display: flex;
               flex-direction: column;

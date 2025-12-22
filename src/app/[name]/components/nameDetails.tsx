@@ -76,7 +76,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
     {
       label: 'Category',
       value: (
-        <div className='flex flex-row gap-2! overflow-visible'>
+        <div className='flex flex-row flex-wrap justify-end gap-2!'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
                 <Link

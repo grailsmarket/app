@@ -70,8 +70,6 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
     ),
   }
 
-  console.log(displayedColumns)
-
   return (
     <div className='group px-sm md:px-md lg:px-lg flex h-[60px] w-full flex-row items-center justify-start gap-1 rounded-sm bg-transparent transition hover:bg-white/10'>
       {displayedColumns.map((column, index) => (

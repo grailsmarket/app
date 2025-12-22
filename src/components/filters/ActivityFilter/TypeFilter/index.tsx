@@ -3,19 +3,17 @@ import { persistor } from '@/state'
 import UnexpandedFilter from '../../components/UnexpandedFilter'
 import FilterSelector from '../../components/FilterSelector'
 import { PROFILE_ACTIVITY_FILTERS } from '@/constants/filters/portfolioFilters'
-import {
-  ActivityTypeFilterType,
-  selectProfileActivityFilters,
-  toggleActivityFiltersType,
-} from '@/state/reducers/filters/profileActivityFilters'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 const TypeFilter = () => {
-  const { type: typeFilter } = useAppSelector(selectProfileActivityFilters)
+  const { selectors, actions } = useFilterRouter()
+  const typeFilter = selectors.filters.type
   const dispatch = useAppDispatch()
 
   const toggleActivityFiltersTypeFn = (value: ActivityTypeFilterType) => {
-    dispatch(toggleActivityFiltersType(value))
+    dispatch(actions.toggleFiltersType(value))
   }
 
   return (
@@ -35,7 +33,8 @@ const TypeFilter = () => {
             >
               <p className='text-md font-medium'>{item.label}</p>
               <FilterSelector
-                isActive={typeFilter.includes(item.value)}
+                // @ts-expect-error type doesn't come through from the filter router
+                isActive={typeFilter.includes(item.value as ActivityTypeFilterType)}
                 onClick={() => toggleActivityFiltersTypeFn(item.value)}
               />
             </div>

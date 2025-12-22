@@ -25,6 +25,22 @@ import {
   clearMarketplaceFilters,
 } from '@/state/reducers/filters/marketplaceFilters'
 
+// Import marketplace activity filters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateMarketplaceActivityFilters,
+  selectMarketplaceActivityFilters,
+  toggleMarketplaceActivityFiltersType,
+  setMarketplaceActivityFiltersType,
+  toggleMarketplaceActivityFilterOpen,
+  setMarketplaceActivityFiltersOpen,
+  setMarketplaceActivitySearch,
+  setMarketplaceActivityFiltersScrollTop,
+  clearMarketplaceActivityFilters,
+} from '@/state/reducers/filters/marketplaceActivityFilters'
+
+// Import marketplace state selector
+import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
+
 // Import myOffers selectors and actions
 import {
   emptyFilterState as emptyFilterStateMyOffersFilters,
@@ -167,14 +183,25 @@ import {
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
+  const marketplaceState = useAppSelector(selectMarketplace)
 
   // Determine which tab is active in profile
   const activeProfileTab = profileState.selectedTab?.value || 'domains'
+  // Determine which tab is active in marketplace
+  const activeMarketplaceTab = marketplaceState.selectedTab?.value || 'names'
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'category') {
       return selectCategoryDomainsFilters(state)
+    }
+
+    if (filterType === 'marketplace') {
+      if (activeMarketplaceTab === 'activity') {
+        return selectMarketplaceActivityFilters(state)
+      }
+
+      return selectMarketplaceFilters(state)
     }
 
     if (filterType === 'profile') {
@@ -390,6 +417,38 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       }
     }
 
+    if (filterType === 'marketplace') {
+      if (activeMarketplaceTab === 'activity') {
+        return {
+          setScrollTop: setMarketplaceActivityFiltersScrollTop,
+          toggleFilterOpen: toggleMarketplaceActivityFilterOpen,
+          toggleFiltersType: toggleMarketplaceActivityFiltersType,
+          setFiltersOpen: setMarketplaceActivityFiltersOpen,
+          setFiltersType: setMarketplaceActivityFiltersType,
+          setSearch: setMarketplaceActivitySearch,
+          clearFilters: clearMarketplaceActivityFilters,
+        } as any
+      }
+
+      return {
+        setFiltersOpen: setMarketplaceFiltersOpen,
+        toggleFiltersStatus: toggleMarketplaceFiltersStatus,
+        setFiltersStatus: setMarketplaceFiltersStatus,
+        toggleFiltersType: toggleMarketplaceFiltersType,
+        setFiltersType: setMarketplaceFiltersType,
+        setFiltersLength: setMarketplaceFiltersLength,
+        setPriceDenomination: setMarketplacePriceDenomination,
+        setPriceRange: setMarketplacePriceRange,
+        toggleCategory: toggleMarketplaceCategory,
+        setFiltersCategory: setMarketplaceFiltersCategory,
+        setSort: setMarketplaceSort,
+        setSearch: setMarketplaceSearch,
+        setScrollTop: setMarketplaceScrollTop,
+        toggleFilterOpen: toggleMarketplaceFilterOpen,
+        clearFilters: clearMarketplaceFilters,
+      }
+    }
+
     return {
       setFiltersOpen: setMarketplaceFiltersOpen,
       toggleFiltersStatus: toggleMarketplaceFiltersStatus,
@@ -407,11 +466,18 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
-  }, [filterType, activeProfileTab])
+  }, [filterType, activeProfileTab, activeMarketplaceTab])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'category') {
       return emptyFilterStateCategoryDomainsFilters
+    }
+
+    if (filterType === 'marketplace') {
+      if (activeMarketplaceTab === 'activity') {
+        return emptyFilterStateMarketplaceActivityFilters
+      }
+      return emptyFilterStateMarketplaceFilters
     }
 
     if (filterType === 'profile') {
@@ -433,7 +499,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     return emptyFilterStateMarketplaceFilters
-  }, [filterType, activeProfileTab])
+  }, [filterType, activeProfileTab, activeMarketplaceTab])
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
@@ -449,6 +515,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     actions: actions as any,
     context: filterType,
     profileTab: profileState.selectedTab,
+    marketplaceTab: marketplaceState.selectedTab,
     isFiltersClear,
   }
 }

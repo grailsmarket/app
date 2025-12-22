@@ -93,7 +93,7 @@ const Activity: React.FC<ActivityProps> = ({
       style={{ maxHeight, minHeight }}
     >
       {showHeaders && !noResults && (
-        <div className='px-sm pb-sm md:px-md lg:px-lg py-md flex w-full items-center justify-start sm:flex'>
+        <div className='sm:px-sm pt-sm md:px-md lg:px-lg sm:py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             return (
               <div
@@ -113,9 +113,7 @@ const Activity: React.FC<ActivityProps> = ({
                           : columnWidth,
                 }}
               >
-                <p className='hover:text-light-100 w-fit cursor-pointer text-left text-sm font-medium capitalize transition-colors'>
-                  {header}
-                </p>
+                <p className='text-neutral w-fit cursor-pointer text-left text-sm font-medium capitalize'>{header}</p>
               </div>
             )
           })}

@@ -1,14 +1,9 @@
 'use client'
 
 import React from 'react'
-import FilterIcon from 'public/icons/filter.svg'
-import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { Address, useWindowSize } from 'ethereum-identity-kit'
-import MagnifyingGlass from 'public/icons/search.svg'
-import { useProfileActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
+import { useProfileActivity } from '../hooks/useActivity'
 import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
@@ -16,15 +11,13 @@ interface Props {
 }
 
 const ActivityPanel: React.FC<Props> = ({ user }) => {
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
   const isAtBottom = useScrollToBottom({ threshold: 100 })
   const { width: windowWidth } = useWindowSize()
 
   return (
     <div className='px-md md:pt-md flex w-full flex-col gap-2'>
-      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+      {/* <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
@@ -49,9 +42,9 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
       <Activity
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 150px)' : 'calc(100dvh - 76px)'}
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 126px)' : 'calc(100dvh - 28px)'}
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}

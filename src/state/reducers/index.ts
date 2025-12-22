@@ -7,6 +7,7 @@ import scrollPosition from './scroll'
 import domainsReducer from './domains'
 import filtersReducer from './filters'
 import profileReducer from './portfolio'
+import marketplaceReducer from './marketplace'
 import transactionReducer from './transactions'
 import registrationReducer from './registration'
 import viewReducer from './view'
@@ -25,6 +26,7 @@ const reducer = combineReducers({
   domains: domainsReducer,
   modals: modalReducer,
   profile: profileReducer,
+  marketplace: marketplaceReducer,
   transactions: transactionReducer,
   scroll: scrollPosition,
   registration: registrationReducer,

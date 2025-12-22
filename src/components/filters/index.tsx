@@ -14,6 +14,7 @@ import { useFilterContext } from '@/context/filters'
 import ActivityTypeFilter from './ActivityFilter/TypeFilter'
 import { useEffect, useRef } from 'react'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
+import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
@@ -31,6 +32,7 @@ const FilterPanel: React.FC = () => {
   const { search } = useAppSelector(selectMarketplaceFilters)
   const { selectors, actions } = useFilterRouter()
   const { profileTab, filterType } = useFilterContext()
+  const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const filtersOpen = selectors.filters.open
 
   // const outsideClickRef = useOutsideClick(() => {
@@ -42,6 +44,9 @@ const FilterPanel: React.FC = () => {
   const isOpen = windowWidth < 1024 ? filtersOpen : true
   const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
   const isDisabled = filterType === 'marketplace' && isBulkSearch
+  const isActivityFilter =
+    (filterType === 'profile' && profileTab?.value === 'activity') ||
+    (filterType === 'marketplace' && marketplaceTab?.value === 'activity')
 
   return (
     <div
@@ -94,7 +99,7 @@ const FilterPanel: React.FC = () => {
       </div>
 
       {/* Middle div */}
-      {filterType === 'profile' && profileTab?.value === 'activity' ? (
+      {isActivityFilter ? (
         <ActivityTypeFilter />
       ) : (
         <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />

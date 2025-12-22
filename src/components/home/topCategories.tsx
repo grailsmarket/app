@@ -22,10 +22,12 @@ const TopCategories = () => {
           <Arrow className='text-primary h-3 w-3 rotate-180 sm:h-4 sm:w-4' />
         </Link>
       </div>
-      <div className='flex w-full flex-wrap justify-center gap-4 lg:flex-nowrap'>
-        {categories?.slice(0, 3).map((category, index) => (
+      <div className='flex w-full flex-wrap justify-center gap-4'>
+        {categories?.slice(0, 6).map((category, index) => (
           <div
-            className={cn(index === 0 ? 'w-full lg:w-1/3' : 'w-full sm:w-[calc(50%-8px)] lg:w-1/3')}
+            className={cn(
+              index === 0 ? 'w-full lg:w-[calc(33.33%-12px)]' : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+            )}
             key={category.name}
           >
             <CategoryRow category={category} />

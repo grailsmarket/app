@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux'
 import marketplaceFiltersReducer from './marketplaceFilters'
+import marketplaceActivityFiltersReducer from './marketplaceActivityFilters'
 import myDomainsFiltersReducer from './myDomainsFilters'
 import watchlistFiltersReducer from './watchlistFilters'
 import myOffersFiltersReducer from './myOffersFilters'
@@ -14,6 +15,7 @@ const filtersReducer = combineReducers({
   myDomainsFilters: myDomainsFiltersReducer,
   watchlistFilters: watchlistFiltersReducer,
   marketplaceFilters: marketplaceFiltersReducer,
+  marketplaceActivityFilters: marketplaceActivityFiltersReducer,
   receivedOffersFilters: receivedOffersFiltersReducer,
   profileDomainsFilters: profileDomainsFiltersReducer,
   profileListingsFilters: profileListingsFiltersReducer,

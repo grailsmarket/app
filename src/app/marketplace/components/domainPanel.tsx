@@ -22,18 +22,16 @@ const DomainPanel = () => {
   const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
   const isAtBottom = useScrollToBottom({ threshold: 30 })
-  // const { viewType } = useAppSelector(selectMarketplaceDomains)
 
   return (
     <div
-      className='sm:pt-lg pt-md flex w-full flex-col gap-2 overflow-hidden sm:gap-4'
+      className='sm:pt-lg pt-md px-sm flex w-full flex-col gap-2 overflow-hidden'
       style={{
-        width: isClient ? (windowWidth ? (windowWidth < 1024 ? '100%' : 'calc(100% - 280px)') : '100%') : '100%',
         maxHeight: isClient
           ? windowWidth && windowWidth < 768
-            ? 'calc(100dvh - 56px)'
-            : 'calc(100dvh - 70px)'
-          : 'calc(100dvh - 56px)',
+            ? 'calc(100dvh - 106px)'
+            : 'calc(100dvh - 120px)'
+          : 'calc(100dvh - 106px)',
       }}
     >
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
@@ -87,7 +85,7 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 110px)' : 'calc(100dvh - 84px)'}
+        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 160px)' : 'calc(100dvh - 128px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom='80px'

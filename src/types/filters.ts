@@ -13,6 +13,7 @@ import {
   ProfileActivityOpenableFilterType,
 } from '@/state/reducers/filters/profileActivityFilters'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
+import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 
 // Internal types for common structures
 export type LengthType = {
@@ -58,6 +59,7 @@ export interface FilterRouter<T extends FilterContextType> {
   actions: FilterRouterActions
   context: T
   profileTab?: ProfileTabType
+  marketplaceTab?: MarketplaceTabType
   isFiltersClear: boolean
 }
 

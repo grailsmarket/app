@@ -39,6 +39,7 @@
   --shadow-xl: 4px 8px 16px 0px var(--shadow-color);
   --shadow-bulk: 0 0 8px 0 #ffdfc0;
   --shadow-footer: 0 -4px 40px 4px #ffdfc0;
+  --shadow-homeCard: -2px 0 12px 0 #111a;
 
   /* Custom Ethereum Identity Kit colors */
   --ethereum-identity-kit-sign-in-button: #ffdfc0;
@@ -89,6 +90,7 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-bulk: var(--shadow-bulk);
   --shadow-footer: var(--shadow-footer);
+  --shadow-homeCard: var(--shadow-homeCard);
 }
 
 body {

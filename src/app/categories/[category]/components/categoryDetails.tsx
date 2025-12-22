@@ -175,7 +175,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
     avatar: DEFAULT_FALLBACK_AVATAR,
     header: DEFAULT_FALLBACK_HEADER,
   }
-  const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS].twitter
+  const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.twitter || null
 
   return (
     <div className='relative w-full items-center justify-center md:px-4'>

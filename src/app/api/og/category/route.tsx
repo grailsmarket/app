@@ -56,9 +56,9 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/bip_39/avatar.jpg',
     header: 'https://grails.app/clubs/bip_39/header.jpeg',
   },
-  periodic_table_natural: {
-    avatar: 'https://grails.app/clubs/periodic_table_natural/avatar.jpg',
-    header: 'https://grails.app/clubs/periodic_table_natural/header.jpeg',
+  periodic_table: {
+    avatar: 'https://grails.app/clubs/periodic_table/avatar.jpg',
+    header: 'https://grails.app/clubs/periodic_table/header.jpeg',
   },
   english_adjectives: {
     avatar: 'https://grails.app/clubs/english_adjectives/avatar.jpg',

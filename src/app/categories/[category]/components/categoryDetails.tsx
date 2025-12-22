@@ -33,8 +33,8 @@ import Prepunk10kAvatar from 'public/clubs/prepunk_10k/avatar.jpg'
 import Prepunk10kHeader from 'public/clubs/prepunk_10k/header.jpeg'
 import BIP39Avatar from 'public/clubs/bip_39/avatar.jpg'
 import BIP39Header from 'public/clubs/bip_39/header.jpeg'
-import PeriodicTableNaturalAvatar from 'public/clubs/periodic_table_natural/avatar.jpg'
-import PeriodicTableNaturalHeader from 'public/clubs/periodic_table_natural/header.jpeg'
+import PeriodicTableAvatar from 'public/clubs/periodic_table/avatar.jpg'
+import PeriodicTableHeader from 'public/clubs/periodic_table/header.jpeg'
 import EnglishAdjectivesAvatar from 'public/clubs/english_adjectives/avatar.jpg'
 import EnglishAdjectivesHeader from 'public/clubs/english_adjectives/header.jpeg'
 import WikidataTopNounsAvatar from 'public/clubs/wikidata_top_nouns/avatar.jpg'
@@ -100,9 +100,9 @@ export const CATEGORY_IMAGES = {
     avatar: BIP39Avatar,
     header: BIP39Header,
   },
-  periodic_table_natural: {
-    avatar: PeriodicTableNaturalAvatar,
-    header: PeriodicTableNaturalHeader,
+  periodic_table: {
+    avatar: PeriodicTableAvatar,
+    header: PeriodicTableHeader,
   },
   english_adjectives: {
     avatar: EnglishAdjectivesAvatar,
@@ -144,12 +144,6 @@ export const CATEGORY_SOCIAL_LINKS = {
   },
   pokemon: {
     twitter: 'https://x.com/PokemonENS',
-  },
-  '1kforenames': {
-    twitter: null,
-  },
-  '1ksurnames': {
-    twitter: null,
   },
   '999': {
     twitter: 'https://x.com/ens999club',

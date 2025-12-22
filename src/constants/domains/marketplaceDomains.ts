@@ -133,7 +133,7 @@ export const CATEGORY_LABELS = {
   un_capital_cities: 'Un Capital Cities',
   un_countries: 'Un Countries',
   bip_39: 'BIP 39',
-  periodic_table_natural: 'Periodic Table',
+  periodic_table: 'Periodic Table',
   english_adjectives: 'English Adjectives',
   wikidata_top_nouns: 'Top Nouns',
   wikidata_top_fantasy_char: 'Top Fantasy',

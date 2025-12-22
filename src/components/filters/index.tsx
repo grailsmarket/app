@@ -52,9 +52,8 @@ const FilterPanel: React.FC = () => {
     <div
       ref={filterRef}
       className={cn(
-        'bg-background absolute top-0 left-0 z-20 h-[calc(100dvh-80px)] w-full shadow-md transition-transform duration-300 md:max-w-[284px] md:min-w-[284px] lg:relative lg:shadow-none',
+        'bg-background absolute top-0 left-0 z-20 h-[calc(100dvh-100px)] w-full overflow-y-scroll shadow-md transition-transform duration-300 md:max-w-[284px] md:min-w-[284px] lg:relative lg:shadow-none',
         isOpen ? 'translate-x-0' : '-translate-x-[110%]',
-        isPanelCategories ? 'overflow-hidden' : 'overflow-y-scroll',
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'
       )}
     >

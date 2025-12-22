@@ -57,6 +57,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
         pageParam: 1,
         filters: emptyFilterState as any,
         searchTerm: debouncedQuery,
+        enableBulkSearch: true,
       })
       return domains
     },

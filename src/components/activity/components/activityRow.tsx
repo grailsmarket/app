@@ -39,7 +39,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   const eventColumnWidth = `${baseColWidth + 10}%`
 
   const columns = {
-    event: <Event event={activity.event_type} platform={activity.platform} />,
+    event: <Event event={activity.event_type} platform={activity.platform} timestamp={activity.created_at} />,
     name: <Name name={activity.name} tokenId={activity.token_id} />,
     price: (
       <Price
@@ -49,8 +49,16 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
       />
     ),
     user: addressToShow && <User address={addressToShow} className='max-w-[95%]' />,
-    from: activity.actor_address && <User address={activity.actor_address} className='max-w-[95%]' />,
-    to: activity.counterparty_address && <User address={activity.counterparty_address} className='max-w-[95%]' />,
+    from: activity.actor_address ? (
+      <User address={activity.actor_address} className='max-w-[95%]' wrapperClassName='justify-start' />
+    ) : (
+      <p className='text-light-200 font-medium'>N/A</p>
+    ),
+    to: activity.counterparty_address ? (
+      <User address={activity.counterparty_address} className='max-w-[95%]' />
+    ) : (
+      <p className='text-light-200 font-medium'>N/A</p>
+    ),
     time: activity.created_at ? (
       <ActivityTime
         timestamp={activity.created_at}
@@ -61,6 +69,8 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
       'N/A'
     ),
   }
+
+  console.log(displayedColumns)
 
   return (
     <div className='group px-sm md:px-md lg:px-lg flex h-[60px] w-full flex-row items-center justify-start gap-1 rounded-sm bg-transparent transition hover:bg-white/10'>

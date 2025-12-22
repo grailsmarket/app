@@ -139,6 +139,7 @@ const LiveActivity = () => {
         hasMoreActivity={hasNextPageHistoricalActivities}
         scrollEnabled={width && width > 1024 ? true : false}
         useLocalScrollTop={true}
+        columns={['event', 'name', 'price', 'user']}
       />
     </div>
   )

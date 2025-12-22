@@ -35,7 +35,7 @@ const Activity: React.FC<ActivityProps> = ({
   loadingRowCount = 10,
   noResults,
   noResultsLabel = 'No results, try changing your filters.',
-  columns = ['event', 'name', 'price', 'time', 'user'],
+  columns = ['event', 'name', 'price', 'user'],
   paddingBottom,
   listRef,
   hasMoreActivity,

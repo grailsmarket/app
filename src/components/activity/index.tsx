@@ -9,8 +9,6 @@ import VirtualList from '@/components/ui/virtuallist'
 import { ActivityColumnType, NameActivityType } from '@/types/domains'
 
 interface ActivityProps {
-  maxHeight?: string
-  minHeight?: string
   activity: ActivityType[] | NameActivityType[]
   isLoading: boolean
   loadingRowCount?: number
@@ -23,13 +21,12 @@ interface ActivityProps {
   showHeaders?: boolean
   columns?: ActivityColumnType[]
   displayedAddress?: Address
-  scrollEnabled?: boolean
   useLocalScrollTop?: boolean
+  containerScroll?: boolean
+  containerHeight?: string
 }
 
 const Activity: React.FC<ActivityProps> = ({
-  maxHeight = 'calc(100dvh - 160px)',
-  minHeight,
   activity,
   isLoading,
   loadingRowCount = 10,
@@ -42,8 +39,9 @@ const Activity: React.FC<ActivityProps> = ({
   fetchMoreActivity,
   showHeaders = true,
   displayedAddress,
-  scrollEnabled = true,
   useLocalScrollTop = false,
+  containerScroll = false,
+  containerHeight,
 }) => {
   const { width, height } = useWindowSize()
 
@@ -88,10 +86,7 @@ const Activity: React.FC<ActivityProps> = ({
   const eventColumnWidth = `${baseColWidth + 10}%`
 
   return (
-    <div
-      className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
-      style={{ maxHeight, minHeight }}
-    >
+    <div className='flex w-full flex-1 flex-col'>
       {showHeaders && !noResults && (
         <div className='sm:px-sm pt-sm md:px-md lg:px-lg sm:py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
@@ -125,16 +120,14 @@ const Activity: React.FC<ActivityProps> = ({
             ref={listRef}
             paddingBottom={paddingBottom}
             items={[...activity, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-            visibleCount={visibleCount}
             rowHeight={60}
             overscanCount={visibleCount}
-            listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
-            minListHeight={minHeight}
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
-            scrollEnabled={scrollEnabled}
             useLocalScrollTop={useLocalScrollTop}
+            containerScroll={containerScroll}
+            containerHeight={containerHeight}
             renderItem={(item, index) => {
               if (!item)
                 return (
@@ -154,7 +147,7 @@ const Activity: React.FC<ActivityProps> = ({
             }}
           />
         ) : (
-          <NoResults label={noResultsLabel} requiresAuth={false} height={maxHeight || '600px'} />
+          <NoResults label={noResultsLabel} requiresAuth={false} height='400px' />
         )}
       </div>
     </div>

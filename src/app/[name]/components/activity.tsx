@@ -3,18 +3,14 @@
 import React from 'react'
 import { useNameActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
-import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
-import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
   name: string
 }
 
 const ActivityPanel: React.FC<Props> = ({ name }) => {
-  const { width } = useWindowSize()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity, isActivityEmpty } = useNameActivity(name)
-  const isAtBottom = useScrollToBottom({ threshold: 100 })
 
   return (
     <div
@@ -26,8 +22,6 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
       <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
       <div className='px-md w-full sm:px-0'>
         <Activity
-          maxHeight={width && width < 1024 ? '600px' : '536px'}
-          minHeight='300px'
           paddingBottom='0px'
           activity={activity}
           loadingRowCount={20}
@@ -38,7 +32,6 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
           fetchMoreActivity={fetchMoreActivity}
           showHeaders={true}
           columns={['event', 'price', 'from', 'to']}
-          scrollEnabled={isAtBottom}
           useLocalScrollTop={true}
         />
       </div>

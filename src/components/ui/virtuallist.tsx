@@ -1,24 +1,31 @@
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
 import clsx from 'clsx'
-import React, { useCallback, forwardRef, ReactElement, ForwardedRef, useEffect, useState, useMemo } from 'react'
+import React, {
+  useCallback,
+  forwardRef,
+  ReactElement,
+  ForwardedRef,
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+} from 'react'
 
 export interface VirtualListProps<T = unknown> {
   items: T[]
-  visibleCount: number
   rowHeight: number
   overscanCount?: number
   containerClassName?: string
-  listHeight?: string
-  minListHeight?: string
   gap?: number
   renderItem: (item: T, index: number) => React.ReactNode
   onScrollNearBottom?: () => void
   scrollThreshold?: number
   paddingBottom?: string
-  scrollEnabled?: boolean
-  cacheScrollTop?: boolean
   useLocalScrollTop?: boolean
+  containerScroll?: boolean
+  containerHeight?: string
 }
 
 export type VirtualListComponentType = <T = unknown>(
@@ -29,143 +36,277 @@ export type VirtualListComponentType = <T = unknown>(
 const VirtualListComponent: VirtualListComponentType = (props, ref) => {
   const {
     items,
-    visibleCount,
-    overscanCount = 3,
+    overscanCount = 5,
     rowHeight,
     renderItem,
     gap = 16,
-    listHeight = '100%',
-    minListHeight,
     containerClassName,
     onScrollNearBottom,
     scrollThreshold = 300,
     paddingBottom = '80px',
-    scrollEnabled = true,
     useLocalScrollTop = false,
+    containerScroll = false,
+    containerHeight,
   } = props
 
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const [localScrollTop, setLocalScrollTop] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [scrollState, setScrollState] = useState({ scrollY: 0, viewportHeight: 0 })
+  const [elementTop, setElementTop] = useState(0)
+  const hasRestoredScroll = useRef(false)
+  const onScrollNearBottomRef = useRef(onScrollNearBottom)
 
-  const scrollTop = useMemo(
-    () => (useLocalScrollTop ? localScrollTop : selectors.filters.scrollTop),
-    [useLocalScrollTop, localScrollTop, selectors.filters.scrollTop]
+  // Keep onScrollNearBottom ref updated
+  useEffect(() => {
+    onScrollNearBottomRef.current = onScrollNearBottom
+  }, [onScrollNearBottom])
+
+  // Get stored scroll position
+  const storedScrollTop = useMemo(
+    () => (useLocalScrollTop || containerScroll ? 0 : selectors.filters.scrollTop),
+    [useLocalScrollTop, containerScroll, selectors.filters.scrollTop]
   )
-  const setScrollTop = useMemo(
+
+  const setStoredScrollTop = useMemo(
     () => {
-      if (useLocalScrollTop) {
-        return setLocalScrollTop
+      if (useLocalScrollTop || containerScroll) {
+        return () => {} // No-op for local scroll or container scroll
       } else {
         return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [useLocalScrollTop, actions]
+    [useLocalScrollTop, containerScroll, actions]
   )
 
+  // Total height of the list content
+  const totalHeight = items.length * (rowHeight + gap)
+
+  // Calculate element's position in document on mount and resize (only for window scroll mode)
   useEffect(() => {
-    const virtualList = document.getElementById('virtual-list')
-    if (virtualList) {
-      virtualList.scrollTop = scrollTop
+    if (containerScroll) return
+
+    const updateElementTop = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        setElementTop(rect.top + window.scrollY)
+      }
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    updateElementTop()
 
-  const containerHeight = visibleCount * (rowHeight + gap)!
+    // Update on resize
+    window.addEventListener('resize', updateElementTop)
 
-  const onScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      const currentScrollTop = e.currentTarget.scrollTop
-      setScrollTop(currentScrollTop)
+    // Use ResizeObserver for more accurate updates
+    const resizeObserver = new ResizeObserver(updateElementTop)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
 
-      if (onScrollNearBottom) {
-        const scrollHeight = e.currentTarget.scrollHeight
-        const clientHeight = e.currentTarget.clientHeight
+    return () => {
+      window.removeEventListener('resize', updateElementTop)
+      resizeObserver.disconnect()
+    }
+  }, [containerScroll])
 
-        if (scrollHeight - currentScrollTop - clientHeight < scrollThreshold) {
-          onScrollNearBottom()
-        }
+  // Restore scroll position on mount (only for window scroll mode)
+  useLayoutEffect(() => {
+    if (containerScroll) return
+    if (!hasRestoredScroll.current && storedScrollTop > 0 && elementTop > 0) {
+      // Calculate the window scroll position that would put us at the stored position
+      const targetWindowScroll = elementTop + storedScrollTop
+      window.scrollTo({ top: targetWindowScroll, behavior: 'instant' })
+      hasRestoredScroll.current = true
+    }
+  }, [storedScrollTop, elementTop, containerScroll])
+
+  // Listen to scroll events (window or container based on mode)
+  useEffect(() => {
+    if (containerScroll) {
+      // Container scroll mode
+      const scrollContainer = scrollContainerRef.current
+      if (!scrollContainer) return
+
+      const handleScroll = () => {
+        setScrollState({
+          scrollY: scrollContainer.scrollTop,
+          viewportHeight: scrollContainer.clientHeight,
+        })
       }
-    },
-    [onScrollNearBottom, scrollThreshold, setScrollTop]
-  )
 
-  // Calculate startIndex and endIndex for the items to be rendered.
-  let startIndex = 0
-  let endIndex = items.length
+      // Initial state
+      handleScroll()
 
-  startIndex = Math.max(0, Math.floor(scrollTop / rowHeight!) - overscanCount)
-  endIndex = Math.min(items.length, Math.ceil((scrollTop + containerHeight) / rowHeight!) + overscanCount)
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
 
-  // Total height of the list.
-  const totalHeight = items.length * (rowHeight + gap)!
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll)
+      }
+    } else {
+      // Window scroll mode
+      const handleScroll = () => {
+        setScrollState({
+          scrollY: window.scrollY,
+          viewportHeight: window.innerHeight,
+        })
+      }
+
+      // Initial state
+      handleScroll()
+
+      window.addEventListener('scroll', handleScroll, { passive: true })
+      window.addEventListener('resize', handleScroll, { passive: true })
+
+      return () => {
+        window.removeEventListener('scroll', handleScroll)
+        window.removeEventListener('resize', handleScroll)
+      }
+    }
+  }, [containerScroll])
+
+  // Calculate scroll position relative to the list
+  const relativeScrollTop = useMemo(() => {
+    if (containerScroll) {
+      return scrollState.scrollY
+    }
+    return Math.max(0, scrollState.scrollY - elementTop)
+  }, [scrollState.scrollY, elementTop, containerScroll])
+
+  // Store scroll position for restoration (debounced, only for window scroll mode)
+  useEffect(() => {
+    if (containerScroll) return
+    if (hasRestoredScroll.current || storedScrollTop === 0) {
+      const timeoutId = setTimeout(() => {
+        setStoredScrollTop(relativeScrollTop)
+      }, 100)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [relativeScrollTop, setStoredScrollTop, storedScrollTop, containerScroll])
+
+  // Check if we're near the bottom of the list content
+  useEffect(() => {
+    if (!onScrollNearBottomRef.current) return
+
+    if (containerScroll) {
+      const distanceToBottom = totalHeight - (scrollState.scrollY + scrollState.viewportHeight)
+      if (distanceToBottom < scrollThreshold) {
+        onScrollNearBottomRef.current()
+      }
+    } else {
+      const viewportBottom = scrollState.scrollY + scrollState.viewportHeight
+      const listBottom = elementTop + totalHeight
+
+      if (listBottom - viewportBottom < scrollThreshold) {
+        onScrollNearBottomRef.current()
+      }
+    }
+  }, [scrollState, elementTop, totalHeight, scrollThreshold, containerScroll])
+
+  // Calculate startIndex and endIndex for the items to be rendered
+  const { startIndex, endIndex } = useMemo(() => {
+    const effectiveRowHeight = rowHeight + gap
+    const viewportHeight = scrollState.viewportHeight || window.innerHeight
+
+    const start = Math.max(0, Math.floor(relativeScrollTop / effectiveRowHeight) - overscanCount)
+    const end = Math.min(
+      items.length,
+      Math.ceil((relativeScrollTop + viewportHeight) / effectiveRowHeight) + overscanCount
+    )
+
+    return { startIndex: start, endIndex: end }
+  }, [relativeScrollTop, rowHeight, gap, scrollState.viewportHeight, items.length, overscanCount])
 
   const getOffset = (index: number): number => {
-    return index * rowHeight!
+    return index * (rowHeight + gap)
   }
 
   const visibleItems = items.slice(startIndex, endIndex)
 
-  const handleWheel = useCallback(() => {
-    if (!scrollEnabled) {
-      // Don't prevent default - let it bubble up
-      return
-    }
-  }, [scrollEnabled])
+  // Combine refs
+  const setRefs = useCallback(
+    (element: HTMLDivElement | null) => {
+      containerRef.current = element
+      if (typeof ref === 'function') {
+        ref(element)
+      } else if (ref) {
+        ref.current = element
+      }
+    },
+    [ref]
+  )
+
+  const innerContent = (
+    <div style={{ width: '100%', height: totalHeight, position: 'relative' }}>
+      <div
+        style={{
+          width: '100%',
+          position: 'absolute',
+          top: getOffset(startIndex),
+          left: 0,
+          right: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap,
+        }}
+      >
+        {visibleItems.map((item, i) => {
+          const index = startIndex + i
+          return (
+            <div
+              key={index}
+              style={{
+                width: '100%',
+                height: rowHeight,
+                display: 'flex',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+                position: 'relative',
+              }}
+            >
+              {renderItem(item, index)}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  if (containerScroll) {
+    return (
+      <div
+        ref={(el) => {
+          scrollContainerRef.current = el
+          setRefs(el)
+        }}
+        style={{
+          position: 'relative',
+          height: containerHeight || '100%',
+          overflowY: 'auto',
+          width: '100%',
+        }}
+        className={clsx(containerClassName)}
+      >
+        {innerContent}
+      </div>
+    )
+  }
 
   return (
     <div
-      ref={ref}
-      onScroll={onScroll}
-      onWheel={handleWheel}
+      ref={setRefs}
       style={{
-        maxHeight: listHeight,
-        minHeight: minListHeight,
-        overflowY: scrollEnabled ? 'auto' : 'hidden',
         position: 'relative',
         paddingBottom,
-        WebkitOverflowScrolling: 'touch',
+        width: '100%',
       }}
-      id='virtual-list'
-      className={clsx(containerClassName, 'hide-scrollbar w-full')}
+      className={clsx(containerClassName)}
     >
-      <div style={{ width: '100%', height: totalHeight, position: 'relative' }}>
-        <div
-          style={{
-            width: '100%',
-            position: 'absolute',
-            top: getOffset(startIndex),
-            left: 0,
-            right: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap,
-          }}
-        >
-          {visibleItems.map((item, i) => {
-            const index = startIndex + i
-            return (
-              <div
-                key={index}
-                style={{
-                  width: '100%',
-                  height: rowHeight,
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box',
-                  position: 'relative',
-                }}
-              >
-                {renderItem(item, index)}
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      {innerContent}
     </div>
   )
 }

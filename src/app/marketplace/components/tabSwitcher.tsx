@@ -56,7 +56,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
   // During SSR and initial mount, render without active state
   if (!mounted) {
     return (
-      <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:min-h-14 lg:gap-8'>
+      <div className='bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky top-14 z-10 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8'>
         <div ref={containerRef} className='relative flex h-10 w-full justify-between gap-4'>
           <div
             className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -93,7 +93,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
 
   // After mount, render with proper active state
   return (
-    <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:min-h-14 lg:gap-8'>
+    <div className='bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky top-0 z-20 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8'>
       <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
         <div
           className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'

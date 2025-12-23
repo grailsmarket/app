@@ -8,7 +8,6 @@ import OfferRow from './components/offerRow'
 import { cn } from '@/utils/tailwind'
 
 interface OffersProps {
-  maxHeight?: string
   offers: DomainOfferType[]
   isLoading: boolean
   loadingRowCount?: number
@@ -25,7 +24,6 @@ interface OffersProps {
 }
 
 const Offers: React.FC<OffersProps> = ({
-  maxHeight = 'calc(100dvh - 160px)',
   offers,
   isLoading,
   loadingRowCount = 10,
@@ -90,10 +88,7 @@ const Offers: React.FC<OffersProps> = ({
   }
 
   return (
-    <div
-      className='hide-scrollbar flex w-full flex-1 flex-col overflow-y-auto lg:overflow-hidden'
-      style={{ maxHeight }}
-    >
+    <div className='flex w-full flex-1 flex-col'>
       {showHeaders && (
         <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-between sm:flex'>
           {displayedColumns.map((header, index) => {
@@ -123,10 +118,8 @@ const Offers: React.FC<OffersProps> = ({
             ref={listRef}
             paddingBottom={paddingBottom}
             items={[...offers, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-            visibleCount={visibleCount}
             rowHeight={60}
             overscanCount={visibleCount}
-            listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
             scrollThreshold={200}
@@ -150,11 +143,7 @@ const Offers: React.FC<OffersProps> = ({
             }}
           />
         ) : (
-          <NoResults
-            label={noResultsLabel}
-            requiresAuth={false}
-            height={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px - 80px)` : '600px'}
-          />
+          <NoResults label={noResultsLabel} requiresAuth={false} height='400px' />
         )}
       </div>
     </div>

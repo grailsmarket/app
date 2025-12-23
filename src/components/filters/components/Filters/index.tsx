@@ -28,30 +28,32 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     filterType === 'marketplace' || activeProfileTab === 'domains' || activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
 
   return (
-    <div className='flex w-full overflow-x-hidden pb-10'>
+    <div className='flex min-h-0 flex-1 overflow-x-hidden'>
       <div
         className={cn(
-          'flex min-w-full flex-col gap-y-2 pb-16 transition-transform lg:min-w-[284px]',
+          'flex min-h-0 min-w-full flex-col overflow-y-auto pb-18 transition-transform lg:min-w-[284px]',
           showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[284px]'
         )}
       >
-        <SortFilter />
-        <StatusFilter />
-        {/* <TypeFilter /> */}
-        <LengthFilter />
-        <PriceRangeFilter />
-        {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
+        <div className='flex flex-col gap-y-2'>
+          <SortFilter />
+          <StatusFilter />
+          {/* <TypeFilter /> */}
+          <LengthFilter />
+          <PriceRangeFilter />
+          {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
+        </div>
       </div>
       {showCategoryTab && (
         <div
-          className={`hide-scrollbar flex min-w-full flex-1 flex-col gap-y-px overflow-y-hidden transition-transform lg:min-w-[282px] ${
+          className={cn(
+            'flex min-h-0 min-w-full flex-col gap-y-px overflow-y-auto pb-18 transition-transform lg:min-w-[282px]',
             isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
-          }`}
+          )}
         >
           {categories?.map((category, index) => (
             <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />
           ))}
-          <div className='flex-1' />
         </div>
       )}
     </div>

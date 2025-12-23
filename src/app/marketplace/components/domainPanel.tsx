@@ -8,32 +8,18 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import MagnifyingGlass from 'public/icons/search.svg'
-import useScrollToBottom from '@/hooks/useScrollToBottom'
 import { useRouter } from 'next/navigation'
 import { normalizeName } from '@/lib/ens'
 
 const DomainPanel = () => {
   const router = useRouter()
-  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const { width: windowWidth } = useWindowSize()
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
-  const isAtBottom = useScrollToBottom({ threshold: 30 })
 
   return (
-    <div
-      className='sm:pt-lg pt-md px-sm flex w-full flex-col gap-2 overflow-hidden'
-      style={{
-        maxHeight: isClient
-          ? windowWidth && windowWidth < 768
-            ? 'calc(100dvh - 106px)'
-            : 'calc(100dvh - 120px)'
-          : 'calc(100dvh - 106px)',
-      }}
-    >
+    <div className='sm:pt-lg pt-md px-sm z-0 flex w-full flex-col gap-2'>
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
@@ -85,7 +71,6 @@ const DomainPanel = () => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 160px)' : 'calc(100dvh - 128px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom='80px'
@@ -97,7 +82,6 @@ const DomainPanel = () => {
             fetchMoreDomains()
           }
         }}
-        scrollEnabled={isAtBottom}
       />
     </div>
   )

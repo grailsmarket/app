@@ -14,7 +14,6 @@ import LoadingCard from './grid/components/loadingCard'
 import { cn } from '@/utils/tailwind'
 
 interface DomainsProps {
-  maxHeight?: string
   domains: MarketplaceDomainType[]
   isLoading: boolean
   loadingRowCount?: number
@@ -27,14 +26,12 @@ interface DomainsProps {
   displayedDetails?: MarketplaceHeaderColumn[]
   forceViewType?: 'grid' | 'list'
   paddingBottom?: string
-  scrollEnabled?: boolean
   showWatchlist?: boolean
   isBulkSelecting?: boolean
   useLocalScrollTop?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
-  maxHeight = 'calc(100dvh - 160px)',
   domains,
   isLoading,
   loadingRowCount = 10,
@@ -47,7 +44,6 @@ const Domains: React.FC<DomainsProps> = ({
   displayedDetails = MARKETPLACE_DISPLAYED_COLUMNS,
   forceViewType,
   paddingBottom,
-  scrollEnabled = true,
   showWatchlist = false,
   isBulkSelecting = false,
   useLocalScrollTop = false,
@@ -100,7 +96,7 @@ const Domains: React.FC<DomainsProps> = ({
   if (!isClient) return null
 
   return (
-    <div className='hide-scrollbar flex w-full flex-1 flex-col overflow-hidden' style={{ maxHeight }}>
+    <div className='flex w-full flex-1 flex-col'>
       {showHeaders && viewTypeToUse !== 'grid' && (
         <div className='px-sm md:px-md pt-sm lg:px-lg md:py-md flex w-full items-center justify-between sm:flex'>
           {displayedColumns.map((header, index) => {
@@ -130,11 +126,9 @@ const Domains: React.FC<DomainsProps> = ({
               containerPadding={width && width < 640 ? 4 : 0}
               containerWidth={containerWidth}
               overscanCount={4}
-              gridHeight={maxHeight ? `calc(${maxHeight} - 24px)` : '600px'}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}
-              scrollEnabled={scrollEnabled}
               useLocalScrollTop={useLocalScrollTop}
               renderItem={(item, index, columnsCount) => {
                 if (!item) return <LoadingCard key={index} />
@@ -154,15 +148,12 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualList<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              visibleCount={visibleCount}
               rowHeight={60}
               overscanCount={visibleCount}
-              listHeight={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px)` : '600px'}
               gap={0}
               paddingBottom={paddingBottom ? paddingBottom : '40px'}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={200}
-              scrollEnabled={scrollEnabled}
               useLocalScrollTop={useLocalScrollTop}
               renderItem={(item, index) => {
                 if (!item)
@@ -186,11 +177,7 @@ const Domains: React.FC<DomainsProps> = ({
             />
           )
         ) : (
-          <NoResults
-            label={noResultsLabel}
-            requiresAuth={false}
-            height={maxHeight ? `calc(${maxHeight} - ${showHeaders ? 48 : 0}px - 80px)` : '600px'}
-          />
+          <NoResults label={noResultsLabel} requiresAuth={false} height='400px' />
         )}
       </div>
     </div>

@@ -5,10 +5,8 @@ import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useWindowSize } from 'ethereum-identity-kit'
 import { useMarketplaceActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
-import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface ActivityPanelProps {
   isLiveActivityConnected: boolean
@@ -20,8 +18,6 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
   const { actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } =
     useMarketplaceActivity(setIsLiveActivityConnected)
-  const isAtBottom = useScrollToBottom({ threshold: 100 })
-  const { width: windowWidth } = useWindowSize()
 
   return (
     <div className='px-md pt-md md:pt-lg flex w-full flex-col gap-2'>
@@ -44,13 +40,6 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
         </div>
       </div>
       <Activity
-        maxHeight={
-          windowWidth && windowWidth > 1024
-            ? 'calc(100dvh - 128px)'
-            : windowWidth && windowWidth > 768
-              ? 'calc(100dvh - 172px)'
-              : 'calc(100dvh - 140px)'
-        }
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}
@@ -58,7 +47,6 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         columns={['event', 'name', 'price', 'from', 'to']}
-        scrollEnabled={isAtBottom}
       />
     </div>
   )

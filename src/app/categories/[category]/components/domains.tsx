@@ -9,8 +9,6 @@ import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useCategoryDomains } from '../hooks/useDomains'
-import useScrollToBottom from '@/hooks/useScrollToBottom'
-import { useWindowSize } from 'ethereum-identity-kit'
 
 interface Props {
   category: string
@@ -21,8 +19,6 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
   const { selectors, actions } = useFilterRouter()
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
     useCategoryDomains(category)
-  const isAtBottom = useScrollToBottom({ threshold: 10 })
-  const { width: windowWidth } = useWindowSize()
 
   return (
     <>
@@ -54,7 +50,6 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
         <ViewSelector />
       </div>
       <Domains
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 86px)' : 'calc(100dvh - 28px)'}
         domains={domains}
         loadingRowCount={20}
         paddingBottom='120px'
@@ -66,7 +61,6 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
             fetchMoreCategoryDomains()
           }
         }}
-        scrollEnabled={isAtBottom}
       />
     </>
   )

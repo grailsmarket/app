@@ -27,11 +27,11 @@ const Marketplace = () => {
   return (
     <Suspense>
       <FilterProvider filterType='marketplace'>
-        <main className='overflow-hidden'>
+        <main className='min-h-screen'>
           <div className='relative z-10 mx-auto flex w-full flex-col'>
-            <div className='bg-background relative flex h-[calc(100dvh-56px)] max-h-[calc(100dvh-54px)] w-full flex-row gap-0 overflow-hidden md:h-[calc(100dvh-70px)] md:max-h-[calc(100dvh-70px)] lg:gap-0 lg:px-0 lg:pl-2'>
+            <div className='bg-background relative flex min-h-[calc(100dvh-54px)] w-full flex-row gap-0 md:min-h-[calc(100dvh-70px)] lg:gap-0 lg:px-0 lg:pl-2'>
               <FilterPanel />
-              <div className='bg-tertiary ml-2 hidden h-full w-[3px] lg:block' />
+              <div className='bg-tertiary ml-2 hidden min-h-full w-[3px] lg:block' />
               <MainPanel />
               <ActionButtons />
             </div>

@@ -10,6 +10,7 @@ import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { useDomains } from '../hooks/useDomains'
+import { useNavbar } from '@/context/navbar'
 
 interface TabSwitcherProps {
   user: Address | undefined
@@ -22,6 +23,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { profileTotalDomains, totalWatchlistDomains, totalListings } = useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
+  const { isNavbarVisible } = useNavbar()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
@@ -92,7 +94,12 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
     return (
-      <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8'>
+      <div
+        className={cn(
+          'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 md:overflow-x-visible lg:gap-8',
+          isNavbarVisible ? 'top-14' : 'top-0'
+        )}
+      >
         <div ref={containerRef} className='relative flex h-10 gap-4'>
           <div
             className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -130,7 +137,12 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
 
   // After mount, render with proper active state
   return (
-    <div className='px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8'>
+    <div
+      className={cn(
+        'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 md:overflow-x-visible lg:gap-8',
+        isNavbarVisible ? 'top-14' : 'top-0'
+      )}
+    >
       <div ref={containerRef} className='relative flex h-10 gap-4'>
         <div
           className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'

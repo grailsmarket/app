@@ -119,7 +119,7 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary p-sm border-tertiary h-[516px] w-full rounded-md border-2 pb-0 lg:max-w-[700px]'>
+    <div className='bg-secondary p-sm border-tertiary h-[516px] w-full overflow-hidden rounded-md border-2 pb-0 lg:max-w-[700px] lg:overflow-visible'>
       <div className='pt-md p-md lg:p-lg flex items-center justify-between'>
         <div className='flex items-center gap-4'>
           <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
@@ -142,7 +142,6 @@ const LiveActivity = () => {
       </div>
       <div className='px-md pt-md sm:p-sm md:p-0'>
         <Activity
-          maxHeight={'466px'}
           activity={allActivities}
           paddingBottom='10px'
           loadingRowCount={16}
@@ -150,9 +149,10 @@ const LiveActivity = () => {
           noResults={!isActivityLoading && allActivities.length === 0}
           fetchMoreActivity={fetchNextPageHistoricalActivities}
           hasMoreActivity={hasNextPageHistoricalActivities}
-          scrollEnabled={width && width > 1024 ? true : false}
           useLocalScrollTop={true}
           columns={['event', 'name', 'price', 'user']}
+          containerScroll={!!(width && width >= 1024)}
+          containerHeight={width && width > 768 ? '418px' : '438px'}
         />
       </div>
     </div>

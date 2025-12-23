@@ -14,10 +14,30 @@ import Hamburger from './hamburger'
 import Watchlist from './watchlist'
 import SearchIcon from './searchIcon'
 import { cn } from '@/utils/tailwind'
+import { useAppSelector } from '@/state/hooks'
+import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
+import { selectProfileListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
+import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
+import { useNavbar } from '@/context/navbar'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const { setNavbarVisible } = useNavbar()
+
+  // Check if any filter panel is open
+  const marketplaceFilters = useAppSelector(selectMarketplaceFilters)
+  const profileFilters = useAppSelector(selectProfileListingsFilters)
+  const categoryFilters = useAppSelector(selectCategoryDomainsFilters)
+  const isAnyFilterOpen = marketplaceFilters.open || profileFilters.open || categoryFilters.open
+
+  // Compute effective visibility (visible if scrolled up OR filters are open)
+  const effectiveVisibility = isVisible || isAnyFilterOpen
+
+  // Update context whenever effective visibility changes
+  useEffect(() => {
+    setNavbarVisible(effectiveVisibility)
+  }, [effectiveVisibility, setNavbarVisible])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,7 +62,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       className={cn(
         'bg-background border-tertiary app:border-r-2 app:border-l-2 sticky top-0 left-0 z-50 mx-auto h-14 w-full max-w-[2340px] border-b-2 backdrop-blur-md transition-transform duration-300 md:h-18',
         showInfo ? 'mt-6' : '',
-        !isVisible ? '-translate-y-full md:translate-y-0' : 'translate-y-0'
+        !effectiveVisibility ? '-translate-y-full md:translate-y-0' : 'translate-y-0'
       )}
     >
       <nav className='px-md md:px-lg lg:px-xl mx-auto flex h-full max-w-[2340px] items-center justify-between'>

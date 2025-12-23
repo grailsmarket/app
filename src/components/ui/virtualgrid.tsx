@@ -1,7 +1,17 @@
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
 import clsx from 'clsx'
-import React, { useState, useCallback, forwardRef, ReactElement, ForwardedRef, useMemo, useEffect } from 'react'
+import React, {
+  useState,
+  useCallback,
+  forwardRef,
+  ReactElement,
+  ForwardedRef,
+  useMemo,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+} from 'react'
 
 export interface VirtualGridProps<T = unknown> {
   items: T[]
@@ -13,11 +23,9 @@ export interface VirtualGridProps<T = unknown> {
   containerWidth?: number
   overscanCount?: number
   containerClassName?: string
-  gridHeight?: string
   renderItem: (item: T, index: number, columnsCount: number) => React.ReactNode
   onScrollNearBottom?: () => void
   scrollThreshold?: number
-  scrollEnabled?: boolean
   useLocalScrollTop?: boolean
   maxColumns?: number
   minCardWidth?: number
@@ -37,13 +45,11 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     containerPadding = 20,
     paddingBottom = '80px',
     containerWidth = 1200,
-    overscanCount = 2,
-    gridHeight = '100%',
+    overscanCount = 3,
     containerClassName,
     renderItem,
     onScrollNearBottom,
     scrollThreshold = 300,
-    scrollEnabled = true,
     useLocalScrollTop = false,
     maxColumns = 9,
     minCardWidth = 120,
@@ -51,24 +57,34 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const [localScrollTop, setLocalScrollTop] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scrollState, setScrollState] = useState({ scrollY: 0, viewportHeight: 0 })
+  const [elementTop, setElementTop] = useState(0)
+  const hasRestoredScroll = useRef(false)
+  const onScrollNearBottomRef = useRef(onScrollNearBottom)
 
-  const scrollTop = useLocalScrollTop ? localScrollTop : selectors.filters.scrollTop
-  const setScrollTop = useMemo(
-    () => (useLocalScrollTop ? setLocalScrollTop : (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))),
+  // Keep onScrollNearBottom ref updated
+  useEffect(() => {
+    onScrollNearBottomRef.current = onScrollNearBottom
+  }, [onScrollNearBottom])
+
+  // Get stored scroll position
+  const storedScrollTop = useMemo(
+    () => (useLocalScrollTop ? 0 : selectors.filters.scrollTop),
+    [useLocalScrollTop, selectors.filters.scrollTop]
+  )
+
+  const setStoredScrollTop = useMemo(
+    () => {
+      if (useLocalScrollTop) {
+        return () => {} // No-op for local scroll
+      } else {
+        return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+      }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [useLocalScrollTop, actions]
   )
-
-  useEffect(() => {
-    // console.log('scrollTop', scrollTop)
-    const virtualGrid = document.getElementById('virtual-grid')
-    if (virtualGrid) {
-      virtualGrid.scrollTop = scrollTop
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Calculate columns based on container width
   const columnsCount = useMemo(() => {
@@ -89,74 +105,146 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     return Math.max(calculatedWidth, minCardWidth)
   }, [containerWidth, columnsCount, gap, containerPadding, minCardWidth])
 
-  // Calculate total rows
+  // Calculate total rows and heights
   const totalRows = Math.ceil(items.length / columnsCount)
   const rowHeight = cardHeight + gap
-
-  const onScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      const currentScrollTop = e.currentTarget.scrollTop
-      setScrollTop(currentScrollTop)
-
-      if (onScrollNearBottom) {
-        const scrollHeight = e.currentTarget.scrollHeight
-        const clientHeight = e.currentTarget.clientHeight
-
-        if (scrollHeight - currentScrollTop - clientHeight < scrollThreshold) {
-          onScrollNearBottom()
-        }
-      }
-    },
-    [onScrollNearBottom, scrollThreshold, setScrollTop]
-  )
-
-  // Calculate visible rows
-  const containerHeight = typeof gridHeight === 'number' ? gridHeight : 600
-  // const visibleRows = Math.ceil(containerHeight / rowHeight)
-
-  const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - overscanCount)
-  const endRow = Math.min(totalRows, Math.ceil((scrollTop + containerHeight) / rowHeight) + overscanCount)
-
-  // Get items for visible rows
-  const visibleItems: Array<{ item: (typeof items)[0]; index: number; row: number; col: number }> = []
-  for (let row = startRow; row < endRow; row++) {
-    for (let col = 0; col < columnsCount; col++) {
-      const index = row * columnsCount + col
-      if (index < items.length) {
-        visibleItems.push({
-          item: items[index],
-          index,
-          row,
-          col,
-        })
-      }
-    }
-  }
-
   const totalHeight = totalRows * rowHeight
 
-  const handleWheel = useCallback(() => {
-    if (!scrollEnabled) {
-      // Don't prevent default - let it bubble up
-      return
+  // Calculate element's position in document on mount and resize
+  useEffect(() => {
+    const updateElementTop = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        setElementTop(rect.top + window.scrollY)
+      }
     }
-  }, [scrollEnabled])
+
+    updateElementTop()
+
+    // Update on resize
+    window.addEventListener('resize', updateElementTop)
+
+    // Use ResizeObserver for more accurate updates
+    const resizeObserver = new ResizeObserver(updateElementTop)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateElementTop)
+      resizeObserver.disconnect()
+    }
+  }, [])
+
+  // Restore scroll position on mount
+  useLayoutEffect(() => {
+    if (!hasRestoredScroll.current && storedScrollTop > 0 && elementTop > 0) {
+      // Calculate the window scroll position that would put us at the stored position
+      const targetWindowScroll = elementTop + storedScrollTop
+      window.scrollTo({ top: targetWindowScroll, behavior: 'instant' })
+      hasRestoredScroll.current = true
+    }
+  }, [storedScrollTop, elementTop])
+
+  // Listen to window scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollState({
+        scrollY: window.scrollY,
+        viewportHeight: window.innerHeight,
+      })
+    }
+
+    // Initial state
+    handleScroll()
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
+  }, [])
+
+  // Calculate scroll position relative to the grid
+  const relativeScrollTop = useMemo(() => {
+    return Math.max(0, scrollState.scrollY - elementTop)
+  }, [scrollState.scrollY, elementTop])
+
+  // Store scroll position for restoration (debounced)
+  useEffect(() => {
+    if (hasRestoredScroll.current || storedScrollTop === 0) {
+      const timeoutId = setTimeout(() => {
+        setStoredScrollTop(relativeScrollTop)
+      }, 100)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [relativeScrollTop, setStoredScrollTop, storedScrollTop])
+
+  // Check if we're near the bottom of the grid content
+  useEffect(() => {
+    if (!onScrollNearBottomRef.current) return
+
+    const viewportBottom = scrollState.scrollY + scrollState.viewportHeight
+    const gridBottom = elementTop + totalHeight
+
+    if (gridBottom - viewportBottom < scrollThreshold) {
+      onScrollNearBottomRef.current()
+    }
+  }, [scrollState, elementTop, totalHeight, scrollThreshold])
+
+  // Calculate visible rows
+  const { startRow, endRow } = useMemo(() => {
+    const viewportHeight = scrollState.viewportHeight || window.innerHeight
+
+    const start = Math.max(0, Math.floor(relativeScrollTop / rowHeight) - overscanCount)
+    const end = Math.min(totalRows, Math.ceil((relativeScrollTop + viewportHeight) / rowHeight) + overscanCount)
+
+    return { startRow: start, endRow: end }
+  }, [relativeScrollTop, rowHeight, scrollState.viewportHeight, totalRows, overscanCount])
+
+  // Get items for visible rows
+  const visibleItems = useMemo(() => {
+    const result: Array<{ item: (typeof items)[0]; index: number; row: number; col: number }> = []
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < columnsCount; col++) {
+        const index = row * columnsCount + col
+        if (index < items.length) {
+          result.push({
+            item: items[index],
+            index,
+            row,
+            col,
+          })
+        }
+      }
+    }
+    return result
+  }, [startRow, endRow, columnsCount, items])
+
+  // Combine refs
+  const setRefs = useCallback(
+    (element: HTMLDivElement | null) => {
+      containerRef.current = element
+      if (typeof ref === 'function') {
+        ref(element)
+      } else if (ref) {
+        ref.current = element
+      }
+    },
+    [ref]
+  )
 
   return (
     <div
-      ref={ref}
-      onScroll={onScroll}
-      onWheel={handleWheel}
+      ref={setRefs}
       style={{
-        height: gridHeight,
-        overflowY: scrollEnabled ? 'auto' : 'hidden',
-        overflowX: 'hidden',
         position: 'relative',
         paddingBottom,
-        WebkitOverflowScrolling: 'touch',
+        width: '100%',
       }}
-      id='virtual-grid'
-      className={clsx(containerClassName, 'hide-scrollbar')}
+      className={clsx(containerClassName)}
     >
       <div
         style={{

@@ -285,3 +285,7 @@ body {
     gap: 4px;
   }
 }
+
+.avatar-container {
+  z-index: inherit !important;
+}

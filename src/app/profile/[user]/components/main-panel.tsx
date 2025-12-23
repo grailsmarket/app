@@ -15,10 +15,13 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
-import { clearActivityFilters, setFiltersScrollTop } from '@/state/reducers/filters/profileActivityFilters'
-import { clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
-import { clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
-import { clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
+import {
+  clearActivityFilters,
+  setFiltersScrollTop as setActivityScrollTop,
+} from '@/state/reducers/filters/profileActivityFilters'
+import { clearReceivedOffersFilters, setReceivedOffersScrollTop } from '@/state/reducers/filters/receivedOffersFilters'
+import { clearMyOffersFilters, setMyOffersScrollTop } from '@/state/reducers/filters/myOffersFilters'
+import { clearWatchlistFilters, setWatchlistFiltersScrollTop } from '@/state/reducers/filters/watchlistFilters'
 import {
   clearFilters,
   setFiltersScrollTop as setDomainsScrollTop,
@@ -58,10 +61,15 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
       dispatch(clearActivityFilters())
-      dispatch(setFiltersScrollTop(0))
+      // Reset all scroll positions
       dispatch(setDomainsScrollTop(0))
+      dispatch(setActivityScrollTop(0))
+      dispatch(setMyOffersScrollTop(0))
+      dispatch(setReceivedOffersScrollTop(0))
+      dispatch(setWatchlistFiltersScrollTop(0))
       dispatch(clearBulkSelect())
       document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
+      window.scrollTo({ top: 0, behavior: 'instant' })
     }
 
     dispatch(setLastVisitedProfile(user))
@@ -92,9 +100,9 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       <FilterProvider filterType='profile' profileTab={selectedTab}>
         <div className='w-full'>
           <div className='z-10 w-full'>
-            <div className='lg:pl-md bg-background border-tertiary relative flex h-[100dvh] w-full gap-0 overflow-hidden border-t-2 md:h-[calc(100dvh-70px)]'>
+            <div className='lg:pl-md bg-background border-tertiary relative flex min-h-[calc(100dvh-56px)] w-full gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
               <FilterPanel />
-              <div className='bg-tertiary ml-2 hidden h-full w-[3px] lg:block' />
+              <div className='bg-tertiary sticky top-0 ml-2 hidden h-screen w-[3px] lg:block' />
               <div
                 className='flex w-full flex-col gap-2'
                 style={{

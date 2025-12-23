@@ -1,10 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Address, useWindowSize } from 'ethereum-identity-kit'
+import { Address } from 'ethereum-identity-kit'
 import Activity from '@/components/activity'
 import { useProfileActivity } from '../hooks/useActivity'
-import useScrollToBottom from '@/hooks/useScrollToBottom'
 
 interface Props {
   user: Address | undefined
@@ -12,8 +11,6 @@ interface Props {
 
 const ActivityPanel: React.FC<Props> = ({ user }) => {
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
-  const isAtBottom = useScrollToBottom({ threshold: 100 })
-  const { width: windowWidth } = useWindowSize()
 
   return (
     <div className='px-md md:pt-md flex w-full flex-col gap-2'>
@@ -44,7 +41,6 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
         </div>
       </div> */}
       <Activity
-        maxHeight={windowWidth && windowWidth > 768 ? 'calc(100dvh - 126px)' : 'calc(100dvh - 28px)'}
         activity={activity}
         loadingRowCount={20}
         noResults={!activityLoading && activity?.length === 0}
@@ -52,7 +48,6 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         displayedAddress={user}
-        scrollEnabled={isAtBottom}
       />
     </div>
   )

@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import VirtualList from '@/components/ui/virtuallist'
 import { fetchNotifications } from '@/api/notifications/fetchNotifications'
 import NotificationRow from './notificationRow'
-import { Cross, useWindowSize } from 'ethereum-identity-kit'
+import { Cross } from 'ethereum-identity-kit'
 import NotificationLoadingRow from './loadingRow'
 import NoResults from '@/components/ui/noResults'
 
@@ -15,8 +14,7 @@ interface NotificationModalProps {
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }) => {
-  const virtualListRef = useRef<HTMLDivElement>(null)
-  const { width } = useWindowSize()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // Fetch notifications with infinite query
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
@@ -39,6 +37,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       .filter((notification) => !!notification.ensName && !!notification.ensTokenId) || []
   const isNotificationsLoading = isLoading || isFetchingNextPage
 
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
+    if (scrollHeight - scrollTop - clientHeight < 200 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
   if (!isOpen) return null
 
   return (
@@ -47,7 +53,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       onClick={onClose}
     >
       <div
-        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-scroll border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2'
+        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -59,31 +65,25 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         </div>
 
         {/* Notifications list */}
-        <div className=''>
-          <VirtualList
-            listHeight={width && width < 768 ? 'calc(100dvh - 150px)' : '520px'}
-            ref={virtualListRef}
-            items={isNotificationsLoading ? [...allNotifications, ...Array(10).fill(null)] : [...allNotifications]}
-            visibleCount={30}
-            rowHeight={64}
-            overscanCount={20}
-            paddingBottom='0px'
-            gap={0}
-            useLocalScrollTop={true}
-            renderItem={(notification, index) => {
-              if (!notification) return <NotificationLoadingRow />
-
-              return <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
-            }}
-            onScrollNearBottom={() => {
-              if (hasNextPage && !isFetchingNextPage) {
-                fetchNextPage()
-              }
-            }}
-            containerClassName='h-full'
-          />
-          {allNotifications.length === 0 && !isNotificationsLoading && (
-            <NoResults label='No notifications' height='500px' />
+        <div ref={scrollContainerRef} onScroll={handleScroll} className='flex-1 overflow-y-auto'>
+          {allNotifications.length === 0 && !isNotificationsLoading ? (
+            <NoResults label='No notifications' height='400px' />
+          ) : (
+            <div className='flex flex-col'>
+              {allNotifications.map((notification, index) => (
+                <div key={notification.id || index} className='h-16'>
+                  <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
+                </div>
+              ))}
+              {isNotificationsLoading &&
+                Array(10)
+                  .fill(null)
+                  .map((_, index) => (
+                    <div key={`loading-${index}`} className='h-16'>
+                      <NotificationLoadingRow />
+                    </div>
+                  ))}
+            </div>
           )}
         </div>
       </div>

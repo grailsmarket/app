@@ -17,7 +17,7 @@ const TypeFilter = () => {
   }
 
   return (
-    <div className='bg-dark-700 flex flex-col'>
+    <div className='bg-dark-700 flex min-h-0 flex-1 flex-col overflow-y-auto'>
       <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Type' />}>
         <div className='w-full p-3'>
           <div className='flex w-full flex-col gap-3'>

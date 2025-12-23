@@ -14,6 +14,7 @@ import { UserProvider } from '@/context/user'
 import Modals from './modals'
 import Cart from '@/components/cart'
 import { SeaportProvider } from '@/context/seaport'
+import { NavbarProvider } from '@/context/navbar'
 import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
@@ -43,17 +44,19 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
               <ReduxProvider store={store}>
                 <UserProvider>
                   <SeaportProvider>
-                    <div className='relative flex min-h-[100dvh]! flex-col'>
-                      <InfoBar onVisibilityChange={handleInfoBarVisibilityChange} />
-                      <Navigation showInfo={showInfoBar} />
-                      <Cart />
-                      <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
-                        {children}
+                    <NavbarProvider>
+                      <div className='relative flex min-h-[100dvh]! flex-col'>
+                        <InfoBar onVisibilityChange={handleInfoBarVisibilityChange} />
+                        <Navigation showInfo={showInfoBar} />
+                        <Cart />
+                        <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
+                          {children}
+                        </div>
                       </div>
-                    </div>
-                    <TransactionModal />
-                    <Modals />
-                    <div id='modal-root' />
+                      <TransactionModal />
+                      <Modals />
+                      <div id='modal-root' />
+                    </NavbarProvider>
                   </SeaportProvider>
                 </UserProvider>
               </ReduxProvider>

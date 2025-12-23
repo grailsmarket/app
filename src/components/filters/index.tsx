@@ -52,7 +52,7 @@ const FilterPanel: React.FC = () => {
     <div
       ref={filterRef}
       className={cn(
-        'bg-background fixed top-14 left-0 z-20 flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden shadow-md transition-transform duration-300 md:top-[70px] md:h-[calc(100dvh-70px)] md:max-w-[284px] md:min-w-[284px] lg:sticky lg:top-[70px] lg:h-[calc(100dvh-70px)] lg:shadow-none',
+        'bg-background fixed top-14 left-0 z-20 flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden overscroll-contain shadow-md transition-transform duration-300 md:top-[70px] md:h-[calc(100dvh-70px)] md:max-w-[284px] md:min-w-[284px] lg:sticky lg:top-[70px] lg:h-[calc(100dvh-70px)] lg:shadow-none',
         isOpen ? 'translate-x-0' : '-translate-x-[110%] lg:translate-x-0',
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'
       )}

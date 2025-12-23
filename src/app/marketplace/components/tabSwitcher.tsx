@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeMarketplaceTab, MarketplaceTabType, selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
+import { useNavbar } from '@/context/navbar'
 
 interface MarketplaceTabSwitcherProps {
   isLiveActivityConnected: boolean
@@ -14,6 +15,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
   const [mounted, setMounted] = useState(false)
   const { selectedTab } = useAppSelector(selectMarketplace)
   const dispatch = useAppDispatch()
+  const { isNavbarVisible } = useNavbar()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
@@ -56,7 +58,12 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
   // During SSR and initial mount, render without active state
   if (!mounted) {
     return (
-      <div className='bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky top-14 z-10 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8'>
+      <div
+        className={cn(
+          'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8',
+          isNavbarVisible ? 'top-14' : 'top-0'
+        )}
+      >
         <div ref={containerRef} className='relative flex h-10 w-full justify-between gap-4'>
           <div
             className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -93,7 +100,12 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
 
   // After mount, render with proper active state
   return (
-    <div className='bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky top-0 z-20 flex min-h-12 items-center gap-2 border-b-2 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8'>
+    <div
+      className={cn(
+        'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8',
+        isNavbarVisible ? 'top-14' : 'top-0'
+      )}
+    >
       <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
         <div
           className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'

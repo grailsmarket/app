@@ -50,6 +50,34 @@ import UnCapitalCitiesAvatar from 'public/clubs/un_capital_cities/avatar.jpg'
 import UnCapitalCitiesHeader from 'public/clubs/un_capital_cities/header.jpeg'
 import UnCountriesAvatar from 'public/clubs/un_countries/avatar.jpg'
 import UnCountriesHeader from 'public/clubs/un_countries/header.jpeg'
+
+import ThreeLetterPalindromesAvatar from 'public/clubs/3_letter_palindromes/avatar.png'
+import ThreeLetterPalindromesHeader from 'public/clubs/3_letter_palindromes/header.jpg'
+import ThreeDigitPalindromesAvatar from 'public/clubs/3_digit_palindromes/avatar.png'
+import ThreeDigitPalindromesHeader from 'public/clubs/3_digit_palindromes/header.jpg'
+import FourDigitPalindromesAvatar from 'public/clubs/4_digit_palindromes/avatar.png'
+import FourDigitPalindromesHeader from 'public/clubs/4_digit_palindromes/header.jpg'
+import FiveDigitPalindromesAvatar from 'public/clubs/5_digit_palindromes/avatar.png'
+import FiveDigitPalindromesHeader from 'public/clubs/5_digit_palindromes/header.jpg'
+import SixDigitPalindromesAvatar from 'public/clubs/6_digit_palindromes/avatar.png'
+import SixDigitPalindromesHeader from 'public/clubs/6_digit_palindromes/header.jpg'
+import HundredKAvatar from 'public/clubs/100k_club/avatar.png'
+import HundredKHeader from 'public/clubs/100k_club/header.jpg'
+import DoubleEthmojiAvatar from 'public/clubs/double_ethmoji/avatar.png'
+import DoubleEthmojiHeader from 'public/clubs/double_ethmoji/header.png'
+
+import DoubleTripleDigitsAvatar from 'public/clubs/double_triple_digits/avatar.png'
+import DoubleTripleDigitsHeader from 'public/clubs/double_triple_digits/header.jpg'   
+import Ethmoji10kAvatar from 'public/clubs/ethmoji_10k/avatar.png'
+import Ethmoji10kHeader from 'public/clubs/ethmoji_10k/header.png'  
+import PrepunkDigitsAvatar from 'public/clubs/prepunk_digits/avatar.jpeg'
+import PrepunkDigitsHeader from 'public/clubs/prepunk_digits/header.jpeg'
+
+import QuadEthmojiAvatar from 'public/clubs/quad_ethmoji/avatar.png'
+import QuadEthmojiHeader from 'public/clubs/quad_ethmoji/header.png'
+import QuintEthmojiAvatar from 'public/clubs/quint_ethmoji/avatar.png'
+import QuintEthmojiHeader from 'public/clubs/quint_ethmoji/header.png'
+
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
 export const CATEGORY_IMAGES = {
@@ -137,6 +165,54 @@ export const CATEGORY_IMAGES = {
     avatar: UnCountriesAvatar,
     header: UnCountriesHeader,
   },
+  '3_letter_palindromes': {
+    avatar: ThreeLetterPalindromesAvatar,
+    header: ThreeLetterPalindromesHeader,
+  },
+  '3_digit_palindromes': {
+    avatar: ThreeDigitPalindromesAvatar,
+    header: ThreeDigitPalindromesHeader,
+  },
+  '4_digit_palindromes': {
+    avatar: FourDigitPalindromesAvatar,
+    header: FourDigitPalindromesHeader,
+  },
+  '5_digit_palindromes': {
+    avatar: FiveDigitPalindromesAvatar,
+    header: FiveDigitPalindromesHeader,
+  },
+  '6_digit_palindromes': {
+    avatar: SixDigitPalindromesAvatar,
+    header: SixDigitPalindromesHeader,
+  },
+  '100k_club': {
+    avatar: HundredKAvatar,
+    header: HundredKHeader,
+  },
+  double_ethmoji: {
+    avatar: DoubleEthmojiAvatar,
+    header: DoubleEthmojiHeader,
+  },
+  double_triple_digits: {
+    avatar: DoubleTripleDigitsAvatar,
+    header: DoubleTripleDigitsHeader,
+  },
+  ethmoji_10k: {
+    avatar: Ethmoji10kAvatar,
+    header: Ethmoji10kHeader,
+  },
+  prepunk_digits: {
+    avatar: PrepunkDigitsAvatar,
+    header: PrepunkDigitsHeader,
+  },
+  quad_ethmoji: {
+    avatar: QuadEthmojiAvatar,
+    header: QuadEthmojiHeader,
+  },
+  quint_ethmoji: {
+    avatar: QuintEthmojiAvatar,
+    header: QuintEthmojiHeader,
+  },  
 }
 
 export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {
@@ -178,6 +254,21 @@ export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: 
   },
   wikidata_top_fantasy_char: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main/wikidata_top_fantasy_char',
+  },
+  prepunk_digits: {
+    twitter: 'https://x.com/PrePunkOfficial',
+  },
+  ethmoji_10k: {
+    twitter: 'https://x.com/EthmojiClub',
+  },
+  quad_ethmoji: {
+    twitter: 'https://x.com/EthmojiClub',
+  },
+  quint_ethmoji: {
+    twitter: 'https://x.com/EthmojiClub',
+  },
+  double_ethmoji: {
+    twitter: 'https://x.com/EthmojiClub',
   },
 }
 

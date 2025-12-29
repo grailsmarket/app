@@ -88,6 +88,54 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/un_countries/avatar.jpg',
     header: 'https://grails.app/clubs/un_countries/header.jpeg',
   },
+  '3_letter_palindromes': {
+    avatar: 'https://grails.app/clubs/3_letter_palindromes/avatar.jpg',
+    header: 'https://grails.app/clubs/3_letter_palindromes/header.jpeg',
+  },
+  '3_digit_palindromes': {
+    avatar: 'https://grails.app/clubs/3_digit_palindromes/avatar.jpg',
+    header: 'https://grails.app/clubs/3_digit_palindromes/header.jpeg',
+  },
+  '4_digit_palindromes': {
+    avatar: 'https://grails.app/clubs/4_digit_palindromes/avatar.jpg',
+    header: 'https://grails.app/clubs/4_digit_palindromes/header.jpeg',
+  },
+  '5_digit_palindromes': {
+    avatar: 'https://grails.app/clubs/5_digit_palindromes/avatar.jpg',
+    header: 'https://grails.app/clubs/5_digit_palindromes/header.jpeg',
+  },
+  '6_digit_palindromes': {
+    avatar: 'https://grails.app/clubs/6_digit_palindromes/avatar.jpg',
+    header: 'https://grails.app/clubs/6_digit_palindromes/header.jpeg',
+  },
+  '100k_club': {
+    avatar: 'https://grails.app/clubs/100k_club/avatar.jpg',
+    header: 'https://grails.app/clubs/100k_club/header.jpeg',
+  },
+  'double_ethmoji': {
+    avatar: 'https://grails.app/clubs/double_ethmoji/avatar.jpg',
+    header: 'https://grails.app/clubs/double_ethmoji/header.jpeg',
+  },
+  'double_triple_digits': {
+    avatar: 'https://grails.app/clubs/double_triple_digits/avatar.jpg',
+    header: 'https://grails.app/clubs/double_triple_digits/header.jpeg',
+  },
+  'ethmoji_10k': {
+    avatar: 'https://grails.app/clubs/ethmoji_10k/avatar.jpg',
+    header: 'https://grails.app/clubs/ethmoji_10k/header.jpeg',
+  },
+  'prepunk_digits': {
+    avatar: 'https://grails.app/clubs/prepunk_digits/avatar.jpg',
+    header: 'https://grails.app/clubs/prepunk_digits/header.jpeg',
+  },
+  'quad_ethmoji': {
+    avatar: 'https://grails.app/clubs/quad_ethmoji/avatar.jpg',
+    header: 'https://grails.app/clubs/quad_ethmoji/header.jpeg',
+  },
+  'quint_ethmoji': {
+    avatar: 'https://grails.app/clubs/quint_ethmoji/avatar.jpg',
+    header: 'https://grails.app/clubs/quint_ethmoji/header.jpeg',
+  },
 }
 
 export async function GET(req: NextRequest) {

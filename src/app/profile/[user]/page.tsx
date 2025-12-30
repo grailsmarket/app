@@ -37,13 +37,29 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     }
   }
 
+  const fetchAvatar = async (avatar: string) => {
+    try {
+      if (ssr) {
+        const response = await fetch(avatar)
+        if (response.status === 200) {
+          return response
+        }
+      }
+
+      return false
+    } catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
   const ensData = await getAccount()
   const ensName = ensData?.ens?.name
   const ensAvatar = ensData?.ens?.avatar
   const displayUser = ensName || truncatedUser
   const description = ensData?.ens?.records?.description
 
-  const avatarResponse = ensAvatar && isLinkValid(ensAvatar) ? await fetch(ensAvatar) : null
+  const avatarResponse = ensAvatar && isLinkValid(ensAvatar) ? await fetchAvatar(ensAvatar) : false
 
   const pageUrl = `https://grails.app/profile/${user}`
   const ogImageUrl = `https://grails.app/api/og/profile?user=${user}`
@@ -64,10 +80,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description,
       images: ogImageUrl,
     },
-    icons: avatarResponse?.status === 200 ? ensAvatar : '@/app/favicon.ico',
+    icons: avatarResponse ? ensAvatar : '@/app/favicon.ico',
     appleWebApp: {
       capable: true,
       title: displayUser,
+      // startupImage: avatarResponse ? ensAvatar : '/assets/apple-touch-icon.png',
     },
   }
 }

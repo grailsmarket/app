@@ -67,9 +67,9 @@ import DoubleEthmojiAvatar from 'public/clubs/double_ethmoji/avatar.png'
 import DoubleEthmojiHeader from 'public/clubs/double_ethmoji/header.png'
 
 import DoubleTripleDigitsAvatar from 'public/clubs/double_triple_digits/avatar.png'
-import DoubleTripleDigitsHeader from 'public/clubs/double_triple_digits/header.jpg'   
+import DoubleTripleDigitsHeader from 'public/clubs/double_triple_digits/header.jpg'
 import Ethmoji10kAvatar from 'public/clubs/ethmoji_10k/avatar.png'
-import Ethmoji10kHeader from 'public/clubs/ethmoji_10k/header.png'  
+import Ethmoji10kHeader from 'public/clubs/ethmoji_10k/header.png'
 import PrepunkDigitsAvatar from 'public/clubs/prepunk_digits/avatar.jpeg'
 import PrepunkDigitsHeader from 'public/clubs/prepunk_digits/header.jpeg'
 
@@ -212,7 +212,7 @@ export const CATEGORY_IMAGES = {
   quint_ethmoji: {
     avatar: QuintEthmojiAvatar,
     header: QuintEthmojiHeader,
-  },  
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {

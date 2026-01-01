@@ -112,27 +112,27 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/100k_club/avatar.jpg',
     header: 'https://grails.app/clubs/100k_club/header.jpeg',
   },
-  'double_ethmoji': {
+  double_ethmoji: {
     avatar: 'https://grails.app/clubs/double_ethmoji/avatar.jpg',
     header: 'https://grails.app/clubs/double_ethmoji/header.jpeg',
   },
-  'double_triple_digits': {
+  double_triple_digits: {
     avatar: 'https://grails.app/clubs/double_triple_digits/avatar.jpg',
     header: 'https://grails.app/clubs/double_triple_digits/header.jpeg',
   },
-  'ethmoji_10k': {
+  ethmoji_10k: {
     avatar: 'https://grails.app/clubs/ethmoji_10k/avatar.jpg',
     header: 'https://grails.app/clubs/ethmoji_10k/header.jpeg',
   },
-  'prepunk_digits': {
+  prepunk_digits: {
     avatar: 'https://grails.app/clubs/prepunk_digits/avatar.jpg',
     header: 'https://grails.app/clubs/prepunk_digits/header.jpeg',
   },
-  'quad_ethmoji': {
+  quad_ethmoji: {
     avatar: 'https://grails.app/clubs/quad_ethmoji/avatar.jpg',
     header: 'https://grails.app/clubs/quad_ethmoji/header.jpeg',
   },
-  'quint_ethmoji': {
+  quint_ethmoji: {
     avatar: 'https://grails.app/clubs/quint_ethmoji/avatar.jpg',
     header: 'https://grails.app/clubs/quint_ethmoji/header.jpeg',
   },

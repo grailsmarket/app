@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { WagmiProvider, type State } from 'wagmi'
 import { Provider as ReduxProvider } from 'react-redux'
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit'
@@ -15,7 +15,6 @@ import Modals from './modals'
 import Cart from '@/components/cart'
 import { SeaportProvider } from '@/context/seaport'
 import { NavbarProvider } from '@/context/navbar'
-import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
   children: React.ReactNode
@@ -29,11 +28,11 @@ const queryClient = new QueryClient({
 })
 
 const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
-  const [showInfoBar, setShowInfoBar] = useState(false)
+  // const [showInfoBar, setShowInfoBar] = useState(false)
 
-  const handleInfoBarVisibilityChange = useCallback((visible: boolean) => {
-    setShowInfoBar(visible)
-  }, [])
+  // const handleInfoBarVisibilityChange = useCallback((visible: boolean) => {
+  //   setShowInfoBar(visible)
+  // }, [])
 
   const providers = useMemo(
     () => (
@@ -46,8 +45,8 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                   <SeaportProvider>
                     <NavbarProvider>
                       <div className='relative flex min-h-[100dvh]! flex-col'>
-                        <InfoBar onVisibilityChange={handleInfoBarVisibilityChange} />
-                        <Navigation showInfo={showInfoBar} />
+                        {/* <InfoBar onVisibilityChange={handleInfoBarVisibilityChange} /> */}
+                        <Navigation showInfo={false} />
                         <Cart />
                         <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
                           {children}
@@ -65,7 +64,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
         </WagmiProvider>
       </QueryClientProvider>
     ),
-    [initialState, children, showInfoBar, handleInfoBarVisibilityChange]
+    [initialState, children]
   )
 
   return providers

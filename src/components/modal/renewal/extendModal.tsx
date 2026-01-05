@@ -9,7 +9,7 @@ import {
   setBulkRenewalModalCanAddDomains,
   setBulkRenewalModalDomains,
 } from '@/state/reducers/modals/bulkRenewalModal'
-import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { clearBulkSelect, selectBulkSelect, removeBulkSelectDomain } from '@/state/reducers/modals/bulkSelectModal'
 import useExtendDomains from '@/hooks/registrar/useExtendDomains'
 import useETHPrice from '@/hooks/useETHPrice'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -59,6 +59,20 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
+
+  // Batch processing state
+  const BATCH_SIZE = 100
+  const [currentBatch, setCurrentBatch] = useState(1)
+  const [totalBatches, setTotalBatches] = useState(1)
+  const [namesProcessed, setNamesProcessed] = useState(0)
+  const [completedTxHashes, setCompletedTxHashes] = useState<string[]>([])
+  const [remainingDomains, setRemainingDomains] = useState(domains)
+
+  // Sync remainingDomains with domains when modal opens or domains change
+  useEffect(() => {
+    setRemainingDomains(domains)
+    setTotalBatches(Math.ceil(domains.length / BATCH_SIZE))
+  }, [domains])
 
   // Get ETH balance
   const { data: ethBalance } = useBalance({
@@ -206,11 +220,34 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     return ethBalance.value >= totalRequired
   }, [ethBalance, calculationResults, gasPrice, gasEstimate])
 
+  // Helper function to split array into chunks
+  const chunkArray = <T,>(array: T[], size: number): T[][] => {
+    const chunks: T[][] = []
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size))
+    }
+    return chunks
+  }
+
+  // Helper function to refetch queries for domains
+  const refetchDomainQueries = (domainsToRefetch: typeof domains) => {
+    queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
+    queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
+    domainsToRefetch.forEach((domain) => {
+      queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
+    })
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
+
+    // Reset batch state
+    setCurrentBatch(1)
+    setNamesProcessed(0)
+    setCompletedTxHashes([])
 
     if (!calculationResults) {
       setError('Invalid calculation parameters')
@@ -224,58 +261,91 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       return
     }
 
-    try {
-      let durations: bigint[]
+    // Use remainingDomains for retry support
+    const domainsToProcess = remainingDomains
+    const batches = chunkArray(domainsToProcess, BATCH_SIZE)
+    const numBatches = batches.length
+    setTotalBatches(numBatches)
 
-      if (extensionMode === 'extend_for') {
-        durations = new Array(domains.length).fill(BigInt(quantity * getSecondsPerUnit(timeUnit)))
-      } else {
-        durations = domains.map((domain) =>
-          BigInt(
-            Math.max(
-              0,
-              customDate - (domain.expiry_date ? Math.floor(new Date(domain.expiry_date).getTime() / 1000) : 0)
+    const successfullyExtendedDomains: typeof domains = []
+    const txHashes: string[] = []
+
+    try {
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex]
+        setCurrentBatch(batchIndex + 1)
+
+        let durations: bigint[]
+
+        if (extensionMode === 'extend_for') {
+          durations = new Array(batch.length).fill(BigInt(quantity * getSecondsPerUnit(timeUnit)))
+        } else {
+          durations = batch.map((domain) =>
+            BigInt(
+              Math.max(
+                0,
+                customDate - (domain.expiry_date ? Math.floor(new Date(domain.expiry_date).getTime() / 1000) : 0)
+              )
             )
           )
-        )
+        }
+
+        const names = batch.map((item) => item.name.replace('.eth', ''))
+
+        const rentPrice = (await publicClient?.readContract({
+          address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+          abi: ENS_HOLIDAY_RENEWAL_ABI,
+          functionName: 'bulkRentPrice',
+          args: [names, durations],
+        })) as bigint
+
+        const tx = await extend(names, durations, rentPrice)
+
+        if (!tx) {
+          throw new Error(`Transaction ${batchIndex + 1} failed`)
+        }
+
+        setTxHash(tx)
+        const receipt = await publicClient?.waitForTransactionReceipt({
+          hash: tx,
+          confirmations: 1,
+        })
+
+        if (receipt?.status !== 'success') {
+          throw new Error(`Transaction ${batchIndex + 1} failed`)
+        }
+
+        // Batch succeeded
+        txHashes.push(tx)
+        setCompletedTxHashes([...txHashes])
+        successfullyExtendedDomains.push(...batch)
+        setNamesProcessed(successfullyExtendedDomains.length)
+
+        // Update remaining domains (for retry support)
+        const remaining = domainsToProcess.slice((batchIndex + 1) * BATCH_SIZE)
+        setRemainingDomains(remaining)
       }
 
-      const names = domains.map((item) => item.name.replace('.eth', ''))
-
-      const rentPrice = (await publicClient?.readContract({
-        address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
-        abi: ENS_HOLIDAY_RENEWAL_ABI,
-        functionName: 'bulkRentPrice',
-        args: [names, durations],
-      })) as bigint
-
-      const tx = await extend(names, durations, rentPrice)
-
-      if (!tx) {
-        throw new Error('Transaction failed')
-      }
-
-      setTxHash(tx)
-      const receipt = await publicClient?.waitForTransactionReceipt({
-        hash: tx,
-        confirmations: 1,
-      })
-
-      if (receipt?.status !== 'success') {
-        throw new Error('Transaction failed')
-      }
-
+      // All batches completed successfully
       setSuccess(true)
       setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
-        queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
-        domains.forEach((domain) => {
-          queryClient.refetchQueries({ queryKey: ['name', 'details', domain.name] })
-        })
+        refetchDomainQueries(domainsToProcess)
       }, 2500)
     } catch (err: any) {
       console.error('Failed to extend domains:', err)
       setError(err.message || 'Transaction failed')
+
+      // Refetch queries for successfully extended domains
+      if (successfullyExtendedDomains.length > 0) {
+        setTimeout(() => {
+          refetchDomainQueries(successfullyExtendedDomains)
+        }, 2500)
+      }
+
+      // Remove successfully extended domains from bulk selection
+      successfullyExtendedDomains.forEach((domain) => {
+        dispatch(removeBulkSelectDomain(domain))
+      })
     } finally {
       setIsLoading(false)
     }
@@ -311,13 +381,34 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             </div>
 
             {success ? (
-              <div className='flex flex-col items-center gap-4 py-8'>
+              <div className='flex flex-col items-center gap-4 py-2'>
                 <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-3'>
                   <Check className='text-background h-8 w-8' />
                 </div>
-                <div className='text-center'>
+                <div className='flex flex-col items-center gap-2 text-center'>
                   <h3 className='mb-2 text-xl font-bold'>Extended Names Successfully!</h3>
-                  {txHash && (
+                  {completedTxHashes.length > 0 ? (
+                    <div className='flex flex-col gap-1'>
+                      {completedTxHashes.length > 1 && (
+                        <p className='text-neutral text-sm mb-1'>
+                          {completedTxHashes.length} transactions completed
+                        </p>
+                      )}
+                      {completedTxHashes.map((hash, index) => (
+                        <a
+                          key={hash}
+                          href={`https://etherscan.io/tx/${hash}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+                        >
+                          {completedTxHashes.length > 1
+                            ? `View Transaction ${index + 1} on Etherscan`
+                            : 'View on Etherscan'}
+                        </a>
+                      ))}
+                    </div>
+                  ) : txHash ? (
                     <a
                       href={`https://etherscan.io/tx/${txHash}`}
                       target='_blank'
@@ -326,15 +417,26 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     >
                       View on Etherscan
                     </a>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ) : isLoading ? (
               <div className='flex w-full flex-col gap-4'>
-                <h2 className='mt-4 text-center text-xl font-bold'>Processing Transaction</h2>
-                <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
+                <h2 className='mt-4 text-center text-xl font-bold'>
+                  Processing Transaction{totalBatches > 1 ? ` ${currentBatch} of ${totalBatches}` : ''}
+                </h2>
+                <div className='flex flex-col items-center justify-center gap-4 pt-4 pb-4 text-center'>
                   <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-                  <p className='text-neutral text-lg'>Transaction submitted</p>
+                  <div className='flex flex-col gap-1'>
+                    <p className='text-neutral text-lg'>
+                      Extending {namesProcessed}/{domains.length} names...
+                    </p>
+                    {totalBatches > 1 && (
+                      <p className='text-neutral text-sm'>
+                        Batch {currentBatch} of {totalBatches}
+                      </p>
+                    )}
+                  </div>
                   {txHash && (
                     <a
                       href={`https://etherscan.io/tx/${txHash}`}
@@ -342,8 +444,24 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-lg underline transition-colors'
                     >
-                      View on Etherscan
+                      View Transaction {currentBatch} on Etherscan
                     </a>
+                  )}
+                  {completedTxHashes.length > 0 && (
+                    <div className='flex flex-col gap-1'>
+                      <p className='text-neutral text-sm'>Completed transactions:</p>
+                      {completedTxHashes.map((hash, index) => (
+                        <a
+                          key={hash}
+                          href={`https://etherscan.io/tx/${hash}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-primary/70 hover:text-primary text-sm underline transition-colors'
+                        >
+                          Transaction {index + 1}
+                        </a>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
@@ -372,11 +490,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                      extensionMode === 'extend_for'
-                                        ? new Date(domain.expiry_date).getTime() +
-                                          quantity * getSecondsPerUnit(timeUnit) * 1000
-                                        : customDate * 1000
-                                    ).toLocaleDateString()
+                                    extensionMode === 'extend_for'
+                                      ? new Date(domain.expiry_date).getTime() +
+                                      quantity * getSecondsPerUnit(timeUnit) * 1000
+                                      : customDate * 1000
+                                  ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -414,9 +532,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       >
                         {customDate
                           ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : 'Select Date'}
                       </PrimaryButton>
                     ) : (
@@ -494,6 +612,28 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   {error && (
                     <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
                       <p className='text-sm text-red-400'>{error}</p>
+                      {namesProcessed > 0 && (
+                        <p className='text-sm text-yellow-400 mt-2'>
+                          {namesProcessed} of {domains.length} names were successfully extended.
+                          {remainingDomains.length > 0 && ` ${remainingDomains.length} names remaining.`}
+                        </p>
+                      )}
+                      {completedTxHashes.length > 0 && (
+                        <div className='mt-2 flex flex-col gap-1'>
+                          <p className='text-neutral text-xs'>Completed transactions:</p>
+                          {completedTxHashes.map((hash, index) => (
+                            <a
+                              key={hash}
+                              href={`https://etherscan.io/tx/${hash}`}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              className='text-primary/70 hover:text-primary text-xs underline transition-colors'
+                            >
+                              Transaction {index + 1}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -519,17 +659,22 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     isLoading ||
                     !calculationResults ||
                     !hasSufficientBalance ||
-                    (extensionMode === 'extend_to' && customDate === 0)
+                    (extensionMode === 'extend_to' && customDate === 0) ||
+                    remainingDomains.length === 0
                   }
                   className='w-full'
                 >
                   {isLoading
-                    ? 'Extending...'
+                    ? totalBatches > 1
+                      ? `Extending... (${currentBatch}/${totalBatches})`
+                      : 'Extending...'
                     : !hasSufficientBalance
                       ? 'Insufficient ETH Balance'
-                      : domains.length === 1
-                        ? `Extend ${domains[0].name}`
-                        : `Extend ${domains.length} Name${domains.length > 1 ? 's' : ''}`}
+                      : error && remainingDomains.length > 0
+                        ? `Try Again (${remainingDomains.length} name${remainingDomains.length > 1 ? 's' : ''} remaining)`
+                        : remainingDomains.length === 1
+                          ? `Extend ${remainingDomains[0].name}`
+                          : `Extend ${remainingDomains.length} Name${remainingDomains.length > 1 ? 's' : ''}`}
                 </PrimaryButton>
               )}
               <SecondaryButton onClick={handleClose} className='w-full' disabled={isLoading}>

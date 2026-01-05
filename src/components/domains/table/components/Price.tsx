@@ -24,18 +24,18 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
 
   if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
     const premiumPriceOracle = expiry_date ? new PremiumPriceOracle(new Date(expiry_date).getTime() / 1000) : null
-    const prmeiumPrice = premiumPriceOracle
+    const premiumPrice = premiumPriceOracle
       ? premiumPriceOracle.getOptimalPrecisionPremiumAmount(new Date().getTime() / 1000)
       : 0
     const regPrice = calculateRegistrationPrice(name, ethPrice)
-    const regPriceUSD = regPrice.usd + prmeiumPrice
 
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
         <div>
           <p className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM ? 'text-premium' : 'text-available')}>
             <p>$</p>
-            <p>{regPriceUSD.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+            <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+            <p className='text-md font-medium text-neutral'>&nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year</p>
           </p>
         </div>
         {registrationStatus === PREMIUM && expiry_date && (

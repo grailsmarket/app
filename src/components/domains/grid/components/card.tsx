@@ -57,12 +57,10 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
   const premiumPriceOracle = domain.expiry_date
     ? new PremiumPriceOracle(new Date(domain.expiry_date).getTime() / 1000)
     : null
-  const prmeiumPrice = premiumPriceOracle
+  const premiumPrice = premiumPriceOracle
     ? premiumPriceOracle.getOptimalPrecisionPremiumAmount(new Date().getTime() / 1000)
     : 0
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
-  const regPriceUSD = regPrice.usd + prmeiumPrice
-  // const regPriceETH = regPrice.eth + (prmeiumPrice / ethPrice)
 
   return (
     <Link
@@ -144,12 +142,8 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM ? 'text-premium' : 'text-available')}
             >
               <p>$</p>
-              <p>{regPriceUSD.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
-              {/* {registrationStatus === UNREGISTERED && (
-                <p className='text-md font-medium pl-0.5 text-available flex items-center gap-px'>
-                  (Available)
-                </p>
-              )} */}
+              <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+              <p className='text-md font-medium text-neutral'>&nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year</p>
             </div>
           )}
           {registrationStatus === PREMIUM && domain.expiry_date && (

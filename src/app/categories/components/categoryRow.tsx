@@ -20,7 +20,7 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
   return (
     <Link
       href={`/categories/${category.name}`}
-      className='bg-secondary p-lg relative flex h-full w-full flex-col gap-2 rounded-lg hover:bg-white/10'
+      className='bg-secondary p-lg relative justify-between flex h-full w-full flex-col gap-2 rounded-lg hover:bg-white/10'
     >
       <Image
         src={categoryHeader}
@@ -43,6 +43,15 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
       <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Sales</p>
         <p className='text-xl font-semibold'>{localizeNumber(category.total_sales_count)}</p>
+      </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Volume</p>
+        <Price
+          price={category.total_sales_volume_wei}
+          currencyAddress={category.floor_price_currency as Address}
+          iconSize='22px'
+          fontSize='text-xl font-semibold'
+        />
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Floor Price</p>

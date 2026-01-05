@@ -34,14 +34,14 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             <p
               className={cn(
                 'text-md truncate leading-[18px] font-bold',
-                registrationStatus === GRACE_PERIOD ? 'text-yellow-500' : 'text-light-100'
+                registrationStatus === GRACE_PERIOD ? 'text-grace' : 'text-foreground'
               )}
             >
               {beautifyName(domain.name)}
             </p>
             {registrationStatus === GRACE_PERIOD ? (
               <p className='text-md text-neutral'>
-                Grace Period {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
+                Grace {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
               </p>
             ) : (
               <p className='text-md text-neutral truncate font-semibold'>

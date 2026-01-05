@@ -7,7 +7,7 @@ import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import useETHPrice from '@/hooks/useETHPrice'
-import { PREMIUM, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
+import { PREMIUM, REGISTERABLE_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 
 interface PriceProps {
@@ -33,13 +33,16 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
         <div>
-          <p className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM && 'text-premium')}>
+          <p className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM ? 'text-premium' : 'text-available')}>
             <p>$</p>
             <p>{regPriceUSD.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
           </p>
         </div>
         {registrationStatus === PREMIUM && expiry_date && (
-          <p className='text-md text-neutral'>Premium ({formatTimeLeft(expiry_date, 'premium')})</p>
+          <p className='text-md font-medium text-premium/70'>Premium ({formatTimeLeft(expiry_date, 'premium')})</p>
+        )}
+        {registrationStatus === UNREGISTERED && (
+          <p className='text-md font-medium text-available'>Available</p>
         )}
       </div>
     )

@@ -79,21 +79,21 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         <div className='flex flex-row flex-wrap justify-end gap-2!'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-                <Link
-                  key={club}
-                  href={`/categories/${club}`}
-                  className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
-                >
-                  <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                    alt={club}
-                    width={24}
-                    height={24}
-                    className='aspect-square! rounded-full'
-                  />
-                  <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
-                </Link>
-              ))
+              <Link
+                key={club}
+                href={`/categories/${club}`}
+                className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
+              >
+                <Image
+                  src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                  alt={club}
+                  width={24}
+                  height={24}
+                  className='aspect-square! rounded-full'
+                />
+                <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+              </Link>
+            ))
             : 'None'}
         </div>
       ),
@@ -103,7 +103,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
       label: 'Status',
       value: (
         <p
-          className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-yellow-500' : registrationStatus === PREMIUM ? 'text-purple-500' : registrationStatus === REGISTERED ? 'text-blue-400' : 'text-foreground/70'}`}
+          className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-grace' : registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === REGISTERED ? 'text-available' : 'text-foreground/70'}`}
         >
           {registrationStatus}
         </p>

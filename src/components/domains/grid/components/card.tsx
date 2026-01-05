@@ -5,7 +5,7 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES, PREMIUM } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES, PREMIUM, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'
@@ -124,7 +124,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
             <p className='text-grace truncate font-semibold'>
-              Grace Period {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
+              Grace {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
             </p>
           ) : registrationStatus === REGISTERED ? (
             domainListing?.price ? (
@@ -141,16 +141,26 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             )
           ) : (
             <div
-              className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM && 'text-premium')}
+              className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM ? 'text-premium' : 'text-available')}
             >
               <p>$</p>
               <p>{regPriceUSD.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+              {/* {registrationStatus === UNREGISTERED && (
+                <p className='text-md font-medium pl-0.5 text-available flex items-center gap-px'>
+                  (Available)
+                </p>
+              )} */}
             </div>
           )}
           {registrationStatus === PREMIUM && domain.expiry_date && (
-            <div className='text-md text-neutral flex items-center gap-px font-semibold'>
+            <div className='text-md font-medium text-premium/70 flex items-center gap-px'>
               Premium ({formatTimeLeft(domain.expiry_date, 'premium')})
             </div>
+          )}
+          {registrationStatus === UNREGISTERED && (
+            <p className='text-md font-medium text-available flex items-center gap-px'>
+              Available
+            </p>
           )}
           {domain.last_sale_price && domain.last_sale_currency && (
             <div className='flex items-center gap-[6px]'>

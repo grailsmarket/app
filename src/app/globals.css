@@ -8,7 +8,8 @@
   --tertiary: #444444;
   --neutral: #aaaaaa;
   --premium: #74fd43;
-  --grace-period: oklch(79.5% 0.184 86.047);
+  --grace: #efb100;
+  --available: #2db5ff;
   --max-width-domain-panel: 1700px;
   --max-width-app: 2340px;
   --padding-sm: 4px;
@@ -61,7 +62,8 @@
   --color-tertiary: var(--tertiary);
   --color-neutral: var(--neutral);
   --color-premium: var(--premium);
-  --color-grace: var(--grace-period);
+  --color-grace: var(--grace);
+  --color-available: var(--available);
   --font-inter: var(--font-inter);
   --font-sedan-sc: var(--font-sedan-sc);
   --padding-sm: var(--padding-sm);

@@ -1,4 +1,4 @@
-import { DAY_IN_SECONDS, ONE_HOUR, ONE_MINUTE } from '@/constants/time'
+import { DAY_IN_SECONDS, MONTH_IN_SECONDS, ONE_HOUR, ONE_MINUTE, YEAR_IN_SECONDS } from '@/constants/time'
 
 const PREMIUM_PERIOD_DAYS = 111
 const GRACE_PERIOD_DAYS = 90
@@ -17,6 +17,16 @@ export const formatTimeLeft = (expiryDate: string, type: 'premium' | 'grace' = '
 
   const remainingSeconds = Math.floor(remainingMs / 1000)
 
+  if (remainingSeconds >= YEAR_IN_SECONDS) {
+    const years = Math.floor(remainingSeconds / YEAR_IN_SECONDS)
+    return `${years}y`
+  }
+
+  if (remainingSeconds >= MONTH_IN_SECONDS) {
+    const months = Math.floor(remainingSeconds / MONTH_IN_SECONDS)
+    return `${months}mo`
+  }
+
   // Days
   if (remainingSeconds >= DAY_IN_SECONDS) {
     const days = Math.floor(remainingSeconds / DAY_IN_SECONDS)
@@ -32,7 +42,7 @@ export const formatTimeLeft = (expiryDate: string, type: 'premium' | 'grace' = '
   // Minutes
   if (remainingSeconds >= ONE_MINUTE) {
     const minutes = Math.floor(remainingSeconds / ONE_MINUTE)
-    return `${minutes}m`
+    return `${minutes}min`
   }
 
   // Seconds

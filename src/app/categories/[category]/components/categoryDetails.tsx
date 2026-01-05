@@ -78,6 +78,17 @@ import QuadEthmojiHeader from 'public/clubs/quad_ethmoji/header.png'
 import QuintEthmojiAvatar from 'public/clubs/quint_ethmoji/avatar.png'
 import QuintEthmojiHeader from 'public/clubs/quint_ethmoji/header.png'
 
+import TopCryptoNamesAvatar from 'public/clubs/top_crypto_names/avatar.png'
+import TopCryptoNamesHeader from 'public/clubs/top_crypto_names/header.jpg'
+import TopCryptoTickersAvatar from 'public/clubs/top_crypto_tickers/avatar.png'
+import TopCryptoTickersHeader from 'public/clubs/top_crypto_tickers/header.jpg'
+import Top500CitiesGlobalAvatar from 'public/clubs/top500_cities_global/avatar.png'
+import Top500CitiesGlobalHeader from 'public/clubs/top500_cities_global/header.png'
+import Top500CitiesUsaAvatar from 'public/clubs/top500_cities_usa/avatar.png'
+import Top500CitiesUsaHeader from 'public/clubs/top500_cities_usa/header.png'
+import UsStatesAvatar from 'public/clubs/us_states/avatar.jpg'
+import UsStatesHeader from 'public/clubs/us_states/header.jpg'
+
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
 export const CATEGORY_IMAGES = {
@@ -213,6 +224,26 @@ export const CATEGORY_IMAGES = {
     avatar: QuintEthmojiAvatar,
     header: QuintEthmojiHeader,
   },
+  top_crypto_names: {
+    avatar: TopCryptoNamesAvatar,
+    header: TopCryptoNamesHeader,
+  },
+  top_crypto_tickers: {
+    avatar: TopCryptoTickersAvatar,
+    header: TopCryptoTickersHeader,
+  },
+  top500_cities_global: {
+    avatar: Top500CitiesGlobalAvatar,
+    header: Top500CitiesGlobalHeader,
+  },
+  top500_cities_usa: {
+    avatar: Top500CitiesUsaAvatar,
+    header: Top500CitiesUsaHeader,
+  },
+  us_states: {
+    avatar: UsStatesAvatar,
+    header: UsStatesHeader,
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {
@@ -269,6 +300,21 @@ export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: 
   },
   double_ethmoji: {
     twitter: 'https://x.com/EthmojiClub',
+  },
+  top_crypto_names: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  top_crypto_tickers: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  top500_cities_global: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  top500_cities_usa: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  us_states: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
 }
 

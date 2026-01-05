@@ -151,4 +151,9 @@ export const CATEGORY_LABELS = {
   prepunk_digits: 'Prepunk Digits',
   quad_ethmoji: 'Quad Ethmoji',
   quint_ethmoji: 'Quint Ethmoji',
+  top_crypto_names: 'Top Crypto Names',
+  top_crypto_tickers: 'Top Crypto Tickers',
+  top500_cities_global: 'Top 500 Cities Global',
+  top500_cities_usa: 'Top 500 Cities USA',
+  us_states: 'US States',
 } as const

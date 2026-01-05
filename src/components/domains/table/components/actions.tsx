@@ -1,5 +1,5 @@
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
-import { MarketplaceDomainType } from '@/types/domains'
+import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 import React, { MouseEventHandler, useMemo } from 'react'
 import CartIcon from './CartIcon'
@@ -26,6 +26,8 @@ import {
 import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
 import { useUserContext } from '@/context/user'
+import { REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
+import { openRegistrationModal } from '@/state/reducers/registration'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -34,6 +36,7 @@ interface ActionsProps {
   canAddToCart: boolean
   watchlistId?: number | undefined
   isBulkSelecting?: boolean
+  registrationStatus: RegistrationStatus
 }
 
 const Actions: React.FC<ActionsProps> = ({
@@ -43,6 +46,7 @@ const Actions: React.FC<ActionsProps> = ({
   columnCount,
   watchlistId,
   isBulkSelecting,
+  registrationStatus,
 }) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -70,6 +74,12 @@ const Actions: React.FC<ActionsProps> = ({
     } else {
       dispatch(setMakeListingModalPreviousListings([]))
     }
+  }
+
+  const openRegistrationModalHandler = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
   }
 
   const openCancelListingModal: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -157,6 +167,14 @@ const Actions: React.FC<ActionsProps> = ({
         )
       }
     }
+  }
+
+  if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
+    return (
+      <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
+        <PrimaryButton onClick={(e) => openRegistrationModalHandler(e)}>Register</PrimaryButton>
+      </div>
+    )
   }
 
   return (

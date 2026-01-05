@@ -355,14 +355,7 @@ export type RegistrationDomainCommitType = {
   name: string
 }
 
-export type MarketplaceHeaderColumn =
-  | 'domain'
-  | 'listed_price'
-  | 'registry_price'
-  | 'last_sale'
-  | 'highest_offer'
-  | 'expires'
-  | 'actions'
+export type MarketplaceHeaderColumn = 'domain' | 'price' | 'last_sale' | 'highest_offer' | 'expires' | 'actions'
 
 export type MarketplaceHeaderItem = {
   label: string

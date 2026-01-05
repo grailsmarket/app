@@ -53,7 +53,7 @@ const Name = async (props: Props) => {
   }
 
   return (
-    <main className='min-h-[calc(100dvh-56px)] w-full sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+    <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
       <NamePage name={normalizedName} />
     </main>
   )

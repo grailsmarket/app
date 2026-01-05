@@ -138,7 +138,9 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               <p className='leading-[18px] font-bold'>Unlisted</p>
             )
           ) : (
-            <div className='text-premium flex items-center gap-px font-semibold'>
+            <div
+              className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM && 'text-premium')}
+            >
               <p>$</p>
               <p>{regPriceUSD.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
             </div>

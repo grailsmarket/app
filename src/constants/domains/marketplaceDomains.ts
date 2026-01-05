@@ -1,17 +1,9 @@
 import { OfferDurationUnitsType, ExtendDurationUnitsType } from '@/state/reducers/domains/marketplaceDomains'
 import { MarketplaceHeaderColumn, MarketplaceHeaderItem, OfferColumnType } from '@/types/domains'
 
-export const MARKETPLACE_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['listed_price', 'last_sale', 'highest_offer']
-export const PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
-  'expires',
-  'listed_price',
-  'last_sale',
-]
-export const PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
-  'listed_price',
-  'expires',
-  'last_sale',
-]
+export const MARKETPLACE_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['price', 'last_sale', 'highest_offer']
+export const PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['expires', 'price', 'last_sale']
+export const PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['price', 'expires', 'last_sale']
 export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = [
   'name',
   'offer_amount',
@@ -20,11 +12,7 @@ export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = [
   'actions',
 ]
 export const PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = ['name', 'offer_amount', 'expires', 'actions']
-export const PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
-  'listed_price',
-  'last_sale',
-  'highest_offer',
-]
+export const PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = ['price', 'last_sale', 'highest_offer']
 
 export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, MarketplaceHeaderItem> = {
   domain: {
@@ -33,8 +21,8 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
       return MARKETPLACE_DOMAIN_COLUMN_WIDTHS[columnsLength]
     },
   },
-  listed_price: {
-    label: 'Listing',
+  price: {
+    label: 'Price',
     getWidth: (columnsLength: number) => {
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
@@ -45,12 +33,12 @@ export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, Marketplac
       return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
     },
   },
-  registry_price: {
-    label: 'Registry Price',
-    getWidth: (columnsLength: number) => {
-      return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
-    },
-  },
+  // registry_price: {
+  //   label: 'Registry Price',
+  //   getWidth: (columnsLength: number) => {
+  //     return MARKETPLACE_DETAILS_COLUMN_WIDTHS[columnsLength]
+  //   },
+  // },
   last_sale: {
     label: 'Last Sale',
     getWidth: (columnsLength: number) => {

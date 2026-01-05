@@ -5,8 +5,6 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
 import Name from './name'
-import ListPrice from './listPrice'
-import RegistryPrice from './RegistryPrice'
 import LastSale from './lastSale'
 import HighestOffer from './highestOffer'
 import Expiration from './expiration'
@@ -22,6 +20,7 @@ import {
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
+import Price from './Price'
 
 interface TableRowProps {
   domain: MarketplaceDomainType
@@ -55,16 +54,17 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         columnCount={columnCount}
       />
     ),
-    listed_price: (
-      <ListPrice
-        key={`${domain.name}-listed_price`}
+    price: (
+      <Price
+        key={`${domain.name}-price`}
+        name={domain.name}
+        expiry_date={domain.expiry_date}
         listing={domainListing}
         registrationStatus={registrationStatus}
         columnCount={columnCount}
         index={index}
       />
     ),
-    registry_price: <RegistryPrice key={`${domain.name}-registry_price`} domain={domain} columnCount={columnCount} />,
     last_sale: <LastSale key={`${domain.name}-last_sale`} domain={domain} columnCount={columnCount} index={index} />,
     highest_offer: (
       <HighestOffer key={`${domain.name}-highest_offer`} domain={domain} columnCount={columnCount} index={index} />
@@ -86,6 +86,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         canAddToCart={canAddToCart}
         watchlistId={watchlistId}
         isBulkSelecting={isBulkSelecting}
+        registrationStatus={registrationStatus}
       />
     ),
   }

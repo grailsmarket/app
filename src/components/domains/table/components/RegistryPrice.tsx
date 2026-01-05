@@ -16,7 +16,7 @@ const RegistryPrice: React.FC<RegistryPriceProps> = ({ domain, columnCount }) =>
   const { ethPrice } = useETHPrice()
 
   return (
-    <div className={cn(ALL_MARKETPLACE_COLUMNS['registry_price'].getWidth(columnCount))}>
+    <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount))}>
       <div className='flex flex-col'>
         <div className='flex text-xs leading-[18px] font-medium'>
           {hasRegistrationPrice(domain.expiry_date) && (

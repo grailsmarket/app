@@ -150,11 +150,23 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
                 registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
               )}
             >
-              <p>$</p>
-              <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
-              <p className='text-md text-neutral font-medium'>
-                &nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
-              </p>
+              {registrationStatus === PREMIUM ? (
+                <>
+                  <p>$</p>
+                  <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+                  <p className='text-md text-neutral font-medium'>
+                    &nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>$</p>
+                  <p>
+                    {regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}&nbsp;
+                    <span className='text-neutral font-medium'>/&nbsp;Year</span>
+                  </p>
+                </>
+              )}
             </div>
           )}
           {registrationStatus === PREMIUM && domain.expiry_date && (

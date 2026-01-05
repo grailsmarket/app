@@ -38,11 +38,22 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
               registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
             )}
           >
-            <p>$</p>
-            <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
-            <p className='text-md text-neutral font-medium'>
-              &nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
-            </p>
+            {registrationStatus === PREMIUM ? (
+              <>
+                <p>$</p>
+                <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+                <p>+</p>
+                <p className='text-md text-neutral font-medium'>
+                  ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
+                </p>
+              </>
+            ) : (
+              <>
+                <p>$</p>
+                <p>{regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}</p>
+                <p className='text-neutral font-medium'>&nbsp;/&nbsp;Year</p>
+              </>
+            )}
           </p>
         </div>
         {registrationStatus === PREMIUM && expiry_date && (

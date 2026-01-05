@@ -1,7 +1,7 @@
 import React from 'react'
 import { usePoap } from './usePoap'
 import Image from 'next/image'
-import GrailsPoap from 'public/art/grails-poap.webp'
+import GrailsPoap from 'public/art/grails-poap-2026.webp'
 import Link from 'next/link'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useAppDispatch } from '@/state/hooks'

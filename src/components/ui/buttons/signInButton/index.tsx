@@ -9,7 +9,8 @@ import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
 import ExternalLink from 'public/icons/external-link.svg'
-import GrailsPoap from 'public/art/grails-poap.webp'
+import GrailsPoap2025 from 'public/art/grails-poap-2025.webp'
+import GrailsPoap2026 from 'public/art/grails-poap-2026.webp'
 import Link from 'next/link'
 
 const SignInButton = () => {
@@ -24,6 +25,7 @@ const SignInButton = () => {
     authStatus,
     isPoapClaimed,
     claimedPoapLink,
+    poapClaimedYear,
     setIsSettingsOpen,
     handleSignOut,
     handleGetNonce,
@@ -84,7 +86,7 @@ const SignInButton = () => {
             className='flex w-full cursor-pointer flex-row-reverse items-center justify-start gap-1.5 rounded-sm px-1 transition-opacity hover:opacity-80 sm:flex-row sm:gap-2'
           >
             <p>My POAP</p>
-            <Image src={GrailsPoap} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />
+            <Image src={poapClaimedYear === '2026' ? GrailsPoap2026 : GrailsPoap2025} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />
           </Link>
         ) : null}
         <button

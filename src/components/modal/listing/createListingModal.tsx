@@ -93,7 +93,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             formatUnits(
               BigInt(previousListing.price),
               TOKEN_DECIMALS[
-                TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
+              TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
               ]
             )
           )

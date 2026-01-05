@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi'
 import type { Address } from 'viem'
-import { useContext, createContext, useEffect, useCallback, useState, SetStateAction, Dispatch } from 'react'
+import { useContext, createContext, useCallback, useState, SetStateAction, Dispatch } from 'react'
 import { useSiwe } from 'ethereum-identity-kit'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { fetchNonce } from '@/api/siwe/fetchNonce'
@@ -42,6 +42,7 @@ type userContextType = {
   setIsSettingsOpen: Dispatch<SetStateAction<boolean>>
   isPoapClaimed: boolean
   claimedPoapLink?: string
+  poapClaimedYear?: string
   handleGetNonce: () => Promise<string> | string
   verify: (message: string, nonce: string, signature: string) => Promise<void> | void
   handleSignInSuccess: () => void
@@ -96,6 +97,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
 
   const isPoapClaimed = poapClaimData?.has_claimed
   const claimedPoapLink = poapClaimData?.link
+  const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0]
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')
@@ -158,6 +160,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         setIsSettingsOpen,
         isPoapClaimed,
         claimedPoapLink,
+        poapClaimedYear,
         handleGetNonce,
         verify,
         handleSignInSuccess,

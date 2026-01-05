@@ -1,6 +1,6 @@
 export const MARKETPLACE_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price Range', 'Activity', 'Sort'] as const
 
-export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Digits', 'Emojis', 'Repeating Characters'] as const
+export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Digits', 'Emojis', 'Repeating'] as const
 
 export const MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS: Record<string, string> = {
   Letters: 'letters',

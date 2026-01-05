@@ -17,7 +17,7 @@ import {
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
   status: [],
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -36,7 +36,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -47,7 +47,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -129,7 +129,7 @@ export const categoryDomainsFiltersSlice = createSlice({
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Status']
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

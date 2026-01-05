@@ -92,7 +92,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Status'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -184,6 +184,7 @@ export const myOffersFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

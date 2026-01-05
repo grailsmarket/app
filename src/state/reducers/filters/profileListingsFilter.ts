@@ -45,7 +45,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: 'price_asc',
   scrollTop: 0,
 }
@@ -114,7 +114,7 @@ export const profileListingsFiltersSlice = createSlice({
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort']
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

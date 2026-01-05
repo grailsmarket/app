@@ -47,7 +47,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -140,6 +140,7 @@ export const myDomainsFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

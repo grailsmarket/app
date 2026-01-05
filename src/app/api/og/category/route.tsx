@@ -144,13 +144,13 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/top_crypto_tickers/avatar.png',
     header: 'https://grails.app/clubs/top_crypto_tickers/header.jpg',
   },
-  top500_cities_global: {
-    avatar: 'https://grails.app/clubs/top500_cities_global/avatar.png',
-    header: 'https://grails.app/clubs/top500_cities_global/header.png',
+  top_cities_global: {
+    avatar: 'https://grails.app/clubs/top_cities_global/avatar.png',
+    header: 'https://grails.app/clubs/top_cities_global/header.png',
   },
-  top500_cities_usa: {
-    avatar: 'https://grails.app/clubs/top500_cities_usa/avatar.png',
-    header: 'https://grails.app/clubs/top500_cities_usa/header.png',
+  top_cities_usa: {
+    avatar: 'https://grails.app/clubs/top_cities_usa/avatar.png',
+    header: 'https://grails.app/clubs/top_cities_usa/header.png',
   },
   us_states: {
     avatar: 'https://grails.app/clubs/us_states/avatar.jpg',

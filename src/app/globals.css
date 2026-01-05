@@ -7,6 +7,8 @@
   --secondary: #333333;
   --tertiary: #444444;
   --neutral: #aaaaaa;
+  --premium: #74fd43;
+  --grace-period: oklch(79.5% 0.184 86.047);
   --max-width-domain-panel: 1700px;
   --max-width-app: 2340px;
   --padding-sm: 4px;
@@ -58,6 +60,8 @@
   --color-secondary: var(--secondary);
   --color-tertiary: var(--tertiary);
   --color-neutral: var(--neutral);
+  --color-premium: var(--premium);
+  --color-grace: var(--grace-period);
   --font-inter: var(--font-inter);
   --font-sedan-sc: var(--font-sedan-sc);
   --padding-sm: var(--padding-sm);

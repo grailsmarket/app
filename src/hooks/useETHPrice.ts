@@ -10,7 +10,7 @@ const useETHPrice = () => {
 
   return {
     isLoading,
-    ethPrice,
+    ethPrice: ethPrice || 3100,
   }
 }
 

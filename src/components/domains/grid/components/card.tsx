@@ -5,13 +5,14 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES, PREMIUM } from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'
 import Price from '@/components/ui/price'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { formatPremiumTimeLeft } from '@/utils/time/formatPremiumTimeLeft'
 import { useFilterContext } from '@/context/filters'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
@@ -26,6 +27,8 @@ import { normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
+import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
+import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -50,6 +53,16 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+
+  const premiumPriceOracle = domain.expiry_date
+    ? new PremiumPriceOracle(new Date(domain.expiry_date).getTime() / 1000)
+    : null
+  const prmeiumPrice = premiumPriceOracle
+    ? premiumPriceOracle.getOptimalPrecisionPremiumAmount(new Date().getTime() / 1000)
+    : 0
+  const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
+  const regPriceUSD = regPrice.usd + prmeiumPrice
+  // const regPriceETH = regPrice.eth + (prmeiumPrice / ethPrice)
 
   return (
     <Link
@@ -104,13 +117,13 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
       </div>
       <div
         className={cn(
-          'p-lg flex w-full flex-1 flex-col justify-between gap-1',
+          'p-lg text-md flex w-full flex-1 flex-col justify-between gap-1',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
-            <p className='text-md truncate font-semibold text-yellow-500'>Grace Period</p>
+            <p className='text-grace truncate font-semibold'>Grace Period</p>
           ) : registrationStatus === REGISTERED ? (
             domainListing?.price ? (
               <div className='flex items-center gap-1'>
@@ -122,9 +135,19 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
                 />
               </div>
             ) : (
-              <p className='text-md leading-[18px] font-bold'>Unlisted</p>
+              <p className='leading-[18px] font-bold'>Unlisted</p>
             )
-          ) : null}
+          ) : (
+            <div className='text-premium flex items-center gap-px font-semibold'>
+              <p>$</p>
+              <p>{regPriceUSD.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+            </div>
+          )}
+          {registrationStatus === PREMIUM && domain.expiry_date && (
+            <div className='text-md text-neutral flex items-center gap-px font-semibold'>
+              Premium ({formatPremiumTimeLeft(domain.expiry_date)})
+            </div>
+          )}
           {domain.last_sale_price && domain.last_sale_currency ? (
             <div className='mt-0.5 flex items-center gap-[6px]'>
               <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p>

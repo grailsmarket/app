@@ -4,7 +4,7 @@ import CartIcon from '../../table/components/CartIcon'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
-import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import {
@@ -187,7 +187,7 @@ const Actions: React.FC<ActionsProps> = ({
     <div
       className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
     >
-      {registrationStatus === UNREGISTERED ? (
+      {REGISTERABLE_STATUSES.includes(registrationStatus) ? (
         <button onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}>
           <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
             Register

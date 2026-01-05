@@ -29,6 +29,7 @@ import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { beautifyName } from '@/lib/ens'
+import { CAN_CLAIM_POAP } from '@/constants'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -1158,7 +1159,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         }}
         className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 md:max-w-md md:rounded-md md:border-2'
       >
-        {step === 'success' && !poapClaimed ? (
+        {step === 'success' && CAN_CLAIM_POAP && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

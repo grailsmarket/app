@@ -1,21 +1,15 @@
 import { DAY_IN_SECONDS, ONE_HOUR, ONE_MINUTE } from '@/constants/time'
 
 const PREMIUM_PERIOD_DAYS = 111
+const GRACE_PERIOD_DAYS = 90
 
-/**
- * Calculates the time remaining in a domain's temporary premium period.
- * Premium period is 111 days after the expiry date.
- * Returns the largest time unit (days > hours > minutes > seconds).
- *
- * @param expiryDate - The domain's expiry date as ISO string
- * @returns Formatted string like "10d", "5h", "30m", "45s" or null if premium has ended
- */
-export const formatPremiumTimeLeft = (expiryDate: string): string | null => {
+export const formatTimeLeft = (expiryDate: string, type: 'premium' | 'grace' = 'premium'): string | null => {
   const expiryTime = new Date(expiryDate).getTime()
-  const premiumEndTime = expiryTime + PREMIUM_PERIOD_DAYS * DAY_IN_SECONDS * 1000
+  const timeToAdd = (type === 'premium' ? PREMIUM_PERIOD_DAYS : GRACE_PERIOD_DAYS) * DAY_IN_SECONDS * 1000
+  const endTime = expiryTime + timeToAdd
   const now = Date.now()
 
-  const remainingMs = premiumEndTime - now
+  const remainingMs = endTime - now
 
   if (remainingMs <= 0) {
     return null

@@ -12,7 +12,7 @@ import NameImage from '@/components/ui/nameImage'
 import Price from '@/components/ui/price'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { formatPremiumTimeLeft } from '@/utils/time/formatPremiumTimeLeft'
+import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 import { useFilterContext } from '@/context/filters'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
@@ -123,7 +123,9 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
       >
         <div className='flex w-full flex-col'>
           {registrationStatus === GRACE_PERIOD ? (
-            <p className='text-grace truncate font-semibold'>Grace Period</p>
+            <p className='text-grace truncate font-semibold'>
+              Grace Period {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
+            </p>
           ) : registrationStatus === REGISTERED ? (
             domainListing?.price ? (
               <div className='flex items-center gap-1'>
@@ -147,11 +149,11 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
           )}
           {registrationStatus === PREMIUM && domain.expiry_date && (
             <div className='text-md text-neutral flex items-center gap-px font-semibold'>
-              Premium ({formatPremiumTimeLeft(domain.expiry_date)})
+              Premium ({formatTimeLeft(domain.expiry_date, 'premium')})
             </div>
           )}
-          {domain.last_sale_price && domain.last_sale_currency ? (
-            <div className='mt-0.5 flex items-center gap-[6px]'>
+          {domain.last_sale_price && domain.last_sale_currency && (
+            <div className='flex items-center gap-[6px]'>
               <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p>
               <div className='flex items-center gap-1'>
                 <Price
@@ -162,8 +164,9 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
                 />
               </div>
             </div>
-          ) : (
-            <p className='text-md text-neutral truncate font-semibold'>
+          )}
+          {domain.clubs && domain.clubs.length > 0 && (
+            <p className='text-md text-neutral mt-px truncate font-semibold'>
               {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
             </p>
           )}

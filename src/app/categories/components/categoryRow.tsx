@@ -2,20 +2,17 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Address } from 'viem'
-import { useRouter } from 'next/navigation'
 import Price from '@/components/ui/price'
 import { CategoryType } from '@/types/domains'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { CATEGORY_IMAGES } from '../[category]/components/categoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
-import PrimaryButton from '@/components/ui/buttons/primary'
 
 interface CategoryRowProps {
   category: CategoryType
 }
 
 const CategoryRow = ({ category }: CategoryRowProps) => {
-  const router = useRouter()
   const categoryName = CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]
   const categoryImage = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES]
   const categoryHeader = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].header
@@ -23,7 +20,7 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
   return (
     <Link
       href={`/categories/${category.name}`}
-      className='bg-secondary p-lg relative flex w-full flex-col gap-2 rounded-lg hover:bg-white/10'
+      className='bg-secondary p-lg relative flex h-full w-full flex-col gap-2 rounded-lg hover:bg-white/10'
     >
       <Image
         src={categoryHeader}
@@ -56,9 +53,9 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
           fontSize='text-xl font-semibold'
         />
       </div>
-      <PrimaryButton className='z-10 mt-2 h-8! w-full' onClick={() => router.push(`/categories/${category.name}`)}>
+      {/* <PrimaryButton className='z-10 mt-2 h-8! w-full' onClick={() => router.push(`/categories/${category.name}`)}>
         View
-      </PrimaryButton>
+      </PrimaryButton> */}
     </Link>
   )
 }

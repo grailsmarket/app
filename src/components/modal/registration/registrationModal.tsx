@@ -49,6 +49,7 @@ import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDo
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
+import { CAN_CLAIM_POAP } from '@/constants'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -644,7 +645,7 @@ const RegistrationModal: React.FC = () => {
     )
   }
 
-  if (registrationState.flowState === 'success' && !poapClaimed) {
+  if (registrationState.flowState === 'success' && CAN_CLAIM_POAP && !poapClaimed) {
     return (
       <div className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4'>
         <div

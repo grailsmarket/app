@@ -7,6 +7,7 @@ import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
+import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -39,7 +40,9 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
               {beautifyName(domain.name)}
             </p>
             {registrationStatus === GRACE_PERIOD ? (
-              <p className='text-md text-neutral'>Grace Period</p>
+              <p className='text-md text-neutral'>
+                Grace Period {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
+              </p>
             ) : (
               <p className='text-md text-neutral truncate font-semibold'>
                 {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}

@@ -28,6 +28,7 @@ import { cn } from '@/utils/tailwind'
 import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
+import { CAN_CLAIM_POAP } from '@/constants'
 
 interface ExtendModalProps {
   onClose: () => void
@@ -229,7 +230,14 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       if (extensionMode === 'extend_for') {
         durations = new Array(domains.length).fill(BigInt(quantity * getSecondsPerUnit(timeUnit)))
       } else {
-        durations = new Array(domains.length).fill(BigInt(Math.max(0, customDate - longestExpirationDate)))
+        durations = domains.map((domain) =>
+          BigInt(
+            Math.max(
+              0,
+              customDate - (domain.expiry_date ? Math.floor(new Date(domain.expiry_date).getTime() / 1000) : 0)
+            )
+          )
+        )
       }
 
       const names = domains.map((item) => item.name.replace('.eth', ''))
@@ -294,7 +302,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           showDatePicker && 'min-h-[480px]'
         )}
       >
-        {success && !poapClaimed ? (
+        {success && CAN_CLAIM_POAP && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

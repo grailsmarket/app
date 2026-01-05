@@ -8,7 +8,7 @@ import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import useETHPrice from '@/hooks/useETHPrice'
 import { PREMIUM, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
-import { formatPremiumTimeLeft } from '@/utils/time/formatPremiumTimeLeft'
+import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 
 interface PriceProps {
   name: string
@@ -39,7 +39,7 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
           </p>
         </div>
         {registrationStatus === PREMIUM && expiry_date && (
-          <p className='text-md text-neutral'>Premium ({formatPremiumTimeLeft(expiry_date)})</p>
+          <p className='text-md text-neutral'>Premium ({formatTimeLeft(expiry_date, 'premium')})</p>
         )}
       </div>
     )

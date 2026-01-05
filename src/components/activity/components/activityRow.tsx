@@ -51,23 +51,15 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
     user: addressToShow && <User address={addressToShow} className='max-w-[95%]' />,
     from: activity.actor_address ? (
       <User address={activity.actor_address} className='max-w-[95%]' wrapperClassName='justify-start' />
-    ) : (
-      <p className='text-light-200 font-medium'>N/A</p>
-    ),
-    to: activity.counterparty_address ? (
-      <User address={activity.counterparty_address} className='max-w-[95%]' />
-    ) : (
-      <p className='text-light-200 font-medium'>N/A</p>
-    ),
+    ) : null,
+    to: activity.counterparty_address ? <User address={activity.counterparty_address} className='max-w-[95%]' /> : null,
     time: activity.created_at ? (
       <ActivityTime
         timestamp={activity.created_at}
         className='text-md text-light-200 font-medium'
         tooltipPosition={index === 0 ? 'bottom' : 'top'}
       />
-    ) : (
-      'N/A'
-    ),
+    ) : null,
   }
 
   return (

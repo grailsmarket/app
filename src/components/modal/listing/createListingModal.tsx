@@ -33,6 +33,7 @@ import Calendar from 'public/icons/calendar.svg'
 import { formatUnits } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
 import { useQueryClient } from '@tanstack/react-query'
+import { CAN_CLAIM_POAP } from '@/constants'
 
 export type ListingStatus =
   | 'review'
@@ -734,7 +735,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         }}
         className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-h-none md:max-w-md md:rounded-md md:border-2'
       >
-        {status === 'success' && !poapClaimed ? (
+        {status === 'success' && CAN_CLAIM_POAP && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

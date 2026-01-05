@@ -122,7 +122,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
             alignTooltip='right'
           />
         ) : (
-          'N/A'
+          ''
         ),
       canCopy: false,
     },

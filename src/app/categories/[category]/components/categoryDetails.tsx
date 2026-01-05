@@ -82,10 +82,10 @@ import TopCryptoNamesAvatar from 'public/clubs/top_crypto_names/avatar.png'
 import TopCryptoNamesHeader from 'public/clubs/top_crypto_names/header.jpg'
 import TopCryptoTickersAvatar from 'public/clubs/top_crypto_tickers/avatar.png'
 import TopCryptoTickersHeader from 'public/clubs/top_crypto_tickers/header.jpg'
-import Top500CitiesGlobalAvatar from 'public/clubs/top500_cities_global/avatar.png'
-import Top500CitiesGlobalHeader from 'public/clubs/top500_cities_global/header.png'
-import Top500CitiesUsaAvatar from 'public/clubs/top500_cities_usa/avatar.png'
-import Top500CitiesUsaHeader from 'public/clubs/top500_cities_usa/header.png'
+import TopCitiesGlobalAvatar from 'public/clubs/top_cities_global/avatar.png'
+import TopCitiesGlobalHeader from 'public/clubs/top_cities_global/header.png'
+import TopCitiesUsaAvatar from 'public/clubs/top_cities_usa/avatar.png'
+import TopCitiesUsaHeader from 'public/clubs/top_cities_usa/header.png'
 import UsStatesAvatar from 'public/clubs/us_states/avatar.jpg'
 import UsStatesHeader from 'public/clubs/us_states/header.jpg'
 
@@ -232,13 +232,13 @@ export const CATEGORY_IMAGES = {
     avatar: TopCryptoTickersAvatar,
     header: TopCryptoTickersHeader,
   },
-  top500_cities_global: {
-    avatar: Top500CitiesGlobalAvatar,
-    header: Top500CitiesGlobalHeader,
+  top_cities_global: {
+    avatar: TopCitiesGlobalAvatar,
+    header: TopCitiesGlobalHeader,
   },
-  top500_cities_usa: {
-    avatar: Top500CitiesUsaAvatar,
-    header: Top500CitiesUsaHeader,
+  top_cities_usa: {
+    avatar: TopCitiesUsaAvatar,
+    header: TopCitiesUsaHeader,
   },
   us_states: {
     avatar: UsStatesAvatar,
@@ -307,10 +307,10 @@ export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: 
   top_crypto_tickers: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
-  top500_cities_global: {
+  top_cities_global: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
-  top500_cities_usa: {
+  top_cities_usa: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
   us_states: {

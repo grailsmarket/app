@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react'
 import { useDebounce } from '@/hooks/useDebounce'
 
 export const usePriceRangeFilter = () => {
-  const [currMinVal, setCurrMinVal] = useState<number | null>(null)
-  const [currMaxVal, setCurrMaxVal] = useState<number | null>(null)
+  const [currMinVal, setCurrMinVal] = useState<string | null>(null)
+  const [currMaxVal, setCurrMaxVal] = useState<string | null>(null)
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
 
-  const debouncedMinVal = useDebounce(currMinVal?.toString() || '', 400)
-  const debouncedMaxVal = useDebounce(currMaxVal?.toString() || '', 400)
+  const debouncedMinVal = useDebounce(currMinVal || '', 400)
+  const debouncedMaxVal = useDebounce(currMaxVal || '', 400)
 
   const { denomination, priceRange } = selectors.filters
 

@@ -390,9 +390,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   {completedTxHashes.length > 0 ? (
                     <div className='flex flex-col gap-1'>
                       {completedTxHashes.length > 1 && (
-                        <p className='text-neutral text-sm mb-1'>
-                          {completedTxHashes.length} transactions completed
-                        </p>
+                        <p className='text-neutral mb-1 text-sm'>{completedTxHashes.length} transactions completed</p>
                       )}
                       {completedTxHashes.map((hash, index) => (
                         <a
@@ -490,11 +488,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                    extensionMode === 'extend_for'
-                                      ? new Date(domain.expiry_date).getTime() +
-                                      quantity * getSecondsPerUnit(timeUnit) * 1000
-                                      : customDate * 1000
-                                  ).toLocaleDateString()
+                                      extensionMode === 'extend_for'
+                                        ? new Date(domain.expiry_date).getTime() +
+                                          quantity * getSecondsPerUnit(timeUnit) * 1000
+                                        : customDate * 1000
+                                    ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -532,9 +530,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       >
                         {customDate
                           ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
                           : 'Select Date'}
                       </PrimaryButton>
                     ) : (
@@ -613,7 +611,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
                       <p className='text-sm text-red-400'>{error}</p>
                       {namesProcessed > 0 && (
-                        <p className='text-sm text-yellow-400 mt-2'>
+                        <p className='mt-2 text-sm text-yellow-400'>
                           {namesProcessed} of {domains.length} names were successfully extended.
                           {remainingDomains.length > 0 && ` ${remainingDomains.length} names remaining.`}
                         </p>

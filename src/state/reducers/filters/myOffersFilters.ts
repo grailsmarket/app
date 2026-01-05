@@ -61,7 +61,7 @@ export type MyDomainsFiltersOpenedState = MyDomainsFiltersState & {
 export const emptyFilterState: MyDomainsFiltersState = {
   search: '',
   status: [],
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -81,7 +81,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -92,7 +92,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Status'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -173,7 +173,7 @@ export const myOffersFiltersSlice = createSlice({
     clearMyOffersFilters(state) {
       state.search = ''
       state.status = []
-      state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
+      state.type = []
       state.length = {
         min: null,
         max: null,
@@ -184,6 +184,7 @@ export const myOffersFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

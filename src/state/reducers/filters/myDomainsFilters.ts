@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   PortfolioFiltersState,
@@ -17,7 +16,7 @@ import {
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
   status: [],
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -37,7 +36,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -48,7 +47,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -130,7 +129,7 @@ export const myDomainsFiltersSlice = createSlice({
       state.open = false
       state.search = ''
       state.status = []
-      state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
+      state.type = []
       state.length = {
         min: null,
         max: null,
@@ -141,6 +140,7 @@ export const myDomainsFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

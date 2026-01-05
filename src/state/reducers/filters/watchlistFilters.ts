@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { MARKETPLACE_TYPE_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   MarketplaceCategoryType,
@@ -18,7 +17,7 @@ import {
 export const emptyFilterState: MarketplaceFiltersState = {
   search: '',
   status: [],
-  type: [...MARKETPLACE_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -38,7 +37,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [MARKETPLACE_TYPE_FILTER_LABELS[0]],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -49,7 +48,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Status'],
+  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -142,7 +141,7 @@ export const watchlistFiltersSlice = createSlice({
     clearWatchlistFilters(state) {
       state.search = ''
       state.status = []
-      state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]
+      state.type = []
       state.length = {
         min: null,
         max: null,
@@ -153,6 +152,7 @@ export const watchlistFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
+      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },

@@ -33,6 +33,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
+import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 
 type Row = {
   label: string
@@ -79,21 +80,21 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         <div className='flex flex-row flex-wrap justify-end gap-2!'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-              <Link
-                key={club}
-                href={`/categories/${club}`}
-                className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
-              >
-                <Image
-                  src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                  alt={club}
-                  width={24}
-                  height={24}
-                  className='aspect-square! rounded-full'
-                />
-                <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
-              </Link>
-            ))
+                <Link
+                  key={club}
+                  href={`/categories/${club}`}
+                  className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
+                >
+                  <Image
+                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                    alt={club}
+                    width={24}
+                    height={24}
+                    className='aspect-square! rounded-full'
+                  />
+                  <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+                </Link>
+              ))
             : 'None'}
         </div>
       ),
@@ -105,7 +106,13 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         <p
           className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-grace' : registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === REGISTERED ? 'text-available' : 'text-foreground/70'}`}
         >
-          {registrationStatus}
+          {registrationStatus}{' '}
+          {nameDetails?.expiry_date &&
+            (registrationStatus === GRACE_PERIOD
+              ? `(${formatTimeLeft(nameDetails?.expiry_date, 'grace')})`
+              : registrationStatus === PREMIUM
+                ? `(${formatTimeLeft(nameDetails?.expiry_date, 'premium')})`
+                : '')}
         </p>
       ),
       canCopy: false,

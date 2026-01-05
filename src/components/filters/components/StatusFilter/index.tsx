@@ -71,7 +71,7 @@ const StatusFilter: React.FC = () => {
               onClick={toggleActive(label as any)}
             >
               <p className='text-md text-light-200 font-medium'>{label}</p>
-              <FilterSelector isActive={isActive(label as any)} onClick={toggleActive(label as any)} />
+              <FilterSelector isActive={isActive(label as any)} onClick={toggleActive(label as any)} isRadio={true} />
             </div>
           ))}
         </div>

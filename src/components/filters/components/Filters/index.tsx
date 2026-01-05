@@ -9,6 +9,7 @@ import { cn } from '@/utils/tailwind'
 import { useIsClient } from 'ethereum-identity-kit'
 import { useCategories } from '../../hooks/useCategories'
 import SortFilter from '../SortFilter'
+import TypeFilter from '../TypeFilter'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -38,7 +39,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
         <div className='flex flex-col gap-y-2'>
           <SortFilter />
           <StatusFilter />
-          {/* <TypeFilter /> */}
+          <TypeFilter />
           <LengthFilter />
           <PriceRangeFilter />
           {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}

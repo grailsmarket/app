@@ -86,7 +86,13 @@ const SignInButton = () => {
             className='flex w-full cursor-pointer flex-row-reverse items-center justify-start gap-1.5 rounded-sm px-1 transition-opacity hover:opacity-80 sm:flex-row sm:gap-2'
           >
             <p>My POAP</p>
-            <Image src={poapClaimedYear === '2026' ? GrailsPoap2026 : GrailsPoap2025} alt='Grails POAP' width={24} height={24} className='h-5 w-auto md:h-6' />
+            <Image
+              src={poapClaimedYear === '2026' ? GrailsPoap2026 : GrailsPoap2025}
+              alt='Grails POAP'
+              width={24}
+              height={24}
+              className='h-5 w-auto md:h-6'
+            />
           </Link>
         ) : null}
         <button

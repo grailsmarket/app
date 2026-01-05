@@ -2,7 +2,13 @@ export const MY_DOMAINS_OPENABLE_FILTERS = ['Sort', 'Status', 'Type', 'Length', 
 
 export const MY_DOMAINS_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
 
-export const MY_DOMAINS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
+export const MY_DOMAINS_STATUS_FILTER_LABELS = [
+  'Listed',
+  'Unlisted',
+  'Expiring Soon',
+  'Grace Period',
+  'Has Offers',
+] as const
 export const RECEIVED_OFFERS_STATUS_FILTER_LABELS = ['Expiring Soon'] as const
 export const MY_OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
 
@@ -30,7 +36,7 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'expiry_date_desc',
 ]
 
-export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period'] as const
+export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period', 'Has Offers'] as const
 
 export const ALL_SORT_FILTERS = [
   // 'alphabetical_asc',

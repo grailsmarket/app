@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { MARKETPLACE_TYPE_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   MarketplaceCategoryType,
@@ -18,7 +17,7 @@ import {
 export const emptyFilterState: MarketplaceFiltersState = {
   search: '',
   status: [],
-  type: [...MARKETPLACE_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -38,7 +37,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [MARKETPLACE_TYPE_FILTER_LABELS[0]],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -142,7 +141,7 @@ export const watchlistFiltersSlice = createSlice({
     clearWatchlistFilters(state) {
       state.search = ''
       state.status = []
-      state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]
+      state.type = []
       state.length = {
         min: null,
         max: null,

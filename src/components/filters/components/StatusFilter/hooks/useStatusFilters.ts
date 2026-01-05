@@ -16,7 +16,12 @@ export const useStatusFilters = () => {
 
   const toggleActive = (status: MarketplaceStatusFilterType | PortfolioStatusFilterType | ActivityTypeFilterType) => {
     return () => {
-      dispatch(actions.toggleFiltersStatus(status as any))
+      if (isActive(status)) {
+        dispatch(actions.setFiltersStatus(null))
+        return
+      }
+
+      dispatch(actions.setFiltersStatus(status as any))
     }
   }
 

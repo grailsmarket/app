@@ -5,7 +5,13 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import { REGISTERED, GRACE_PERIOD, EXPIRED_STATUSES, PREMIUM, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import {
+  REGISTERED,
+  GRACE_PERIOD,
+  EXPIRED_STATUSES,
+  PREMIUM,
+  UNREGISTERED,
+} from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'
@@ -139,22 +145,25 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             )
           ) : (
             <div
-              className={cn('flex items-center gap-px font-semibold', registrationStatus === PREMIUM ? 'text-premium' : 'text-available')}
+              className={cn(
+                'flex items-center gap-px font-semibold',
+                registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
+              )}
             >
               <p>$</p>
               <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
-              <p className='text-md font-medium text-neutral'>&nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year</p>
+              <p className='text-md text-neutral font-medium'>
+                &nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
+              </p>
             </div>
           )}
           {registrationStatus === PREMIUM && domain.expiry_date && (
-            <div className='text-md font-medium text-premium/70 flex items-center gap-px'>
+            <div className='text-md text-premium/70 flex items-center gap-px font-medium'>
               Premium ({formatTimeLeft(domain.expiry_date, 'premium')})
             </div>
           )}
           {registrationStatus === UNREGISTERED && (
-            <p className='text-md font-medium text-available flex items-center gap-px'>
-              Available
-            </p>
+            <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
           )}
           {domain.last_sale_price && domain.last_sale_currency && (
             <div className='flex items-center gap-[6px]'>

@@ -60,7 +60,7 @@ export type MarketplaceFiltersOpenedState = MarketplaceFiltersState & {
 export const emptyFilterState: MarketplaceFiltersState = {
   search: '',
   status: [],
-  type: [...MARKETPLACE_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -80,7 +80,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [...MARKETPLACE_TYPE_FILTER_LABELS],
+  type: [],
   length: {
     min: null,
     max: null,
@@ -170,7 +170,7 @@ export const marketplaceFiltersSlice = createSlice({
     clearMarketplaceFilters(state) {
       state.search = ''
       state.status = []
-      state.type = [...MARKETPLACE_TYPE_FILTER_LABELS]
+      state.type = []
       state.length = {
         min: null,
         max: null,

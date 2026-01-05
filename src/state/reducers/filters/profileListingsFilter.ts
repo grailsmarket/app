@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
-import { MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
 import {
   PortfolioFiltersOpenedState,
   PortfolioTypeFilterType,
@@ -15,7 +14,7 @@ import {
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   status: ['Listed'],
   length: {
     min: null,
@@ -34,7 +33,7 @@ export const emptyFilterState: PortfolioFiltersState = {
 export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
-  type: [...MY_DOMAINS_TYPE_FILTER_LABELS],
+  type: [],
   status: ['Listed'],
   length: {
     min: null,
@@ -110,7 +109,7 @@ export const profileListingsFiltersSlice = createSlice({
     },
     clearFilters(state) {
       state.search = ''
-      state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
+      state.type = []
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }

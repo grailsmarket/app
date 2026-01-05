@@ -20,7 +20,7 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
   return (
     <Link
       href={`/categories/${category.name}`}
-      className='bg-secondary p-lg relative justify-between flex h-full w-full flex-col gap-2 rounded-lg hover:bg-white/10'
+      className='bg-secondary p-lg relative flex h-full w-full flex-col justify-between gap-2 rounded-lg hover:bg-white/10'
     >
       <Image
         src={categoryHeader}

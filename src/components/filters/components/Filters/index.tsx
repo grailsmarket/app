@@ -32,8 +32,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     <div className='flex min-h-0 flex-1 overflow-x-hidden'>
       <div
         className={cn(
-          'flex min-h-0 min-w-full flex-col overflow-y-auto pb-18 transition-transform lg:min-w-[284px]',
-          showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[284px]'
+          'flex min-h-0 min-w-full flex-col overflow-y-auto pb-18 transition-transform lg:min-w-[292px]',
+          showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
         )}
       >
         <div className='flex flex-col gap-y-2'>
@@ -49,7 +49,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
         <div
           className={cn(
             'flex min-h-0 min-w-full flex-col gap-y-px overflow-y-auto pb-18 transition-transform lg:min-w-[282px]',
-            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[280px]'
+            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[288px]'
           )}
         >
           {categories?.map((category, index) => (

@@ -77,22 +77,26 @@ const ActionButtons = () => {
       <div
         className={cn(
           'border-tertiary action-buttons-container max-w-app! bg-background p-md md:px-lg action-buttons-container fixed bottom-0 left-0 z-20 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
-          (selectedTab.value === 'watchlist' && !cartIsEmpty) || filtersOpen
+          (selectedTab.value === 'watchlist' && !cartIsEmpty)
             ? 'w-full translate-y-0'
-            : 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
+            : filtersOpen ? 'w-full translate-y-full lg:w-[290px] lg:translate-y-0' : 'hidden'
         )}
         style={{
           maxWidth: 'calc(var(--max-width-app) - 4px)',
         }}
       >
-        <div className={cn('flex-row justify-end gap-2 lg:w-[284px]', filtersOpen ? 'flex' : 'hidden lg:flex')}>
+        <div className='flex flex-row justify-end gap-2 lg:w-[264px]'>
           <PersistGate persistor={persistor}>
-            <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
-              Clear Filters
-            </SecondaryButton>
-            <SecondaryButton onClick={closeFilters} className='md:hidden'>
-              Close Filters
-            </SecondaryButton>
+            {filtersOpen &&
+              <>
+                <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
+                  Clear Filters
+                </SecondaryButton>
+                <SecondaryButton onClick={closeFilters} className='md:hidden'>
+                  Close Filters
+                </SecondaryButton>
+              </>
+            }
           </PersistGate>
         </div>
         <div className={cn('flex w-fit flex-row gap-x-2 overflow-x-scroll', filtersOpen ? 'hidden lg:flex' : 'flex')}>

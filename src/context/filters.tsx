@@ -1,12 +1,14 @@
 'use client'
 
-import React, { createContext, useContext, ReactNode, useEffect } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect, useRef } from 'react'
 import { FilterContextType } from '@/types/filters'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { beautifyName } from '@/lib/ens'
+import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
+import { useWindowSize } from 'ethereum-identity-kit'
 
 interface FilterContextValue {
   filterType: FilterContextType
@@ -26,6 +28,20 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children, filter
   const { actions } = useFilterRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { width: windowWidth } = useWindowSize()
+  const previousPathRef = useRef<string | null>(null)
+
+  // Close filters on mobile when navigating to a different page
+  useEffect(() => {
+    const isMobile = windowWidth !== null && windowWidth < 1024
+
+    // Only close on mobile and when navigating to a different page (not on initial mount)
+    if (isMobile && previousPathRef.current !== null && previousPathRef.current !== pathname) {
+      dispatch(setFilterPanelOpen(false))
+    }
+
+    previousPathRef.current = pathname
+  }, [pathname, windowWidth, dispatch])
 
   useEffect(() => {
     if (actions) {

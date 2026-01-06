@@ -15,8 +15,13 @@ import ActivityTypeFilter from './ActivityFilter/TypeFilter'
 import { useEffect, useRef } from 'react'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
+import { useNavbar } from '@/context/navbar'
 
-const FilterPanel: React.FC = () => {
+interface FilterPanelProps {
+  hasTabs?: boolean
+}
+
+const FilterPanel: React.FC<FilterPanelProps> = ({ hasTabs }) => {
   const filterRef = useRef<HTMLDivElement>(null)
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
@@ -34,6 +39,7 @@ const FilterPanel: React.FC = () => {
   const { profileTab, filterType } = useFilterContext()
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const filtersOpen = selectors.filters.open
+  const { isNavbarVisible } = useNavbar()
 
   // const outsideClickRef = useOutsideClick(() => {
   //   dispatch(actions.setFiltersOpen(false))
@@ -41,34 +47,45 @@ const FilterPanel: React.FC = () => {
 
   if (!isClient || !windowWidth) return null
 
-  const isOpen = windowWidth < 1024 ? filtersOpen : true
+  const isMobile = windowWidth < 1024
+  const isOpen = filtersOpen
   const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
   const isDisabled = filterType === 'marketplace' && isBulkSearch
   const isActivityFilter =
     (filterType === 'profile' && profileTab?.value === 'activity') ||
     (filterType === 'marketplace' && marketplaceTab?.value === 'activity')
 
+  // On mobile: slide in/out overlay
+  // On desktop: collapse/expand sidebar with width transition
   return (
     <div
       ref={filterRef}
       className={cn(
-        'bg-background fixed top-14 left-0 z-20 flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden overscroll-contain shadow-md transition-transform duration-300 md:top-[70px] md:h-[calc(100dvh-70px)] md:max-w-[284px] md:min-w-[284px] lg:sticky lg:top-[70px] lg:h-[calc(100dvh-70px)] lg:shadow-none',
-        isOpen ? 'translate-x-0' : '-translate-x-[110%] lg:translate-x-0',
-        isDisabled && 'pointer-events-none cursor-not-allowed opacity-50'
+        'bg-background z-20 flex flex-col overflow-hidden overscroll-contain transition-all border-tertiary duration-300',
+        // Mobile styles
+        isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
+        isMobile && (isNavbarVisible ? 'top-14 h-[calc(100dvh-56px)]' : 'fixed top-0 left-0 h-[100dvh] w-full'),
+        isMobile && (hasTabs ? 'fixed md:top-[128px] md:h-[calc(100dvh-128px)]' : 'fixed md:top-[70px] md:h-[calc(100dvh-70px)]]'),
+        isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
+        // Desktop styles
+        !isMobile && (hasTabs ? 'sticky top-[126px] h-[calc(100dvh-126px)]' : 'sticky top-[70px] h-[calc(100dvh-70px)]'),
+        !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
+        isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
+        isOpen ? 'border-r-2' : 'w-0'
       )}
     >
       <div
         className={cn(
           'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
-          isOpen ? 'w-full overflow-x-hidden lg:w-[284px]' : 'w-0 lg:z-0 lg:w-[56px]'
+          isOpen ? 'w-full overflow-x-hidden lg:w-[292px]' : 'w-0 lg:z-0 lg:w-[56px]'
         )}
       >
         {/* Top div */}
         <div className='pt-md relative flex items-center justify-between'>
           <div
             className={cn(
-              'pr-lg flex w-full min-w-full justify-between transition-transform lg:min-w-[300px]',
-              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]'
+              'pr-lg flex w-full min-w-full justify-between transition-transform lg:min-w-[292px]',
+              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
             )}
           >
             <div className='p-lg flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
@@ -79,7 +96,7 @@ const FilterPanel: React.FC = () => {
               onClick={() => {
                 dispatch(actions.setFiltersOpen(false))
               }}
-              className='cursor-pointer transition-opacity hover:opacity-80 lg:hidden'
+              className='cursor-pointer transition-opacity hover:opacity-80'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button>
@@ -87,8 +104,8 @@ const FilterPanel: React.FC = () => {
           <button
             onClick={setPanelAll}
             className={cn(
-              'p-lg hover:bg-secondary flex min-w-full cursor-pointer items-center gap-2 rounded-sm transition-transform sm:min-w-[290px] lg:min-w-[282px]',
-              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[300px]'
+              'p-lg hover:bg-secondary flex min-w-full cursor-pointer items-center gap-2 rounded-sm transition-transform sm:min-w-[284px] lg:min-w-[284px]',
+              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[289px]'
             )}
           >
             <Image src={backArrow} alt='back arrow' height={12} width={12} className='rotate-180' />

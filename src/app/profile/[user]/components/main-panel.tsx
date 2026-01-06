@@ -6,7 +6,8 @@ import { Address } from 'viem'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
 import TabSwitcher from './tabSwitcher'
-import { fetchAccount, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { fetchAccount } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
 import { useQuery } from '@tanstack/react-query'
 import OfferPanel from './offerPanel'
@@ -28,18 +29,17 @@ import {
 } from '@/state/reducers/filters/profileListingsFilter'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import BulkSelect from '@/components/ui/bulkSelect'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 interface Props {
   user: Address | string
 }
 
 const MainPanel: React.FC<Props> = ({ user }) => {
-  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab, lastVisitedProfile } = useAppSelector(selectUserProfile)
   const profileTab = selectedTab.value
-  const { width: windowWidth } = useWindowSize()
   const { data: userAccount } = useQuery({
     queryKey: ['account', user],
     queryFn: () => fetchAccount(user),
@@ -100,19 +100,16 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       <FilterProvider filterType='profile' profileTab={selectedTab}>
         <div className='w-full'>
           <div className='z-10 w-full'>
-            <div className='lg:pl-md bg-background border-tertiary relative flex min-h-[calc(100dvh-56px)] w-full gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
-              <FilterPanel />
-              <div className='bg-tertiary sticky top-0 ml-2 hidden h-screen w-[3px] lg:block' />
-              <div
-                className='flex w-full flex-col gap-2'
-                style={{
-                  width: isClient && windowWidth && windowWidth > 1024 ? 'calc(100% - 280px)' : '100%',
-                }}
-              >
-                <TabSwitcher user={userAccount?.address} />
-                {showDomainsPanel && <DomainPanel user={userAccount?.address} />}
-                {showOfferPanel && <OfferPanel user={userAccount?.address} />}
-                {showActivityPanel && <ActivityPanel user={userAccount?.address} />}
+            <div className='bg-background border-tertiary relative flex flex-col min-h-[calc(100dvh-56px)] w-full gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
+              <TabSwitcher user={userAccount?.address} />
+              <div className='flex w-full flex-row gap-0 transition-all duration-300'>
+                <FilterPanel hasTabs={true} />
+                <ProfileContent
+                  userAddress={userAccount?.address}
+                  showDomainsPanel={showDomainsPanel}
+                  showOfferPanel={showOfferPanel}
+                  showActivityPanel={showActivityPanel}
+                />
               </div>
               <ActionButtons />
               <BulkSelect isMyProfile={isMyProfile} />
@@ -121,6 +118,43 @@ const MainPanel: React.FC<Props> = ({ user }) => {
         </div>
       </FilterProvider>
     </Suspense>
+  )
+}
+
+// Inner component to access filter state from context
+interface ProfileContentProps {
+  userAddress: Address | undefined
+  showDomainsPanel: boolean
+  showOfferPanel: boolean
+  showActivityPanel: boolean
+}
+
+const ProfileContent: React.FC<ProfileContentProps> = ({
+  userAddress,
+  showDomainsPanel,
+  showOfferPanel,
+  showActivityPanel,
+}) => {
+  const isClient = useIsClient()
+  const { width: windowWidth } = useWindowSize()
+  const { selectors } = useFilterRouter()
+  const filtersOpen = selectors.filters.open
+
+  const getContentWidth = () => {
+    if (!isClient || !windowWidth) return '100%'
+    if (windowWidth < 1024) return '100%'
+    return filtersOpen ? 'calc(100% - 290px)' : '100%'
+  }
+
+  return (
+    <div
+      className='flex w-full flex-col pt-2 gap-2 transition-all duration-300'
+      style={{ width: getContentWidth() }}
+    >
+      {showDomainsPanel && <DomainPanel user={userAddress} />}
+      {showOfferPanel && <OfferPanel user={userAddress} />}
+      {showActivityPanel && <ActivityPanel user={userAddress} />}
+    </div>
   )
 }
 

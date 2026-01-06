@@ -3,6 +3,7 @@ import { RootState } from '@/state'
 import { useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
 import { FilterRouter, FilterContextType } from '@/types/filters'
+import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
 
 // Import marketplace selectors and actions
 import {
@@ -184,6 +185,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
   const marketplaceState = useAppSelector(selectMarketplace)
+  const filterPanelState = useAppSelector(selectFilterPanel)
 
   // Determine which tab is active in profile
   const activeProfileTab = profileState.selectedTab?.value || 'domains'
@@ -510,9 +512,17 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   return {
     selectors: {
-      filters: filters,
+      // Override the open state with the shared filter panel state
+      filters: {
+        ...filters,
+        open: filterPanelState.open,
+      },
     },
-    actions: actions as any,
+    actions: {
+      ...actions,
+      // Override setFiltersOpen to use the shared filter panel action
+      setFiltersOpen: setFilterPanelOpen,
+    } as any,
     context: filterType,
     profileTab: profileState.selectedTab,
     marketplaceTab: marketplaceState.selectedTab,

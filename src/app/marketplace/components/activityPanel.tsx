@@ -15,17 +15,17 @@ interface ActivityPanelProps {
 
 const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, setIsLiveActivityConnected }) => {
   const dispatch = useAppDispatch()
-  const { actions } = useFilterRouter()
+  const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } =
     useMarketplaceActivity(setIsLiveActivityConnected)
 
   return (
     <div className='px-md pt-md md:pt-lg flex w-full flex-col gap-2'>
-      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2 lg:hidden'>
+      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-full items-center justify-between gap-2'>
           <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
-            onClick={() => dispatch(actions.setFiltersOpen(true))}
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>

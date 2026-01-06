@@ -16,6 +16,7 @@ const DomainPanel = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
+  const filtersOpen = selectors.filters.open
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
 
   return (
@@ -23,8 +24,8 @@ const DomainPanel = () => {
       <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-auto items-center gap-2'>
           <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 sm:h-10 sm:w-10 lg:hidden'
-            onClick={() => dispatch(actions.setFiltersOpen(true))}
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 sm:h-10 sm:w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
@@ -74,6 +75,7 @@ const DomainPanel = () => {
         domains={domains}
         loadingRowCount={20}
         paddingBottom='80px'
+        filtersOpen={filtersOpen}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}

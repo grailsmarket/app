@@ -22,6 +22,7 @@ interface DomainsProps {
   listRef?: RefObject<HTMLDivElement>
   hasMoreDomains?: boolean
   fetchMoreDomains?: () => void
+  filtersOpen?: boolean
   showHeaders?: boolean
   displayedDetails?: MarketplaceHeaderColumn[]
   forceViewType?: 'grid' | 'list'
@@ -40,6 +41,7 @@ const Domains: React.FC<DomainsProps> = ({
   listRef,
   hasMoreDomains,
   fetchMoreDomains,
+  filtersOpen,
   showHeaders = true,
   displayedDetails = MARKETPLACE_DISPLAYED_COLUMNS,
   forceViewType,
@@ -83,14 +85,14 @@ const Domains: React.FC<DomainsProps> = ({
   const containerWidth = useMemo(() => {
     if (!width) return 1200
 
-    if (width >= 2340) return 2340 - 340
+    if (width >= 2340) return 2340 - (filtersOpen ? 340 : 0)
     if (width < 640) return width - 9
     if (width < 768) return width - 20
     if (width < 1024) return width - 30
 
     // Account for sidebar (280px) and padding
-    return width - (width < 1024 ? 48 : 346)
-  }, [width])
+    return width - (width < 1024 ? 48 : (filtersOpen ? 328 : 36))
+  }, [width, filtersOpen])
 
   const isClient = useIsClient()
   if (!isClient) return null

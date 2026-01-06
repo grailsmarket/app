@@ -41,12 +41,12 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   }, [selectedTab.value])
 
   return (
-    <div className='sm:px-md px-sm flex w-full flex-col gap-2'>
+    <div className='sm:px-md px-sm flex w-full flex-col gap-1'>
       <div className='md:p-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='px-sm flex w-auto items-center gap-2 md:p-0'>
           <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
-            onClick={() => dispatch(actions.setFiltersOpen(true))}
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
@@ -79,6 +79,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
       <Domains
         domains={domains}
         loadingRowCount={20}
+        filtersOpen={selectors.filters.open}
         paddingBottom={selectedTab.value === 'watchlist' ? '320px' : '160px'}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}

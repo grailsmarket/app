@@ -17,6 +17,7 @@ interface Props {
 const DomainPanel: React.FC<Props> = ({ category }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
+  const filtersOpen = selectors.filters.open
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
     useCategoryDomains(category)
 
@@ -25,8 +26,8 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
       <div className='px-sm md:px-md lg:px-lg lg:pt-lg pt-md flex w-full items-center justify-between gap-2 sm:px-0 sm:pt-3 md:pt-3.5'>
         <div className='flex w-auto items-center gap-2'>
           <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10 lg:hidden'
-            onClick={() => dispatch(actions.setFiltersOpen(true))}
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
@@ -53,6 +54,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
         domains={domains}
         loadingRowCount={20}
         paddingBottom='120px'
+        filtersOpen={filtersOpen}
         noResults={!categoryDomainsLoading && domains?.length === 0}
         isLoading={categoryDomainsLoading}
         hasMoreDomains={hasMoreCategoryDomains}

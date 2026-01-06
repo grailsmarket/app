@@ -6,13 +6,14 @@ import modalReducer from './modals'
 import scrollPosition from './scroll'
 import domainsReducer from './domains'
 import filtersReducer from './filters'
+import filterPanelReducer from './filterPanel'
 import profileReducer from './portfolio'
 import marketplaceReducer from './marketplace'
 import transactionReducer from './transactions'
 import registrationReducer from './registration'
 import viewReducer from './view'
 
-const PERSISTED_KEYS: string[] = ['registration', 'view']
+const PERSISTED_KEYS: string[] = ['registration', 'view', 'filterPanel']
 
 const persistConfig = {
   key: 'root',
@@ -23,6 +24,7 @@ const persistConfig = {
 
 const reducer = combineReducers({
   filters: filtersReducer,
+  filterPanel: filterPanelReducer,
   domains: domainsReducer,
   modals: modalReducer,
   profile: profileReducer,

@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import FilterPanel from '@/components/filters'
 import MainPanel from './components/mainPanel'
 import { FilterProvider } from '@/context/filters'
 import ActionButtons from './components/actionButtons'
@@ -29,9 +28,7 @@ const Marketplace = () => {
       <FilterProvider filterType='marketplace'>
         <main className='min-h-screen'>
           <div className='relative z-10 mx-auto flex w-full flex-col'>
-            <div className='bg-background relative flex min-h-[calc(100dvh-54px)] w-full flex-row gap-0 md:min-h-[calc(100dvh-70px)] lg:gap-0 lg:px-0 lg:pl-2'>
-              <FilterPanel />
-              <div className='bg-tertiary ml-2 hidden min-h-full w-[3px] lg:block' />
+            <div className='bg-background relative flex min-h-[calc(100dvh-54px)] w-full flex-row gap-0 md:min-h-[calc(100dvh-70px)] lg:px-0'>
               <MainPanel />
               <ActionButtons />
             </div>

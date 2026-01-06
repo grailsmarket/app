@@ -33,7 +33,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
     },
   })
 
-  if (profileIsLoading) return <LoadingCell height='32px' width='200px' />
+  if (profileIsLoading) return <LoadingCell height='32px' width='80%' />
 
   return (
     <ProfileTooltip
@@ -63,6 +63,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
               alt='Header'
               width={400}
               height={80}
+              unoptimized={true}
               className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
             />
           )}

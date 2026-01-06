@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation'
 import { useUserContext } from '@/context/user'
 import { REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { openRegistrationModal } from '@/state/reducers/registration'
+import ActionsDropdown from '@/components/domains/actionsDropdown'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -169,13 +170,13 @@ const Actions: React.FC<ActionsProps> = ({
     }
   }
 
-  if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
-    return (
-      <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
-        <PrimaryButton onClick={(e) => openRegistrationModalHandler(e)}>Register</PrimaryButton>
-      </div>
-    )
-  }
+  // if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
+  //   return (
+  //     <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
+  //       <PrimaryButton onClick={(e) => openRegistrationModalHandler(e)}>Register</PrimaryButton>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
@@ -197,10 +198,28 @@ const Actions: React.FC<ActionsProps> = ({
             />
           </div>
         )}
-        {canAddToCart && (
-          <button className={`cursor-pointer rounded-sm p-1.5`}>
-            <CartIcon domain={domain} />
-          </button>
+        {REGISTERABLE_STATUSES.includes(registrationStatus) ? (
+          <>
+            <PrimaryButton className='ml-1' onClick={(e) => openRegistrationModalHandler(e)}>
+              Register
+            </PrimaryButton>
+          </>
+        ) : (
+          <>
+            {canAddToCart && (
+              <button className={`cursor-pointer rounded-sm p-0`}>
+                <CartIcon domain={domain} />
+              </button>
+            )}
+            {!isBulkSelecting && (
+              <ActionsDropdown
+                domain={domain}
+                isOwner={isMyDomain}
+                registrationStatus={registrationStatus}
+                dropdownPosition='left'
+              />
+            )}
+          </>
         )}
       </div>
     </div>

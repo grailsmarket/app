@@ -28,6 +28,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { openRegistrationModal } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import ActionsDropdown from '@/components/domains/actionsDropdown'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -223,6 +224,14 @@ const Actions: React.FC<ActionsProps> = ({
           <button className='cursor-pointer rounded-sm' disabled={!canAddToCart}>
             <CartIcon domain={domain} className='p-0' />
           </button>
+        )}
+        {!isBulkSelecting && (
+          <ActionsDropdown
+            domain={domain}
+            isOwner={isMyDomain}
+            registrationStatus={registrationStatus}
+            dropdownPosition={isFirstInRow ? 'right' : 'left'}
+          />
         )}
       </div>
     </div>

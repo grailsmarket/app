@@ -21,6 +21,8 @@ import {
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
 import Price from './Price'
+import User from '@/components/ui/user'
+import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 
 interface TableRowProps {
   domain: MarketplaceDomainType
@@ -89,6 +91,18 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         registrationStatus={registrationStatus}
       />
     ),
+    owner: domain.owner ? (
+      <div
+        key={`${domain.name}-owner`}
+        className={cn(ALL_MARKETPLACE_COLUMNS['owner'].getWidth(columnCount), 'relative pr-1')}
+      >
+        <User
+          address={domain.owner as `0x${string}`}
+          className='max-w-[90%]'
+          wrapperClassName='justify-start! max-w-full'
+        />
+      </div>
+    ) : null,
   }
 
   return (

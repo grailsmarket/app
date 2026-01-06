@@ -56,6 +56,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
   registrationStatus,
   isSubname,
 }) => {
+  const [isOwnerCopied, setIsOwnerCopied] = useState(false)
   const { ethPrice } = useETHPrice()
 
   const rows: Row[] = [
@@ -222,6 +223,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         {rows.map((row) => {
           // Subnames don't have a status
           if (isSubname && row.label === 'Status') return null
+          const isUserRow = row.label === 'Owner' || row.label === 'Previous Owner'
 
           return (
             <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
@@ -232,11 +234,27 @@ const NameDetails: React.FC<NameDetailsProps> = ({
                 <div
                   className={cn(
                     row.label === 'Owner' || row.label === 'Previous Owner'
-                      ? 'overflow-visible'
+                      ? 'flex flex-row items-center gap-2.5 overflow-visible'
                       : 'max-w-3/4 overflow-x-auto'
                   )}
                 >
                   {row.value}
+                  {isUserRow && nameDetails?.owner && (
+                    <Image
+                      src={isOwnerCopied ? CheckIcon : CopyIcon}
+                      alt='Copy'
+                      className='h-4 w-4 cursor-pointer hover:opacity-80'
+                      width={16}
+                      height={16}
+                      onClick={() => {
+                        navigator.clipboard.writeText(nameDetails?.owner as string)
+                        setIsOwnerCopied(true)
+                        setTimeout(() => {
+                          setIsOwnerCopied(false)
+                        }, 2000)
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </div>

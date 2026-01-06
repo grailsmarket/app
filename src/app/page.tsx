@@ -25,7 +25,7 @@ const Home = () => {
           <div className='flex w-full flex-col items-center justify-center gap-12 lg:items-start lg:justify-start'>
             <div className='flex w-full flex-col items-center justify-center gap-2 lg:items-start lg:justify-start'>
               <h1 className='font-sedan-sc text-center text-4xl sm:text-7xl lg:text-left xl:text-9xl'>
-                ENS Market & Manager
+                ENS Manager & Market
               </h1>
               <p className='xs:text-xl mb-2 text-center text-lg font-medium sm:mb-4 md:text-2xl lg:text-left'>
                 0% Market Fees — Bulk Tools — Open Source{' '}

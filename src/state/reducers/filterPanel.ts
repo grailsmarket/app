@@ -6,7 +6,7 @@ interface FilterPanelState {
 }
 
 const initialState: FilterPanelState = {
-  open: true,
+  open: false,
 }
 
 const filterPanelSlice = createSlice({

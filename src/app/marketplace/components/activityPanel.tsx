@@ -7,6 +7,8 @@ import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useMarketplaceActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
+import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 interface ActivityPanelProps {
   isLiveActivityConnected: boolean
@@ -18,10 +20,16 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
   const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } =
     useMarketplaceActivity(setIsLiveActivityConnected)
+  const { isNavbarVisible } = useNavbar()
 
   return (
-    <div className='px-sm pt-md md:pt-lg flex w-full flex-col gap-2'>
-      <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+    <div className='flex w-full flex-col'>
+      <div
+        className={cn(
+          'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row md:top-32',
+          isNavbarVisible ? 'top-26' : 'top-12'
+        )}
+      >
         <div className='flex w-full items-center justify-between gap-2'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'

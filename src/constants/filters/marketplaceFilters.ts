@@ -1,23 +1,121 @@
-export const MARKETPLACE_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price Range', 'Activity', 'Sort'] as const
+export const MARKETPLACE_OPENABLE_FILTERS = [
+  'Status',
+  'Market',
+  'Type',
+  'Text Match',
+  'Length',
+  'Price Range',
+  'Activity',
+  'Sort',
+] as const
 
 export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Digits', 'Emojis', 'Repeating'] as const
+
+export type MarketplaceTypeFilterLabel = (typeof MARKETPLACE_TYPE_FILTER_LABELS)[number]
+
+// Type filter options for each type category
+export const TYPE_FILTER_OPTIONS = ['none', 'include', 'exclude', 'only'] as const
+
+export type TypeFilterOption = (typeof TYPE_FILTER_OPTIONS)[number]
+
+export const TYPE_FILTER_OPTION_LABELS: Record<TypeFilterOption, string> = {
+  none: '---',
+  include: 'Include',
+  exclude: 'Exclude',
+  only: 'Only',
+}
+
+// Type filter state structure
+export type TypeFiltersState = Record<MarketplaceTypeFilterLabel, TypeFilterOption>
+
+export const DEFAULT_TYPE_FILTERS_STATE: TypeFiltersState = {
+  Letters: 'include',
+  Digits: 'include',
+  Emojis: 'include',
+  Repeating: 'include',
+}
+
+export const EMPTY_TYPE_FILTERS_STATE: TypeFiltersState = {
+  Letters: 'none',
+  Digits: 'none',
+  Emojis: 'none',
+  Repeating: 'none',
+}
 
 export const MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS: Record<string, string> = {
   Letters: 'letters',
   Digits: 'digits',
   Emojis: 'emojis',
-  'Repeating Characters': 'repeatingChars',
+  Repeating: 'repeatingChars',
 }
 
-export const MARKETPLACE_STATUS_FILTER_LABELS = [
-  'Listed',
-  'Unlisted',
-  'Expiring Soon',
-  'Premium',
-  'Available',
-  'Has Last Sale',
-  'Has Offers',
-] as const
+// Market filter constants
+export const MARKET_FILTER_LABELS = ['Listed', 'Has Offers', 'Has Last Sale'] as const
+export const LISTED_FILTER_LABELS = ['Has Offers', 'Has Last Sale'] as const
+export const OFFERS_FILTER_LABELS = ['Listed', 'Has Last Sale'] as const
+
+export type MarketFilterLabel = (typeof MARKET_FILTER_LABELS)[number]
+
+export const MARKET_FILTER_OPTIONS = ['none', 'yes', 'no'] as const
+
+export type MarketFilterOption = (typeof MARKET_FILTER_OPTIONS)[number]
+
+export const MARKET_FILTER_OPTION_LABELS: Record<MarketFilterOption, string> = {
+  none: '---',
+  yes: 'Yes',
+  no: 'No',
+}
+
+// Marketplace (platform) filter constants
+export const MARKETPLACE_OPTIONS = ['none', 'grails', 'opensea'] as const
+
+export type MarketplaceOption = (typeof MARKETPLACE_OPTIONS)[number]
+
+export const MARKETPLACE_OPTION_LABELS: Record<MarketplaceOption, string> = {
+  none: '---',
+  grails: 'Grails',
+  opensea: 'Opensea',
+}
+
+export type MarketFiltersState = Record<MarketFilterLabel, MarketFilterOption> & {
+  marketplace: MarketplaceOption
+}
+
+export const DEFAULT_MARKET_FILTERS_STATE: MarketFiltersState = {
+  Listed: 'none',
+  'Has Offers': 'none',
+  'Has Last Sale': 'none',
+  marketplace: 'none',
+}
+
+// Map market filter labels to API query params
+export const MARKET_FILTER_PARAM_OPTIONS: Record<MarketFilterLabel, string> = {
+  Listed: 'listed',
+  'Has Offers': 'hasOffer',
+  'Has Last Sale': 'hasSales',
+}
+
+// Text Match filter constants
+export const TEXT_MATCH_FILTER_LABELS = ['Contains', 'Starts with', 'Ends with'] as const
+
+export type TextMatchFilterLabel = (typeof TEXT_MATCH_FILTER_LABELS)[number]
+
+export type TextMatchFiltersState = Record<TextMatchFilterLabel, string>
+
+export const DEFAULT_TEXT_MATCH_FILTERS_STATE: TextMatchFiltersState = {
+  Contains: '',
+  'Starts with': '',
+  'Ends with': '',
+}
+
+// Map text match filter labels to API query params
+export const TEXT_MATCH_FILTER_PARAM_OPTIONS: Record<TextMatchFilterLabel, string> = {
+  Contains: 'contains',
+  'Starts with': 'startsWith',
+  'Ends with': 'endsWith',
+}
+
+export const MARKETPLACE_STATUS_FILTER_LABELS = ['Registered', 'Grace', 'Premium', 'Available'] as const
 
 export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
   Listed: 'listed',
@@ -25,9 +123,10 @@ export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
 }
 
 export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
+  Registered: 'registered',
   Listed: 'listed',
   Unlisted: 'unlisted',
-  'Expiring Soon': 'grace',
+  Grace: 'grace',
   Premium: 'premium',
   Available: 'available',
   'Has Last Sale': 'has_last_sale',
@@ -51,7 +150,7 @@ export const MARKETPLACE_SORT_FILTERS = [
 
 export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Has Offers'] as const
 
-export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Grace'] as const
 
 export const PORTFOLIO_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
 

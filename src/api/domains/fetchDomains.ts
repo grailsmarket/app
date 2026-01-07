@@ -9,7 +9,6 @@ import { nameHasEmoji } from '@/utils/nameCharacters'
 import { nameHasNumbers } from '@/utils/nameCharacters'
 import { normalizeName } from '@/lib/ens'
 import { BigNumber } from '@ethersproject/bignumber'
-import { MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS } from '@/constants/filters/marketplaceFilters'
 
 interface FetchDomainsOptions {
   limit: number
@@ -75,7 +74,7 @@ export const fetchDomains = async ({
 
     const API_STATUS_FILTER_OPTIONS = {
       Registered: 'registered',
-      'Expiring Soon': 'grace',
+      Grace: 'grace',
       Premium: 'premium',
       Available: 'available',
     }
@@ -84,21 +83,27 @@ export const fetchDomains = async ({
     const statusFilter = filters.status.filter(
       (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
     )
-    const typeFilter = filters.type.map(
-      (type) => MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS[type as keyof typeof MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS]
-    )
+
+    const typeFilters = filters.type
+
+    const marketFilters = filters.market
+    const getMarketFilterValue = (value: string | undefined): boolean | undefined => {
+      if (value === 'yes') return true
+      if (value === 'no') return false
+      return undefined
+    }
+
+    const textMatchFilters = filters.textMatch
+    const getTextMatchFilterValue = (value: string | undefined): string | undefined => {
+      return value && value.trim().length > 0 ? value.trim() : undefined
+    }
+
     const paramString = buildQueryParamString({
       limit,
       page: pageParam,
       q: search?.length > 0 ? search : undefined,
       'filters[owner]': ownerAddress || null,
-      'filters[listed]': filters.status.includes('Listed')
-        ? true
-        : filters.status.includes('Unlisted')
-          ? false
-          : undefined,
-      // 'filters[showListings]': filters.status.includes('Listed') ? true : undefined,
-      // 'filters[showUnlisted]': filters.status.includes('Unlisted') ? true : undefined,
+      'filters[listed]': getMarketFilterValue(marketFilters?.Listed),
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max
@@ -111,45 +116,21 @@ export const fetchDomains = async ({
             .mul(BigNumber.from(10).pow(12))
             .toString()
         : filters.priceRange.min || null,
-      // 'filters[hasNumbers]': filters.type.includes('Numbers') ? undefined : false,
-      // 'filters[hasEmojis]': filters.type.includes('Emojis') ? undefined : false,
-      'filters[letters]': typeFilter.includes('letters')
-        ? typeFilter.length > 1
-          ? 'include'
-          : 'only'
-        : typeFilter.length > 1
-          ? 'exclude'
-          : undefined,
-      'filters[digits]': typeFilter.includes('digits')
-        ? typeFilter.length > 1
-          ? 'include'
-          : 'only'
-        : typeFilter.length > 1
-          ? 'exclude'
-          : undefined,
-      'filters[emoji]': typeFilter.includes('emojis')
-        ? typeFilter.length > 1
-          ? 'include'
-          : 'only'
-        : typeFilter.length > 1
-          ? 'exclude'
-          : undefined,
-      'filters[repeatingChars]': typeFilter.includes('repeatingChars')
-        ? typeFilter.length > 1
-          ? 'include'
-          : 'only'
-        : undefined,
+      'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
+      'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
+      'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,
+      'filters[repeatingChars]': typeFilters.Repeating !== 'none' ? typeFilters.Repeating : undefined,
       'filters[clubs][]': category || filters.categories?.join(',') || null,
       'filters[status]':
         statusFilter.length === 1
           ? API_STATUS_FILTER_OPTIONS[statusFilter[0] as keyof typeof API_STATUS_FILTER_OPTIONS]
           : undefined,
-      // 'filters[isGracestatuPeriod]': statusFilter.includes('Grace Period') ? true : undefined,
-      // 'filters[isPremiumPeriod]': statusFilter.includes('Premium') ? true : undefined,
-      // 'filters[expiringWithinDays]': statusFilter.includes('Expiring Soon') ? 60 : undefined,
-      // @ts-expect-error - TS tantrum
-      'filters[hasSales]': filters.status.includes('Has Last Sale') ? true : undefined,
-      'filters[hasOffer]': filters.status.includes('Has Offers') ? true : undefined,
+      'filters[hasSales]': getMarketFilterValue(marketFilters?.['Has Last Sale']),
+      'filters[hasOffer]': getMarketFilterValue(marketFilters?.['Has Offers']),
+      'filters[marketplace]': marketFilters?.marketplace !== 'none' ? marketFilters?.marketplace : undefined,
+      'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
+      'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
+      'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),
       sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
     })

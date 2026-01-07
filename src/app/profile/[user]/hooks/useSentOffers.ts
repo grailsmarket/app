@@ -28,6 +28,8 @@ export const useSentOffers = (user: Address | undefined) => {
       filters.type,
       filters.status,
       filters.sort,
+      filters.textMatch,
+      filters.market,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

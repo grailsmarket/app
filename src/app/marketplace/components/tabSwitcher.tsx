@@ -60,7 +60,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
     return (
       <div
         className={cn(
-          'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8',
+          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8',
           isNavbarVisible ? 'top-14' : 'top-0'
         )}
       >
@@ -102,7 +102,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
   return (
     <div
       className={cn(
-        'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[72px] md:min-h-14 lg:gap-8',
+        'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[72px] md:min-h-14 lg:gap-8',
         isNavbarVisible ? 'top-14' : 'top-0'
       )}
     >
@@ -126,7 +126,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
           </button>
         ))}
       </div>
-      {selectedTab.value === 'activity' && (
+      {/* {selectedTab.value === 'activity' && (
         <div className='hidden items-center justify-end gap-1 sm:gap-2 lg:flex'>
           <div
             className={`h-2.5 w-2.5 animate-pulse rounded-full ${isLiveActivityConnected ? 'bg-green-500' : 'bg-red-500'}`}
@@ -135,7 +135,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
             {isLiveActivityConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
-      )}
+      )} */}
     </div>
   )
 }

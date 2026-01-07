@@ -4,7 +4,7 @@ import CartIcon from '../../table/components/CartIcon'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
-import { REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import {
@@ -188,25 +188,28 @@ const Actions: React.FC<ActionsProps> = ({
     <div
       className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
     >
-      {REGISTERABLE_STATUSES.includes(registrationStatus) ? (
-        <button onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}>
-          <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-            Register
-          </p>
-        </button>
-      ) : domainListing?.price ? (
-        <button onClick={(e) => clickHandler(e, openBuyNowModal)}>
-          <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-            Buy Now
-          </p>
-        </button>
-      ) : (
-        <button onClick={(e) => clickHandler(e, openMakeOfferModal)}>
-          <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-            Offer
-          </p>
-        </button>
-      )}
+      <div>
+        {registrationStatus !== GRACE_PERIOD &&
+          (REGISTERABLE_STATUSES.includes(registrationStatus) ? (
+            <button onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}>
+              <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
+                Register
+              </p>
+            </button>
+          ) : domainListing?.price ? (
+            <button onClick={(e) => clickHandler(e, openBuyNowModal)}>
+              <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
+                Buy Now
+              </p>
+            </button>
+          ) : (
+            <button onClick={(e) => clickHandler(e, openMakeOfferModal)}>
+              <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
+                Offer
+              </p>
+            </button>
+          ))}
+      </div>
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {watchlistId && (
           <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>

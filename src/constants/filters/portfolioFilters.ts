@@ -1,24 +1,22 @@
-export const MY_DOMAINS_OPENABLE_FILTERS = ['Sort', 'Status', 'Type', 'Length', 'Price Range'] as const
-
-export const MY_DOMAINS_TYPE_FILTER_LABELS = ['Letters', 'Numbers', 'Emojis'] as const
-
-export const MY_DOMAINS_STATUS_FILTER_LABELS = [
-  'Listed',
-  'Unlisted',
-  'Expiring Soon',
-  'Grace Period',
-  'Has Offers',
+export const MY_DOMAINS_OPENABLE_FILTERS = [
+  'Sort',
+  'Status',
+  'Market',
+  'Type',
+  'Text Match',
+  'Length',
+  'Price Range',
 ] as const
-export const RECEIVED_OFFERS_STATUS_FILTER_LABELS = ['Expiring Soon'] as const
-export const MY_OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
 
-export const MY_DOMAINS_OFFERS_PARAM_OPTIONS: Record<string, string> = {
-  Listed: 'listed',
-  'Has Offers': 'has_offers',
-}
+// Re-export from marketplace for consistency
+export { MARKETPLACE_TYPE_FILTER_LABELS as MY_DOMAINS_TYPE_FILTER_LABELS } from './marketplaceFilters'
+
+export const MY_DOMAINS_STATUS_FILTER_LABELS = ['Grace'] as const
+export const RECEIVED_OFFERS_STATUS_FILTER_LABELS = ['Grace'] as const
+export const MY_OFFERS_STATUS_FILTER_LABELS = ['Grace'] as const
 
 export const MY_DOMAINS_STATUS_PARAM_OPTIONS: Record<string, string> = {
-  'Expiring Soon': 'expiring',
+  Grace: 'grace',
 }
 
 export const MY_DOMAINS_SORT_FILTERS = [
@@ -36,7 +34,7 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'expiry_date_desc',
 ]
 
-export const MY_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon', 'Grace Period', 'Has Offers'] as const
+export const MY_DOMAINS_FILTER_LABELS = ['Grace'] as const
 
 export const ALL_SORT_FILTERS = [
   // 'alphabetical_asc',
@@ -65,7 +63,7 @@ export const MY_DOMAINS_CATEGORIES = [
   'Places',
 ]
 
-export const PROFILE_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const PROFILE_DOMAINS_FILTER_LABELS = ['Grace'] as const
 export const PROFILE_ACTIVITY_FILTER_LABELS = [
   'Sale',
   'Transfer',

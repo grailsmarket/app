@@ -12,6 +12,8 @@ import { selectViewType } from '@/state/reducers/view'
 import Card from './grid/components/card'
 import LoadingCard from './grid/components/loadingCard'
 import { cn } from '@/utils/tailwind'
+import { useFilterContext } from '@/context/filters'
+import { useNavbar } from '@/context/navbar'
 
 interface DomainsProps {
   domains: MarketplaceDomainType[]
@@ -53,7 +55,8 @@ const Domains: React.FC<DomainsProps> = ({
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
-
+  const { filterType } = useFilterContext()
+  const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {
       fetchMoreDomains()
@@ -86,12 +89,12 @@ const Domains: React.FC<DomainsProps> = ({
     if (!width) return 1200
 
     if (width >= 2340) return 2340 - (filtersOpen ? 340 : 0)
-    if (width < 640) return width - 9
-    if (width < 768) return width - 20
-    if (width < 1024) return width - 30
+    if (width < 640) return width - 4
+    if (width < 768) return width - 4
+    if (width < 1024) return width - 14
 
     // Account for sidebar (280px) and padding
-    return width - (width < 1024 ? 48 : filtersOpen ? 328 : 36)
+    return width - (width < 1024 ? 48 : filtersOpen ? 320 : 36)
   }, [width, filtersOpen])
 
   const isClient = useIsClient()
@@ -100,7 +103,18 @@ const Domains: React.FC<DomainsProps> = ({
   return (
     <div className='flex w-full flex-1 flex-col'>
       {showHeaders && viewTypeToUse !== 'grid' && (
-        <div className='px-sm md:px-md pt-sm lg:px-lg md:py-md flex w-full items-center justify-between sm:flex'>
+        <div
+          className={cn(
+            'px-md pt-sm bg-background transition-top lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between duration-300 sm:flex',
+            filterType === 'category'
+              ? isNavbarVisible
+                ? 'top-38 sm:top-28 md:top-34'
+                : 'top-24 sm:top-13 md:top-34'
+              : isNavbarVisible
+                ? 'top-49 sm:top-40 md:top-48'
+                : 'top-35 sm:top-26 md:top-48'
+          )}
+        >
           {displayedColumns.map((header, index) => {
             const item = ALL_MARKETPLACE_COLUMNS[header]
             return (
@@ -125,7 +139,7 @@ const Domains: React.FC<DomainsProps> = ({
               cardWidth={width && width < 400 ? 150 : 180}
               cardHeight={width && width < 400 ? (width < 328 ? 380 : 320) : 350}
               gap={4}
-              containerPadding={width && width < 640 ? 4 : 0}
+              containerPadding={width && width < 768 ? 8 : 0}
               containerWidth={containerWidth}
               overscanCount={4}
               paddingBottom={paddingBottom}
@@ -160,7 +174,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='md:px-lg flex h-[60px] w-full items-center'>
+                    <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center border-t'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

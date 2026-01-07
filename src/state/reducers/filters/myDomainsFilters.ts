@@ -11,12 +11,24 @@ import {
   PriceDenominationType,
   PriceType,
   LengthType,
+  TypeFiltersState,
 } from '@/types/filters'
+import {
+  DEFAULT_TYPE_FILTERS_STATE,
+  DEFAULT_MARKET_FILTERS_STATE,
+  DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  TypeFilterOption,
+  MarketplaceTypeFilterLabel,
+  MarketFiltersState,
+  TextMatchFiltersState,
+} from '@/constants/filters/marketplaceFilters'
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -36,7 +48,9 @@ export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -47,7 +61,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -75,16 +89,28 @@ export const myDomainsFiltersSlice = createSlice({
     setMyDomainsFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       state.status = [payload]
     },
-    toggleMyDomainsFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      const index = state.type.findIndex((type) => type === payload)
-      if (index > -1) {
-        state.type.splice(index, 1)
+    setMyDomainsTypeFilter(
+      state,
+      { payload }: PayloadAction<{ label: MarketplaceTypeFilterLabel; option: TypeFilterOption }>
+    ) {
+      const { label, option } = payload
+      if (option === 'only') {
+        state.type = { ...DEFAULT_TYPE_FILTERS_STATE, [label]: 'only' }
       } else {
-        state.type.push(payload)
+        state.type[label] = option
       }
     },
-    setMyDomainsFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      state.type = [payload]
+    toggleMyDomainsFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
+    },
+    setMyDomainsFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
+      state.type = payload
+    },
+    setMyDomainsMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
+      state.market = payload
+    },
+    setMyDomainsTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
+      state.textMatch = payload
     },
     setMyDomainsFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
@@ -129,7 +155,9 @@ export const myDomainsFiltersSlice = createSlice({
       state.open = false
       state.search = ''
       state.status = []
-      state.type = []
+      state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
+      state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
+      state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
       state.length = {
         min: null,
         max: null,
@@ -140,7 +168,7 @@ export const myDomainsFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -151,8 +179,11 @@ export const {
   setMyDomainsFiltersOpen,
   toggleMyDomainsFiltersStatus,
   setMyDomainsFiltersStatus,
+  setMyDomainsTypeFilter,
   toggleMyDomainsFiltersType,
   setMyDomainsFiltersType,
+  setMyDomainsMarketFilters,
+  setMyDomainsTextMatchFilters,
   setMyDomainsFiltersLength,
   setMyDomainsPriceDenomination,
   setMyDomainsPriceRange,

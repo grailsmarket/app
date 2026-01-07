@@ -29,30 +29,33 @@ const LengthFilter = () => {
         open={open}
         toggleOpen={toggleOpen}
         label='Length'
-        expandedHeight={102}
+        expandedHeight={112}
         CustomComponent={
           <p className='text-md text-neutral font-medium'>{minVal ? `${minVal} - ${maxVal || '10+'}` : null}</p>
         }
       >
-        <div className='px-lg py-md flex flex-row gap-x-2'>
-          <input
-            ref={onMinClickAway as Ref<HTMLInputElement>}
-            type='number'
-            placeholder='Min'
-            value={currMinVal || ''}
-            onBlur={() => setMinLength(Number(minVal))}
-            onChange={(e) => setCurrMinVal(Number(e.target.value))}
-            className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
-          />
-          <input
-            ref={onMaxClickAway as Ref<HTMLInputElement>}
-            type='number'
-            placeholder='Max'
-            value={currMaxVal || ''}
-            onBlur={() => setMaxLength(Number(maxVal))}
-            onChange={(e) => setCurrMaxVal(Number(e.target.value))}
-            className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
-          />
+        <div className='px-lg py-md flex w-full items-center justify-between'>
+          <p className='text-lg font-medium'>Length</p>
+          <div className='flex w-2/3 flex-row gap-x-2'>
+            <input
+              ref={onMinClickAway as Ref<HTMLInputElement>}
+              type='number'
+              placeholder='Min'
+              value={currMinVal || ''}
+              onBlur={() => setMinLength(Number(minVal))}
+              onChange={(e) => setCurrMinVal(Number(e.target.value))}
+              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+            />
+            <input
+              ref={onMaxClickAway as Ref<HTMLInputElement>}
+              type='number'
+              placeholder='Max'
+              value={currMaxVal || ''}
+              onBlur={() => setMaxLength(Number(maxVal))}
+              onChange={(e) => setCurrMaxVal(Number(e.target.value))}
+              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+            />
+          </div>
         </div>
       </ExpandableTab>
     </PersistGate>

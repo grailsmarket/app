@@ -41,7 +41,12 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
             {registrationStatus === PREMIUM ? (
               <>
                 <p>$</p>
-                <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+                <p>
+                  {premiumPrice.toLocaleString(navigator.language, {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
                 <p>+</p>
                 <p className='text-md text-neutral font-medium'>
                   ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year

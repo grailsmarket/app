@@ -10,6 +10,16 @@ import {
   MY_DOMAINS_CATEGORIES,
 } from '@/constants/filters/portfolioFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
+import {
+  DEFAULT_TYPE_FILTERS_STATE,
+  DEFAULT_MARKET_FILTERS_STATE,
+  DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  TypeFilterOption,
+  MarketplaceTypeFilterLabel,
+  TypeFiltersState,
+  MarketFiltersState,
+  TextMatchFiltersState,
+} from '@/constants/filters/marketplaceFilters'
 
 // Types --------------------------------------------
 export type MyDomainsStatusFilterType =
@@ -44,7 +54,9 @@ export type SortFilterType = (typeof ALL_SORT_FILTERS)[number]
 export type MyDomainsFiltersState = {
   search: string
   status: MyDomainsStatusFilterType[]
-  type: MyDomainsTypeFilterType[]
+  market: MarketFiltersState
+  type: TypeFiltersState
+  textMatch: TextMatchFiltersState
   length: MyDomainsLengthType
   denomination: PriceDenominationType
   priceRange: MyDomainsPriceType
@@ -61,7 +73,9 @@ export type MyDomainsFiltersOpenedState = MyDomainsFiltersState & {
 export const emptyFilterState: MyDomainsFiltersState = {
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -81,7 +95,9 @@ export const initialState: MyDomainsFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -92,7 +108,7 @@ export const initialState: MyDomainsFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -120,16 +136,28 @@ export const myOffersFiltersSlice = createSlice({
     setMyOffersFiltersStatus(state, { payload }: PayloadAction<MyDomainsStatusFilterType>) {
       state.status = [payload]
     },
-    toggleMyOffersFiltersType(state, { payload }: PayloadAction<MyDomainsTypeFilterType>) {
-      const index = state.type.findIndex((type) => type === payload)
-      if (index > -1) {
-        state.type.splice(index, 1)
+    setMyOffersTypeFilter(
+      state,
+      { payload }: PayloadAction<{ label: MarketplaceTypeFilterLabel; option: TypeFilterOption }>
+    ) {
+      const { label, option } = payload
+      if (option === 'only') {
+        state.type = { ...DEFAULT_TYPE_FILTERS_STATE, [label]: 'only' }
       } else {
-        state.type.push(payload)
+        state.type[label] = option
       }
     },
-    setMyOffersFiltersType(state, { payload }: PayloadAction<MyDomainsTypeFilterType>) {
-      state.type = [payload]
+    toggleMyOffersFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
+    },
+    setMyOffersFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
+      state.type = payload
+    },
+    setMyOffersMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
+      state.market = payload
+    },
+    setMyOffersTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
+      state.textMatch = payload
     },
     setMyOffersFiltersLength(state, { payload }: PayloadAction<MyDomainsLengthType>) {
       state.length = payload
@@ -173,7 +201,9 @@ export const myOffersFiltersSlice = createSlice({
     clearMyOffersFilters(state) {
       state.search = ''
       state.status = []
-      state.type = []
+      state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
+      state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
+      state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
       state.length = {
         min: null,
         max: null,
@@ -184,7 +214,7 @@ export const myOffersFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -195,8 +225,11 @@ export const {
   setMyOffersFiltersOpen,
   toggleMyOffersFiltersStatus,
   setMyOffersFiltersStatus,
+  setMyOffersTypeFilter,
   toggleMyOffersFiltersType,
   setMyOffersFiltersType,
+  setMyOffersMarketFilters,
+  setMyOffersTextMatchFilters,
   setMyOffersFiltersLength,
   setMyOffersPriceDenomination,
   setMyOffersPriceRange,

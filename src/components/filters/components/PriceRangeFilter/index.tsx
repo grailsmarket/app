@@ -19,7 +19,7 @@ const PriceRangeFilter = () => {
       <ExpandableTab
         open={open}
         toggleOpen={toggleOpen}
-        expandedHeight={102}
+        expandedHeight={112}
         label='Price Range'
         CustomComponent={
           <p className='text-md text-neutral font-medium'>
@@ -27,9 +27,10 @@ const PriceRangeFilter = () => {
           </p>
         }
       >
-        <div className='px-lg py-md flex flex-col items-start gap-y-4'>
+        <div className='px-lg py-md flex w-full flex-row items-center justify-between'>
+          <p className='text-lg font-medium'>Price</p>
           {/* <PriceDenominatorSwitch denomination={denomination} setDenominationGenerator={setDenominationGenerator} /> */}
-          <div className='flex gap-x-2'>
+          <div className='flex w-2/3 flex-row gap-x-2'>
             <input
               type='text'
               inputMode='decimal'

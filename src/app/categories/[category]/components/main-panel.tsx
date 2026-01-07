@@ -46,10 +46,7 @@ const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
   }
 
   return (
-    <div
-      className='px-sm flex flex-col gap-2 transition-all duration-300 md:gap-4'
-      style={{ width: getContentWidth() }}
-    >
+    <div className='z-0 flex flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
       <DomainPanel category={category} />
     </div>
   )

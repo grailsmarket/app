@@ -153,7 +153,12 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               {registrationStatus === PREMIUM ? (
                 <>
                   <p>$</p>
-                  <p>{premiumPrice.toLocaleString(navigator.language, { maximumFractionDigits: 2 })}</p>
+                  <p>
+                    {premiumPrice.toLocaleString(navigator.language, {
+                      maximumFractionDigits: 2,
+                      minimumFractionDigits: 2,
+                    })}
+                  </p>
                   <p className='text-md text-neutral font-medium'>
                     &nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
                   </p>

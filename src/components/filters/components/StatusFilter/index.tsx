@@ -4,7 +4,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { useFilterOpen } from '../../hooks/useFilterOpen'
 import { useStatusFilters } from './hooks/useStatusFilters'
 import { persistor } from '@/state'
-import FilterSelector from '../FilterSelector'
+import FilterDropdown from '../FilterDropdown'
 import ExpandableTab from '@/components/ui/expandableTab'
 import UnexpandedFilter from '../UnexpandedFilter'
 import { MARKETPLACE_STATUS_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
@@ -19,7 +19,7 @@ import { useMemo } from 'react'
 
 const StatusFilter: React.FC = () => {
   const { open, toggleOpen } = useFilterOpen('Status')
-  const { isActive, toggleActive, statusFilter } = useStatusFilters()
+  const { getStatus, setStatus } = useStatusFilters()
   const { filterType, profileTab } = useFilterContext()
   const activeProfileTab = profileTab?.value || 'domains'
 
@@ -46,34 +46,35 @@ const StatusFilter: React.FC = () => {
     return MARKETPLACE_STATUS_FILTER_LABELS
   }, [filterType, activeProfileTab])
 
-  // Calculate expanded height based on number of labels
-  const expandedHeight = 56 + filterLabels.length * 36
+  // Create options with 'none' prepended
+  const options = useMemo(() => ['none', ...filterLabels] as const, [filterLabels])
 
-  const selectedLabel =
-    statusFilter.length > 1 ? `${statusFilter[0]} +${statusFilter.length - 1}` : statusFilter[0] || null
+  // Create option labels mapping (each label maps to itself, 'none' maps to '---')
+  const optionLabels = useMemo(() => {
+    const labels: Record<string, string> = { none: '---' }
+    filterLabels.forEach((label) => {
+      labels[label] = label
+    })
+    return labels
+  }, [filterLabels])
+
+  // Calculate expanded height for one dropdown row
+  const expandedHeight = 64 + 42
 
   if (filterLabels.length === 0) return null
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Status' />}>
-      <ExpandableTab
-        open={open}
-        toggleOpen={toggleOpen}
-        expandedHeight={expandedHeight}
-        label='Status'
-        CustomComponent={<p className='text-md text-neutral font-medium'>{selectedLabel}</p>}
-      >
-        <div className='pt-sm flex flex-col overflow-x-hidden'>
-          {filterLabels.map((label, index) => (
-            <div
-              key={index}
-              className='px-lg py-md hover:bg-secondary flex cursor-pointer justify-between rounded-sm'
-              onClick={toggleActive(label as any)}
-            >
-              <p className='text-md text-light-200 font-medium'>{label}</p>
-              <FilterSelector isActive={isActive(label as any)} onClick={toggleActive(label as any)} isRadio={true} />
-            </div>
-          ))}
+      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={expandedHeight} label='Status'>
+        <div className='flex flex-col'>
+          <FilterDropdown<string>
+            label='Status'
+            value={getStatus()}
+            options={options}
+            optionLabels={optionLabels}
+            onChange={setStatus}
+            noneValue='none'
+          />
         </div>
       </ExpandableTab>
     </PersistGate>

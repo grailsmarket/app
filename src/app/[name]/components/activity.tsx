@@ -33,6 +33,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
           showHeaders={true}
           columns={['event', 'price', 'from', 'to']}
           useLocalScrollTop={true}
+          stickyHeaders={false}
         />
       </div>
     </div>

@@ -27,7 +27,6 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
     setIsOpen(false)
   })
 
-  // Parse current sort value to extract type and direction
   const { sortType, sortDirection } = useMemo(() => {
     const currentSort = selectors.filters.sort as SortFilterType | null
 
@@ -35,7 +34,6 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
       return { sortType: null as SortType | null, sortDirection: 'asc' as SortDirection }
     }
 
-    // Extract direction (last part after underscore)
     const parts = currentSort.split('_')
     const direction = parts[parts.length - 1] as SortDirection
 
@@ -69,24 +67,22 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
 
   return (
     <div className={cn('flex items-center gap-1', className)}>
-      {/* Sort Type Dropdown */}
       <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className='relative'>
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 cursor-pointer items-center gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-[190px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
           )}
         >
-          <span className='text-md font-medium whitespace-nowrap sm:text-lg'>
-            <span className='text-neutral text-md'>Sort by:</span>&nbsp;{displayLabel}
-          </span>
+          <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
+            <span className='text-neutral text-md'>Sort:</span>&nbsp;{displayLabel}
+          </p>
           <ShortArrow className={cn('h-3 w-3 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
         </button>
 
         {isOpen && (
           <div className='bg-background border-tertiary absolute left-0 z-50 mt-1 w-full min-w-[160px] overflow-hidden rounded-md border-2 shadow-lg'>
-            {/* None option */}
             <button
               onClick={() => handleTypeSelect(null)}
               className={cn(
@@ -97,7 +93,6 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
               None
             </button>
 
-            {/* Sort type options */}
             {SORT_TYPES.map((type) => (
               <button
                 key={type}
@@ -114,7 +109,6 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
         )}
       </div>
 
-      {/* Direction Toggle Button */}
       <button
         type='button'
         onClick={handleDirectionToggle}

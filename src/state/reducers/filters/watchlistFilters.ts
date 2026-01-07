@@ -13,11 +13,23 @@ import {
   PriceDenominationType,
   SortFilterType,
 } from './marketplaceFilters'
+import {
+  DEFAULT_TYPE_FILTERS_STATE,
+  DEFAULT_MARKET_FILTERS_STATE,
+  DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  TypeFilterOption,
+  MarketplaceTypeFilterLabel,
+  TypeFiltersState,
+  MarketFiltersState,
+  TextMatchFiltersState,
+} from '@/constants/filters/marketplaceFilters'
 
 export const emptyFilterState: MarketplaceFiltersState = {
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -37,7 +49,9 @@ export const initialState: MarketplaceFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -48,7 +62,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -76,16 +90,28 @@ export const watchlistFiltersSlice = createSlice({
     setWatchlistFiltersStatus(state, { payload }: PayloadAction<MarketplaceStatusFilterType>) {
       state.status = [payload]
     },
-    toggleWatchlistFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterType>) {
-      const index = state.type.findIndex((type) => type === payload)
-      if (index > -1) {
-        state.type.splice(index, 1)
+    setWatchlistTypeFilter(
+      state,
+      { payload }: PayloadAction<{ label: MarketplaceTypeFilterLabel; option: TypeFilterOption }>
+    ) {
+      const { label, option } = payload
+      if (option === 'only') {
+        state.type = { ...DEFAULT_TYPE_FILTERS_STATE, [label]: 'only' }
       } else {
-        state.type.push(payload)
+        state.type[label] = option
       }
     },
-    setWatchlistFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterType>) {
-      state.type = [payload]
+    toggleWatchlistFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
+    },
+    setWatchlistFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
+      state.type = payload
+    },
+    setWatchlistMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
+      state.market = payload
+    },
+    setWatchlistTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
+      state.textMatch = payload
     },
     setWatchlistFiltersLength(state, { payload }: PayloadAction<MarketplaceLengthType>) {
       state.length = payload
@@ -141,7 +167,9 @@ export const watchlistFiltersSlice = createSlice({
     clearWatchlistFilters(state) {
       state.search = ''
       state.status = []
-      state.type = []
+      state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
+      state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
+      state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
       state.length = {
         min: null,
         max: null,
@@ -152,7 +180,7 @@ export const watchlistFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -163,8 +191,11 @@ export const {
   setWatchlistFiltersOpen,
   toggleWatchlistFiltersStatus,
   setWatchlistFiltersStatus,
+  setWatchlistTypeFilter,
   toggleWatchlistFiltersType,
   setWatchlistFiltersType,
+  setWatchlistMarketFilters,
+  setWatchlistTextMatchFilters,
   setWatchlistFiltersLength,
   setWatchlistPriceDenomination,
   setWatchlistPriceRange,

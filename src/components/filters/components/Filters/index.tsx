@@ -1,7 +1,8 @@
-// import TypeFilter from '../TypeFilter'
 import StatusFilter from '../StatusFilter'
+import MarketFilter from '../MarketFilter'
 import LengthFilter from '../LengthFilter'
 import CategoryFilter from '../CategoryFilter'
+import CategoryFilterAll from '../CategoryFilterAll'
 import PriceRangeFilter from '../PriceRangeFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
@@ -9,6 +10,7 @@ import { cn } from '@/utils/tailwind'
 import { useIsClient } from 'ethereum-identity-kit'
 import { useCategories } from '../../hooks/useCategories'
 import TypeFilter from '../TypeFilter'
+import TextMatchFilter from '../TextMatchFilter'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -35,13 +37,15 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
         )}
       >
-        <div className='flex flex-col gap-y-2'>
+        <div className='flex flex-col'>
           {/* <SortFilter /> */}
           <StatusFilter />
-          <TypeFilter />
+          <MarketFilter />
+          <TextMatchFilter />
           <LengthFilter />
           <PriceRangeFilter />
           {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
+          <TypeFilter />
         </div>
       </div>
       {showCategoryTab && (
@@ -51,6 +55,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
             isPanelCategories && '-translate-x-[100%] lg:-translate-x-[288px]'
           )}
         >
+          <CategoryFilterAll
+            allCategoryNames={categories?.map((c) => c.name) || []}
+            totalCount={categories?.reduce((sum, c) => sum + c.member_count, 0) || 0}
+          />
           {categories?.map((category, index) => (
             <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />
           ))}

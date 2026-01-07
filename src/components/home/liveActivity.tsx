@@ -153,6 +153,7 @@ const LiveActivity = () => {
           columns={['event', 'name', 'price', 'user']}
           containerScroll={!!(width && width >= 1024)}
           containerHeight='418px'
+          stickyHeaders={false}
         />
       </div>
     </div>

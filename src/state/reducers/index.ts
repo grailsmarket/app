@@ -13,7 +13,7 @@ import transactionReducer from './transactions'
 import registrationReducer from './registration'
 import viewReducer from './view'
 
-const PERSISTED_KEYS: string[] = ['registration', 'view', 'filterPanel']
+const PERSISTED_KEYS: string[] = ['registration', 'view']
 
 const persistConfig = {
   key: 'root',

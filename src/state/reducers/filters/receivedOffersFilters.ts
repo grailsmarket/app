@@ -16,9 +16,11 @@ import {
 import {
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
+  DEFAULT_TEXT_MATCH_FILTERS_STATE,
   TypeFilterOption,
   MarketplaceTypeFilterLabel,
   MarketFiltersState,
+  TextMatchFiltersState,
 } from '@/constants/filters/marketplaceFilters'
 
 export const emptyFilterState: PortfolioFiltersState = {
@@ -26,6 +28,7 @@ export const emptyFilterState: PortfolioFiltersState = {
   status: [],
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -47,6 +50,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   status: [],
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -57,7 +61,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -100,6 +104,9 @@ export const receivedOffersFiltersSlice = createSlice({
     },
     setReceivedOffersMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
       state.market = payload
+    },
+    setReceivedOffersTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
+      state.textMatch = payload
     },
     setReceivedOffersFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
@@ -145,6 +152,7 @@ export const receivedOffersFiltersSlice = createSlice({
       state.status = []
       state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
       state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
+      state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
       state.length = {
         min: null,
         max: null,
@@ -155,7 +163,7 @@ export const receivedOffersFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -170,6 +178,7 @@ export const {
   toggleReceivedOffersFiltersType,
   setReceivedOffersFiltersType,
   setReceivedOffersMarketFilters,
+  setReceivedOffersTextMatchFilters,
   setReceivedOffersFiltersLength,
   setReceivedOffersPriceDenomination,
   setReceivedOffersPriceRange,

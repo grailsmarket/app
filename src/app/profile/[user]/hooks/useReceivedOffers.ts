@@ -28,6 +28,8 @@ export const useReceivedOffers = (user: Address | undefined) => {
       filters.status,
       filters.sort,
       filters.length,
+      filters.textMatch,
+      filters.market,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

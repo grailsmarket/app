@@ -9,6 +9,7 @@ import { cn } from '@/utils/tailwind'
 import { useIsClient } from 'ethereum-identity-kit'
 import { useCategories } from '../../hooks/useCategories'
 import TypeFilter from '../TypeFilter'
+import TextMatchFilter from '../TextMatchFilter'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -40,6 +41,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           <StatusFilter />
           <MarketFilter />
           <TypeFilter />
+          <TextMatchFilter />
           <LengthFilter />
           <PriceRangeFilter />
           {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}

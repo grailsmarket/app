@@ -2,6 +2,7 @@ export const MARKETPLACE_OPENABLE_FILTERS = [
   'Status',
   'Market',
   'Type',
+  'Text Match',
   'Length',
   'Price Range',
   'Activity',
@@ -71,6 +72,26 @@ export const MARKET_FILTER_PARAM_OPTIONS: Record<MarketFilterLabel, string> = {
   Listed: 'listed',
   'Has Offers': 'hasOffer',
   'Has Last Sale': 'hasSales',
+}
+
+// Text Match filter constants
+export const TEXT_MATCH_FILTER_LABELS = ['Contains', 'Starts with', 'Ends with'] as const
+
+export type TextMatchFilterLabel = (typeof TEXT_MATCH_FILTER_LABELS)[number]
+
+export type TextMatchFiltersState = Record<TextMatchFilterLabel, string>
+
+export const DEFAULT_TEXT_MATCH_FILTERS_STATE: TextMatchFiltersState = {
+  Contains: '',
+  'Starts with': '',
+  'Ends with': '',
+}
+
+// Map text match filter labels to API query params
+export const TEXT_MATCH_FILTER_PARAM_OPTIONS: Record<TextMatchFilterLabel, string> = {
+  Contains: 'contains',
+  'Starts with': 'startsWith',
+  'Ends with': 'endsWith',
 }
 
 export const MARKETPLACE_STATUS_FILTER_LABELS = ['Registered', 'Expiring Soon', 'Premium', 'Available'] as const

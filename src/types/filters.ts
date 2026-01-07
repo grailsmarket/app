@@ -12,6 +12,8 @@ import {
   DEFAULT_TYPE_FILTERS_STATE,
   type MarketFiltersState,
   DEFAULT_MARKET_FILTERS_STATE,
+  type TextMatchFiltersState,
+  DEFAULT_TEXT_MATCH_FILTERS_STATE,
 } from '@/constants/filters/marketplaceFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
@@ -21,8 +23,8 @@ import {
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 
-export type { TypeFiltersState, MarketFiltersState }
-export { DEFAULT_TYPE_FILTERS_STATE, DEFAULT_MARKET_FILTERS_STATE }
+export type { TypeFiltersState, MarketFiltersState, TextMatchFiltersState }
+export { DEFAULT_TYPE_FILTERS_STATE, DEFAULT_MARKET_FILTERS_STATE, DEFAULT_TEXT_MATCH_FILTERS_STATE }
 
 // Internal types for common structures
 export type LengthType = {
@@ -54,6 +56,7 @@ export interface FilterRouterActions {
   toggleFiltersType: (payload: any) => PayloadAction<any>
   setFiltersType: (payload: any) => PayloadAction<any>
   setMarketFilters: (payload: MarketFiltersState) => PayloadAction<MarketFiltersState>
+  setTextMatchFilters: (payload: TextMatchFiltersState) => PayloadAction<TextMatchFiltersState>
   setFiltersLength: (payload: LengthType) => PayloadAction<any>
   setPriceDenomination: (payload: any) => PayloadAction<any>
   setPriceRange: (payload: PriceType) => PayloadAction<any>
@@ -93,6 +96,7 @@ export type PortfolioFiltersState = {
   status: PortfolioStatusFilterType[]
   market: MarketFiltersState
   type: TypeFiltersState
+  textMatch: TextMatchFiltersState
   length: LengthType
   denomination: PriceDenominationType
   priceRange: PriceType

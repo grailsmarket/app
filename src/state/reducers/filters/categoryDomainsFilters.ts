@@ -4,9 +4,11 @@ import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
+  DEFAULT_TEXT_MATCH_FILTERS_STATE,
   TypeFilterOption,
   MarketplaceTypeFilterLabel,
   MarketFiltersState,
+  TextMatchFiltersState,
 } from '@/constants/filters/marketplaceFilters'
 import {
   PortfolioFiltersOpenedState,
@@ -25,6 +27,7 @@ export const emptyFilterState: PortfolioFiltersState = {
   status: [],
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -45,6 +48,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   status: [],
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
+  textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -55,7 +59,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -99,6 +103,9 @@ export const categoryDomainsFiltersSlice = createSlice({
     setMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
       state.market = payload
     },
+    setTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
+      state.textMatch = payload
+    },
     setFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
     },
@@ -140,11 +147,12 @@ export const categoryDomainsFiltersSlice = createSlice({
       state.status = []
       state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
       state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
+      state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -160,6 +168,7 @@ export const {
   toggleFiltersType,
   setFiltersType,
   setMarketFilters,
+  setTextMatchFilters,
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,

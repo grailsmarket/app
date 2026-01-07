@@ -36,6 +36,8 @@ export const useCategoryDomains = (category: string) => {
       filters.sort,
       // @ts-expect-error the activity filter state will not be used for domains
       filters.market,
+      // @ts-expect-error the text match filter state will not be used for domains
+      filters.textMatch,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

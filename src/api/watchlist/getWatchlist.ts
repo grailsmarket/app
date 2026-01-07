@@ -38,6 +38,12 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
     return undefined
   }
 
+  // Text Match filters - only include if non-empty
+  const textMatchFilters = filters.textMatch
+  const getTextMatchFilterValue = (value: string | undefined): string | undefined => {
+    return value && value.trim().length > 0 ? value.trim() : undefined
+  }
+
   const paramString = buildQueryParamString({
     limit,
     page: pageParam,
@@ -66,6 +72,9 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
         : undefined,
     'filters[hasSales]': getMarketFilterValue(marketFilters?.['Has Last Sale']),
     'filters[hasOffer]': getMarketFilterValue(marketFilters?.['Has Offers']),
+    'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
+    'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
+    'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),
     sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
     sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
   })

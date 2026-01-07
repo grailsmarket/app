@@ -1,4 +1,12 @@
-export const MY_DOMAINS_OPENABLE_FILTERS = ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range'] as const
+export const MY_DOMAINS_OPENABLE_FILTERS = [
+  'Sort',
+  'Status',
+  'Market',
+  'Type',
+  'Text Match',
+  'Length',
+  'Price Range',
+] as const
 
 // Re-export from marketplace for consistency
 export { MARKETPLACE_TYPE_FILTER_LABELS as MY_DOMAINS_TYPE_FILTER_LABELS } from './marketplaceFilters'

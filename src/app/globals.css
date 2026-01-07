@@ -295,3 +295,7 @@ body {
 .avatar-container {
   z-index: inherit !important;
 }
+
+.user-profile-content {
+  z-index: 20;
+}

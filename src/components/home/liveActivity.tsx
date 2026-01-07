@@ -119,7 +119,7 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary p-sm border-tertiary h-[502px] lg:h-[524px] w-full overflow-hidden rounded-md border-2 pb-0 lg:max-w-[700px] lg:overflow-visible'>
+    <div className='bg-secondary p-sm border-tertiary h-[502px] w-full overflow-hidden rounded-md border-2 pb-0 lg:h-[524px] lg:max-w-[700px] lg:overflow-visible'>
       <div className='pt-md p-md lg:p-lg flex items-center justify-between'>
         <div className='flex items-center gap-4'>
           <h2 className='text-2xl font-bold text-white'>Live Activity</h2>

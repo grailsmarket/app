@@ -9,6 +9,7 @@ import TabSwitcher from './tabSwitcher'
 import DomainPanel from './domainPanel'
 import ActivityPanel from './activityPanel'
 import FilterPanel from '@/components/filters'
+import ActionButtons from './actionButtons'
 
 const MainPanel: React.FC = () => {
   const [isLiveActivityConnected, setIsLiveActivityConnected] = useState(false)
@@ -30,12 +31,9 @@ const MainPanel: React.FC = () => {
   return (
     <div className='flex w-full flex-col gap-0'>
       <TabSwitcher isLiveActivityConnected={false} />
-      <div className='flex flex-row gap-0 w-full'>
+      <div className='flex w-full flex-row gap-0'>
         <FilterPanel hasTabs={true} />
-        <div
-          className='flex w-full flex-col transition-all duration-300'
-          style={{ width: getContentWidth() }}
-        >
+        <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
           {showNamesPanel && <DomainPanel />}
           {showActivityPanel && (
             <ActivityPanel
@@ -45,6 +43,7 @@ const MainPanel: React.FC = () => {
           )}
         </div>
       </div>
+      <ActionButtons hideDomainActions={showActivityPanel} />
     </div>
   )
 }

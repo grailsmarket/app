@@ -17,7 +17,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
     <Suspense>
       <FilterProvider filterType='category'>
         <div className='z-10 w-full'>
-          <div className='px-sm md:px-md border-tertiary bg-background relative z-10 mx-auto flex min-h-[calc(100dvh-56px)] gap-0 border-t-2 sm:px-3 md:min-h-[calc(100dvh-70px)]'>
+          <div className='border-tertiary bg-background relative z-10 mx-auto flex min-h-[calc(100dvh-56px)] gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
             <FilterPanel />
             <CategoryContent category={category} />
             <ActionButtons />
@@ -47,7 +47,7 @@ const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
 
   return (
     <div
-      className='flex flex-col gap-2 transition-all duration-300 md:gap-4'
+      className='px-sm flex flex-col gap-2 transition-all duration-300 md:gap-4'
       style={{ width: getContentWidth() }}
     >
       <DomainPanel category={category} />

@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
 import MainPanel from './components/mainPanel'
 import { FilterProvider } from '@/context/filters'
-import ActionButtons from './components/actionButtons'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -30,7 +29,6 @@ const Marketplace = () => {
           <div className='relative z-10 mx-auto flex w-full flex-col'>
             <div className='bg-background relative flex min-h-[calc(100dvh-54px)] w-full flex-row gap-0 md:min-h-[calc(100dvh-70px)] lg:px-0'>
               <MainPanel />
-              <ActionButtons />
             </div>
           </div>
         </main>

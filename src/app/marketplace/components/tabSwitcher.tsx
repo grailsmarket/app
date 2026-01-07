@@ -102,7 +102,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
   return (
     <div
       className={cn(
-        'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[70px] md:min-h-14 lg:gap-8',
+        'bg-background px-md sm:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:top-[72px] md:min-h-14 lg:gap-8',
         isNavbarVisible ? 'top-14' : 'top-0'
       )}
     >

@@ -63,7 +63,7 @@ const ActionButtons = () => {
       <button
         onClick={scrollToTop}
         className={cn(
-          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-30 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
+          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6',
           isBulkListingActionButtonsVisible && 'bottom-16 md:right-5 md:bottom-22',
@@ -76,27 +76,29 @@ const ActionButtons = () => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container max-w-app! bg-background p-md md:px-lg action-buttons-container fixed bottom-0 left-0 z-20 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
-          (selectedTab.value === 'watchlist' && !cartIsEmpty)
+          'border-tertiary action-buttons-container max-w-app! bg-background p-md md:px-lg action-buttons-container fixed bottom-0 left-0 z-30 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
+          selectedTab.value === 'watchlist' && !cartIsEmpty
             ? 'w-full translate-y-0'
-            : filtersOpen ? 'w-full translate-y-full lg:w-[290px] lg:translate-y-0' : 'hidden'
+            : filtersOpen
+              ? 'w-full translate-y-0 lg:w-[290px]'
+              : 'hidden'
         )}
         style={{
           maxWidth: 'calc(var(--max-width-app) - 4px)',
         }}
       >
-        <div className='flex flex-row justify-end gap-2 lg:w-[264px]'>
+        <div className='flex w-full flex-row justify-end gap-2 lg:w-[264px]'>
           <PersistGate persistor={persistor}>
-            {filtersOpen &&
+            {filtersOpen && (
               <>
                 <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
                   Clear Filters
                 </SecondaryButton>
-                <SecondaryButton onClick={closeFilters} className='md:hidden'>
+                <SecondaryButton onClick={closeFilters} className='lg:hidden'>
                   Close Filters
                 </SecondaryButton>
               </>
-            }
+            )}
           </PersistGate>
         </div>
         <div className={cn('flex w-fit flex-row gap-x-2 overflow-x-scroll', filtersOpen ? 'hidden lg:flex' : 'flex')}>

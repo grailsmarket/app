@@ -46,7 +46,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
       <button
         onClick={scrollToTop}
         className={cn(
-          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-30 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
+          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6'
         )}
@@ -58,27 +58,32 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
       <div
         className={cn(
           'border-tertiary bg-background fixed bottom-0 left-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
-          (cartIsEmpty || hideDomainActions) && !filtersOpen
-            ? 'w-full translate-y-full lg:w-[300px] lg:translate-y-0'
-            : 'w-full translate-y-0'
+          !cartIsEmpty && !hideDomainActions
+            ? 'w-full translate-y-0'
+            : filtersOpen
+              ? 'w-full translate-y-0 lg:w-[290px]'
+              : 'hidden'
         )}
       >
         <div
           className={cn(
-            'px-md md:px-lg lg:border-tertiary lg:pr-lg h-full flex-row items-center justify-end gap-2 lg:w-[298px]',
-            filtersOpen ? 'flex' : 'hidden lg:flex'
+            'px-md md:px-lg lg:border-tertiary flex h-full flex-row items-center justify-end gap-2 lg:w-[290px]'
           )}
         >
           <PersistGate persistor={persistor}>
-            <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
-              Clear Filters
-            </SecondaryButton>
-            <SecondaryButton onClick={closeFilters} className='lg:hidden'>
-              Close Filters
-            </SecondaryButton>
+            {filtersOpen && (
+              <>
+                <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
+                  Clear Filters
+                </SecondaryButton>
+                <SecondaryButton onClick={closeFilters} className='lg:hidden'>
+                  Close Filters
+                </SecondaryButton>
+              </>
+            )}
           </PersistGate>
         </div>
-        {!cartIsEmpty && (
+        {!cartIsEmpty && !hideDomainActions && (
           <div className={cn('px-md md:px-lg flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
             <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
               Clear Cart

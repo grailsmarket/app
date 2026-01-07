@@ -56,19 +56,30 @@ export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'
 export const PORTFOLIO_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
 
 export const ALL_SORT_FILTERS = [
-  // 'alphabetical_asc',
-  // 'alphabetical_desc',
-  'price_desc',
+  'alphabetical_asc',
+  'alphabetical_desc',
   'price_asc',
-  // 'offer_asc',
-  // 'offer_desc',
-  // 'last_sale_price_asc',
-  // 'last_sale_price_desc',
-  // 'last_sale_date_asc',
+  'price_desc',
+  'last_sale_price_asc',
+  'last_sale_price_desc',
+  'last_sale_date_asc',
   'last_sale_date_desc',
   'expiry_date_asc',
-  // 'expiry_date_desc',
+  'expiry_date_desc',
 ] as const
+
+// Sort types for the dropdown (without direction)
+export const SORT_TYPES = ['alphabetical', 'price', 'last_sale_price', 'last_sale_date', 'expiry_date'] as const
+
+export type SortType = (typeof SORT_TYPES)[number]
+
+export const SORT_TYPE_LABELS: Record<SortType, string> = {
+  alphabetical: 'Alphabetical',
+  price: 'Price',
+  last_sale_price: 'Last Sale Price',
+  last_sale_date: 'Last Sale Date',
+  expiry_date: 'Expiration',
+}
 
 export const SORT_FILTER_LABELS = {
   alphabetical_asc: 'Alphabetical (A-Z)',

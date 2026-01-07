@@ -20,11 +20,11 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
     useMarketplaceActivity(setIsLiveActivityConnected)
 
   return (
-    <div className='px-md pt-md md:pt-lg flex w-full flex-col gap-2'>
-      <div className='md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+    <div className='px-sm pt-md md:pt-lg flex w-full flex-col gap-2'>
+      <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
         <div className='flex w-full items-center justify-between gap-2'>
           <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10'
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />

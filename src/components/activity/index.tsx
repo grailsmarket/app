@@ -88,7 +88,7 @@ const Activity: React.FC<ActivityProps> = ({
   return (
     <div className='flex w-full flex-1 flex-col'>
       {showHeaders && !noResults && (
-        <div className='sm:px-sm pt-sm md:px-md lg:px-lg sm:py-md flex w-full items-center justify-start sm:flex'>
+        <div className='px-sm pt-sm md:px-md lg:px-lg sm:py-md flex w-full items-center justify-start sm:flex'>
           {displayedColumns.map((header, index) => {
             return (
               <div

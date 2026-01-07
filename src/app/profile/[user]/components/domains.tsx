@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react'
 import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
+import SortDropdown from '@/components/domains/sortDropdown'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -41,22 +42,22 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   }, [selectedTab.value])
 
   return (
-    <div className='sm:px-md px-sm flex w-full flex-col gap-1'>
-      <div className='md:p-md lg:px-lg flex w-full items-center justify-between gap-2'>
-        <div className='px-sm flex w-auto items-center gap-2 md:p-0'>
+    <div className='px-sm flex w-full flex-col gap-1'>
+      <div className='md:p-md lg:px-lg flex w-full flex-col items-center justify-between gap-2 sm:flex-row'>
+        <div className='px-sm flex w-full items-center gap-2 sm:w-fit md:p-0'>
           <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-70 transition-opacity hover:opacity-100 md:h-10 md:w-10'
+            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group border-tertiary flex h-9 items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40 md:h-10'>
+          <div className='group border-tertiary flex h-9 w-[calc(100%-39px)] items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40 sm:w-fit md:h-10'>
             <input
               type='text'
               placeholder='Search'
               value={selectors.filters.search}
               onChange={(e) => dispatch(actions.setSearch(e.target.value))}
-              className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
+              className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
             {selectors.filters.search.length === 0 ? (
               <Image
@@ -73,8 +74,16 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
               />
             )}
           </div>
+          <div className='hidden sm:block'>
+            <SortDropdown />
+          </div>
         </div>
-        <ViewSelector />
+        <div className='px-sm flex w-full items-center justify-between gap-2 sm:w-fit sm:justify-end'>
+          <div className='block sm:hidden'>
+            <SortDropdown />
+          </div>
+          <ViewSelector />
+        </div>
       </div>
       <Domains
         domains={domains}

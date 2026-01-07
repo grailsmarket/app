@@ -5,7 +5,6 @@ import Image from 'next/image'
 import list from 'public/icons/list.svg'
 import grid from 'public/icons/grid.svg'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { cn } from '@/utils/tailwind'
 import Tooltip from '../ui/tooltip'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -64,7 +63,7 @@ const ViewSelector = () => {
   return (
     <PersistGate persistor={persistor}>
       <div className='flex gap-x-2'>
-        <Tooltip label='List view'>
+        {/* <Tooltip label='List view'>
           <button onClick={() => onChangeViewType('list')} className='h-6 w-6'>
             <Image
               src={list}
@@ -74,16 +73,17 @@ const ViewSelector = () => {
               className={cn('cursor-pointer', viewType === 'list' ? 'opacity-100' : 'opacity-50 hover:opacity-80')}
             />
           </button>
-        </Tooltip>
-        <Tooltip label='Grid view'>
-          <button onClick={() => onChangeViewType('grid')} className='h-6 w-6'>
-            <Image
-              src={grid}
-              alt='Grid layout'
-              width={18}
-              height={18}
-              className={cn('cursor-pointer', viewType === 'grid' ? 'opacity-100' : 'opacity-50 hover:opacity-80')}
-            />
+        </Tooltip> */}
+        <Tooltip label={viewType === 'grid' ? 'Grid view' : 'List view'}>
+          <button
+            onClick={() => onChangeViewType(viewType === 'grid' ? 'list' : 'grid')}
+            className='border-foreground flex h-9 w-9 items-center justify-center rounded-sm border opacity-40 transition-opacity hover:opacity-80 md:h-10 md:w-10'
+          >
+            {viewType === 'grid' ? (
+              <Image src={grid} alt='Grid layout' width={18} height={18} />
+            ) : (
+              <Image src={list} alt='List layout' width={24} height={24} />
+            )}
           </button>
         </Tooltip>
       </div>

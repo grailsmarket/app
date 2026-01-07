@@ -100,9 +100,9 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       <FilterProvider filterType='profile' profileTab={selectedTab}>
         <div className='w-full'>
           <div className='z-10 w-full'>
-            <div className='bg-background border-tertiary relative flex flex-col min-h-[calc(100dvh-56px)] w-full gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
+            <div className='bg-background border-tertiary relative flex min-h-[calc(100dvh-56px)] w-full flex-col gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
               <TabSwitcher user={userAccount?.address} />
-              <div className='flex w-full flex-row gap-0 transition-all duration-300'>
+              <div className='relative flex w-full flex-row gap-0 transition-all duration-300'>
                 <FilterPanel hasTabs={true} />
                 <ProfileContent
                   userAddress={userAccount?.address}
@@ -147,10 +147,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   }
 
   return (
-    <div
-      className='flex w-full flex-col pt-2 gap-2 transition-all duration-300'
-      style={{ width: getContentWidth() }}
-    >
+    <div className='flex w-full flex-col gap-2 pt-2 transition-all duration-300' style={{ width: getContentWidth() }}>
       {showDomainsPanel && <DomainPanel user={userAddress} />}
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}

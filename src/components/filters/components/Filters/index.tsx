@@ -1,5 +1,5 @@
-// import TypeFilter from '../TypeFilter'
 import StatusFilter from '../StatusFilter'
+import MarketFilter from '../MarketFilter'
 import LengthFilter from '../LengthFilter'
 import CategoryFilter from '../CategoryFilter'
 import PriceRangeFilter from '../PriceRangeFilter'
@@ -35,9 +35,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
         )}
       >
-        <div className='flex flex-col gap-y-2'>
+        <div className='flex flex-col'>
           {/* <SortFilter /> */}
           <StatusFilter />
+          <MarketFilter />
           <TypeFilter />
           <LengthFilter />
           <PriceRangeFilter />

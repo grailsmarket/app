@@ -10,12 +10,21 @@ import {
   PriceType,
   LengthType,
   PortfolioFiltersState,
+  TypeFiltersState,
 } from '@/types/filters'
+import {
+  DEFAULT_TYPE_FILTERS_STATE,
+  DEFAULT_MARKET_FILTERS_STATE,
+  TypeFilterOption,
+  MarketplaceTypeFilterLabel,
+  MarketFiltersState,
+} from '@/constants/filters/marketplaceFilters'
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
-  type: [],
-  status: ['Listed'],
+  status: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -33,8 +42,9 @@ export const emptyFilterState: PortfolioFiltersState = {
 export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
-  type: [],
-  status: ['Listed'],
+  status: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -45,7 +55,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range'],
   sort: 'price_asc',
   scrollTop: 0,
 }
@@ -61,15 +71,22 @@ export const profileListingsFiltersSlice = createSlice({
     setSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
-    toggleFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      if (state.type.includes(payload)) {
-        state.type = state.type.filter((type) => type !== payload)
+    setTypeFilter(state, { payload }: PayloadAction<{ label: MarketplaceTypeFilterLabel; option: TypeFilterOption }>) {
+      const { label, option } = payload
+      if (option === 'only') {
+        state.type = { ...DEFAULT_TYPE_FILTERS_STATE, [label]: 'only' }
       } else {
-        state.type = state.type.concat(payload)
+        state.type[label] = option
       }
     },
-    setFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      state.type = [payload]
+    toggleFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
+      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+    },
+    setFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
+      state.type = payload
+    },
+    setMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
+      state.market = payload
     },
     setFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
@@ -109,12 +126,13 @@ export const profileListingsFiltersSlice = createSlice({
     },
     clearFilters(state) {
       state.search = ''
-      state.type = []
+      state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
+      state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -124,8 +142,10 @@ export const profileListingsFiltersSlice = createSlice({
 export const {
   setFiltersOpen,
   setSearch,
+  setTypeFilter,
   toggleFiltersType,
   setFiltersType,
+  setMarketFilters,
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,

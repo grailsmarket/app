@@ -2,21 +2,29 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
+  DEFAULT_TYPE_FILTERS_STATE,
+  DEFAULT_MARKET_FILTERS_STATE,
+  TypeFilterOption,
+  MarketplaceTypeFilterLabel,
+  MarketFiltersState,
+} from '@/constants/filters/marketplaceFilters'
+import {
   PortfolioFiltersOpenedState,
   PortfolioStatusFilterType,
-  PortfolioTypeFilterType,
   PortfolioOpenableFilterType,
   SortFilterType,
   PriceDenominationType,
   PriceType,
   LengthType,
   PortfolioFiltersState,
+  TypeFiltersState,
 } from '@/types/filters'
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -35,7 +43,8 @@ export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -46,7 +55,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -72,15 +81,22 @@ export const profileDomainsFiltersSlice = createSlice({
     setFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       state.status = [payload]
     },
-    toggleFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      if (state.type.includes(payload)) {
-        state.type = state.type.filter((type) => type !== payload)
+    setTypeFilter(state, { payload }: PayloadAction<{ label: MarketplaceTypeFilterLabel; option: TypeFilterOption }>) {
+      const { label, option } = payload
+      if (option === 'only') {
+        state.type = { ...DEFAULT_TYPE_FILTERS_STATE, [label]: 'only' }
       } else {
-        state.type = state.type.concat(payload)
+        state.type[label] = option
       }
     },
-    setFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      state.type = [payload]
+    toggleFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
+      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+    },
+    setFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
+      state.type = payload
+    },
+    setMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
+      state.market = payload
     },
     setFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
@@ -121,12 +137,13 @@ export const profileDomainsFiltersSlice = createSlice({
     clearFilters(state) {
       state.search = ''
       state.status = []
-      state.type = []
+      state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
+      state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -138,8 +155,10 @@ export const {
   setSearch,
   toggleFiltersStatus,
   setFiltersStatus,
+  setTypeFilter,
   toggleFiltersType,
   setFiltersType,
+  setMarketFilters,
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,

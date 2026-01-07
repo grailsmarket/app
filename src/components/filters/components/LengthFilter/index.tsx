@@ -29,7 +29,7 @@ const LengthFilter = () => {
         open={open}
         toggleOpen={toggleOpen}
         label='Length'
-        expandedHeight={102}
+        expandedHeight={112}
         CustomComponent={
           <p className='text-md text-neutral font-medium'>{minVal ? `${minVal} - ${maxVal || '10+'}` : null}</p>
         }

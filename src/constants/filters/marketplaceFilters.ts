@@ -1,23 +1,79 @@
-export const MARKETPLACE_OPENABLE_FILTERS = ['Status', 'Type', 'Length', 'Price Range', 'Activity', 'Sort'] as const
+export const MARKETPLACE_OPENABLE_FILTERS = [
+  'Status',
+  'Market',
+  'Type',
+  'Length',
+  'Price Range',
+  'Activity',
+  'Sort',
+] as const
 
 export const MARKETPLACE_TYPE_FILTER_LABELS = ['Letters', 'Digits', 'Emojis', 'Repeating'] as const
+
+export type MarketplaceTypeFilterLabel = (typeof MARKETPLACE_TYPE_FILTER_LABELS)[number]
+
+// Type filter options for each type category
+export const TYPE_FILTER_OPTIONS = ['none', 'include', 'exclude', 'only'] as const
+
+export type TypeFilterOption = (typeof TYPE_FILTER_OPTIONS)[number]
+
+export const TYPE_FILTER_OPTION_LABELS: Record<TypeFilterOption, string> = {
+  none: '---',
+  include: 'Include',
+  exclude: 'Exclude',
+  only: 'Only',
+}
+
+// Type filter state structure
+export type TypeFiltersState = Record<MarketplaceTypeFilterLabel, TypeFilterOption>
+
+export const DEFAULT_TYPE_FILTERS_STATE: TypeFiltersState = {
+  Letters: 'none',
+  Digits: 'none',
+  Emojis: 'none',
+  Repeating: 'none',
+}
 
 export const MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS: Record<string, string> = {
   Letters: 'letters',
   Digits: 'digits',
   Emojis: 'emojis',
-  'Repeating Characters': 'repeatingChars',
+  Repeating: 'repeatingChars',
 }
 
-export const MARKETPLACE_STATUS_FILTER_LABELS = [
-  'Listed',
-  'Unlisted',
-  'Expiring Soon',
-  'Premium',
-  'Available',
-  'Has Last Sale',
-  'Has Offers',
-] as const
+// Market filter constants
+export const MARKET_FILTER_LABELS = ['Listed', 'Has Offers', 'Has Last Sale'] as const
+export const LISTED_FILTER_LABELS = ['Has Offers', 'Has Last Sale'] as const
+export const OFFERS_FILTER_LABELS = ['Listed', 'Has Last Sale'] as const
+
+export type MarketFilterLabel = (typeof MARKET_FILTER_LABELS)[number]
+
+export const MARKET_FILTER_OPTIONS = ['none', 'yes', 'no'] as const
+
+export type MarketFilterOption = (typeof MARKET_FILTER_OPTIONS)[number]
+
+export const MARKET_FILTER_OPTION_LABELS: Record<MarketFilterOption, string> = {
+  none: '---',
+  yes: 'Yes',
+  no: 'No',
+}
+
+export type MarketFiltersState = Record<MarketFilterLabel, MarketFilterOption>
+
+export const DEFAULT_MARKET_FILTERS_STATE: MarketFiltersState = {
+  Listed: 'none',
+  'Has Offers': 'none',
+  'Has Last Sale': 'none',
+}
+
+// Map market filter labels to API query params
+export const MARKET_FILTER_PARAM_OPTIONS: Record<MarketFilterLabel, string> = {
+  Listed: 'listed',
+  'Has Offers': 'hasOffer',
+  'Has Last Sale': 'hasSales',
+}
+
+export const MARKETPLACE_STATUS_FILTER_LABELS = ['Registered', 'Expiring Soon', 'Premium', 'Available'] as const
 
 export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
   Listed: 'listed',
@@ -25,6 +81,7 @@ export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
 }
 
 export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
+  Registered: 'registered',
   Listed: 'listed',
   Unlisted: 'unlisted',
   'Expiring Soon': 'grace',

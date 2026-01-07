@@ -28,6 +28,7 @@ export const useProfileDomains = (user: Address | undefined) => {
       filters.type,
       filters.status,
       filters.sort,
+      filters.market,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

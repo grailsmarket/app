@@ -10,12 +10,12 @@ import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import {
-  EXPIRED_STATUSES,
   PREMIUM,
   GRACE_PERIOD,
   UNREGISTERED,
   REGISTERED,
   REGISTERED_STATUSES,
+  REGISTERABLE_STATUSES,
 } from '@/constants/domains/registrationStatuses'
 import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
@@ -66,7 +66,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
       canCopy: true,
     },
     {
-      label: EXPIRED_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner',
+      label: REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner',
       value: nameDetails?.owner ? <User address={nameDetails?.owner as `0x${string}`} /> : null,
       canCopy: false,
     },

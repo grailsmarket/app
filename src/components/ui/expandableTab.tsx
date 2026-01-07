@@ -25,11 +25,12 @@ const ExpandableTab: React.FC<ExpandableTabProps> = ({
   labelColor,
 }) => {
   return (
-    <div className='w-full'>
+    <div className='border-tertiary w-full border-b'>
       <div
-        className={`flex w-full flex-col overflow-hidden transition-all`}
+        className={`flex w-full flex-col transition-all`}
         style={{
           height: open ? (expandedHeight ? expandedHeight + 'px' : 'auto') : headerHeight + 'px',
+          overflow: open ? 'visible' : 'hidden',
         }}
       >
         <div

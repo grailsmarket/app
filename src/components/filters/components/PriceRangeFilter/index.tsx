@@ -19,7 +19,7 @@ const PriceRangeFilter = () => {
       <ExpandableTab
         open={open}
         toggleOpen={toggleOpen}
-        expandedHeight={102}
+        expandedHeight={112}
         label='Price Range'
         CustomComponent={
           <p className='text-md text-neutral font-medium'>

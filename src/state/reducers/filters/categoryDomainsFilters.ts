@@ -1,23 +1,30 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
-import { MY_DOMAINS_TYPE_FILTER_LABELS } from '@/constants/filters/portfolioFilters'
+import {
+  DEFAULT_TYPE_FILTERS_STATE,
+  DEFAULT_MARKET_FILTERS_STATE,
+  TypeFilterOption,
+  MarketplaceTypeFilterLabel,
+  MarketFiltersState,
+} from '@/constants/filters/marketplaceFilters'
 import {
   PortfolioFiltersOpenedState,
   PortfolioStatusFilterType,
-  PortfolioTypeFilterType,
   PortfolioOpenableFilterType,
   SortFilterType,
   PriceDenominationType,
   PriceType,
   LengthType,
   PortfolioFiltersState,
+  TypeFiltersState,
 } from '@/types/filters'
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -36,7 +43,8 @@ export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  type: [],
+  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  type: { ...DEFAULT_TYPE_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -47,7 +55,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Type', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -74,16 +82,22 @@ export const categoryDomainsFiltersSlice = createSlice({
     setFiltersStatus(state, { payload }: PayloadAction<PortfolioStatusFilterType>) {
       state.status = [payload]
     },
-    toggleFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      const index = state.type.findIndex((type) => type === payload)
-      if (index > -1) {
-        state.type.splice(index, 1)
+    setTypeFilter(state, { payload }: PayloadAction<{ label: MarketplaceTypeFilterLabel; option: TypeFilterOption }>) {
+      const { label, option } = payload
+      if (option === 'only') {
+        state.type = { ...DEFAULT_TYPE_FILTERS_STATE, [label]: 'only' }
       } else {
-        state.type.push(payload)
+        state.type[label] = option
       }
     },
-    setFiltersType(state, { payload }: PayloadAction<PortfolioTypeFilterType>) {
-      state.type = [payload]
+    toggleFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
+      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+    },
+    setFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
+      state.type = payload
+    },
+    setMarketFilters(state, { payload }: PayloadAction<MarketFiltersState>) {
+      state.market = payload
     },
     setFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
@@ -124,12 +138,13 @@ export const categoryDomainsFiltersSlice = createSlice({
     clearFilters(state) {
       state.search = ''
       state.status = []
-      state.type = [...MY_DOMAINS_TYPE_FILTER_LABELS]
+      state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
+      state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Type', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -141,8 +156,10 @@ export const {
   setSearch,
   toggleFiltersStatus,
   setFiltersStatus,
+  setTypeFilter,
   toggleFiltersType,
   setFiltersType,
+  setMarketFilters,
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,

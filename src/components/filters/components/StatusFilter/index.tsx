@@ -47,7 +47,7 @@ const StatusFilter: React.FC = () => {
   }, [filterType, activeProfileTab])
 
   // Calculate expanded height based on number of labels
-  const expandedHeight = 56 + filterLabels.length * 36
+  const expandedHeight = 64 + filterLabels.length * 36
 
   const selectedLabel =
     statusFilter.length > 1 ? `${statusFilter[0]} +${statusFilter.length - 1}` : statusFilter[0] || null

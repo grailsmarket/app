@@ -28,6 +28,7 @@ export const useDomains = () => {
       filters.type,
       filters.status,
       filters.sort,
+      filters.market,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

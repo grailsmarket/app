@@ -18,7 +18,7 @@ interface GetWatchlistOptions {
 export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: GetWatchlistOptions) => {
   const API_STATUS_FILTER_OPTIONS = {
     Registered: 'registered',
-    'Expiring Soon': 'grace',
+    Grace: 'grace',
     Premium: 'premium',
     Available: 'available',
   }
@@ -27,7 +27,7 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
   const statusFilter = filters.status.filter(
     (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
   )
-  // Type filters - now using object structure with none/include/exclude/only values
+  // Type filters - using object structure with include/exclude/only values
   const typeFilters = filters.type
 
   // Market filters - convert 'yes'/'no'/'none' to true/false/undefined
@@ -72,6 +72,7 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
         : undefined,
     'filters[hasSales]': getMarketFilterValue(marketFilters?.['Has Last Sale']),
     'filters[hasOffer]': getMarketFilterValue(marketFilters?.['Has Offers']),
+    'filters[marketplace]': marketFilters?.marketplace !== 'none' ? marketFilters?.marketplace : undefined,
     'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
     'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
     'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),

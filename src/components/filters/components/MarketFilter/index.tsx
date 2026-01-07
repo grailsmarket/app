@@ -16,12 +16,15 @@ import {
   MarketFilterLabel,
   MarketFilterOption,
   OFFERS_FILTER_LABELS,
+  MARKETPLACE_OPTIONS,
+  MARKETPLACE_OPTION_LABELS,
+  MarketplaceOption,
 } from '@/constants/filters/marketplaceFilters'
 import { useFilterContext } from '@/context/filters'
 
 const MarketFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Market')
-  const { getOption, setOption } = useMarketFilters()
+  const { getOption, setOption, getMarketplaceOption, setMarketplaceOption } = useMarketFilters()
   const { filterType, profileTab } = useFilterContext()
   const activeProfileTab = profileTab?.value || 'domains'
 
@@ -39,15 +42,15 @@ const MarketFilter = () => {
     return MARKET_FILTER_LABELS
   }, [filterType, activeProfileTab])
 
-  // Calculate expanded height based on number of labels
-  const expandedHeight = 64 + filterLabels.length * 42
+  // Calculate expanded height based on number of labels + 1 for marketplace dropdown
+  const expandedHeight = 64 + (filterLabels.length + 1) * 42
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Market' />}>
       <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={expandedHeight} label='Market'>
         <div className='flex flex-col'>
-          {filterLabels.map((label, index) => (
-            <div key={label} className={`z-${filterLabels.length - index}`}>
+          {filterLabels.map((label) => (
+            <div key={label}>
               <FilterDropdown<MarketFilterOption>
                 label={label}
                 value={getOption(label as MarketFilterLabel)}
@@ -58,6 +61,16 @@ const MarketFilter = () => {
               />
             </div>
           ))}
+          <div>
+            <FilterDropdown<MarketplaceOption>
+              label='Marketplace'
+              value={getMarketplaceOption()}
+              options={MARKETPLACE_OPTIONS}
+              optionLabels={MARKETPLACE_OPTION_LABELS}
+              onChange={(option) => setMarketplaceOption(option)}
+              noneValue='none'
+            />
+          </div>
         </div>
       </ExpandableTab>
     </PersistGate>

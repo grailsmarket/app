@@ -74,7 +74,7 @@ export const fetchDomains = async ({
 
     const API_STATUS_FILTER_OPTIONS = {
       Registered: 'registered',
-      'Expiring Soon': 'grace',
+      Grace: 'grace',
       Premium: 'premium',
       Available: 'available',
     }
@@ -83,11 +83,9 @@ export const fetchDomains = async ({
     const statusFilter = filters.status.filter(
       (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
     )
-    // Type filters - now using object structure with none/include/exclude/only values
-    const typeFilters = filters.type
-    const areAnyTypesIncluded = Object.values(typeFilters).some((value) => value === 'include')
 
-    // Market filters - convert 'yes'/'no'/'none' to true/false/undefined
+    const typeFilters = filters.type
+
     const marketFilters = filters.market
     const getMarketFilterValue = (value: string | undefined): boolean | undefined => {
       if (value === 'yes') return true
@@ -95,7 +93,6 @@ export const fetchDomains = async ({
       return undefined
     }
 
-    // Text Match filters - only include if non-empty
     const textMatchFilters = filters.textMatch
     const getTextMatchFilterValue = (value: string | undefined): string | undefined => {
       return value && value.trim().length > 0 ? value.trim() : undefined
@@ -119,14 +116,10 @@ export const fetchDomains = async ({
             .mul(BigNumber.from(10).pow(12))
             .toString()
         : filters.priceRange.min || null,
-      'filters[letters]':
-        typeFilters.Letters !== 'none' ? typeFilters.Letters : areAnyTypesIncluded ? 'exclude' : undefined,
-      'filters[digits]':
-        typeFilters.Digits !== 'none' ? typeFilters.Digits : areAnyTypesIncluded ? 'exclude' : undefined,
-      'filters[emoji]':
-        typeFilters.Emojis !== 'none' ? typeFilters.Emojis : areAnyTypesIncluded ? 'exclude' : undefined,
-      'filters[repeatingChars]':
-        typeFilters.Repeating !== 'none' ? typeFilters.Repeating : areAnyTypesIncluded ? 'exclude' : undefined,
+      'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
+      'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
+      'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,
+      'filters[repeatingChars]': typeFilters.Repeating !== 'none' ? typeFilters.Repeating : undefined,
       'filters[clubs][]': category || filters.categories?.join(',') || null,
       'filters[status]':
         statusFilter.length === 1
@@ -134,6 +127,7 @@ export const fetchDomains = async ({
           : undefined,
       'filters[hasSales]': getMarketFilterValue(marketFilters?.['Has Last Sale']),
       'filters[hasOffer]': getMarketFilterValue(marketFilters?.['Has Offers']),
+      'filters[marketplace]': marketFilters?.marketplace !== 'none' ? marketFilters?.marketplace : undefined,
       'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
       'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
       'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),

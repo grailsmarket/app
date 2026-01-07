@@ -148,7 +148,7 @@ export const myOffersFiltersSlice = createSlice({
       }
     },
     toggleMyOffersFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
-      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
     },
     setMyOffersFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
       state.type = payload

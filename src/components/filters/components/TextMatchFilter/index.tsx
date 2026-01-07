@@ -13,7 +13,7 @@ const TextMatchFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Text Match')
   const { getValue, setValue } = useTextMatchFilters()
   const filterLabels = TEXT_MATCH_FILTER_LABELS
-  const placeholders = ['Contains "..."', 'Starts with "..."', 'Ends with "..."']
+  const placeholders = ['...', '...', '...']
 
   // Calculate expanded height based on number of labels (each input row is ~48px)
   const expandedHeight = 56 + filterLabels.length * 48

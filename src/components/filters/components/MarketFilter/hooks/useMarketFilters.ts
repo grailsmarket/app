@@ -3,6 +3,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import {
   MarketFilterLabel,
   MarketFilterOption,
+  MarketplaceOption,
   DEFAULT_MARKET_FILTERS_STATE,
 } from '@/constants/filters/marketplaceFilters'
 import { MarketFiltersState } from '@/types/filters'
@@ -23,9 +24,20 @@ export const useMarketFilters = () => {
     dispatch(actions.setMarketFilters(newState as any))
   }
 
+  const getMarketplaceOption = (): MarketplaceOption => {
+    return marketFilters.marketplace || 'none'
+  }
+
+  const setMarketplaceOption = (option: MarketplaceOption) => {
+    const newState: MarketFiltersState = { ...marketFilters, marketplace: option }
+    dispatch(actions.setMarketFilters(newState as any))
+  }
+
   return {
     marketFilters,
     getOption,
     setOption,
+    getMarketplaceOption,
+    setMarketplaceOption,
   }
 }

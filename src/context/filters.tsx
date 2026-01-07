@@ -44,6 +44,14 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children, filter
   }, [pathname, windowWidth, dispatch])
 
   useEffect(() => {
+    if (windowWidth !== null && windowWidth > 1024) {
+      dispatch(setFilterPanelOpen(true))
+    } else {
+      dispatch(setFilterPanelOpen(false))
+    }
+  }, [windowWidth, dispatch])
+
+  useEffect(() => {
     if (actions) {
       if (!pathname.includes('/marketplace')) dispatch(actions.clearFilters())
 

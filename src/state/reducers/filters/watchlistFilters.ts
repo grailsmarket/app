@@ -102,7 +102,7 @@ export const watchlistFiltersSlice = createSlice({
       }
     },
     toggleWatchlistFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
-      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
     },
     setWatchlistFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
       state.type = payload

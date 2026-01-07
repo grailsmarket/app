@@ -26,11 +26,13 @@ const TextMatchFilterItem: React.FC<TextMatchFilterItemProps> = ({ label, placeh
     if (value !== localValue && value !== debouncedValue) {
       setLocalValue(value)
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   return (
     <div className='flex flex-row items-center justify-between'>
-      <label className='text-md w-24 shrink-0 font-medium'>{label}</label>
+      <label className='w-24 shrink-0 text-lg font-medium'>{label}</label>
       <input
         type='text'
         placeholder={placeholder}

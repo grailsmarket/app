@@ -29,6 +29,13 @@ export const TYPE_FILTER_OPTION_LABELS: Record<TypeFilterOption, string> = {
 export type TypeFiltersState = Record<MarketplaceTypeFilterLabel, TypeFilterOption>
 
 export const DEFAULT_TYPE_FILTERS_STATE: TypeFiltersState = {
+  Letters: 'include',
+  Digits: 'include',
+  Emojis: 'include',
+  Repeating: 'include',
+}
+
+export const EMPTY_TYPE_FILTERS_STATE: TypeFiltersState = {
   Letters: 'none',
   Digits: 'none',
   Emojis: 'none',
@@ -59,12 +66,26 @@ export const MARKET_FILTER_OPTION_LABELS: Record<MarketFilterOption, string> = {
   no: 'No',
 }
 
-export type MarketFiltersState = Record<MarketFilterLabel, MarketFilterOption>
+// Marketplace (platform) filter constants
+export const MARKETPLACE_OPTIONS = ['none', 'grails', 'opensea'] as const
+
+export type MarketplaceOption = (typeof MARKETPLACE_OPTIONS)[number]
+
+export const MARKETPLACE_OPTION_LABELS: Record<MarketplaceOption, string> = {
+  none: '---',
+  grails: 'Grails',
+  opensea: 'Opensea',
+}
+
+export type MarketFiltersState = Record<MarketFilterLabel, MarketFilterOption> & {
+  marketplace: MarketplaceOption
+}
 
 export const DEFAULT_MARKET_FILTERS_STATE: MarketFiltersState = {
   Listed: 'none',
   'Has Offers': 'none',
   'Has Last Sale': 'none',
+  marketplace: 'none',
 }
 
 // Map market filter labels to API query params
@@ -94,7 +115,7 @@ export const TEXT_MATCH_FILTER_PARAM_OPTIONS: Record<TextMatchFilterLabel, strin
   'Ends with': 'endsWith',
 }
 
-export const MARKETPLACE_STATUS_FILTER_LABELS = ['Registered', 'Expiring Soon', 'Premium', 'Available'] as const
+export const MARKETPLACE_STATUS_FILTER_LABELS = ['Registered', 'Grace', 'Premium', 'Available'] as const
 
 export const MARKETPLACE_OFFERS_PARAM_OPTIONS: Record<string, string> = {
   Listed: 'listed',
@@ -105,7 +126,7 @@ export const MARKETPLACE_STATUS_PARAM_OPTIONS: Record<string, string> = {
   Registered: 'registered',
   Listed: 'listed',
   Unlisted: 'unlisted',
-  'Expiring Soon': 'grace',
+  Grace: 'grace',
   Premium: 'premium',
   Available: 'available',
   'Has Last Sale': 'has_last_sale',
@@ -129,7 +150,7 @@ export const MARKETPLACE_SORT_FILTERS = [
 
 export const OFFERS_STATUS_FILTER_LABELS = ['Listed', 'Has Offers'] as const
 
-export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Expiring Soon'] as const
+export const YOUR_DOMAINS_FILTER_LABELS = ['Listed', 'Unlisted', 'Grace'] as const
 
 export const PORTFOLIO_ACTIVITY_FILTER_LABELS = ['Sale', 'Transfer', 'Offer', 'Mint', 'Listing'] as const
 

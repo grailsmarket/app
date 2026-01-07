@@ -33,7 +33,7 @@ function FilterDropdown<T extends string>({
 
   return (
     <div className='px-lg py-md flex items-center justify-between'>
-      <p className='text-light-200 text-md font-medium'>{label}</p>
+      <p className='text-lg font-medium'>{label}</p>
       <div ref={dropdownRef as RefObject<HTMLDivElement>} className='relative'>
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -60,7 +60,7 @@ function FilterDropdown<T extends string>({
                 key={option}
                 onClick={() => handleSelect(option)}
                 className={cn(
-                  'w-full cursor-pointer px-3 py-2 text-left text-sm transition-colors',
+                  'text-md w-full cursor-pointer px-3 py-2 text-left font-medium transition-colors',
                   value === option ? 'bg-primary/20 text-primary' : 'text-light-200 hover:bg-secondary',
                   noneValue !== undefined && option === noneValue && 'text-neutral-500'
                 )}

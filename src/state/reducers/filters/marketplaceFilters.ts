@@ -146,8 +146,8 @@ export const marketplaceFiltersSlice = createSlice({
     },
     // Keep for backwards compatibility but update to new structure
     toggleMarketplaceFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
-      // Toggle between 'none' and 'include'
-      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+      // Toggle between 'include' and 'exclude'
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
     },
     setMarketplaceFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
       state.type = payload

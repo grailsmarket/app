@@ -2,6 +2,7 @@ import StatusFilter from '../StatusFilter'
 import MarketFilter from '../MarketFilter'
 import LengthFilter from '../LengthFilter'
 import CategoryFilter from '../CategoryFilter'
+import CategoryFilterAll from '../CategoryFilterAll'
 import PriceRangeFilter from '../PriceRangeFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
@@ -40,10 +41,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           {/* <SortFilter /> */}
           <StatusFilter />
           <MarketFilter />
-          <TypeFilter />
           <TextMatchFilter />
           <LengthFilter />
           <PriceRangeFilter />
+          <TypeFilter />
           {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
         </div>
       </div>
@@ -54,6 +55,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
             isPanelCategories && '-translate-x-[100%] lg:-translate-x-[288px]'
           )}
         >
+          <CategoryFilterAll
+            allCategoryNames={categories?.map((c) => c.name) || []}
+            totalCount={categories?.reduce((sum, c) => sum + c.member_count, 0) || 0}
+          />
           {categories?.map((category, index) => (
             <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />
           ))}

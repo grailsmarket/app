@@ -101,7 +101,7 @@ export const myDomainsFiltersSlice = createSlice({
       }
     },
     toggleMyDomainsFiltersType(state, { payload }: PayloadAction<MarketplaceTypeFilterLabel>) {
-      state.type[payload] = state.type[payload] === 'none' ? 'include' : 'none'
+      state.type[payload] = state.type[payload] === 'include' ? 'exclude' : 'include'
     },
     setMyDomainsFiltersType(state, { payload }: PayloadAction<TypeFiltersState>) {
       state.type = payload

@@ -3,7 +3,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import {
   MarketplaceTypeFilterLabel,
   TypeFilterOption,
-  DEFAULT_TYPE_FILTERS_STATE,
+  EMPTY_TYPE_FILTERS_STATE,
 } from '@/constants/filters/marketplaceFilters'
 import { TypeFiltersState } from '@/types/filters'
 
@@ -20,7 +20,7 @@ export const useTypeFilters = () => {
   const setOption = (type: MarketplaceTypeFilterLabel, option: TypeFilterOption) => {
     if (option === 'only') {
       // When 'only' is selected, set all other types to 'none'
-      const newState: TypeFiltersState = { ...DEFAULT_TYPE_FILTERS_STATE, [type]: 'only' }
+      const newState: TypeFiltersState = { ...EMPTY_TYPE_FILTERS_STATE, [type]: 'only' }
       dispatch(actions.setFiltersType(newState as any))
     } else if (option === 'include' || option === 'exclude') {
       // If setting to include/exclude, check if any other filter is 'only' and change it to 'include'

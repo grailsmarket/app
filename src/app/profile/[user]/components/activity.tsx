@@ -8,6 +8,8 @@ import { useProfileActivity } from '../hooks/useActivity'
 import FilterIcon from 'public/icons/filter.svg'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 interface Props {
   user: Address | undefined
@@ -17,10 +19,16 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
+  const { isNavbarVisible } = useNavbar()
 
   return (
-    <div className='px-sm md:pt-md flex w-full flex-col gap-2'>
-      <div className='px-sm md:px-md lg:px-lg flex w-full items-center justify-between gap-2'>
+    <div className='flex w-full flex-col'>
+      <div
+        className={cn(
+          'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full items-center justify-between gap-2 duration-300 sm:flex-row md:top-32',
+          isNavbarVisible ? 'top-26' : 'top-12'
+        )}
+      >
         <div className='flex w-auto items-center gap-2'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
@@ -38,6 +46,7 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
         hasMoreActivity={hasMoreActivity}
         fetchMoreActivity={fetchMoreActivity}
         displayedAddress={user}
+        stickyHeaders={true}
       />
     </div>
   )

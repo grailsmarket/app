@@ -7,6 +7,7 @@ import NoResults from '@/components/ui/noResults'
 import ActivityRow from './components/activityRow'
 import VirtualList from '@/components/ui/virtuallist'
 import { ActivityColumnType, NameActivityType } from '@/types/domains'
+import { useNavbar } from '@/context/navbar'
 
 interface ActivityProps {
   activity: ActivityType[] | NameActivityType[]
@@ -24,6 +25,7 @@ interface ActivityProps {
   useLocalScrollTop?: boolean
   containerScroll?: boolean
   containerHeight?: string
+  stickyHeaders?: boolean
 }
 
 const Activity: React.FC<ActivityProps> = ({
@@ -42,9 +44,10 @@ const Activity: React.FC<ActivityProps> = ({
   useLocalScrollTop = false,
   containerScroll = false,
   containerHeight,
+  stickyHeaders = true,
 }) => {
   const { width, height } = useWindowSize()
-
+  const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreActivity && hasMoreActivity && !isLoading) {
       fetchMoreActivity()
@@ -88,7 +91,13 @@ const Activity: React.FC<ActivityProps> = ({
   return (
     <div className='flex w-full flex-1 flex-col'>
       {showHeaders && !noResults && (
-        <div className='px-sm pt-sm md:px-md lg:px-lg sm:py-md flex w-full items-center justify-start sm:flex'>
+        <div
+          className={cn(
+            'pt-sm transition-top px-md lg:px-lg sm:py-md sticky flex w-full items-center justify-start duration-300 sm:flex',
+            stickyHeaders ? 'sitcky bg-background z-50 md:top-48' : '',
+            stickyHeaders && (isNavbarVisible ? 'top-38' : 'top-24')
+          )}
+        >
           {displayedColumns.map((header, index) => {
             return (
               <div
@@ -131,7 +140,7 @@ const Activity: React.FC<ActivityProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-lg flex h-[60px] w-full items-center justify-between'>
+                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-t'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

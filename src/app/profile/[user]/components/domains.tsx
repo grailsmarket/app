@@ -18,6 +18,8 @@ import {
   PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS,
   PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS,
 } from '@/constants/domains/marketplaceDomains'
+import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 interface Props {
   user: Address | undefined
@@ -29,6 +31,7 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains(user)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
+  const { isNavbarVisible } = useNavbar()
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {
@@ -42,8 +45,13 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
   }, [selectedTab.value])
 
   return (
-    <div className='px-sm flex w-full flex-col gap-1'>
-      <div className='md:p-md lg:px-lg flex w-full flex-col items-center justify-between gap-2 sm:flex-row'>
+    <div className='z-0 flex w-full flex-col'>
+      <div
+        className={cn(
+          'py-md md:py-lg px-sm md:px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row md:top-32',
+          isNavbarVisible ? 'top-26' : 'top-12'
+        )}
+      >
         <div className='px-sm flex w-full items-center gap-2 sm:w-fit md:p-0'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'

@@ -44,8 +44,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           <TextMatchFilter />
           <LengthFilter />
           <PriceRangeFilter />
-          <TypeFilter />
           {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
+          <TypeFilter />
         </div>
       </div>
       {showCategoryTab && (

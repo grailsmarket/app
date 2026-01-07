@@ -127,7 +127,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         }
       }}
       className={cn(
-        'group px-sm md:p-md lg:p-lg flex h-[60px] w-full flex-row items-center justify-between rounded-sm transition',
+        'group px-md md:p-md lg:p-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-between border-t transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
         isBulkSelecting
           ? isSelected

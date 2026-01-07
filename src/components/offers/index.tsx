@@ -6,6 +6,7 @@ import { DomainOfferType, OfferColumnType } from '@/types/domains'
 import LoadingRow from './components/loadingRow'
 import OfferRow from './components/offerRow'
 import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 interface OffersProps {
   offers: DomainOfferType[]
@@ -39,7 +40,7 @@ const Offers: React.FC<OffersProps> = ({
   useLocalScrollTop = false,
 }) => {
   const { width, height } = useWindowSize()
-
+  const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreOffers && hasMoreOffers && !isLoading) {
       fetchMoreOffers()
@@ -90,7 +91,12 @@ const Offers: React.FC<OffersProps> = ({
   return (
     <div className='flex w-full flex-1 flex-col'>
       {showHeaders && (
-        <div className='px-sm md:px-md lg:px-lg py-md flex w-full items-center justify-between sm:flex'>
+        <div
+          className={cn(
+            'px-md bg-background transition-top lg:px-lg py-md sticky z-40 flex w-full items-center justify-between duration-300 sm:flex md:top-48',
+            isNavbarVisible ? 'top-38' : 'top-24'
+          )}
+        >
           {displayedColumns.map((header, index) => {
             const columnWidth = `${(100 - 20) / displayedColumns.length}%`
             const nameWidth = `${(100 - 20) / displayedColumns.length + 15}%`
@@ -104,7 +110,7 @@ const Offers: React.FC<OffersProps> = ({
                   width: header === 'name' ? nameWidth : header === 'offerrer' ? offerrerWidth : columnWidth,
                 }}
               >
-                <p className='w-fit text-left text-sm font-medium'>
+                <p className='text-neutral w-fit text-left text-sm font-medium'>
                   {header === 'actions' ? '' : columnHeaders[header]}
                 </p>
               </div>
@@ -127,7 +133,7 @@ const Offers: React.FC<OffersProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-lg flex h-[60px] w-full items-center'>
+                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center border-t'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

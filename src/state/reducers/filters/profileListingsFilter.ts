@@ -3,7 +3,6 @@ import { RootState } from '../../index'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
 import {
   PortfolioFiltersOpenedState,
-  PortfolioTypeFilterType,
   PortfolioOpenableFilterType,
   SortFilterType,
   PriceDenominationType,
@@ -46,7 +45,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
   status: [],
-  market: { ...DEFAULT_MARKET_FILTERS_STATE },
+  market: { ...DEFAULT_MARKET_FILTERS_STATE, Listed: 'yes' },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
   length: {

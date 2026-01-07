@@ -12,6 +12,8 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useRouter } from 'next/navigation'
 import { normalizeName } from '@/lib/ens'
+import { useNavbar } from '@/context/navbar'
+import { cn } from '@/utils/tailwind'
 
 const DomainPanel = () => {
   const router = useRouter()
@@ -19,10 +21,16 @@ const DomainPanel = () => {
   const { selectors, actions } = useFilterRouter()
   const filtersOpen = selectors.filters.open
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
+  const { isNavbarVisible } = useNavbar()
 
   return (
-    <div className='sm:pt-lg pt-md px-sm z-0 flex w-full flex-col gap-2'>
-      <div className='px-sm md:px-md lg:px-lg flex w-full flex-col items-center justify-between gap-2 sm:flex-row'>
+    <div className='z-0 flex w-full flex-col'>
+      <div
+        className={cn(
+          'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row md:top-32',
+          isNavbarVisible ? 'top-26' : 'top-12'
+        )}
+      >
         <div className='flex w-full items-center gap-2 sm:w-fit'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'

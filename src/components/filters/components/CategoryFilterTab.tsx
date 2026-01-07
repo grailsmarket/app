@@ -16,7 +16,10 @@ const CategoryFilterTab: React.FC<CategoryFilterTabProps> = ({ setPanelCategorie
   const selectedCategories = selectors.filters.categories
 
   return (
-    <div className='p-lg hover:bg-secondary w-full cursor-pointer rounded-sm' onClick={setPanelCategories}>
+    <div
+      className='p-lg hover:bg-secondary border-tertiary w-full cursor-pointer rounded-sm border-b'
+      onClick={setPanelCategories}
+    >
       <div className='flex cursor-pointer items-center justify-between'>
         <p className='text-lg leading-[18px] font-medium'>Categories</p>
         <div className='flex items-center justify-end gap-x-2'>

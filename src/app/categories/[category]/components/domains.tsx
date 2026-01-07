@@ -10,6 +10,8 @@ import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useCategoryDomains } from '../hooks/useDomains'
+import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 interface Props {
   category: string
@@ -21,10 +23,16 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
   const filtersOpen = selectors.filters.open
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
     useCategoryDomains(category)
+  const { isNavbarVisible } = useNavbar()
 
   return (
     <>
-      <div className='px-sm md:px-md lg:px-lg lg:pt-lg pt-md flex w-full flex-col items-center justify-between gap-2 sm:flex-row sm:px-0 sm:pt-3 md:pt-3.5'>
+      <div
+        className={cn(
+          'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row md:top-18',
+          isNavbarVisible ? 'top-14' : 'top-0'
+        )}
+      >
         <div className='flex w-full items-center gap-2 sm:w-fit'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'

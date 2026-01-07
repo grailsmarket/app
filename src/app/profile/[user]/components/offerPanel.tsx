@@ -11,6 +11,8 @@ import Offers from '@/components/offers'
 import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { Address } from 'viem'
+import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 interface OfferPanelProps {
   user: Address | undefined
@@ -22,7 +24,7 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
   const { selectors, actions } = useFilterRouter()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers(user)
-
+  const { isNavbarVisible } = useNavbar()
   const disconnectMessage = {
     sent_offers: 'Sign in to view your offers.',
     received_offers: 'Sign in to view your received offers.',
@@ -34,22 +36,27 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
   }[selectedTab.value as 'sent_offers' | 'received_offers']
 
   return (
-    <div className='px-sm flex flex-col gap-2 sm:gap-4'>
-      <div className='px-sm md:p-md lg:px-lg flex w-full items-center justify-between gap-2'>
-        <div className='flex w-auto items-center gap-2'>
+    <div className='z-0 flex w-full flex-col'>
+      <div
+        className={cn(
+          'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-start justify-start gap-2 duration-300 sm:flex-row md:top-32',
+          isNavbarVisible ? 'top-26' : 'top-12'
+        )}
+      >
+        <div className='flex w-full items-center gap-2 sm:w-auto'>
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-          <div className='w-ful group border-tertiary flex h-9 items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40 md:h-10'>
+          <div className='group border-tertiary flex h-9 w-[calc(100%-39px)] items-center justify-between rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/40 sm:w-fit md:h-10'>
             <input
               type='text'
               placeholder='Search'
               value={selectors.filters.search || ''}
               onChange={(e) => dispatch(actions.setSearch(e.target.value))}
-              className='w-[200px] bg-transparent text-lg outline-none lg:w-[260px]'
+              className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
             <Image
               src={MagnifyingGlass}

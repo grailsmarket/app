@@ -153,6 +153,6 @@ export const CATEGORY_LABELS = {
   common_animals: 'Common Animals',
   common_english: 'Common English',
   country_codes: 'Country Codes',
-  top_gamertags: 'Top Gamertags',
-  top_gamertags_double: 'Top Gamertags Double',
+  gamertags: 'Gamertags',
+  gamertags_double: 'Gamertags Double',
 } as const

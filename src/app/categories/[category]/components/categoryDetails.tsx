@@ -95,10 +95,10 @@ import CommonEnglishAvatar from 'public/clubs/common_english/avatar.jpeg'
 import CommonEnglishHeader from 'public/clubs/common_english/header.jpg'
 import CountryCodesAvatar from 'public/clubs/country_codes/avatar.jpg'
 import CountryCodesHeader from 'public/clubs/country_codes/header.jpg'
-import TopGamertagsAvatar from 'public/clubs/top_gamertags/avatar.jpeg'
-import TopGamertagsHeader from 'public/clubs/top_gamertags/header.jpeg'
-import TopGamertagsDoubleAvatar from 'public/clubs/top_gamertags_double/avatar.jpeg'
-import TopGamertagsDoubleHeader from 'public/clubs/top_gamertags_double/header.jpeg'
+import GamertagsAvatar from 'public/clubs/gamertags/avatar.jpeg'
+import GamertagsHeader from 'public/clubs/gamertags/header.jpeg'
+import GamertagsDoubleAvatar from 'public/clubs/gamertags_double/avatar.jpeg'
+import GamertagsDoubleHeader from 'public/clubs/gamertags_double/header.jpeg'
 
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
@@ -267,13 +267,13 @@ export const CATEGORY_IMAGES = {
     avatar: CountryCodesAvatar,
     header: CountryCodesHeader,
   },
-  top_gamertags: {
-    avatar: TopGamertagsAvatar,
-    header: TopGamertagsHeader,
+  gamertags: {
+    avatar: GamertagsAvatar,
+    header: GamertagsHeader,
   },
-  top_gamertags_double: {
-    avatar: TopGamertagsDoubleAvatar,
-    header: TopGamertagsDoubleHeader,
+  gamertags_double: {
+    avatar: GamertagsDoubleAvatar,
+    header: GamertagsDoubleHeader,
   },
 }
 
@@ -353,10 +353,10 @@ export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: 
   common_english: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
-  top_gamertags: {
+  gamertags: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
-  top_gamertags_double: {
+  gamertags_double: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
 }

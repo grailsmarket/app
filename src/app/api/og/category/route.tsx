@@ -168,13 +168,13 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/country_codes/avatar.jpg',
     header: 'https://grails.app/clubs/country_codes/header.jpg',
   },
-  top_gamertags: {
-    avatar: 'https://grails.app/clubs/top_gamertags/avatar.jpeg',
-    header: 'https://grails.app/clubs/top_gamertags/header.jpeg',
+  gamertags: {
+    avatar: 'https://grails.app/clubs/gamertags/avatar.jpeg',
+    header: 'https://grails.app/clubs/gamertags/header.jpeg',
   },
-  top_gamertags_double: {
-    avatar: 'https://grails.app/clubs/top_gamertags_double/avatar.jpeg',
-    header: 'https://grails.app/clubs/top_gamertags_double/header.jpeg',
+  gamertags_double: {
+    avatar: 'https://grails.app/clubs/gamertags_double/avatar.jpeg',
+    header: 'https://grails.app/clubs/gamertags_double/header.jpeg',
   },
 }
 

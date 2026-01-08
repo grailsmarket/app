@@ -150,4 +150,9 @@ export const CATEGORY_LABELS = {
   top_cities_global: 'Top Cities Global',
   top_cities_usa: 'Top Cities USA',
   us_states: 'US States',
+  common_animals: 'Common Animals',
+  common_english: 'Common English',
+  country_codes: 'Country Codes',
+  gamertags: 'Gamertags',
+  gamertags_double: 'Gamertags Double',
 } as const

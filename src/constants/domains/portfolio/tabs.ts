@@ -8,6 +8,10 @@ export const PROFILE_TABS = [
     value: 'listings',
   },
   {
+    label: 'Grace',
+    value: 'grace',
+  },
+  {
     label: 'Received Offers',
     value: 'received_offers',
   },

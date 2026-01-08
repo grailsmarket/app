@@ -29,6 +29,7 @@ import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
+import { beautifyName } from '@/lib/ens'
 
 interface ExtendModalProps {
   onClose: () => void
@@ -488,11 +489,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                      extensionMode === 'extend_for'
-                                        ? new Date(domain.expiry_date).getTime() +
-                                          quantity * getSecondsPerUnit(timeUnit) * 1000
-                                        : customDate * 1000
-                                    ).toLocaleDateString()
+                                    extensionMode === 'extend_for'
+                                      ? new Date(domain.expiry_date).getTime() +
+                                      quantity * getSecondsPerUnit(timeUnit) * 1000
+                                      : customDate * 1000
+                                  ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -530,9 +531,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       >
                         {customDate
                           ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : 'Select Date'}
                       </PrimaryButton>
                     ) : (
@@ -671,7 +672,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       : error && remainingDomains.length > 0
                         ? `Try Again (${remainingDomains.length} name${remainingDomains.length > 1 ? 's' : ''} remaining)`
                         : remainingDomains.length === 1
-                          ? `Extend ${remainingDomains[0].name}`
+                          ? `Extend ${beautifyName(remainingDomains[0].name)}`
                           : `Extend ${remainingDomains.length} Name${remainingDomains.length > 1 ? 's' : ''}`}
                 </PrimaryButton>
               )}

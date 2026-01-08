@@ -3,17 +3,17 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { addUserWatchlistDomains } from '@/state/reducers/portfolio/profile'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
 import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { MarketplaceDomainType } from '@/types/domains'
+import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
 export const useWatchlistDomains = (user: Address | undefined) => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
-  const filters = useAppSelector(selectMyDomainsFilters)
+  const filters = useAppSelector(selectWatchlistFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {

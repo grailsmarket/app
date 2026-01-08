@@ -20,6 +20,7 @@ interface FetchDomainsOptions {
   category?: string
   enableBulkSearch?: boolean
   isAuthenticated?: boolean
+  inAnyCategory?: boolean
 }
 
 export const fetchDomains = async ({
@@ -31,9 +32,9 @@ export const fetchDomains = async ({
   category,
   enableBulkSearch = false,
   isAuthenticated = false,
+  inAnyCategory = false,
 }: FetchDomainsOptions) => {
   try {
-    const fetchFunction = isAuthenticated ? fetch : authFetch
     const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
 
     if (isBulkSearching && enableBulkSearch) {
@@ -44,7 +45,7 @@ export const fetchDomains = async ({
         .filter((name) => name.length > 2)
         .join(',')
 
-      const res = await fetchFunction(`${API_URL}/search/bulk`, {
+      const res = await fetch(`${API_URL}/search/bulk`, {
         method: 'POST',
         body: JSON.stringify({
           terms: search.split(','),
@@ -130,7 +131,10 @@ export const fetchDomains = async ({
       'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),
       sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
+      'filters[inAnyClub]': inAnyCategory ? 'true' : undefined,
     })
+
+    const fetchFunction = isAuthenticated ? fetch : authFetch
 
     const res = await fetchFunction(`${API_URL}/search?${paramString}`, {
       method: 'GET',

@@ -93,7 +93,7 @@ const Offers: React.FC<OffersProps> = ({
       {showHeaders && (
         <div
           className={cn(
-            'px-md bg-background transition-top lg:px-lg py-md sticky z-40 flex w-full items-center justify-between duration-300 sm:flex md:top-48',
+            'px-md bg-background transition-top lg:px-lg border-tertiary border-b py-md sticky z-40 flex w-full items-center justify-between duration-300 sm:flex md:top-48',
             isNavbarVisible ? 'top-38' : 'top-24'
           )}
         >
@@ -133,7 +133,7 @@ const Offers: React.FC<OffersProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center border-t'>
+                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

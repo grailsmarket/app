@@ -34,10 +34,11 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const showCategoryTab =
     filterType === 'marketplace' || activeProfileTab === 'domains' || activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
 
-  // Hide status filter for category and marketplace Premium and Available tabs (status is locked for these tabs)
+  // Hide status filter for category and marketplace Premium and Available tabs, and profile Grace tab (status is locked for these tabs)
   const showStatusFilter = !(
     (filterType === 'category' && (activeCategoryTab === 'premium' || activeCategoryTab === 'available')) ||
-    (filterType === 'marketplace' && (activeMarketplaceTab === 'premium' || activeMarketplaceTab === 'available'))
+    (filterType === 'marketplace' && (activeMarketplaceTab === 'premium' || activeMarketplaceTab === 'available')) ||
+    (filterType === 'profile' && activeProfileTab === 'grace')
   )
 
   return (

@@ -57,7 +57,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
 
       <div
         className={cn(
-          'border-tertiary bg-background fixed bottom-0 left-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
+          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
           !cartIsEmpty && !hideDomainActions
             ? 'w-full translate-y-0'
             : filtersOpen

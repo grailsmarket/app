@@ -34,7 +34,7 @@ const PriceRangeFilter = () => {
             <input
               type='text'
               inputMode='decimal'
-              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+              className='border-primary/20 p-md text-lg w-1/2 rounded-sm border-2 outline-none'
               placeholder='Min'
               value={currMinVal ?? ''}
               onChange={(e) => {
@@ -51,7 +51,7 @@ const PriceRangeFilter = () => {
             <input
               type='text'
               inputMode='decimal'
-              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+              className='border-primary/20 p-md text-lg w-1/2 rounded-sm border-2 outline-none'
               placeholder='Max'
               value={currMaxVal ?? ''}
               onChange={(e) => {

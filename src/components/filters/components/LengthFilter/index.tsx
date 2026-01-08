@@ -44,7 +44,7 @@ const LengthFilter = () => {
               value={currMinVal || ''}
               onBlur={() => setMinLength(Number(minVal))}
               onChange={(e) => setCurrMinVal(Number(e.target.value))}
-              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+              className='border-primary/20 p-md text-lg w-1/2 rounded-sm border-2 outline-none'
             />
             <input
               ref={onMaxClickAway as Ref<HTMLInputElement>}
@@ -53,7 +53,7 @@ const LengthFilter = () => {
               value={currMaxVal || ''}
               onBlur={() => setMaxLength(Number(maxVal))}
               onChange={(e) => setCurrMaxVal(Number(e.target.value))}
-              className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+              className='border-primary/20 p-md text-lg w-1/2 rounded-sm border-2 outline-none'
             />
           </div>
         </div>

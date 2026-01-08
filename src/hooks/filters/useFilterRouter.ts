@@ -214,6 +214,27 @@ import {
   clearActivityFilters,
 } from '@/state/reducers/filters/profileActivityFilters'
 
+// Import profile grace filters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateProfileGraceFilters,
+  selectProfileGraceFilters,
+  setFiltersOpen as setProfileGraceFiltersOpen,
+  toggleFiltersType as toggleProfileGraceFiltersType,
+  setFiltersType as setProfileGraceFiltersType,
+  setMarketFilters as setProfileGraceMarketFilters,
+  setProfileGraceTextMatchFilters,
+  setFiltersLength as setProfileGraceFiltersLength,
+  setPriceDenomination as setProfileGracePriceDenomination,
+  setPriceRange as setProfileGracePriceRange,
+  toggleCategory as toggleProfileGraceCategory,
+  setFiltersCategory as setProfileGraceFiltersCategory,
+  setSort as setProfileGraceSort,
+  setSearch as setProfileGraceSearch,
+  setFiltersScrollTop as setProfileGraceFiltersScrollTop,
+  toggleFilterOpen as toggleProfileGraceFilterOpen,
+  clearFilters as clearProfileGraceFilters,
+} from '@/state/reducers/filters/profileGraceFilters'
+
 // Import categoryDomains selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryDomainsFilters,
@@ -342,6 +363,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return selectProfileDomainsFilters(state)
       } else if (activeProfileTab === 'listings') {
         return selectProfileListingsFilters(state)
+      } else if (activeProfileTab === 'grace') {
+        return selectProfileGraceFilters(state)
       } else if (activeProfileTab === 'received_offers') {
         return selectReceivedOffersFilters(state)
       } else if (activeProfileTab === 'sent_offers') {
@@ -538,6 +561,24 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setScrollTop: setProfileListingsFiltersScrollTop,
           toggleFilterOpen: toggleProfileListingsFilterOpen,
           clearFilters: clearProfileListingsFilters,
+        }
+      } else if (activeProfileTab === 'grace') {
+        return {
+          setFiltersOpen: setProfileGraceFiltersOpen,
+          toggleFiltersType: toggleProfileGraceFiltersType,
+          setFiltersType: setProfileGraceFiltersType,
+          setMarketFilters: setProfileGraceMarketFilters,
+          setTextMatchFilters: setProfileGraceTextMatchFilters,
+          setFiltersLength: setProfileGraceFiltersLength,
+          setPriceDenomination: setProfileGracePriceDenomination,
+          setPriceRange: setProfileGracePriceRange,
+          toggleCategory: toggleProfileGraceCategory,
+          setFiltersCategory: setProfileGraceFiltersCategory,
+          setSort: setProfileGraceSort,
+          setSearch: setProfileGraceSearch,
+          setScrollTop: setProfileGraceFiltersScrollTop,
+          toggleFilterOpen: toggleProfileGraceFilterOpen,
+          clearFilters: clearProfileGraceFilters,
         }
       } else if (activeProfileTab === 'sent_offers') {
         return {
@@ -773,6 +814,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return emptyFilterStateProfileDomainsFilters
       } else if (activeProfileTab === 'listings') {
         return emptyFilterStateProfileListingsFilters
+      } else if (activeProfileTab === 'grace') {
+        return emptyFilterStateProfileGraceFilters
       } else if (activeProfileTab === 'sent_offers') {
         return emptyFilterStateMyOffersFilters
       } else if (activeProfileTab === 'received_offers') {

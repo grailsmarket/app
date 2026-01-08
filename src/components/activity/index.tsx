@@ -93,7 +93,7 @@ const Activity: React.FC<ActivityProps> = ({
       {showHeaders && !noResults && (
         <div
           className={cn(
-            'pt-sm transition-top px-md lg:px-lg sm:py-md sticky flex w-full items-center justify-start duration-300 sm:flex',
+            'pt-sm transition-top border-tertiary border-b px-md lg:px-lg sm:py-md sticky flex w-full items-center justify-start duration-300 sm:flex',
             stickyHeaders ? 'sitcky bg-background z-50 md:top-48' : '',
             stickyHeaders && (isNavbarVisible ? 'top-38' : 'top-24')
           )}
@@ -140,7 +140,7 @@ const Activity: React.FC<ActivityProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-t'>
+                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

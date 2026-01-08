@@ -64,7 +64,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
   return (
     <div
       ref={containerRef}
-      className={cn('text-md relative flex flex-col gap-4 text-lg md:flex-row md:items-center', className)}
+      className={cn('text-md relative flex flex-col gap-4 text-xl md:flex-row md:items-center', className)}
     >
       {/* Animated underline indicator - desktop only */}
       <div

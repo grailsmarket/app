@@ -63,7 +63,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   }
 
   return (
-    <div className='group px-md lg:px-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-start gap-1 border-t bg-transparent transition hover:bg-white/10'>
+    <div className='group px-md lg:px-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-start gap-1 border-b bg-transparent transition hover:bg-white/10'>
       {displayedColumns.map((column, index) => (
         <div
           key={column}

@@ -16,12 +16,12 @@ import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
-import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
+import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
 const useWatchlist = (name: string, tokenId: string, watchlistId: number | undefined) => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
-  const filters = useAppSelector(selectMyDomainsFilters)
+  const filters = useAppSelector(selectWatchlistFilters)
   const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
   const { userAddress, authStatus } = useUserContext()
   const [hasWatchlistedBefore, setHasWatchlistedBefore] = useState<boolean | undefined>(undefined)
@@ -173,6 +173,8 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
           filters.type,
           filters.status,
           filters.sort,
+          filters.textMatch,
+          filters.market,
         ],
         (old: any) => {
           const newData = old.pages.map((page: any) => {

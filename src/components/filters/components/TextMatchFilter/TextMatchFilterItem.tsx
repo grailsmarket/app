@@ -38,7 +38,7 @@ const TextMatchFilterItem: React.FC<TextMatchFilterItemProps> = ({ label, placeh
         placeholder={placeholder}
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}
-        className='border-primary/20 p-md text-md w-1/2 rounded-sm border-2 outline-none'
+        className='border-primary/20 p-md text-lg w-1/2 rounded-sm border-2 outline-none'
       />
     </div>
   )

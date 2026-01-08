@@ -27,6 +27,10 @@ import {
   clearFilters,
   setFiltersScrollTop as setDomainsScrollTop,
 } from '@/state/reducers/filters/profileListingsFilter'
+import {
+  clearFilters as clearGraceFilters,
+  setFiltersScrollTop as setGraceScrollTop,
+} from '@/state/reducers/filters/profileGraceFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import BulkSelect from '@/components/ui/bulkSelect'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -61,12 +65,14 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
       dispatch(clearActivityFilters())
+      dispatch(clearGraceFilters())
       // Reset all scroll positions
       dispatch(setDomainsScrollTop(0))
       dispatch(setActivityScrollTop(0))
       dispatch(setMyOffersScrollTop(0))
       dispatch(setReceivedOffersScrollTop(0))
       dispatch(setWatchlistFiltersScrollTop(0))
+      dispatch(setGraceScrollTop(0))
       dispatch(clearBulkSelect())
       document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
       window.scrollTo({ top: 0, behavior: 'instant' })
@@ -91,7 +97,8 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     }
   }, [profileTab, userAccount?.address, userAddress, authStatus, dispatch, user])
 
-  const showDomainsPanel = profileTab === 'domains' || profileTab === 'watchlist' || profileTab === 'listings'
+  const showDomainsPanel =
+    profileTab === 'domains' || profileTab === 'watchlist' || profileTab === 'listings' || profileTab === 'grace'
   const showOfferPanel = profileTab === 'sent_offers' || profileTab === 'received_offers'
   const showActivityPanel = profileTab === 'activity'
 

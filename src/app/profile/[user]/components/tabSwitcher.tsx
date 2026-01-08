@@ -21,7 +21,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const dispatch = useAppDispatch()
-  const { profileTotalDomains, totalWatchlistDomains, totalListings } = useDomains(user)
+  const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains } = useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
   const { isNavbarVisible } = useNavbar()
 
@@ -51,6 +51,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return profileTotalDomains
         case 'listings':
           return totalListings
+        case 'grace':
+          return totalGraceDomains
         case 'watchlist':
           return totalWatchlistDomains
         case 'received_offers':
@@ -61,7 +63,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return 0
       }
     },
-    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers, totalListings]
+    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers, totalListings, totalGraceDomains]
   )
 
   // Update indicator position when selected tab changes

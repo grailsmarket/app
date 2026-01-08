@@ -29,7 +29,7 @@ const OfferRow: React.FC<OfferRowProps> = ({ offer, displayedColumns, currentUse
   }
 
   return (
-    <div className='group px-md border-tertiary lg:px-lg flex h-[60px] w-full flex-row items-center justify-between gap-1 border-t bg-transparent transition hover:bg-white/10'>
+    <div className='group px-md border-tertiary lg:px-lg flex h-[60px] w-full flex-row items-center justify-between gap-1 border-b bg-transparent transition hover:bg-white/10'>
       {displayedColumns.map((column) => (
         <div
           key={column}

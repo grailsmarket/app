@@ -22,6 +22,7 @@ const TypeFilterDropdown: React.FC<TypeFilterDropdownProps> = ({ label, value, o
       optionLabels={TYPE_FILTER_OPTION_LABELS}
       onChange={onChange}
       noneValue='none'
+      dropdownPosition='top'
     />
   )
 }

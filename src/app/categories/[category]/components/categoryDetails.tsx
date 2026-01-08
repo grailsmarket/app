@@ -89,6 +89,17 @@ import TopCitiesUsaHeader from 'public/clubs/top_cities_usa/header.png'
 import UsStatesAvatar from 'public/clubs/us_states/avatar.jpg'
 import UsStatesHeader from 'public/clubs/us_states/header.jpg'
 
+import CommonAnimalsAvatar from 'public/clubs/common_animals/avatar.jpg'
+import CommonAnimalsHeader from 'public/clubs/common_animals/header.jpg'
+import CommonEnglishAvatar from 'public/clubs/common_english/avatar.jpeg'
+import CommonEnglishHeader from 'public/clubs/common_english/header.jpg'
+import CountryCodesAvatar from 'public/clubs/country_codes/avatar.jpg'
+import CountryCodesHeader from 'public/clubs/country_codes/header.jpg'
+import TopGamertagsAvatar from 'public/clubs/top_gamertags/avatar.jpeg'
+import TopGamertagsHeader from 'public/clubs/top_gamertags/header.jpeg'
+import TopGamertagsDoubleAvatar from 'public/clubs/top_gamertags_double/avatar.jpeg'
+import TopGamertagsDoubleHeader from 'public/clubs/top_gamertags_double/header.jpeg'
+
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
 export const CATEGORY_IMAGES = {
@@ -244,6 +255,26 @@ export const CATEGORY_IMAGES = {
     avatar: UsStatesAvatar,
     header: UsStatesHeader,
   },
+  common_animals: {
+    avatar: CommonAnimalsAvatar,
+    header: CommonAnimalsHeader,
+  },
+  common_english: {
+    avatar: CommonEnglishAvatar,
+    header: CommonEnglishHeader,
+  },
+  country_codes: {
+    avatar: CountryCodesAvatar,
+    header: CountryCodesHeader,
+  },
+  top_gamertags: {
+    avatar: TopGamertagsAvatar,
+    header: TopGamertagsHeader,
+  },
+  top_gamertags_double: {
+    avatar: TopGamertagsDoubleAvatar,
+    header: TopGamertagsDoubleHeader,
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {
@@ -314,6 +345,18 @@ export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: 
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
   us_states: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  common_animals: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  common_english: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  top_gamertags: {
+    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  top_gamertags_double: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
   },
 }

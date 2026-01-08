@@ -103,7 +103,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
             <div className='bg-background border-tertiary relative flex min-h-[calc(100dvh-56px)] w-full flex-col gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
               <TabSwitcher user={userAccount?.address} />
               <div className='relative flex w-full flex-row gap-0 transition-all duration-300'>
-                <FilterPanel hasTabs={true} />
+                <FilterPanel />
                 <ProfileContent
                   userAddress={userAccount?.address}
                   showDomainsPanel={showDomainsPanel}

@@ -6,8 +6,10 @@ import { fetchDomains } from '@/api/domains/fetchDomains'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import TableRow from '@/components/domains/table/components/TableRow'
 import TableLoadingRow from '@/components/domains/table/components/TableLoadingRow'
+import { useUserContext } from '@/context/user'
 
 const SalesAndRegs = () => {
+  const { authStatus } = useUserContext()
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentSalesAndRegs'],
     queryFn: () =>
@@ -19,6 +21,7 @@ const SalesAndRegs = () => {
           sort: 'last_sale_date_desc',
         },
         searchTerm: '',
+        isAuthenticated: authStatus === 'authenticated',
       }),
   })
 

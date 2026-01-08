@@ -49,7 +49,7 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
                 </p>
                 <p>+</p>
                 <p className='text-md text-neutral font-medium'>
-                  ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
+                  ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/yr
                 </p>
               </>
             ) : (

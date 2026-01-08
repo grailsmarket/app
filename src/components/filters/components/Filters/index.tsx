@@ -18,8 +18,9 @@ interface FiltersProps {
 }
 
 const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories }) => {
-  const { filterType, profileTab } = useFilterContext()
+  const { filterType, profileTab, categoryTab } = useFilterContext()
   const activeProfileTab = profileTab?.value || 'domains'
+  const activeCategoryTab = categoryTab?.value || 'names'
   const isClient = useIsClient()
   const { categories } = useCategories()
 
@@ -28,6 +29,12 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   // Use appropriate categories based on filter context
   const showCategoryTab =
     filterType === 'marketplace' || activeProfileTab === 'domains' || activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
+
+  // Hide status filter for category Premium and Available tabs (status is locked for these tabs)
+  const showStatusFilter = !(
+    filterType === 'category' &&
+    (activeCategoryTab === 'premium' || activeCategoryTab === 'available')
+  )
 
   return (
     <div className='flex min-h-0 flex-1 overflow-x-hidden'>
@@ -39,7 +46,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       >
         <div className='flex flex-col'>
           {/* <SortFilter /> */}
-          <StatusFilter />
+          {showStatusFilter && <StatusFilter />}
           <MarketFilter />
           <TextMatchFilter />
           <LengthFilter />

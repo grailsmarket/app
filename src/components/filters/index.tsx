@@ -17,11 +17,7 @@ import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFi
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
 
-interface FilterPanelProps {
-  hasTabs?: boolean
-}
-
-const FilterPanel: React.FC<FilterPanelProps> = ({ hasTabs }) => {
+const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
@@ -36,7 +32,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ hasTabs }) => {
   const dispatch = useAppDispatch()
   const { search } = useAppSelector(selectMarketplaceFilters)
   const { selectors, actions } = useFilterRouter()
-  const { profileTab, filterType } = useFilterContext()
+  const { profileTab, filterType, categoryTab } = useFilterContext()
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const filtersOpen = selectors.filters.open
   const { isNavbarVisible } = useNavbar()
@@ -53,7 +49,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ hasTabs }) => {
   const isDisabled = filterType === 'marketplace' && isBulkSearch
   const isActivityFilter =
     (filterType === 'profile' && profileTab?.value === 'activity') ||
-    (filterType === 'marketplace' && marketplaceTab?.value === 'activity')
+    (filterType === 'marketplace' && marketplaceTab?.value === 'activity') ||
+    (filterType === 'category' && categoryTab?.value === 'activity')
 
   // On mobile: slide in/out overlay
   // On desktop: collapse/expand sidebar with width transition
@@ -65,11 +62,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ hasTabs }) => {
         // Mobile styles
         isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-14 h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
-        isMobile && (hasTabs ? 'md:top-[70px] md:h-[calc(100dvh-70px)]' : 'md:h-[calc(100dvh-70px)]] md:top-[70px]'),
+        isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles
-        !isMobile &&
-          (hasTabs ? 'sticky top-[128px] h-[calc(100dvh-128px)]' : 'sticky top-[72px] h-[calc(100dvh-72px)]'),
+        !isMobile && 'sticky top-[128px] h-[calc(100dvh-128px)]',
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? 'md:border-r-2' : 'w-0'

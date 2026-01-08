@@ -9,6 +9,9 @@ import profileListingsFiltersReducer from './profileListingsFilter'
 import profileDomainsFiltersReducer from './profileDomainsFilters'
 import profileActivityFiltersReducer from './profileActivityFilters'
 import categoryDomainsFiltersReducer from './categoryDomainsFilters'
+import categoryPremiumFiltersReducer from './categoryPremiumFilters'
+import categoryAvailableFiltersReducer from './categoryAvailableFilters'
+import categoryActivityFiltersReducer from './categoryActivityFilters'
 
 const filtersReducer = combineReducers({
   myOffersFilters: myOffersFiltersReducer,
@@ -21,6 +24,9 @@ const filtersReducer = combineReducers({
   profileListingsFilters: profileListingsFiltersReducer,
   profileActivityFilters: profileActivityFiltersReducer,
   categoryDomainsFilters: categoryDomainsFiltersReducer,
+  categoryPremiumFilters: categoryPremiumFiltersReducer,
+  categoryAvailableFilters: categoryAvailableFiltersReducer,
+  categoryActivityFilters: categoryActivityFiltersReducer,
 })
 
 export default filtersReducer

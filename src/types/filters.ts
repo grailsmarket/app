@@ -22,6 +22,7 @@ import {
 } from '@/state/reducers/filters/profileActivityFilters'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
+import { CategoryTabType } from '@/state/reducers/category/category'
 
 export type { TypeFiltersState, MarketFiltersState, TextMatchFiltersState }
 export { DEFAULT_TYPE_FILTERS_STATE, DEFAULT_MARKET_FILTERS_STATE, DEFAULT_TEXT_MATCH_FILTERS_STATE }
@@ -73,6 +74,7 @@ export interface FilterRouter<T extends FilterContextType> {
   context: T
   profileTab?: ProfileTabType
   marketplaceTab?: MarketplaceTabType
+  categoryTab?: CategoryTabType
   isFiltersClear: boolean
 }
 

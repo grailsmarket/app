@@ -195,20 +195,90 @@ import {
   clearFilters as clearCategoryDomainsFilters,
 } from '@/state/reducers/filters/categoryDomainsFilters'
 
+// Import categoryPremium selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoryPremiumFilters,
+  selectCategoryPremiumFilters,
+  setFiltersOpen as setCategoryPremiumFiltersOpen,
+  toggleFiltersType as toggleCategoryPremiumFiltersType,
+  setFiltersType as setCategoryPremiumFiltersType,
+  setMarketFilters as setCategoryPremiumMarketFilters,
+  setTextMatchFilters as setCategoryPremiumTextMatchFilters,
+  setFiltersLength as setCategoryPremiumFiltersLength,
+  setPriceDenomination as setCategoryPremiumPriceDenomination,
+  setPriceRange as setCategoryPremiumPriceRange,
+  toggleCategory as toggleCategoryPremiumCategory,
+  setFiltersCategory as setCategoryPremiumFiltersCategory,
+  setSort as setCategoryPremiumSort,
+  setSearch as setCategoryPremiumSearch,
+  setFiltersScrollTop as setCategoryPremiumFiltersScrollTop,
+  toggleFilterOpen as toggleCategoryPremiumFilterOpen,
+  clearFilters as clearCategoryPremiumFilters,
+} from '@/state/reducers/filters/categoryPremiumFilters'
+
+// Import categoryAvailable selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoryAvailableFilters,
+  selectCategoryAvailableFilters,
+  setFiltersOpen as setCategoryAvailableFiltersOpen,
+  toggleFiltersType as toggleCategoryAvailableFiltersType,
+  setFiltersType as setCategoryAvailableFiltersType,
+  setMarketFilters as setCategoryAvailableMarketFilters,
+  setTextMatchFilters as setCategoryAvailableTextMatchFilters,
+  setFiltersLength as setCategoryAvailableFiltersLength,
+  setPriceDenomination as setCategoryAvailablePriceDenomination,
+  setPriceRange as setCategoryAvailablePriceRange,
+  toggleCategory as toggleCategoryAvailableCategory,
+  setFiltersCategory as setCategoryAvailableFiltersCategory,
+  setSort as setCategoryAvailableSort,
+  setSearch as setCategoryAvailableSearch,
+  setFiltersScrollTop as setCategoryAvailableFiltersScrollTop,
+  toggleFilterOpen as toggleCategoryAvailableFilterOpen,
+  clearFilters as clearCategoryAvailableFilters,
+} from '@/state/reducers/filters/categoryAvailableFilters'
+
+// Import categoryActivity selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoryActivityFilters,
+  selectCategoryActivityFilters,
+  toggleActivityFiltersType as toggleCategoryActivityFiltersType,
+  setActivityFiltersType as setCategoryActivityFiltersType,
+  toggleFilterOpen as toggleCategoryActivityFilterOpen,
+  setFiltersOpen as setCategoryActivityFiltersOpen,
+  setSearch as setCategoryActivitySearch,
+  setFiltersScrollTop as setCategoryActivityFiltersScrollTop,
+  clearActivityFilters as clearCategoryActivityFilters,
+} from '@/state/reducers/filters/categoryActivityFilters'
+
+// Import category state selector
+import { selectCategory } from '@/state/reducers/category/category'
+
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
   const marketplaceState = useAppSelector(selectMarketplace)
+  const categoryState = useAppSelector(selectCategory)
   const filterPanelState = useAppSelector(selectFilterPanel)
 
   // Determine which tab is active in profile
   const activeProfileTab = profileState.selectedTab?.value || 'domains'
   // Determine which tab is active in marketplace
   const activeMarketplaceTab = marketplaceState.selectedTab?.value || 'names'
+  // Determine which tab is active in category
+  const activeCategoryTab = categoryState.selectedTab?.value || 'names'
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'category') {
+      if (activeCategoryTab === 'names') {
+        return selectCategoryDomainsFilters(state)
+      } else if (activeCategoryTab === 'premium') {
+        return selectCategoryPremiumFilters(state)
+      } else if (activeCategoryTab === 'available') {
+        return selectCategoryAvailableFilters(state)
+      } else if (activeCategoryTab === 'activity') {
+        return selectCategoryActivityFilters(state)
+      }
       return selectCategoryDomainsFilters(state)
     }
 
@@ -244,6 +314,74 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
     if (filterType === 'category') {
+      if (activeCategoryTab === 'names') {
+        return {
+          setFiltersOpen: setCategoryDomainsFiltersOpen,
+          toggleFiltersStatus: toggleCategoryDomainsFiltersStatus,
+          setFiltersStatus: setCategoryDomainsFiltersStatus,
+          toggleFiltersType: toggleCategoryDomainsFiltersType,
+          setFiltersType: setCategoryDomainsFiltersType,
+          setMarketFilters: setCategoryDomainsMarketFilters,
+          setTextMatchFilters: setCategoryDomainsTextMatchFilters,
+          setFiltersLength: setCategoryDomainsFiltersLength,
+          setPriceDenomination: setCategoryDomainsPriceDenomination,
+          setPriceRange: setCategoryDomainsPriceRange,
+          toggleCategory: toggleCategoryDomainsCategory,
+          setFiltersCategory: setCategoryDomainsFiltersCategory,
+          setSort: setCategoryDomainsSort,
+          setSearch: setCategoryDomainsSearch,
+          setScrollTop: setCategoryDomainsFiltersScrollTop,
+          toggleFilterOpen: toggleCategoryDomainsFilterOpen,
+          clearFilters: clearCategoryDomainsFilters,
+        }
+      } else if (activeCategoryTab === 'premium') {
+        return {
+          setFiltersOpen: setCategoryPremiumFiltersOpen,
+          toggleFiltersType: toggleCategoryPremiumFiltersType,
+          setFiltersType: setCategoryPremiumFiltersType,
+          setMarketFilters: setCategoryPremiumMarketFilters,
+          setTextMatchFilters: setCategoryPremiumTextMatchFilters,
+          setFiltersLength: setCategoryPremiumFiltersLength,
+          setPriceDenomination: setCategoryPremiumPriceDenomination,
+          setPriceRange: setCategoryPremiumPriceRange,
+          toggleCategory: toggleCategoryPremiumCategory,
+          setFiltersCategory: setCategoryPremiumFiltersCategory,
+          setSort: setCategoryPremiumSort,
+          setSearch: setCategoryPremiumSearch,
+          setScrollTop: setCategoryPremiumFiltersScrollTop,
+          toggleFilterOpen: toggleCategoryPremiumFilterOpen,
+          clearFilters: clearCategoryPremiumFilters,
+        }
+      } else if (activeCategoryTab === 'available') {
+        return {
+          setFiltersOpen: setCategoryAvailableFiltersOpen,
+          toggleFiltersType: toggleCategoryAvailableFiltersType,
+          setFiltersType: setCategoryAvailableFiltersType,
+          setMarketFilters: setCategoryAvailableMarketFilters,
+          setTextMatchFilters: setCategoryAvailableTextMatchFilters,
+          setFiltersLength: setCategoryAvailableFiltersLength,
+          setPriceDenomination: setCategoryAvailablePriceDenomination,
+          setPriceRange: setCategoryAvailablePriceRange,
+          toggleCategory: toggleCategoryAvailableCategory,
+          setFiltersCategory: setCategoryAvailableFiltersCategory,
+          setSort: setCategoryAvailableSort,
+          setSearch: setCategoryAvailableSearch,
+          setScrollTop: setCategoryAvailableFiltersScrollTop,
+          toggleFilterOpen: toggleCategoryAvailableFilterOpen,
+          clearFilters: clearCategoryAvailableFilters,
+        }
+      } else if (activeCategoryTab === 'activity') {
+        return {
+          setScrollTop: setCategoryActivityFiltersScrollTop,
+          toggleFilterOpen: toggleCategoryActivityFilterOpen,
+          toggleFiltersType: toggleCategoryActivityFiltersType,
+          setFiltersOpen: setCategoryActivityFiltersOpen,
+          setFiltersType: setCategoryActivityFiltersType,
+          setSearch: setCategoryActivitySearch,
+          clearFilters: clearCategoryActivityFilters,
+        } as any
+      }
+
       return {
         setFiltersOpen: setCategoryDomainsFiltersOpen,
         toggleFiltersStatus: toggleCategoryDomainsFiltersStatus,
@@ -498,10 +636,19 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
-  }, [filterType, activeProfileTab, activeMarketplaceTab])
+  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'category') {
+      if (activeCategoryTab === 'names') {
+        return emptyFilterStateCategoryDomainsFilters
+      } else if (activeCategoryTab === 'premium') {
+        return emptyFilterStateCategoryPremiumFilters
+      } else if (activeCategoryTab === 'available') {
+        return emptyFilterStateCategoryAvailableFilters
+      } else if (activeCategoryTab === 'activity') {
+        return emptyFilterStateCategoryActivityFilters
+      }
       return emptyFilterStateCategoryDomainsFilters
     }
 
@@ -531,7 +678,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     return emptyFilterStateMarketplaceFilters
-  }, [filterType, activeProfileTab, activeMarketplaceTab])
+  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab])
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
@@ -556,6 +703,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     context: filterType,
     profileTab: profileState.selectedTab,
     marketplaceTab: marketplaceState.selectedTab,
+    categoryTab: categoryState.selectedTab,
     isFiltersClear,
   }
 }

@@ -1,5 +1,6 @@
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
+import { useUserContext } from '@/context/user'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
@@ -8,6 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 export const useDomains = () => {
+  const { authStatus } = useUserContext()
   const filters = useAppSelector(selectMarketplaceFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
@@ -38,6 +40,7 @@ export const useDomains = () => {
         filters,
         searchTerm: debouncedSearch,
         enableBulkSearch: true,
+        isAuthenticated: authStatus === 'authenticated',
       })
 
       return {

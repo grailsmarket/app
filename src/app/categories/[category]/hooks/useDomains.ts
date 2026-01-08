@@ -5,9 +5,11 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { MarketplaceDomainType } from '@/types/domains'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { useUserContext } from '@/context/user'
 
 export const useCategoryDomains = (category: string) => {
   const { selectors } = useFilterRouter()
+  const { authStatus } = useUserContext()
   const filters = selectors.filters
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
 
@@ -47,6 +49,7 @@ export const useCategoryDomains = (category: string) => {
         filters,
         searchTerm: debouncedSearch,
         category: category,
+        isAuthenticated: authStatus === 'authenticated',
       })
 
       return {

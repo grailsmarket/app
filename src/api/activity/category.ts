@@ -1,0 +1,36 @@
+import { API_URL } from '@/constants/api'
+import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
+import { APIResponseType, PaginationType } from '@/types/api'
+import { ActivityType } from '@/types/profile'
+
+interface FetchCategoryActivityOptions {
+  club: string
+  limit: number
+  pageParam: number
+  eventTypes: ActivityTypeFilterType[]
+}
+
+export const fetchCategoryActivity = async ({ club, limit, pageParam, eventTypes }: FetchCategoryActivityOptions) => {
+  const typeFilter = eventTypes.join('&event_type=')
+  const response = await fetch(
+    `${API_URL}/activity?club=${club}&limit=${limit}&page=${pageParam}&event_type=${typeFilter}`
+  )
+  const data = (await response.json()) as APIResponseType<{
+    results: ActivityType[]
+    pagination: PaginationType
+  }>
+
+  if (!data.data.results) {
+    return {
+      activity: [],
+      nextPageParam: pageParam,
+      hasNextPage: false,
+    }
+  }
+
+  return {
+    activity: data.data.results,
+    nextPageParam: data.data.pagination.page + 1,
+    hasNextPage: data.data.pagination.hasNext,
+  }
+}

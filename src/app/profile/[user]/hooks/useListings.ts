@@ -5,8 +5,10 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { Address } from 'viem'
 import { selectProfileListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
 import { useAppSelector } from '@/state/hooks'
+import { useUserContext } from '@/context/user'
 
 export const useListings = (user: Address | undefined) => {
+  const { authStatus } = useUserContext()
   const filters = useAppSelector(selectProfileListingsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
 
@@ -46,6 +48,7 @@ export const useListings = (user: Address | undefined) => {
         filters,
         searchTerm: debouncedSearch,
         ownerAddress: user,
+        isAuthenticated: authStatus === 'authenticated',
       })
 
       return {

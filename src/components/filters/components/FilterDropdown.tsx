@@ -38,7 +38,7 @@ function FilterDropdown<T extends string>({
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'text-md flex min-w-[90px] items-center justify-between gap-2 border-b px-2 py-1 font-medium transition-colors',
+            'text-md flex min-w-[90px] cursor-pointer items-center justify-between gap-2 border-b px-2 py-1 font-medium transition-colors',
             isOpen ? 'border-primary' : 'border-tertiary hover:border-primary'
           )}
         >

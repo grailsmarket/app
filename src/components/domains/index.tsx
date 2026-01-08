@@ -12,7 +12,6 @@ import { selectViewType } from '@/state/reducers/view'
 import Card from './grid/components/card'
 import LoadingCard from './grid/components/loadingCard'
 import { cn } from '@/utils/tailwind'
-import { useFilterContext } from '@/context/filters'
 import { useNavbar } from '@/context/navbar'
 
 interface DomainsProps {
@@ -55,7 +54,6 @@ const Domains: React.FC<DomainsProps> = ({
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
-  const { filterType } = useFilterContext()
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {
@@ -106,13 +104,7 @@ const Domains: React.FC<DomainsProps> = ({
         <div
           className={cn(
             'px-md pt-sm bg-background transition-top lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between duration-300 sm:flex',
-            filterType === 'category'
-              ? isNavbarVisible
-                ? 'top-38 sm:top-28 md:top-34'
-                : 'top-24 sm:top-13 md:top-34'
-              : isNavbarVisible
-                ? 'top-49 sm:top-40 md:top-48'
-                : 'top-35 sm:top-26 md:top-48'
+            isNavbarVisible ? 'top-49 sm:top-40 md:top-48' : 'top-35 sm:top-26 md:top-48'
           )}
         >
           {displayedColumns.map((header, index) => {

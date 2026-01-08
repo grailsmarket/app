@@ -201,7 +201,7 @@ const Actions: React.FC<ActionsProps> = ({
         {REGISTERABLE_STATUSES.includes(registrationStatus) ? (
           <>
             <PrimaryButton className='ml-1' onClick={(e) => openRegistrationModalHandler(e)}>
-              Register
+              Reg
             </PrimaryButton>
           </>
         ) : (

@@ -32,7 +32,7 @@ const MainPanel: React.FC = () => {
     <div className='flex w-full flex-col gap-0'>
       <TabSwitcher isLiveActivityConnected={false} />
       <div className='flex w-full flex-row gap-0'>
-        <FilterPanel hasTabs={true} />
+        <FilterPanel />
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
           {showNamesPanel && <DomainPanel />}
           {showActivityPanel && (

@@ -168,21 +168,21 @@ export const ALL_SORT_FILTERS = [
 ] as const
 
 // Sort types for the dropdown (without direction)
-export const SORT_TYPES = ['alphabetical', 'price', 'last_sale_price', 'last_sale_date', 'expiry_date'] as const
+export const SORT_TYPES = ['expiry_date', 'price', 'last_sale_price', 'last_sale_date', 'alphabetical'] as const
 
 export type SortType = (typeof SORT_TYPES)[number]
 
 export const SORT_TYPE_LABELS: Record<SortType, string> = {
-  alphabetical: 'Alphabetical',
+  expiry_date: 'Expiration',
   price: 'Price',
   last_sale_price: 'Last Sale Price',
   last_sale_date: 'Last Sale Date',
-  expiry_date: 'Expiration',
+  alphabetical: 'Alphabetical',
 }
 
 export const SORT_FILTER_LABELS = {
-  alphabetical_asc: 'Alphabetical (A-Z)',
-  alphabetical_desc: 'Alphabetical (Z-A)',
+  expiry_date_asc: 'Expiration Date (Soonest First)',
+  expiry_date_desc: 'Expiration Date (Latest First)',
   last_sale_price_asc: 'Last Sale Price (Low to High)',
   last_sale_price_desc: 'Last Sale Price (High to Low)',
   last_sale_date_asc: 'Last Sale Date (Old to New)',
@@ -191,6 +191,6 @@ export const SORT_FILTER_LABELS = {
   price_asc: 'Price (Low to High)',
   offer_asc: 'Offer (Low to High)',
   offer_desc: 'Offer (High to Low)',
-  expiry_date_asc: 'Expiration Date (Soonest First)',
-  expiry_date_desc: 'Expiration Date (Latest First)',
+  alphabetical_asc: 'Alphabetical (A-Z)',
+  alphabetical_desc: 'Alphabetical (Z-A)',
 }

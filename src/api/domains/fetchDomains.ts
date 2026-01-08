@@ -9,6 +9,7 @@ import { nameHasEmoji } from '@/utils/nameCharacters'
 import { nameHasNumbers } from '@/utils/nameCharacters'
 import { normalizeName } from '@/lib/ens'
 import { BigNumber } from '@ethersproject/bignumber'
+import { authFetch } from '../authFetch'
 
 interface FetchDomainsOptions {
   limit: number
@@ -18,6 +19,7 @@ interface FetchDomainsOptions {
   ownerAddress?: Address
   category?: string
   enableBulkSearch?: boolean
+  isAuthenticated?: boolean
 }
 
 export const fetchDomains = async ({
@@ -28,8 +30,10 @@ export const fetchDomains = async ({
   ownerAddress,
   category,
   enableBulkSearch = false,
+  isAuthenticated = false,
 }: FetchDomainsOptions) => {
   try {
+    const fetchFunction = isAuthenticated ? fetch : authFetch
     const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
 
     if (isBulkSearching && enableBulkSearch) {
@@ -40,15 +44,8 @@ export const fetchDomains = async ({
         .filter((name) => name.length > 2)
         .join(',')
 
-      console.log('search')
-
-      const res = await fetch(`${API_URL}/search/bulk`, {
+      const res = await fetchFunction(`${API_URL}/search/bulk`, {
         method: 'POST',
-        mode: 'cors',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           terms: search.split(','),
           page: pageParam,
@@ -135,7 +132,7 @@ export const fetchDomains = async ({
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
     })
 
-    const res = await fetch(`${API_URL}/search?${paramString}`, {
+    const res = await fetchFunction(`${API_URL}/search?${paramString}`, {
       method: 'GET',
       mode: 'cors',
       headers: {

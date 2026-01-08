@@ -6,8 +6,10 @@ import { useQuery } from '@tanstack/react-query'
 import React from 'react'
 import Card from '../domains/grid/components/card'
 import LoadingCard from '../domains/grid/components/loadingCard'
+import { useUserContext } from '@/context/user'
 
 const DisplayedCards: React.FC = () => {
+  const { authStatus } = useUserContext()
   const { data: domains, isLoading } = useQuery({
     queryKey: ['domains'],
     queryFn: async () => {
@@ -19,6 +21,7 @@ const DisplayedCards: React.FC = () => {
           status: ['Listed'],
         },
         searchTerm: '',
+        isAuthenticated: authStatus === 'authenticated',
       })
 
       return domains.domains

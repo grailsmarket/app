@@ -3,7 +3,7 @@ import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { EXPIRED_STATUSES } from '@/constants/domains/registrationStatuses'
+import { EXPIRED_STATUSES, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import Name from './name'
 import LastSale from './lastSale'
 import HighestOffer from './highestOffer'
@@ -96,11 +96,13 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         key={`${domain.name}-owner`}
         className={cn(ALL_MARKETPLACE_COLUMNS['owner'].getWidth(columnCount), 'relative pr-1')}
       >
-        <User
-          address={domain.owner as `0x${string}`}
-          className='max-w-[90%]'
-          wrapperClassName='justify-start! max-w-full'
-        />
+        {!REGISTERABLE_STATUSES.includes(registrationStatus) && (
+          <User
+            address={domain.owner as `0x${string}`}
+            className='max-w-[90%]'
+            wrapperClassName='justify-start! max-w-full'
+          />
+        )}
       </div>
     ) : null,
   }
@@ -138,7 +140,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
     >
       <div
         className={cn(
-          'flex h-full w-full flex-row items-center justify-between',
+          'flex h-full w-full flex-row items-center justify-between gap-0',
           isBulkSelecting && 'pointer-events-none'
         )}
       >

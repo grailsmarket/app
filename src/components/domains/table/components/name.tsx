@@ -21,8 +21,8 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
       <div className='flex h-[36px] w-full max-w-full flex-row items-center'>
         <div
-          className='flex max-w-full flex-row items-center justify-start gap-2 truncate'
-          style={{ maxWidth: domainIsValid ? 'calc(100% - 32px)' : 'calc(100% - 46px)' }}
+          className='flex flex-row items-center justify-start gap-2 truncate'
+          style={{ maxWidth: domainIsValid ? 'calc(100% - 8px)' : 'calc(100% - 12px)' }}
         >
           <NameImage
             name={domain.name}

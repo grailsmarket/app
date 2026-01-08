@@ -29,18 +29,18 @@ const RecentListings = () => {
   return (
     <div className='flex flex-col'>
       <h2 className='p-md lg:p-lg text-2xl font-bold'>Recent Listings</h2>
-      <div className='flex flex-col gap-0 border-t border-tertiary'>
+      <div className='border-tertiary flex flex-col gap-0 border-t'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (
-            <div key={index} className='px-lg flex h-[60px] w-full border-b border-tertiary items-center'>
-              <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
-            </div>
-          ))
+              <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+                <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
+              </div>
+            ))
           : listings?.domains?.map((domain, index) => (
-            <div key={domain.token_id}>
-              <TableRow domain={domain} index={index} displayedColumns={['domain', 'price', 'actions']} />
-            </div>
-          ))}
+              <div key={domain.token_id}>
+                <TableRow domain={domain} index={index} displayedColumns={['domain', 'price', 'actions']} />
+              </div>
+            ))}
       </div>
     </div>
   )

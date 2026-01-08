@@ -103,7 +103,7 @@ const Domains: React.FC<DomainsProps> = ({
       {showHeaders && viewTypeToUse !== 'grid' && (
         <div
           className={cn(
-            'px-md pt-sm bg-background transition-top border-tertiary border-b lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between duration-300 sm:flex',
+            'px-md pt-sm bg-background transition-top border-tertiary lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
             isNavbarVisible ? 'top-49 sm:top-40 md:top-48' : 'top-35 sm:top-26 md:top-48'
           )}
         >

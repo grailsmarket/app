@@ -36,13 +36,8 @@ export const useDomains = (user: Address | undefined) => {
 
   const { listings, totalListings, listingsLoading, fetchMoreListings, hasMoreListings } = useListings(user)
 
-  const {
-    graceDomains,
-    graceDomainsLoading,
-    fetchMoreGraceDomains,
-    hasMoreGraceDomains,
-    totalGraceDomains,
-  } = useGraceDomains(user)
+  const { graceDomains, graceDomainsLoading, fetchMoreGraceDomains, hasMoreGraceDomains, totalGraceDomains } =
+    useGraceDomains(user)
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {

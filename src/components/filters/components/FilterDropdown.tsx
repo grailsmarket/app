@@ -40,7 +40,7 @@ function FilterDropdown<T extends string>({
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'text-lg flex min-w-[90px] cursor-pointer items-center justify-between gap-2 border-b px-2 py-1 font-medium transition-colors',
+            'flex min-w-[90px] cursor-pointer items-center justify-between gap-2 border-b px-2 py-1 text-lg font-medium transition-colors',
             isOpen ? 'border-primary' : 'border-tertiary hover:border-primary'
           )}
         >
@@ -56,13 +56,18 @@ function FilterDropdown<T extends string>({
         </button>
 
         {isOpen && (
-          <div className={cn('bg-background border-tertiary absolute right-0 z-50 mt-1 min-w-[90px] border rounded-sm shadow-lg', dropdownPosition === 'top' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+2px)]')}>
+          <div
+            className={cn(
+              'bg-background border-tertiary absolute right-0 z-50 mt-1 min-w-[90px] rounded-sm border shadow-lg',
+              dropdownPosition === 'top' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+2px)]'
+            )}
+          >
             {options.map((option) => (
               <button
                 key={option}
                 onClick={() => handleSelect(option)}
                 className={cn(
-                  'text-lg w-full cursor-pointer px-3 py-2 text-left font-medium transition-colors',
+                  'w-full cursor-pointer px-3 py-2 text-left text-lg font-medium transition-colors',
                   value === option ? 'bg-primary/20 text-primary' : 'text-light-200 hover:bg-secondary',
                   noneValue !== undefined && option === noneValue && 'text-neutral-500'
                 )}

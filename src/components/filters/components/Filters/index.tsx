@@ -6,6 +6,7 @@ import CategoryFilterAll from '../CategoryFilterAll'
 import PriceRangeFilter from '../PriceRangeFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
 import { useIsClient } from 'ethereum-identity-kit'
 import { useCategories } from '../../hooks/useCategories'
@@ -23,6 +24,9 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const activeCategoryTab = categoryTab?.value || 'names'
   const isClient = useIsClient()
   const { categories } = useCategories()
+  // Get marketplace tab from filter router
+  const { marketplaceTab } = useFilterRouter()
+  const activeMarketplaceTab = marketplaceTab?.value || 'names'
 
   if (!isClient) return null
 
@@ -30,10 +34,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const showCategoryTab =
     filterType === 'marketplace' || activeProfileTab === 'domains' || activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
 
-  // Hide status filter for category Premium and Available tabs (status is locked for these tabs)
+  // Hide status filter for category and marketplace Premium and Available tabs (status is locked for these tabs)
   const showStatusFilter = !(
-    filterType === 'category' &&
-    (activeCategoryTab === 'premium' || activeCategoryTab === 'available')
+    (filterType === 'category' && (activeCategoryTab === 'premium' || activeCategoryTab === 'available')) ||
+    (filterType === 'marketplace' && (activeMarketplaceTab === 'premium' || activeMarketplaceTab === 'available'))
   )
 
   return (

@@ -1,16 +1,15 @@
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useUserContext } from '@/context/user'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useAppSelector } from '@/state/hooks'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { MarketplaceDomainType } from '@/types/domains'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 export const useDomains = () => {
   const { authStatus } = useUserContext()
-  const filters = useAppSelector(selectMarketplaceFilters)
+  const filters = useFilterRouter().selectors.filters
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {
@@ -30,13 +29,16 @@ export const useDomains = () => {
       filters.type,
       filters.status,
       filters.sort,
+      // @ts-expect-error the text match filter state will not be used for domains
       filters.market,
+      // @ts-expect-error the text match filter state will not be used for domains
       filters.textMatch,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
+        // @ts-expect-error the filters state will not be used for domains
         filters,
         searchTerm: debouncedSearch,
         enableBulkSearch: true,

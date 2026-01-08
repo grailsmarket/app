@@ -41,6 +41,48 @@ import {
   clearMarketplaceActivityFilters,
 } from '@/state/reducers/filters/marketplaceActivityFilters'
 
+// Import marketplace premium filters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateMarketplacePremiumFilters,
+  selectMarketplacePremiumFilters,
+  setFiltersOpen as setMarketplacePremiumFiltersOpen,
+  toggleFiltersType as toggleMarketplacePremiumFiltersType,
+  setFiltersType as setMarketplacePremiumFiltersType,
+  setMarketFilters as setMarketplacePremiumMarketFilters,
+  setTextMatchFilters as setMarketplacePremiumTextMatchFilters,
+  setFiltersLength as setMarketplacePremiumFiltersLength,
+  setPriceDenomination as setMarketplacePremiumPriceDenomination,
+  setPriceRange as setMarketplacePremiumPriceRange,
+  toggleCategory as toggleMarketplacePremiumCategory,
+  setFiltersCategory as setMarketplacePremiumFiltersCategory,
+  setSort as setMarketplacePremiumSort,
+  setSearch as setMarketplacePremiumSearch,
+  setFiltersScrollTop as setMarketplacePremiumFiltersScrollTop,
+  toggleFilterOpen as toggleMarketplacePremiumFilterOpen,
+  clearFilters as clearMarketplacePremiumFilters,
+} from '@/state/reducers/filters/marketplacePremiumFilters'
+
+// Import marketplace available filters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateMarketplaceAvailableFilters,
+  selectMarketplaceAvailableFilters,
+  setFiltersOpen as setMarketplaceAvailableFiltersOpen,
+  toggleFiltersType as toggleMarketplaceAvailableFiltersType,
+  setFiltersType as setMarketplaceAvailableFiltersType,
+  setMarketFilters as setMarketplaceAvailableMarketFilters,
+  setTextMatchFilters as setMarketplaceAvailableTextMatchFilters,
+  setFiltersLength as setMarketplaceAvailableFiltersLength,
+  setPriceDenomination as setMarketplaceAvailablePriceDenomination,
+  setPriceRange as setMarketplaceAvailablePriceRange,
+  toggleCategory as toggleMarketplaceAvailableCategory,
+  setFiltersCategory as setMarketplaceAvailableFiltersCategory,
+  setSort as setMarketplaceAvailableSort,
+  setSearch as setMarketplaceAvailableSearch,
+  setFiltersScrollTop as setMarketplaceAvailableFiltersScrollTop,
+  toggleFilterOpen as toggleMarketplaceAvailableFilterOpen,
+  clearFilters as clearMarketplaceAvailableFilters,
+} from '@/state/reducers/filters/marketplaceAvailableFilters'
+
 // Import marketplace state selector
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 
@@ -283,10 +325,15 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'activity') {
+      if (activeMarketplaceTab === 'names') {
+        return selectMarketplaceFilters(state)
+      } else if (activeMarketplaceTab === 'premium') {
+        return selectMarketplacePremiumFilters(state)
+      } else if (activeMarketplaceTab === 'available') {
+        return selectMarketplaceAvailableFilters(state)
+      } else if (activeMarketplaceTab === 'activity') {
         return selectMarketplaceActivityFilters(state)
       }
-
       return selectMarketplaceFilters(state)
     }
 
@@ -585,7 +632,63 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'activity') {
+      if (activeMarketplaceTab === 'names') {
+        return {
+          setFiltersOpen: setMarketplaceFiltersOpen,
+          toggleFiltersStatus: toggleMarketplaceFiltersStatus,
+          setFiltersStatus: setMarketplaceFiltersStatus,
+          toggleFiltersType: toggleMarketplaceFiltersType,
+          setFiltersType: setMarketplaceFiltersType,
+          setMarketFilters: setMarketplaceMarketFilters,
+          setTextMatchFilters: setMarketplaceTextMatchFilters,
+          setFiltersLength: setMarketplaceFiltersLength,
+          setPriceDenomination: setMarketplacePriceDenomination,
+          setPriceRange: setMarketplacePriceRange,
+          toggleCategory: toggleMarketplaceCategory,
+          setFiltersCategory: setMarketplaceFiltersCategory,
+          setSort: setMarketplaceSort,
+          setSearch: setMarketplaceSearch,
+          setScrollTop: setMarketplaceScrollTop,
+          toggleFilterOpen: toggleMarketplaceFilterOpen,
+          clearFilters: clearMarketplaceFilters,
+        }
+      } else if (activeMarketplaceTab === 'premium') {
+        return {
+          setFiltersOpen: setMarketplacePremiumFiltersOpen,
+          toggleFiltersType: toggleMarketplacePremiumFiltersType,
+          setFiltersType: setMarketplacePremiumFiltersType,
+          setMarketFilters: setMarketplacePremiumMarketFilters,
+          setTextMatchFilters: setMarketplacePremiumTextMatchFilters,
+          setFiltersLength: setMarketplacePremiumFiltersLength,
+          setPriceDenomination: setMarketplacePremiumPriceDenomination,
+          setPriceRange: setMarketplacePremiumPriceRange,
+          toggleCategory: toggleMarketplacePremiumCategory,
+          setFiltersCategory: setMarketplacePremiumFiltersCategory,
+          setSort: setMarketplacePremiumSort,
+          setSearch: setMarketplacePremiumSearch,
+          setScrollTop: setMarketplacePremiumFiltersScrollTop,
+          toggleFilterOpen: toggleMarketplacePremiumFilterOpen,
+          clearFilters: clearMarketplacePremiumFilters,
+        }
+      } else if (activeMarketplaceTab === 'available') {
+        return {
+          setFiltersOpen: setMarketplaceAvailableFiltersOpen,
+          toggleFiltersType: toggleMarketplaceAvailableFiltersType,
+          setFiltersType: setMarketplaceAvailableFiltersType,
+          setMarketFilters: setMarketplaceAvailableMarketFilters,
+          setTextMatchFilters: setMarketplaceAvailableTextMatchFilters,
+          setFiltersLength: setMarketplaceAvailableFiltersLength,
+          setPriceDenomination: setMarketplaceAvailablePriceDenomination,
+          setPriceRange: setMarketplaceAvailablePriceRange,
+          toggleCategory: toggleMarketplaceAvailableCategory,
+          setFiltersCategory: setMarketplaceAvailableFiltersCategory,
+          setSort: setMarketplaceAvailableSort,
+          setSearch: setMarketplaceAvailableSearch,
+          setScrollTop: setMarketplaceAvailableFiltersScrollTop,
+          toggleFilterOpen: toggleMarketplaceAvailableFilterOpen,
+          clearFilters: clearMarketplaceAvailableFilters,
+        }
+      } else if (activeMarketplaceTab === 'activity') {
         return {
           setScrollTop: setMarketplaceActivityFiltersScrollTop,
           toggleFilterOpen: toggleMarketplaceActivityFilterOpen,
@@ -653,7 +756,13 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'activity') {
+      if (activeMarketplaceTab === 'names') {
+        return emptyFilterStateMarketplaceFilters
+      } else if (activeMarketplaceTab === 'premium') {
+        return emptyFilterStateMarketplacePremiumFilters
+      } else if (activeMarketplaceTab === 'available') {
+        return emptyFilterStateMarketplaceAvailableFilters
+      } else if (activeMarketplaceTab === 'activity') {
         return emptyFilterStateMarketplaceActivityFilters
       }
       return emptyFilterStateMarketplaceFilters

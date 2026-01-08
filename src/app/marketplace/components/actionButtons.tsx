@@ -77,7 +77,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
                   Clear Filters
                 </SecondaryButton>
                 <SecondaryButton onClick={closeFilters} className='lg:hidden'>
-                  Close Filters
+                  Close
                 </SecondaryButton>
               </>
             )}

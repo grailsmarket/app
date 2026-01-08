@@ -4,6 +4,14 @@ export const MARKETPLACE_TABS = [
     value: 'names',
   },
   {
+    label: 'Premium',
+    value: 'premium',
+  },
+  {
+    label: 'Available',
+    value: 'available',
+  },
+  {
     label: 'Activity',
     value: 'activity',
   },

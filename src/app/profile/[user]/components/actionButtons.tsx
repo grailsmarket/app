@@ -95,7 +95,7 @@ const ActionButtons = () => {
                   Clear Filters
                 </SecondaryButton>
                 <SecondaryButton onClick={closeFilters} className='lg:hidden'>
-                  Close Filters
+                  Close
                 </SecondaryButton>
               </>
             )}

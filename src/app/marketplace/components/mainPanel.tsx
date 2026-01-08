@@ -18,7 +18,7 @@ const MainPanel: React.FC = () => {
   const { width: windowWidth } = useWindowSize()
   const { open: filtersOpen } = useAppSelector(selectMarketplaceFilters)
 
-  const showNamesPanel = selectedTab.value === 'names'
+  const showDomainsPanel = selectedTab.value === 'names' || selectedTab.value === 'premium' || selectedTab.value === 'available'
   const showActivityPanel = selectedTab.value === 'activity'
 
   // On mobile: always 100%, on desktop: adjust based on filter open state
@@ -34,7 +34,7 @@ const MainPanel: React.FC = () => {
       <div className='flex w-full flex-row gap-0'>
         <FilterPanel />
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
-          {showNamesPanel && <DomainPanel />}
+          {showDomainsPanel && <DomainPanel />}
           {showActivityPanel && (
             <ActivityPanel
               isLiveActivityConnected={isLiveActivityConnected}

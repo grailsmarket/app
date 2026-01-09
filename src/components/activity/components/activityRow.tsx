@@ -8,6 +8,7 @@ import User from '@/components/ui/user'
 import { ActivityColumnType } from '@/types/domains'
 import { ActivityType } from '@/types/profile'
 import ActivityTime from '@/components/ui/activityTime'
+import Image from 'next/image'
 
 interface ActivityRowProps {
   activity: ActivityType
@@ -48,11 +49,13 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
         tooltipPosition={index === 0 ? 'bottom' : 'top'}
       />
     ),
-    user: addressToShow && <User address={addressToShow} className='max-w-[95%]' />,
+    user: addressToShow && <User address={addressToShow} className='max-w-[95%]' wrapperClassName='justify-start' />,
     from: activity.actor_address ? (
       <User address={activity.actor_address} className='max-w-[95%]' wrapperClassName='justify-start' />
     ) : null,
-    to: activity.counterparty_address ? <User address={activity.counterparty_address} className='max-w-[95%]' /> : null,
+    to: activity.counterparty_address ? (
+      <User address={activity.counterparty_address} className='max-w-[95%]' wrapperClassName='justify-start' />
+    ) : null,
     time: activity.created_at ? (
       <ActivityTime
         timestamp={activity.created_at}
@@ -63,25 +66,39 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   }
 
   return (
-    <div className='group px-md lg:px-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-start gap-1 border-b bg-transparent transition hover:bg-white/10'>
-      {displayedColumns.map((column, index) => (
-        <div
-          key={column}
-          className={cn('flex flex-row items-center gap-2', index + 1 === displayedColumns.length && 'justify-end')}
-          style={{
-            width:
-              column === 'name'
-                ? nameColumnWidth
-                : column === 'event'
-                  ? eventColumnWidth
-                  : column === 'user'
-                    ? userColumnWidth
-                    : columnWidth,
-          }}
-        >
-          {columns[column]}
-        </div>
-      ))}
+    <div className='group px-md lg:px-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-between gap-1 border-b bg-transparent transition hover:bg-white/10'>
+      <div className='flex w-[calc(100%-28px)] flex-row items-center gap-2'>
+        {displayedColumns.map((column) => (
+          <div
+            key={column}
+            className={cn('flex flex-row items-center gap-2')}
+            style={{
+              width:
+                column === 'name'
+                  ? nameColumnWidth
+                  : column === 'event'
+                    ? eventColumnWidth
+                    : column === 'user'
+                      ? userColumnWidth
+                      : columnWidth,
+            }}
+          >
+            {columns[column]}
+          </div>
+        ))}
+      </div>
+      <div className='mr-1 h-4 w-4 md:pr-0'>
+        {activity.transaction_hash && (
+          <Image
+            src='/icons/external-link.svg'
+            alt='External Link'
+            width={16}
+            height={16}
+            className='h-4 w-4 cursor-pointer transition-opacity hover:opacity-70'
+            onClick={() => window.open(`https://etherscan.io/tx/${activity.transaction_hash}`, '_blank')}
+          />
+        )}
+      </div>
     </div>
   )
 }

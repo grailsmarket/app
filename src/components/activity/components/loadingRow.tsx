@@ -18,7 +18,7 @@ const LoadingRow: React.FC<LoadingRowsProps> = ({ displayedColumns }) => {
   return displayedColumns.map((column, index) => {
     return (
       <div
-        className={cn('flex flex-row items-center gap-2')}
+        className={cn('flex', index === displayedColumns.length - 1 && 'justify-end')}
         style={{
           width:
             column === 'name'

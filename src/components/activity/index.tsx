@@ -98,28 +98,29 @@ const Activity: React.FC<ActivityProps> = ({
             stickyHeaders && (isNavbarVisible ? 'top-38' : 'top-24')
           )}
         >
-          <div className='flex w-[calc(100%-28px)] flex-row items-center justify-start'>
-            {displayedColumns.map((header, index) => {
-              return (
-                <div
-                  key={index}
-                  className={cn('flex flex-row items-center gap-1')}
-                  style={{
-                    width:
-                      header === 'name'
-                        ? nameColumnWidth
-                        : header === 'event'
-                          ? eventColumnWidth
-                          : header === 'user'
-                            ? userColumnWidth
-                            : columnWidth,
-                  }}
-                >
-                  <p className='text-neutral w-fit cursor-pointer text-left text-sm font-medium capitalize'>{header}</p>
-                </div>
-              )
-            })}
-          </div>
+          {displayedColumns.map((header, index) => {
+            return (
+              <div
+                key={index}
+                className={cn(
+                  'flex flex-row items-center gap-1',
+                  index + 1 === displayedColumns.length && 'justify-end'
+                )}
+                style={{
+                  width:
+                    header === 'name'
+                      ? nameColumnWidth
+                      : header === 'event'
+                        ? eventColumnWidth
+                        : header === 'user'
+                          ? userColumnWidth
+                          : columnWidth,
+                }}
+              >
+                <p className='text-neutral w-fit cursor-pointer text-left text-sm font-medium capitalize'>{header}</p>
+              </div>
+            )
+          })}
         </div>
       )}
       <div className='h-full w-full rounded-sm px-0' ref={listRef}>
@@ -139,7 +140,7 @@ const Activity: React.FC<ActivityProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-[calc(100%-28px)] items-center justify-between border-b'>
+                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

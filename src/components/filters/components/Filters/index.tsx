@@ -23,12 +23,17 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const activeProfileTab = profileTab?.value || 'domains'
   const activeCategoryTab = categoryTab?.value || 'names'
   const isClient = useIsClient()
-  const { categories } = useCategories()
+  const { categories, userCategoryCounts } = useCategories()
   // Get marketplace tab from filter router
   const { marketplaceTab } = useFilterRouter()
   const activeMarketplaceTab = marketplaceTab?.value || 'names'
 
   if (!isClient) return null
+
+  const showUserCategoryCounts =
+    filterType === 'profile' &&
+    (activeProfileTab === 'domains' || activeProfileTab === 'grace' || activeProfileTab === 'listings') &&
+    userCategoryCounts
 
   // Use appropriate categories based on filter context
   const showCategoryTab =
@@ -69,11 +74,17 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
         >
           <CategoryFilterAll
             allCategoryNames={categories?.map((c) => c.name) || []}
-            totalCount={categories?.reduce((sum, c) => sum + c.member_count, 0) || 0}
+            totalCount={
+              showUserCategoryCounts
+                ? userCategoryCounts.any
+                : categories?.reduce((sum, c) => sum + c.member_count, 0) || 0
+            }
           />
-          {categories?.map((category, index) => (
-            <CategoryFilter key={index} category={category.name} owner_count={category.member_count} />
-          ))}
+          {categories?.map((category, index) => {
+            const categoryCount = showUserCategoryCounts ? userCategoryCounts?.[category.name] : category.member_count
+
+            return <CategoryFilter key={index} category={category.name} owner_count={categoryCount} />
+          })}
         </div>
       )}
     </div>

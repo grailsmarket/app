@@ -51,6 +51,7 @@ export const MARKETPLACE_TYPE_FILTER_PARAM_OPTIONS: Record<string, string> = {
 
 // Market filter constants
 export const MARKET_FILTER_LABELS = ['Listed', 'Has Offers', 'Has Last Sale'] as const
+export const GRACE_FILTER_LABELS = ['Has Offers', 'Has Last Sale'] as const
 export const LISTED_FILTER_LABELS = ['Has Offers', 'Has Last Sale'] as const
 export const OFFERS_FILTER_LABELS = ['Listed', 'Has Last Sale'] as const
 

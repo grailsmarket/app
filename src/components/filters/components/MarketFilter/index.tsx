@@ -19,16 +19,33 @@ import {
   MARKETPLACE_OPTIONS,
   MARKETPLACE_OPTION_LABELS,
   MarketplaceOption,
+  GRACE_FILTER_LABELS,
 } from '@/constants/filters/marketplaceFilters'
 import { useFilterContext } from '@/context/filters'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 const MarketFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Market')
   const { getOption, setOption, getMarketplaceOption, setMarketplaceOption } = useMarketFilters()
-  const { filterType, profileTab } = useFilterContext()
+  const { filterType, profileTab, categoryTab } = useFilterContext()
+  const { marketplaceTab } = useFilterRouter()
   const activeProfileTab = profileTab?.value || 'domains'
+  const activeCategoryTab = categoryTab?.value || 'names'
+  const activeMarketplaceTab = marketplaceTab?.value || 'names'
 
   const filterLabels = useMemo(() => {
+    if (filterType === 'category') {
+      if (activeCategoryTab === 'names') {
+        return MARKET_FILTER_LABELS
+      } else if (activeCategoryTab === 'premium') {
+        return GRACE_FILTER_LABELS
+      } else if (activeCategoryTab === 'available') {
+        return GRACE_FILTER_LABELS
+      }
+
+      return MARKET_FILTER_LABELS
+    }
+
     if (filterType === 'profile') {
       if (activeProfileTab === 'listings') {
         return LISTED_FILTER_LABELS
@@ -36,11 +53,72 @@ const MarketFilter = () => {
         return OFFERS_FILTER_LABELS
       } else if (activeProfileTab === 'sent_offers') {
         return OFFERS_FILTER_LABELS
+      } else if (activeProfileTab === 'grace') {
+        return GRACE_FILTER_LABELS
+      }
+    }
+
+    if (filterType === 'marketplace') {
+      if (activeMarketplaceTab === 'names') {
+        return MARKET_FILTER_LABELS
+      } else if (activeMarketplaceTab === 'premium') {
+        return GRACE_FILTER_LABELS
+      } else if (activeMarketplaceTab === 'available') {
+        return GRACE_FILTER_LABELS
       }
     }
 
     return MARKET_FILTER_LABELS
-  }, [filterType, activeProfileTab])
+  }, [filterType, activeProfileTab, activeCategoryTab, activeMarketplaceTab])
+
+  const showMarketplaceDropdown = useMemo(() => {
+    if (filterType === 'category') {
+      if (activeCategoryTab === 'names') {
+        return true
+      } else if (activeCategoryTab === 'premium') {
+        return false
+      } else if (activeCategoryTab === 'available') {
+        return false
+      } else if (activeCategoryTab === 'activity') {
+        return false
+      }
+      return true
+    }
+
+    if (filterType === 'profile') {
+      if (activeProfileTab === 'domains') {
+        return true
+      }
+      if (activeProfileTab === 'grace') {
+        return false
+      } else if (activeProfileTab === 'listings') {
+        return true
+      } else if (activeProfileTab === 'received_offers') {
+        return true
+      } else if (activeProfileTab === 'sent_offers') {
+        return true
+      } else if (activeProfileTab === 'watchlist') {
+        return true
+      } else if (activeProfileTab === 'activity') {
+        return false
+      }
+      return true
+    }
+
+    if (filterType === 'marketplace') {
+      if (activeMarketplaceTab === 'names') {
+        return true
+      } else if (activeMarketplaceTab === 'premium') {
+        return false
+      } else if (activeMarketplaceTab === 'available') {
+        return false
+      } else if (activeMarketplaceTab === 'activity') {
+        return false
+      }
+    }
+
+    return true
+  }, [filterType, activeCategoryTab, activeProfileTab, activeMarketplaceTab])
 
   // Calculate expanded height based on number of labels + 1 for marketplace dropdown
   const expandedHeight = 64 + (filterLabels.length + 1) * 42
@@ -61,16 +139,18 @@ const MarketFilter = () => {
               />
             </div>
           ))}
-          <div>
-            <FilterDropdown<MarketplaceOption>
-              label='Marketplace'
-              value={getMarketplaceOption()}
-              options={MARKETPLACE_OPTIONS}
-              optionLabels={MARKETPLACE_OPTION_LABELS}
-              onChange={(option) => setMarketplaceOption(option)}
-              noneValue='none'
-            />
-          </div>
+          {showMarketplaceDropdown && (
+            <div>
+              <FilterDropdown<MarketplaceOption>
+                label='Marketplace'
+                value={getMarketplaceOption()}
+                options={MARKETPLACE_OPTIONS}
+                optionLabels={MARKETPLACE_OPTION_LABELS}
+                onChange={(option) => setMarketplaceOption(option)}
+                noneValue='none'
+              />
+            </div>
+          )}
         </div>
       </ExpandableTab>
     </PersistGate>

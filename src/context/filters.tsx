@@ -9,12 +9,13 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { beautifyName } from '@/lib/ens'
 import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { Address, useWindowSize } from 'ethereum-identity-kit'
 
 interface FilterContextValue {
   filterType: FilterContextType
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
+  profileAddress?: Address | string
 }
 
 const FilterContext = createContext<FilterContextValue | undefined>(undefined)
@@ -24,9 +25,16 @@ interface FilterProviderProps {
   filterType: FilterContextType
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
+  profileAddress?: Address | string
 }
 
-export const FilterProvider: React.FC<FilterProviderProps> = ({ children, filterType, profileTab, categoryTab }) => {
+export const FilterProvider: React.FC<FilterProviderProps> = ({
+  children,
+  filterType,
+  profileTab,
+  categoryTab,
+  profileAddress,
+}) => {
   const dispatch = useAppDispatch()
   const { actions } = useFilterRouter()
   const pathname = usePathname()
@@ -74,7 +82,11 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children, filter
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
 
-  return <FilterContext.Provider value={{ filterType, profileTab, categoryTab }}>{children}</FilterContext.Provider>
+  return (
+    <FilterContext.Provider value={{ filterType, profileTab, categoryTab, profileAddress }}>
+      {children}
+    </FilterContext.Provider>
+  )
 }
 
 export const useFilterContext = (): FilterContextValue => {

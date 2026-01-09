@@ -104,7 +104,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   return (
     <Suspense>
-      <FilterProvider filterType='profile' profileTab={selectedTab}>
+      <FilterProvider filterType='profile' profileTab={selectedTab} profileAddress={userAccount?.address || user}>
         <div className='w-full'>
           <div className='z-10 w-full'>
             <div className='bg-background border-tertiary relative flex min-h-[calc(100dvh-56px)] w-full flex-col gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>

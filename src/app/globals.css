@@ -299,3 +299,7 @@ body {
 .user-profile-content {
   z-index: 20;
 }
+
+.avatar-container {
+  position: relative !important;
+}

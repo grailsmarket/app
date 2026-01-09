@@ -20,6 +20,7 @@ const DisplayedCards: React.FC = () => {
           ...emptyFilterState,
           status: ['Listed'],
         },
+        inAnyCategory: true,
         searchTerm: '',
         isAuthenticated: authStatus === 'authenticated',
       })

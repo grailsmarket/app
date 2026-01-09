@@ -110,7 +110,7 @@ const LiveActivity = () => {
   })
 
   const handleViewAll = () => {
-    dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
+    dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
     router.push('/marketplace')
   }
 

@@ -111,7 +111,7 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   if (filterType === 'profile') {
-    if (profileTab.value === 'domains' || profileTab.value === 'listings') {
+    if (profileTab.value === 'domains' || profileTab.value === 'listings' || profileTab.value === 'grace') {
       if (isBulkSelecting) {
         return (
           <div className='flex flex-row justify-end gap-4 opacity-100'>

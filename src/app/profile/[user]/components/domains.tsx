@@ -108,7 +108,10 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         }}
         displayedDetails={displayedDetails}
         showWatchlist={selectedTab.value === 'watchlist'}
-        isBulkSelecting={(selectedTab.value === 'domains' || selectedTab.value === 'listings') && isSelecting}
+        isBulkSelecting={
+          (selectedTab.value === 'domains' || selectedTab.value === 'listings' || selectedTab.value === 'grace') &&
+          isSelecting
+        }
       />
     </div>
   )

@@ -160,10 +160,22 @@ export const fetchDomains = async ({
       statusFilter.length > 0 ||
       ownerAddress ||
       category ||
+      filters.categories?.length > 0 ||
       filters.length.min ||
       filters.length.max ||
       filters.priceRange.min ||
-      filters.priceRange.max
+      filters.priceRange.max ||
+      filters.type.Letters === 'exclude' ||
+      filters.type.Digits === 'exclude' ||
+      filters.type.Emojis === 'exclude' ||
+      filters.type.Repeating === 'exclude' ||
+      filters.textMatch?.Contains ||
+      filters.textMatch?.['Starts with'] ||
+      filters.textMatch?.['Ends with'] ||
+      filters.market?.Listed !== 'none' ||
+      filters.market?.['Has Last Sale'] === 'no' ||
+      filters.market?.['Has Offers'] === 'no' ||
+      filters.market?.marketplace !== 'none'
 
     if (pageParam === 1) {
       if (isBulkSearching) {

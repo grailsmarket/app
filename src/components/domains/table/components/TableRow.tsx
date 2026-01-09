@@ -91,12 +91,12 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         registrationStatus={registrationStatus}
       />
     ),
-    owner: domain.owner ? (
+    owner: (
       <div
         key={`${domain.name}-owner`}
         className={cn(ALL_MARKETPLACE_COLUMNS['owner'].getWidth(columnCount), 'relative pr-1')}
       >
-        {!REGISTERABLE_STATUSES.includes(registrationStatus) && (
+        {!REGISTERABLE_STATUSES.includes(registrationStatus) && domain.owner && (
           <User
             address={domain.owner as `0x${string}`}
             className='max-w-[90%]'
@@ -104,7 +104,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
           />
         )}
       </div>
-    ) : null,
+    ),
   }
 
   return (

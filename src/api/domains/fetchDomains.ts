@@ -47,6 +47,10 @@ export const fetchDomains = async ({
 
       const res = await fetch(`${API_URL}/search/bulk`, {
         method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           terms: search.split(','),
           page: pageParam,

@@ -5,15 +5,19 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import Image from 'next/image'
 import arrowDown from 'public/icons/arrow-down.svg'
 import { useCategories } from '../hooks/useCategories'
+import { useFilterContext } from '@/context/filters'
 
 interface CategoryFilterTabProps {
   setPanelCategories: () => void
 }
 
 const CategoryFilterTab: React.FC<CategoryFilterTabProps> = ({ setPanelCategories }) => {
-  const { selectors } = useFilterRouter()
   const { categories } = useCategories()
+  const { selectors } = useFilterRouter()
+  const { filterType } = useFilterContext()
   const selectedCategories = selectors.filters.categories
+
+  if (filterType === 'category') return null
 
   return (
     <div

@@ -22,11 +22,11 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
   const { isNavbarVisible } = useNavbar()
 
   return (
-    <div className='flex w-full flex-col'>
+    <div className='z-0 flex w-full flex-col'>
       <div
         className={cn(
-          'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full items-center justify-between gap-2 duration-300 sm:flex-row md:top-32',
-          isNavbarVisible ? 'top-26' : 'top-12'
+          'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full items-center justify-between gap-2 duration-300 sm:flex-row',
+          isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
         <div className='flex w-auto items-center gap-2'>

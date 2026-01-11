@@ -62,7 +62,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       className={cn(
         'bg-background border-tertiary app:border-r-2 app:border-l-2 sticky top-0 left-0 z-50 mx-auto h-14 w-full max-w-[2340px] border-b-2 backdrop-blur-md transition-transform duration-300 md:h-18',
         showInfo ? 'mt-6' : '',
-        !effectiveVisibility ? '-translate-y-full md:translate-y-0' : 'translate-y-0'
+        !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
       <nav className='px-md md:px-lg lg:px-xl mx-auto flex h-full max-w-[2340px] items-center justify-between'>
@@ -84,7 +84,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

@@ -1,12 +1,14 @@
 'use client'
 
+import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { useUserContext } from '@/context/user'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import React, { useRef, useState, useEffect } from 'react'
 
 interface PagesProps {
@@ -15,7 +17,9 @@ interface PagesProps {
 }
 
 const Pages = ({ className, onClick }: PagesProps) => {
+  const router = useRouter()
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { ensProfile } = useAppSelector(selectUserProfile)
   const { openConnectModal } = useConnectModal()
@@ -91,6 +95,15 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Explore
       </Link>
+      <p
+        className='font-semibold cursor-pointer transition-all text-foreground opacity-80 hover:opacity-100'
+        onClick={() => {
+          dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
+          router.push('/marketplace')
+        }}
+      >
+        Premium
+      </p>
       <Link
         href='/categories'
         className={cn(

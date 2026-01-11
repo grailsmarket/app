@@ -58,14 +58,15 @@ const FilterPanel: React.FC = () => {
     <div
       ref={filterRef}
       className={cn(
-        'bg-background border-tertiary z-20 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
+        'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
         isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-14 h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles
-        !isMobile && 'sticky top-[128px] h-[calc(100dvh-128px)]',
+        !isMobile && 'sticky',
+        !isMobile && (isNavbarVisible ? 'top-[128px] h-[calc(100dvh-128px)]' : 'top-14 h-[calc(100dvh-56px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? 'md:border-r-2' : 'w-0'

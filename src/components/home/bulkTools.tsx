@@ -19,7 +19,7 @@ import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModa
 const bulkTools = [
   {
     title: 'Bulk Search',
-    description: 'Input search terms separated by commas or spaces.',
+    description: 'Up to 500 search terms separated by commas or spaces.',
     icon: <Image src={search} alt='Search' width={20} height={20} />,
   },
   {

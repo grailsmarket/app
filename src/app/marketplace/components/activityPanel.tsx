@@ -26,8 +26,8 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
     <div className='flex w-full flex-col'>
       <div
         className={cn(
-          'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row md:top-32',
-          isNavbarVisible ? 'top-26' : 'top-12'
+          'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
+          isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
         <div className='flex w-full items-center justify-between gap-2'>

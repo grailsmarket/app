@@ -5,11 +5,10 @@ import { FilterContextType } from '@/types/filters'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { CategoryTabType } from '@/state/reducers/category/category'
 import { useAppDispatch } from '@/state/hooks'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { usePathname, useSearchParams } from 'next/navigation'
-import { beautifyName } from '@/lib/ens'
+import { usePathname } from 'next/navigation'
 import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import { Address, useWindowSize } from 'ethereum-identity-kit'
+import { useFilterUrlSync } from '@/hooks/filters/useFilterUrlSync'
 
 interface FilterContextValue {
   filterType: FilterContextType
@@ -26,6 +25,7 @@ interface FilterProviderProps {
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
   profileAddress?: Address | string
+  isOwner?: boolean // For profile page to check watchlist access
 }
 
 export const FilterProvider: React.FC<FilterProviderProps> = ({
@@ -34,11 +34,10 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
   profileTab,
   categoryTab,
   profileAddress,
+  isOwner = true,
 }) => {
   const dispatch = useAppDispatch()
-  const { actions } = useFilterRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const { width: windowWidth } = useWindowSize()
   const previousPathRef = useRef<string | null>(null)
 
@@ -62,31 +61,27 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
     }
   }, [windowWidth, dispatch])
 
-  useEffect(() => {
-    if (actions) {
-      if (!pathname.includes('/marketplace')) dispatch(actions.clearFilters())
-
-      const defaultSearch = searchParams.get('search')
-      if (defaultSearch) {
-        const isBulkSearching = defaultSearch.replaceAll(' ', ',').split(',').length > 1
-        const searchToApply = isBulkSearching
-          ? defaultSearch
-              .replaceAll(' ', ',')
-              .split(',')
-              .map((query) => beautifyName(query.trim()))
-              .join(', ')
-          : beautifyName(defaultSearch)
-        dispatch(actions.setSearch(searchToApply))
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname])
-
   return (
     <FilterContext.Provider value={{ filterType, profileTab, categoryTab, profileAddress }}>
-      {children}
+      <FilterUrlSyncWrapper filterType={filterType} isOwner={isOwner}>
+        {children}
+      </FilterUrlSyncWrapper>
     </FilterContext.Provider>
   )
+}
+
+// Inner component that handles URL sync (must be inside FilterContext.Provider)
+interface FilterUrlSyncWrapperProps {
+  children: ReactNode
+  filterType: FilterContextType
+  isOwner: boolean
+}
+
+const FilterUrlSyncWrapper: React.FC<FilterUrlSyncWrapperProps> = ({ children, filterType, isOwner }) => {
+  // This hook handles all URL <-> Redux sync
+  useFilterUrlSync({ filterType, isOwner })
+
+  return <>{children}</>
 }
 
 export const useFilterContext = (): FilterContextValue => {

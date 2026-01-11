@@ -1,6 +1,6 @@
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDebounce } from '@/hooks/useDebounce'
 
 export const useLengthFilter = () => {
@@ -8,6 +8,7 @@ export const useLengthFilter = () => {
   const [currMaxVal, setCurrMaxVal] = useState<number | null>(null)
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
+  const isInitialSync = useRef(true)
 
   const debouncedMinVal = useDebounce(currMinVal?.toString() || '', 400)
   const debouncedMaxVal = useDebounce(currMaxVal?.toString() || '', 400)
@@ -16,6 +17,23 @@ export const useLengthFilter = () => {
 
   const minVal = lengthFilter.min
   const maxVal = lengthFilter.max
+
+  // Sync local state from Redux when Redux changes externally (e.g., from URL)
+  useEffect(() => {
+    // On initial sync or when Redux changes externally
+    if (isInitialSync.current || (minVal !== currMinVal && minVal !== null)) {
+      setCurrMinVal(minVal)
+    }
+    if (isInitialSync.current || (maxVal !== currMaxVal && maxVal !== null)) {
+      setCurrMaxVal(maxVal)
+    }
+
+    if (isInitialSync.current) {
+      isInitialSync.current = false
+    }
+    // Only re-run when Redux values change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minVal, maxVal])
 
   const setMinLength = (min: number) => {
     const newMin = min === 0 ? null : maxVal && min >= maxVal ? maxVal : min

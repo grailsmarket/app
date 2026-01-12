@@ -32,7 +32,6 @@ import {
   setFiltersScrollTop as setGraceScrollTop,
 } from '@/state/reducers/filters/profileGraceFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
-import BulkSelect from '@/components/ui/bulkSelect'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 interface Props {
@@ -121,10 +120,10 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                   showDomainsPanel={showDomainsPanel}
                   showOfferPanel={showOfferPanel}
                   showActivityPanel={showActivityPanel}
+                  isMyProfile={isMyProfile}
                 />
               </div>
               <ActionButtons />
-              <BulkSelect isMyProfile={isMyProfile} />
             </div>
           </div>
         </div>
@@ -139,6 +138,7 @@ interface ProfileContentProps {
   showDomainsPanel: boolean
   showOfferPanel: boolean
   showActivityPanel: boolean
+  isMyProfile: boolean
 }
 
 const ProfileContent: React.FC<ProfileContentProps> = ({
@@ -146,6 +146,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   showDomainsPanel,
   showOfferPanel,
   showActivityPanel,
+  isMyProfile,
 }) => {
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
@@ -160,7 +161,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
 
   return (
     <div className='z-0 flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
-      {showDomainsPanel && <DomainPanel user={userAddress} />}
+      {showDomainsPanel && <DomainPanel user={userAddress} isMyProfile={isMyProfile} />}
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}
     </div>

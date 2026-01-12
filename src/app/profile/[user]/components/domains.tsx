@@ -20,18 +20,34 @@ import {
 } from '@/constants/domains/marketplaceDomains'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
+import { SelectAllProvider } from '@/context/selectAll'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useUserContext } from '@/context/user'
+import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
+import BulkSelect from '@/components/ui/bulkSelect'
 
 interface Props {
   user: Address | undefined
+  isMyProfile?: boolean
 }
 
-const DomainPanel: React.FC<Props> = ({ user }) => {
+const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains(user)
+  const {
+    domains,
+    domainsLoading,
+    fetchMoreDomains,
+    hasMoreDomains,
+    profileTotalDomains,
+    totalListings,
+    totalGraceDomains,
+  } = useDomains(user)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { isNavbarVisible } = useNavbar()
+  const { authStatus } = useUserContext()
+  const debouncedSearch = useDebounce(selectors.filters.search, 500)
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {
@@ -44,7 +60,26 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
     }
   }, [selectedTab.value])
 
-  return (
+  // Get total count based on selected tab
+  const totalCount = useMemo(() => {
+    switch (selectedTab.value) {
+      case 'domains':
+        return profileTotalDomains
+      case 'listings':
+        return totalListings
+      case 'grace':
+        return totalGraceDomains
+      default:
+        return 0
+    }
+  }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains])
+
+  // Check if bulk select is enabled for this tab
+  const isBulkSelectEnabled =
+    (selectedTab.value === 'domains' || selectedTab.value === 'listings' || selectedTab.value === 'grace') &&
+    isSelecting
+
+  const content = (
     <div className='z-0 flex w-full flex-col'>
       <div
         className={cn(
@@ -108,13 +143,34 @@ const DomainPanel: React.FC<Props> = ({ user }) => {
         }}
         displayedDetails={displayedDetails}
         showWatchlist={selectedTab.value === 'watchlist'}
-        isBulkSelecting={
-          (selectedTab.value === 'domains' || selectedTab.value === 'listings' || selectedTab.value === 'grace') &&
-          isSelecting
-        }
+        isBulkSelecting={isBulkSelectEnabled}
       />
     </div>
   )
+
+  // Wrap with SelectAllProvider only for tabs that support bulk select
+  if (
+    isBulkSelectEnabled ||
+    selectedTab.value === 'domains' ||
+    selectedTab.value === 'listings' ||
+    selectedTab.value === 'grace'
+  ) {
+    return (
+      <SelectAllProvider
+        loadedDomains={domains}
+        totalCount={totalCount}
+        filters={selectors.filters as MarketplaceFiltersState}
+        searchTerm={debouncedSearch}
+        ownerAddress={user}
+        isAuthenticated={authStatus === 'authenticated'}
+      >
+        {content}
+        <BulkSelect isMyProfile={isMyProfile} pageType='profile' />
+      </SelectAllProvider>
+    )
+  }
+
+  return content
 }
 
 export default DomainPanel

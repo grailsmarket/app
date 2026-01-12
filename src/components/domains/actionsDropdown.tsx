@@ -154,7 +154,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           {isRegistered && hasListing && (
             <button
               onClick={handleBuyNow}
-              className='hover:bg-tertiary text-md flex w-full items-center gap-1.5 px-3 py-2 text-left transition-colors'
+              className='hover:bg-tertiary flex w-full items-center gap-1.5 px-3 py-2 text-left text-lg transition-colors'
             >
               <Image src={BuyNowIcon} alt='Buy Now' className='h-4 w-4' width={16} height={16} />
               <p>Buy Now</p>
@@ -164,7 +164,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           {isUnregistered ? (
             <button
               onClick={handleRegisterName}
-              className='hover:bg-tertiary text-md flex w-full items-center gap-1.5 px-3 py-2 text-left transition-colors'
+              className='hover:bg-tertiary flex w-full items-center gap-1.5 px-3 py-2 text-left text-lg transition-colors'
             >
               <Image src={RegisterIcon} alt='Register Name' className='h-4 w-4' width={16} height={16} />
               <p>Register Name</p>
@@ -172,7 +172,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           ) : (
             <button
               onClick={handleExtendName}
-              className='hover:bg-tertiary text-md flex w-full items-center gap-1.5 px-3 py-2 text-left transition-colors'
+              className='hover:bg-tertiary flex w-full items-center gap-1.5 px-3 py-2 text-left text-lg transition-colors'
             >
               <Image src={CalendarIcon} alt='Extend Name' className='h-4 w-4' width={16} height={16} />
               <p>Extend Name</p>
@@ -183,7 +183,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           {isRegistered && !isOwner && (
             <button
               onClick={handleMakeOffer}
-              className='hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left transition-colors'
+              className='hover:bg-tertiary flex w-full items-center gap-2 px-3 py-2 text-left text-lg transition-colors'
             >
               <Image src={OfferIcon} alt='Make an Offer' className='h-4 w-4' width={16} height={16} />
               <p>Make an Offer</p>
@@ -194,7 +194,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           {isRegistered && isOwner && (
             <button
               onClick={handleListOrEdit}
-              className='hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left transition-colors'
+              className='hover:bg-tertiary flex w-full items-center gap-2 px-3 py-2 text-left text-lg transition-colors'
             >
               <Image src={ListIcon} alt='List Name' className='h-4 w-4' width={16} height={16} />
               <p>{hasListing ? 'Edit Listing' : 'List Name'}</p>
@@ -205,7 +205,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           {isRegistered && isOwner && hasListing && (
             <button
               onClick={handleCancelListing}
-              className='hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left text-red-400 transition-colors'
+              className='hover:bg-tertiary flex w-full items-center gap-2 px-3 py-2 text-left text-lg text-red-400 transition-colors'
             >
               <Image src={CancelIcon} alt='Cancel Listing' className='h-4 w-4' width={16} height={16} />
               <p>Cancel Listing</p>

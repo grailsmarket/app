@@ -22,12 +22,10 @@ const CategoryFilterAll: React.FC<CategoryFilterAllProps> = ({ allCategoryNames,
 
   const toggleAll = () => {
     if (areAllSelected) {
-      // Deselect all - clear categories by toggling each selected one
       selectedCategories.forEach((cat) => {
         dispatch(actions.toggleCategory(cat))
       })
     } else {
-      // Select all - add any missing categories
       allCategoryNames.forEach((cat) => {
         if (!selectedCategories.includes(cat)) {
           dispatch(actions.toggleCategory(cat))

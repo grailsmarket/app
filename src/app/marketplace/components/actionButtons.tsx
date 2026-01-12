@@ -1,14 +1,11 @@
 'use client'
 
-import { useFilterButtons } from '@/components/filters/hooks/useFilterButtons'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
-import { persistor } from '@/state'
 import { cn } from '@/utils/tailwind'
 import React, { useEffect, useState } from 'react'
-import { PersistGate } from 'redux-persist/integration/react'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
@@ -21,7 +18,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
   const { selectors } = useFilterRouter()
   const { clearCart, cartIsEmpty } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
-  const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
   const filtersOpen = selectors.filters.open
   const [showScrollTop, setShowScrollTop] = useState(false)
 
@@ -57,34 +53,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-30 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
-          !cartIsEmpty && !hideDomainActions
-            ? 'w-full translate-y-0'
-            : filtersOpen
-              ? 'w-full translate-y-0 lg:w-[290px]'
-              : 'hidden'
+          'border-tertiary action-buttons-container bg-background app:w-[2044px]! fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:left-[292px] lg:w-[calc(100%-292px)] starting:translate-y-full',
+          !cartIsEmpty && !hideDomainActions ? 'translate-y-0' : 'hidden'
         )}
       >
-        <div
-          className={cn(
-            'px-md md:px-lg lg:border-tertiary flex h-full flex-row items-center justify-end gap-2 lg:w-[290px]'
-          )}
-        >
-          <PersistGate persistor={persistor}>
-            {filtersOpen && (
-              <>
-                <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
-                  Clear Filters
-                </SecondaryButton>
-                <SecondaryButton onClick={closeFilters} className='lg:hidden'>
-                  Close
-                </SecondaryButton>
-              </>
-            )}
-          </PersistGate>
-        </div>
         {!cartIsEmpty && !hideDomainActions && (
-          <div className={cn('px-md md:px-lg flex w-fit flex-row gap-x-2', filtersOpen ? 'hidden lg:flex' : 'flex')}>
+          <div className='px-md md:px-lg flex w-fit flex-row gap-x-2'>
             <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
               Clear Cart
             </SecondaryButton>

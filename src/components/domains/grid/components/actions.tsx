@@ -13,7 +13,6 @@ import {
   setMakeListingModalPreviousListings,
 } from '@/state/reducers/modals/makeListingModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
-import Watchlist from '@/components/ui/watchlist'
 import { cn } from '@/utils/tailwind'
 import {
   selectBulkSelect,
@@ -55,7 +54,7 @@ const Actions: React.FC<ActionsProps> = ({
   const domainListing = domain.listings[0]
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
-  const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+  const isSelected = isBulkSelecting && selectedDomains.some((d: MarketplaceDomainType) => d.name === domain.name)
   const isMyDomain = userAddress?.toLowerCase() === domain.owner?.toLowerCase()
 
   const openBuyNowModal = () => {
@@ -211,18 +210,6 @@ const Actions: React.FC<ActionsProps> = ({
           ))}
       </div>
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
-        {watchlistId && (
-          <div onClick={(e) => clickHandler(e, () => {})} className='flex flex-row items-center gap-0'>
-            <Watchlist
-              domain={domain}
-              tooltipPosition='top'
-              dropdownPosition={isFirstInRow ? 'right' : 'left'}
-              watchlistId={watchlistId}
-              showSettings={true}
-              showSettingsArrow={false}
-            />
-          </div>
-        )}
         {canAddToCart && (
           <button className='cursor-pointer rounded-sm' disabled={!canAddToCart}>
             <CartIcon domain={domain} className='p-0' />

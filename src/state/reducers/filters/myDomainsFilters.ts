@@ -5,7 +5,6 @@ import {
   PortfolioFiltersState,
   PortfolioFiltersOpenedState,
   PortfolioStatusFilterType,
-  PortfolioTypeFilterType,
   PortfolioOpenableFilterType,
   SortFilterType,
   PriceDenominationType,

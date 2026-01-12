@@ -35,6 +35,7 @@ import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
+import Watchlist from '@/components/ui/watchlist'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -100,7 +101,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
         className
       )}
     >
-      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between overflow-hidden'>
+      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between'>
         <NameImage
           name={domain.name}
           tokenId={domain.token_id}
@@ -116,6 +117,25 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
             >
               <p className='pl-[6px]'>⚠️</p>
             </Tooltip>
+          </div>
+        )}
+        {watchlistId && (
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            className='bg-secondary absolute top-3 right-3 z-10 flex flex-row items-center gap-0 rounded-sm pl-2'
+          >
+            <Watchlist
+              domain={domain}
+              tooltipPosition='bottom'
+              dropdownPosition={isFirstInRow ? 'right' : 'left'}
+              tooltipAlign={isFirstInRow ? 'left' : 'right'}
+              watchlistId={watchlistId}
+              showSettings={true}
+              showSettingsArrow={false}
+            />
           </div>
         )}
       </div>

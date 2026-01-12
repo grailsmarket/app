@@ -1,15 +1,12 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { PersistGate } from 'redux-persist/integration/react'
-import { persistor } from '@/state'
 import { cn } from '@/utils/tailwind'
 import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { useFilterButtons } from '@/components/filters/hooks/useFilterButtons'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import Image from 'next/image'
@@ -19,7 +16,6 @@ import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 const ActionButtons = () => {
   const { cartIsEmpty, clearCart } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
-  const { clearFilters, isFiltersClear, closeFilters } = useFilterButtons()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
@@ -76,32 +72,14 @@ const ActionButtons = () => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container max-w-app! bg-background p-md md:px-lg action-buttons-container fixed bottom-0 left-0 z-30 flex w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:justify-between starting:translate-y-full',
-          selectedTab.value === 'watchlist' && !cartIsEmpty
-            ? 'w-full translate-y-0'
-            : filtersOpen
-              ? 'w-full translate-y-0 lg:w-[290px]'
-              : 'hidden'
+          'border-tertiary action-buttons-container bg-background app:w-[2044px]! fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:left-[292px] lg:w-[calc(100%-292px)] starting:translate-y-full',
+          selectedTab.value === 'watchlist' && !cartIsEmpty ? 'translate-y-0' : 'hidden'
         )}
         style={{
           maxWidth: 'calc(var(--max-width-app) - 4px)',
         }}
       >
-        <div className='flex w-full flex-row justify-end gap-2 lg:w-[264px]'>
-          <PersistGate persistor={persistor}>
-            {filtersOpen && (
-              <>
-                <SecondaryButton disabled={isFiltersClear} onClick={clearFilters}>
-                  Clear Filters
-                </SecondaryButton>
-                <SecondaryButton onClick={closeFilters} className='lg:hidden'>
-                  Close
-                </SecondaryButton>
-              </>
-            )}
-          </PersistGate>
-        </div>
-        <div className={cn('flex w-fit flex-row gap-x-2 overflow-x-scroll', filtersOpen ? 'hidden lg:flex' : 'flex')}>
+        <div className='px-md md:px-lg flex w-fit flex-row gap-x-2'>
           {selectedTab.value === 'watchlist' && !cartIsEmpty && (
             <>
               <SecondaryButton onClick={() => clearCart()}>Clear Cart</SecondaryButton>

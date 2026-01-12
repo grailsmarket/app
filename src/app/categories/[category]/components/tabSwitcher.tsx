@@ -32,7 +32,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   const { data: totalPremiumNames } = useQuery({
     queryKey: ['totalPremiumNames', category],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/search?filters[clubs][]=${category}&filters[status]=premium`)
+      const res = await fetch(`${API_URL}/search?limit=1&page=1&filters[clubs][]=${category}&filters[status]=premium`)
       const json = (await res.json()) as APIResponseType<{
         names: MarketplaceDomainType[]
         results: MarketplaceDomainType[]
@@ -46,7 +46,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   const { data: availableNames } = useQuery({
     queryKey: ['availableNames', category],
     queryFn: async () => {
-      const res = await fetch(`${API_URL}/search?filters[clubs][]=${category}&filters[status]=available`)
+      const res = await fetch(`${API_URL}/search?limit=1&page=1&filters[clubs][]=${category}&filters[status]=available`)
       const json = (await res.json()) as APIResponseType<{
         names: MarketplaceDomainType[]
         results: MarketplaceDomainType[]

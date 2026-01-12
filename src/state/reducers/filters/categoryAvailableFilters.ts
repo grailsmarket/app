@@ -11,7 +11,6 @@ import {
   MarketFiltersState,
   TextMatchFiltersState,
   TextNonMatchFiltersState,
-  MARKETPLACE_OPENABLE_FILTERS,
 } from '@/constants/filters/marketplaceFilters'
 import {
   MarketplaceFiltersOpenedState,

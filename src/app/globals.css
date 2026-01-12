@@ -186,7 +186,7 @@ body {
   }
 
   .action-buttons-container {
-    left: calc((100vw - var(--max-width-app)) / 2 + 2px) !important;
+    left: calc((100vw - var(--max-width-app)) / 2 + 294px) !important;
   }
 }
 

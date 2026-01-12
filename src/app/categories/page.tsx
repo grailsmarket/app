@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
-import Categories from './components/categories'
+import { FilterProvider } from '@/context/filters'
+import MainPanel from './components/MainPanel'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: `Categories`,
@@ -19,12 +21,16 @@ export const metadata: Metadata = {
   },
 }
 
-const UserPage = () => {
+const CategoriesPage = () => {
   return (
-    <main className='md:p-lg p-md min-h-[calc(100dvh-52px)] w-full md:min-h-[calc(100dvh-70px)]'>
-      <Categories />
-    </main>
+    <Suspense>
+      <FilterProvider filterType='categoriesPage'>
+        <main className='min-h-[calc(100dvh-52px)] w-full md:min-h-[calc(100dvh-70px)]'>
+          <MainPanel />
+        </main>
+      </FilterProvider>
+    </Suspense>
   )
 }
 
-export default UserPage
+export default CategoriesPage

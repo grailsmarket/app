@@ -13,6 +13,34 @@ interface CategoryRowProps {
 }
 
 const CategoryRow = ({ category }: CategoryRowProps) => {
+  // const { data: totalPremiumNames } = useQuery({
+  //   queryKey: ['totalPremiumNames', category.name],
+  //   queryFn: async () => {
+  //     const res = await fetch(`${API_URL}/search?limit=1&page=1&filters[clubs][]=${category.name}&filters[status]=premium`)
+  //     const json = (await res.json()) as APIResponseType<{
+  //       names: MarketplaceDomainType[]
+  //       results: MarketplaceDomainType[]
+  //       pagination: PaginationType
+  //     }>
+
+  //     return json.data.pagination.total || 0
+  //   },
+  // })
+
+  // const { data: availableNames } = useQuery({
+  //   queryKey: ['availableNames', category.name],
+  //   queryFn: async () => {
+  //     const res = await fetch(`${API_URL}/search?limit=1&page=1&filters[clubs][]=${category.name}&filters[status]=available`)
+  //     const json = (await res.json()) as APIResponseType<{
+  //       names: MarketplaceDomainType[]
+  //       results: MarketplaceDomainType[]
+  //       pagination: PaginationType
+  //     }>
+
+  //     return json.data.pagination.total || 0
+  //   },
+  // })
+
   const categoryName = CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]
   const categoryImage = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES]
   const categoryHeader = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].header
@@ -29,7 +57,7 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         height={1000}
         className='absolute top-0 left-0 h-full w-full object-cover opacity-10'
       />
-      <div className='z-10 flex items-center gap-3 md:gap-4'>
+      <div className='z-10 flex items-center gap-3'>
         <Image src={categoryImage.avatar} alt={categoryName} width={60} height={60} className='rounded-full' />
         <div className='flex flex-col gap-0.5'>
           <h3 className='text-xl font-bold md:text-2xl'>{categoryName}</h3>
@@ -40,6 +68,14 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         <p className='font-sedan-sc text-xl md:text-2xl'>Names</p>
         <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
       </div>
+      {/* <div className='z-10 flex items-center text-premium justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Premium Names</p>
+        <p className='text-xl font-semibold'>{localizeNumber(totalPremiumNames || 0)}</p>
+      </div>
+      <div className='z-10 flex items-center text-available justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Available Names</p>
+        <p className='text-xl font-semibold'>{localizeNumber(availableNames || 0)}</p>
+      </div> */}
       <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Sales</p>
         <p className='text-xl font-semibold'>{localizeNumber(category.total_sales_count)}</p>

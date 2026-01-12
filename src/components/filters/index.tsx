@@ -16,6 +16,7 @@ import { useEffect, useRef } from 'react'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
+import SecondaryButton from '../ui/buttons/secondary'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
@@ -31,7 +32,7 @@ const FilterPanel: React.FC = () => {
 
   const dispatch = useAppDispatch()
   const { search } = useAppSelector(selectMarketplaceFilters)
-  const { selectors, actions } = useFilterRouter()
+  const { selectors, actions, isFiltersClear } = useFilterRouter()
   const { profileTab, filterType, categoryTab } = useFilterContext()
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const filtersOpen = selectors.filters.open
@@ -82,22 +83,30 @@ const FilterPanel: React.FC = () => {
         <div className='pt-md relative flex items-center justify-between'>
           <div
             className={cn(
-              'pr-lg flex w-full min-w-full justify-between transition-transform lg:min-w-[292px]',
+              'px-lg py-md flex w-full min-w-full justify-between transition-transform lg:min-w-[292px]',
               isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
             )}
           >
-            <div className='p-lg flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
-              <Image src={FilterIcon} alt='back arrow' height={14} width={14} />
-              <p className='text-light-800 text-lg leading-6 font-bold'>Filters</p>
-            </div>
             <button
               onClick={() => {
                 dispatch(actions.setFiltersOpen(false))
               }}
-              className='cursor-pointer transition-opacity hover:opacity-80'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button>
+            <div className='flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
+              <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
+              <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
+            </div>
+            <SecondaryButton
+              onClick={() => {
+                dispatch(actions.clearFilters())
+              }}
+              disabled={isFiltersClear}
+            >
+              Clear
+            </SecondaryButton>
           </div>
           <button
             onClick={setPanelAll}

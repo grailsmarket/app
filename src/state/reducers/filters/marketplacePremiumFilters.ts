@@ -1,8 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import {
-  ALL_SORT_FILTERS,
-  MARKETPLACE_OPENABLE_FILTERS,
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
   DEFAULT_TEXT_MATCH_FILTERS_STATE,

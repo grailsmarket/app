@@ -24,7 +24,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
       <FilterProvider filterType='category' categoryTab={selectedTab}>
         <div className='border-tertiary z-10 w-full border-t-2'>
           <TabSwitcher category={category} />
-          <div className='bg-background relative z-10 mx-auto flex min-h-[calc(100dvh-56px)] gap-0 md:min-h-[calc(100dvh-70px)]'>
+          <div className='bg-background z-10 mx-auto flex min-h-[calc(100dvh-56px)] gap-0 md:min-h-[calc(100dvh-70px)]'>
             <FilterPanel />
             <CategoryContent category={category} />
             <ActionButtons />

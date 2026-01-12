@@ -328,6 +328,21 @@ import {
 // Import category state selector
 import { selectCategory } from '@/state/reducers/category/category'
 
+// Import categoriesPage selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoriesPageFilters,
+  selectCategoriesPageFilters,
+  setCategoriesPageFiltersOpen,
+  setCategoriesPageSearch,
+  toggleCategoriesPageType,
+  setCategoriesPageType,
+  setCategoriesPageSort,
+  setCategoriesPageSortDirection,
+  toggleCategoriesPageFilterOpen,
+  setCategoriesPageScrollTop,
+  clearCategoriesPageFilters,
+} from '@/state/reducers/filters/categoriesPageFilters'
+
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
@@ -344,6 +359,10 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
+    if (filterType === 'categoriesPage') {
+      return selectCategoriesPageFilters(state)
+    }
+
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
         return selectCategoryDomainsFilters(state)
@@ -395,6 +414,20 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
+    if (filterType === 'categoriesPage') {
+      return {
+        setFiltersOpen: setCategoriesPageFiltersOpen,
+        setSearch: setCategoriesPageSearch,
+        toggleFiltersType: toggleCategoriesPageType,
+        setFiltersType: setCategoriesPageType,
+        setSort: setCategoriesPageSort,
+        setSortDirection: setCategoriesPageSortDirection,
+        setScrollTop: setCategoriesPageScrollTop,
+        toggleFilterOpen: toggleCategoriesPageFilterOpen,
+        clearFilters: clearCategoriesPageFilters,
+      } as any
+    }
+
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
         return {
@@ -813,6 +846,10 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab])
 
   const emptyFilterState = useMemo(() => {
+    if (filterType === 'categoriesPage') {
+      return emptyFilterStateCategoriesPageFilters
+    }
+
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
         return emptyFilterStateCategoryDomainsFilters

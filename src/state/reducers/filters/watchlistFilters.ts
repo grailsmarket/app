@@ -9,7 +9,6 @@ import {
   MarketplaceOpenableFilterType,
   MarketplacePriceType,
   MarketplaceStatusFilterType,
-  MarketplaceTypeFilterType,
   PriceDenominationType,
   SortFilterType,
 } from './marketplaceFilters'

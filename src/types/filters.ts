@@ -45,7 +45,7 @@ export type PriceType = {
   max: number | null
 }
 
-export type FilterContextType = 'marketplace' | 'profile' | 'category'
+export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage'
 
 export interface FilterRouterSelectors<T extends FilterContextType> {
   filters: T extends 'marketplace'

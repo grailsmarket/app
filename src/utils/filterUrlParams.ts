@@ -12,6 +12,13 @@ import {
   MarketplaceOption,
 } from '@/constants/filters/marketplaceFilters'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
+import {
+  CategoriesPageTypeOption,
+  CategoriesPageSortOption,
+  CategoriesPageSortDirection,
+  DEFAULT_CATEGORIES_PAGE_SORT,
+  DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
+} from '@/constants/filters/categoriesPageFilters'
 
 // URL parameter keys
 export const URL_PARAMS = {
@@ -45,6 +52,10 @@ export const URL_PARAMS = {
   notEndsWith: 'not_ends_with',
   // Activity type filters
   activityType: 'activity_type',
+  // Categories page filters
+  catType: 'cat_type',
+  catSort: 'cat_sort',
+  catDir: 'cat_dir',
 } as const
 
 // Tabs that have locked status (status is implied by the tab)
@@ -87,6 +98,10 @@ export interface ParsedUrlFilters {
   textMatch?: Partial<TextMatchFiltersState>
   textNonMatch?: Partial<TextNonMatchFiltersState>
   activityType?: string[] // Activity type filters for activity tabs
+  // Categories page filters
+  catType?: CategoriesPageTypeOption | null
+  catSort?: CategoriesPageSortOption
+  catDir?: CategoriesPageSortDirection
 }
 
 // Default empty filter state for comparison
@@ -280,6 +295,55 @@ export function serializeFiltersToUrl(
   return params.toString()
 }
 
+// Categories page filter state structure
+export interface CategoriesPageFilterState {
+  search: string
+  type: CategoriesPageTypeOption | null
+  sort: CategoriesPageSortOption
+  sortDirection: CategoriesPageSortDirection
+}
+
+// Default empty categories page filter state
+const DEFAULT_EMPTY_CATEGORIES_PAGE_FILTER_STATE: CategoriesPageFilterState = {
+  search: '',
+  type: null,
+  sort: DEFAULT_CATEGORIES_PAGE_SORT,
+  sortDirection: DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
+}
+
+/**
+ * Serialize categories page filters to URL search params string
+ * Only includes non-default values to keep URL clean
+ */
+export function serializeCategoriesPageFiltersToUrl(
+  filters: CategoriesPageFilterState,
+  emptyFilterState: CategoriesPageFilterState = DEFAULT_EMPTY_CATEGORIES_PAGE_FILTER_STATE
+): string {
+  const params = new URLSearchParams()
+
+  // Search
+  if (filters.search && filters.search !== emptyFilterState.search) {
+    params.set(URL_PARAMS.search, filters.search)
+  }
+
+  // Type (single value)
+  if (filters.type && filters.type !== emptyFilterState.type) {
+    params.set(URL_PARAMS.catType, filters.type)
+  }
+
+  // Sort
+  if (filters.sort !== emptyFilterState.sort) {
+    params.set(URL_PARAMS.catSort, filters.sort)
+  }
+
+  // Sort Direction
+  if (filters.sortDirection !== emptyFilterState.sortDirection) {
+    params.set(URL_PARAMS.catDir, filters.sortDirection)
+  }
+
+  return params.toString()
+}
+
 /**
  * Parse URL search params into filter state
  * Returns partial filter state - only includes values present in URL
@@ -396,6 +460,22 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
   // if (activityType) {
   //   result.activityType = activityType.split(',').filter(Boolean)
   // }
+
+  // Categories page filters
+  const catType = searchParams.get(URL_PARAMS.catType) as CategoriesPageTypeOption | null
+  if (catType) {
+    result.catType = catType
+  }
+
+  const catSort = searchParams.get(URL_PARAMS.catSort) as CategoriesPageSortOption | null
+  if (catSort) {
+    result.catSort = catSort
+  }
+
+  const catDir = searchParams.get(URL_PARAMS.catDir) as CategoriesPageSortDirection | null
+  if (catDir) {
+    result.catDir = catDir
+  }
 
   return result
 }

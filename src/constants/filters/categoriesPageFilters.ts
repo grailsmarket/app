@@ -9,7 +9,7 @@ export const CATEGORIES_PAGE_TYPE_LABELS: Record<CategoriesPageTypeOption, strin
   ethmojis: 'Ethmojis',
   digits: 'Digits',
   palindromes: 'Palindromes',
-  prepunk: 'Pre punk',
+  prepunk: 'Prepunk',
   geo: 'Geo',
   letters: 'Letters',
 }

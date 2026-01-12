@@ -111,7 +111,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     return (
       <div
         className={cn(
-          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-20 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl  md:min-h-14 md:overflow-x-visible lg:gap-8',
+          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-20 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >

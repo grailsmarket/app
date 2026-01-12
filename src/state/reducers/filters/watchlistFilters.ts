@@ -17,11 +17,13 @@ import {
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
   DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  DEFAULT_TEXT_NON_MATCH_FILTERS_STATE,
   TypeFilterOption,
   MarketplaceTypeFilterLabel,
   TypeFiltersState,
   MarketFiltersState,
   TextMatchFiltersState,
+  TextNonMatchFiltersState,
 } from '@/constants/filters/marketplaceFilters'
 
 export const emptyFilterState: MarketplaceFiltersState = {
@@ -30,6 +32,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -52,6 +55,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -62,7 +66,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
   sort: null,
   scrollTop: 0,
 }
@@ -112,6 +116,9 @@ export const watchlistFiltersSlice = createSlice({
     },
     setWatchlistTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
       state.textMatch = payload
+    },
+    setWatchlistTextNonMatchFilters(state, { payload }: PayloadAction<TextNonMatchFiltersState>) {
+      state.textNonMatch = payload
     },
     setWatchlistFiltersLength(state, { payload }: PayloadAction<MarketplaceLengthType>) {
       state.length = payload
@@ -170,6 +177,7 @@ export const watchlistFiltersSlice = createSlice({
       state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
       state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
       state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
+      state.textNonMatch = { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE }
       state.length = {
         min: null,
         max: null,
@@ -180,7 +188,7 @@ export const watchlistFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -196,6 +204,7 @@ export const {
   setWatchlistFiltersType,
   setWatchlistMarketFilters,
   setWatchlistTextMatchFilters,
+  setWatchlistTextNonMatchFilters,
   setWatchlistFiltersLength,
   setWatchlistPriceDenomination,
   setWatchlistPriceRange,

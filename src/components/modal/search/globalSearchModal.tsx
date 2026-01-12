@@ -169,7 +169,9 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
             <Cross className='text-foreground/90 h-4 w-4 md:h-5 md:w-5' />
           </button>
         </div>
-        <p className='text-md text-neutral px-5 pt-3 lg:px-7'><strong>Bulk Search</strong>: Input up to 500 terms separated by commas or spaces, then press ENTER</p>
+        <p className='text-md text-neutral px-5 pt-3 lg:px-7'>
+          <strong>Bulk Search</strong>: Input up to 500 terms separated by commas or spaces, then press ENTER
+        </p>
 
         {/* Results */}
         <div className='h-[calc(100dvh-160px)] overflow-y-auto md:max-h-[75vh]'>

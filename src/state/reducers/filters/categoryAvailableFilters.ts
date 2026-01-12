@@ -5,10 +5,12 @@ import {
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
   DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  DEFAULT_TEXT_NON_MATCH_FILTERS_STATE,
   TypeFilterOption,
   MarketplaceTypeFilterLabel,
   MarketFiltersState,
   TextMatchFiltersState,
+  TextNonMatchFiltersState,
   MARKETPLACE_OPENABLE_FILTERS,
 } from '@/constants/filters/marketplaceFilters'
 import {
@@ -25,6 +27,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -46,6 +49,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -56,8 +60,8 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
-  sort: null,
+  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
+  sort: 'last_sale_price_desc',
   scrollTop: 0,
 }
 
@@ -91,6 +95,9 @@ export const categoryAvailableFiltersSlice = createSlice({
     },
     setTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
       state.textMatch = payload
+    },
+    setTextNonMatchFilters(state, { payload }: PayloadAction<TextNonMatchFiltersState>) {
+      state.textNonMatch = payload
     },
     setFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
@@ -134,11 +141,12 @@ export const categoryAvailableFiltersSlice = createSlice({
       state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
       state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
       state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
+      state.textNonMatch = { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE }
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
       state.sort = null
     },
   },
@@ -153,6 +161,7 @@ export const {
   setFiltersType,
   setMarketFilters,
   setTextMatchFilters,
+  setTextNonMatchFilters,
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,

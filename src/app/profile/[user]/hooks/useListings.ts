@@ -32,6 +32,7 @@ export const useListings = (user: Address | undefined) => {
       filters.sort,
       filters.market,
       filters.textMatch,
+      filters.textNonMatch,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

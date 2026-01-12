@@ -96,6 +96,7 @@ export const fetchDomains = async ({
     }
 
     const textMatchFilters = filters.textMatch
+    const textNonMatchFilters = filters.textNonMatch
     const getTextMatchFilterValue = (value: string | undefined): string | undefined => {
       return value && value.trim().length > 0 ? value.trim() : undefined
     }
@@ -133,6 +134,9 @@ export const fetchDomains = async ({
       'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
       'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
       'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),
+      'filters[doesNotContain]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't contain"]),
+      'filters[doesNotStartWith]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't start with"]),
+      'filters[doesNotEndWith]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't end with"]),
       sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
       'filters[inAnyClub]': inAnyCategory ? 'true' : undefined,
@@ -172,6 +176,9 @@ export const fetchDomains = async ({
       filters.textMatch?.Contains ||
       filters.textMatch?.['Starts with'] ||
       filters.textMatch?.['Ends with'] ||
+      filters.textNonMatch?.["Doesn't contain"] ||
+      filters.textNonMatch?.["Doesn't start with"] ||
+      filters.textNonMatch?.["Doesn't end with"] ||
       filters.market?.Listed !== 'none' ||
       filters.market?.['Has Last Sale'] === 'no' ||
       filters.market?.['Has Offers'] === 'no' ||

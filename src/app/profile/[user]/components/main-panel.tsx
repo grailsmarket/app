@@ -104,7 +104,12 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   return (
     <Suspense>
-      <FilterProvider filterType='profile' profileTab={selectedTab} profileAddress={userAccount?.address || user} isOwner={isMyProfile}>
+      <FilterProvider
+        filterType='profile'
+        profileTab={selectedTab}
+        profileAddress={userAccount?.address || user}
+        isOwner={isMyProfile}
+      >
         <div className='w-full'>
           <div className='z-10 w-full'>
             <div className='bg-background border-tertiary relative flex min-h-[calc(100dvh-56px)] w-full flex-col gap-0 border-t-2 md:min-h-[calc(100dvh-70px)]'>
@@ -154,7 +159,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   }
 
   return (
-    <div className='flex w-full z-0 flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
+    <div className='z-0 flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
       {showDomainsPanel && <DomainPanel user={userAddress} />}
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}

@@ -5,10 +5,12 @@ import {
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
   DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  DEFAULT_TEXT_NON_MATCH_FILTERS_STATE,
   TypeFilterOption,
   MarketplaceTypeFilterLabel,
   MarketFiltersState,
   TextMatchFiltersState,
+  TextNonMatchFiltersState,
 } from '@/constants/filters/marketplaceFilters'
 import {
   PortfolioFiltersOpenedState,
@@ -28,6 +30,7 @@ export const emptyFilterState: PortfolioFiltersState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -49,6 +52,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: {
     min: null,
     max: null,
@@ -59,7 +63,7 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   categories: [],
-  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -105,6 +109,9 @@ export const profileGraceFiltersSlice = createSlice({
     setProfileGraceTextMatchFilters(state, { payload }: PayloadAction<TextMatchFiltersState>) {
       state.textMatch = payload
     },
+    setProfileGraceTextNonMatchFilters(state, { payload }: PayloadAction<TextNonMatchFiltersState>) {
+      state.textNonMatch = payload
+    },
     setFiltersLength(state, { payload }: PayloadAction<LengthType>) {
       state.length = payload
     },
@@ -147,11 +154,12 @@ export const profileGraceFiltersSlice = createSlice({
       state.market = { ...DEFAULT_MARKET_FILTERS_STATE }
       state.type = { ...DEFAULT_TYPE_FILTERS_STATE }
       state.textMatch = { ...DEFAULT_TEXT_MATCH_FILTERS_STATE }
+      state.textNonMatch = { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE }
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
       state.sort = 'expiry_date_asc'
     },
   },
@@ -168,6 +176,7 @@ export const {
   setFiltersType,
   setMarketFilters,
   setProfileGraceTextMatchFilters,
+  setProfileGraceTextNonMatchFilters,
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,

@@ -40,6 +40,7 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
 
   // Text Match filters - only include if non-empty
   const textMatchFilters = filters.textMatch
+  const textNonMatchFilters = filters.textNonMatch
   const getTextMatchFilterValue = (value: string | undefined): string | undefined => {
     return value && value.trim().length > 0 ? value.trim() : undefined
   }
@@ -76,6 +77,9 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
     'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
     'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
     'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),
+    'filters[doesNotContain]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't contain"]),
+    'filters[doesNotStartWith]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't start with"]),
+    'filters[doesNotEndWith]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't end with"]),
     sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
     sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
   })

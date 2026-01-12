@@ -4,6 +4,7 @@ export const MY_DOMAINS_OPENABLE_FILTERS = [
   'Market',
   'Type',
   'Text Match',
+  'Text Non-Match',
   'Length',
   'Price Range',
 ] as const

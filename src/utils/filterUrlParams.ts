@@ -2,9 +2,11 @@ import {
   DEFAULT_TYPE_FILTERS_STATE,
   DEFAULT_MARKET_FILTERS_STATE,
   DEFAULT_TEXT_MATCH_FILTERS_STATE,
+  DEFAULT_TEXT_NON_MATCH_FILTERS_STATE,
   TypeFiltersState,
   MarketFiltersState,
   TextMatchFiltersState,
+  TextNonMatchFiltersState,
   TypeFilterOption,
   MarketFilterOption,
   MarketplaceOption,
@@ -37,6 +39,10 @@ export const URL_PARAMS = {
   contains: 'contains',
   startsWith: 'starts_with',
   endsWith: 'ends_with',
+  // Text non-match filters
+  notContains: 'not_contains',
+  notStartsWith: 'not_starts_with',
+  notEndsWith: 'not_ends_with',
   // Activity type filters
   activityType: 'activity_type',
 } as const
@@ -58,6 +64,7 @@ export interface BaseFilterState {
   market: MarketFiltersState
   type: TypeFiltersState
   textMatch: TextMatchFiltersState
+  textNonMatch: TextNonMatchFiltersState
   length: { min: number | null; max: number | null }
   denomination: string
   priceRange: { min: number | null; max: number | null }
@@ -78,6 +85,7 @@ export interface ParsedUrlFilters {
   type?: Partial<TypeFiltersState>
   market?: Partial<MarketFiltersState>
   textMatch?: Partial<TextMatchFiltersState>
+  textNonMatch?: Partial<TextNonMatchFiltersState>
   activityType?: string[] // Activity type filters for activity tabs
 }
 
@@ -88,6 +96,7 @@ const DEFAULT_EMPTY_FILTER_STATE: BaseFilterState = {
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },
+  textNonMatch: { ...DEFAULT_TEXT_NON_MATCH_FILTERS_STATE },
   length: { min: null, max: null },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: { min: null, max: null },
@@ -172,7 +181,10 @@ export function serializeFiltersToUrl(
   }
 
   // Categories (array)
-  if (filters.categories.length > 0 && JSON.stringify(filters.categories) !== JSON.stringify(emptyFilterState.categories)) {
+  if (
+    filters.categories.length > 0 &&
+    JSON.stringify(filters.categories) !== JSON.stringify(emptyFilterState.categories)
+  ) {
     params.set(URL_PARAMS.categories, filters.categories.join(','))
   }
 
@@ -232,11 +244,36 @@ export function serializeFiltersToUrl(
     if (filters.textMatch.Contains && filters.textMatch.Contains !== emptyFilterState.textMatch.Contains) {
       params.set(URL_PARAMS.contains, filters.textMatch.Contains)
     }
-    if (filters.textMatch['Starts with'] && filters.textMatch['Starts with'] !== emptyFilterState.textMatch['Starts with']) {
+    if (
+      filters.textMatch['Starts with'] &&
+      filters.textMatch['Starts with'] !== emptyFilterState.textMatch['Starts with']
+    ) {
       params.set(URL_PARAMS.startsWith, filters.textMatch['Starts with'])
     }
     if (filters.textMatch['Ends with'] && filters.textMatch['Ends with'] !== emptyFilterState.textMatch['Ends with']) {
       params.set(URL_PARAMS.endsWith, filters.textMatch['Ends with'])
+    }
+  }
+
+  // Text non-match filters (only non-empty values) - skip for activity tabs
+  if (!isActivityTab && filters.textNonMatch) {
+    if (
+      filters.textNonMatch["Doesn't contain"] &&
+      filters.textNonMatch["Doesn't contain"] !== emptyFilterState.textNonMatch["Doesn't contain"]
+    ) {
+      params.set(URL_PARAMS.notContains, filters.textNonMatch["Doesn't contain"])
+    }
+    if (
+      filters.textNonMatch["Doesn't start with"] &&
+      filters.textNonMatch["Doesn't start with"] !== emptyFilterState.textNonMatch["Doesn't start with"]
+    ) {
+      params.set(URL_PARAMS.notStartsWith, filters.textNonMatch["Doesn't start with"])
+    }
+    if (
+      filters.textNonMatch["Doesn't end with"] &&
+      filters.textNonMatch["Doesn't end with"] !== emptyFilterState.textNonMatch["Doesn't end with"]
+    ) {
+      params.set(URL_PARAMS.notEndsWith, filters.textNonMatch["Doesn't end with"])
     }
   }
 
@@ -343,6 +380,17 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     if (endsWith) result.textMatch['Ends with'] = endsWith
   }
 
+  // Text non-match filters
+  const notContains = searchParams.get(URL_PARAMS.notContains)
+  const notStartsWith = searchParams.get(URL_PARAMS.notStartsWith)
+  const notEndsWith = searchParams.get(URL_PARAMS.notEndsWith)
+  if (notContains || notStartsWith || notEndsWith) {
+    result.textNonMatch = {}
+    if (notContains) result.textNonMatch["Doesn't contain"] = notContains
+    if (notStartsWith) result.textNonMatch["Doesn't start with"] = notStartsWith
+    if (notEndsWith) result.textNonMatch["Doesn't end with"] = notEndsWith
+  }
+
   // Activity type URL param is disabled for now - uncomment to re-enable
   // const activityType = searchParams.get(URL_PARAMS.activityType)
   // if (activityType) {
@@ -363,6 +411,6 @@ export function getTabFromParams(searchParams: URLSearchParams, defaultTab: stri
  * Check if URL has any filter params (excluding tab)
  */
 export function hasFilterParams(searchParams: URLSearchParams): boolean {
-  const filterKeys = Object.values(URL_PARAMS).filter(key => key !== URL_PARAMS.tab)
-  return filterKeys.some(key => searchParams.has(key))
+  const filterKeys = Object.values(URL_PARAMS).filter((key) => key !== URL_PARAMS.tab)
+  return filterKeys.some((key) => searchParams.has(key))
 }

@@ -67,11 +67,11 @@ function getTabChangeAction(filterType: FilterContextType): ActionCreatorWithPay
 function findTabByValue(filterType: FilterContextType, value: string) {
   switch (filterType) {
     case 'profile':
-      return PROFILE_TABS.find(t => t.value === value) || PROFILE_TABS[0]
+      return PROFILE_TABS.find((t) => t.value === value) || PROFILE_TABS[0]
     case 'marketplace':
-      return MARKETPLACE_TABS.find(t => t.value === value) || MARKETPLACE_TABS[0]
+      return MARKETPLACE_TABS.find((t) => t.value === value) || MARKETPLACE_TABS[0]
     case 'category':
-      return CATEGORY_TABS.find(t => t.value === value) || CATEGORY_TABS[0]
+      return CATEGORY_TABS.find((t) => t.value === value) || CATEGORY_TABS[0]
     default:
       return { label: 'Names', value: 'names' }
   }
@@ -93,11 +93,9 @@ function getEmptyFilterState(filterType: FilterContextType): BaseFilterState {
 
 // Validate tab value is allowed
 function isValidTab(filterType: FilterContextType, tabValue: string, isOwner: boolean = true): boolean {
-  const tabs = filterType === 'profile' ? PROFILE_TABS
-    : filterType === 'marketplace' ? MARKETPLACE_TABS
-    : CATEGORY_TABS
+  const tabs = filterType === 'profile' ? PROFILE_TABS : filterType === 'marketplace' ? MARKETPLACE_TABS : CATEGORY_TABS
 
-  const isValidTabValue = tabs.some(t => t.value === tabValue)
+  const isValidTabValue = tabs.some((t) => t.value === tabValue)
 
   // Special case: watchlist is only valid for profile owner
   if (filterType === 'profile' && tabValue === 'watchlist' && !isOwner) {
@@ -141,96 +139,116 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   }, [filterType, profileTab, marketplaceTab, categoryTab, defaultTab])
 
   // Apply filters from URL to Redux
-  const applyFiltersFromUrl = useCallback((urlFilters: ParsedUrlFilters) => {
-    if (!actions) return
+  const applyFiltersFromUrl = useCallback(
+    (urlFilters: ParsedUrlFilters) => {
+      if (!actions) return
 
-    // Apply search
-    if (urlFilters.search !== undefined) {
-      dispatch(actions.setSearch(urlFilters.search))
-    }
+      // Apply search
+      if (urlFilters.search !== undefined) {
+        dispatch(actions.setSearch(urlFilters.search))
+      }
 
-    // Apply sort
-    if (urlFilters.sort !== undefined) {
-      dispatch(actions.setSort(urlFilters.sort))
-    }
+      // Apply sort
+      if (urlFilters.sort !== undefined) {
+        dispatch(actions.setSort(urlFilters.sort))
+      }
 
-    // Apply status (if action exists - activity tabs don't have status)
-    if (urlFilters.status !== undefined && actions.setFiltersStatus) {
-      // Set each status
-      urlFilters.status.forEach((status, index) => {
-        if (index === 0) {
-          dispatch(actions.setFiltersStatus(status))
-        } else {
-          dispatch(actions.toggleFiltersStatus(status))
-        }
-      })
-    }
+      // Apply status (if action exists - activity tabs don't have status)
+      if (urlFilters.status !== undefined && actions.setFiltersStatus) {
+        // Set each status
+        urlFilters.status.forEach((status, index) => {
+          if (index === 0) {
+            dispatch(actions.setFiltersStatus(status))
+          } else {
+            dispatch(actions.toggleFiltersStatus(status))
+          }
+        })
+      }
 
-    // Apply length
-    if (urlFilters.length !== undefined && actions.setFiltersLength) {
-      dispatch(actions.setFiltersLength(urlFilters.length))
-    }
+      // Apply length
+      if (urlFilters.length !== undefined && actions.setFiltersLength) {
+        dispatch(actions.setFiltersLength(urlFilters.length))
+      }
 
-    // Apply price range
-    if (urlFilters.priceRange !== undefined && actions.setPriceRange) {
-      dispatch(actions.setPriceRange(urlFilters.priceRange))
-    }
+      // Apply price range
+      if (urlFilters.priceRange !== undefined && actions.setPriceRange) {
+        dispatch(actions.setPriceRange(urlFilters.priceRange))
+      }
 
-    // Apply denomination
-    if (urlFilters.denomination !== undefined && actions.setPriceDenomination) {
-      dispatch(actions.setPriceDenomination(urlFilters.denomination))
-    }
+      // Apply denomination
+      if (urlFilters.denomination !== undefined && actions.setPriceDenomination) {
+        dispatch(actions.setPriceDenomination(urlFilters.denomination))
+      }
 
-    // Apply categories
-    if (urlFilters.categories !== undefined && actions.setFiltersCategory) {
-      urlFilters.categories.forEach((category, index) => {
-        if (index === 0) {
-          dispatch(actions.setFiltersCategory(category))
-        } else {
-          dispatch(actions.toggleCategory(category))
-        }
-      })
-    }
+      // Apply categories
+      if (urlFilters.categories !== undefined && actions.setFiltersCategory) {
+        urlFilters.categories.forEach((category, index) => {
+          if (index === 0) {
+            dispatch(actions.setFiltersCategory(category))
+          } else {
+            dispatch(actions.toggleCategory(category))
+          }
+        })
+      }
 
-    // Apply type filters
-    if (urlFilters.type !== undefined && actions.setFiltersType) {
-      const currentType = (selectors.filters as any).type || {}
-      dispatch(actions.setFiltersType({
-        ...currentType,
-        ...urlFilters.type,
-      }))
-    }
+      // Apply type filters
+      if (urlFilters.type !== undefined && actions.setFiltersType) {
+        const currentType = (selectors.filters as any).type || {}
+        dispatch(
+          actions.setFiltersType({
+            ...currentType,
+            ...urlFilters.type,
+          })
+        )
+      }
 
-    // Apply market filters
-    if (urlFilters.market !== undefined && actions.setMarketFilters) {
-      const currentMarket = (selectors.filters as any).market || {}
-      dispatch(actions.setMarketFilters({
-        ...currentMarket,
-        ...urlFilters.market,
-      }))
-    }
+      // Apply market filters
+      if (urlFilters.market !== undefined && actions.setMarketFilters) {
+        const currentMarket = (selectors.filters as any).market || {}
+        dispatch(
+          actions.setMarketFilters({
+            ...currentMarket,
+            ...urlFilters.market,
+          })
+        )
+      }
 
-    // Apply text match filters
-    if (urlFilters.textMatch !== undefined && actions.setTextMatchFilters) {
-      const currentTextMatch = (selectors.filters as any).textMatch || {}
-      dispatch(actions.setTextMatchFilters({
-        ...currentTextMatch,
-        ...urlFilters.textMatch,
-      }))
-    }
+      // Apply text match filters
+      if (urlFilters.textMatch !== undefined && actions.setTextMatchFilters) {
+        const currentTextMatch = (selectors.filters as any).textMatch || {}
+        dispatch(
+          actions.setTextMatchFilters({
+            ...currentTextMatch,
+            ...urlFilters.textMatch,
+          })
+        )
+      }
 
-    // Activity type URL param is disabled for now - uncomment to re-enable
-    // if (urlFilters.activityType !== undefined && actions.setFiltersType) {
-    //   // For activity tabs, setFiltersType sets the first type, then we toggle the rest
-    //   urlFilters.activityType.forEach((actType, index) => {
-    //     if (index === 0) {
-    //       dispatch(actions.setFiltersType(actType))
-    //     } else if (actions.toggleFiltersType) {
-    //       dispatch(actions.toggleFiltersType(actType))
-    //     }
-    //   })
-    // }
-  }, [actions, dispatch, selectors.filters])
+      // Apply text non-match filters
+      if (urlFilters.textNonMatch !== undefined && actions.setTextNonMatchFilters) {
+        const currentTextNonMatch = (selectors.filters as any).textNonMatch || {}
+        dispatch(
+          actions.setTextNonMatchFilters({
+            ...currentTextNonMatch,
+            ...urlFilters.textNonMatch,
+          })
+        )
+      }
+
+      // Activity type URL param is disabled for now - uncomment to re-enable
+      // if (urlFilters.activityType !== undefined && actions.setFiltersType) {
+      //   // For activity tabs, setFiltersType sets the first type, then we toggle the rest
+      //   urlFilters.activityType.forEach((actType, index) => {
+      //     if (index === 0) {
+      //       dispatch(actions.setFiltersType(actType))
+      //     } else if (actions.toggleFiltersType) {
+      //       dispatch(actions.toggleFiltersType(actType))
+      //     }
+      //   })
+      // }
+    },
+    [actions, dispatch, selectors.filters]
+  )
 
   // URL → Redux: Initialize from URL on mount
   useEffect(() => {
@@ -252,12 +270,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
 
     // If tab was invalid (e.g., unauthorized watchlist), update URL
     if (urlTab !== validTab) {
-      const newUrl = serializeFiltersToUrl(
-        selectors.filters as BaseFilterState,
-        validTab,
-        defaultTab,
-        emptyFilterState
-      )
+      const newUrl = serializeFiltersToUrl(selectors.filters as BaseFilterState, validTab, defaultTab, emptyFilterState)
       const urlString = newUrl ? `${pathname}?${newUrl}` : pathname
       router.replace(urlString, { scroll: false })
       lastWrittenUrl.current = newUrl
@@ -265,7 +278,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
 
     // Store filters to be applied when actions are ready
     // Check if there are any URL filters to apply
-    const hasFiltersToApply = Object.keys(urlFilters).some(key => key !== 'tab')
+    const hasFiltersToApply = Object.keys(urlFilters).some((key) => key !== 'tab')
     if (hasFiltersToApply) {
       pendingUrlFilters.current = urlFilters
     } else {
@@ -354,7 +367,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
 
     // Store filters to be applied when actions are ready (after tab change propagates)
     // Check if there are any URL filters to apply
-    const hasFiltersToApply = Object.keys(urlFilters).some(key => key !== 'tab')
+    const hasFiltersToApply = Object.keys(urlFilters).some((key) => key !== 'tab')
     if (hasFiltersToApply) {
       pendingUrlFilters.current = urlFilters
     } else {

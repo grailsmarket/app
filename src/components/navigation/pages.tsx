@@ -96,7 +96,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
         Explore
       </Link>
       <p
-        className='font-semibold cursor-pointer transition-all text-foreground opacity-80 hover:opacity-100'
+        className='text-foreground cursor-pointer font-semibold opacity-80 transition-all hover:opacity-100'
         onClick={() => {
           dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
           router.push('/marketplace')

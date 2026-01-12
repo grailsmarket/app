@@ -220,7 +220,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
               {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
             </p>
           )}
-          {profileTab.value === 'domains' && filterType === 'profile' && domain.expiry_date && (
+          {(profileTab.value === 'domains' || profileTab.value === 'watchlist') && filterType === 'profile' && domain.expiry_date && (
             <div className='flex items-center gap-1'>
               <p className='text-md text-neutral truncate font-semibold'>
                 Expiry: {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}

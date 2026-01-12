@@ -27,7 +27,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
           <div className='bg-background z-10 mx-auto flex min-h-[calc(100dvh-56px)] gap-0 md:min-h-[calc(100dvh-70px)]'>
             <FilterPanel />
             <CategoryContent category={category} />
-            <ActionButtons />
+            <ActionButtons hideDomainActions={selectedTab.value !== 'names'} />
           </div>
         </div>
       </FilterProvider>

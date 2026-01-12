@@ -26,6 +26,9 @@ import { selectCategory } from '@/state/reducers/category/category'
 import { useSelectAll } from '@/context/selectAll'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { useUserContext } from '@/context/user'
+import useCartDomains from '@/hooks/useCartDomains'
+import { useFilterContext } from '@/context/filters'
+import { cn } from '@/utils/tailwind'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -39,6 +42,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
   const categoryState = useAppSelector(selectCategory)
   const selectAllContext = useSelectAll()
   const { userAddress } = useUserContext()
+  const { cartIsEmpty } = useCartDomains()
+  const { categoryTab } = useFilterContext()
 
   // Get the selected tab based on page type
   const selectedTab = pageType === 'category' ? categoryState.selectedTab : profileState.selectedTab
@@ -58,8 +63,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
         (domain) =>
           domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
           domain.listings?.some(
-            (listing) =>
-              listing.order_data.protocol_data.parameters.consideration[0].identifierOrCriteria === domain.token_id
+            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
           )
       )
     : []
@@ -130,6 +134,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
     dispatch(clearSelectAllError())
   }
 
+  const isActionButtonsVisible = pageType === 'category' && categoryTab?.value === 'names' && !cartIsEmpty
   // For profile tabs
   const isProfileTab = pageType === 'profile'
   // const isCategoryTab = pageType === 'category'
@@ -163,7 +168,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
   if (!isBulkSelectSupportedTab) return null
 
   return (
-    <div className='bulk-select-container fixed right-1 bottom-1 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2 md:right-4 md:bottom-4'>
+    <div
+      className={cn(
+        'bulk-select-container fixed flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2',
+        isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
+      )}
+    >
       {isSelecting ? (
         <>
           {/* Error message banner */}
@@ -236,7 +246,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
                   <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
                     {selectedDomains.length}
                   </SecondaryButton>
-                  {selectAllContext?.canSelectAll && (
+                  {selectAllContext?.canSelectAll && pageType === 'profile' && (
                     <SecondaryButton onClick={handleSelectAll}>Select All</SecondaryButton>
                   )}
                   <SecondaryButton

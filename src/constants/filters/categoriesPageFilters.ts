@@ -32,24 +32,24 @@ export const CATEGORIES_PAGE_SORT_OPTIONS = [
 export type CategoriesPageSortOption = (typeof CATEGORIES_PAGE_SORT_OPTIONS)[number]
 
 export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, string> = {
+  total_sales_volume_wei: 'Volume (All Time)',
+  sales_volume_wei_1y: 'Volume (1y)',
+  sales_volume_wei_1mo: 'Volume (1mo)',
+  sales_volume_wei_1w: 'Volume (1w)',
   member_count: 'Name Count',
-  total_sales_volume_wei: 'Total Volume',
-  sales_volume_wei_1y: 'Volume (1Y)',
-  sales_volume_wei_1mo: 'Volume (1M)',
-  sales_volume_wei_1w: 'Volume (1W)',
   floor_price_wei: 'Floor Price',
-  total_sales_count: 'Total Sales',
-  sales_count_1y: 'Sales (1Y)',
-  sales_count_1mo: 'Sales (1M)',
-  sales_count_1w: 'Sales (1W)',
-  name: 'Name',
+  total_sales_count: 'Sales (All Time)',
+  sales_count_1y: 'Sales (1y)',
+  sales_count_1mo: 'Sales (1mo)',
+  sales_count_1w: 'Sales (1w)',
+  name: 'Alphabetical',
 }
 
 // Sort direction
 export type CategoriesPageSortDirection = 'asc' | 'desc'
 
 // Default values
-export const DEFAULT_CATEGORIES_PAGE_SORT: CategoriesPageSortOption = 'total_sales_volume_wei'
+export const DEFAULT_CATEGORIES_PAGE_SORT: CategoriesPageSortOption = 'sales_volume_wei_1mo'
 export const DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION: CategoriesPageSortDirection = 'desc'
 
 // Openable filters (for filter panel sections)

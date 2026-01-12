@@ -15,6 +15,7 @@ import { Arrow } from 'ethereum-identity-kit'
 import Link from 'next/link'
 import React, { useEffect } from 'react'
 import LoadingCell from '../ui/loadingCell'
+import { DEFAULT_CATEGORIES_PAGE_SORT } from '@/constants/filters/categoriesPageFilters'
 
 const TopCategories = () => {
   const dispatch = useAppDispatch()
@@ -33,7 +34,7 @@ const TopCategories = () => {
   })
 
   useEffect(() => {
-    dispatch(setCategoriesPageSort('total_sales_volume_wei'))
+    dispatch(setCategoriesPageSort(DEFAULT_CATEGORIES_PAGE_SORT))
     dispatch(setCategoriesPageSortDirection('desc'))
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,31 +58,31 @@ const TopCategories = () => {
       <div className='flex w-full flex-wrap justify-center gap-4'>
         {isLoading
           ? Array(6)
-              .fill(null)
-              .map((_, index) => (
-                <div
-                  className={cn(
-                    index === 0
-                      ? 'w-full lg:w-[calc(33.33%-12px)]'
-                      : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
-                  )}
-                  key={index}
-                >
-                  <LoadingCell radius='8px' height={'230px'} width={'100%'} />
-                </div>
-              ))
-          : categories?.slice(0, 6).map((category, index) => (
+            .fill(null)
+            .map((_, index) => (
               <div
                 className={cn(
                   index === 0
                     ? 'w-full lg:w-[calc(33.33%-12px)]'
                     : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
                 )}
-                key={category.name}
+                key={index}
               >
-                <CategoryRow category={category} />
+                <LoadingCell radius='8px' height={'230px'} width={'100%'} />
               </div>
-            ))}
+            ))
+          : categories?.slice(0, 6).map((category, index) => (
+            <div
+              className={cn(
+                index === 0
+                  ? 'w-full lg:w-[calc(33.33%-12px)]'
+                  : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+              )}
+              key={category.name}
+            >
+              <CategoryRow category={category} />
+            </div>
+          ))}
       </div>
     </div>
   )

@@ -50,6 +50,7 @@ import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 import { CAN_CLAIM_POAP } from '@/constants'
+import { mainnet } from 'viem/chains'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -89,6 +90,7 @@ const RegistrationModal: React.FC = () => {
 
   const { data: ethBalance } = useBalance({
     address,
+    chainId: mainnet.id,
   })
 
   const timeUnitOptions: DropdownOption[] = [

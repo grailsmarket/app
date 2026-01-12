@@ -65,11 +65,13 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const { data: wethBalance } = useBalance({
     address,
     token: WETH_ADDRESS as `0x${string}`,
+    chainId: mainnet.id,
   })
 
   const { data: usdcBalance } = useBalance({
     address,
     token: USDC_ADDRESS as `0x${string}`,
+    chainId: mainnet.id,
   })
 
   // Check if user has sufficient balance

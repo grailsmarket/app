@@ -119,11 +119,13 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   // Get balances
   const { data: ethBalance } = useBalance({
     address,
+    chainId: mainnet.id,
   })
 
   const { data: usdcBalance } = useBalance({
     address,
     token: USDC_ADDRESS as `0x${string}`,
+    chainId: mainnet.id,
   })
 
   // Check if listing uses ETH or USDC

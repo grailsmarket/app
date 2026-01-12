@@ -30,6 +30,7 @@ import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { beautifyName } from '@/lib/ens'
+import { mainnet } from 'viem/chains'
 
 interface ExtendModalProps {
   onClose: () => void
@@ -78,6 +79,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   // Get ETH balance
   const { data: ethBalance } = useBalance({
     address,
+    chainId: mainnet.id,
   })
 
   // Time unit options

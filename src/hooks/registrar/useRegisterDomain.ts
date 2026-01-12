@@ -108,11 +108,15 @@ const useRegisterDomain = () => {
     }
 
     try {
+      // Ensure we're on mainnet before submitting the commitment
+      await walletClient.switchChain({ id: mainnet.id })
+
       const tx = await walletClient.writeContract({
         address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
         abi: ENS_HOLIDAY_REGISTRAR_ABI,
         functionName: 'commit',
         args: [commitmentHash],
+        chain: mainnet,
       })
       return tx
     } catch (error) {
@@ -178,6 +182,9 @@ const useRegisterDomain = () => {
     }
 
     try {
+      // Ensure we're on mainnet before submitting the registration
+      await walletClient.switchChain({ id: mainnet.id })
+
       // Estimate gas and add 25% buffer for safety (seems that registering emoji names needs more gas)
       let gasLimit = BigInt(500000) // Safe fallback if estimation fails
 
@@ -206,6 +213,7 @@ const useRegisterDomain = () => {
         args: [registrationData],
         value,
         gas: gasLimit,
+        chain: mainnet,
       })
       return tx
     } catch (error) {

@@ -1,19 +1,51 @@
 'use client'
 
+import { fetchFilteredCategories } from '@/api/categories/fetchFilteredCategories'
+import CategoriesSortDropdown from '@/app/categories/components/CategoriesSortDropdown'
 import CategoryRow from '@/app/categories/components/categoryRow'
-import { useCategories } from '@/components/filters/hooks/useCategories'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import {
+  selectCategoriesPageFilters,
+  setCategoriesPageSort,
+  setCategoriesPageSortDirection,
+} from '@/state/reducers/filters/categoriesPageFilters'
 import { cn } from '@/utils/tailwind'
+import { useQuery } from '@tanstack/react-query'
 import { Arrow } from 'ethereum-identity-kit'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect } from 'react'
+import LoadingCell from '../ui/loadingCell'
 
 const TopCategories = () => {
-  const { categories } = useCategories()
+  const dispatch = useAppDispatch()
+  const filters = useAppSelector(selectCategoriesPageFilters)
+
+  const { data: categories, isLoading } = useQuery({
+    queryKey: ['categories', filters.sort, filters.sortDirection],
+    queryFn: async () => {
+      const results = await fetchFilteredCategories({
+        sort: filters.sort,
+        sortDirection: filters.sortDirection,
+      })
+
+      return results
+    },
+  })
+
+  useEffect(() => {
+    dispatch(setCategoriesPageSort('total_sales_volume_wei'))
+    dispatch(setCategoriesPageSortDirection('desc'))
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className='w-full'>
-      <div className='px-md py-lg sm:p-xl flex items-center justify-between'>
-        <h2 className='font-sedan-sc text-4xl sm:text-5xl md:text-6xl'>Top Categories</h2>
+      <div className='px-sm sm:px-md py-lg sm:p-xl flex items-center justify-between'>
+        <div className='flex flex-col gap-1 sm:gap-2 lg:flex-row lg:items-center lg:gap-4'>
+          <h2 className='font-sedan-sc pb-1 text-4xl leading-11 sm:text-5xl md:text-6xl'>Top Categories</h2>
+          <CategoriesSortDropdown />
+        </div>
         <Link
           href='/categories'
           className='text-primary hover:text-primary/80 flex items-center justify-end gap-2 text-center text-xl font-semibold sm:text-2xl'
@@ -23,16 +55,33 @@ const TopCategories = () => {
         </Link>
       </div>
       <div className='flex w-full flex-wrap justify-center gap-4'>
-        {categories?.slice(0, 6).map((category, index) => (
-          <div
-            className={cn(
-              index === 0 ? 'w-full lg:w-[calc(33.33%-12px)]' : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
-            )}
-            key={category.name}
-          >
-            <CategoryRow category={category} />
-          </div>
-        ))}
+        {isLoading
+          ? Array(6)
+              .fill(null)
+              .map((_, index) => (
+                <div
+                  className={cn(
+                    index === 0
+                      ? 'w-full lg:w-[calc(33.33%-12px)]'
+                      : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+                  )}
+                  key={index}
+                >
+                  <LoadingCell radius='8px' height={'230px'} width={'100%'} />
+                </div>
+              ))
+          : categories?.slice(0, 6).map((category, index) => (
+              <div
+                className={cn(
+                  index === 0
+                    ? 'w-full lg:w-[calc(33.33%-12px)]'
+                    : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+                )}
+                key={category.name}
+              >
+                <CategoryRow category={category} />
+              </div>
+            ))}
       </div>
     </div>
   )

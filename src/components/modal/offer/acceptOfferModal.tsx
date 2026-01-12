@@ -830,12 +830,16 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       console.log('Function name:', 'setApprovalForAll')
       console.log('Args:', [conduitAddress, true])
 
+      // Ensure we're on mainnet before approving
+      await walletClient.switchChain({ id: mainnet.id })
+
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({
         address: nftContract as `0x${string}`,
         abi: isWrapped ? WRAPPER_ABI : NFT_ABI,
         functionName: 'setApprovalForAll',
         args: [conduitAddress, true],
+        chain: mainnet,
       })
 
       setApproveTxHash(approveTx)
@@ -926,6 +930,9 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       setStep('processing')
 
+      // Ensure we're on mainnet before executing the transaction
+      await walletClient.switchChain({ id: mainnet.id })
+
       // Execute the transaction
       const tx = await walletClient.writeContract({
         address: SEAPORT_ADDRESS as `0x${string}`,
@@ -939,6 +946,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         ],
         value: BigInt(0),
         gas: gasEstimate || undefined,
+        chain: mainnet,
       })
 
       setTxHash(tx)

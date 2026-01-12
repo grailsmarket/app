@@ -13,6 +13,9 @@ const useExtendDomains = () => {
     }
 
     try {
+      // Ensure we're on mainnet before executing the transaction
+      await walletClient.switchChain({ id: mainnet.id })
+
       const tx = await walletClient?.writeContract({
         address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
         abi: ENS_HOLIDAY_RENEWAL_ABI,

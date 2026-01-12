@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { mainnet } from 'wagmi/chains'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
@@ -44,6 +45,9 @@ export function useSeaportOrder() {
       const totalPayment = orderBuilder.calculateTotalPayment(order)
       const usesETH = orderBuilder.usesNativeToken(order)
 
+      // Ensure we're on mainnet before executing the transaction
+      await walletClient.switchChain({ id: mainnet.id })
+
       // Execute the transaction using the efficient function
       const tx = await walletClient.writeContract({
         address: SEAPORT_ADDRESS as `0x${string}`,
@@ -51,6 +55,7 @@ export function useSeaportOrder() {
         functionName: 'fulfillBasicOrder_efficient_6GL6yc',
         args: [basicOrderParams],
         value: usesETH ? totalPayment : BigInt(0),
+        chain: mainnet,
       })
 
       // Wait for confirmation

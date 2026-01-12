@@ -302,12 +302,16 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         amount: listing.price,
       })
 
+      // Ensure we're on mainnet before approving
+      await walletClient.switchChain({ id: mainnet.id })
+
       // Approve the conduit (or Seaport) to spend USDC
       const approveTx = await walletClient.writeContract({
         address: USDC_ADDRESS as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [approvalTarget as `0x${string}`, BigInt(listing.price)],
+        chain: mainnet,
       })
 
       setApproveTxHash(approveTx)
@@ -403,6 +407,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
         setStep('processing')
 
+        // Ensure we're on mainnet before executing the transaction
+        await walletClient.switchChain({ id: mainnet.id })
+
         // Execute with fulfillAdvancedOrder
         tx = await walletClient.writeContract({
           address: SEAPORT_ADDRESS as `0x${string}`,
@@ -416,6 +423,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           ],
           value: usesETH ? totalPayment : BigInt(0),
           gas: gasEstimate || undefined, // Use estimated gas if available
+          chain: mainnet,
         })
 
         setTxHash(tx)
@@ -441,6 +449,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
         setStep('processing')
 
+        // Ensure we're on mainnet before executing the transaction
+        await walletClient.switchChain({ id: mainnet.id })
+
         tx = await walletClient.writeContract({
           address: SEAPORT_ADDRESS as `0x${string}`,
           abi: SEAPORT_ABI,
@@ -448,6 +459,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           args: [basicOrderParams],
           value: totalPayment,
           gas: gasEstimate || undefined, // Use estimated gas if available
+          chain: mainnet,
         })
 
         setTxHash(tx)

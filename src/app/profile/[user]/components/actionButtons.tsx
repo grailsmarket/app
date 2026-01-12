@@ -55,7 +55,6 @@ const ActionButtons = () => {
 
   return (
     <>
-      {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
         className={cn(
@@ -72,12 +71,9 @@ const ActionButtons = () => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container bg-background app:w-[2044px]! fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:left-[292px] lg:w-[calc(100%-292px)] starting:translate-y-full',
+          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 starting:translate-y-full',
           selectedTab.value === 'watchlist' && !cartIsEmpty ? 'translate-y-0' : 'hidden'
         )}
-        style={{
-          maxWidth: 'calc(var(--max-width-app) - 4px)',
-        }}
       >
         <div className='px-md md:px-lg flex w-fit flex-row gap-x-2'>
           {selectedTab.value === 'watchlist' && !cartIsEmpty && (

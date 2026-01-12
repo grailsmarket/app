@@ -49,7 +49,7 @@ const Actions: React.FC<ActionsProps> = ({
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const { filterType } = useFilterContext()
+  const { filterType, categoryTab } = useFilterContext()
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
@@ -109,8 +109,15 @@ const Actions: React.FC<ActionsProps> = ({
     handler()
   }
 
-  if (filterType === 'profile') {
-    if (profileTab.value === 'domains' || profileTab.value === 'listings' || profileTab.value === 'grace') {
+  if (filterType === 'profile' || filterType === 'category') {
+    if (
+      profileTab.value === 'domains' ||
+      profileTab.value === 'listings' ||
+      profileTab.value === 'grace' ||
+      categoryTab?.value === 'names' ||
+      categoryTab?.value === 'premium' ||
+      categoryTab?.value === 'available'
+    ) {
       if (isBulkSelecting) {
         return (
           <div className='flex flex-row justify-end gap-4 opacity-100'>

@@ -9,7 +9,7 @@ export const CATEGORIES_PAGE_TYPE_LABELS: Record<CategoriesPageTypeOption, strin
   ethmojis: 'Ethmojis',
   digits: 'Digits',
   palindromes: 'Palindromes',
-  prepunk: 'Pre-punk',
+  prepunk: 'Pre punk',
   geo: 'Geo',
   letters: 'Letters',
 }
@@ -20,28 +20,28 @@ export const CATEGORIES_PAGE_SORT_OPTIONS = [
   'sales_volume_wei_1y',
   'sales_volume_wei_1mo',
   'sales_volume_wei_1w',
+  'member_count',
+  'floor_price_wei',
   'total_sales_count',
   'sales_count_1y',
   'sales_count_1mo',
   'sales_count_1w',
-  'member_count',
-  'floor_price_wei',
   'name',
 ] as const
 
 export type CategoriesPageSortOption = (typeof CATEGORIES_PAGE_SORT_OPTIONS)[number]
 
 export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, string> = {
+  member_count: 'Name Count',
   total_sales_volume_wei: 'Total Volume',
   sales_volume_wei_1y: 'Volume (1Y)',
   sales_volume_wei_1mo: 'Volume (1M)',
   sales_volume_wei_1w: 'Volume (1W)',
+  floor_price_wei: 'Floor Price',
   total_sales_count: 'Total Sales',
   sales_count_1y: 'Sales (1Y)',
   sales_count_1mo: 'Sales (1M)',
   sales_count_1w: 'Sales (1W)',
-  member_count: 'Member Count',
-  floor_price_wei: 'Floor Price',
   name: 'Name',
 }
 

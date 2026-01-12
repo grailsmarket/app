@@ -11,6 +11,7 @@ import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { useDomains } from '../hooks/useDomains'
 import { useNavbar } from '@/context/navbar'
+import { formatTotalTabItems } from '@/utils/formatTabItems'
 
 interface TabSwitcherProps {
   user: Address | undefined
@@ -48,17 +49,17 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     () => (tab: (typeof PROFILE_TABS)[number]) => {
       switch (tab.value) {
         case 'domains':
-          return profileTotalDomains
+          return formatTotalTabItems(profileTotalDomains)
         case 'listings':
-          return totalListings
+          return formatTotalTabItems(totalListings)
         case 'grace':
-          return totalGraceDomains
+          return formatTotalTabItems(totalGraceDomains)
         case 'watchlist':
-          return totalWatchlistDomains
+          return formatTotalTabItems(totalWatchlistDomains)
         case 'received_offers':
-          return totalReceivedOffers
+          return formatTotalTabItems(totalReceivedOffers)
         case 'sent_offers':
-          return totalSentOffers
+          return formatTotalTabItems(totalSentOffers)
         case 'activity':
           return 0
       }

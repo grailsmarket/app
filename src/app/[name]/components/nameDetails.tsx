@@ -34,6 +34,7 @@ import { cn } from '@/utils/tailwind'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
 import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
+import { fetchAccount } from 'ethereum-identity-kit'
 
 type Row = {
   label: string
@@ -57,6 +58,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
   isSubname,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
+  const [isOwnerAddressCopied, setIsOwnerAddressCopied] = useState(false)
   const { ethPrice } = useETHPrice()
 
   const rows: Row[] = [
@@ -233,27 +235,61 @@ const NameDetails: React.FC<NameDetailsProps> = ({
               ) : (
                 <div
                   className={cn(
-                    row.label === 'Owner' || row.label === 'Previous Owner'
-                      ? 'flex flex-row items-center gap-2.5 overflow-visible'
+                    isUserRow
+                      ? 'flex max-w-3/4 flex-col items-end justify-center gap-2 truncate overflow-visible'
                       : 'max-w-3/4 overflow-x-auto'
                   )}
                 >
-                  {row.value}
+                  <div className={cn(isUserRow ? 'flex flex-row items-center gap-2.5 overflow-visible' : 'max-w-full')}>
+                    {row.value}
+                    {isUserRow && nameDetails?.owner && (
+                      <Image
+                        src={isOwnerCopied ? CheckIcon : CopyIcon}
+                        alt='Copy'
+                        className='h-4 w-4 cursor-pointer hover:opacity-80'
+                        width={16}
+                        height={16}
+                        onClick={async () => {
+                          const account = await fetchAccount(nameDetails?.owner as `0x${string}`)
+                          console.log(account)
+
+                          if (account) {
+                            navigator.clipboard.writeText(account.ens?.name as string)
+                            setIsOwnerCopied(true)
+                            setTimeout(() => {
+                              setIsOwnerCopied(false)
+                            }, 2000)
+
+                            return
+                          }
+
+                          navigator.clipboard.writeText(nameDetails?.owner as string)
+                          setIsOwnerCopied(true)
+                          setTimeout(() => {
+                            setIsOwnerCopied(false)
+                          }, 2000)
+                        }}
+                      />
+                    )}
+                  </div>
                   {isUserRow && nameDetails?.owner && (
-                    <Image
-                      src={isOwnerCopied ? CheckIcon : CopyIcon}
-                      alt='Copy'
-                      className='h-4 w-4 cursor-pointer hover:opacity-80'
-                      width={16}
-                      height={16}
-                      onClick={() => {
-                        navigator.clipboard.writeText(nameDetails?.owner as string)
-                        setIsOwnerCopied(true)
-                        setTimeout(() => {
-                          setIsOwnerCopied(false)
-                        }, 2000)
-                      }}
-                    />
+                    <div className='text-neutral flex max-w-full flex-row items-center gap-1 truncate'>
+                      <p className='max-w-full truncate'>{nameDetails?.owner}</p>
+                      <Image
+                        src={isOwnerAddressCopied ? CheckIcon : CopyIcon}
+                        alt='Copy'
+                        className='h-4 w-4 cursor-pointer hover:opacity-80'
+                        width={16}
+                        height={16}
+                        onClick={() => {
+                          navigator.clipboard.writeText(nameDetails?.owner as string)
+                          setIsOwnerAddressCopied(true)
+                          setTimeout(() => {
+                            setIsOwnerAddressCopied(false)
+                          }, 2000)
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
               )}

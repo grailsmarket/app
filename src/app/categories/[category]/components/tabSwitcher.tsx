@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { MarketplaceDomainType } from '@/types/domains'
 import Label from '@/components/ui/label'
+import { formatTotalTabItems } from '@/utils/formatTabItems'
 
 interface Props {
   category: string
@@ -96,11 +97,11 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     () => (tab: (typeof CATEGORY_TABS)[number]) => {
       switch (tab.value) {
         case 'names':
-          return allNames
+          return formatTotalTabItems(allNames)
         case 'premium':
-          return totalPremiumNames
+          return formatTotalTabItems(totalPremiumNames || 0)
         case 'available':
-          return availableNames
+          return formatTotalTabItems(availableNames || 0)
       }
     },
     [allNames, totalPremiumNames, availableNames]
@@ -135,7 +136,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
                 <p>{tab.label}</p>
                 {tab.value !== 'activity' && (
                   <Label
-                    label={getTotalItems(tab)?.toLocaleString('default', { maximumFractionDigits: 0 })}
+                    label={getTotalItems(tab)}
                     className={cn(
                       'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
                       selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
@@ -177,7 +178,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
             <p>{tab.label}</p>
             {tab.value !== 'activity' && (
               <Label
-                label={getTotalItems(tab)?.toLocaleString(navigator.language || 'en-US', { maximumFractionDigits: 0 })}
+                label={getTotalItems(tab)}
                 className={cn(
                   'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
                   selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'

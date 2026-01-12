@@ -6,7 +6,6 @@ import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import { cn } from '@/utils/tailwind'
 import React, { useEffect, useState } from 'react'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
 
@@ -15,10 +14,8 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
-  const { selectors } = useFilterRouter()
   const { clearCart, cartIsEmpty } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
-  const filtersOpen = selectors.filters.open
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   useEffect(() => {
@@ -34,11 +31,10 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const isActionBarVisible = !((cartIsEmpty || hideDomainActions) && !filtersOpen)
+  const isActionBarVisible = !(cartIsEmpty || hideDomainActions)
 
   return (
     <>
-      {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
         className={cn(
@@ -53,7 +49,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container bg-background app:w-[2044px]! fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 md:h-16 lg:left-[292px] lg:w-[calc(100%-292px)] starting:translate-y-full',
+          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-all duration-300 md:h-16 starting:translate-y-full',
           !cartIsEmpty && !hideDomainActions ? 'translate-y-0' : 'hidden'
         )}
       >

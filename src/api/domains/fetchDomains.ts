@@ -21,6 +21,7 @@ interface FetchDomainsOptions {
   enableBulkSearch?: boolean
   isAuthenticated?: boolean
   inAnyCategory?: boolean
+  signal?: AbortSignal
 }
 
 export const fetchDomains = async ({
@@ -33,6 +34,7 @@ export const fetchDomains = async ({
   enableBulkSearch = false,
   isAuthenticated = false,
   inAnyCategory = false,
+  signal,
 }: FetchDomainsOptions) => {
   try {
     const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
@@ -56,6 +58,7 @@ export const fetchDomains = async ({
           page: pageParam,
           limit,
         }),
+        signal,
       })
 
       const json = (await res.json()) as APIResponseType<{
@@ -151,6 +154,7 @@ export const fetchDomains = async ({
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      signal,
     })
 
     const json = (await res.json()) as APIResponseType<{

@@ -6,12 +6,18 @@ import ViewSelector from '@/components/domains/viewSelector'
 import SortDropdown from '@/components/domains/sortDropdown'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useCategoryDomains } from '../hooks/useDomains'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
+import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { SelectAllProvider } from '@/context/selectAll'
+import { useDebounce } from '@/hooks/useDebounce'
+import { useUserContext } from '@/context/user'
+import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
+import BulkSelect from '@/components/ui/bulkSelect'
 
 interface Props {
   category: string
@@ -21,11 +27,14 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const filtersOpen = selectors.filters.open
-  const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains } =
+  const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains, totalCategoryDomains } =
     useCategoryDomains(category)
   const { isNavbarVisible } = useNavbar()
+  const { isSelecting } = useAppSelector(selectBulkSelect)
+  const { authStatus } = useUserContext()
+  const debouncedSearch = useDebounce(selectors.filters.search, 500)
 
-  return (
+  const content = (
     <>
       <div
         className={cn(
@@ -70,7 +79,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
       <Domains
         domains={domains}
         loadingRowCount={20}
-        paddingBottom='120px'
+        paddingBottom={isSelecting ? '160px' : '120px'}
         filtersOpen={filtersOpen}
         noResults={!categoryDomainsLoading && domains?.length === 0}
         isLoading={categoryDomainsLoading}
@@ -80,8 +89,24 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
             fetchMoreCategoryDomains()
           }
         }}
+        isBulkSelecting={isSelecting}
       />
     </>
+  )
+
+  // Wrap with SelectAllProvider
+  return (
+    <SelectAllProvider
+      loadedDomains={domains}
+      totalCount={totalCategoryDomains}
+      filters={selectors.filters as MarketplaceFiltersState}
+      searchTerm={debouncedSearch}
+      category={category}
+      isAuthenticated={authStatus === 'authenticated'}
+    >
+      {content}
+      <BulkSelect pageType='category' />
+    </SelectAllProvider>
   )
 }
 

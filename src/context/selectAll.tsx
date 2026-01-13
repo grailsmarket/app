@@ -11,12 +11,15 @@ import {
   finishSelectAll,
   cancelSelectAll,
   setSelectAllError,
+  setBulkSelectWatchlistIds,
 } from '@/state/reducers/modals/bulkSelectModal'
 import { MarketplaceDomainType, DomainListingType } from '@/types/domains'
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import { PortfolioFiltersState } from '@/types/filters'
 import { Address } from 'viem'
+import { getWatchlist } from '@/api/watchlist/getWatchlist'
+import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
 
 const SELECT_ALL_BATCH_SIZE = 50
 
@@ -36,6 +39,7 @@ interface SelectAllProviderProps {
   searchTerm: string
   ownerAddress?: Address
   category?: string
+  isWatchlist?: boolean
   isAuthenticated?: boolean
 }
 
@@ -47,6 +51,7 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
   searchTerm,
   ownerAddress,
   category,
+  isWatchlist = false,
   isAuthenticated = false,
 }) => {
   const dispatch = useAppDispatch()
@@ -80,7 +85,7 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
       if (remainingCount > 0) {
         // Calculate starting page based on what's already loaded
         // Assuming default fetch limit, we need to figure out which page to start from
-        const startPage = Math.ceil(loadedDomains.length / SELECT_ALL_BATCH_SIZE)
+        const startPage = Math.ceil(loadedDomains.length / SELECT_ALL_BATCH_SIZE) + 1
         const totalPages = Math.ceil(totalCount / SELECT_ALL_BATCH_SIZE)
 
         // Fetch remaining pages
@@ -93,20 +98,62 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
           }
 
           try {
-            const result = await fetchDomains({
-              limit: SELECT_ALL_BATCH_SIZE,
-              pageParam: page,
-              filters,
-              searchTerm,
-              ownerAddress,
-              category,
-              isAuthenticated,
-              signal,
-            })
+            const result = await (isWatchlist && isAuthenticated
+              ? getWatchlist({
+                limit: SELECT_ALL_BATCH_SIZE,
+                pageParam: page,
+                filters,
+                searchTerm,
+              })
+              : fetchDomains({
+                limit: SELECT_ALL_BATCH_SIZE,
+                pageParam: page,
+                filters,
+                searchTerm,
+                ownerAddress,
+                category,
+                isAuthenticated,
+                signal,
+              }))
+
+            const domains = (
+              isWatchlist && isAuthenticated
+                // @ts-expect-error the types do exist
+                ? result.watchlist.map((domain) => ({
+                  id: domain.ensNameId,
+                  watchlist_id: domain.id,
+                  name: domain.ensName,
+                  token_id: domain.nameData.tokenId,
+                  expiry_date: domain.nameData.expiryDate,
+                  registration_date: null,
+                  owner: domain.nameData.ownerAddress,
+                  character_count: domain.ensName.length,
+                  metadata: {},
+                  has_numbers: nameHasNumbers(domain.ensName),
+                  has_emoji: nameHasEmoji(domain.ensName),
+                  listings: domain.nameData.activeListing ? [domain.nameData.activeListing] : [],
+                  clubs: [],
+                  listing_created_at: null,
+                  highest_offer_currency: null,
+                  highest_offer_id: null,
+                  highest_offer_wei: null,
+                  offer: null,
+                  last_sale_price: null,
+                  last_sale_currency: null,
+                  last_sale_date: null,
+                  last_sale_price_usd: null,
+                  view_count: 0,
+                  downvotes: 0,
+                  upvotes: 0,
+                  watchers_count: 0,
+                }))
+                // @ts-expect-error the types do exist
+                : result.domains
+            ) as MarketplaceDomainType[]
 
             // Add new domains (avoid duplicates by checking name)
             const existingNames = new Set(allDomains.map((d) => d.name))
-            const newDomains = result.domains.filter((d) => !existingNames.has(d.name))
+            const newDomains = domains.filter((d) => !existingNames.has(d.name))
             allDomains.push(...newDomains)
             currentLoaded = allDomains.length
 
@@ -126,6 +173,11 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
             // Select what we have so far
             selectDomainsAndListings(allDomains)
 
+            if (isWatchlist && isAuthenticated) {
+              // @ts-expect-error the types do exist
+              dispatch(setBulkSelectWatchlistIds(allDomains.map((d) => d.watchlist_id)))
+            }
+
             // Set error message
             dispatch(setSelectAllError(`Could not load all domains. Selected ${allDomains.length} of ${totalCount}.`))
             return
@@ -135,6 +187,11 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
 
       // Successfully fetched all - select them
       selectDomainsAndListings(allDomains)
+
+      if (isWatchlist && isAuthenticated) {
+        // @ts-expect-error the types do exist
+        dispatch(setBulkSelectWatchlistIds(allDomains.map((d) => d.watchlist_id)))
+      }
 
       // Finish loading
       dispatch(finishSelectAll())
@@ -160,6 +217,7 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
     category,
     isAuthenticated,
     dispatch,
+    isWatchlist,
   ])
 
   const selectDomainsAndListings = (domains: MarketplaceDomainType[]) => {

@@ -42,6 +42,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     profileTotalDomains,
     totalListings,
     totalGraceDomains,
+    totalWatchlistDomains,
   } = useDomains(user)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
@@ -71,10 +72,12 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
         return totalListings
       case 'grace':
         return totalGraceDomains
+      case 'watchlist':
+        return totalWatchlistDomains
       default:
         return 0
     }
-  }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains])
+  }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains, totalWatchlistDomains])
 
   // Check if bulk select is enabled for this tab
   const isBulkSelectEnabled = isSelecting
@@ -150,11 +153,12 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
 
   return (
     <SelectAllProvider
+      ownerAddress={user}
       loadedDomains={domains}
       totalCount={totalCount}
       filters={selectors.filters as MarketplaceFiltersState}
       searchTerm={debouncedSearch}
-      ownerAddress={user}
+      isWatchlist={selectedTab.value === 'watchlist'}
       isAuthenticated={authStatus === 'authenticated'}
     >
       {content}

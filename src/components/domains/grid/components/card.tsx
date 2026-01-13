@@ -28,6 +28,7 @@ import {
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
   setAnchorIndex,
+  setHoveredIndex,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
@@ -69,8 +70,19 @@ const Card: React.FC<CardProps> = ({
   )
   const domainListing = domain.listings[0]
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
-  const { domains: selectedDomains, anchorIndex } = useAppSelector(selectBulkSelect)
+  const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+
+  // Calculate if this item is in the preview range (between anchor and hovered, shift pressed, not already selected)
+  const isInPreviewRange = (() => {
+    if (!isBulkSelecting || !isShiftPressed || anchorIndex === null || hoveredIndex === null || index === undefined) {
+      return false
+    }
+    if (isSelected) return false // Don't show preview for already selected items
+    const start = Math.min(anchorIndex, hoveredIndex)
+    const end = Math.max(anchorIndex, hoveredIndex)
+    return index >= start && index <= end
+  })()
 
   const premiumPriceOracle = domain.expiry_date
     ? new PremiumPriceOracle(new Date(domain.expiry_date).getTime() / 1000)
@@ -134,13 +146,25 @@ const Card: React.FC<CardProps> = ({
           handleBulkSelectClick(e)
         }
       }}
+      onMouseEnter={() => {
+        if (isBulkSelecting && index !== undefined) {
+          dispatch(setHoveredIndex(index))
+        }
+      }}
+      onMouseLeave={() => {
+        if (isBulkSelecting) {
+          dispatch(setHoveredIndex(null))
+        }
+      }}
       className={cn(
         'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition hover:opacity-100 md:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
         isBulkSelecting
           ? isSelected
             ? 'bg-primary/20 hover:bg-foreground/30 opacity-100!'
-            : 'hover:bg-primary/10'
+            : isInPreviewRange
+              ? 'bg-primary/10 opacity-100!'
+              : 'hover:bg-primary/10'
           : 'hover:bg-foreground/10',
         className
       )}

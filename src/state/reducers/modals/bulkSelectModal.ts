@@ -14,6 +14,8 @@ type BulkSelectState = {
   previousListings: DomainListingType[]
   selectAll: SelectAllState | null
   anchorIndex: number | null
+  hoveredIndex: number | null
+  isShiftPressed: boolean
 }
 
 const initialState: BulkSelectState = {
@@ -22,6 +24,8 @@ const initialState: BulkSelectState = {
   previousListings: [],
   selectAll: null,
   anchorIndex: null,
+  hoveredIndex: null,
+  isShiftPressed: false,
 }
 
 export const BulkSelectSlice = createSlice({
@@ -61,9 +65,17 @@ export const BulkSelectSlice = createSlice({
       state.previousListings = []
       state.selectAll = null
       state.anchorIndex = null
+      state.hoveredIndex = null
+      state.isShiftPressed = false
     },
     setAnchorIndex(state, { payload }: PayloadAction<number | null>) {
       state.anchorIndex = payload
+    },
+    setHoveredIndex(state, { payload }: PayloadAction<number | null>) {
+      state.hoveredIndex = payload
+    },
+    setIsShiftPressed(state, { payload }: PayloadAction<boolean>) {
+      state.isShiftPressed = payload
     },
     startSelectAll(state, { payload }: PayloadAction<{ total: number }>) {
       state.selectAll = {
@@ -111,6 +123,8 @@ export const {
   setBulkSelectPreviousListings,
   clearBulkSelect,
   setAnchorIndex,
+  setHoveredIndex,
+  setIsShiftPressed,
   startSelectAll,
   updateSelectAllProgress,
   finishSelectAll,

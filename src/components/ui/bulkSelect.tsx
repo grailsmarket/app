@@ -29,6 +29,7 @@ import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import { useFilterContext } from '@/context/filters'
 import { cn } from '@/utils/tailwind'
+import { useShiftKeyListener } from '@/hooks/useShiftKey'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -38,6 +39,9 @@ interface BulkSelectProps {
 const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
   const dispatch = useAppDispatch()
   const { isSelecting, domains: selectedDomains, previousListings, selectAll } = useAppSelector(selectBulkSelect)
+
+  // Listen for shift key events and update Redux state
+  useShiftKeyListener()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
   const selectAllContext = useSelectAll()

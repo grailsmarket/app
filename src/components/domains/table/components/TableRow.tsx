@@ -18,6 +18,7 @@ import {
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
   setAnchorIndex,
+  setHoveredIndex,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
@@ -53,8 +54,19 @@ const TableRow: React.FC<TableRowProps> = ({
   const canAddToCart = !(
     EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
   )
-  const { domains: selectedDomains, anchorIndex } = useAppSelector(selectBulkSelect)
+  const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+
+  // Calculate if this item is in the preview range (between anchor and hovered, shift pressed, not already selected)
+  const isInPreviewRange = (() => {
+    if (!isBulkSelecting || !isShiftPressed || anchorIndex === null || hoveredIndex === null) {
+      return false
+    }
+    if (isSelected) return false // Don't show preview for already selected items
+    const start = Math.min(anchorIndex, hoveredIndex)
+    const end = Math.max(anchorIndex, hoveredIndex)
+    return index >= start && index <= end
+  })()
 
   const columnCount = displayedColumns.length
   const columns: Record<MarketplaceHeaderColumn, React.ReactNode> = {
@@ -172,13 +184,25 @@ const TableRow: React.FC<TableRowProps> = ({
           handleBulkSelectClick(e)
         }
       }}
+      onMouseEnter={() => {
+        if (isBulkSelecting) {
+          dispatch(setHoveredIndex(index))
+        }
+      }}
+      onMouseLeave={() => {
+        if (isBulkSelecting) {
+          dispatch(setHoveredIndex(null))
+        }
+      }}
       className={cn(
         'group px-md md:p-md lg:p-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-between border-b transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
         isBulkSelecting
           ? isSelected
             ? 'bg-primary/20 hover:bg-foreground/30'
-            : 'hover:bg-primary/10'
+            : isInPreviewRange
+              ? 'bg-primary/10'
+              : 'hover:bg-primary/10'
           : 'hover:bg-foreground/10'
       )}
     >

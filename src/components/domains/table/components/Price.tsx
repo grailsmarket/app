@@ -5,10 +5,9 @@ import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { DomainListingType, RegistrationStatus } from '@/types/domains'
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
-import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import useETHPrice from '@/hooks/useETHPrice'
+import { usePremiumCountdown } from '@/hooks/usePremiumCountdown'
 import { PREMIUM, REGISTERABLE_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
-import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 
 interface PriceProps {
   name: string
@@ -21,14 +20,10 @@ interface PriceProps {
 
 const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationStatus, columnCount, index }) => {
   const { ethPrice } = useETHPrice()
+  const { premiumPrice, timeLeftString: premiumTimeLeft } = usePremiumCountdown(expiry_date)
+  const regPrice = calculateRegistrationPrice(name, ethPrice)
 
   if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
-    const premiumPriceOracle = expiry_date ? new PremiumPriceOracle(new Date(expiry_date).getTime() / 1000) : null
-    const premiumPrice = premiumPriceOracle
-      ? premiumPriceOracle.getOptimalPrecisionPremiumAmount(new Date().getTime() / 1000)
-      : 0
-    const regPrice = calculateRegistrationPrice(name, ethPrice)
-
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
         <div>
@@ -61,8 +56,8 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
             )}
           </p>
         </div>
-        {registrationStatus === PREMIUM && expiry_date && (
-          <p className='text-md text-premium/70 font-medium'>Premium ({formatTimeLeft(expiry_date, 'premium')})</p>
+        {registrationStatus === PREMIUM && premiumTimeLeft && (
+          <p className='text-md text-premium/70 font-medium'>Premium ({premiumTimeLeft})</p>
         )}
         {registrationStatus === UNREGISTERED && <p className='text-md text-available font-medium'>Available</p>}
       </div>

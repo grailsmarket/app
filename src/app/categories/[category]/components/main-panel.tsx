@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import { FilterProvider } from '@/context/filters'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
@@ -9,15 +9,31 @@ import TabSwitcher from './tabSwitcher'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useAppSelector } from '@/state/hooks'
-import { selectCategory } from '@/state/reducers/category/category'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { changeCategoryTab, selectCategory, setLastVisitedCategory } from '@/state/reducers/category/category'
+import { clearFilters as clearCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
+import { clearFilters as clearCategoryPremiumFilters } from '@/state/reducers/filters/categoryPremiumFilters'
+import { clearFilters as clearCategoryAvailableFilters } from '@/state/reducers/filters/categoryAvailableFilters'
+import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
 
 interface Props {
   category: string
 }
 
 const MainPanel: React.FC<Props> = ({ category }) => {
-  const { selectedTab } = useAppSelector(selectCategory)
+  const dispatch = useAppDispatch()
+  const { selectedTab, lastVisitedCategory } = useAppSelector(selectCategory)
+
+  useEffect(() => {
+    if (lastVisitedCategory && lastVisitedCategory !== category) {
+      dispatch(clearCategoryDomainsFilters())
+      dispatch(clearCategoryPremiumFilters())
+      dispatch(clearCategoryAvailableFilters())
+      dispatch(changeCategoryTab(CATEGORY_TABS[0]))
+    }
+
+    dispatch(setLastVisitedCategory(category))
+  }, [lastVisitedCategory, category, dispatch])
 
   return (
     <Suspense>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Cross } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
@@ -10,6 +10,7 @@ import {
   selectBulkSelect,
   setBulkSelectIsSelecting,
   clearSelectAllError,
+  removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
 import {
   CancelListingListing,
@@ -27,18 +28,22 @@ import { useSelectAll } from '@/context/selectAll'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
-import { useFilterContext } from '@/context/filters'
 import { cn } from '@/utils/tailwind'
 import { useShiftKeyListener } from '@/hooks/useShiftKey'
+import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
+import { useQueryClient } from '@tanstack/react-query'
+import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
   pageType?: 'profile' | 'category'
 }
 
-const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
+const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType = 'profile' }) => {
+  const [isRemovingFromWatchlist, setIsRemovingFromWatchlist] = useState(false)
+
   const dispatch = useAppDispatch()
-  const { isSelecting, domains: selectedDomains, previousListings, selectAll } = useAppSelector(selectBulkSelect)
+  const { isSelecting, domains: selectedDomains, previousListings, selectAll, watchlistIds: selectedWatchlistIds } = useAppSelector(selectBulkSelect)
 
   // Listen for shift key events and update Redux state
   useShiftKeyListener()
@@ -47,10 +52,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
   const selectAllContext = useSelectAll()
   const { userAddress } = useUserContext()
   const { cartIsEmpty } = useCartDomains()
-  const { categoryTab } = useFilterContext()
+  const queryClient = useQueryClient()
+  const watchlistFilters = useAppSelector(selectWatchlistFilters)
 
   // Get the selected tab based on page type
-  const selectedTab = pageType === 'category' ? categoryState.selectedTab : profileState.selectedTab
+  const categoryTab = categoryState.selectedTab
+  const profileTab = profileState.selectedTab
+  const selectedTab = pageType === 'category' ? categoryTab : profileTab
+
+  useEffect(() => {
+    dispatch(setBulkSelectIsSelecting(false))
+    dispatch(clearBulkSelect())
+  }, [selectedTab, dispatch])
 
   const namesExtend = selectedDomains.filter(
     (domain) =>
@@ -64,12 +77,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          domain.listings?.some(
-            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-          )
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        domain.listings?.some(
+          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+        )
+    )
     : []
 
   const handleBulkSelect = () => {
@@ -90,6 +103,56 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
   const handleExtendAction = () => {
     dispatch(setBulkRenewalModalDomains(namesExtend))
     dispatch(setBulkRenewalModalOpen(true))
+  }
+
+  const handleRemoveFromWatchlistAction = async () => {
+    setIsRemovingFromWatchlist(true)
+
+    const results = await Promise.all(selectedWatchlistIds.map(async (id) => {
+      const result = await removeFromWatchlist(id)
+      if (result.success) {
+        dispatch(removeBulkSelectWatchlistId(id))
+      }
+      return result
+    }))
+
+    if (results.some((result) => !result.success)) {
+      console.error('Failed to remove from watchlist' + results.filter((result) => !result.success).map((result) => result.watchlistId).join(', '))
+    } else {
+      dispatch(clearBulkSelect())
+    }
+
+    queryClient.setQueryData(
+      [
+        'profile',
+        'watchlist',
+        userAddress,
+        watchlistFilters.search,
+        watchlistFilters.length,
+        watchlistFilters.priceRange,
+        watchlistFilters.categories,
+        watchlistFilters.type,
+        watchlistFilters.status,
+        watchlistFilters.sort,
+        watchlistFilters.textMatch,
+        watchlistFilters.market,
+      ],
+      (old: any) => {
+        const newData = old.pages.map((page: any) => {
+          return {
+            ...page,
+            domains: page.domains.filter((item: any) => !selectedWatchlistIds.includes(item.watchlist_id)),
+          }
+        })
+
+        return {
+          ...old,
+          pages: newData,
+        }
+      }
+    )
+
+    setIsRemovingFromWatchlist(false)
   }
 
   const handleTransferAction = () => {
@@ -138,18 +201,21 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
     dispatch(clearSelectAllError())
   }
 
-  const isActionButtonsVisible = pageType === 'category' && categoryTab?.value === 'names' && !cartIsEmpty
   // For profile tabs
   const isProfileTab = pageType === 'profile'
-  // const isCategoryTab = pageType === 'category'
+  const isCategoryTab = pageType === 'category'
+  const isActionButtonsVisible = (isCategoryTab ? selectedTab?.value === 'names' : selectedTab?.value === 'watchlist') && !cartIsEmpty
 
   // Define which tabs support bulk select for each page type
-  const profileBulkSelectTabs = ['domains', 'listings', 'grace']
+  const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'watchlist']
   const categoryBulkSelectTabs = ['names', 'premium', 'available']
 
   const isBulkSelectSupportedTab = isProfileTab
     ? profileBulkSelectTabs.includes(selectedTab?.value || '')
     : categoryBulkSelectTabs.includes(selectedTab?.value || '')
+
+  const showOwnedActionButtons = isCategoryTab ? selectedTab?.value === 'names' : isMyProfile ? selectedTab?.value === 'domains' || selectedTab?.value === 'listings' || selectedTab?.value === 'names' : selectedTab?.value === 'watchlist'
+  const showWatchlistButton = isProfileTab && isMyProfile && selectedTab?.value === 'watchlist'
 
   const canListDomains =
     selectedTab?.value === 'domains' || selectedTab?.value === 'listings' || selectedTab?.value === 'names'
@@ -157,7 +223,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
     selectedTab?.value === 'domains' ||
     selectedTab?.value === 'listings' ||
     selectedTab?.value === 'grace' ||
-    selectedTab?.value === 'names'
+    selectedTab?.value === 'names' ||
+    selectedTab?.value === 'watchlist'
   const canTransferDomains =
     selectedTab?.value === 'domains' ||
     selectedTab?.value === 'listings' ||
@@ -211,6 +278,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
                 <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
                   {selectedDomains.length}
                 </SecondaryButton>
+                {selectAllContext?.canSelectAll && pageType === 'profile' && (
+                  <SecondaryButton onClick={handleSelectAll}>Select All</SecondaryButton>
+                )}
                 <SecondaryButton
                   onClick={handleCancelBulkSelect}
                   className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
@@ -221,37 +291,44 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ pageType = 'profile' }) => {
 
               <div className='shadow-bulk bg-background flex max-w-full flex-row overflow-x-scroll rounded-md'>
                 <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
+                  {showWatchlistButton &&
+                    <PrimaryButton className='flex items-center gap-2' onClick={handleRemoveFromWatchlistAction} disabled={selectedWatchlistIds.length === 0}>
+                      {isRemovingFromWatchlist ? <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' /> : null}
+                      <p className='text-nowrap'>({selectedWatchlistIds.length}) Remove from Watchlist</p>
+                    </PrimaryButton>}
                   <PrimaryButton
                     onClick={handleExtendAction}
                     disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
                   >
                     <p className='text-nowrap'>({namesExtend.length}) Extend</p>
                   </PrimaryButton>
-                  <PrimaryButton
-                    onClick={handleTransferAction}
-                    disabled={selectedDomains.length === 0 || !canTransferDomains || namesTransfer.length === 0}
-                  >
-                    <p className='text-nowrap'>({namesTransfer.length}) Transfer</p>
-                  </PrimaryButton>
-                  <PrimaryButton
-                    onClick={handleListAction}
-                    disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}
-                  >
-                    <p className='text-nowrap'>({namesList.length}) List</p>
-                  </PrimaryButton>
-                  <PrimaryButton
-                    onClick={handleCancelListingsAction}
-                    disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
-                  >
-                    <p className='text-nowrap'>({namesCancel.length}) Cancel Listings</p>
-                  </PrimaryButton>
+                  {showOwnedActionButtons && <>
+                    <PrimaryButton
+                      onClick={handleTransferAction}
+                      disabled={selectedDomains.length === 0 || !canTransferDomains || namesTransfer.length === 0}
+                    >
+                      <p className='text-nowrap'>({namesTransfer.length}) Transfer</p>
+                    </PrimaryButton>
+                    <PrimaryButton
+                      onClick={handleListAction}
+                      disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}
+                    >
+                      <p className='text-nowrap'>({namesList.length}) List</p>
+                    </PrimaryButton>
+                    <PrimaryButton
+                      onClick={handleCancelListingsAction}
+                      disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
+                    >
+                      <p className='text-nowrap'>({namesCancel.length}) Cancel Listings</p>
+                    </PrimaryButton>
+                  </>}
                 </div>
                 <div className='bg-background border-tertiary hidden flex-row gap-1.5 border-l-2 p-3 pl-1.5 sm:flex'>
                   <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
                     {selectedDomains.length}
                   </SecondaryButton>
                   {selectAllContext?.canSelectAll && pageType === 'profile' && (
-                    <SecondaryButton onClick={handleSelectAll}>Select All</SecondaryButton>
+                    <SecondaryButton className='hidden sm:block' onClick={handleSelectAll}>Select All</SecondaryButton>
                   )}
                   <SecondaryButton
                     onClick={handleCancelBulkSelect}

@@ -7,7 +7,6 @@ import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
@@ -17,8 +16,6 @@ const ActionButtons = () => {
   const { cartIsEmpty, clearCart } = useCartDomains()
   const { setIsCartOpen } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
-  const { selectors } = useFilterRouter()
-  const filtersOpen = selectors.filters.open
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   useEffect(() => {
@@ -34,8 +31,8 @@ const ActionButtons = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const isActionBarVisible = (selectedTab.value === 'watchlist' && !cartIsEmpty) || filtersOpen
-  const isBulkListingActionButtonsVisible = selectedTab.value === 'listings' || selectedTab.value === 'domains'
+  const isActionBarVisible = (selectedTab.value === 'watchlist' && !cartIsEmpty)
+  const isBulkSelectVisible = selectedTab.value === 'listings' || selectedTab.value === 'domains' || selectedTab.value === 'grace' || selectedTab.value === 'watchlist'
   const isBulkSelecting = useAppSelector(selectBulkSelect).isSelecting
 
   // const handleSelectAll = () => {
@@ -61,8 +58,9 @@ const ActionButtons = () => {
           'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6',
-          isBulkListingActionButtonsVisible && 'bottom-16 md:right-5 md:bottom-22',
-          isBulkSelecting && 'bottom-30 md:bottom-24'
+          isBulkSelectVisible && 'bottom-16 md:right-5 md:bottom-22',
+          isBulkSelecting && 'bottom-30 md:bottom-24',
+          (isBulkSelectVisible && isActionBarVisible) && 'hidden'
         )}
         aria-label='Scroll to top'
       >

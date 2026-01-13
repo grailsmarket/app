@@ -19,6 +19,8 @@ import {
   removeBulkSelectPreviousListing,
   setAnchorIndex,
   setHoveredIndex,
+  addBulkSelectWatchlistId,
+  removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
@@ -134,12 +136,20 @@ const TableRow: React.FC<TableRowProps> = ({
     dispatch(addBulkSelectDomain(d))
     const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
     listings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+
+    if (watchlistId) {
+      dispatch(addBulkSelectWatchlistId(watchlistId))
+    }
   }
 
   const deselectDomain = (d: MarketplaceDomainType) => {
     dispatch(removeBulkSelectDomain(d))
     const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
     listings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+
+    if (watchlistId) {
+      dispatch(removeBulkSelectWatchlistId(watchlistId))
+    }
   }
 
   const handleBulkSelectClick = (e: React.MouseEvent) => {

@@ -77,9 +77,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
   }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains])
 
   // Check if bulk select is enabled for this tab
-  const isBulkSelectEnabled =
-    (selectedTab.value === 'domains' || selectedTab.value === 'listings' || selectedTab.value === 'grace') &&
-    isSelecting
+  const isBulkSelectEnabled = isSelecting
 
   const content = (
     <div className='z-0 flex w-full flex-col'>
@@ -150,29 +148,20 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     </div>
   )
 
-  // Wrap with SelectAllProvider only for tabs that support bulk select
-  if (
-    isBulkSelectEnabled ||
-    selectedTab.value === 'domains' ||
-    selectedTab.value === 'listings' ||
-    selectedTab.value === 'grace'
-  ) {
-    return (
-      <SelectAllProvider
-        loadedDomains={domains}
-        totalCount={totalCount}
-        filters={selectors.filters as MarketplaceFiltersState}
-        searchTerm={debouncedSearch}
-        ownerAddress={user}
-        isAuthenticated={authStatus === 'authenticated'}
-      >
-        {content}
-        <BulkSelect isMyProfile={isMyProfile} pageType='profile' />
-      </SelectAllProvider>
-    )
-  }
 
-  return content
+  return (
+    <SelectAllProvider
+      loadedDomains={domains}
+      totalCount={totalCount}
+      filters={selectors.filters as MarketplaceFiltersState}
+      searchTerm={debouncedSearch}
+      ownerAddress={user}
+      isAuthenticated={authStatus === 'authenticated'}
+    >
+      {content}
+      <BulkSelect isMyProfile={isMyProfile} pageType='profile' />
+    </SelectAllProvider>
+  )
 }
 
 export default DomainPanel

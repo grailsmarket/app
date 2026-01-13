@@ -109,6 +109,7 @@ const Actions: React.FC<ActionsProps> = ({
     handler()
   }
 
+
   if (filterType === 'profile' || filterType === 'category') {
     if (
       profileTab.value === 'domains' ||

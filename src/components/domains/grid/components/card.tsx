@@ -29,13 +29,15 @@ import {
   removeBulkSelectPreviousListing,
   setAnchorIndex,
   setHoveredIndex,
+  addBulkSelectWatchlistId,
+  removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
-import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
+import { usePremiumCountdown } from '@/hooks/usePremiumCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Watchlist from '@/components/ui/watchlist'
 
@@ -69,7 +71,7 @@ const Card: React.FC<CardProps> = ({
     EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
   )
   const domainListing = domain.listings[0]
-  const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
+  // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
@@ -84,24 +86,27 @@ const Card: React.FC<CardProps> = ({
     return index >= start && index <= end
   })()
 
-  const premiumPriceOracle = domain.expiry_date
-    ? new PremiumPriceOracle(new Date(domain.expiry_date).getTime() / 1000)
-    : null
-  const premiumPrice = premiumPriceOracle
-    ? premiumPriceOracle.getOptimalPrecisionPremiumAmount(new Date().getTime() / 1000)
-    : 0
+  const { premiumPrice, timeLeftString: premiumTimeLeft } = usePremiumCountdown(domain.expiry_date)
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
   const selectDomain = (d: MarketplaceDomainType) => {
     dispatch(addBulkSelectDomain(d))
     const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
     listings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+
+    if (watchlistId) {
+      dispatch(addBulkSelectWatchlistId(watchlistId))
+    }
   }
 
   const deselectDomain = (d: MarketplaceDomainType) => {
     dispatch(removeBulkSelectDomain(d))
     const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
     listings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+
+    if (watchlistId) {
+      dispatch(removeBulkSelectWatchlistId(watchlistId))
+    }
   }
 
   const handleBulkSelectClick = (e: React.MouseEvent) => {
@@ -262,9 +267,9 @@ const Card: React.FC<CardProps> = ({
               )}
             </div>
           )}
-          {registrationStatus === PREMIUM && domain.expiry_date && (
+          {registrationStatus === PREMIUM && premiumTimeLeft && (
             <div className='text-md text-premium/70 flex items-center gap-px font-medium'>
-              Premium ({formatTimeLeft(domain.expiry_date, 'premium')})
+              Premium ({premiumTimeLeft})
             </div>
           )}
           {registrationStatus === UNREGISTERED && (

@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation'
 import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import { Address, useWindowSize } from 'ethereum-identity-kit'
 import { useFilterUrlSync } from '@/hooks/filters/useFilterUrlSync'
+import { clearBulkSelect, setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 interface FilterContextValue {
   filterType: FilterContextType
@@ -52,6 +53,11 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 
     previousPathRef.current = pathname
   }, [pathname, windowWidth, dispatch])
+
+  useEffect(() => {
+    dispatch(setBulkSelectIsSelecting(false))
+    dispatch(clearBulkSelect())
+  }, [pathname, dispatch])
 
   useEffect(() => {
     if (windowWidth !== null && windowWidth > 1024) {

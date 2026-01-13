@@ -7,11 +7,13 @@ export type CategoryTabType = (typeof CATEGORY_TABS)[number]
 
 type CategoryState = {
   selectedTab: CategoryTabType
+  lastVisitedCategory: string | null
 }
 
 // Initial State
 const initialState: CategoryState = {
   selectedTab: CATEGORY_TABS[0],
+  lastVisitedCategory: null,
 }
 
 // Slice
@@ -22,6 +24,9 @@ export const categorySlice = createSlice({
     changeCategoryTab(state, { payload }: PayloadAction<CategoryTabType>) {
       state.selectedTab = payload
     },
+    setLastVisitedCategory(state, { payload }: PayloadAction<string | null>) {
+      state.lastVisitedCategory = payload
+    },
     resetCategoryState(state) {
       state.selectedTab = CATEGORY_TABS[0]
     },
@@ -29,7 +34,7 @@ export const categorySlice = createSlice({
 })
 
 // Actions
-export const { changeCategoryTab, resetCategoryState } = categorySlice.actions
+export const { changeCategoryTab, resetCategoryState, setLastVisitedCategory } = categorySlice.actions
 
 // Selectors
 export const selectCategory = (state: RootState) => state.category.category

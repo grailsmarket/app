@@ -12,6 +12,7 @@ type BulkSelectState = {
   isSelecting: boolean
   domains: MarketplaceDomainType[]
   previousListings: DomainListingType[]
+  watchlistIds: number[]
   selectAll: SelectAllState | null
   anchorIndex: number | null
   hoveredIndex: number | null
@@ -22,6 +23,7 @@ const initialState: BulkSelectState = {
   isSelecting: false,
   domains: [],
   previousListings: [],
+  watchlistIds: [],
   selectAll: null,
   anchorIndex: null,
   hoveredIndex: null,
@@ -59,10 +61,22 @@ export const BulkSelectSlice = createSlice({
     setBulkSelectPreviousListings(state, { payload }: PayloadAction<DomainListingType[]>) {
       state.previousListings = payload
     },
+    setBulkSelectWatchlistIds(state, { payload }: PayloadAction<number[]>) {
+      state.watchlistIds = payload
+    },
+    addBulkSelectWatchlistId(state, { payload }: PayloadAction<number>) {
+      if (!state.watchlistIds.includes(payload)) {
+        state.watchlistIds.push(payload)
+      }
+    },
+    removeBulkSelectWatchlistId(state, { payload }: PayloadAction<number>) {
+      state.watchlistIds = state.watchlistIds.filter((id) => id !== payload)
+    },
     clearBulkSelect(state) {
       state.isSelecting = false
       state.domains = []
       state.previousListings = []
+      state.watchlistIds = []
       state.selectAll = null
       state.anchorIndex = null
       state.hoveredIndex = null
@@ -121,6 +135,9 @@ export const {
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
   setBulkSelectPreviousListings,
+  setBulkSelectWatchlistIds,
+  addBulkSelectWatchlistId,
+  removeBulkSelectWatchlistId,
   clearBulkSelect,
   setAnchorIndex,
   setHoveredIndex,

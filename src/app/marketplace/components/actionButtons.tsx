@@ -8,14 +8,16 @@ import { cn } from '@/utils/tailwind'
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
+import { useFilterContext } from '@/context/filters'
 
 interface ActionButtonsProps {
   hideDomainActions?: boolean
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
-  const { clearCart, cartIsEmpty } = useCartDomains()
+  const { filterType, categoryTab } = useFilterContext()
   const { setIsCartOpen } = useUserContext()
+  const { clearCart, cartIsEmpty } = useCartDomains()
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   useEffect(() => {
@@ -32,6 +34,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
   }
 
   const isActionBarVisible = !(cartIsEmpty || hideDomainActions)
+  const isBulkSelectVisible = filterType === 'category' && categoryTab?.value !== 'activity'
 
   return (
     <>
@@ -40,7 +43,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
         className={cn(
           'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
-          isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6'
+          isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6',
+          (isBulkSelectVisible && isActionBarVisible) && 'hidden',
         )}
         aria-label='Scroll to top'
       >

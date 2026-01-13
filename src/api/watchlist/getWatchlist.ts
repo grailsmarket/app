@@ -77,9 +77,9 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
     'filters[contains]': getTextMatchFilterValue(textMatchFilters?.Contains),
     'filters[startsWith]': getTextMatchFilterValue(textMatchFilters?.['Starts with']),
     'filters[endsWith]': getTextMatchFilterValue(textMatchFilters?.['Ends with']),
-    'filters[doesNotContain]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't contain"]),
-    'filters[doesNotStartWith]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't start with"]),
-    'filters[doesNotEndWith]': getTextMatchFilterValue(textNonMatchFilters?.["Doesn't end with"]),
+    'filters[doesNotContain]': getTextMatchFilterValue(textNonMatchFilters?.['Does not contain']),
+    'filters[doesNotStartWith]': getTextMatchFilterValue(textNonMatchFilters?.['Does not start with']),
+    'filters[doesNotEndWith]': getTextMatchFilterValue(textNonMatchFilters?.['Does not end with']),
     sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
     sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
   })

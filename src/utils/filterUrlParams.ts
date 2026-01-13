@@ -273,22 +273,22 @@ export function serializeFiltersToUrl(
   // Text non-match filters (only non-empty values) - skip for activity tabs
   if (!isActivityTab && filters.textNonMatch) {
     if (
-      filters.textNonMatch["Doesn't contain"] &&
-      filters.textNonMatch["Doesn't contain"] !== emptyFilterState.textNonMatch["Doesn't contain"]
+      filters.textNonMatch['Does not contain'] &&
+      filters.textNonMatch['Does not contain'] !== emptyFilterState.textNonMatch['Does not contain']
     ) {
-      params.set(URL_PARAMS.notContains, filters.textNonMatch["Doesn't contain"])
+      params.set(URL_PARAMS.notContains, filters.textNonMatch['Does not contain'])
     }
     if (
-      filters.textNonMatch["Doesn't start with"] &&
-      filters.textNonMatch["Doesn't start with"] !== emptyFilterState.textNonMatch["Doesn't start with"]
+      filters.textNonMatch['Does not start with'] &&
+      filters.textNonMatch['Does not start with'] !== emptyFilterState.textNonMatch['Does not start with']
     ) {
-      params.set(URL_PARAMS.notStartsWith, filters.textNonMatch["Doesn't start with"])
+      params.set(URL_PARAMS.notStartsWith, filters.textNonMatch['Does not start with'])
     }
     if (
-      filters.textNonMatch["Doesn't end with"] &&
-      filters.textNonMatch["Doesn't end with"] !== emptyFilterState.textNonMatch["Doesn't end with"]
+      filters.textNonMatch['Does not end with'] &&
+      filters.textNonMatch['Does not end with'] !== emptyFilterState.textNonMatch['Does not end with']
     ) {
-      params.set(URL_PARAMS.notEndsWith, filters.textNonMatch["Doesn't end with"])
+      params.set(URL_PARAMS.notEndsWith, filters.textNonMatch['Does not end with'])
     }
   }
 
@@ -450,9 +450,9 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
   const notEndsWith = searchParams.get(URL_PARAMS.notEndsWith)
   if (notContains || notStartsWith || notEndsWith) {
     result.textNonMatch = {}
-    if (notContains) result.textNonMatch["Doesn't contain"] = notContains
-    if (notStartsWith) result.textNonMatch["Doesn't start with"] = notStartsWith
-    if (notEndsWith) result.textNonMatch["Doesn't end with"] = notEndsWith
+    if (notContains) result.textNonMatch['Does not contain'] = notContains
+    if (notStartsWith) result.textNonMatch['Does not start with'] = notStartsWith
+    if (notEndsWith) result.textNonMatch['Does not end with'] = notEndsWith
   }
 
   // Activity type URL param is disabled for now - uncomment to re-enable

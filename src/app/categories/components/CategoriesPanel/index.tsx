@@ -78,7 +78,7 @@ const CategoriesPanel: React.FC = () => {
       </div>
 
       {/* Categories grid */}
-      <div className='px-md lg:px-lg'>
+      <div className='px-md lg:px-lg pb-lg'>
         {isLoading ? (
           <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4'>
             {Array.from({ length: 12 }).map((_, i) => (

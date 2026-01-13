@@ -6,7 +6,7 @@ import { DomainListingType, RegistrationStatus } from '@/types/domains'
 import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import useETHPrice from '@/hooks/useETHPrice'
-import { usePremiumCountdown } from '@/hooks/usePremiumCountdown'
+import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { PREMIUM, REGISTERABLE_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface PriceProps {
@@ -20,7 +20,9 @@ interface PriceProps {
 
 const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationStatus, columnCount, index }) => {
   const { ethPrice } = useETHPrice()
-  const { premiumPrice, timeLeftString: premiumTimeLeft } = usePremiumCountdown(expiry_date)
+  // Only use 'premium' type for premium names, null for others (no grace period in table Price component)
+  const countdownType = registrationStatus === PREMIUM ? 'premium' : null
+  const { premiumPrice, timeLeftString } = useExpiryCountdown(expiry_date, countdownType)
   const regPrice = calculateRegistrationPrice(name, ethPrice)
 
   if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
@@ -56,8 +58,8 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
             )}
           </p>
         </div>
-        {registrationStatus === PREMIUM && premiumTimeLeft && (
-          <p className='text-md text-premium/70 font-medium'>Premium ({premiumTimeLeft})</p>
+        {registrationStatus === PREMIUM && timeLeftString && (
+          <p className='text-md text-premium/70 font-medium'>Premium ({timeLeftString})</p>
         )}
         {registrationStatus === UNREGISTERED && <p className='text-md text-available font-medium'>Available</p>}
       </div>

@@ -13,7 +13,6 @@ import {
   PREMIUM,
   GRACE_PERIOD,
   UNREGISTERED,
-  REGISTERED,
   REGISTERED_STATUSES,
   REGISTERABLE_STATUSES,
 } from '@/constants/domains/registrationStatuses'
@@ -33,8 +32,9 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
-import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
-import { fetchAccount } from 'ethereum-identity-kit'
+import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
+import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
+import { useRouter } from 'next/navigation'
 
 type Row = {
   label: string
@@ -59,7 +59,13 @@ const NameDetails: React.FC<NameDetailsProps> = ({
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
   const [isOwnerAddressCopied, setIsOwnerAddressCopied] = useState(false)
+  const router = useRouter()
   const { ethPrice } = useETHPrice()
+
+  // Determine countdown type based on registration status
+  const countdownType =
+    registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
+  const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
 
   const rows: Row[] = [
     {
@@ -107,15 +113,17 @@ const NameDetails: React.FC<NameDetailsProps> = ({
       label: 'Status',
       value: (
         <p
-          className={`text-xl font-semibold ${registrationStatus === GRACE_PERIOD ? 'text-grace' : registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === REGISTERED ? 'text-available' : 'text-foreground/70'}`}
+          className={`cursor-pointer text-xl font-semibold hover:opacity-80 ${registrationStatus === GRACE_PERIOD ? 'text-grace' : registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground/70 cursor-text hover:opacity-100'}`}
+          onClick={() => {
+            if (registrationStatus === PREMIUM || registrationStatus === UNREGISTERED) {
+              router.push(`/marketplace?tab=${registrationStatus.toLowerCase()}&sort=expiry_date_asc`)
+            }
+          }}
         >
-          {registrationStatus}{' '}
-          {nameDetails?.expiry_date &&
-            (registrationStatus === GRACE_PERIOD
-              ? `(${formatTimeLeft(nameDetails?.expiry_date, 'grace')})`
-              : registrationStatus === PREMIUM
-                ? `(${formatTimeLeft(nameDetails?.expiry_date, 'premium')})`
-                : '')}
+          {registrationStatus}
+          {timeLeftString && (registrationStatus === GRACE_PERIOD || registrationStatus === PREMIUM) && (
+            <> ({timeLeftString})</>
+          )}
         </p>
       ),
       canCopy: false,
@@ -274,7 +282,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
                   </div>
                   {isUserRow && nameDetails?.owner && (
                     <div className='text-neutral flex max-w-full flex-row items-center gap-1 truncate'>
-                      <p className='max-w-full truncate'>{nameDetails?.owner}</p>
+                      <p className='max-w-full truncate'>{truncateAddress(nameDetails?.owner)}</p>
                       <Image
                         src={isOwnerAddressCopied ? CheckIcon : CopyIcon}
                         alt='Copy'

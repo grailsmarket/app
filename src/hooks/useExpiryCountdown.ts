@@ -3,49 +3,52 @@ import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { DAY_IN_SECONDS, ONE_HOUR } from '@/constants/time'
 
 const PREMIUM_PERIOD_DAYS = 111
+const GRACE_PERIOD_DAYS = 90
 
-interface UsePremiumCountdownResult {
+type CountdownType = 'premium' | 'grace' | null
+
+interface UseExpiryCountdownResult {
   premiumPrice: number
   timeLeftString: string | null
   isUnderOneHour: boolean
-  isPremium: boolean
+  isActive: boolean
 }
 
-export const usePremiumCountdown = (expiryDate: string | null): UsePremiumCountdownResult => {
+const defaultResult = {
+  premiumPrice: 0,
+  timeLeftString: null,
+  isUnderOneHour: false,
+  isActive: false,
+}
+
+export const useExpiryCountdown = (expiryDate: string | null, type: CountdownType): UseExpiryCountdownResult => {
   const [tick, setTick] = useState(0)
 
   const calculateValues = useCallback(() => {
-    if (!expiryDate) {
-      return {
-        premiumPrice: 0,
-        timeLeftString: null,
-        isUnderOneHour: false,
-        isPremium: false,
-        remainingSeconds: 0,
-      }
+    // If no type or no expiry date, return defaults
+    if (!type || !expiryDate) {
+      return { ...defaultResult, remainingSeconds: 0 }
     }
 
+    const periodDays = type === 'premium' ? PREMIUM_PERIOD_DAYS : GRACE_PERIOD_DAYS
     const expiryTime = new Date(expiryDate).getTime()
-    const premiumEndTime = expiryTime + PREMIUM_PERIOD_DAYS * DAY_IN_SECONDS * 1000
+    const endTime = expiryTime + periodDays * DAY_IN_SECONDS * 1000
     const now = Date.now()
-    const remainingMs = premiumEndTime - now
+    const remainingMs = endTime - now
 
     if (remainingMs <= 0) {
-      return {
-        premiumPrice: 0,
-        timeLeftString: null,
-        isUnderOneHour: false,
-        isPremium: false,
-        remainingSeconds: 0,
-      }
+      return { ...defaultResult, remainingSeconds: 0 }
     }
 
     const remainingSeconds = Math.floor(remainingMs / 1000)
     const isUnderOneHour = remainingSeconds < ONE_HOUR
 
-    // Calculate premium price
-    const premiumPriceOracle = new PremiumPriceOracle(expiryTime / 1000)
-    const premiumPrice = premiumPriceOracle.getOptimalPrecisionPremiumAmount(now / 1000)
+    // Only calculate premium price for premium type
+    let premiumPrice = 0
+    if (type === 'premium') {
+      const premiumPriceOracle = new PremiumPriceOracle(expiryTime / 1000)
+      premiumPrice = premiumPriceOracle.getOptimalPrecisionPremiumAmount(now / 1000)
+    }
 
     // Format time string
     let timeLeftString: string
@@ -67,16 +70,16 @@ export const usePremiumCountdown = (expiryDate: string | null): UsePremiumCountd
       premiumPrice,
       timeLeftString,
       isUnderOneHour,
-      isPremium: true,
+      isActive: true,
       remainingSeconds,
     }
-  }, [expiryDate])
+  }, [expiryDate, type])
 
   const values = calculateValues()
 
   useEffect(() => {
-    // Only set up interval if under one hour and is premium
-    if (!values.isPremium || !values.isUnderOneHour) {
+    // Only set up interval if type is set, is active, and under one hour
+    if (!type || !values.isActive || !values.isUnderOneHour) {
       return
     }
 
@@ -85,7 +88,7 @@ export const usePremiumCountdown = (expiryDate: string | null): UsePremiumCountd
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [values.isPremium, values.isUnderOneHour])
+  }, [type, values.isActive, values.isUnderOneHour])
 
   // Re-calculate on each tick
   const currentValues = tick >= 0 ? calculateValues() : values
@@ -94,6 +97,6 @@ export const usePremiumCountdown = (expiryDate: string | null): UsePremiumCountd
     premiumPrice: currentValues.premiumPrice,
     timeLeftString: currentValues.timeLeftString,
     isUnderOneHour: currentValues.isUnderOneHour,
-    isPremium: currentValues.isPremium,
+    isActive: currentValues.isActive,
   }
 }

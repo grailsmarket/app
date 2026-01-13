@@ -100,55 +100,55 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
           try {
             const result = await (isWatchlist && isAuthenticated
               ? getWatchlist({
-                limit: SELECT_ALL_BATCH_SIZE,
-                pageParam: page,
-                filters,
-                searchTerm,
-              })
+                  limit: SELECT_ALL_BATCH_SIZE,
+                  pageParam: page,
+                  filters,
+                  searchTerm,
+                })
               : fetchDomains({
-                limit: SELECT_ALL_BATCH_SIZE,
-                pageParam: page,
-                filters,
-                searchTerm,
-                ownerAddress,
-                category,
-                isAuthenticated,
-                signal,
-              }))
+                  limit: SELECT_ALL_BATCH_SIZE,
+                  pageParam: page,
+                  filters,
+                  searchTerm,
+                  ownerAddress,
+                  category,
+                  isAuthenticated,
+                  signal,
+                }))
 
             const domains = (
               isWatchlist && isAuthenticated
-                // @ts-expect-error the types do exist
-                ? result.watchlist.map((domain) => ({
-                  id: domain.ensNameId,
-                  watchlist_id: domain.id,
-                  name: domain.ensName,
-                  token_id: domain.nameData.tokenId,
-                  expiry_date: domain.nameData.expiryDate,
-                  registration_date: null,
-                  owner: domain.nameData.ownerAddress,
-                  character_count: domain.ensName.length,
-                  metadata: {},
-                  has_numbers: nameHasNumbers(domain.ensName),
-                  has_emoji: nameHasEmoji(domain.ensName),
-                  listings: domain.nameData.activeListing ? [domain.nameData.activeListing] : [],
-                  clubs: [],
-                  listing_created_at: null,
-                  highest_offer_currency: null,
-                  highest_offer_id: null,
-                  highest_offer_wei: null,
-                  offer: null,
-                  last_sale_price: null,
-                  last_sale_currency: null,
-                  last_sale_date: null,
-                  last_sale_price_usd: null,
-                  view_count: 0,
-                  downvotes: 0,
-                  upvotes: 0,
-                  watchers_count: 0,
-                }))
-                // @ts-expect-error the types do exist
-                : result.domains
+                ? // @ts-expect-error the types do exist
+                  result.watchlist.map((domain) => ({
+                    id: domain.ensNameId,
+                    watchlist_id: domain.id,
+                    name: domain.ensName,
+                    token_id: domain.nameData.tokenId,
+                    expiry_date: domain.nameData.expiryDate,
+                    registration_date: null,
+                    owner: domain.nameData.ownerAddress,
+                    character_count: domain.ensName.length,
+                    metadata: {},
+                    has_numbers: nameHasNumbers(domain.ensName),
+                    has_emoji: nameHasEmoji(domain.ensName),
+                    listings: domain.nameData.activeListing ? [domain.nameData.activeListing] : [],
+                    clubs: [],
+                    listing_created_at: null,
+                    highest_offer_currency: null,
+                    highest_offer_id: null,
+                    highest_offer_wei: null,
+                    offer: null,
+                    last_sale_price: null,
+                    last_sale_currency: null,
+                    last_sale_date: null,
+                    last_sale_price_usd: null,
+                    view_count: 0,
+                    downvotes: 0,
+                    upvotes: 0,
+                    watchers_count: 0,
+                  }))
+                : // @ts-expect-error the types do exist
+                  result.domains
             ) as MarketplaceDomainType[]
 
             // Add new domains (avoid duplicates by checking name)

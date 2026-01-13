@@ -7,7 +7,9 @@ import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
-import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
+import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
+import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
+import Image from 'next/image'
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -17,6 +19,10 @@ interface NameProps {
 }
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
+  // Only use 'grace' type for grace period names, null for others
+  const countdownType = registrationStatus === GRACE_PERIOD ? 'grace' : null
+  const { timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType)
+
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
       <div className='flex h-[36px] w-full max-w-full flex-row items-center'>
@@ -40,12 +46,21 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
               {beautifyName(domain.name)}
             </p>
             {registrationStatus === GRACE_PERIOD ? (
-              <p className='text-md text-grace/75 font-medium'>
-                Grace {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
-              </p>
+              <p className='text-md text-grace/75 font-medium'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
             ) : (
-              <p className='text-md text-neutral truncate font-semibold'>
-                {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
+              <p className='text-md text-neutral flex max-w-full flex-row items-center gap-2 truncate font-semibold'>
+                {domain.clubs?.map((club) => (
+                  <div key={club} className='flex min-w-fit flex-row items-center gap-1'>
+                    <Image
+                      src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                      alt={club}
+                      width={16}
+                      height={16}
+                      className='rounded-full'
+                    />
+                    <p>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+                  </div>
+                ))}
               </p>
             )}
           </div>

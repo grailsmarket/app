@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Address } from 'viem'
@@ -7,6 +7,8 @@ import { CategoryType } from '@/types/domains'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { CATEGORY_IMAGES } from '../[category]/components/categoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
+import { selectCategoriesPageFilters } from '@/state/reducers/filters/categoriesPageFilters'
+import { useAppSelector } from '@/state/hooks'
 
 interface CategoryRowProps {
   category: CategoryType
@@ -40,6 +42,99 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
   //     return json.data.pagination.total || 0
   //   },
   // })
+
+  const categoriesFilters = useAppSelector(selectCategoriesPageFilters)
+  const categorySort = categoriesFilters.sort
+
+  const salesTimeWindow = useMemo(() => {
+    switch (categorySort) {
+      case 'total_sales_volume_wei':
+        return {
+          label: '',
+          value: category.total_sales_count,
+        }
+      case 'sales_volume_wei_1y':
+        return {
+          label: '1y',
+          value: category.sales_count_1y,
+        }
+      case 'sales_volume_wei_1mo':
+        return {
+          label: '1mo',
+          value: category.sales_count_1mo,
+        }
+      case 'sales_volume_wei_1w':
+        return {
+          label: '1w',
+          value: category.sales_count_1w,
+        }
+      case 'total_sales_count':
+        return {
+          label: '',
+          value: category.total_sales_count,
+        }
+      case 'sales_count_1y':
+        return {
+          label: '1y',
+          value: category.sales_count_1y,
+        }
+      case 'sales_count_1mo':
+        return {
+          label: '1mo',
+          value: category.sales_count_1mo,
+        }
+      case 'sales_count_1w':
+        return {
+          label: '1w',
+          value: category.sales_count_1w,
+        }
+    }
+  }, [categorySort, category])
+
+  const volumeTimeWindow = useMemo(() => {
+    switch (categorySort) {
+      case 'total_sales_volume_wei':
+        return {
+          label: '',
+          value: category.total_sales_volume_wei,
+        }
+      case 'sales_volume_wei_1y':
+        return {
+          label: '1y',
+          value: category.sales_volume_wei_1y,
+        }
+      case 'sales_volume_wei_1mo':
+        return {
+          label: '1mo',
+          value: category.sales_volume_wei_1mo,
+        }
+      case 'sales_volume_wei_1w':
+        return {
+          label: '1w',
+          value: category.sales_volume_wei_1w,
+        }
+      case 'total_sales_count':
+        return {
+          label: '',
+          value: category.total_sales_volume_wei,
+        }
+      case 'sales_count_1y':
+        return {
+          label: '1y',
+          value: category.sales_volume_wei_1y,
+        }
+      case 'sales_count_1mo':
+        return {
+          label: '1mo',
+          value: category.sales_volume_wei_1mo,
+        }
+      case 'sales_count_1w':
+        return {
+          label: '1w',
+          value: category.sales_volume_wei_1w,
+        }
+    }
+  }, [categorySort, category])
 
   const categoryName = CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]
   const categoryImage = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES]
@@ -77,13 +172,25 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         <p className='text-xl font-semibold'>{localizeNumber(availableNames || 0)}</p>
       </div> */}
       <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Sales</p>
-        <p className='text-xl font-semibold'>{localizeNumber(category.total_sales_count)}</p>
+        <p className='font-sedan-sc text-xl md:text-2xl'>
+          Sales{' '}
+          <span className='text-lg font-medium md:text-xl'>
+            {salesTimeWindow?.label && salesTimeWindow.label.length > 0 ? `(${salesTimeWindow.label})` : ''}
+          </span>
+        </p>
+        <p className='text-xl font-semibold'>
+          {localizeNumber(salesTimeWindow ? salesTimeWindow.value : category.total_sales_count)}
+        </p>
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Volume</p>
+        <p className='font-sedan-sc text-xl md:text-2xl'>
+          Volume{' '}
+          <span className='text-lg font-medium md:text-xl'>
+            {volumeTimeWindow?.label && volumeTimeWindow.label.length > 0 ? `(${volumeTimeWindow.label})` : ''}
+          </span>
+        </p>
         <Price
-          price={category.total_sales_volume_wei}
+          price={volumeTimeWindow ? volumeTimeWindow.value : category.total_sales_volume_wei}
           currencyAddress={category.floor_price_currency as Address}
           iconSize='22px'
           fontSize='text-xl font-semibold'

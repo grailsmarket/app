@@ -18,7 +18,6 @@ import NameImage from '@/components/ui/nameImage'
 import Price from '@/components/ui/price'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { formatTimeLeft } from '@/utils/time/formatTimeLeft'
 import { useFilterContext } from '@/context/filters'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
@@ -37,7 +36,7 @@ import { normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
-import { usePremiumCountdown } from '@/hooks/usePremiumCountdown'
+import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Watchlist from '@/components/ui/watchlist'
 import User from '@/components/ui/user'
@@ -88,7 +87,10 @@ const Card: React.FC<CardProps> = ({
     return index >= start && index <= end
   })()
 
-  const { premiumPrice, timeLeftString: premiumTimeLeft } = usePremiumCountdown(domain.expiry_date)
+  // Determine countdown type based on registration status
+  const countdownType =
+    registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
+  const { premiumPrice, timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType)
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
   const selectDomain = (d: MarketplaceDomainType) => {
@@ -222,9 +224,7 @@ const Card: React.FC<CardProps> = ({
       >
         <div className='flex w-full flex-col gap-1'>
           {registrationStatus === GRACE_PERIOD ? (
-            <p className='text-grace truncate font-semibold'>
-              Grace {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
-            </p>
+            <p className='text-grace truncate font-semibold'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
           ) : registrationStatus === REGISTERED ? (
             domainListing?.price ? (
               <div className='flex items-center gap-1'>
@@ -269,9 +269,9 @@ const Card: React.FC<CardProps> = ({
               )}
             </div>
           )}
-          {registrationStatus === PREMIUM && premiumTimeLeft && (
+          {registrationStatus === PREMIUM && timeLeftString && (
             <div className='text-md text-premium/70 flex items-center gap-px font-medium'>
-              Premium ({premiumTimeLeft})
+              Premium ({timeLeftString})
             </div>
           )}
           {registrationStatus === UNREGISTERED && (

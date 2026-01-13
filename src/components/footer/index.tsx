@@ -5,6 +5,7 @@ import Pages from './components/pages'
 import Sources from './components/sources'
 import Link from 'next/link'
 import byEthId from 'public/by-ethid.svg'
+import poweredByEIK from 'public/powered-by-eik.svg'
 
 const Footer = () => {
   return (
@@ -18,15 +19,26 @@ const Footer = () => {
             alt='Ethereum Follow Protocol'
             className='w-[120px] sm:w-[180px]'
           />
-          <Link href='https://ethid.org/' target='_blank' className='transition-opacity hover:opacity-80'>
-            <Image
-              src={byEthId}
-              alt='Ethereum Identity Foundation'
-              width={100}
-              height={100}
-              className='h-auto w-20 sm:w-24'
-            />
-          </Link>
+          <div className='flex items-center gap-4'>
+            <Link href='https://ethid.org/' target='_blank' className='transition-opacity hover:opacity-80'>
+              <Image
+                src={byEthId}
+                alt='Ethereum Identity Foundation'
+                width={100}
+                height={100}
+                className='h-auto w-20 sm:w-24'
+              />
+            </Link>
+            <Link href='https://ethidentitykit.com' target='_blank' className='transition-opacity hover:opacity-80'>
+              <Image
+                src={poweredByEIK}
+                alt='Powered by Ethereum Identity Kit'
+                width={36}
+                height={36}
+                className='h-auto w-9 sm:w-10'
+              />
+            </Link>
+          </div>
         </section>
         <section className='flex align-middle'>
           <div className='flex flex-col gap-4 sm:gap-6'>

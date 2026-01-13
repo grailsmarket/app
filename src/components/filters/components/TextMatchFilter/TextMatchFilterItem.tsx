@@ -32,13 +32,13 @@ const TextMatchFilterItem: React.FC<TextMatchFilterItemProps> = ({ label, placeh
 
   return (
     <div className='flex flex-row items-center justify-between'>
-      <label className='w-24 shrink-0 text-lg font-medium'>{label}</label>
+      <label className='w-3/5 shrink-0 text-lg font-medium'>{label}</label>
       <input
         type='text'
         placeholder={placeholder}
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}
-        className='border-primary/20 p-md w-1/2 rounded-sm border-2 text-lg outline-none'
+        className='border-primary/20 p-md w-2/5 rounded-sm border-2 text-lg outline-none'
       />
     </div>
   )

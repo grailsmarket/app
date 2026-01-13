@@ -101,29 +101,41 @@ const Domains: React.FC<DomainsProps> = ({
   if (!isClient) return null
 
   return (
-    <div className='flex w-full flex-1 flex-col'>
-      {showHeaders && viewTypeToUse !== 'grid' && (
+    <div className={cn('flex w-full flex-1 flex-col', viewTypeToUse === 'grid' ? 'gap-4' : '')}>
+      {viewTypeToUse === 'grid' ? (
         <div
           className={cn(
-            'px-md pt-sm bg-background transition-top border-tertiary lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
-            isNavbarVisible ? 'top-49 sm:top-40 md:top-48' : 'top-35 sm:top-26 md:top-30'
+            'bg-tertiary transition-top sticky z-40 h-0.5 w-full duration-300',
+            isNavbarVisible ? 'top-50 sm:top-40 md:top-50' : 'top-36 sm:top-26 md:top-32'
           )}
-        >
-          {displayedColumns.map((header, index) => {
-            const item = ALL_MARKETPLACE_COLUMNS[header]
-            return (
-              <div key={index} className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
-                <p className='text-neutral w-fit text-left text-sm font-medium'>
-                  {item.label === 'Actions'
-                    ? ''
-                    : showPreviousOwner && item.label === 'Owner'
-                      ? 'Previous Owner'
-                      : item.label}
-                </p>
-              </div>
-            )
-          })}
-        </div>
+        />
+      ) : (
+        showHeaders && (
+          <div
+            className={cn(
+              'px-md pt-sm bg-background transition-top border-tertiary lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
+              isNavbarVisible ? 'top-49 sm:top-40 md:top-48' : 'top-35 sm:top-26 md:top-30'
+            )}
+          >
+            {displayedColumns.map((header, index) => {
+              const item = ALL_MARKETPLACE_COLUMNS[header]
+              return (
+                <div
+                  key={index}
+                  className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}
+                >
+                  <p className='text-neutral w-fit text-left text-sm font-medium'>
+                    {item.label === 'Actions'
+                      ? ''
+                      : showPreviousOwner && item.label === 'Owner'
+                        ? 'Previous Owner'
+                        : item.label}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )
       )}
       <div
         className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg px-0' : 'px-0')}

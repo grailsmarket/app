@@ -162,37 +162,37 @@ const Actions: React.FC<ActionsProps> = ({
       }
 
       if (isMyDomain) {
-        if (registrationStatus !== REGISTERED) return null
+        if (registrationStatus === REGISTERED) {
+          if (domainListing?.price) {
+            return (
+              <div className='flex flex-row justify-end gap-1 opacity-100'>
+                <button
+                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+                  onClick={(e) => clickHandler(e, openMakeListingModal)}
+                >
+                  Edit
+                </button>
+                <p
+                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+                  onClick={(e) => clickHandler(e, openCancelListingModal)}
+                >
+                  Cancel
+                </p>
+              </div>
+            )
+          }
 
-        if (domainListing?.price) {
           return (
-            <div className='flex flex-row justify-end gap-1 opacity-100'>
-              <button
-                className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+            <div className='flex flex-row justify-end opacity-100'>
+              <p
+                className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
                 onClick={(e) => clickHandler(e, openMakeListingModal)}
               >
-                Edit
-              </button>
-              <p
-                className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
-                onClick={(e) => clickHandler(e, openCancelListingModal)}
-              >
-                Cancel
+                List
               </p>
             </div>
           )
         }
-
-        return (
-          <div className='flex flex-row justify-end opacity-100'>
-            <p
-              className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
-              onClick={(e) => clickHandler(e, openMakeListingModal)}
-            >
-              List
-            </p>
-          </div>
-        )
       }
     }
   }

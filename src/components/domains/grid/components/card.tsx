@@ -333,7 +333,7 @@ const Card: React.FC<CardProps> = ({
           )}
         </div>
         <div className='flex flex-col gap-2'>
-          {domain.owner && filterType !== 'profile' && (
+          {domain.owner && (filterType !== 'profile' || profileTab.value === 'watchlist') && (
             <User
               address={domain.owner as Address}
               className='max-w-full'

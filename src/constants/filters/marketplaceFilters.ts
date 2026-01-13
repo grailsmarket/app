@@ -118,23 +118,23 @@ export const TEXT_MATCH_FILTER_PARAM_OPTIONS: Record<TextMatchFilterLabel, strin
 }
 
 // Text Non-Match filter constants
-export const TEXT_NON_MATCH_FILTER_LABELS = ["Doesn't contain", "Doesn't start with", "Doesn't end with"] as const
+export const TEXT_NON_MATCH_FILTER_LABELS = ['Does not contain', 'Does not start with', 'Does not end with'] as const
 
 export type TextNonMatchFilterLabel = (typeof TEXT_NON_MATCH_FILTER_LABELS)[number]
 
 export type TextNonMatchFiltersState = Record<TextNonMatchFilterLabel, string>
 
 export const DEFAULT_TEXT_NON_MATCH_FILTERS_STATE: TextNonMatchFiltersState = {
-  "Doesn't contain": '',
-  "Doesn't start with": '',
-  "Doesn't end with": '',
+  'Does not contain': '',
+  'Does not start with': '',
+  'Does not end with': '',
 }
 
 // Map text non-match filter labels to API query params
 export const TEXT_NON_MATCH_FILTER_PARAM_OPTIONS: Record<TextNonMatchFilterLabel, string> = {
-  "Doesn't contain": 'doesNotContain',
-  "Doesn't start with": 'doesNotStartWith',
-  "Doesn't end with": 'doesNotEndWith',
+  'Does not contain': 'doesNotContain',
+  'Does not start with': 'doesNotStartWith',
+  'Does not end with': 'doesNotEndWith',
 }
 
 export const MARKETPLACE_STATUS_FILTER_LABELS = ['Registered', 'Grace', 'Premium', 'Available'] as const

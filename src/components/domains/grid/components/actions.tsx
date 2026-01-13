@@ -28,6 +28,7 @@ import { openRegistrationModal } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import ActionsDropdown from '@/components/domains/actionsDropdown'
+import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -79,6 +80,11 @@ const Actions: React.FC<ActionsProps> = ({
     }
   }
 
+  const openExtendModal = () => {
+    dispatch(setBulkRenewalModalDomains([domain]))
+    dispatch(setBulkRenewalModalOpen(true))
+  }
+
   const openCancelListingModal = () => {
     dispatch(
       setCancelListingModalListings([
@@ -109,7 +115,6 @@ const Actions: React.FC<ActionsProps> = ({
     handler()
   }
 
-
   if (filterType === 'profile' || filterType === 'category') {
     if (
       profileTab.value === 'domains' ||
@@ -132,7 +137,7 @@ const Actions: React.FC<ActionsProps> = ({
                     grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
                   }
                 }}
-                className='flex flex-row items-center gap-1'
+                className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border-2 px-2.5! py-[5px]!'
               >
                 Selected
                 <Check className='h-3 w-3' />
@@ -147,6 +152,7 @@ const Actions: React.FC<ActionsProps> = ({
                     grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
                   }
                 }}
+                className='border-tertiary h-fit! w-fit! border-2 px-2.5! py-[5px]!'
               >
                 Select
               </SecondaryButton>
@@ -160,15 +166,15 @@ const Actions: React.FC<ActionsProps> = ({
 
         if (domainListing?.price) {
           return (
-            <div className='py-md flex flex-row justify-end gap-4 opacity-100'>
-              <p
-                className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'
+            <div className='flex flex-row justify-end gap-1 opacity-100'>
+              <button
+                className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
                 onClick={(e) => clickHandler(e, openMakeListingModal)}
               >
                 Edit
-              </p>
+              </button>
               <p
-                className='text-foreground/70 hover:text-foreground cursor-pointer text-lg font-bold transition-colors'
+                className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
                 onClick={(e) => clickHandler(e, openCancelListingModal)}
               >
                 Cancel
@@ -178,9 +184,9 @@ const Actions: React.FC<ActionsProps> = ({
         }
 
         return (
-          <div className='py-md flex flex-row justify-end opacity-100'>
+          <div className='flex flex-row justify-end opacity-100'>
             <p
-              className='text-primary/80 hover:text-primary cursor-pointer text-lg font-bold transition-colors'
+              className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
               onClick={(e) => clickHandler(e, openMakeListingModal)}
             >
               List
@@ -196,26 +202,35 @@ const Actions: React.FC<ActionsProps> = ({
       className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
     >
       <div>
-        {registrationStatus !== GRACE_PERIOD &&
-          (REGISTERABLE_STATUSES.includes(registrationStatus) ? (
-            <button onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}>
-              <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-                Register
-              </p>
-            </button>
-          ) : domainListing?.price ? (
-            <button onClick={(e) => clickHandler(e, openBuyNowModal)}>
-              <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-                Buy Now
-              </p>
-            </button>
-          ) : (
-            <button onClick={(e) => clickHandler(e, openMakeOfferModal)}>
-              <p className='text-primary/80 hover:text-primary cursor-pointer py-1 text-lg font-bold transition-colors'>
-                Offer
-              </p>
-            </button>
-          ))}
+        {registrationStatus === GRACE_PERIOD ? (
+          <button
+            onClick={(e) => clickHandler(e, openExtendModal)}
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+          >
+            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
+          </button>
+        ) : REGISTERABLE_STATUSES.includes(registrationStatus) ? (
+          <button
+            onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+          >
+            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Register</p>
+          </button>
+        ) : domainListing?.price ? (
+          <button
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+            onClick={(e) => clickHandler(e, openBuyNowModal)}
+          >
+            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Buy Now</p>
+          </button>
+        ) : (
+          <button
+            onClick={(e) => clickHandler(e, openMakeOfferModal)}
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+          >
+            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Offer</p>
+          </button>
+        )}
       </div>
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         {canAddToCart && (

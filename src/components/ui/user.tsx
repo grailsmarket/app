@@ -33,7 +33,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
     },
   })
 
-  if (profileIsLoading) return <LoadingCell height='32px' width='80%' />
+  if (profileIsLoading) return <LoadingCell height='28px' width='80%' />
 
   return (
     <ProfileTooltip
@@ -53,7 +53,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
         <Link
           href={`/profile/${address}`}
           className={cn(
-            'bg-tertiary border-primary relative flex h-[37px]! w-fit flex-row items-center gap-2 rounded-sm border px-1.5 py-1 transition hover:opacity-70 sm:h-10',
+            'bg-tertiary relative flex h-[28px]! w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70 sm:h-10',
             className
           )}
         >
@@ -72,10 +72,10 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
             name={profile?.ens?.name}
             src={profile?.ens?.avatar}
             fallback={DEFAULT_FALLBACK_AVATAR}
-            style={{ width: '30px', height: '30px', zIndex: 10 }}
+            style={{ width: '18px', height: '18px', zIndex: 10 }}
           />
-          <div className='relative' style={{ maxWidth: 'calc(100% - 38px)' }}>
-            <p className='z-10 truncate text-xl font-semibold'>
+          <div className='relative' style={{ maxWidth: 'calc(100% - 24px)' }}>
+            <p className='z-10 truncate text-[15px] font-semibold'>
               {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
             </p>
           </div>

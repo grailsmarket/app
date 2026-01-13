@@ -33,6 +33,7 @@ import { useShiftKeyListener } from '@/hooks/useShiftKey'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { useQueryClient } from '@tanstack/react-query'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
+import Label from './label'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -43,7 +44,13 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const [isRemovingFromWatchlist, setIsRemovingFromWatchlist] = useState(false)
 
   const dispatch = useAppDispatch()
-  const { isSelecting, domains: selectedDomains, previousListings, selectAll, watchlistIds: selectedWatchlistIds } = useAppSelector(selectBulkSelect)
+  const {
+    isSelecting,
+    domains: selectedDomains,
+    previousListings,
+    selectAll,
+    watchlistIds: selectedWatchlistIds,
+  } = useAppSelector(selectBulkSelect)
 
   // Listen for shift key events and update Redux state
   useShiftKeyListener()
@@ -77,12 +84,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        domain.listings?.some(
-          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-        )
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          domain.listings?.some(
+            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+          )
+      )
     : []
 
   const handleBulkSelect = () => {
@@ -108,16 +115,24 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const handleRemoveFromWatchlistAction = async () => {
     setIsRemovingFromWatchlist(true)
 
-    const results = await Promise.all(selectedWatchlistIds.map(async (id) => {
-      const result = await removeFromWatchlist(id)
-      if (result.success) {
-        dispatch(removeBulkSelectWatchlistId(id))
-      }
-      return result
-    }))
+    const results = await Promise.all(
+      selectedWatchlistIds.map(async (id) => {
+        const result = await removeFromWatchlist(id)
+        if (result.success) {
+          dispatch(removeBulkSelectWatchlistId(id))
+        }
+        return result
+      })
+    )
 
     if (results.some((result) => !result.success)) {
-      console.error('Failed to remove from watchlist' + results.filter((result) => !result.success).map((result) => result.watchlistId).join(', '))
+      console.error(
+        'Failed to remove from watchlist' +
+          results
+            .filter((result) => !result.success)
+            .map((result) => result.watchlistId)
+            .join(', ')
+      )
     } else {
       dispatch(clearBulkSelect())
     }
@@ -204,7 +219,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   // For profile tabs
   const isProfileTab = pageType === 'profile'
   const isCategoryTab = pageType === 'category'
-  const isActionButtonsVisible = (isCategoryTab ? selectedTab?.value === 'names' : selectedTab?.value === 'watchlist') && !cartIsEmpty
+  const isActionButtonsVisible =
+    (isCategoryTab ? selectedTab?.value === 'names' : selectedTab?.value === 'watchlist') && !cartIsEmpty
 
   // Define which tabs support bulk select for each page type
   const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'watchlist']
@@ -214,7 +230,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     ? profileBulkSelectTabs.includes(selectedTab?.value || '')
     : categoryBulkSelectTabs.includes(selectedTab?.value || '')
 
-  const showOwnedActionButtons = isCategoryTab ? selectedTab?.value === 'names' : isMyProfile ? selectedTab?.value === 'domains' || selectedTab?.value === 'listings' || selectedTab?.value === 'names' : selectedTab?.value === 'watchlist'
+  const showOwnedActionButtons = isCategoryTab
+    ? selectedTab?.value === 'names'
+    : isMyProfile
+      ? selectedTab?.value === 'domains' || selectedTab?.value === 'listings' || selectedTab?.value === 'names'
+      : selectedTab?.value === 'watchlist'
   const showWatchlistButton = isProfileTab && isMyProfile && selectedTab?.value === 'watchlist'
 
   const canListDomains =
@@ -241,7 +261,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   return (
     <div
       className={cn(
-        'bulk-select-container fixed flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 sm:right-2 sm:bottom-2 sm:flex-row-reverse sm:gap-2',
+        'bulk-select-container fixed flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all sm:right-2 sm:bottom-2 sm:gap-1.5',
         isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
       )}
     >
@@ -274,12 +294,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           {/* Normal selecting state - not loading */}
           {!isSelectAllLoading && (
             <>
+              <div className='bg-background shadow-bulk rounded-md p-2'>
+                <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
+              </div>
+
               <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
                 <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
                   {selectedDomains.length}
                 </SecondaryButton>
-                {selectAllContext?.canSelectAll && pageType === 'profile' && (
-                  <SecondaryButton onClick={handleSelectAll}>Select All</SecondaryButton>
+                {pageType === 'profile' && (
+                  <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
+                    Select All
+                  </SecondaryButton>
                 )}
                 <SecondaryButton
                   onClick={handleCancelBulkSelect}
@@ -291,51 +317,79 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
               <div className='shadow-bulk bg-background flex max-w-full flex-row overflow-x-scroll rounded-md'>
                 <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
-                  {showWatchlistButton &&
-                    <PrimaryButton className='flex items-center gap-2' onClick={handleRemoveFromWatchlistAction} disabled={selectedWatchlistIds.length === 0}>
-                      {isRemovingFromWatchlist ? <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' /> : null}
-                      <p className='text-nowrap'>({selectedWatchlistIds.length}) Remove from Watchlist</p>
-                    </PrimaryButton>}
+                  {showWatchlistButton && (
+                    <PrimaryButton
+                      className='flex items-center gap-2'
+                      onClick={handleRemoveFromWatchlistAction}
+                      disabled={selectedWatchlistIds.length === 0}
+                    >
+                      {isRemovingFromWatchlist ? (
+                        <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' />
+                      ) : null}
+                      <p className='text-nowrap'>
+                        <p>Remove from Watchlist</p>
+                        <Label label={selectedWatchlistIds.length} className='ml-1' />
+                      </p>
+                    </PrimaryButton>
+                  )}
                   <PrimaryButton
                     onClick={handleExtendAction}
                     disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
+                    className='flex items-center gap-1.5'
                   >
-                    <p className='text-nowrap'>({namesExtend.length}) Extend</p>
+                    <p>Extend</p>
+                    <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
-                  {showOwnedActionButtons && <>
-                    <PrimaryButton
-                      onClick={handleTransferAction}
-                      disabled={selectedDomains.length === 0 || !canTransferDomains || namesTransfer.length === 0}
-                    >
-                      <p className='text-nowrap'>({namesTransfer.length}) Transfer</p>
-                    </PrimaryButton>
-                    <PrimaryButton
-                      onClick={handleListAction}
-                      disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}
-                    >
-                      <p className='text-nowrap'>({namesList.length}) List</p>
-                    </PrimaryButton>
-                    <PrimaryButton
-                      onClick={handleCancelListingsAction}
-                      disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
-                    >
-                      <p className='text-nowrap'>({namesCancel.length}) Cancel Listings</p>
-                    </PrimaryButton>
-                  </>}
-                </div>
-                <div className='bg-background border-tertiary hidden flex-row gap-1.5 border-l-2 p-3 pl-1.5 sm:flex'>
-                  <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
-                    {selectedDomains.length}
-                  </SecondaryButton>
-                  {selectAllContext?.canSelectAll && pageType === 'profile' && (
-                    <SecondaryButton className='hidden sm:block' onClick={handleSelectAll}>Select All</SecondaryButton>
+                  {showOwnedActionButtons && (
+                    <>
+                      <PrimaryButton
+                        onClick={handleTransferAction}
+                        disabled={selectedDomains.length === 0 || !canTransferDomains || namesTransfer.length === 0}
+                        className='flex items-center gap-1.5'
+                      >
+                        <p>Transfer</p>
+                        <Label label={namesTransfer.length} className='bg-tertiary text-white' />
+                      </PrimaryButton>
+                      <PrimaryButton
+                        onClick={handleListAction}
+                        disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}
+                        className='flex items-center gap-1.5'
+                      >
+                        <p>List</p>
+                        <Label label={namesList.length} className='bg-tertiary text-white' />
+                      </PrimaryButton>
+                      <PrimaryButton
+                        onClick={handleCancelListingsAction}
+                        disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
+                        className='flex items-center gap-1.5'
+                      >
+                        <p>Cancel Listings</p>
+                        <Label label={namesCancel.length} className='bg-tertiary text-white' />
+                      </PrimaryButton>
+                    </>
                   )}
-                  <SecondaryButton
-                    onClick={handleCancelBulkSelect}
-                    className='hidden w-28 items-center justify-center sm:flex'
-                  >
-                    Close
-                  </SecondaryButton>
+                </div>
+                <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 sm:flex'>
+                  <div className='flex flex-row gap-1.5'>
+                    <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
+                      {selectedDomains.length}
+                    </SecondaryButton>
+                    {pageType === 'profile' && (
+                      <SecondaryButton
+                        className='hidden sm:block'
+                        onClick={handleSelectAll}
+                        disabled={!selectAllContext?.canSelectAll}
+                      >
+                        Select All
+                      </SecondaryButton>
+                    )}
+                    <SecondaryButton
+                      onClick={handleCancelBulkSelect}
+                      className='hidden w-28 items-center justify-center sm:flex'
+                    >
+                      Close
+                    </SecondaryButton>
+                  </div>
                 </div>
               </div>
             </>

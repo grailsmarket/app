@@ -82,11 +82,13 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
                 : categories?.reduce((sum, c) => sum + c.member_count, 0) || 0
             }
           />
-          {categories?.map((category, index) => {
-            const categoryCount = showUserCategoryCounts ? userCategoryCounts?.[category.name] : category.member_count
+          {categories
+            ?.sort((a, b) => a.name.localeCompare(b.name))
+            .map((category, index) => {
+              const categoryCount = showUserCategoryCounts ? userCategoryCounts?.[category.name] : category.member_count
 
-            return <CategoryFilter key={index} category={category.name} owner_count={categoryCount} />
-          })}
+              return <CategoryFilter key={index} category={category.name} owner_count={categoryCount} />
+            })}
         </div>
       )}
     </div>

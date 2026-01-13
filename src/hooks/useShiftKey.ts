@@ -1,16 +1,14 @@
 import { useEffect } from 'react'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectBulkSelect, setIsShiftPressed } from '@/state/reducers/modals/bulkSelectModal'
+import { useAppDispatch } from '@/state/hooks'
+import { setBulkSelectIsSelecting, setIsShiftPressed } from '@/state/reducers/modals/bulkSelectModal'
 
 export const useShiftKeyListener = () => {
   const dispatch = useAppDispatch()
-  const { isSelecting } = useAppSelector(selectBulkSelect)
 
   useEffect(() => {
-    if (!isSelecting) return
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Shift') {
+        dispatch(setBulkSelectIsSelecting(true))
         dispatch(setIsShiftPressed(true))
       }
     }
@@ -36,5 +34,5 @@ export const useShiftKeyListener = () => {
       window.removeEventListener('blur', handleBlur)
       dispatch(setIsShiftPressed(false))
     }
-  }, [dispatch, isSelecting])
+  }, [dispatch])
 }

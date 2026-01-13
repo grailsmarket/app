@@ -102,7 +102,14 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   if (filterType === 'profile' || filterType === 'category') {
-    if (profileTab.value === 'domains' || profileTab.value === 'listings' || profileTab.value === 'grace' || categoryTab?.value === 'names' || categoryTab?.value === 'premium' || categoryTab?.value === 'available') {
+    if (
+      profileTab.value === 'domains' ||
+      profileTab.value === 'listings' ||
+      profileTab.value === 'grace' ||
+      categoryTab?.value === 'names' ||
+      categoryTab?.value === 'premium' ||
+      categoryTab?.value === 'available'
+    ) {
       if (isBulkSelecting) {
         return (
           <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>

@@ -40,7 +40,7 @@
   --shadow-medium: 2px 2px 4px 0px var(--shadow-color);
   --shadow-large: 4px 4px 8px 0px var(--shadow-color);
   --shadow-xl: 4px 8px 16px 0px var(--shadow-color);
-  --shadow-bulk: 0 0 8px 0 #ffdfc0;
+  --shadow-bulk: 0 0 20px -8px #ffdfc0aa;
   --shadow-footer: 0 -4px 40px 4px #ffdfc0;
   --shadow-homeCard: -2px 0 12px 0 #111a;
 

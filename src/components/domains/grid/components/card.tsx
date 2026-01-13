@@ -40,6 +40,9 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { usePremiumCountdown } from '@/hooks/usePremiumCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Watchlist from '@/components/ui/watchlist'
+import User from '@/components/ui/user'
+import Image from 'next/image'
+import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -67,9 +70,8 @@ const Card: React.FC<CardProps> = ({
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(
-    EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
-  )
+  const isMyDomain = address?.toLowerCase() === domain.owner?.toLowerCase()
+  const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || isMyDomain)
   const domainListing = domain.listings[0]
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
@@ -214,11 +216,11 @@ const Card: React.FC<CardProps> = ({
       </div>
       <div
         className={cn(
-          'p-lg text-md flex w-full flex-1 flex-col justify-between gap-1',
+          'p-lg flex w-full flex-1 flex-col justify-between gap-1 text-lg',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
-        <div className='flex w-full flex-col'>
+        <div className='flex w-full flex-col gap-1'>
           {registrationStatus === GRACE_PERIOD ? (
             <p className='text-grace truncate font-semibold'>
               Grace {domain.expiry_date ? `(${formatTimeLeft(domain.expiry_date, 'grace')})` : ''}
@@ -229,8 +231,8 @@ const Card: React.FC<CardProps> = ({
                 <Price
                   price={domainListing.price}
                   currencyAddress={domainListing.currency_address}
-                  iconSize='16px'
-                  fontSize='text-lg font-semibold'
+                  iconSize='17px'
+                  fontSize='text-xl font-semibold'
                 />
               </div>
             ) : (
@@ -275,23 +277,43 @@ const Card: React.FC<CardProps> = ({
           {registrationStatus === UNREGISTERED && (
             <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
           )}
-          {domain.last_sale_price && domain.last_sale_currency && (
-            <div className='flex items-center gap-[6px]'>
-              <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p>
+          {domain.clubs && domain.clubs.length > 0 && (
+            <div className='flex max-w-full flex-row items-center gap-1 truncate'>
+              <div className='flex max-w-fit min-w-fit items-center gap-1'>
+                <Image
+                  src={CATEGORY_IMAGES[domain.clubs[0] as keyof typeof CATEGORY_IMAGES].avatar}
+                  alt={domain.clubs[0] as string}
+                  width={16}
+                  height={16}
+                  className='rounded-full'
+                />
+                <p className='text-md text-neutral truncate font-semibold'>
+                  {CATEGORY_LABELS[domain.clubs[0] as keyof typeof CATEGORY_LABELS]}
+                </p>
+              </div>
+              {domain.clubs.length > 1 && (
+                <p className='text-md text-neutral truncate pt-0.5 font-bold'>+{domain.clubs.length - 1}</p>
+              )}
+            </div>
+          )}
+          {domain.last_sale_price && domain.last_sale_currency && domain.last_sale_date && (
+            <div className='text-neutral flex items-center gap-[4px]'>
+              {/* <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p> */}
               <div className='flex items-center gap-1'>
                 <Price
                   price={convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)}
                   currencyAddress={domain.last_sale_currency as Address}
-                  iconSize='16px'
-                  fontSize='text-md'
+                  iconSize='14px'
+                  fontSize='text-md font-semibold text-neutral'
                 />
               </div>
+              <p>-</p>
+              <div>
+                <p className='text-md truncate font-semibold'>
+                  {formatExpiryDate(domain.last_sale_date, { includeTime: false, dateDivider: '/' })}
+                </p>
+              </div>
             </div>
-          )}
-          {domain.clubs && domain.clubs.length > 0 && (
-            <p className='text-md text-neutral mt-px truncate font-semibold'>
-              {domain.clubs?.map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]).join(', ')}
-            </p>
           )}
           {(profileTab.value === 'domains' || profileTab.value === 'watchlist') &&
             filterType === 'profile' &&
@@ -310,15 +332,24 @@ const Card: React.FC<CardProps> = ({
             </div>
           )}
         </div>
-        <div className='flex justify-between'>
-          <Actions
-            domain={domain}
-            registrationStatus={registrationStatus}
-            canAddToCart={canAddToCart}
-            isFirstInRow={isFirstInRow}
-            watchlistId={watchlistId}
-            isBulkSelecting={isBulkSelecting}
-          />
+        <div className='flex flex-col gap-2'>
+          {domain.owner && filterType !== 'profile' && (
+            <User
+              address={domain.owner as Address}
+              className='max-w-full'
+              wrapperClassName='justify-start! max-w-full'
+            />
+          )}
+          <div className='flex justify-between'>
+            <Actions
+              domain={domain}
+              registrationStatus={registrationStatus}
+              canAddToCart={canAddToCart}
+              isFirstInRow={isFirstInRow}
+              watchlistId={watchlistId}
+              isBulkSelecting={isBulkSelecting}
+            />
+          </div>
         </div>
       </div>
     </Link>

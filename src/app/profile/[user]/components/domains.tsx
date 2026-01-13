@@ -148,7 +148,6 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     </div>
   )
 
-
   return (
     <SelectAllProvider
       loadedDomains={domains}

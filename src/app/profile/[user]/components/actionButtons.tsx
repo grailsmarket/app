@@ -31,8 +31,12 @@ const ActionButtons = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const isActionBarVisible = (selectedTab.value === 'watchlist' && !cartIsEmpty)
-  const isBulkSelectVisible = selectedTab.value === 'listings' || selectedTab.value === 'domains' || selectedTab.value === 'grace' || selectedTab.value === 'watchlist'
+  const isActionBarVisible = selectedTab.value === 'watchlist' && !cartIsEmpty
+  const isBulkSelectVisible =
+    selectedTab.value === 'listings' ||
+    selectedTab.value === 'domains' ||
+    selectedTab.value === 'grace' ||
+    selectedTab.value === 'watchlist'
   const isBulkSelecting = useAppSelector(selectBulkSelect).isSelecting
 
   // const handleSelectAll = () => {
@@ -59,8 +63,8 @@ const ActionButtons = () => {
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6',
           isBulkSelectVisible && 'bottom-16 md:right-5 md:bottom-22',
-          isBulkSelecting && 'bottom-30 md:bottom-24',
-          (isBulkSelectVisible && isActionBarVisible) && 'hidden'
+          isBulkSelecting && 'bottom-30 md:bottom-32',
+          isBulkSelectVisible && isActionBarVisible && 'hidden'
         )}
         aria-label='Scroll to top'
       >

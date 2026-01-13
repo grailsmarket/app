@@ -62,7 +62,7 @@ const ActionButtons = () => {
           'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6',
-          isBulkSelectVisible && 'bottom-16 md:right-5 md:bottom-22',
+          isBulkSelectVisible && 'bottom-15 md:right-5 md:bottom-22',
           isBulkSelecting && 'bottom-30 md:bottom-32',
           isBulkSelectVisible && isActionBarVisible && 'hidden'
         )}

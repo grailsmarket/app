@@ -84,12 +84,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          domain.listings?.some(
-            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-          )
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        domain.listings?.some(
+          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+        )
+    )
     : []
 
   const handleBulkSelect = () => {
@@ -128,10 +128,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-          results
-            .filter((result) => !result.success)
-            .map((result) => result.watchlistId)
-            .join(', ')
+        results
+          .filter((result) => !result.success)
+          .map((result) => result.watchlistId)
+          .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())
@@ -265,7 +265,6 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
       )}
     >
-      {/* Error message banner */}
       {isSelecting && selectAllError && (
         <div className='shadow-bulk flex w-full flex-row items-center justify-between gap-2 rounded-md bg-yellow-900/90 p-2 text-yellow-100 sm:p-3'>
           <p className='text-sm'>{selectAllError}</p>
@@ -275,7 +274,6 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         </div>
       )}
 
-      {/* Loading progress */}
       {isSelecting && isSelectAllLoading && selectAllProgress && (
         <div className='shadow-bulk bg-background flex flex-row items-center gap-3 rounded-md p-2 sm:p-3'>
           <div className='flex items-center gap-2'>
@@ -290,14 +288,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         </div>
       )}
 
-      {/* Shift hint */}
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk rounded-md p-2'>
+        <div className='bg-background shadow-bulk hidden lg:block rounded-md p-2'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
         </div>
       )}
 
-      {/* Mobile controls */}
       {isSelecting && !isSelectAllLoading && (
         <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
           <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
@@ -317,11 +313,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         </div>
       )}
 
-      {/* Main toolbar container - animates width */}
       <div
         className={cn(
           'shadow-bulk bg-background overflow-hidden rounded-md transition-all duration-600 ease-in-out',
-          isSelecting ? 'max-w-[100vw] md:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[70vw] 2xl:max-w-[60vw]' : 'max-w-34'
+          isSelecting ? 'max-w-[95vw] md:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[70vw] 2xl:max-w-[60vw]' : 'max-w-34'
         )}
       >
         {isSelecting ? (

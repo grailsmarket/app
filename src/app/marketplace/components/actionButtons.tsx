@@ -9,6 +9,8 @@ import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import ArrowDown from 'public/icons/arrow-down.svg'
 import { useFilterContext } from '@/context/filters'
+import { useAppSelector } from '@/state/hooks'
+import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 interface ActionButtonsProps {
   hideDomainActions?: boolean
@@ -35,15 +37,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
 
   const isActionBarVisible = !(cartIsEmpty || hideDomainActions)
   const isBulkSelectVisible = filterType === 'category' && categoryTab?.value !== 'activity'
+  const isSelecting = useAppSelector(selectBulkSelect).isSelecting
 
   return (
     <>
       <button
         onClick={scrollToTop}
         className={cn(
-          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4',
+          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4 xl:right-5',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
-          isActionBarVisible ? 'bottom-16 md:bottom-18' : 'bottom-4 md:bottom-6',
+          isActionBarVisible ? 'bottom-16 md:bottom-18' : isBulkSelectVisible ? isSelecting ? 'bottom-30 md:bottom-32' : 'bottom-15 md:bottom-22' : 'bottom-4 md:bottom-6',
           isBulkSelectVisible && isActionBarVisible && 'hidden'
         )}
         aria-label='Scroll to top'

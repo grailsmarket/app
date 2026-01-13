@@ -14,8 +14,9 @@ export const PORTFOLIO_RECEIVED_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = [
 export const PORTFOLIO_MY_OFFERS_DISPLAYED_COLUMNS: OfferColumnType[] = ['name', 'offer_amount', 'expires', 'actions']
 export const PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
   'price',
-  'last_sale',
   'expires',
+  'owner',
+  'last_sale',
   'highest_offer',
 ]
 

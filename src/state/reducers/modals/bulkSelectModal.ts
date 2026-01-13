@@ -13,6 +13,7 @@ type BulkSelectState = {
   domains: MarketplaceDomainType[]
   previousListings: DomainListingType[]
   selectAll: SelectAllState | null
+  anchorIndex: number | null
 }
 
 const initialState: BulkSelectState = {
@@ -20,6 +21,7 @@ const initialState: BulkSelectState = {
   domains: [],
   previousListings: [],
   selectAll: null,
+  anchorIndex: null,
 }
 
 export const BulkSelectSlice = createSlice({
@@ -58,6 +60,10 @@ export const BulkSelectSlice = createSlice({
       state.domains = []
       state.previousListings = []
       state.selectAll = null
+      state.anchorIndex = null
+    },
+    setAnchorIndex(state, { payload }: PayloadAction<number | null>) {
+      state.anchorIndex = payload
     },
     startSelectAll(state, { payload }: PayloadAction<{ total: number }>) {
       state.selectAll = {
@@ -104,6 +110,7 @@ export const {
   removeBulkSelectPreviousListing,
   setBulkSelectPreviousListings,
   clearBulkSelect,
+  setAnchorIndex,
   startSelectAll,
   updateSelectAllProgress,
   finishSelectAll,

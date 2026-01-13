@@ -18,6 +18,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
+import { selectCategory } from '@/state/reducers/category/category'
 
 interface Props {
   category: string
@@ -27,6 +28,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const filtersOpen = selectors.filters.open
+  const { selectedTab } = useAppSelector(selectCategory)
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains, totalCategoryDomains } =
     useCategoryDomains(category)
   const { isNavbarVisible } = useNavbar()
@@ -90,6 +92,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
           }
         }}
         isBulkSelecting={isSelecting}
+        showPreviousOwner={selectedTab.value === 'premium' || selectedTab.value === 'available'}
       />
     </>
   )

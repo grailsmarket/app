@@ -31,6 +31,7 @@ interface DomainsProps {
   showWatchlist?: boolean
   isBulkSelecting?: boolean
   useLocalScrollTop?: boolean
+  showPreviousOwner?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -50,6 +51,7 @@ const Domains: React.FC<DomainsProps> = ({
   showWatchlist = false,
   isBulkSelecting = false,
   useLocalScrollTop = false,
+  showPreviousOwner = false,
 }) => {
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
@@ -112,7 +114,11 @@ const Domains: React.FC<DomainsProps> = ({
             return (
               <div key={index} className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}>
                 <p className='text-neutral w-fit text-left text-sm font-medium'>
-                  {item.label === 'Actions' ? '' : item.label}
+                  {item.label === 'Actions'
+                    ? ''
+                    : showPreviousOwner && item.label === 'Owner'
+                      ? 'Previous Owner'
+                      : item.label}
                 </p>
               </div>
             )
@@ -144,6 +150,8 @@ const Domains: React.FC<DomainsProps> = ({
                   <Card
                     key={item.token_id}
                     domain={item}
+                    index={index}
+                    allDomains={domains}
                     isFirstInRow={index % columnsCount === 0}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
@@ -175,10 +183,12 @@ const Domains: React.FC<DomainsProps> = ({
                     key={item.token_id}
                     domain={item}
                     index={index}
+                    allDomains={domains}
                     displayedColumns={displayedColumns}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
                     isBulkSelecting={isBulkSelecting}
+                    showPreviousOwner={showPreviousOwner}
                   />
                 )
               }}

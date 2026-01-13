@@ -53,6 +53,8 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     switch (selectedTab.value) {
       case 'domains':
         return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
+      case 'grace':
+        return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
       case 'listings':
         return PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS
       case 'watchlist':

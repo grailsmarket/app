@@ -7,13 +7,14 @@ import ViewSelector from '@/components/domains/viewSelector'
 import SortDropdown from '@/components/domains/sortDropdown'
 import FilterIcon from 'public/icons/filter.svg'
 import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useRouter } from 'next/navigation'
 import { normalizeName } from '@/lib/ens'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
+import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 
 const DomainPanel = () => {
   const router = useRouter()
@@ -22,6 +23,7 @@ const DomainPanel = () => {
   const filtersOpen = selectors.filters.open
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
   const { isNavbarVisible } = useNavbar()
+  const { selectedTab } = useAppSelector(selectMarketplace)
 
   return (
     <div className='z-0 flex w-full flex-col'>
@@ -101,6 +103,7 @@ const DomainPanel = () => {
             fetchMoreDomains()
           }
         }}
+        showPreviousOwner={selectedTab.value === 'available' || selectedTab.value === 'premium'}
       />
     </div>
   )

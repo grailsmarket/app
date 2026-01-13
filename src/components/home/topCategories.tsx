@@ -58,31 +58,31 @@ const TopCategories = () => {
       <div className='flex w-full flex-wrap justify-center gap-4'>
         {isLoading
           ? Array(6)
-            .fill(null)
-            .map((_, index) => (
+              .fill(null)
+              .map((_, index) => (
+                <div
+                  className={cn(
+                    index === 0
+                      ? 'w-full lg:w-[calc(33.33%-12px)]'
+                      : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+                  )}
+                  key={index}
+                >
+                  <LoadingCell radius='8px' height={'230px'} width={'100%'} />
+                </div>
+              ))
+          : categories?.slice(0, 6).map((category, index) => (
               <div
                 className={cn(
                   index === 0
                     ? 'w-full lg:w-[calc(33.33%-12px)]'
                     : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
                 )}
-                key={index}
+                key={category.name}
               >
-                <LoadingCell radius='8px' height={'230px'} width={'100%'} />
+                <CategoryRow category={category} />
               </div>
-            ))
-          : categories?.slice(0, 6).map((category, index) => (
-            <div
-              className={cn(
-                index === 0
-                  ? 'w-full lg:w-[calc(33.33%-12px)]'
-                  : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
-              )}
-              key={category.name}
-            >
-              <CategoryRow category={category} />
-            </div>
-          ))}
+            ))}
       </div>
     </div>
   )

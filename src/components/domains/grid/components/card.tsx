@@ -27,6 +27,7 @@ import {
   removeBulkSelectDomain,
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
+  setAnchorIndex,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
@@ -39,13 +40,23 @@ import Watchlist from '@/components/ui/watchlist'
 
 interface CardProps {
   domain: MarketplaceDomainType
+  index?: number
+  allDomains?: MarketplaceDomainType[]
   className?: string
   isFirstInRow?: boolean
   watchlistId?: number | undefined
   isBulkSelecting?: boolean
 }
 
-const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistId, isBulkSelecting }) => {
+const Card: React.FC<CardProps> = ({
+  domain,
+  index,
+  allDomains,
+  className,
+  isFirstInRow,
+  watchlistId,
+  isBulkSelecting,
+}) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { ethPrice } = useETHPrice()
@@ -58,7 +69,7 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
   )
   const domainListing = domain.listings[0]
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
-  const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
+  const { domains: selectedDomains, anchorIndex } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   const premiumPriceOracle = domain.expiry_date
@@ -69,25 +80,58 @@ const Card: React.FC<CardProps> = ({ domain, className, isFirstInRow, watchlistI
     : 0
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
+  const selectDomain = (d: MarketplaceDomainType) => {
+    dispatch(addBulkSelectDomain(d))
+    const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
+    listings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+  }
+
+  const deselectDomain = (d: MarketplaceDomainType) => {
+    dispatch(removeBulkSelectDomain(d))
+    const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
+    listings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+  }
+
+  const handleBulkSelectClick = (e: React.MouseEvent) => {
+    if (!isBulkSelecting || index === undefined) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    const isShiftClick = e.shiftKey
+
+    if (isShiftClick && anchorIndex !== null && allDomains) {
+      // Shift-click with existing anchor: select range
+      const start = Math.min(anchorIndex, index)
+      const end = Math.max(anchorIndex, index)
+      const domainsInRange = allDomains.slice(start, end + 1)
+
+      // Add all domains in range to selection
+      domainsInRange.forEach((d) => selectDomain(d))
+
+      // Update anchor to current index
+      dispatch(setAnchorIndex(index))
+    } else if (isShiftClick && anchorIndex === null) {
+      // Shift-click without anchor: select single item and set anchor
+      selectDomain(domain)
+      dispatch(setAnchorIndex(index))
+    } else if (!isShiftClick && isSelected) {
+      // Regular click on selected item: deselect and reset anchor
+      deselectDomain(domain)
+      dispatch(setAnchorIndex(null))
+    } else if (!isShiftClick && !isSelected) {
+      // Regular click on unselected item: select and set as anchor
+      selectDomain(domain)
+      dispatch(setAnchorIndex(index))
+    }
+  }
+
   return (
     <Link
       href={`/${normalizeName(domain.name)}`}
       onClick={(e) => {
         if (isBulkSelecting) {
-          e.preventDefault()
-          e.stopPropagation()
-
-          if (isSelected) {
-            dispatch(removeBulkSelectDomain(domain))
-            if (grailsListings.length > 0) {
-              grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
-            }
-          } else {
-            dispatch(addBulkSelectDomain(domain))
-            if (grailsListings.length > 0) {
-              grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
-            }
-          }
+          handleBulkSelectClick(e)
         }
       }}
       className={cn(

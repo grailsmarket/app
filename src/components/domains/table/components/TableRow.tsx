@@ -17,6 +17,7 @@ import {
   removeBulkSelectDomain,
   addBulkSelectPreviousListing,
   removeBulkSelectPreviousListing,
+  setAnchorIndex,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
 import { normalizeName } from '@/lib/ens'
@@ -27,22 +28,32 @@ import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 interface TableRowProps {
   domain: MarketplaceDomainType
   index: number
+  allDomains?: MarketplaceDomainType[]
   displayedColumns: MarketplaceHeaderColumn[]
   watchlistId?: number | undefined
   isBulkSelecting?: boolean
+  showPreviousOwner?: boolean
 }
 
-const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, watchlistId, isBulkSelecting }) => {
+const TableRow: React.FC<TableRowProps> = ({
+  domain,
+  index,
+  allDomains,
+  displayedColumns,
+  watchlistId,
+  isBulkSelecting,
+  showPreviousOwner,
+}) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const domainListing = domain.listings[0]
-  const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
+  // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const canAddToCart = !(
     EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
   )
-  const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
+  const { domains: selectedDomains, anchorIndex } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
   const columnCount = displayedColumns.length
@@ -96,7 +107,7 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
         key={`${domain.name}-owner`}
         className={cn(ALL_MARKETPLACE_COLUMNS['owner'].getWidth(columnCount), 'relative pr-1')}
       >
-        {!REGISTERABLE_STATUSES.includes(registrationStatus) && domain.owner && (
+        {(showPreviousOwner || !REGISTERABLE_STATUSES.includes(registrationStatus)) && domain.owner && (
           <User
             address={domain.owner as `0x${string}`}
             className='max-w-[90%]'
@@ -107,25 +118,58 @@ const TableRow: React.FC<TableRowProps> = ({ domain, index, displayedColumns, wa
     ),
   }
 
+  const selectDomain = (d: MarketplaceDomainType) => {
+    dispatch(addBulkSelectDomain(d))
+    const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
+    listings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+  }
+
+  const deselectDomain = (d: MarketplaceDomainType) => {
+    dispatch(removeBulkSelectDomain(d))
+    const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
+    listings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+  }
+
+  const handleBulkSelectClick = (e: React.MouseEvent) => {
+    if (!isBulkSelecting) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    const isShiftClick = e.shiftKey
+
+    if (isShiftClick && anchorIndex !== null && allDomains) {
+      // Shift-click with existing anchor: select range
+      const start = Math.min(anchorIndex, index)
+      const end = Math.max(anchorIndex, index)
+      const domainsInRange = allDomains.slice(start, end + 1)
+
+      // Add all domains in range to selection
+      domainsInRange.forEach((d) => selectDomain(d))
+
+      // Update anchor to current index
+      dispatch(setAnchorIndex(index))
+    } else if (isShiftClick && anchorIndex === null) {
+      // Shift-click without anchor: select single item and set anchor
+      selectDomain(domain)
+      dispatch(setAnchorIndex(index))
+    } else if (!isShiftClick && isSelected) {
+      // Regular click on selected item: deselect and reset anchor
+      deselectDomain(domain)
+      dispatch(setAnchorIndex(null))
+    } else if (!isShiftClick && !isSelected) {
+      // Regular click on unselected item: select and set as anchor
+      selectDomain(domain)
+      dispatch(setAnchorIndex(index))
+    }
+  }
+
   return (
     <Link
       href={`/${normalizeName(domain.name)}`}
       onClick={(e) => {
         if (isBulkSelecting) {
-          e.preventDefault()
-          e.stopPropagation()
-
-          if (isSelected) {
-            dispatch(removeBulkSelectDomain(domain))
-            if (grailsListings.length > 0) {
-              grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
-            }
-          } else {
-            dispatch(addBulkSelectDomain(domain))
-            if (grailsListings.length > 0) {
-              grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
-            }
-          }
+          handleBulkSelectClick(e)
         }
       }}
       className={cn(

@@ -296,27 +296,30 @@ const Card: React.FC<CardProps> = ({
               )}
             </div>
           )}
-          {domain.last_sale_price && domain.last_sale_currency && domain.last_sale_date && (
-            <div className='text-neutral flex items-center gap-[4px]'>
-              {/* <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p> */}
-              <div className='flex items-center gap-1'>
-                <Price
-                  price={convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)}
-                  currencyAddress={domain.last_sale_currency as Address}
-                  iconSize='14px'
-                  fontSize='text-md font-semibold text-neutral'
-                />
+          {filterType !== 'category' &&
+            domain.last_sale_price &&
+            domain.last_sale_currency &&
+            domain.last_sale_date && (
+              <div className='text-neutral flex items-center gap-[4px]'>
+                {/* <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p> */}
+                <div className='flex items-center gap-1'>
+                  <Price
+                    price={convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)}
+                    currencyAddress={domain.last_sale_currency as Address}
+                    iconSize='14px'
+                    fontSize='text-md font-semibold text-neutral'
+                  />
+                </div>
+                <p>-</p>
+                <div>
+                  <p className='text-md truncate font-semibold'>
+                    {formatExpiryDate(domain.last_sale_date, { includeTime: false, dateDivider: '/' })}
+                  </p>
+                </div>
               </div>
-              <p>-</p>
-              <div>
-                <p className='text-md truncate font-semibold'>
-                  {formatExpiryDate(domain.last_sale_date, { includeTime: false, dateDivider: '/' })}
-                </p>
-              </div>
-            </div>
-          )}
-          {(profileTab.value === 'domains' || profileTab.value === 'watchlist') &&
-            filterType === 'profile' &&
+            )}
+          {(((profileTab.value === 'domains' || profileTab.value === 'watchlist') && filterType === 'profile') ||
+            filterType === 'category') &&
             domain.expiry_date && (
               <div className='flex items-center gap-1'>
                 <p className='text-md text-neutral truncate font-semibold'>

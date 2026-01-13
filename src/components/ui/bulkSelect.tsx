@@ -265,141 +265,149 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
       )}
     >
-      {isSelecting ? (
-        <>
-          {/* Error message banner */}
-          {selectAllError && (
-            <div className='shadow-bulk flex w-full flex-row items-center justify-between gap-2 rounded-md bg-yellow-900/90 p-2 text-yellow-100 sm:p-3'>
-              <p className='text-sm'>{selectAllError}</p>
-              <button onClick={handleDismissError} className='text-yellow-100 hover:text-white'>
-                <Cross className='h-3 w-3' />
-              </button>
-            </div>
+      {/* Error message banner */}
+      {isSelecting && selectAllError && (
+        <div className='shadow-bulk flex w-full flex-row items-center justify-between gap-2 rounded-md bg-yellow-900/90 p-2 text-yellow-100 sm:p-3'>
+          <p className='text-sm'>{selectAllError}</p>
+          <button onClick={handleDismissError} className='text-yellow-100 hover:text-white'>
+            <Cross className='h-3 w-3' />
+          </button>
+        </div>
+      )}
+
+      {/* Loading progress */}
+      {isSelecting && isSelectAllLoading && selectAllProgress && (
+        <div className='shadow-bulk bg-background flex flex-row items-center gap-3 rounded-md p-2 sm:p-3'>
+          <div className='flex items-center gap-2'>
+            <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white' />
+            <p className='text-lg text-nowrap'>
+              Loading names... {selectAllProgress.loaded}/{selectAllProgress.total}
+            </p>
+          </div>
+          <SecondaryButton onClick={handleCancelSelectAll} className='h-9 md:h-10'>
+            Cancel
+          </SecondaryButton>
+        </div>
+      )}
+
+      {/* Shift hint */}
+      {isSelecting && !isSelectAllLoading && (
+        <div className='bg-background shadow-bulk rounded-md p-2'>
+          <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
+        </div>
+      )}
+
+      {/* Mobile controls */}
+      {isSelecting && !isSelectAllLoading && (
+        <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
+          <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
+            {selectedDomains.length}
+          </SecondaryButton>
+          {pageType === 'profile' && (
+            <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
+              Select All
+            </SecondaryButton>
           )}
+          <SecondaryButton
+            onClick={handleCancelBulkSelect}
+            className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
+          >
+            <Cross className='h-3 w-3' />
+          </SecondaryButton>
+        </div>
+      )}
 
-          {isSelectAllLoading && selectAllProgress && (
-            <div className='shadow-bulk bg-background flex flex-row items-center gap-3 rounded-md p-2 sm:p-3'>
-              <div className='flex items-center gap-2'>
-                <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white' />
-                <p className='text-lg text-nowrap'>
-                  Loading names... {selectAllProgress.loaded}/{selectAllProgress.total}
-                </p>
-              </div>
-              <SecondaryButton onClick={handleCancelSelectAll} className='h-9 md:h-10'>
-                Cancel
-              </SecondaryButton>
+      {/* Main toolbar container - animates width */}
+      <div
+        className={cn(
+          'shadow-bulk bg-background overflow-hidden rounded-md transition-all duration-600 ease-in-out',
+          isSelecting ? 'max-w-[100vw] md:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[70vw] 2xl:max-w-[60vw]' : 'max-w-34'
+        )}
+      >
+        {isSelecting ? (
+          <div className='flex max-w-full flex-row overflow-x-scroll'>
+            <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
+              {showWatchlistButton && (
+                <PrimaryButton
+                  className='flex items-center gap-2'
+                  onClick={handleRemoveFromWatchlistAction}
+                  disabled={selectedWatchlistIds.length === 0}
+                >
+                  {isRemovingFromWatchlist ? (
+                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' />
+                  ) : null}
+                  <p>Remove&nbsp;from&nbsp;Watchlist</p>
+                  <Label label={selectedWatchlistIds.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
+              <PrimaryButton
+                onClick={handleExtendAction}
+                disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
+                className='flex items-center gap-1.5'
+              >
+                <p>Extend</p>
+                <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
+              </PrimaryButton>
+              {showOwnedActionButtons && (
+                <>
+                  <PrimaryButton
+                    onClick={handleTransferAction}
+                    disabled={selectedDomains.length === 0 || !canTransferDomains || namesTransfer.length === 0}
+                    className='flex items-center gap-1.5'
+                  >
+                    <p>Transfer</p>
+                    <Label label={namesTransfer.length} className='bg-tertiary text-white' />
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={handleListAction}
+                    disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}
+                    className='flex items-center gap-1.5'
+                  >
+                    <p>List</p>
+                    <Label label={namesList.length} className='bg-tertiary text-white' />
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={handleCancelListingsAction}
+                    disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
+                    className='flex items-center gap-1.5'
+                  >
+                    <p>Cancel&nbsp;Listings</p>
+                    <Label label={namesCancel.length} className='bg-tertiary text-white' />
+                  </PrimaryButton>
+                </>
+              )}
             </div>
-          )}
-
-          {/* Normal selecting state - not loading */}
-          {!isSelectAllLoading && (
-            <>
-              <div className='bg-background shadow-bulk rounded-md p-2'>
-                <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
-              </div>
-
-              <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
+            <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 sm:flex'>
+              <div className='flex flex-row gap-1.5'>
                 <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
                   {selectedDomains.length}
                 </SecondaryButton>
                 {pageType === 'profile' && (
-                  <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
+                  <SecondaryButton
+                    className='hidden sm:block'
+                    onClick={handleSelectAll}
+                    disabled={!selectAllContext?.canSelectAll}
+                  >
                     Select All
                   </SecondaryButton>
                 )}
                 <SecondaryButton
                   onClick={handleCancelBulkSelect}
-                  className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
+                  className='hidden w-28 items-center justify-center sm:flex'
                 >
-                  <Cross className='h-3 w-3' />
+                  Close
                 </SecondaryButton>
               </div>
-
-              <div className='shadow-bulk bg-background flex max-w-full flex-row overflow-x-scroll rounded-md'>
-                <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
-                  {showWatchlistButton && (
-                    <PrimaryButton
-                      className='flex items-center gap-2'
-                      onClick={handleRemoveFromWatchlistAction}
-                      disabled={selectedWatchlistIds.length === 0}
-                    >
-                      {isRemovingFromWatchlist ? (
-                        <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' />
-                      ) : null}
-                      <p>Remove&nbsp;from&nbsp;Watchlist</p>
-                      <Label label={selectedWatchlistIds.length} className='bg-tertiary w-7 min-w-fit text-white' />
-                    </PrimaryButton>
-                  )}
-                  <PrimaryButton
-                    onClick={handleExtendAction}
-                    disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
-                    className='flex items-center gap-1.5'
-                  >
-                    <p>Extend</p>
-                    <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
-                  </PrimaryButton>
-                  {showOwnedActionButtons && (
-                    <>
-                      <PrimaryButton
-                        onClick={handleTransferAction}
-                        disabled={selectedDomains.length === 0 || !canTransferDomains || namesTransfer.length === 0}
-                        className='flex items-center gap-1.5'
-                      >
-                        <p>Transfer</p>
-                        <Label label={namesTransfer.length} className='bg-tertiary text-white' />
-                      </PrimaryButton>
-                      <PrimaryButton
-                        onClick={handleListAction}
-                        disabled={selectedDomains.length === 0 || !canListDomains || namesList.length === 0}
-                        className='flex items-center gap-1.5'
-                      >
-                        <p>List</p>
-                        <Label label={namesList.length} className='bg-tertiary text-white' />
-                      </PrimaryButton>
-                      <PrimaryButton
-                        onClick={handleCancelListingsAction}
-                        disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
-                        className='flex items-center gap-1.5'
-                      >
-                        <p>Cancel&nbsp;Listings</p>
-                        <Label label={namesCancel.length} className='bg-tertiary text-white' />
-                      </PrimaryButton>
-                    </>
-                  )}
-                </div>
-                <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 sm:flex'>
-                  <div className='flex flex-row gap-1.5'>
-                    <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
-                      {selectedDomains.length}
-                    </SecondaryButton>
-                    {pageType === 'profile' && (
-                      <SecondaryButton
-                        className='hidden sm:block'
-                        onClick={handleSelectAll}
-                        disabled={!selectAllContext?.canSelectAll}
-                      >
-                        Select All
-                      </SecondaryButton>
-                    )}
-                    <SecondaryButton
-                      onClick={handleCancelBulkSelect}
-                      className='hidden w-28 items-center justify-center sm:flex'
-                    >
-                      Close
-                    </SecondaryButton>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </>
-      ) : (
-        <div className='shadow-bulk bg-background rounded-md p-2 sm:p-3'>
-          <PrimaryButton onClick={handleBulkSelect} className='w-28'>
-            Bulk Select
-          </PrimaryButton>
-        </div>
-      )}
+            </div>
+          </div>
+        ) : (
+          <div className='p-2 sm:p-3'>
+            <PrimaryButton onClick={handleBulkSelect} className='w-28'>
+              Bulk Select
+            </PrimaryButton>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

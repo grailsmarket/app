@@ -91,6 +91,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
             fetchMoreCategoryDomains()
           }
         }}
+        displayedDetails={['price', 'expires', 'owner', 'last_sale', 'highest_offer']}
         isBulkSelecting={isSelecting}
         showPreviousOwner={selectedTab.value === 'premium' || selectedTab.value === 'available'}
       />

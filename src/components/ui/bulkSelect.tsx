@@ -326,7 +326,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                       {isRemovingFromWatchlist ? (
                         <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' />
                       ) : null}
-                      <p>Remove from Watchlist</p>
+                      <p>Remove&nbsp;from&nbsp;Watchlist</p>
                       <Label label={selectedWatchlistIds.length} className='bg-tertiary w-7 min-w-fit text-white' />
                     </PrimaryButton>
                   )}
@@ -361,7 +361,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                         disabled={previousListings.length === 0 || !canCancelListings || namesCancel.length === 0}
                         className='flex items-center gap-1.5'
                       >
-                        <p>Cancel Listings</p>
+                        <p>Cancel&nbsp;Listings</p>
                         <Label label={namesCancel.length} className='bg-tertiary text-white' />
                       </PrimaryButton>
                     </>

@@ -84,12 +84,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          domain.listings?.some(
-            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-          )
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        domain.listings?.some(
+          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+        )
+    )
     : []
 
   const handleBulkSelect = () => {
@@ -128,10 +128,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-          results
-            .filter((result) => !result.success)
-            .map((result) => result.watchlistId)
-            .join(', ')
+        results
+          .filter((result) => !result.success)
+          .map((result) => result.watchlistId)
+          .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())
@@ -326,10 +326,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                       {isRemovingFromWatchlist ? (
                         <div className='h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black' />
                       ) : null}
-                      <p className='text-nowrap'>
-                        <p>Remove from Watchlist</p>
-                        <Label label={selectedWatchlistIds.length} className='ml-1' />
-                      </p>
+                      <p>Remove from Watchlist</p>
+                      <Label label={selectedWatchlistIds.length} className='bg-tertiary w-7 min-w-fit text-white' />
                     </PrimaryButton>
                   )}
                   <PrimaryButton

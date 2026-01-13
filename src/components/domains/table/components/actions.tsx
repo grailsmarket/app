@@ -106,6 +106,7 @@ const Actions: React.FC<ActionsProps> = ({
       profileTab.value === 'domains' ||
       profileTab.value === 'listings' ||
       profileTab.value === 'grace' ||
+      profileTab.value === 'watchlist' ||
       categoryTab?.value === 'names' ||
       categoryTab?.value === 'premium' ||
       categoryTab?.value === 'available'

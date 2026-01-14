@@ -728,6 +728,8 @@ export class SeaportClient {
     royaltyRecipient?: string
     marketplace: MarketplaceType[]
     currencies?: ('ETH' | 'USDC')[] // Payment currencies
+    brokerAddress?: string // Address to receive broker fee
+    brokerFeeBps?: number // Broker fee in basis points (e.g., 100 = 1%)
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
@@ -780,6 +782,8 @@ export class SeaportClient {
     royaltyRecipient?: string
     marketplace: MarketplaceType
     currencies?: ('ETH' | 'USDC')[]
+    brokerAddress?: string // Address to receive broker fee
+    brokerFeeBps?: number // Broker fee in basis points (e.g., 100 = 1%)
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
@@ -1091,6 +1095,20 @@ export class SeaportClient {
           amount: openSeaFee.toString(),
           endAmount: openSeaFee.toString(),
           recipient: OPENSEA_FEE_RECIPIENT,
+        })
+      }
+
+      // Calculate broker fee if specified (for brokered listings)
+      if (params.brokerAddress && params.brokerFeeBps) {
+        const brokerFee = (priceInSmallestUnit * BigInt(params.brokerFeeBps)) / BigInt(10000)
+        sellerAmount = sellerAmount - brokerFee
+
+        // Add broker fee consideration
+        consideration.push({
+          token: currencyToken,
+          amount: brokerFee.toString(),
+          endAmount: brokerFee.toString(),
+          recipient: params.brokerAddress,
         })
       }
 

@@ -21,7 +21,10 @@ const TableLoadingRow: React.FC<TableLoadingRowsProps> = ({ displayedColumns }) 
         key={index}
       >
         {header === 'domain' && <LoadingCell height='36px' width='36px' radius='4px' />}
-        <LoadingCell height={header === 'actions' ? '26px' : '22px'} width={header === 'actions' ? '26px' : '90px'} />
+        <div className={cn('flex items-center gap-2', header === 'actions' && 'justify-end')}>
+          <LoadingCell height={header === 'actions' ? '26px' : '22px'} width={header === 'actions' ? '26px' : '90px'} />
+          {header === 'actions' && <LoadingCell height='40px' width='76px' radius='4px' />}
+        </div>
       </div>
     )
   })

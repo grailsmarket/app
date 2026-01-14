@@ -99,21 +99,21 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         <div className='flex flex-row flex-wrap justify-end gap-2!'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-              <Link
-                key={club}
-                href={`/categories/${club}`}
-                className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
-              >
-                <Image
-                  src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                  alt={club}
-                  width={24}
-                  height={24}
-                  className='aspect-square! rounded-full'
-                />
-                <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
-              </Link>
-            ))
+                <Link
+                  key={club}
+                  href={`/categories/${club}`}
+                  className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
+                >
+                  <Image
+                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                    alt={club}
+                    width={24}
+                    height={24}
+                    className='aspect-square! rounded-full'
+                  />
+                  <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+                </Link>
+              ))
             : 'None'}
         </div>
       ),
@@ -222,53 +222,55 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
       <div className='p-lg lg:p-xl flex flex-col items-center gap-3 lg:pt-5'>
-        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
-          <div className='flex w-full flex-row gap-2'>
-            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
-              <SecondaryButton
-                onClick={openTransferModal}
-                className='w-full text-lg'
-                disabled={authStatus !== 'authenticated'}
-              >
-                Transfer
-              </SecondaryButton>
-            )}
-            {!isSubname && (
-              <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg'>
-                Extend
-              </PrimaryButton>
-            )}
-            <div className='flex w-fit justify-center gap-2'>
-              <button
-                className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
-                onClick={() => {
-                  window.open(`https://app.ens.domains/${name}`, '_blank')
-                }}
-              >
-                <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-6.5 w-6.5' />
-              </button>
-              <button
-                className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
-                onClick={() => {
-                  window.open(
-                    `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
-                    '_blank'
-                  )
-                }}
-              >
-                <Image src={OPENSEA_LOGO} alt='Opensea Logo' width={28} height={28} className='h-6.5 w-6.5' />
-              </button>
-              <button
-                className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
-                onClick={() => {
-                  window.open(`https://ensvision.com/name/${name}`, '_blank')
-                }}
-              >
-                <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />
-              </button>
-            </div>
+        <div className='flex w-full flex-row gap-2'>
+          {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
+            <>
+              {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+                <SecondaryButton
+                  onClick={openTransferModal}
+                  className='w-full text-lg'
+                  disabled={authStatus !== 'authenticated'}
+                >
+                  Transfer
+                </SecondaryButton>
+              )}
+              {!isSubname && (
+                <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg'>
+                  Extend
+                </PrimaryButton>
+              )}
+            </>
+          )}
+          <div className='flex w-fit justify-center gap-2'>
+            <button
+              className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
+              onClick={() => {
+                window.open(`https://app.ens.domains/${name}`, '_blank')
+              }}
+            >
+              <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-6.5 w-6.5' />
+            </button>
+            <button
+              className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
+              onClick={() => {
+                window.open(
+                  `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
+                  '_blank'
+                )
+              }}
+            >
+              <Image src={OPENSEA_LOGO} alt='Opensea Logo' width={28} height={28} className='h-6.5 w-6.5' />
+            </button>
+            <button
+              className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
+              onClick={() => {
+                window.open(`https://ensvision.com/name/${name}`, '_blank')
+              }}
+            >
+              <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />
+            </button>
           </div>
-        )}
+        </div>
         {rows.map((row) => {
           // Subnames don't have a status
           if (isSubname && row.label === 'Status') return null

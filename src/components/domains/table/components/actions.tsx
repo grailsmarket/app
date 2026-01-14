@@ -226,8 +226,18 @@ const Actions: React.FC<ActionsProps> = ({
           return (
             <>
               <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
-                <SecondaryButton onClick={(e) => openListModal(e, true)}>Edit</SecondaryButton>
-                <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
+                <SecondaryButton
+                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
+                  onClick={(e) => openListModal(e, true)}
+                >
+                  Edit
+                </SecondaryButton>
+                <SecondaryButton
+                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
+                  onClick={openCancelListingModal}
+                >
+                  Cancel
+                </SecondaryButton>
               </div>
               <div className={cn('flex flex-row justify-end sm:hidden', width)}>
                 <SecondaryButton
@@ -244,9 +254,15 @@ const Actions: React.FC<ActionsProps> = ({
           )
         }
         return (
-          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-            <PrimaryButton onClick={(e) => openListModal(e, false)}>List</PrimaryButton>
-          </div>
+          <PrimaryButton
+            onClick={(e) => openListModal(e, false)}
+            className={cn(
+              'border-primary/80 text-primary hover:bg-primary! hover:text-background flex w-16! flex-row items-center justify-center gap-2 border-2 bg-transparent opacity-100 hover:opacity-100',
+              width
+            )}
+          >
+            List
+          </PrimaryButton>
         )
       }
     }
@@ -296,7 +312,7 @@ const Actions: React.FC<ActionsProps> = ({
         {availableAction && (
           <PrimaryButton
             className={cn(
-              'border-primary/80 text-primary bg-transparent hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
+              'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
               availableAction.label !== 'Reg' ? 'hidden md:block' : ''
             )}
             onClick={availableAction.onClick}

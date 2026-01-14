@@ -206,20 +206,20 @@ const Actions: React.FC<ActionsProps> = ({
         {registrationStatus === GRACE_PERIOD ? (
           <button
             onClick={(e) => clickHandler(e, openExtendModal)}
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
           </button>
         ) : REGISTERABLE_STATUSES.includes(registrationStatus) ? (
           <button
             onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Register</p>
           </button>
         ) : domainListing?.price ? (
           <button
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
             onClick={(e) => clickHandler(e, openBuyNowModal)}
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Buy Now</p>
@@ -227,7 +227,7 @@ const Actions: React.FC<ActionsProps> = ({
         ) : (
           <button
             onClick={(e) => clickHandler(e, openMakeOfferModal)}
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border px-2 py-1'
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Offer</p>
           </button>

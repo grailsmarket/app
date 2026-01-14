@@ -19,7 +19,7 @@ const Footer = () => {
             alt='Ethereum Follow Protocol'
             className='w-[120px] sm:w-[180px]'
           />
-          <div className='flex items-center gap-4'>
+          <div className='flex items-center gap-3'>
             <Link href='https://ethid.org/' target='_blank' className='transition-opacity hover:opacity-80'>
               <Image
                 src={byEthId}
@@ -29,13 +29,14 @@ const Footer = () => {
                 className='h-auto w-20 sm:w-24'
               />
             </Link>
+            <div className='bg-foreground/50 h-9 w-0.5 rounded-full' />
             <Link href='https://ethidentitykit.com' target='_blank' className='transition-opacity hover:opacity-80'>
               <Image
                 src={poweredByEIK}
                 alt='Powered by Ethereum Identity Kit'
-                width={36}
+                width={120}
                 height={36}
-                className='h-auto w-9 sm:w-10'
+                className='h-auto w-28 sm:w-32'
               />
             </Link>
           </div>

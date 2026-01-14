@@ -42,6 +42,8 @@ interface BulkSelectProps {
 
 const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType = 'profile' }) => {
   const [isRemovingFromWatchlist, setIsRemovingFromWatchlist] = useState(false)
+  // Delayed state for content switch - keeps expanded content visible during close animation
+  const [showExpandedContent, setShowExpandedContent] = useState(false)
 
   const dispatch = useAppDispatch()
   const {
@@ -51,6 +53,20 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectAll,
     watchlistIds: selectedWatchlistIds,
   } = useAppSelector(selectBulkSelect)
+
+  // Handle delayed content switch for smooth close animation
+  useEffect(() => {
+    if (isSelecting) {
+      // When opening, show expanded content immediately
+      setShowExpandedContent(true)
+    } else {
+      // When closing, delay hiding expanded content until after transition completes
+      const timeout = setTimeout(() => {
+        setShowExpandedContent(false)
+      }, 300) // match transition duration
+      return () => clearTimeout(timeout)
+    }
+  }, [isSelecting])
 
   // Listen for shift key events and update Redux state
   useShiftKeyListener()
@@ -295,7 +311,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
+        <div className='bg-background shadow-bulk flex flex-row gap-1.5 rounded-md p-2 sm:hidden'>
           <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
             {selectedDomains.length}
           </SecondaryButton>
@@ -315,12 +331,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       <div
         className={cn(
-          'shadow-bulk bg-background overflow-hidden rounded-md transition-all duration-600 ease-in-out',
-          isSelecting ? 'max-w-[95vw] md:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[70vw] 2xl:max-w-[60vw]' : 'max-w-34'
+          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-300',
+          isSelecting ? 'w-[min(800px,95vw)]' : 'w-34'
         )}
+        // style={{ transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)' }}
       >
-        {isSelecting ? (
-          <div className='flex max-w-full flex-row overflow-x-scroll'>
+        {showExpandedContent ? (
+          <div
+            className={cn(
+              'flex max-w-full flex-row overflow-x-scroll transition-opacity duration-300',
+              isSelecting ? 'opacity-100' : 'opacity-0'
+            )}
+          >
             <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
               {showWatchlistButton && (
                 <PrimaryButton
@@ -383,7 +405,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     onClick={handleSelectAll}
                     disabled={!selectAllContext?.canSelectAll}
                   >
-                    Select All
+                    Select&nbsp;All
                   </SecondaryButton>
                 )}
                 <SecondaryButton
@@ -398,7 +420,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         ) : (
           <div className='p-2 sm:p-3'>
             <PrimaryButton onClick={handleBulkSelect} className='w-28'>
-              Bulk Select
+              Bulk&nbsp;Select
             </PrimaryButton>
           </div>
         )}

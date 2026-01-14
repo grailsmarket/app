@@ -14,7 +14,7 @@ import {
 import { setCancelListingModalListings, setCancelListingModalOpen } from '@/state/reducers/modals/cancelListingModal'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
-import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
 import { RegistrationStatus } from '@/types/domains'
 import Image from 'next/image'
 import CalendarIcon from 'public/icons/calendar-white.svg'
@@ -59,7 +59,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
   const domainListing = domain.listings[0]
   const hasListing = Boolean(domainListing?.price)
   const isRegistered = registrationStatus === REGISTERED
-  const isUnregistered = registrationStatus === UNREGISTERED
+  const isUnregistered = REGISTERABLE_STATUSES.includes(registrationStatus)
 
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault()

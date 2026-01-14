@@ -30,21 +30,21 @@ const DisplayedCards: React.FC = () => {
   })
   return (
     <div className='shadow-primary background-radial-primary relative mt-28 h-[240px] w-[240px] rounded-full sm:mt-24 lg:mt-40'>
-      <div className='shadow-homeCard absolute -top-28 left-0 z-20 h-[300px] w-[190px] overflow-hidden rounded-lg sm:-top-24 sm:left-0 sm:h-[360px] sm:w-[240px]'>
+      <div className='shadow-homeCard absolute -top-28 left-0 z-20 h-[350px] w-[190px] overflow-hidden rounded-lg sm:-top-24 sm:left-0 sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
         ) : (
           <Card domain={domains[0]} className='hover:bg-tertiary! opacity-100! hover:opacity-100!' />
         )}
       </div>
-      <div className='shadow-homeCard absolute top-0 left-28 z-30 h-[300px] w-[190px] overflow-hidden rounded-lg sm:top-0 sm:left-36 sm:h-[360px] sm:w-[240px]'>
+      <div className='shadow-homeCard absolute top-0 left-28 z-30 h-[350px] w-[190px] overflow-hidden rounded-lg sm:top-0 sm:left-36 sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
         ) : (
           <Card domain={domains[1]} className='hover:bg-tertiary! opacity-100! hover:opacity-100!' />
         )}
       </div>
-      <div className='shadow-homeCard absolute top-14 -left-12 z-10 h-[300px] w-[190px] overflow-hidden rounded-lg sm:top-24 sm:-left-20 sm:h-[360px] sm:w-[240px]'>
+      <div className='shadow-homeCard absolute top-14 -left-12 z-10 h-[350px] w-[190px] overflow-hidden rounded-lg sm:top-24 sm:-left-20 sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
         ) : (

@@ -238,7 +238,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
                 Extend
               </PrimaryButton>
             )}
-            <div className='flex w-full justify-center gap-2'>
+            <div className='flex w-fit justify-center gap-2'>
               <button
                 className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
                 onClick={() => {
@@ -261,7 +261,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
               <button
                 className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
                 onClick={() => {
-                  window.open(`https://app.ens.domains/${name}/register`, '_blank')
+                  window.open(`https://ensvision.com/name/${name}`, '_blank')
                 }}
               >
                 <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />

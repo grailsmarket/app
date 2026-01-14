@@ -25,9 +25,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const activeCategoryTab = categoryTab?.value || 'names'
   const isClient = useIsClient()
   const { categories, userCategoryCounts } = useCategories()
-  // Get marketplace tab from filter router
-  const { marketplaceTab } = useFilterRouter()
+  // Get marketplace and categoriesPage tabs from filter router
+  const { marketplaceTab, categoriesPageTab } = useFilterRouter()
   const activeMarketplaceTab = marketplaceTab?.value || 'names'
+  const activeCategoriesPageTab = categoriesPageTab?.value || 'categories'
 
   if (!isClient) return null
 
@@ -38,12 +39,17 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
 
   // Use appropriate categories based on filter context
   const showCategoryTab =
-    filterType === 'marketplace' || activeProfileTab === 'domains' || activeProfileTab === 'watchlist' // Only show category tab for marketplace and portfolio domains tab
+    filterType === 'marketplace' ||
+    filterType === 'categoriesPage' ||
+    activeProfileTab === 'domains' ||
+    activeProfileTab === 'watchlist' // Only show category tab for marketplace, categoriesPage, and portfolio domains tab
 
-  // Hide status filter for category and marketplace Premium and Available tabs, and profile Grace tab (status is locked for these tabs)
+  // Hide status filter for category/marketplace/categoriesPage Premium and Available tabs, and profile Grace tab (status is locked for these tabs)
   const showStatusFilter = !(
     (filterType === 'category' && (activeCategoryTab === 'premium' || activeCategoryTab === 'available')) ||
     (filterType === 'marketplace' && (activeMarketplaceTab === 'premium' || activeMarketplaceTab === 'available')) ||
+    (filterType === 'categoriesPage' &&
+      (activeCategoriesPageTab === 'premium' || activeCategoriesPageTab === 'available')) ||
     (filterType === 'profile' && activeProfileTab === 'grace')
   )
 

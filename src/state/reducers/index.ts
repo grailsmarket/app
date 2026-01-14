@@ -10,6 +10,7 @@ import filterPanelReducer from './filterPanel'
 import profileReducer from './portfolio'
 import marketplaceReducer from './marketplace'
 import categoryReducer from './category'
+import categoriesPageReducer from './categoriesPage'
 import transactionReducer from './transactions'
 import registrationReducer from './registration'
 import viewReducer from './view'
@@ -31,6 +32,7 @@ const reducer = combineReducers({
   profile: profileReducer,
   marketplace: marketplaceReducer,
   category: categoryReducer,
+  categoriesPage: categoriesPageReducer,
   transactions: transactionReducer,
   scroll: scrollPosition,
   registration: registrationReducer,

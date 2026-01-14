@@ -16,6 +16,9 @@ import categoryPremiumFiltersReducer from './categoryPremiumFilters'
 import categoryAvailableFiltersReducer from './categoryAvailableFilters'
 import categoryActivityFiltersReducer from './categoryActivityFilters'
 import categoriesPageFiltersReducer from './categoriesPageFilters'
+import categoriesNamesFiltersReducer from './categoriesNamesFilters'
+import categoriesPremiumDomainsFiltersReducer from './categoriesPremiumDomainsFilters'
+import categoriesAvailableDomainsFiltersReducer from './categoriesAvailableDomainsFilters'
 
 const filtersReducer = combineReducers({
   myOffersFilters: myOffersFiltersReducer,
@@ -35,6 +38,9 @@ const filtersReducer = combineReducers({
   categoryAvailableFilters: categoryAvailableFiltersReducer,
   categoryActivityFilters: categoryActivityFiltersReducer,
   categoriesPageFilters: categoriesPageFiltersReducer,
+  categoriesNamesFilters: categoriesNamesFiltersReducer,
+  categoriesPremiumDomainsFilters: categoriesPremiumDomainsFiltersReducer,
+  categoriesAvailableDomainsFilters: categoriesAvailableDomainsFiltersReducer,
 })
 
 export default filtersReducer

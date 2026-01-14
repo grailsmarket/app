@@ -317,9 +317,16 @@ const DEFAULT_EMPTY_CATEGORIES_PAGE_FILTER_STATE: CategoriesPageFilterState = {
  */
 export function serializeCategoriesPageFiltersToUrl(
   filters: CategoriesPageFilterState,
-  emptyFilterState: CategoriesPageFilterState = DEFAULT_EMPTY_CATEGORIES_PAGE_FILTER_STATE
+  emptyFilterState: CategoriesPageFilterState = DEFAULT_EMPTY_CATEGORIES_PAGE_FILTER_STATE,
+  tab?: string,
+  defaultTab: string = 'categories'
 ): string {
   const params = new URLSearchParams()
+
+  // Tab (only if not default)
+  if (tab && tab !== defaultTab) {
+    params.set(URL_PARAMS.tab, tab)
+  }
 
   // Search
   if (filters.search && filters.search !== emptyFilterState.search) {

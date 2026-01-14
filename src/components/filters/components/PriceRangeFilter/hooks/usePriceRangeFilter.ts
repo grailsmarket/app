@@ -25,10 +25,18 @@ export const usePriceRangeFilter = () => {
     const reduxMaxStr = maxVal !== null ? String(maxVal) : null
 
     // Sync on initial load, when Redux changes to a new non-null value, or when Redux is cleared to null
-    if (isInitialSync.current || (reduxMinStr !== currMinVal && reduxMinStr !== null) || (reduxMinStr === null && currMinVal !== null)) {
+    if (
+      isInitialSync.current ||
+      (reduxMinStr !== currMinVal && reduxMinStr !== null) ||
+      (reduxMinStr === null && currMinVal !== null)
+    ) {
       setCurrMinVal(reduxMinStr)
     }
-    if (isInitialSync.current || (reduxMaxStr !== currMaxVal && reduxMaxStr !== null) || (reduxMaxStr === null && currMaxVal !== null)) {
+    if (
+      isInitialSync.current ||
+      (reduxMaxStr !== currMaxVal && reduxMaxStr !== null) ||
+      (reduxMaxStr === null && currMaxVal !== null)
+    ) {
       setCurrMaxVal(reduxMaxStr)
     }
 

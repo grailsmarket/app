@@ -19,9 +19,10 @@ interface UserProps {
   address: Address
   className?: string
   wrapperClassName?: string
+  loadingCellWidth?: string
 }
 
-const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => {
+const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '80%' }) => {
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', address],
@@ -33,7 +34,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName }) => 
     },
   })
 
-  if (profileIsLoading) return <LoadingCell height='28px' width='80%' />
+  if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
 
   return (
     <ProfileTooltip

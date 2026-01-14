@@ -296,7 +296,7 @@ const Actions: React.FC<ActionsProps> = ({
         {availableAction && (
           <PrimaryButton
             className={cn(
-              'border-primary/80 text-primary bg-background hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
+              'border-primary/80 text-primary bg-transparent hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
               availableAction.label !== 'Reg' ? 'hidden md:block' : ''
             )}
             onClick={availableAction.onClick}

@@ -100,12 +100,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          domain.listings?.some(
-            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-          )
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        domain.listings?.some(
+          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+        )
+    )
     : []
 
   const handleBulkSelect = () => {
@@ -144,10 +144,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-          results
-            .filter((result) => !result.success)
-            .map((result) => result.watchlistId)
-            .join(', ')
+        results
+          .filter((result) => !result.success)
+          .map((result) => result.watchlistId)
+          .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())
@@ -331,10 +331,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       <div
         className={cn(
-          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-300',
+          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200',
           isSelecting ? 'w-[min(800px,95vw)]' : 'w-34'
         )}
-        // style={{ transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)' }}
+      // style={{ transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)' }}
       >
         {showExpandedContent ? (
           <div

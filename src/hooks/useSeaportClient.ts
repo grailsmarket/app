@@ -265,9 +265,6 @@ export function useSeaportClient() {
         // Determine if this is a brokered listing (broker specified + Grails marketplace)
         const isBrokeredListing = params.brokerAddress && params.brokerFeeBps && params.marketplace.includes('grails')
 
-        // Send to appropriate API endpoint
-        let response: Response
-
         if (isBrokeredListing) {
           // Use brokered-listings endpoint for each domain
           // Note: brokered-listings endpoint handles one listing at a time
@@ -311,7 +308,7 @@ export function useSeaportClient() {
         }
 
         // Regular listing - use existing endpoint
-        response = await fetch('/api/listings/create', {
+        const response = await fetch('/api/listings/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

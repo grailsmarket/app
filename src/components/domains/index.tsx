@@ -186,7 +186,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+                    <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

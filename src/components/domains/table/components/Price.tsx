@@ -7,7 +7,7 @@ import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import useETHPrice from '@/hooks/useETHPrice'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
-import { PREMIUM, REGISTERABLE_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, PREMIUM, REGISTERABLE_STATUSES, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface PriceProps {
   name: string
@@ -16,12 +16,22 @@ interface PriceProps {
   registrationStatus: RegistrationStatus
   columnCount: number
   index: number
+  showGracePeriod?: boolean
 }
 
-const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationStatus, columnCount, index }) => {
+const Price: React.FC<PriceProps> = ({
+  name,
+  expiry_date,
+  listing,
+  registrationStatus,
+  columnCount,
+  index,
+  showGracePeriod = false,
+}) => {
   const { ethPrice } = useETHPrice()
   // Only use 'premium' type for premium names, null for others (no grace period in table Price component)
-  const countdownType = registrationStatus === PREMIUM ? 'premium' : null
+  const countdownType =
+    registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD && showGracePeriod ? 'grace' : null
   const { premiumPrice, timeLeftString } = useExpiryCountdown(expiry_date, countdownType)
   const regPrice = calculateRegistrationPrice(name, ethPrice)
 
@@ -62,6 +72,20 @@ const Price: React.FC<PriceProps> = ({ name, expiry_date, listing, registrationS
           <p className='text-md text-premium/70 font-medium'>Premium ({timeLeftString})</p>
         )}
         {registrationStatus === UNREGISTERED && <p className='text-md text-available font-medium'>Available</p>}
+      </div>
+    )
+  }
+
+  if (registrationStatus === GRACE_PERIOD && showGracePeriod) {
+    return (
+      <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
+        <p className='text-md text-grace font-medium'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+        {expiry_date && (
+          <p className='text-md text-neutral font-semibold'>
+            <span className='xs:inline hidden'>Expiry</span>{' '}
+            {formatExpiryDate(expiry_date, { includeTime: false, dateDivider: '/' })}
+          </p>
+        )}
       </div>
     )
   }

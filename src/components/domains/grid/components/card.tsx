@@ -318,7 +318,8 @@ const Card: React.FC<CardProps> = ({
                 </div>
               </div>
             )}
-          {(((profileTab.value === 'domains' || profileTab.value === 'watchlist') && filterType === 'profile') ||
+          {(((profileTab.value === 'domains' || profileTab.value === 'watchlist' || profileTab.value === 'grace') &&
+            filterType === 'profile') ||
             filterType === 'category') &&
             domain.expiry_date && (
               <div className='flex items-center gap-1'>

@@ -90,6 +90,7 @@ const TableRow: React.FC<TableRowProps> = ({
         registrationStatus={registrationStatus}
         columnCount={columnCount}
         index={index}
+        showGracePeriod={!displayedColumns.includes('expires')}
       />
     ),
     last_sale: <LastSale key={`${domain.name}-last_sale`} domain={domain} columnCount={columnCount} index={index} />,

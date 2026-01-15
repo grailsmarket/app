@@ -3,7 +3,7 @@
 import React from 'react'
 import MainPanel from './main-panel'
 import { useCategories } from '@/components/filters/hooks/useCategories'
-import CategoryDetails from './categoryDetails'
+import CategoryDetails, { CATEGORY_IMAGES } from './categoryDetails'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import Link from 'next/link'
 
@@ -13,7 +13,9 @@ interface Props {
 
 const CategoryPage: React.FC<Props> = ({ category }) => {
   const { categories: allCategories, categoriesLoading } = useCategories()
-  const categoryDetails = allCategories?.find((item) => item.name === category)
+  const categoryDetails = allCategories?.find(
+    (item) => item.name === category && item.name in CATEGORY_IMAGES
+  )
 
   if (categoriesLoading) {
     return (

@@ -81,7 +81,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   // Broker fields
   const [brokerAddress, setBrokerAddress] = useState<string>('')
   const [brokerFeePercent, setBrokerFeePercent] = useState<number | ''>('')
-  const [minBrokerFeePercent, setMinBrokerFeePercent] = useState<number>(1) // Default 1%
+  const [minBrokerFeePercent, setMinBrokerFeePercent] = useState<number>(0.0001) // Default 1%
   const [showBrokerSection, setShowBrokerSection] = useState(false)
 
   const debouncedBrokerAddress = useDebounce(brokerAddress, 500)
@@ -468,7 +468,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                                   return newPrices
                                 })
                             }}
-                            placeholder='0.1'
+                            placeholder='Enter number'
                             min={0}
                             step={0.001}
                             max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
@@ -591,7 +591,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   className='flex cursor-pointer items-center justify-between'
                 >
                   <div className='flex flex-col'>
-                    <p className='text-lg font-semibold'>Broker (Optional)</p>
+                    <div className='flex items-center gap-1.5 text-lg font-semibold'>
+                      <p>Broker</p>
+                      <p className='text-neutral text-md font-medium'>(Optional)</p>
+                    </div>
                     <p className='text-neutral text-md font-medium'>Add a broker to receive a fee from this sale</p>
                   </div>
                   <Image
@@ -640,9 +643,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
                     <Input
                       type='number'
-                      label={`Broker Fee % (min ${minBrokerFeePercent}%)`}
+                      label={`Broker Fee %`}
                       value={brokerFeePercent}
-                      labelClassName='min-w-2/3!'
+                      labelClassName='min-w-[144px]!'
                       onChange={(e) => {
                         const value = e.target.value
                         if (value === '') {
@@ -653,7 +656,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                           setBrokerFeePercent(Math.min(numValue, 100))
                         }
                       }}
-                      placeholder={`${minBrokerFeePercent}`}
+                      placeholder={`Enter number`}
                       min={minBrokerFeePercent}
                       max={100}
                       step={0.1}
@@ -749,14 +752,25 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 <div className='space-y-1'>
                   <div className='flex justify-between text-gray-400'>
                     <span>Listing Price:</span>
-                    <span>
-                      {prices[0]} {currencies[0]}
-                    </span>
+                    <div className='flex flex-col items-end gap-px'>
+                      <p>
+                        {prices[0]} {currencies[0]}
+                      </p>
+                      {currencies[0] === 'ETH' && (
+                        <p className='text-xs'>
+                          ($
+                          {(Number(prices[0]) * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
+                            maximumFractionDigits: 2,
+                          })}
+                          )
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {calculateFees()!.fees.map((fee, idx) => (
                     <div
                       key={idx}
-                      className={cn('flex justify-between', fee.amount > 0 ? 'text-red-400' : 'text-green-400')}
+                      className={cn('flex justify-between', fee.amount > 0 ? 'text-zinc-300' : 'text-green-400')}
                     >
                       <p className='pt-px'>- {fee.label}:</p>
                       <div className='flex flex-col items-end gap-px'>

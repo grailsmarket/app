@@ -5,7 +5,7 @@ import { Address } from 'viem'
 import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
 import { useBrokeredListings } from '../hooks/useBrokeredListings'
-import { PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
+import { PORTFOLIO_BROKER_DISPLAYED_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -112,7 +112,7 @@ const BrokerPanel: React.FC<Props> = ({ user }) => {
             fetchMoreBrokeredListings()
           }
         }}
-        displayedDetails={PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS}
+        displayedDetails={PORTFOLIO_BROKER_DISPLAYED_COLUMNS}
         showWatchlist={false}
         isBulkSelecting={false}
       />

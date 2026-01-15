@@ -585,7 +585,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
             {/* Broker section - only show when Grails is selected */}
             {selectedMarketplace.length === 1 && selectedMarketplace[0] === 'grails' && (
-              <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
+              <div className='border-tertiary flex flex-col gap-0 rounded-md border p-3'>
                 <div
                   onClick={() => setShowBrokerSection(!showBrokerSection)}
                   className='flex cursor-pointer items-center justify-between'
@@ -607,8 +607,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 </div>
 
                 {showBrokerSection && (
-                  <div className='mt-2 flex flex-col gap-3'>
-                    <div className='flex w-full flex-col gap-2'>
+                  <div className='mt-2 flex flex-col gap-6'>
+                    <div className='relative flex w-full flex-col gap-2'>
                       <Input
                         type='text'
                         label='Broker Address'
@@ -623,12 +623,12 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                       {debouncedBrokerAddress.length > 0 &&
                         !isBrokerAccountLoading &&
                         (brokerAccount ? (
-                          <div className='px-md flex items-center gap-2'>
+                          <div className='px-md absolute -bottom-5 left-0 flex items-center gap-1'>
                             <Avatar
                               address={brokerAccount.address}
                               name={brokerAccount.ens.name}
                               src={brokerAccount.ens.avatar}
-                              style={{ width: 24, height: 24 }}
+                              style={{ width: 16, height: 16 }}
                             />
                             <p className='text-neutral text-md font-medium'>
                               {isAddress(brokerAddress) && brokerAccount.ens.name
@@ -751,13 +751,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <div className='bg-secondary border-tertiary text-md rounded-md border p-3'>
                 <div className='space-y-1'>
                   <div className='flex justify-between text-gray-400'>
-                    <span>Listing Price:</span>
+                    <p className='text-lg font-semibold'>Listing Price:</p>
                     <div className='flex flex-col items-end gap-px'>
-                      <p>
+                      <p className='text-lg font-semibold'>
                         {prices[0]} {currencies[0]}
                       </p>
                       {currencies[0] === 'ETH' && (
-                        <p className='text-xs'>
+                        <p className='text-sm font-medium'>
                           ($
                           {(Number(prices[0]) * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
                             maximumFractionDigits: 2,
@@ -770,7 +770,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   {calculateFees()!.fees.map((fee, idx) => (
                     <div
                       key={idx}
-                      className={cn('flex justify-between', fee.amount > 0 ? 'text-zinc-300' : 'text-green-400')}
+                      className={cn(
+                        'flex justify-between text-lg font-medium',
+                        fee.amount > 0 ? 'text-zinc-300' : 'text-green-400'
+                      )}
                     >
                       <p className='pt-px'>- {fee.label}:</p>
                       <div className='flex flex-col items-end gap-px'>
@@ -778,7 +781,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                           {fee.amount.toFixed(currencies[0] === 'USDC' ? 2 : 4)} {currencies[0]}
                         </p>
                         {fee.amount > 0 && currencies[0] === 'ETH' && (
-                          <p className='text-xs'>
+                          <p className='text-sm font-medium'>
                             ($
                             {(fee.amount * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
                               maximumFractionDigits: 2,
@@ -791,7 +794,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   ))}
                   <div className='bg-primary my-2 h-px w-full' />
                   <div className='flex justify-between font-medium'>
-                    <span>You Receive:</span>
+                    <p className='text-lg font-semibold'>You Receive:</p>
                     <div className='flex flex-col items-end gap-px'>
                       <p className='text-lg font-bold'>
                         {calculateFees()!.netProceeds.toLocaleString('default', {
@@ -801,7 +804,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                         {currencies[0]}
                       </p>
                       {currencies[0] === 'ETH' && (
-                        <p className='text-neutral text-xs'>
+                        <p className='text-neutral text-sm font-medium'>
                           ($
                           {(calculateFees()!.netProceeds * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
                             maximumFractionDigits: 2,

@@ -350,7 +350,10 @@ const Card: React.FC<CardProps> = ({
                 </div>
               </div>
             )}
-          {(((profileTab.value === 'domains' || profileTab.value === 'watchlist' || profileTab.value === 'grace') &&
+          {(((profileTab.value === 'domains' ||
+            profileTab.value === 'watchlist' ||
+            profileTab.value === 'grace' ||
+            profileTab.value === 'broker') &&
             filterType === 'profile') ||
             filterType === 'category') &&
             domain.expiry_date && (
@@ -369,13 +372,14 @@ const Card: React.FC<CardProps> = ({
           )}
         </div>
         <div className='flex flex-col gap-2'>
-          {domain.owner && (filterType !== 'profile' || profileTab.value === 'watchlist') && (
-            <User
-              address={domain.owner as Address}
-              className='max-w-full'
-              wrapperClassName='justify-start! max-w-full'
-            />
-          )}
+          {domain.owner &&
+            (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
+              <User
+                address={domain.owner as Address}
+                className='max-w-full'
+                wrapperClassName='justify-start! max-w-full'
+              />
+            )}
           <div className='flex justify-between'>
             <Actions
               domain={domain}

@@ -135,7 +135,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
                 align='left'
               >
                 <Link
-                  href={`/profile/${listing.broker_address}`}
+                  href={`/profile/${listing.broker_address}?tab=broker`}
                   className='bg-primary/20 text-primary hover:bg-primary/30 rounded-md px-2 py-1 text-xs font-semibold transition-colors'
                 >
                   Brokered

@@ -100,12 +100,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          domain.listings?.some(
-            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-          )
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        domain.listings?.some(
+          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+        )
+    )
     : []
 
   const handleBulkSelect = () => {
@@ -177,10 +177,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-          results
-            .filter((result) => !result.success)
-            .map((result) => result.watchlistId)
-            .join(', ')
+        results
+          .filter((result) => !result.success)
+          .map((result) => result.watchlistId)
+          .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())
@@ -344,8 +344,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk hidden rounded-md p-2 lg:block'>
+        <div className='bg-background shadow-bulk hidden rounded-md p-2 lg:flex flex-row gap-1.5'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
+          <div className='w-px h-4 bg-neutral' />
+          <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to select all</p>
+          <div className='w-px h-4 bg-neutral' />
+          <p className='text-md text-neutral text-end font-semibold'>ESC to close</p>
         </div>
       )}
 

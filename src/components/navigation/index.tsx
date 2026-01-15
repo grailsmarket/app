@@ -1,24 +1,24 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import Image from 'next/image'
-import logo from 'public/logo-w-text.png'
-import logoMobile from 'public/logo.png'
-import Link from 'next/link'
-import Searchbar from '../ui/searchbar'
-import Pages from './pages'
-import SignInButton from '../ui/buttons/signInButton/index'
 import Cart from './cart'
-import Notifications from './notifications'
+import Pages from './pages'
+import Link from 'next/link'
+import Image from 'next/image'
 import Hamburger from './hamburger'
 import Watchlist from './watchlist'
 import SearchIcon from './searchIcon'
 import { cn } from '@/utils/tailwind'
+import Searchbar from '../ui/searchbar'
+import logoMobile from 'public/logo.png'
+import logo from 'public/logo-w-text.png'
+import Notifications from './notifications'
+import { useNavbar } from '@/context/navbar'
 import { useAppSelector } from '@/state/hooks'
+import SignInButton from '../ui/buttons/signInButton/index'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { selectProfileListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
 import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
-import { useNavbar } from '@/context/navbar'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [isVisible, setIsVisible] = useState(true)
@@ -84,7 +84,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (Press /)' />
           </div>
           <Pages className='hidden md:flex' />
         </div>

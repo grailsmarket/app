@@ -100,12 +100,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        domain.listings?.some(
-          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-        )
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          domain.listings?.some(
+            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+          )
+      )
     : []
 
   const handleBulkSelect = () => {
@@ -177,10 +177,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-        results
-          .filter((result) => !result.success)
-          .map((result) => result.watchlistId)
-          .join(', ')
+          results
+            .filter((result) => !result.success)
+            .map((result) => result.watchlistId)
+            .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())
@@ -344,11 +344,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk hidden rounded-md p-2 lg:flex flex-row gap-1.5'>
+        <div className='bg-background shadow-bulk hidden flex-row gap-1.5 rounded-md p-2 lg:flex'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
-          <div className='w-px h-4 bg-neutral' />
+          <div className='bg-neutral h-4 w-px' />
           <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to Select All</p>
-          <div className='w-px h-4 bg-neutral' />
+          <div className='bg-neutral h-4 w-px' />
           <p className='text-md text-neutral text-end font-semibold'>ESC to Close</p>
         </div>
       )}

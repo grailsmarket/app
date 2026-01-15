@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useDomains } from '../hooks/useDomains'
 import Domains from '@/components/domains'
 import ViewSelector from '@/components/domains/viewSelector'
@@ -26,6 +26,64 @@ const DomainPanel = () => {
   const { isNavbarVisible } = useNavbar()
   const { selectedTab } = useAppSelector(selectMarketplace)
 
+  // Local state for search input to prevent glitchy typing
+  const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const userHasTyped = useRef(false)
+
+  // Sync local state from Redux/URL only on initial page load
+  // Once user starts typing, local state becomes the source of truth
+  useEffect(() => {
+    if (!userHasTyped.current) {
+      setLocalSearch(selectors.filters.search || '')
+    }
+  }, [selectors.filters.search])
+
+  // Debounced search handler
+  const handleSearchChange = (value: string) => {
+    userHasTyped.current = true
+    setLocalSearch(value)
+
+    // Clear previous timeout
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
+    // Debounce the Redux/URL update
+    debounceRef.current = setTimeout(() => {
+      dispatch(actions.setSearch(value))
+
+      const searchTerm = value.toLowerCase().trim()
+      if (searchTerm.length === 0) {
+        router.push('/marketplace')
+        return
+      }
+
+      const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
+      if (isBulkSearching) {
+        router.push(
+          `/marketplace?search=${searchTerm
+            .replaceAll(' ', ',')
+            .split(',')
+            .map((query) => normalizeName(query.toLowerCase().trim()))
+            .filter((query) => query.length > 2)
+            .join(',')}`
+        )
+      } else {
+        router.push(`/marketplace?search=${normalizeName(searchTerm)}`)
+      }
+    }, 300)
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [])
+
   return (
     <div className='z-0 flex w-full flex-col'>
       <div
@@ -45,36 +103,17 @@ const DomainPanel = () => {
             <input
               type='text'
               placeholder='Search'
-              value={selectors.filters.search || ''}
-              onChange={(e) => {
-                dispatch(actions.setSearch(e.target.value))
-                // router.push(`/marketplace`)
-
-                const searchTerm = e.target.value.toLowerCase().trim()
-                if (searchTerm.length === 0) {
-                  router.push('/marketplace')
-                  return
-                }
-
-                const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
-                if (isBulkSearching) {
-                  router.push(
-                    `/marketplace?search=${searchTerm
-                      .replaceAll(' ', ',')
-                      .split(',')
-                      .map((query) => normalizeName(query.toLowerCase().trim()))
-                      .filter((query) => query.length > 2)
-                      .join(',')}`
-                  )
-                } else {
-                  router.push(`/marketplace?search=${normalizeName(searchTerm)}`)
-                }
-              }}
+              value={localSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
-            {selectors.filters.search.length > 0 ? (
+            {localSearch.length > 0 ? (
               <Cross
-                onClick={() => dispatch(actions.setSearch(''))}
+                onClick={() => {
+                  setLocalSearch('')
+                  dispatch(actions.setSearch(''))
+                  router.push('/marketplace')
+                }}
                 className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
               />
             ) : (

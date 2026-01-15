@@ -55,10 +55,35 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       if (tab.value === 'broker') {
         return totalBrokeredListings > 0
       }
+      // Hide grace tab if no domains in grace period
+      if (tab.value === 'grace') {
+        return totalGraceDomains > 0
+      }
+      // Hide listings tab if no listings
+      if (tab.value === 'listings') {
+        return totalListings > 0
+      }
+      // Hide received offers tab if no received offers
+      if (tab.value === 'received_offers') {
+        return totalReceivedOffers > 0
+      }
+      // Hide sent offers tab if no sent offers
+      if (tab.value === 'sent_offers') {
+        return totalSentOffers > 0
+      }
       return true
     })
     return tabs
-  }, [authStatus, user, userAddress, totalBrokeredListings])
+  }, [
+    authStatus,
+    user,
+    userAddress,
+    totalBrokeredListings,
+    totalGraceDomains,
+    totalListings,
+    totalReceivedOffers,
+    totalSentOffers,
+  ])
 
   const getTotalItems = useMemo(
     () => (tab: (typeof PROFILE_TABS)[number]) => {

@@ -9,7 +9,7 @@ import PrepunksHeader from 'public/clubs/prepunks/header.jpeg'
 import TenKAvatar from 'public/clubs/10k/avatar.jpg'
 import TenKHeader from 'public/clubs/10k/header.jpeg'
 import PokemonAvatar from 'public/clubs/pokemon/avatar.jpg'
-import PokemonHeader from 'public/clubs/pokemon/header.jpeg'
+import PokemonHeader from 'public/clubs/pokemon/header.jpg'
 import OneKForenamesAvatar from 'public/clubs/1kforenames/avatar.jpg'
 import OneKForenamesHeader from 'public/clubs/1kforenames/header.png'
 import OneKSurnamesAvatar from 'public/clubs/1ksurnames/avatar.jpg'
@@ -99,6 +99,19 @@ import GamertagsAvatar from 'public/clubs/gamertags/avatar.jpeg'
 import GamertagsHeader from 'public/clubs/gamertags/header.jpeg'
 import GamertagsDoubleAvatar from 'public/clubs/gamertags_double/avatar.jpeg'
 import GamertagsDoubleHeader from 'public/clubs/gamertags_double/header.jpeg'
+
+import CryptoTermsAvatar from 'public/clubs/crypto_terms/avatar.jpg'
+import CryptoTermsHeader from 'public/clubs/crypto_terms/header.jpg'
+import SocialHandlesAvatar from 'public/clubs/social_handles/avatar.jpg'
+import SocialHandlesHeader from 'public/clubs/social_handles/header.jpg'
+import PokemonGen1Avatar from 'public/clubs/pokemon_gen1/avatar.jpg'
+import PokemonGen1Header from 'public/clubs/pokemon_gen1/header.jpg'
+import PokemonGen2Avatar from 'public/clubs/pokemon_gen2/avatar.jpg'
+import PokemonGen2Header from 'public/clubs/pokemon_gen2/header.jpg'
+import PokemonGen3Avatar from 'public/clubs/pokemon_gen3/avatar.jpg'
+import PokemonGen3Header from 'public/clubs/pokemon_gen3/header.jpg'
+import PokemonGen4Avatar from 'public/clubs/pokemon_gen4/avatar.jpg'
+import PokemonGen4Header from 'public/clubs/pokemon_gen4/header.jpg'
 
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
@@ -275,6 +288,30 @@ export const CATEGORY_IMAGES = {
     avatar: GamertagsDoubleAvatar,
     header: GamertagsDoubleHeader,
   },
+  crypto_terms: {
+    avatar: CryptoTermsAvatar,
+    header: CryptoTermsHeader,
+  },
+  social_handles: {
+    avatar: SocialHandlesAvatar,
+    header: SocialHandlesHeader,
+  },
+  pokemon_gen1: {
+    avatar: PokemonGen1Avatar,
+    header: PokemonGen1Header,
+  },
+  pokemon_gen2: {
+    avatar: PokemonGen2Avatar,
+    header: PokemonGen2Header,
+  },
+  pokemon_gen3: {
+    avatar: PokemonGen3Avatar,
+    header: PokemonGen3Header,
+  },
+  pokemon_gen4: {
+    avatar: PokemonGen4Avatar,
+    header: PokemonGen4Header,
+  },
 }
 
 export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {
@@ -358,6 +395,18 @@ export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: 
   },
   gamertags_double: {
     github: 'https://github.com/grailsmarket/ens-categories/tree/main',
+  },
+  pokemon_gen1: {
+    twitter: 'https://x.com/PokemonENS',
+  },
+  pokemon_gen2: {
+    twitter: 'https://x.com/PokemonENS',
+  },
+  pokemon_gen3: {
+    twitter: 'https://x.com/PokemonENS',
+  },
+  pokemon_gen4: {
+    twitter: 'https://x.com/PokemonENS',
   },
 }
 

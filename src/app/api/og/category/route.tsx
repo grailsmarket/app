@@ -14,7 +14,7 @@ export const CATEGORY_IMAGES = {
   },
   pokemon: {
     avatar: 'https://grails.app/clubs/pokemon/avatar.jpg',
-    header: 'https://grails.app/clubs/pokemon/header.jpeg',
+    header: 'https://grails.app/clubs/pokemon/header.jpg',
   },
   '1kforenames': {
     avatar: 'https://grails.app/clubs/1kforenames/avatar.jpg',
@@ -175,6 +175,30 @@ export const CATEGORY_IMAGES = {
   gamertags_double: {
     avatar: 'https://grails.app/clubs/gamertags_double/avatar.jpeg',
     header: 'https://grails.app/clubs/gamertags_double/header.jpeg',
+  },
+  crypto_terms: {
+    avatar: 'https://grails.app/clubs/crypto_terms/avatar.jpg',
+    header: 'https://grails.app/clubs/crypto_terms/header.jpg',
+  },
+  social_handles: {
+    avatar: 'https://grails.app/clubs/social_handles/avatar.jpg',
+    header: 'https://grails.app/clubs/social_handles/header.jpg',
+  },
+  pokemon_gen1: {
+    avatar: 'https://grails.app/clubs/pokemon_gen1/avatar.jpg',
+    header: 'https://grails.app/clubs/pokemon_gen1/header.jpg',
+  },
+  pokemon_gen2: {
+    avatar: 'https://grails.app/clubs/pokemon_gen2/avatar.jpg',
+    header: 'https://grails.app/clubs/pokemon_gen2/header.jpg',
+  },
+  pokemon_gen3: {
+    avatar: 'https://grails.app/clubs/pokemon_gen3/avatar.jpg',
+    header: 'https://grails.app/clubs/pokemon_gen3/header.jpg',
+  },
+  pokemon_gen4: {
+    avatar: 'https://grails.app/clubs/pokemon_gen4/avatar.jpg',
+    header: 'https://grails.app/clubs/pokemon_gen4/header.jpg',
   },
 }
 

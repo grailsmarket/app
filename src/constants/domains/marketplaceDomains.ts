@@ -161,4 +161,10 @@ export const CATEGORY_LABELS = {
   country_codes: 'Country Codes',
   gamertags: 'Gamertags',
   gamertags_double: 'Gamertags Double',
+  crypto_terms: 'Crypto Words',
+  social_handles: 'Handles',
+  pokemon_gen1: 'Pokemon Gen 1',
+  pokemon_gen2: 'Pokemon Gen 2',
+  pokemon_gen3: 'Pokemon Gen 3',
+  pokemon_gen4: 'Pokemon Gen 4',
 } as const

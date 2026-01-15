@@ -30,7 +30,7 @@ import {
 } from '@/state/reducers/modals/makeListingModal'
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import Calendar from 'public/icons/calendar.svg'
-import { formatUnits, isAddress } from 'viem'
+import { Address, formatUnits, isAddress } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CAN_CLAIM_POAP } from '@/constants'
@@ -143,7 +143,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             formatUnits(
               BigInt(previousListing.price),
               TOKEN_DECIMALS[
-                TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
+              TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
               ]
             )
           )
@@ -237,10 +237,12 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       }
 
       // Add broker params if broker address is provided
-      if (brokerAddress.trim() && Number(brokerFeePercent) > 0) {
-        params.brokerAddress = brokerAddress
+      if (isAddress(brokerAccount?.address || brokerAddress) && Number(brokerFeePercent) > 0) {
+        params.brokerAddress = (brokerAccount?.address || brokerAddress)
         params.brokerFeeBps = Math.round(Number(brokerFeePercent) * 100) // Convert percent to basis points
       }
+
+      // console.log('Params:', params)
 
       const result = await createListing(params)
 
@@ -293,7 +295,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     }
 
     // Add broker fee if specified
-    if (brokerAddress.trim() && Number(brokerFeePercent) > 0 && selectedMarketplace.includes('grails')) {
+    if (brokerAddress.length > 0 && Number(brokerFeePercent) > 0 && selectedMarketplace.includes('grails')) {
       fees.push({
         label: `Broker Fee (${brokerFeePercent}%)`,
         amount: prices.reduce(
@@ -649,13 +651,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                       max={100}
                       step={0.1}
                     />
-                    {brokerAddress.trim() &&
+                    {brokerAddress.length > 0 &&
                       Number(brokerFeePercent) > 0 &&
                       Number(brokerFeePercent) < minBrokerFeePercent && (
                         <p className='text-sm text-red-400'>Broker fee must be at least {minBrokerFeePercent}%</p>
                       )}
 
-                    {brokerAddress.trim() && Number(brokerFeePercent) > 0 && (
+                    {brokerAddress.length > 0 && Number(brokerFeePercent) > 0 && (
                       <div className='bg-secondary rounded-md p-2'>
                         <p className='text-neutral text-md font-medium'>
                           The broker will get <span className='font-bold'>{brokerFeePercent}%</span> of the sale when

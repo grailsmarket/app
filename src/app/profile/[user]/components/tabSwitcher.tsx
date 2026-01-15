@@ -40,7 +40,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   }, [])
 
   const displayedTabs = useMemo(() => {
-    let tabs = PROFILE_TABS.filter((tab) => {
+    const tabs = PROFILE_TABS.filter((tab) => {
       // Only show watchlist to profile owner
       if (tab.value === 'watchlist') {
         return user && userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated'

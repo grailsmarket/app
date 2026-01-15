@@ -32,7 +32,7 @@ const Home = () => {
               </p>
               <HeroSearch />
             </div>
-            <div className='flex h-[480px] w-full items-start justify-center sm:h-[560px] lg:hidden'>
+            <div className='mr-4 flex h-[520px] w-full items-start justify-center sm:h-[600px] lg:mr-0 lg:hidden'>
               <DisplayedCards />
             </div>
             <LiveActivity />

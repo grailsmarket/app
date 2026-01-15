@@ -19,17 +19,24 @@ export const usePriceRangeFilter = () => {
   const minVal = priceRange.min
   const maxVal = priceRange.max
 
-  // Sync local state from Redux when Redux changes externally (e.g., from URL)
+  // Sync local state from Redux when Redux changes externally (e.g., from URL or clear filters)
   useEffect(() => {
-    // Only sync if Redux has a value and local state doesn't match
     const reduxMinStr = minVal !== null ? String(minVal) : null
     const reduxMaxStr = maxVal !== null ? String(maxVal) : null
 
-    // On initial sync or when Redux changes externally
-    if (isInitialSync.current || (reduxMinStr !== currMinVal && reduxMinStr !== null)) {
+    // Sync on initial load, when Redux changes to a new non-null value, or when Redux is cleared to null
+    if (
+      isInitialSync.current ||
+      (reduxMinStr !== currMinVal && reduxMinStr !== null) ||
+      (reduxMinStr === null && currMinVal !== null)
+    ) {
       setCurrMinVal(reduxMinStr)
     }
-    if (isInitialSync.current || (reduxMaxStr !== currMaxVal && reduxMaxStr !== null)) {
+    if (
+      isInitialSync.current ||
+      (reduxMaxStr !== currMaxVal && reduxMaxStr !== null) ||
+      (reduxMaxStr === null && currMaxVal !== null)
+    ) {
       setCurrMaxVal(reduxMaxStr)
     }
 

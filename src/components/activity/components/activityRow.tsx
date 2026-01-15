@@ -63,7 +63,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   }
 
   return (
-    <div className='group px-md lg:px-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-start gap-1 border-b bg-transparent transition hover:bg-white/10'>
+    <div className='group px-md lg:px-lg border-tertiary flex h-[86px] w-full flex-row flex-wrap items-center justify-start border-b bg-transparent py-1 transition hover:bg-white/10 sm:h-[60px] sm:flex-nowrap sm:py-0'>
       {displayedColumns.map((column, index) => (
         <div
           key={column}
@@ -82,6 +82,37 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           {columns[column]}
         </div>
       ))}
+      {displayedColumns.includes('name') ? (
+        <div className='pr-md flex w-full flex-row justify-between sm:hidden'>
+          {addressToShow && (
+            <User
+              address={addressToShow}
+              className='max-w-[50%]'
+              wrapperClassName='justify-start'
+              loadingCellWidth='120px'
+            />
+          )}
+          <Price
+            price={activity.price_wei}
+            currencyAddress={activity.currency_address}
+            tooltipPosition={index === 0 ? 'bottom' : 'top'}
+          />
+        </div>
+      ) : (
+        <div className='flex w-full flex-row justify-between sm:hidden'>
+          {activity.actor_address && (
+            <User
+              address={activity.actor_address}
+              className='max-w-[50%]'
+              wrapperClassName='justify-start'
+              loadingCellWidth='120px'
+            />
+          )}
+          {activity.counterparty_address && (
+            <User address={activity.counterparty_address} className='max-w-[50%]' loadingCellWidth='120px' />
+          )}
+        </div>
+      )}
     </div>
   )
 }

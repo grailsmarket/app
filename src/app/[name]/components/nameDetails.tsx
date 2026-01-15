@@ -35,6 +35,12 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
+import ENS_LOGO from 'public/logos/ens-circle.svg'
+import OPENSEA_LOGO from 'public/logos/opensea.svg'
+import ENSVISION_LOGO from 'public/logos/ensvision.svg'
+import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
+import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { useQuery } from '@tanstack/react-query'
 
 type Row = {
   label: string
@@ -66,6 +72,10 @@ const NameDetails: React.FC<NameDetailsProps> = ({
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
   const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
+  const { data: isWrapped } = useQuery({
+    queryKey: ['isWrapped', name],
+    queryFn: () => checkIfWrapped(name),
+  })
 
   const rows: Row[] = [
     {
@@ -151,12 +161,12 @@ const NameDetails: React.FC<NameDetailsProps> = ({
     },
     {
       label: 'Token ID',
-      value: nameDetails?.token_id,
+      value: nameDetails?.token_id ? truncateAddress(nameDetails?.token_id as `0x${string}`) : null,
       canCopy: true,
     },
     {
       label: 'Namehash',
-      value: nameDetails?.token_id ? numberToHex(BigInt(nameDetails.token_id)) : null,
+      value: nameDetails?.token_id ? truncateAddress(numberToHex(BigInt(nameDetails.token_id))) : null,
       canCopy: true,
     },
   ]
@@ -212,31 +222,62 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
       <div className='p-lg lg:p-xl flex flex-col items-center gap-3 lg:pt-5'>
-        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
-          <div className='flex w-full flex-row gap-2'>
-            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
-              <SecondaryButton
-                onClick={openTransferModal}
-                className='w-full text-lg'
-                disabled={authStatus !== 'authenticated'}
-              >
-                Transfer
-              </SecondaryButton>
-            )}
-            {!isSubname && (
-              <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg'>
-                Extend
-              </PrimaryButton>
-            )}
+        <div className='flex w-full flex-row gap-2'>
+          {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
+            <>
+              {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+                <SecondaryButton
+                  onClick={openTransferModal}
+                  className='w-full text-lg'
+                  disabled={authStatus !== 'authenticated'}
+                >
+                  Transfer
+                </SecondaryButton>
+              )}
+              {!isSubname && (
+                <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg'>
+                  Extend
+                </PrimaryButton>
+              )}
+            </>
+          )}
+          <div className='flex w-fit justify-center gap-2'>
+            <button
+              className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
+              onClick={() => {
+                window.open(`https://app.ens.domains/${name}`, '_blank')
+              }}
+            >
+              <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-6.5 w-6.5' />
+            </button>
+            <button
+              className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
+              onClick={() => {
+                window.open(
+                  `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
+                  '_blank'
+                )
+              }}
+            >
+              <Image src={OPENSEA_LOGO} alt='Opensea Logo' width={28} height={28} className='h-6.5 w-6.5' />
+            </button>
+            <button
+              className='bg-tertiary flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm hover:opacity-80'
+              onClick={() => {
+                window.open(`https://ensvision.com/name/${name}`, '_blank')
+              }}
+            >
+              <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />
+            </button>
           </div>
-        )}
+        </div>
         {rows.map((row) => {
           // Subnames don't have a status
           if (isSubname && row.label === 'Status') return null
           const isUserRow = row.label === 'Owner' || row.label === 'Previous Owner'
 
           return (
-            <div key={row.label} className='flex w-full flex-row items-center justify-between gap-2'>
+            <div key={row.label} className='flex w-full flex-row items-start justify-between gap-2'>
               <p className='font-sedan-sc text-2xl'>{row.label}</p>
               {typeof row.value === 'string' ? (
                 <CopyValue value={row.value} canCopy={row.canCopy} />

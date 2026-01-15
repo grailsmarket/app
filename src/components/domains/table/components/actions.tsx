@@ -26,9 +26,12 @@ import {
 import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
 import { useUserContext } from '@/context/user'
-import { REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
+import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
 import { openRegistrationModal } from '@/state/reducers/registration'
 import ActionsDropdown from '@/components/domains/actionsDropdown'
+import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
+import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
+import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
@@ -63,6 +66,15 @@ const Actions: React.FC<ActionsProps> = ({
     () => userAddress?.toLowerCase() === domain.owner?.toLowerCase() && authStatus === 'authenticated',
     [userAddress, authStatus, domain.owner]
   )
+  const isUnregistered = REGISTERABLE_STATUSES.includes(registrationStatus)
+
+  const openBuyNowModal = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(setBuyNowModalDomain(domain))
+    dispatch(setBuyNowModalListing(domainListing))
+    dispatch(setBuyNowModalOpen(true))
+  }
 
   const openListModal = (e: React.MouseEvent<Element, MouseEvent>, editListing: boolean) => {
     e.preventDefault()
@@ -100,6 +112,68 @@ const Actions: React.FC<ActionsProps> = ({
     )
     dispatch(setCancelListingModalOpen(true))
   }
+
+  const openOfferModal = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(setMakeOfferModalDomain(domain))
+    dispatch(setMakeOfferModalOpen(true))
+  }
+
+  const openExtendModal = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(setBulkRenewalModalDomains([domain]))
+    dispatch(setBulkRenewalModalOpen(true))
+  }
+
+  const availableAction = useMemo(() => {
+    if (isUnregistered) {
+      return {
+        label: 'Reg',
+        onClick: (e: React.MouseEvent<Element, MouseEvent>) => openRegistrationModalHandler(e),
+      }
+    }
+
+    if (registrationStatus === REGISTERED) {
+      if (domainListing?.price) {
+        if (isMyDomain) {
+          return {
+            label: 'Edit',
+            onClick: (e: React.MouseEvent<Element, MouseEvent>) => openListModal(e, true),
+          }
+        }
+
+        return {
+          label: 'Buy',
+          onClick: (e: React.MouseEvent<Element, MouseEvent>) => openBuyNowModal(e),
+        }
+      }
+
+      if (isMyDomain) {
+        return {
+          label: 'List',
+          onClick: (e: React.MouseEvent<Element, MouseEvent>) => openListModal(e, true),
+        }
+      }
+
+      return {
+        label: 'Offer',
+        onClick: (e: React.MouseEvent<Element, MouseEvent>) => openOfferModal(e),
+      }
+    }
+
+    if (registrationStatus === GRACE_PERIOD) {
+      return {
+        label: 'Extend',
+        onClick: (e: React.MouseEvent<Element, MouseEvent>) => openExtendModal(e),
+      }
+    }
+
+    return null
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [domainListing, registrationStatus, isMyDomain])
 
   if (filterType === 'profile' || filterType === 'category') {
     if (
@@ -152,8 +226,18 @@ const Actions: React.FC<ActionsProps> = ({
           return (
             <>
               <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
-                <SecondaryButton onClick={(e) => openListModal(e, true)}>Edit</SecondaryButton>
-                <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
+                <SecondaryButton
+                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
+                  onClick={(e) => openListModal(e, true)}
+                >
+                  Edit
+                </SecondaryButton>
+                <SecondaryButton
+                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
+                  onClick={openCancelListingModal}
+                >
+                  Cancel
+                </SecondaryButton>
               </div>
               <div className={cn('flex flex-row justify-end sm:hidden', width)}>
                 <SecondaryButton
@@ -170,9 +254,15 @@ const Actions: React.FC<ActionsProps> = ({
           )
         }
         return (
-          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-            <PrimaryButton onClick={(e) => openListModal(e, false)}>List</PrimaryButton>
-          </div>
+          <PrimaryButton
+            onClick={(e) => openListModal(e, false)}
+            className={cn(
+              'border-primary/80 text-primary hover:bg-primary! hover:text-background flex w-16! flex-row items-center justify-center gap-2 border-2 bg-transparent opacity-100 hover:opacity-100',
+              width
+            )}
+          >
+            List
+          </PrimaryButton>
         )
       }
     }
@@ -206,28 +296,29 @@ const Actions: React.FC<ActionsProps> = ({
             />
           </div>
         )}
-        {REGISTERABLE_STATUSES.includes(registrationStatus) ? (
-          <>
-            <PrimaryButton className='ml-1' onClick={(e) => openRegistrationModalHandler(e)}>
-              Reg
-            </PrimaryButton>
-          </>
-        ) : (
-          <>
-            {canAddToCart && (
-              <button className={`cursor-pointer rounded-sm p-0`}>
-                <CartIcon domain={domain} />
-              </button>
+        {canAddToCart && !isMyDomain && !watchlistId && (
+          <button className={`cursor-pointer rounded-sm p-0`}>
+            <CartIcon domain={domain} />
+          </button>
+        )}
+        {!isBulkSelecting && !isUnregistered && (
+          <ActionsDropdown
+            domain={domain}
+            isOwner={isMyDomain}
+            registrationStatus={registrationStatus}
+            dropdownPosition='left'
+          />
+        )}
+        {availableAction && (
+          <PrimaryButton
+            className={cn(
+              'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
+              availableAction.label !== 'Reg' ? 'hidden md:block' : ''
             )}
-            {!isBulkSelecting && (
-              <ActionsDropdown
-                domain={domain}
-                isOwner={isMyDomain}
-                registrationStatus={registrationStatus}
-                dropdownPosition='left'
-              />
-            )}
-          </>
+            onClick={availableAction.onClick}
+          >
+            {availableAction.label}
+          </PrimaryButton>
         )}
       </div>
     </div>

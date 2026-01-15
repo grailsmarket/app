@@ -54,6 +54,7 @@ const Profile: React.FC<Props> = ({ user }) => {
               addressOrName={user}
               showPoaps={true}
               showFollowButton={true}
+              showFollowerState={true}
               style={{ paddingLeft: '10px' }}
               onStatClick={({ stat }) => {
                 setIsFollowersAndFollowingOpen(true)

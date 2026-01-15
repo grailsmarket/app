@@ -1,5 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { MarketplaceFiltersOpenedState } from '@/state/reducers/filters/marketplaceFilters'
+import { CategoriesPageFiltersOpenedState } from '@/state/reducers/filters/categoriesPageFilters'
 import {
   ALL_SORT_FILTERS,
   MY_DOMAINS_FILTER_LABELS,
@@ -25,6 +26,7 @@ import {
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 import { CategoryTabType } from '@/state/reducers/category/category'
+import { CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
 
 export type { TypeFiltersState, MarketFiltersState, TextMatchFiltersState, TextNonMatchFiltersState }
 export {
@@ -83,6 +85,7 @@ export interface FilterRouter<T extends FilterContextType> {
   profileTab?: ProfileTabType
   marketplaceTab?: MarketplaceTabType
   categoryTab?: CategoryTabType
+  categoriesPageTab?: CategoriesPageTabType
   isFiltersClear: boolean
 }
 

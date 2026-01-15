@@ -328,6 +328,77 @@ import {
 // Import category state selector
 import { selectCategory } from '@/state/reducers/category/category'
 
+// Import categoriesPage state selector
+import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
+
+// Import categoriesNamesFilters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoriesNamesFilters,
+  selectCategoriesNamesFilters,
+  setFiltersOpen as setCategoriesNamesFiltersOpen,
+  toggleFiltersStatus as toggleCategoriesNamesFiltersStatus,
+  setFiltersStatus as setCategoriesNamesFiltersStatus,
+  toggleFiltersType as toggleCategoriesNamesFiltersType,
+  setFiltersType as setCategoriesNamesFiltersType,
+  setMarketFilters as setCategoriesNamesMarketFilters,
+  setTextMatchFilters as setCategoriesNamesTextMatchFilters,
+  setTextNonMatchFilters as setCategoriesNamesTextNonMatchFilters,
+  setFiltersLength as setCategoriesNamesFiltersLength,
+  setPriceDenomination as setCategoriesNamesPriceDenomination,
+  setPriceRange as setCategoriesNamesPriceRange,
+  toggleCategory as toggleCategoriesNamesCategory,
+  setFiltersCategory as setCategoriesNamesFiltersCategory,
+  setSort as setCategoriesNamesSort,
+  setSearch as setCategoriesNamesSearch,
+  setFiltersScrollTop as setCategoriesNamesFiltersScrollTop,
+  toggleFilterOpen as toggleCategoriesNamesFilterOpen,
+  clearFilters as clearCategoriesNamesFilters,
+} from '@/state/reducers/filters/categoriesNamesFilters'
+
+// Import categoriesPremiumDomainsFilters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoriesPremiumDomainsFilters,
+  selectCategoriesPremiumDomainsFilters,
+  setFiltersOpen as setCategoriesPremiumDomainsFiltersOpen,
+  toggleFiltersType as toggleCategoriesPremiumDomainsFiltersType,
+  setFiltersType as setCategoriesPremiumDomainsFiltersType,
+  setMarketFilters as setCategoriesPremiumDomainsMarketFilters,
+  setTextMatchFilters as setCategoriesPremiumDomainsTextMatchFilters,
+  setTextNonMatchFilters as setCategoriesPremiumDomainsTextNonMatchFilters,
+  setFiltersLength as setCategoriesPremiumDomainsFiltersLength,
+  setPriceDenomination as setCategoriesPremiumDomainsPriceDenomination,
+  setPriceRange as setCategoriesPremiumDomainsPriceRange,
+  toggleCategory as toggleCategoriesPremiumDomainsCategory,
+  setFiltersCategory as setCategoriesPremiumDomainsFiltersCategory,
+  setSort as setCategoriesPremiumDomainsSort,
+  setSearch as setCategoriesPremiumDomainsSearch,
+  setFiltersScrollTop as setCategoriesPremiumDomainsFiltersScrollTop,
+  toggleFilterOpen as toggleCategoriesPremiumDomainsFilterOpen,
+  clearFilters as clearCategoriesPremiumDomainsFilters,
+} from '@/state/reducers/filters/categoriesPremiumDomainsFilters'
+
+// Import categoriesAvailableDomainsFilters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoriesAvailableDomainsFilters,
+  selectCategoriesAvailableDomainsFilters,
+  setFiltersOpen as setCategoriesAvailableDomainsFiltersOpen,
+  toggleFiltersType as toggleCategoriesAvailableDomainsFiltersType,
+  setFiltersType as setCategoriesAvailableDomainsFiltersType,
+  setMarketFilters as setCategoriesAvailableDomainsMarketFilters,
+  setTextMatchFilters as setCategoriesAvailableDomainsTextMatchFilters,
+  setTextNonMatchFilters as setCategoriesAvailableDomainsTextNonMatchFilters,
+  setFiltersLength as setCategoriesAvailableDomainsFiltersLength,
+  setPriceDenomination as setCategoriesAvailableDomainsPriceDenomination,
+  setPriceRange as setCategoriesAvailableDomainsPriceRange,
+  toggleCategory as toggleCategoriesAvailableDomainsCategory,
+  setFiltersCategory as setCategoriesAvailableDomainsFiltersCategory,
+  setSort as setCategoriesAvailableDomainsSort,
+  setSearch as setCategoriesAvailableDomainsSearch,
+  setFiltersScrollTop as setCategoriesAvailableDomainsFiltersScrollTop,
+  toggleFilterOpen as toggleCategoriesAvailableDomainsFilterOpen,
+  clearFilters as clearCategoriesAvailableDomainsFilters,
+} from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
+
 // Import categoriesPage selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesPageFilters,
@@ -348,6 +419,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const profileState = useAppSelector(selectUserProfile)
   const marketplaceState = useAppSelector(selectMarketplace)
   const categoryState = useAppSelector(selectCategory)
+  const categoriesPageState = useAppSelector(selectCategoriesPage)
   const filterPanelState = useAppSelector(selectFilterPanel)
 
   // Determine which tab is active in profile
@@ -356,10 +428,21 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const activeMarketplaceTab = marketplaceState.selectedTab?.value || 'names'
   // Determine which tab is active in category
   const activeCategoryTab = categoryState.selectedTab?.value || 'names'
+  // Determine which tab is active in categoriesPage
+  const activeCategoriesPageTab = categoriesPageState.categoriesPage.selectedTab?.value || 'categories'
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'categoriesPage') {
+      if (activeCategoriesPageTab === 'categories') {
+        return selectCategoriesPageFilters(state)
+      } else if (activeCategoriesPageTab === 'names') {
+        return selectCategoriesNamesFilters(state)
+      } else if (activeCategoriesPageTab === 'premium') {
+        return selectCategoriesPremiumDomainsFilters(state)
+      } else if (activeCategoriesPageTab === 'available') {
+        return selectCategoriesAvailableDomainsFilters(state)
+      }
       return selectCategoriesPageFilters(state)
     }
 
@@ -415,6 +498,78 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
     if (filterType === 'categoriesPage') {
+      if (activeCategoriesPageTab === 'categories') {
+        return {
+          setFiltersOpen: setCategoriesPageFiltersOpen,
+          setSearch: setCategoriesPageSearch,
+          toggleFiltersType: toggleCategoriesPageType,
+          setFiltersType: setCategoriesPageType,
+          setSort: setCategoriesPageSort,
+          setSortDirection: setCategoriesPageSortDirection,
+          setScrollTop: setCategoriesPageScrollTop,
+          toggleFilterOpen: toggleCategoriesPageFilterOpen,
+          clearFilters: clearCategoriesPageFilters,
+        } as any
+      } else if (activeCategoriesPageTab === 'names') {
+        return {
+          setFiltersOpen: setCategoriesNamesFiltersOpen,
+          toggleFiltersStatus: toggleCategoriesNamesFiltersStatus,
+          setFiltersStatus: setCategoriesNamesFiltersStatus,
+          toggleFiltersType: toggleCategoriesNamesFiltersType,
+          setFiltersType: setCategoriesNamesFiltersType,
+          setMarketFilters: setCategoriesNamesMarketFilters,
+          setTextMatchFilters: setCategoriesNamesTextMatchFilters,
+          setTextNonMatchFilters: setCategoriesNamesTextNonMatchFilters,
+          setFiltersLength: setCategoriesNamesFiltersLength,
+          setPriceDenomination: setCategoriesNamesPriceDenomination,
+          setPriceRange: setCategoriesNamesPriceRange,
+          toggleCategory: toggleCategoriesNamesCategory,
+          setFiltersCategory: setCategoriesNamesFiltersCategory,
+          setSort: setCategoriesNamesSort,
+          setSearch: setCategoriesNamesSearch,
+          setScrollTop: setCategoriesNamesFiltersScrollTop,
+          toggleFilterOpen: toggleCategoriesNamesFilterOpen,
+          clearFilters: clearCategoriesNamesFilters,
+        }
+      } else if (activeCategoriesPageTab === 'premium') {
+        return {
+          setFiltersOpen: setCategoriesPremiumDomainsFiltersOpen,
+          toggleFiltersType: toggleCategoriesPremiumDomainsFiltersType,
+          setFiltersType: setCategoriesPremiumDomainsFiltersType,
+          setMarketFilters: setCategoriesPremiumDomainsMarketFilters,
+          setTextMatchFilters: setCategoriesPremiumDomainsTextMatchFilters,
+          setTextNonMatchFilters: setCategoriesPremiumDomainsTextNonMatchFilters,
+          setFiltersLength: setCategoriesPremiumDomainsFiltersLength,
+          setPriceDenomination: setCategoriesPremiumDomainsPriceDenomination,
+          setPriceRange: setCategoriesPremiumDomainsPriceRange,
+          toggleCategory: toggleCategoriesPremiumDomainsCategory,
+          setFiltersCategory: setCategoriesPremiumDomainsFiltersCategory,
+          setSort: setCategoriesPremiumDomainsSort,
+          setSearch: setCategoriesPremiumDomainsSearch,
+          setScrollTop: setCategoriesPremiumDomainsFiltersScrollTop,
+          toggleFilterOpen: toggleCategoriesPremiumDomainsFilterOpen,
+          clearFilters: clearCategoriesPremiumDomainsFilters,
+        }
+      } else if (activeCategoriesPageTab === 'available') {
+        return {
+          setFiltersOpen: setCategoriesAvailableDomainsFiltersOpen,
+          toggleFiltersType: toggleCategoriesAvailableDomainsFiltersType,
+          setFiltersType: setCategoriesAvailableDomainsFiltersType,
+          setMarketFilters: setCategoriesAvailableDomainsMarketFilters,
+          setTextMatchFilters: setCategoriesAvailableDomainsTextMatchFilters,
+          setTextNonMatchFilters: setCategoriesAvailableDomainsTextNonMatchFilters,
+          setFiltersLength: setCategoriesAvailableDomainsFiltersLength,
+          setPriceDenomination: setCategoriesAvailableDomainsPriceDenomination,
+          setPriceRange: setCategoriesAvailableDomainsPriceRange,
+          toggleCategory: toggleCategoriesAvailableDomainsCategory,
+          setFiltersCategory: setCategoriesAvailableDomainsFiltersCategory,
+          setSort: setCategoriesAvailableDomainsSort,
+          setSearch: setCategoriesAvailableDomainsSearch,
+          setScrollTop: setCategoriesAvailableDomainsFiltersScrollTop,
+          toggleFilterOpen: toggleCategoriesAvailableDomainsFilterOpen,
+          clearFilters: clearCategoriesAvailableDomainsFilters,
+        }
+      }
       return {
         setFiltersOpen: setCategoriesPageFiltersOpen,
         setSearch: setCategoriesPageSearch,
@@ -843,10 +998,19 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
-  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab])
+  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'categoriesPage') {
+      if (activeCategoriesPageTab === 'categories') {
+        return emptyFilterStateCategoriesPageFilters
+      } else if (activeCategoriesPageTab === 'names') {
+        return emptyFilterStateCategoriesNamesFilters
+      } else if (activeCategoriesPageTab === 'premium') {
+        return emptyFilterStateCategoriesPremiumDomainsFilters
+      } else if (activeCategoriesPageTab === 'available') {
+        return emptyFilterStateCategoriesAvailableDomainsFilters
+      }
       return emptyFilterStateCategoriesPageFilters
     }
 
@@ -897,7 +1061,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     return emptyFilterStateMarketplaceFilters
-  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab])
+  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
@@ -923,6 +1087,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     profileTab: profileState.selectedTab,
     marketplaceTab: marketplaceState.selectedTab,
     categoryTab: categoryState.selectedTab,
+    categoriesPageTab: categoriesPageState.categoriesPage.selectedTab,
     isFiltersClear,
   }
 }

@@ -18,13 +18,21 @@ export const useLengthFilter = () => {
   const minVal = lengthFilter.min
   const maxVal = lengthFilter.max
 
-  // Sync local state from Redux when Redux changes externally (e.g., from URL)
+  // Sync local state from Redux when Redux changes externally (e.g., from URL or clear filters)
   useEffect(() => {
-    // On initial sync or when Redux changes externally
-    if (isInitialSync.current || (minVal !== currMinVal && minVal !== null)) {
+    // Sync on initial load, when Redux changes to a new non-null value, or when Redux is cleared to null
+    if (
+      isInitialSync.current ||
+      (minVal !== currMinVal && minVal !== null) ||
+      (minVal === null && currMinVal !== null)
+    ) {
       setCurrMinVal(minVal)
     }
-    if (isInitialSync.current || (maxVal !== currMaxVal && maxVal !== null)) {
+    if (
+      isInitialSync.current ||
+      (maxVal !== currMaxVal && maxVal !== null) ||
+      (maxVal === null && currMaxVal !== null)
+    ) {
       setCurrMaxVal(maxVal)
     }
 

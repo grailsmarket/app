@@ -8,6 +8,7 @@ import ActivityRow from './components/activityRow'
 import VirtualList from '@/components/ui/virtuallist'
 import { ActivityColumnType, NameActivityType } from '@/types/domains'
 import { useNavbar } from '@/context/navbar'
+import LoadingCell from '../ui/loadingCell'
 
 interface ActivityProps {
   activity: ActivityType[] | NameActivityType[]
@@ -60,7 +61,7 @@ const Activity: React.FC<ActivityProps> = ({
 
     const maxColumns = () => {
       if (width < 450) return 2
-      if (width < 640) return 3
+      if (width < 640) return 2
       if (width < 768) return 4
       if (width < 1024) return 5
       if (width < 1280) return 6
@@ -129,7 +130,7 @@ const Activity: React.FC<ActivityProps> = ({
             ref={listRef}
             paddingBottom={paddingBottom}
             items={[...activity, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-            rowHeight={60}
+            rowHeight={width && width < 640 ? 86 : 60}
             overscanCount={visibleCount}
             gap={0}
             onScrollNearBottom={handleScrollNearBottom}
@@ -140,8 +141,12 @@ const Activity: React.FC<ActivityProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
+                  <div className='px-md md:px-lg border-tertiary flex h-[86px] w-full flex-wrap items-center justify-between border-b py-1 sm:h-[60px] sm:flex-nowrap sm:py-0'>
                     <LoadingRow displayedColumns={displayedColumns} />
+                    <div className='flex w-full flex-row justify-between sm:hidden'>
+                      <LoadingCell height='24px' width='120px' />
+                      <LoadingCell height='24px' width='120px' />
+                    </div>
                   </div>
                 )
               return (

@@ -23,7 +23,7 @@ const ActivityPanel: React.FC<ActivityPanelProps> = ({ isLiveActivityConnected, 
   const { isNavbarVisible } = useNavbar()
 
   return (
-    <div className='flex w-full flex-col'>
+    <div className='z-0 flex w-full flex-col'>
       <div
         className={cn(
           'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',

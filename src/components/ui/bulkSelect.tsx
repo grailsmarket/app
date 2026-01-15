@@ -42,6 +42,8 @@ interface BulkSelectProps {
 
 const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType = 'profile' }) => {
   const [isRemovingFromWatchlist, setIsRemovingFromWatchlist] = useState(false)
+  // Delayed state for content switch - keeps expanded content visible during close animation
+  const [showExpandedContent, setShowExpandedContent] = useState(false)
 
   const dispatch = useAppDispatch()
   const {
@@ -51,6 +53,20 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectAll,
     watchlistIds: selectedWatchlistIds,
   } = useAppSelector(selectBulkSelect)
+
+  // Handle delayed content switch for smooth close animation
+  useEffect(() => {
+    if (isSelecting) {
+      // When opening, show expanded content immediately
+      setShowExpandedContent(true)
+    } else {
+      // When closing, delay hiding expanded content until after transition completes
+      const timeout = setTimeout(() => {
+        setShowExpandedContent(false)
+      }, 300) // match transition duration
+      return () => clearTimeout(timeout)
+    }
+  }, [isSelecting])
 
   // Listen for shift key events and update Redux state
   useShiftKeyListener()
@@ -84,12 +100,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        domain.listings?.some(
-          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-        )
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          domain.listings?.some(
+            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+          )
+      )
     : []
 
   const handleBulkSelect = () => {
@@ -128,10 +144,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-        results
-          .filter((result) => !result.success)
-          .map((result) => result.watchlistId)
-          .join(', ')
+          results
+            .filter((result) => !result.success)
+            .map((result) => result.watchlistId)
+            .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())
@@ -256,6 +272,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
+  const bulkSelectWidth = showOwnedActionButtons
+    ? 'min(820px,95vw)'
+    : showWatchlistButton
+      ? 'min(650px,95vw)'
+      : 'min(420px,95vw)'
+
   if (!isBulkSelectSupportedTab) return null
 
   return (
@@ -289,13 +311,13 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk hidden lg:block rounded-md p-2'>
+        <div className='bg-background shadow-bulk hidden rounded-md p-2 lg:block'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
         </div>
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background flex flex-row gap-1.5 rounded-md p-2 shadow-xl sm:hidden'>
+        <div className='bg-background shadow-bulk flex flex-row gap-1.5 rounded-md p-2 sm:hidden'>
           <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
             {selectedDomains.length}
           </SecondaryButton>
@@ -315,12 +337,21 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       <div
         className={cn(
-          'shadow-bulk bg-background overflow-hidden rounded-md transition-all duration-600 ease-in-out',
-          isSelecting ? 'max-w-[95vw] md:max-w-[90vw] lg:max-w-[80vw] xl:max-w-[70vw] 2xl:max-w-[60vw]' : 'max-w-34'
+          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200'
+          // isSelecting ? bulkSelectWidth : 'w-34'
         )}
+        style={{
+          width: isSelecting ? bulkSelectWidth : '136px',
+          // transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)'
+        }}
       >
-        {isSelecting ? (
-          <div className='flex max-w-full flex-row overflow-x-scroll'>
+        {showExpandedContent ? (
+          <div
+            className={cn(
+              'flex max-w-full flex-row overflow-x-scroll transition-opacity duration-300',
+              isSelecting ? 'opacity-100' : 'opacity-0'
+            )}
+          >
             <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
               {showWatchlistButton && (
                 <PrimaryButton
@@ -351,7 +382,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     className='flex items-center gap-1.5'
                   >
                     <p>Transfer</p>
-                    <Label label={namesTransfer.length} className='bg-tertiary text-white' />
+                    <Label label={namesTransfer.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
                   <PrimaryButton
                     onClick={handleListAction}
@@ -359,7 +390,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     className='flex items-center gap-1.5'
                   >
                     <p>List</p>
-                    <Label label={namesList.length} className='bg-tertiary text-white' />
+                    <Label label={namesList.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
                   <PrimaryButton
                     onClick={handleCancelListingsAction}
@@ -367,7 +398,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     className='flex items-center gap-1.5'
                   >
                     <p>Cancel&nbsp;Listings</p>
-                    <Label label={namesCancel.length} className='bg-tertiary text-white' />
+                    <Label label={namesCancel.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
                 </>
               )}
@@ -383,7 +414,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     onClick={handleSelectAll}
                     disabled={!selectAllContext?.canSelectAll}
                   >
-                    Select All
+                    Select&nbsp;All
                   </SecondaryButton>
                 )}
                 <SecondaryButton
@@ -398,7 +429,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         ) : (
           <div className='p-2 sm:p-3'>
             <PrimaryButton onClick={handleBulkSelect} className='w-28'>
-              Bulk Select
+              Bulk&nbsp;Select
             </PrimaryButton>
           </div>
         )}

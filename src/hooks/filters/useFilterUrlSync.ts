@@ -21,17 +21,22 @@ import { debounce } from 'lodash'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
+import { CATEGORIES_PAGE_TABS } from '@/constants/categories/categoriesPageTabs'
 
 // Import empty filter states for comparison
 import { emptyFilterState as marketplaceEmptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { emptyFilterState as profileDomainsEmptyFilterState } from '@/state/reducers/filters/profileDomainsFilters'
 import { emptyFilterState as categoryDomainsEmptyFilterState } from '@/state/reducers/filters/categoryDomainsFilters'
 import { emptyFilterState as categoriesPageEmptyFilterState } from '@/state/reducers/filters/categoriesPageFilters'
+import { emptyFilterState as categoriesNamesEmptyFilterState } from '@/state/reducers/filters/categoriesNamesFilters'
+import { emptyFilterState as categoriesPremiumEmptyFilterState } from '@/state/reducers/filters/categoriesPremiumDomainsFilters'
+import { emptyFilterState as categoriesAvailableEmptyFilterState } from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
 
 // Import tab change actions
 import { changeTab } from '@/state/reducers/portfolio/profile'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { changeCategoryTab } from '@/state/reducers/category/category'
+import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType
@@ -48,7 +53,7 @@ function getDefaultTab(filterType: FilterContextType): string {
     case 'category':
       return CATEGORY_TABS[0].value
     case 'categoriesPage':
-      return '' // No tabs on categories page
+      return CATEGORIES_PAGE_TABS[0].value
     default:
       return 'names'
   }
@@ -63,6 +68,8 @@ function getTabChangeAction(filterType: FilterContextType): ActionCreatorWithPay
       return changeMarketplaceTab
     case 'category':
       return changeCategoryTab
+    case 'categoriesPage':
+      return changeCategoriesPageTab
     default:
       return changeMarketplaceTab
   }
@@ -77,6 +84,8 @@ function findTabByValue(filterType: FilterContextType, value: string) {
       return MARKETPLACE_TABS.find((t) => t.value === value) || MARKETPLACE_TABS[0]
     case 'category':
       return CATEGORY_TABS.find((t) => t.value === value) || CATEGORY_TABS[0]
+    case 'categoriesPage':
+      return CATEGORIES_PAGE_TABS.find((t) => t.value === value) || CATEGORIES_PAGE_TABS[0]
     default:
       return { label: 'Names', value: 'names' }
   }
@@ -100,12 +109,16 @@ function getEmptyFilterState(filterType: FilterContextType): BaseFilterState | C
 
 // Validate tab value is allowed
 function isValidTab(filterType: FilterContextType, tabValue: string, isOwner: boolean = true): boolean {
-  // Categories page has no tabs
-  if (filterType === 'categoriesPage') {
-    return true
-  }
-
-  const tabs = filterType === 'profile' ? PROFILE_TABS : filterType === 'marketplace' ? MARKETPLACE_TABS : CATEGORY_TABS
+  const tabs =
+    filterType === 'profile'
+      ? PROFILE_TABS
+      : filterType === 'marketplace'
+        ? MARKETPLACE_TABS
+        : filterType === 'category'
+          ? CATEGORY_TABS
+          : filterType === 'categoriesPage'
+            ? CATEGORIES_PAGE_TABS
+            : MARKETPLACE_TABS
 
   const isValidTabValue = tabs.some((t) => t.value === tabValue)
 
@@ -124,7 +137,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { actions, selectors, profileTab, marketplaceTab, categoryTab } = useFilterRouter()
+  const { actions, selectors, profileTab, marketplaceTab, categoryTab, categoriesPageTab } = useFilterRouter()
 
   // Refs to prevent infinite loops
   const isSyncingFromUrl = useRef(false)
@@ -146,11 +159,11 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       case 'category':
         return categoryTab?.value || defaultTab
       case 'categoriesPage':
-        return '' // No tabs
+        return categoriesPageTab?.value || defaultTab
       default:
         return defaultTab
     }
-  }, [filterType, profileTab, marketplaceTab, categoryTab, defaultTab])
+  }, [filterType, profileTab, marketplaceTab, categoryTab, categoriesPageTab, defaultTab])
 
   // Apply filters from URL to Redux
   const applyFiltersFromUrl = useCallback(
@@ -296,14 +309,23 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     }
 
     // If tab was invalid (e.g., unauthorized watchlist), update URL
-    // Skip for categoriesPage since it has no tabs
-    if (urlTab !== validTab && filterType !== 'categoriesPage') {
-      const newUrl = serializeFiltersToUrl(
-        selectors.filters as BaseFilterState,
-        validTab,
-        defaultTab,
-        emptyFilterState as BaseFilterState
-      )
+    if (urlTab !== validTab) {
+      let newUrl: string
+      if (filterType === 'categoriesPage' && validTab === 'categories') {
+        newUrl = serializeCategoriesPageFiltersToUrl(
+          selectors.filters as unknown as CategoriesPageFilterState,
+          categoriesPageEmptyFilterState as CategoriesPageFilterState,
+          validTab,
+          defaultTab
+        )
+      } else {
+        newUrl = serializeFiltersToUrl(
+          selectors.filters as BaseFilterState,
+          validTab,
+          defaultTab,
+          emptyFilterState as BaseFilterState
+        )
+      }
       const urlString = newUrl ? `${pathname}?${newUrl}` : pathname
       router.replace(urlString, { scroll: false })
       lastWrittenUrl.current = newUrl
@@ -351,10 +373,30 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
 
         let newUrl: string
         if (filterType === 'categoriesPage') {
-          newUrl = serializeCategoriesPageFiltersToUrl(
-            filters as CategoriesPageFilterState,
-            emptyFilterState as CategoriesPageFilterState
-          )
+          // Categories page has different filter types per tab
+          if (tab === 'categories') {
+            // Categories tab uses special categories page filters
+            newUrl = serializeCategoriesPageFiltersToUrl(
+              filters as CategoriesPageFilterState,
+              categoriesPageEmptyFilterState as CategoriesPageFilterState,
+              tab,
+              defaultTab
+            )
+          } else {
+            // Names, Premium, Available tabs use domain filters
+            const tabEmptyState =
+              tab === 'names'
+                ? categoriesNamesEmptyFilterState
+                : tab === 'premium'
+                  ? categoriesPremiumEmptyFilterState
+                  : categoriesAvailableEmptyFilterState
+            newUrl = serializeFiltersToUrl(
+              filters as BaseFilterState,
+              tab,
+              defaultTab,
+              tabEmptyState as BaseFilterState
+            )
+          }
         } else {
           newUrl = serializeFiltersToUrl(
             filters as BaseFilterState,

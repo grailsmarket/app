@@ -35,7 +35,7 @@ const CategoriesPanel: React.FC = () => {
       <div
         className={cn(
           'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
-          isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
+          isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
         <div className='flex w-full items-center gap-2 sm:w-fit'>

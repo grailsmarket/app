@@ -49,7 +49,10 @@ const CategoriesFilterPanel: React.FC = () => {
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles
         !isMobile && 'sticky',
-        !isMobile && (isNavbarVisible ? 'top-[70px] h-[calc(100dvh-70px)]' : 'top-14 h-[calc(100dvh-56px)]'),
+        !isMobile &&
+          (isNavbarVisible
+            ? 'top-26 h-[calc(100dvh-104px)] md:top-32 md:h-[calc(100dvh-128px)]'
+            : 'top-12 h-[calc(100dvh-56px)] md:top-14'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? 'md:border-r-2' : 'w-0'
       )}

@@ -28,10 +28,11 @@ const MarketFilter = () => {
   const { open, toggleOpen } = useFilterOpen('Market')
   const { getOption, setOption, getMarketplaceOption, setMarketplaceOption } = useMarketFilters()
   const { filterType, profileTab, categoryTab } = useFilterContext()
-  const { marketplaceTab } = useFilterRouter()
+  const { marketplaceTab, categoriesPageTab } = useFilterRouter()
   const activeProfileTab = profileTab?.value || 'domains'
   const activeCategoryTab = categoryTab?.value || 'names'
   const activeMarketplaceTab = marketplaceTab?.value || 'names'
+  const activeCategoriesPageTab = categoriesPageTab?.value || 'categories'
 
   const filterLabels = useMemo(() => {
     if (filterType === 'category') {
@@ -68,8 +69,18 @@ const MarketFilter = () => {
       }
     }
 
+    if (filterType === 'categoriesPage') {
+      if (activeCategoriesPageTab === 'names') {
+        return MARKET_FILTER_LABELS
+      } else if (activeCategoriesPageTab === 'premium') {
+        return GRACE_FILTER_LABELS
+      } else if (activeCategoriesPageTab === 'available') {
+        return GRACE_FILTER_LABELS
+      }
+    }
+
     return MARKET_FILTER_LABELS
-  }, [filterType, activeProfileTab, activeCategoryTab, activeMarketplaceTab])
+  }, [filterType, activeProfileTab, activeCategoryTab, activeMarketplaceTab, activeCategoriesPageTab])
 
   const showMarketplaceDropdown = useMemo(() => {
     if (filterType === 'category') {
@@ -117,8 +128,18 @@ const MarketFilter = () => {
       }
     }
 
+    if (filterType === 'categoriesPage') {
+      if (activeCategoriesPageTab === 'names') {
+        return true
+      } else if (activeCategoriesPageTab === 'premium') {
+        return false
+      } else if (activeCategoriesPageTab === 'available') {
+        return false
+      }
+    }
+
     return true
-  }, [filterType, activeCategoryTab, activeProfileTab, activeMarketplaceTab])
+  }, [filterType, activeCategoryTab, activeProfileTab, activeMarketplaceTab, activeCategoriesPageTab])
 
   // Calculate expanded height based on number of labels + 1 for marketplace dropdown
   const expandedHeight = 64 + (filterLabels.length + 1) * 42

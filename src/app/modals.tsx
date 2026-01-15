@@ -27,8 +27,11 @@ import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/moda
 import RegistrationModal from '@/components/modal/registration/registrationModal'
 import ShareModal from '@/components/modal/share/shareModal'
 import { selectShareModal, setShareModalOpen } from '@/state/reducers/modals/shareModal'
+import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 
 const Modals: React.FC = () => {
+  // Global keyboard shortcut: "/" to open search modal
+  useGlobalSearchShortcut()
   const dispatch = useAppDispatch()
   const {
     open: acceptOfferModalOpen,

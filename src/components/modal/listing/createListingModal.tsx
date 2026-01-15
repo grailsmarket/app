@@ -30,12 +30,13 @@ import {
 } from '@/state/reducers/modals/makeListingModal'
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import Calendar from 'public/icons/calendar.svg'
-import { Address, formatUnits, isAddress } from 'viem'
+import { formatUnits, isAddress } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { useDebounce } from '@/hooks/useDebounce'
 import { beautifyName } from '@/lib/ens'
+import useETHPrice from '@/hooks/useETHPrice'
 
 export type ListingStatus =
   | 'review'
@@ -56,6 +57,7 @@ interface CreateListingModalProps {
 
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domains, previousListings }) => {
   const dispatch = useAppDispatch()
+  const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
@@ -143,7 +145,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             formatUnits(
               BigInt(previousListing.price),
               TOKEN_DECIMALS[
-              TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
+                TOKENS[previousListing.currency_address as keyof typeof TOKENS] as keyof typeof TOKEN_DECIMALS
               ]
             )
           )
@@ -238,7 +240,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
       // Add broker params if broker address is provided
       if (isAddress(brokerAccount?.address || brokerAddress) && Number(brokerFeePercent) > 0) {
-        params.brokerAddress = (brokerAccount?.address || brokerAddress)
+        params.brokerAddress = brokerAccount?.address || brokerAddress
         params.brokerFeeBps = Math.round(Number(brokerFeePercent) * 100) // Convert percent to basis points
       }
 
@@ -280,13 +282,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     const fees: { label: string; amount: number }[] = []
     const totalPrices = prices.reduce((sum, price) => Number(sum) + Number(price), 0) as number
 
-    if (selectedMarketplace.includes('opensea')) {
-      fees.push({
-        label: 'OpenSea Fee (1%)',
-        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * 0.01, 0) as number,
-      })
-    }
-
     if (selectedMarketplace.includes('grails')) {
       fees.push({
         label: 'Grails Fee (0%)',
@@ -294,8 +289,20 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       })
     }
 
+    if (selectedMarketplace.includes('opensea')) {
+      fees.push({
+        label: 'OpenSea Fee (1%)',
+        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * 0.01, 0) as number,
+      })
+    }
+
     // Add broker fee if specified
-    if (brokerAddress.length > 0 && Number(brokerFeePercent) > 0 && selectedMarketplace.includes('grails')) {
+    if (
+      brokerAddress.length > 0 &&
+      Number(brokerFeePercent) > 0 &&
+      selectedMarketplace.length === 1 &&
+      selectedMarketplace[0] === 'grails'
+    ) {
       fees.push({
         label: `Broker Fee (${brokerFeePercent}%)`,
         amount: prices.reduce(
@@ -751,22 +758,44 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                       key={idx}
                       className={cn('flex justify-between', fee.amount > 0 ? 'text-red-400' : 'text-green-400')}
                     >
-                      <span>- {fee.label}:</span>
-                      <span>
-                        {fee.amount.toFixed(currencies[0] === 'USDC' ? 2 : 4)} {currencies[0]}
-                      </span>
+                      <p className='pt-px'>- {fee.label}:</p>
+                      <div className='flex flex-col items-end gap-px'>
+                        <p>
+                          {fee.amount.toFixed(currencies[0] === 'USDC' ? 2 : 4)} {currencies[0]}
+                        </p>
+                        {fee.amount > 0 && currencies[0] === 'ETH' && (
+                          <p className='text-xs'>
+                            ($
+                            {(fee.amount * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
+                              maximumFractionDigits: 2,
+                            })}
+                            )
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))}
                   <div className='bg-primary my-2 h-px w-full' />
-                  <div className='flex items-center justify-between font-medium'>
+                  <div className='flex justify-between font-medium'>
                     <span>You Receive:</span>
-                    <span className='text-lg font-bold'>
-                      {calculateFees()!.netProceeds.toLocaleString('default', {
-                        maximumFractionDigits: 6,
-                        minimumFractionDigits: 2,
-                      })}{' '}
-                      {currencies[0]}
-                    </span>
+                    <div className='flex flex-col items-end gap-px'>
+                      <p className='text-lg font-bold'>
+                        {calculateFees()!.netProceeds.toLocaleString('default', {
+                          maximumFractionDigits: 6,
+                          minimumFractionDigits: 2,
+                        })}{' '}
+                        {currencies[0]}
+                      </p>
+                      {currencies[0] === 'ETH' && (
+                        <p className='text-neutral text-xs'>
+                          ($
+                          {(calculateFees()!.netProceeds * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
+                            maximumFractionDigits: 2,
+                          })}
+                          )
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

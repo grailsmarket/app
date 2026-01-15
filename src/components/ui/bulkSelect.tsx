@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Cross } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
@@ -112,10 +112,43 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     dispatch(setBulkSelectIsSelecting(true))
   }
 
-  const handleCancelBulkSelect = () => {
+  const handleCancelBulkSelect = useCallback(() => {
     dispatch(setBulkSelectIsSelecting(false))
     dispatch(clearBulkSelect())
-  }
+  }, [dispatch])
+
+  // Keyboard shortcuts: SHIFT+A for select all, Escape to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Skip if user is typing in an input field
+      const activeElement = document.activeElement
+      const isInputField =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement?.getAttribute('contenteditable') === 'true'
+
+      if (isInputField) return
+
+      // SHIFT + A: Select all (only when bulk select is active)
+      if (e.shiftKey && e.key.toLowerCase() === 'a' && isSelecting) {
+        e.preventDefault()
+        if (selectAllContext?.canSelectAll) {
+          selectAllContext.startSelectAll()
+        }
+        return
+      }
+
+      // Escape: Close bulk select (only when bulk select is active)
+      if (e.key === 'Escape' && isSelecting) {
+        e.preventDefault()
+        handleCancelBulkSelect()
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isSelecting, selectAllContext, handleCancelBulkSelect])
 
   const handleListAction = () => {
     dispatch(setMakeListingModalDomains(namesList))

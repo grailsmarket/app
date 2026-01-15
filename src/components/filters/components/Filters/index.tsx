@@ -63,13 +63,13 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       >
         <div className='flex flex-col'>
           {/* <SortFilter /> */}
+          {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
           {showStatusFilter && <StatusFilter />}
           <MarketFilter />
           <TextMatchFilter />
           <TextNonMatchFilter />
           <LengthFilter />
           <PriceRangeFilter />
-          {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
           <TypeFilter />
         </div>
       </div>

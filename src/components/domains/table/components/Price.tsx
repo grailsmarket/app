@@ -12,6 +12,7 @@ import Tooltip from '@/components/ui/tooltip'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { beautifyName } from '@/lib/ens'
+import { DAY_IN_SECONDS } from '@/constants/time'
 
 interface PriceProps {
   name: string
@@ -93,7 +94,13 @@ const Price: React.FC<PriceProps> = ({
   if (registrationStatus === GRACE_PERIOD && showGracePeriod) {
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
-        <p className='text-md text-grace font-medium'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+        <Tooltip
+          label={`Ends ${formatExpiryDate(new Date(new Date(expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+          align='left'
+          position='top'
+        >
+          <p className='text-md text-grace font-medium'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+        </Tooltip>
         {expiry_date && (
           <p className='text-md text-neutral font-semibold'>
             <span className='xs:inline hidden'>Expiry</span>{' '}
@@ -110,7 +117,6 @@ const Price: React.FC<PriceProps> = ({
         <>
           <div className='flex items-center gap-1.5'>
             <PriceComponent
-              // @ts-expect-error - price_wei is a type from the watchlist
               price={listing.price || listing.price_wei}
               currencyAddress={listing.currency_address}
               tooltipPosition={index === 0 ? 'bottom' : 'top'}

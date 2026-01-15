@@ -30,6 +30,7 @@ export type MarketplaceDomainType = {
 export type DomainListingType = {
   id: number
   price: string
+  price_wei: string
   currency_address: Address
   status: string
   seller_address: string

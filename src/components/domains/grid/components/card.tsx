@@ -44,6 +44,7 @@ import Image from 'next/image'
 import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
+import { DAY_IN_SECONDS } from '@/constants/time'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -236,12 +237,18 @@ const Card: React.FC<CardProps> = ({
       >
         <div className='flex w-full flex-col gap-1'>
           {registrationStatus === GRACE_PERIOD ? (
-            <p className='text-grace truncate font-semibold'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+            <Tooltip
+              label={`Ends ${formatExpiryDate(new Date(new Date(domain.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+              align='left'
+              position='top'
+            >
+              <p className='text-grace truncate font-semibold'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+            </Tooltip>
           ) : registrationStatus === REGISTERED ? (
             domainListing ? (
               <div className='flex items-center gap-1'>
                 <Price
-                  price={domainListing.price}
+                  price={domainListing.price || domainListing.price_wei}
                   currencyAddress={domainListing.currency_address}
                   iconSize='17px'
                   fontSize='text-xl font-semibold'

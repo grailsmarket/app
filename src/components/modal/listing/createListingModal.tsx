@@ -37,6 +37,7 @@ import { CAN_CLAIM_POAP } from '@/constants'
 import { useDebounce } from '@/hooks/useDebounce'
 import { beautifyName } from '@/lib/ens'
 import useETHPrice from '@/hooks/useETHPrice'
+import LoadingCell from '@/components/ui/loadingCell'
 
 export type ListingStatus =
   | 'review'
@@ -607,8 +608,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                 </div>
 
                 {showBrokerSection && (
-                  <div className='mt-2 flex flex-col gap-6'>
-                    <div className='relative flex w-full flex-col gap-2'>
+                  <div className='mt-2 flex flex-col gap-2'>
+                    <div className='relative flex w-full flex-col gap-1.5'>
                       <Input
                         type='text'
                         label='Broker Address'
@@ -621,14 +622,18 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                         placeholder='ENS or Address'
                       />
                       {debouncedBrokerAddress.length > 0 &&
-                        !isBrokerAccountLoading &&
-                        (brokerAccount ? (
-                          <div className='px-md absolute -bottom-5 left-0 flex items-center gap-1'>
+                        (isBrokerAccountLoading ? (
+                          <div className='px-md flex items-center gap-1.5'>
+                            <LoadingCell height='20px' width='20px' radius='10px' />
+                            <LoadingCell height='16px' width='240px' radius='4px' />
+                          </div>
+                        ) : brokerAccount ? (
+                          <div className='px-md flex items-center gap-1.5'>
                             <Avatar
                               address={brokerAccount.address}
                               name={brokerAccount.ens.name}
                               src={brokerAccount.ens.avatar}
-                              style={{ width: 16, height: 16 }}
+                              style={{ width: 20, height: 20 }}
                             />
                             <p className='text-neutral text-md font-medium'>
                               {isAddress(brokerAddress) && brokerAccount.ens.name

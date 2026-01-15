@@ -41,6 +41,8 @@ import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { useQuery } from '@tanstack/react-query'
+import Tooltip from '@/components/ui/tooltip'
+import { DAY_IN_SECONDS } from '@/constants/time'
 
 type Row = {
   label: string
@@ -121,21 +123,28 @@ const NameDetails: React.FC<NameDetailsProps> = ({
     },
     {
       label: 'Status',
-      value: (
-        <p
-          className={`cursor-pointer text-xl font-semibold hover:opacity-80 ${registrationStatus === GRACE_PERIOD ? 'text-grace' : registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground/70 cursor-text hover:opacity-100'}`}
-          onClick={() => {
-            if (registrationStatus === PREMIUM || registrationStatus === UNREGISTERED) {
-              router.push(`/marketplace?tab=${registrationStatus.toLowerCase()}&sort=expiry_date_asc`)
-            }
-          }}
-        >
-          {registrationStatus}
-          {timeLeftString && (registrationStatus === GRACE_PERIOD || registrationStatus === PREMIUM) && (
-            <> ({timeLeftString})</>
-          )}
-        </p>
-      ),
+      value:
+        registrationStatus === GRACE_PERIOD ? (
+          <Tooltip
+            label={`Ends ${formatExpiryDate(new Date(new Date(nameDetails?.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+            align='right'
+            position='top'
+          >
+            <p className='text-grace text-xl font-medium'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+          </Tooltip>
+        ) : (
+          <p
+            className={`cursor-pointer text-xl font-semibold hover:opacity-80 ${registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground/70 cursor-text hover:opacity-100'}`}
+            onClick={() => {
+              if (registrationStatus === PREMIUM || registrationStatus === UNREGISTERED) {
+                router.push(`/marketplace?tab=${registrationStatus.toLowerCase()}&sort=expiry_date_asc`)
+              }
+            }}
+          >
+            {registrationStatus}
+            {timeLeftString && registrationStatus === PREMIUM && <> ({timeLeftString})</>}
+          </p>
+        ),
       canCopy: false,
     },
     {
@@ -282,13 +291,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
               {typeof row.value === 'string' ? (
                 <CopyValue value={row.value} canCopy={row.canCopy} />
               ) : (
-                <div
-                  className={cn(
-                    isUserRow
-                      ? 'flex max-w-3/4 flex-col items-end justify-center gap-2 truncate overflow-visible'
-                      : 'max-w-3/4 overflow-x-auto'
-                  )}
-                >
+                <div className={cn(isUserRow ? 'flex max-w-3/4 flex-col items-end justify-center gap-2' : 'max-w-3/4')}>
                   <div className={cn(isUserRow ? 'flex flex-row items-center gap-2.5 overflow-visible' : 'max-w-full')}>
                     {row.value}
                     {isUserRow && nameDetails?.owner && (

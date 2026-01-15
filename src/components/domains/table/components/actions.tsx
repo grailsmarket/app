@@ -221,7 +221,7 @@ const Actions: React.FC<ActionsProps> = ({
         )
       }
 
-      if (isMyDomain) {
+      if (isMyDomain && profileTab.value !== 'watchlist') {
         if (domainListing?.price) {
           return (
             <>
@@ -253,17 +253,22 @@ const Actions: React.FC<ActionsProps> = ({
             </>
           )
         }
-        return (
-          <PrimaryButton
-            onClick={(e) => openListModal(e, false)}
-            className={cn(
-              'border-primary/80 text-primary hover:bg-primary! hover:text-background flex w-16! flex-row items-center justify-center gap-2 border-2 bg-transparent opacity-100 hover:opacity-100',
-              width
-            )}
-          >
-            List
-          </PrimaryButton>
-        )
+
+        if (registrationStatus !== GRACE_PERIOD) {
+          return (
+            <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+              <PrimaryButton
+                onClick={(e) => openListModal(e, false)}
+                className={cn(
+                  'border-primary/80 text-primary hover:bg-primary! hover:text-background flex w-16! flex-row items-center justify-center gap-2 border-2 bg-transparent opacity-100 hover:opacity-100',
+                  width
+                )}
+              >
+                List
+              </PrimaryButton>
+            </div>
+          )
+        }
       }
     }
   }

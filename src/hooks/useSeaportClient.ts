@@ -78,6 +78,8 @@ export function useSeaportClient() {
       royaltyRecipient?: string
       marketplace: MarketplaceType[]
       currencies?: ('ETH' | 'USDC')[]
+      brokerAddress?: string // Address to receive broker fee
+      brokerFeeBps?: number // Broker fee in basis points (e.g., 100 = 1%)
       setStatus?: (status: ListingStatus) => void
       setApproveTxHash?: (txHash: string | null) => void
       setCreateListingTxHash?: (txHash: string | null) => void
@@ -143,21 +145,73 @@ export function useSeaportClient() {
             order.marketplace = 'grails'
           })
 
-          // Submit both orders
-          const [openSeaResponse, grailsResponse] = await Promise.all([
-            fetch('/api/listings/create', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                type: 'listing',
-                domains: params.domains,
-                prices: params.prices,
-                currencies: params.currencies,
-                orders: openSeaOrders,
-                seller_address: address,
-              }),
+          // Determine if Grails listing should be brokered
+          const isBrokeredListing = params.brokerAddress && params.brokerFeeBps
+
+          // Submit OpenSea order (always uses regular endpoint)
+          const openSeaResponsePromise = fetch('/api/listings/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'listing',
+              domains: params.domains,
+              prices: params.prices,
+              currencies: params.currencies,
+              orders: openSeaOrders,
+              seller_address: address,
             }),
-            fetch('/api/listings/create', {
+          })
+
+          // Submit Grails order (use brokered-listings if broker specified)
+          let grailsResponsePromise: Promise<Response>
+
+          if (isBrokeredListing) {
+            // Use brokered-listings endpoint for each domain
+            grailsResponsePromise = (async () => {
+              const responses = await Promise.all(
+                params.domains.map(async (domain, index) => {
+                  const order = grailsOrders[index]
+                  const priceWei = BigInt(Math.floor(parseFloat(params.prices[index]) * 1e18)).toString()
+                  const currency = params.currencies?.[index] || 'ETH'
+                  const currencyAddress =
+                    currency === 'USDC'
+                      ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+                      : '0x0000000000000000000000000000000000000000'
+
+                  return fetch('/api/brokered-listings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      token_id: domain.token_id,
+                      price_wei: priceWei,
+                      currency_address: currencyAddress,
+                      order_data: JSON.stringify(order),
+                      order_hash: order.orderHash,
+                      seller_address: address,
+                      broker_address: params.brokerAddress,
+                      broker_fee_bps: params.brokerFeeBps,
+                      expires_at: new Date(params.expiryDate * 1000).toISOString(),
+                    }),
+                  })
+                })
+              )
+
+              // Return a synthetic response that matches the expected format
+              const allOk = responses.every((r) => r.ok)
+              if (!allOk) {
+                const failedResponse = responses.find((r) => !r.ok)!
+                return failedResponse
+              }
+
+              // Create a synthetic successful response
+              const results = await Promise.all(responses.map((r) => r.json()))
+              return new Response(JSON.stringify({ success: true, data: results }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+              })
+            })()
+          } else {
+            grailsResponsePromise = fetch('/api/listings/create', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -168,8 +222,10 @@ export function useSeaportClient() {
                 orders: grailsOrders,
                 seller_address: address,
               }),
-            }),
-          ])
+            })
+          }
+
+          const [openSeaResponse, grailsResponse] = await Promise.all([openSeaResponsePromise, grailsResponsePromise])
 
           if (!openSeaResponse.ok || !grailsResponse.ok) {
             const errors = []
@@ -204,7 +260,53 @@ export function useSeaportClient() {
         // Single marketplace case
         const formattedOrders = seaportClient.formatOrderForStorage(orders as OrderWithCounter[])
 
-        // Send to API
+        // Determine if this is a brokered listing (broker specified + Grails marketplace)
+        const isBrokeredListing = params.brokerAddress && params.brokerFeeBps && params.marketplace.includes('grails')
+
+        if (isBrokeredListing) {
+          // Use brokered-listings endpoint for each domain
+          // Note: brokered-listings endpoint handles one listing at a time
+          const responses = await Promise.all(
+            params.domains.map(async (domain, index) => {
+              const order = formattedOrders[index]
+              const priceWei = BigInt(Math.floor(parseFloat(params.prices[index]) * 1e18)).toString()
+              const currency = params.currencies?.[index] || 'ETH'
+              const currencyAddress =
+                currency === 'USDC'
+                  ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC address
+                  : '0x0000000000000000000000000000000000000000' // ETH
+
+              return fetch('/api/brokered-listings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  token_id: domain.token_id,
+                  price_wei: priceWei,
+                  currency_address: currencyAddress,
+                  order_data: JSON.stringify(order),
+                  order_hash: order.orderHash,
+                  seller_address: address,
+                  broker_address: params.brokerAddress,
+                  broker_fee_bps: params.brokerFeeBps,
+                  expires_at: new Date(params.expiryDate * 1000).toISOString(),
+                }),
+              })
+            })
+          )
+
+          // Check if any failed
+          const failedResponses = responses.filter((r) => !r.ok)
+          if (failedResponses.length > 0) {
+            const errorData = await failedResponses[0].json()
+            throw new Error(errorData.error?.message || errorData.error || 'Failed to create brokered listing')
+          }
+
+          // Return combined results
+          const results = await Promise.all(responses.map((r) => r.json()))
+          return { success: true, result: results }
+        }
+
+        // Regular listing - use existing endpoint
         const response = await fetch('/api/listings/create', {
           method: 'POST',
           headers: {

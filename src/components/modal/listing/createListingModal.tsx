@@ -6,7 +6,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import DatePicker from '@/components/ui/datepicker'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import Dropdown, { DropdownOption } from '@/components/ui/dropdown'
-import { Check } from 'ethereum-identity-kit'
+import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import EthereumIcon from 'public/tokens/eth-circle.svg'
 import UsdcIcon from 'public/tokens/usdc.svg'
 import Input from '@/components/ui/input'
@@ -30,10 +30,14 @@ import {
 } from '@/state/reducers/modals/makeListingModal'
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import Calendar from 'public/icons/calendar.svg'
-import { formatUnits } from 'viem'
+import { formatUnits, isAddress } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CAN_CLAIM_POAP } from '@/constants'
+import { useDebounce } from '@/hooks/useDebounce'
+import { beautifyName } from '@/lib/ens'
+import useETHPrice from '@/hooks/useETHPrice'
+import LoadingCell from '@/components/ui/loadingCell'
 
 export type ListingStatus =
   | 'review'
@@ -54,6 +58,7 @@ interface CreateListingModalProps {
 
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domains, previousListings }) => {
   const dispatch = useAppDispatch()
+  const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
@@ -74,10 +79,58 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [basePricePrice, setBasePricePrice] = useState<number | ''>('')
   const [showNames, setShowNames] = useState(false)
 
+  // Broker fields
+  const [brokerAddress, setBrokerAddress] = useState<string>('')
+  const [brokerFeePercent, setBrokerFeePercent] = useState<number | ''>('')
+  const [minBrokerFeePercent, setMinBrokerFeePercent] = useState<number>(0.0001) // Default 1%
+  const [showBrokerSection, setShowBrokerSection] = useState(false)
+
+  const debouncedBrokerAddress = useDebounce(brokerAddress, 500)
+
+  const { data: brokerAccount, isLoading: isBrokerAccountLoading } = useQuery({
+    queryKey: ['account', debouncedBrokerAddress],
+    queryFn: async () => {
+      if (!isAddress(debouncedBrokerAddress) && !debouncedBrokerAddress.includes('.')) return null
+
+      const response = await fetchAccount(debouncedBrokerAddress)
+      if (!isAddress(response?.address ?? '')) return null
+
+      return response
+    },
+    enabled: !!debouncedBrokerAddress,
+  })
+
   useEffect(() => {
     getCurrentChain()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Fetch broker fee config on mount
+  useEffect(() => {
+    const fetchBrokerConfig = async () => {
+      try {
+        const response = await fetch('/api/brokered-listings/config')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.data?.minFeePercent) {
+            setMinBrokerFeePercent(data.data.minFeePercent)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch broker config, using default minimum fee:', err)
+      }
+    }
+    fetchBrokerConfig()
+  }, [])
+
+  // Clear broker fields when Grails is deselected
+  useEffect(() => {
+    if (!selectedMarketplace.includes('grails')) {
+      setBrokerAddress('')
+      setBrokerFeePercent('')
+      setShowBrokerSection(false)
+    }
+  }, [selectedMarketplace])
 
   useEffect(() => {
     domains.forEach((domain, index) => {
@@ -146,6 +199,33 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       return
     }
 
+    // Validate broker fields if broker address is provided
+    if (brokerAddress.length > 0) {
+      if (!isAddress(brokerAddress)) {
+        if (!brokerAccount?.address) {
+          setError('Invalid broker address format')
+          setStatus('error')
+          return
+        }
+        if (brokerAccount.address.toLowerCase() === userAddress.toLowerCase()) {
+          setError('You cannot be your own broker')
+          setStatus('error')
+          return
+        }
+        if (!selectedMarketplace.includes('grails')) {
+          setError('Brokered listings are only available on Grails')
+          setStatus('error')
+          return
+        }
+      }
+
+      if (Number(brokerFeePercent) < minBrokerFeePercent) {
+        setError(`Broker fee must be at least ${minBrokerFeePercent}%`)
+        setStatus('error')
+        return
+      }
+    }
+
     try {
       const params: any = {
         domains,
@@ -158,6 +238,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         setCreateListingTxHash,
         setError,
       }
+
+      // Add broker params if broker address is provided
+      if (isAddress(brokerAccount?.address || brokerAddress) && Number(brokerFeePercent) > 0) {
+        params.brokerAddress = brokerAccount?.address || brokerAddress
+        params.brokerFeeBps = Math.round(Number(brokerFeePercent) * 100) // Convert percent to basis points
+      }
+
+      // console.log('Params:', params)
 
       const result = await createListing(params)
 
@@ -195,6 +283,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     const fees: { label: string; amount: number }[] = []
     const totalPrices = prices.reduce((sum, price) => Number(sum) + Number(price), 0) as number
 
+    if (selectedMarketplace.includes('grails')) {
+      fees.push({
+        label: 'Grails Fee (0%)',
+        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * 0.0, 0) as number,
+      })
+    }
+
     if (selectedMarketplace.includes('opensea')) {
       fees.push({
         label: 'OpenSea Fee (1%)',
@@ -202,10 +297,19 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       })
     }
 
-    if (selectedMarketplace.includes('grails')) {
+    // Add broker fee if specified
+    if (
+      brokerAddress.length > 0 &&
+      Number(brokerFeePercent) > 0 &&
+      selectedMarketplace.length === 1 &&
+      selectedMarketplace[0] === 'grails'
+    ) {
       fees.push({
-        label: 'Grails Fee (0%)',
-        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * 0.0, 0) as number,
+        label: `Broker Fee (${brokerFeePercent}%)`,
+        amount: prices.reduce(
+          (sum, price) => Number(sum) + Number(price) * (Number(brokerFeePercent) / 100),
+          0
+        ) as number,
       })
     }
 
@@ -365,7 +469,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                                   return newPrices
                                 })
                             }}
-                            placeholder='0.1'
+                            placeholder='Enter number'
                             min={0}
                             step={0.001}
                             max={currencies[0] === 'USDC' ? Number.MAX_SAFE_INTEGER : MAX_ETH_SUPPLY}
@@ -480,6 +584,107 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               </div>
             </div>
 
+            {/* Broker section - only show when Grails is selected */}
+            {selectedMarketplace.length === 1 && selectedMarketplace[0] === 'grails' && (
+              <div className='border-tertiary flex flex-col gap-0 rounded-md border p-3'>
+                <div
+                  onClick={() => setShowBrokerSection(!showBrokerSection)}
+                  className='flex cursor-pointer items-center justify-between'
+                >
+                  <div className='flex flex-col'>
+                    <div className='flex items-center gap-1.5 text-lg font-semibold'>
+                      <p>Broker</p>
+                      <p className='text-neutral text-md font-medium'>(Optional)</p>
+                    </div>
+                    <p className='text-neutral text-md font-medium'>Add a broker to receive a fee from this sale</p>
+                  </div>
+                  <Image
+                    src={ArrowDownIcon}
+                    alt='Arrow'
+                    width={16}
+                    height={16}
+                    className={cn(showBrokerSection ? 'rotate-180' : '', 'transition-transform')}
+                  />
+                </div>
+
+                {showBrokerSection && (
+                  <div className='mt-2 flex flex-col gap-2'>
+                    <div className='relative flex w-full flex-col gap-1.5'>
+                      <Input
+                        type='text'
+                        label='Broker Address'
+                        value={brokerAddress}
+                        labelClassName='min-w-[144px]!'
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setBrokerAddress(value)
+                        }}
+                        placeholder='ENS or Address'
+                      />
+                      {debouncedBrokerAddress.length > 0 &&
+                        (isBrokerAccountLoading ? (
+                          <div className='px-md flex items-center gap-1.5'>
+                            <LoadingCell height='20px' width='20px' radius='10px' />
+                            <LoadingCell height='16px' width='240px' radius='4px' />
+                          </div>
+                        ) : brokerAccount ? (
+                          <div className='px-md flex items-center gap-1.5'>
+                            <Avatar
+                              address={brokerAccount.address}
+                              name={brokerAccount.ens.name}
+                              src={brokerAccount.ens.avatar}
+                              style={{ width: 20, height: 20 }}
+                            />
+                            <p className='text-neutral text-md font-medium'>
+                              {isAddress(brokerAddress) && brokerAccount.ens.name
+                                ? beautifyName(brokerAccount.ens.name)
+                                : brokerAccount.address || brokerAddress}
+                            </p>
+                          </div>
+                        ) : isAddress(brokerAddress) ? null : (
+                          <p className='text-md px-md font-medium text-red-400'>Invalid ENS name or Address</p>
+                        ))}
+                    </div>
+
+                    <Input
+                      type='number'
+                      label={`Broker Fee %`}
+                      value={brokerFeePercent}
+                      labelClassName='min-w-[144px]!'
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (value === '') {
+                          setBrokerFeePercent('')
+                        } else {
+                          const numValue = Number(value)
+                          // Cap at 100%
+                          setBrokerFeePercent(Math.min(numValue, 100))
+                        }
+                      }}
+                      placeholder={`Enter number`}
+                      min={minBrokerFeePercent}
+                      max={100}
+                      step={0.1}
+                    />
+                    {brokerAddress.length > 0 &&
+                      Number(brokerFeePercent) > 0 &&
+                      Number(brokerFeePercent) < minBrokerFeePercent && (
+                        <p className='text-sm text-red-400'>Broker fee must be at least {minBrokerFeePercent}%</p>
+                      )}
+
+                    {brokerAddress.length > 0 && Number(brokerFeePercent) > 0 && (
+                      <div className='bg-secondary rounded-md p-2'>
+                        <p className='text-neutral text-md font-medium'>
+                          The broker will get <span className='font-bold'>{brokerFeePercent}%</span> of the sale when
+                          this listing is sold.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className='z-20 flex flex-col gap-2'>
               <Dropdown
                 label='Duration'
@@ -551,32 +756,68 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <div className='bg-secondary border-tertiary text-md rounded-md border p-3'>
                 <div className='space-y-1'>
                   <div className='flex justify-between text-gray-400'>
-                    <span>Listing Price:</span>
-                    <span>
-                      {prices[0]} {currencies[0]}
-                    </span>
+                    <p className='text-lg font-semibold'>Listing Price:</p>
+                    <div className='flex flex-col items-end gap-px'>
+                      <p className='text-lg font-semibold'>
+                        {prices[0]} {currencies[0]}
+                      </p>
+                      {currencies[0] === 'ETH' && (
+                        <p className='text-sm font-medium'>
+                          ($
+                          {(Number(prices[0]) * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
+                            maximumFractionDigits: 2,
+                          })}
+                          )
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {calculateFees()!.fees.map((fee, idx) => (
                     <div
                       key={idx}
-                      className={cn('flex justify-between', fee.amount > 0 ? 'text-red-400' : 'text-green-400')}
+                      className={cn(
+                        'flex justify-between text-lg font-medium',
+                        fee.amount > 0 ? 'text-zinc-300' : 'text-green-400'
+                      )}
                     >
-                      <span>- {fee.label}:</span>
-                      <span>
-                        {fee.amount.toFixed(currencies[0] === 'USDC' ? 2 : 4)} {currencies[0]}
-                      </span>
+                      <p className='pt-px'>- {fee.label}:</p>
+                      <div className='flex flex-col items-end gap-px'>
+                        <p>
+                          {fee.amount.toFixed(currencies[0] === 'USDC' ? 2 : 4)} {currencies[0]}
+                        </p>
+                        {fee.amount > 0 && currencies[0] === 'ETH' && (
+                          <p className='text-sm font-medium'>
+                            ($
+                            {(fee.amount * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
+                              maximumFractionDigits: 2,
+                            })}
+                            )
+                          </p>
+                        )}
+                      </div>
                     </div>
                   ))}
                   <div className='bg-primary my-2 h-px w-full' />
-                  <div className='flex items-center justify-between font-medium'>
-                    <span>You Receive:</span>
-                    <span className='text-lg font-bold'>
-                      {calculateFees()!.netProceeds.toLocaleString('default', {
-                        maximumFractionDigits: 6,
-                        minimumFractionDigits: 2,
-                      })}{' '}
-                      {currencies[0]}
-                    </span>
+                  <div className='flex justify-between font-medium'>
+                    <p className='text-lg font-semibold'>You Receive:</p>
+                    <div className='flex flex-col items-end gap-px'>
+                      <p className='text-lg font-bold'>
+                        {calculateFees()!.netProceeds.toLocaleString('default', {
+                          maximumFractionDigits: 6,
+                          minimumFractionDigits: 2,
+                        })}{' '}
+                        {currencies[0]}
+                      </p>
+                      {currencies[0] === 'ETH' && (
+                        <p className='text-neutral text-sm font-medium'>
+                          ($
+                          {(calculateFees()!.netProceeds * ethPrice).toLocaleString(navigator?.language ?? 'en-US', {
+                            maximumFractionDigits: 2,
+                          })}
+                          )
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -588,7 +829,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   !prices.every((price) => Number(price) > 0) ||
                   selectedMarketplace.length === 0 ||
                   expiryDate < currentTimestamp ||
-                  !userAddress
+                  !userAddress ||
+                  (brokerAddress.length > 0 && !(brokerAccount?.address || isAddress(brokerAddress))) ||
+                  (brokerAddress.length > 0 && Number(brokerFeePercent) < minBrokerFeePercent)
                 }
                 onClick={
                   isCorrectChain

@@ -25,6 +25,11 @@ import {
   setShareModalDomainInfo,
 } from '@/state/reducers/modals/shareModal'
 import ShareIconWhite from 'public/icons/image.svg'
+import Tooltip from '@/components/ui/tooltip'
+import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
+import { useQuery } from '@tanstack/react-query'
+import { beautifyName } from '@/lib/ens'
+import Link from 'next/link'
 
 interface ListingsProps {
   domain?: MarketplaceDomainType
@@ -71,29 +76,7 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
         <LoadingCell height='60px' width='100%' />
       ) : (
         displayedListings.map((listing) => (
-          <div key={listing.id} className='flex flex-row items-center justify-between gap-2'>
-            <div className='flex flex-row items-center gap-2 sm:gap-4'>
-              <Image
-                src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
-                width={32}
-                height={32}
-                alt={listing.source}
-                className='h-auto w-7 sm:w-8'
-              />
-              <div className='flex flex-col gap-1'>
-                <div className='flex flex-row items-center gap-2'>
-                  <Price
-                    price={listing.price}
-                    currencyAddress={listing.currency_address}
-                    iconSize='22px'
-                    fontSize='text-2xl sm:text-2xl pt-[3px] font-semibold'
-                  />
-                </div>
-                <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
-              </div>
-            </div>
-            <ActionButtons listing={listing} isMyDomain={isMyDomain} domain={domain} />
-          </div>
+          <DisplayedListing key={listing.id} listing={listing} isMyDomain={isMyDomain} domain={domain} />
         ))
       )}
       {!listingsLoading && listings.length === 0 && (
@@ -106,6 +89,64 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
           {viewAll ? 'View Less' : 'View All'}
         </button>
       )}
+    </div>
+  )
+}
+
+interface DisplayedListingProps {
+  listing: DomainListingType
+  isMyDomain: boolean
+  domain?: MarketplaceDomainType
+}
+
+const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain, domain }) => {
+  const { data: brokerAccount } = useQuery({
+    queryKey: ['brokerAccount', listing.broker_address],
+    queryFn: async () => {
+      if (!listing.broker_address) return null
+      const response = await fetchAccount(listing.broker_address)
+      return response
+    },
+    enabled: !!listing.broker_address,
+  })
+
+  return (
+    <div className='flex flex-row items-center justify-between gap-2'>
+      <div className='flex flex-row items-center gap-2 sm:gap-4'>
+        <Image
+          src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
+          width={32}
+          height={32}
+          alt={listing.source}
+          className='h-auto w-7 sm:w-8'
+        />
+        <div className='flex flex-col gap-1'>
+          <div className='flex flex-row items-center gap-2'>
+            <Price
+              price={listing.price}
+              currencyAddress={listing.currency_address}
+              iconSize='22px'
+              fontSize='text-2xl sm:text-2xl pt-[3px] font-semibold'
+            />
+            {listing.broker_address && listing.broker_fee_bps && (
+              <Tooltip
+                label={`${brokerAccount?.ens.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(listing.broker_address)} - ${listing.broker_fee_bps / 100}%`}
+                position='top'
+                align='left'
+              >
+                <Link
+                  href={`/profile/${listing.broker_address}`}
+                  className='bg-primary/20 text-primary hover:bg-primary/30 rounded-md px-2 py-1 text-xs font-semibold transition-colors'
+                >
+                  Brokered
+                </Link>
+              </Tooltip>
+            )}
+          </div>
+          <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
+        </div>
+      </div>
+      <ActionButtons listing={listing} isMyDomain={isMyDomain} domain={domain} />
     </div>
   )
 }

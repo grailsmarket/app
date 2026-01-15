@@ -91,21 +91,21 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
       <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
         <div className='flex w-full flex-row items-center justify-between gap-4'>
-          <div className='flex flex-row items-center gap-2'>
+          <div className='flex flex-row items-center gap-2 text-2xl sm:text-3xl'>
             {isLoadingRentPrice ? (
-              <span className='text-3xl font-bold'>Loading...</span>
+              <span className='font-bold'>Loading...</span>
             ) : (
               <Price
                 price={premiumPriceWei}
                 currencyAddress={TOKEN_ADDRESSES.ETH}
                 iconSize='28px'
-                fontSize='text-3xl font-bold pl-0.5'
+                fontSize='font-bold pl-0.5'
               />
             )}
-            <p className='text-3xl font-bold'>+</p>
-            <div className='flex flex-row items-center gap-1 text-3xl font-bold'>
+            <p className='font-bold'>+</p>
+            <div className='flex flex-row items-center gap-1 font-bold'>
               <p className=''>
-                ${price}&nbsp;<span className='text-neutral'>/&nbsp;Year</span>
+                ${price}&nbsp;<span className='text-neutral'>/&nbsp;yr</span>
               </p>
             </div>
           </div>

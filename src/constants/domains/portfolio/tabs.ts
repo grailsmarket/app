@@ -24,6 +24,10 @@ export const PROFILE_TABS = [
     value: 'watchlist',
   },
   {
+    label: 'Broker',
+    value: 'broker',
+  },
+  {
     label: 'Activity',
     value: 'activity',
   },

@@ -6,6 +6,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   className?: string
   placeholder?: string
   hideLabel?: boolean
+  labelClassName?: string
 }
 
 const Input: React.FC<InputProps> = ({
@@ -19,13 +20,19 @@ const Input: React.FC<InputProps> = ({
   min,
   max,
   hideLabel = false,
+  labelClassName,
 }) => {
   return (
     <div className={cn('w-full', className)}>
       <div className='flex'>
         {/* Label section */}
         {!hideLabel && (
-          <div className='bg-background border-tertiary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
+          <div
+            className={cn(
+              'bg-background border-tertiary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3',
+              labelClassName
+            )}
+          >
             <span className='text-lg font-semibold text-nowrap'>{label}</span>
           </div>
         )}

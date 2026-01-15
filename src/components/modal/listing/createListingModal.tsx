@@ -6,7 +6,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import DatePicker from '@/components/ui/datepicker'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import Dropdown, { DropdownOption } from '@/components/ui/dropdown'
-import { Check } from 'ethereum-identity-kit'
+import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import EthereumIcon from 'public/tokens/eth-circle.svg'
 import UsdcIcon from 'public/tokens/usdc.svg'
 import Input from '@/components/ui/input'
@@ -32,8 +32,10 @@ import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkS
 import Calendar from 'public/icons/calendar.svg'
 import { formatUnits, isAddress } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CAN_CLAIM_POAP } from '@/constants'
+import { useDebounce } from '@/hooks/useDebounce'
+import { beautifyName } from '@/lib/ens'
 
 export type ListingStatus =
   | 'review'
@@ -78,8 +80,22 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [brokerAddress, setBrokerAddress] = useState<string>('')
   const [brokerFeePercent, setBrokerFeePercent] = useState<number | ''>('')
   const [minBrokerFeePercent, setMinBrokerFeePercent] = useState<number>(1) // Default 1%
-  const [brokerAddressError, setBrokerAddressError] = useState<string | null>(null)
   const [showBrokerSection, setShowBrokerSection] = useState(false)
+
+  const debouncedBrokerAddress = useDebounce(brokerAddress, 500)
+
+  const { data: brokerAccount, isLoading: isBrokerAccountLoading } = useQuery({
+    queryKey: ['account', debouncedBrokerAddress],
+    queryFn: async () => {
+      if (!isAddress(debouncedBrokerAddress) && !debouncedBrokerAddress.includes('.')) return null
+
+      const response = await fetchAccount(debouncedBrokerAddress)
+      if (!isAddress(response?.address ?? '')) return null
+
+      return response
+    },
+    enabled: !!debouncedBrokerAddress,
+  })
 
   useEffect(() => {
     getCurrentChain()
@@ -109,7 +125,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     if (!selectedMarketplace.includes('grails')) {
       setBrokerAddress('')
       setBrokerFeePercent('')
-      setBrokerAddressError(null)
       setShowBrokerSection(false)
     }
   }, [selectedMarketplace])
@@ -182,24 +197,27 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     }
 
     // Validate broker fields if broker address is provided
-    if (brokerAddress.trim()) {
+    if (brokerAddress.length > 0) {
       if (!isAddress(brokerAddress)) {
-        setError('Invalid broker address format')
-        setStatus('error')
-        return
+        if (!brokerAccount?.address) {
+          setError('Invalid broker address format')
+          setStatus('error')
+          return
+        }
+        if (brokerAccount.address.toLowerCase() === userAddress.toLowerCase()) {
+          setError('You cannot be your own broker')
+          setStatus('error')
+          return
+        }
+        if (!selectedMarketplace.includes('grails')) {
+          setError('Brokered listings are only available on Grails')
+          setStatus('error')
+          return
+        }
       }
-      if (brokerAddress.toLowerCase() === userAddress.toLowerCase()) {
-        setError('You cannot be your own broker')
-        setStatus('error')
-        return
-      }
+
       if (Number(brokerFeePercent) < minBrokerFeePercent) {
         setError(`Broker fee must be at least ${minBrokerFeePercent}%`)
-        setStatus('error')
-        return
-      }
-      if (!selectedMarketplace.includes('grails')) {
-        setError('Brokered listings are only available on Grails')
         setStatus('error')
         return
       }
@@ -278,7 +296,10 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     if (brokerAddress.trim() && Number(brokerFeePercent) > 0 && selectedMarketplace.includes('grails')) {
       fees.push({
         label: `Broker Fee (${brokerFeePercent}%)`,
-        amount: prices.reduce((sum, price) => Number(sum) + Number(price) * (Number(brokerFeePercent) / 100), 0) as number,
+        amount: prices.reduce(
+          (sum, price) => Number(sum) + Number(price) * (Number(brokerFeePercent) / 100),
+          0
+        ) as number,
       })
     }
 
@@ -554,15 +575,15 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
             </div>
 
             {/* Broker section - only show when Grails is selected */}
-            {selectedMarketplace.includes('grails') && (
+            {selectedMarketplace.length === 1 && selectedMarketplace[0] === 'grails' && (
               <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
                 <div
                   onClick={() => setShowBrokerSection(!showBrokerSection)}
                   className='flex cursor-pointer items-center justify-between'
                 >
                   <div className='flex flex-col'>
-                    <p className='text-lg font-medium'>Broker (Optional)</p>
-                    <p className='text-neutral text-sm'>Add a broker to receive a fee from this sale</p>
+                    <p className='text-lg font-semibold'>Broker (Optional)</p>
+                    <p className='text-neutral text-md font-medium'>Add a broker to receive a fee from this sale</p>
                   </div>
                   <Image
                     src={ArrowDownIcon}
@@ -575,32 +596,44 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
 
                 {showBrokerSection && (
                   <div className='mt-2 flex flex-col gap-3'>
-                    <Input
-                      type='text'
-                      label='Broker Address'
-                      value={brokerAddress}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        setBrokerAddress(value)
-                        // Validate address format in real-time
-                        if (value.trim() && !isAddress(value)) {
-                          setBrokerAddressError('Invalid address format')
-                        } else if (value.toLowerCase() === userAddress?.toLowerCase()) {
-                          setBrokerAddressError('You cannot be your own broker')
-                        } else {
-                          setBrokerAddressError(null)
-                        }
-                      }}
-                      placeholder='0x...'
-                    />
-                    {brokerAddressError && (
-                      <p className='text-sm text-red-400'>{brokerAddressError}</p>
-                    )}
+                    <div className='flex w-full flex-col gap-2'>
+                      <Input
+                        type='text'
+                        label='Broker Address'
+                        value={brokerAddress}
+                        labelClassName='min-w-[144px]!'
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setBrokerAddress(value)
+                        }}
+                        placeholder='ENS or Address'
+                      />
+                      {debouncedBrokerAddress.length > 0 &&
+                        !isBrokerAccountLoading &&
+                        (brokerAccount ? (
+                          <div className='px-md flex items-center gap-2'>
+                            <Avatar
+                              address={brokerAccount.address}
+                              name={brokerAccount.ens.name}
+                              src={brokerAccount.ens.avatar}
+                              style={{ width: 24, height: 24 }}
+                            />
+                            <p className='text-neutral text-md font-medium'>
+                              {isAddress(brokerAddress) && brokerAccount.ens.name
+                                ? beautifyName(brokerAccount.ens.name)
+                                : brokerAccount.address || brokerAddress}
+                            </p>
+                          </div>
+                        ) : isAddress(brokerAddress) ? null : (
+                          <p className='text-md px-md font-medium text-red-400'>Invalid ENS name or Address</p>
+                        ))}
+                    </div>
 
                     <Input
                       type='number'
                       label={`Broker Fee % (min ${minBrokerFeePercent}%)`}
                       value={brokerFeePercent}
+                      labelClassName='min-w-2/3!'
                       onChange={(e) => {
                         const value = e.target.value
                         if (value === '') {
@@ -616,16 +649,17 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                       max={100}
                       step={0.1}
                     />
-                    {brokerAddress.trim() && Number(brokerFeePercent) > 0 && Number(brokerFeePercent) < minBrokerFeePercent && (
-                      <p className='text-sm text-red-400'>
-                        Broker fee must be at least {minBrokerFeePercent}%
-                      </p>
-                    )}
+                    {brokerAddress.trim() &&
+                      Number(brokerFeePercent) > 0 &&
+                      Number(brokerFeePercent) < minBrokerFeePercent && (
+                        <p className='text-sm text-red-400'>Broker fee must be at least {minBrokerFeePercent}%</p>
+                      )}
 
                     {brokerAddress.trim() && Number(brokerFeePercent) > 0 && (
                       <div className='bg-secondary rounded-md p-2'>
-                        <p className='text-neutral text-sm'>
-                          The broker will receive {brokerFeePercent}% of the sale price when this listing is sold.
+                        <p className='text-neutral text-md font-medium'>
+                          The broker will get <span className='font-bold'>{brokerFeePercent}%</span> of the sale when
+                          this listing is sold.
                         </p>
                       </div>
                     )}
@@ -743,8 +777,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   selectedMarketplace.length === 0 ||
                   expiryDate < currentTimestamp ||
                   !userAddress ||
-                  !!brokerAddressError ||
-                  (!!brokerAddress.trim() && Number(brokerFeePercent) < minBrokerFeePercent)
+                  (brokerAddress.length > 0 && !(brokerAccount?.address || isAddress(brokerAddress))) ||
+                  (brokerAddress.length > 0 && Number(brokerFeePercent) < minBrokerFeePercent)
                 }
                 onClick={
                   isCorrectChain

@@ -173,9 +173,10 @@ export function useSeaportClient() {
                   const order = grailsOrders[index]
                   const priceWei = BigInt(Math.floor(parseFloat(params.prices[index]) * 1e18)).toString()
                   const currency = params.currencies?.[index] || 'ETH'
-                  const currencyAddress = currency === 'USDC'
-                    ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-                    : '0x0000000000000000000000000000000000000000'
+                  const currencyAddress =
+                    currency === 'USDC'
+                      ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+                      : '0x0000000000000000000000000000000000000000'
 
                   return fetch('/api/brokered-listings', {
                     method: 'POST',
@@ -196,14 +197,14 @@ export function useSeaportClient() {
               )
 
               // Return a synthetic response that matches the expected format
-              const allOk = responses.every(r => r.ok)
+              const allOk = responses.every((r) => r.ok)
               if (!allOk) {
-                const failedResponse = responses.find(r => !r.ok)!
+                const failedResponse = responses.find((r) => !r.ok)!
                 return failedResponse
               }
 
               // Create a synthetic successful response
-              const results = await Promise.all(responses.map(r => r.json()))
+              const results = await Promise.all(responses.map((r) => r.json()))
               return new Response(JSON.stringify({ success: true, data: results }), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
@@ -224,10 +225,7 @@ export function useSeaportClient() {
             })
           }
 
-          const [openSeaResponse, grailsResponse] = await Promise.all([
-            openSeaResponsePromise,
-            grailsResponsePromise,
-          ])
+          const [openSeaResponse, grailsResponse] = await Promise.all([openSeaResponsePromise, grailsResponsePromise])
 
           if (!openSeaResponse.ok || !grailsResponse.ok) {
             const errors = []
@@ -273,9 +271,10 @@ export function useSeaportClient() {
               const order = formattedOrders[index]
               const priceWei = BigInt(Math.floor(parseFloat(params.prices[index]) * 1e18)).toString()
               const currency = params.currencies?.[index] || 'ETH'
-              const currencyAddress = currency === 'USDC'
-                ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC address
-                : '0x0000000000000000000000000000000000000000' // ETH
+              const currencyAddress =
+                currency === 'USDC'
+                  ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC address
+                  : '0x0000000000000000000000000000000000000000' // ETH
 
               return fetch('/api/brokered-listings', {
                 method: 'POST',
@@ -296,14 +295,14 @@ export function useSeaportClient() {
           )
 
           // Check if any failed
-          const failedResponses = responses.filter(r => !r.ok)
+          const failedResponses = responses.filter((r) => !r.ok)
           if (failedResponses.length > 0) {
             const errorData = await failedResponses[0].json()
             throw new Error(errorData.error?.message || errorData.error || 'Failed to create brokered listing')
           }
 
           // Return combined results
-          const results = await Promise.all(responses.map(r => r.json()))
+          const results = await Promise.all(responses.map((r) => r.json()))
           return { success: true, result: results }
         }
 

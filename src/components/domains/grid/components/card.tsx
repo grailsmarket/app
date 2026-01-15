@@ -32,7 +32,7 @@ import {
   removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
 import Link from 'next/link'
-import { normalizeName } from '@/lib/ens'
+import { beautifyName, normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
@@ -42,6 +42,8 @@ import Watchlist from '@/components/ui/watchlist'
 import User from '@/components/ui/user'
 import Image from 'next/image'
 import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
+import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
+import { useQuery } from '@tanstack/react-query'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -147,6 +149,16 @@ const Card: React.FC<CardProps> = ({
     }
   }
 
+  const { data: brokerAccount } = useQuery({
+    queryKey: ['brokerAccount', domainListing?.broker_address],
+    queryFn: async () => {
+      if (!domainListing?.broker_address) return null
+      const response = await fetchAccount(domainListing.broker_address)
+      return response
+    },
+    enabled: !!domainListing?.broker_address,
+  })
+
   return (
     <Link
       href={`/${normalizeName(domain.name)}`}
@@ -218,7 +230,7 @@ const Card: React.FC<CardProps> = ({
       </div>
       <div
         className={cn(
-          'p-lg flex w-full flex-1 flex-col justify-between gap-1 text-lg',
+          'flex w-full flex-1 flex-col justify-between gap-[3px] p-3.5 text-lg',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
@@ -226,7 +238,7 @@ const Card: React.FC<CardProps> = ({
           {registrationStatus === GRACE_PERIOD ? (
             <p className='text-grace truncate font-semibold'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
           ) : registrationStatus === REGISTERED ? (
-            domainListing?.price ? (
+            domainListing ? (
               <div className='flex items-center gap-1'>
                 <Price
                   price={domainListing.price}
@@ -234,48 +246,61 @@ const Card: React.FC<CardProps> = ({
                   iconSize='17px'
                   fontSize='text-xl font-semibold'
                 />
+                {domainListing.broker_address && domainListing.broker_fee_bps && (
+                  <Tooltip
+                    label={`${brokerAccount?.ens.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(domainListing.broker_address)} - ${domainListing.broker_fee_bps / 100}%`}
+                    position={index === 0 ? 'bottom' : 'top'}
+                    align='left'
+                  >
+                    <p className='bg-primary/20 text-primary hover:bg-primary/30 rounded-sm px-1.5 py-0.5 text-xs font-semibold transition-colors'>
+                      Brokered
+                    </p>
+                  </Tooltip>
+                )}
               </div>
             ) : (
               <p className='leading-[18px] font-bold'>Unlisted</p>
             )
           ) : (
-            <div
-              className={cn(
-                'flex items-center gap-px font-semibold',
-                registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
+            <div className='flex flex-col gap-px'>
+              <div
+                className={cn(
+                  'flex items-center gap-px font-semibold',
+                  registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
+                )}
+              >
+                {registrationStatus === PREMIUM ? (
+                  <>
+                    <p>$</p>
+                    <p>
+                      {premiumPrice.toLocaleString(navigator.language, {
+                        maximumFractionDigits: 2,
+                        minimumFractionDigits: 2,
+                      })}
+                    </p>
+                    <p className='text-md text-neutral font-medium'>
+                      &nbsp;+&nbsp;${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/yr
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>$</p>
+                    <p>
+                      {regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}&nbsp;
+                      <span className='text-neutral font-medium'>/&nbsp;Year</span>
+                    </p>
+                  </>
+                )}
+              </div>
+              {registrationStatus === PREMIUM && timeLeftString && (
+                <div className='text-md text-premium/70 flex items-center gap-px font-medium'>
+                  Premium ({timeLeftString})
+                </div>
               )}
-            >
-              {registrationStatus === PREMIUM ? (
-                <>
-                  <p>$</p>
-                  <p>
-                    {premiumPrice.toLocaleString(navigator.language, {
-                      maximumFractionDigits: 2,
-                      minimumFractionDigits: 2,
-                    })}
-                  </p>
-                  <p className='text-md text-neutral font-medium'>
-                    &nbsp;+ ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/Year
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>$</p>
-                  <p>
-                    {regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}&nbsp;
-                    <span className='text-neutral font-medium'>/&nbsp;Year</span>
-                  </p>
-                </>
+              {registrationStatus === UNREGISTERED && (
+                <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
               )}
             </div>
-          )}
-          {registrationStatus === PREMIUM && timeLeftString && (
-            <div className='text-md text-premium/70 flex items-center gap-px font-medium'>
-              Premium ({timeLeftString})
-            </div>
-          )}
-          {registrationStatus === UNREGISTERED && (
-            <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
           )}
           {domain.clubs && domain.clubs.length > 0 && (
             <div className='flex max-w-full flex-row items-center gap-1 truncate'>

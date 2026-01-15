@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
-import { PREMIUM, REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -14,7 +14,6 @@ const size = {
 // Gradient definitions based on the CSS classes
 const gradients = {
   'gradient-blue': 'linear-gradient(331.79deg, #44bcf1 2.57%, #628bf2 65.63%, #a099fe 149.86%)',
-  'gradient-purple': 'linear-gradient(135deg, #682e7e 0%, #2b0c65 100%)',
   'gradient-gray': 'linear-gradient(135deg, rgba(129, 133, 152) 0%, rgba(231, 237, 246) 103.11%)',
 }
 
@@ -22,7 +21,6 @@ function getGradient(expiryDate: string | null) {
   const registrationStatus = getRegistrationStatus(expiryDate)
 
   if (registrationStatus === REGISTERED) return gradients['gradient-blue']
-  if (registrationStatus === PREMIUM) return gradients['gradient-purple']
   if (registrationStatus === UNREGISTERED) return gradients['gradient-gray']
 
   return gradients['gradient-blue']

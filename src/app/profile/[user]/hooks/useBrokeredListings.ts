@@ -19,13 +19,12 @@ interface UseBrokeredListingsOptions {
   status?: 'active' | 'sold' | 'cancelled' | 'expired'
 }
 
-export const useBrokeredListings = (
-  brokerAddress: Address | undefined,
-  options: UseBrokeredListingsOptions = {}
-) => {
+export const useBrokeredListings = (brokerAddress: Address | undefined, options: UseBrokeredListingsOptions = {}) => {
   const { status } = options
 
-  const fetchBrokeredListings = async ({ pageParam = 1 }): Promise<{
+  const fetchBrokeredListings = async ({
+    pageParam = 1,
+  }): Promise<{
     domains: MarketplaceDomainType[]
     nextPage: number | null
     total: number
@@ -43,9 +42,7 @@ export const useBrokeredListings = (
       params.set('status', status)
     }
 
-    const response = await fetch(
-      `/api/brokered-listings/broker/${brokerAddress}?${params.toString()}`
-    )
+    const response = await fetch(`/api/brokered-listings/broker/${brokerAddress}?${params.toString()}`)
 
     if (!response.ok) {
       throw new Error('Failed to fetch brokered listings')
@@ -60,13 +57,7 @@ export const useBrokeredListings = (
     }
   }
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-  } = useInfiniteQuery({
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ['brokeredListings', brokerAddress, status],
     queryFn: fetchBrokeredListings,
     getNextPageParam: (lastPage) => lastPage.nextPage,

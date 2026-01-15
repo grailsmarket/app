@@ -13,6 +13,7 @@ import { useDomains } from '../hooks/useDomains'
 import { useBrokeredListings } from '../hooks/useBrokeredListings'
 import { useNavbar } from '@/context/navbar'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 interface TabSwitcherProps {
   user: Address | undefined
@@ -27,12 +28,17 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
   const { totalBrokeredListings } = useBrokeredListings(user)
   const { isNavbarVisible } = useNavbar()
+  const { actions } = useFilterRouter()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
   const setProfileTab = (tab: ProfileTabType) => {
     dispatch(changeTab(tab))
+
+    if (tab.value === 'broker') {
+      dispatch(actions.setFiltersOpen(false))
+    }
   }
 
   useEffect(() => {
@@ -75,7 +81,15 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return 0
       }
     },
-    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers, totalListings, totalGraceDomains, totalBrokeredListings]
+    [
+      profileTotalDomains,
+      totalWatchlistDomains,
+      totalReceivedOffers,
+      totalSentOffers,
+      totalListings,
+      totalGraceDomains,
+      totalBrokeredListings,
+    ]
   )
 
   // Update indicator position when selected tab changes

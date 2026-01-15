@@ -59,6 +59,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   useEffect(() => {
     // reset filters when visiting a new profile
     if (lastVisitedProfile && lastVisitedProfile !== user) {
+      dispatch(changeTab(PROFILE_TABS[0]))
       dispatch(setLastVisitedProfile(user))
       dispatch(clearFilters())
       dispatch(clearMyOffersFilters())

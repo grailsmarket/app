@@ -9,6 +9,7 @@ import TabSwitcher from './tabSwitcher'
 import { fetchAccount } from 'ethereum-identity-kit'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
+import BrokerPanel from './brokerPanel'
 import { useQuery } from '@tanstack/react-query'
 import OfferPanel from './offerPanel'
 import { changeTab, selectUserProfile, setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
@@ -100,6 +101,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     profileTab === 'domains' || profileTab === 'watchlist' || profileTab === 'listings' || profileTab === 'grace'
   const showOfferPanel = profileTab === 'sent_offers' || profileTab === 'received_offers'
   const showActivityPanel = profileTab === 'activity'
+  const showBrokerPanel = profileTab === 'broker'
 
   return (
     <Suspense>
@@ -120,6 +122,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                   showDomainsPanel={showDomainsPanel}
                   showOfferPanel={showOfferPanel}
                   showActivityPanel={showActivityPanel}
+                  showBrokerPanel={showBrokerPanel}
                   isMyProfile={isMyProfile}
                 />
               </div>
@@ -138,6 +141,7 @@ interface ProfileContentProps {
   showDomainsPanel: boolean
   showOfferPanel: boolean
   showActivityPanel: boolean
+  showBrokerPanel: boolean
   isMyProfile: boolean
 }
 
@@ -146,6 +150,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   showDomainsPanel,
   showOfferPanel,
   showActivityPanel,
+  showBrokerPanel,
   isMyProfile,
 }) => {
   const isClient = useIsClient()
@@ -164,6 +169,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
       {showDomainsPanel && <DomainPanel user={userAddress} isMyProfile={isMyProfile} />}
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}
+      {showBrokerPanel && <BrokerPanel user={userAddress} />}
     </div>
   )
 }

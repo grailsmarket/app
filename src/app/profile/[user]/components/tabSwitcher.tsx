@@ -10,6 +10,7 @@ import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { useDomains } from '../hooks/useDomains'
+import { useBrokeredListings } from '../hooks/useBrokeredListings'
 import { useNavbar } from '@/context/navbar'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
 
@@ -24,6 +25,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains } = useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
+  const { totalBrokeredListings } = useBrokeredListings(user)
   const { isNavbarVisible } = useNavbar()
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -38,12 +40,19 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   }, [])
 
   const displayedTabs = useMemo(() => {
-    if (user && userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated') {
-      return PROFILE_TABS
-    }
-
-    return PROFILE_TABS.filter((tab) => tab.value !== 'watchlist')
-  }, [authStatus, user, userAddress])
+    let tabs = PROFILE_TABS.filter((tab) => {
+      // Only show watchlist to profile owner
+      if (tab.value === 'watchlist') {
+        return user && userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated'
+      }
+      // Only show broker tab if there are brokered listings
+      if (tab.value === 'broker') {
+        return totalBrokeredListings > 0
+      }
+      return true
+    })
+    return tabs
+  }, [authStatus, user, userAddress, totalBrokeredListings])
 
   const getTotalItems = useMemo(
     () => (tab: (typeof PROFILE_TABS)[number]) => {
@@ -60,11 +69,13 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return formatTotalTabItems(totalReceivedOffers)
         case 'sent_offers':
           return formatTotalTabItems(totalSentOffers)
+        case 'broker':
+          return formatTotalTabItems(totalBrokeredListings)
         case 'activity':
           return 0
       }
     },
-    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers, totalListings, totalGraceDomains]
+    [profileTotalDomains, totalWatchlistDomains, totalReceivedOffers, totalSentOffers, totalListings, totalGraceDomains, totalBrokeredListings]
   )
 
   // Update indicator position when selected tab changes

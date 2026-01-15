@@ -25,6 +25,7 @@ import {
   setShareModalDomainInfo,
 } from '@/state/reducers/modals/shareModal'
 import ShareIconWhite from 'public/icons/image.svg'
+import Link from 'next/link'
 
 interface ListingsProps {
   domain?: MarketplaceDomainType
@@ -88,6 +89,14 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
                     iconSize='22px'
                     fontSize='text-2xl sm:text-2xl pt-[3px] font-semibold'
                   />
+                  {listing.broker_address && (
+                    <Link
+                      href={`/profile/${listing.broker_address}`}
+                      className='bg-primary/20 text-primary hover:bg-primary/30 rounded-md px-2 py-0.5 text-xs font-medium transition-colors'
+                    >
+                      Brokered
+                    </Link>
+                  )}
                 </div>
                 <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
               </div>

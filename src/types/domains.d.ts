@@ -38,6 +38,8 @@ export type DomainListingType = {
   expires_at: string
   created_at: string
   source: string
+  broker_address: Address | null
+  broker_fee_bps: number | null
 }
 
 export type DomainOfferType = {

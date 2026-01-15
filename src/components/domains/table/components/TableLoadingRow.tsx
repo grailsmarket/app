@@ -15,8 +15,7 @@ const TableLoadingRow: React.FC<TableLoadingRowsProps> = ({ displayedColumns }) 
         className={cn(
           'flex items-center gap-2',
           item.getWidth(displayedColumns.length),
-          index === displayedColumns.length - 1 && 'justify-end',
-          header === 'actions' && 'pr-md'
+          index === displayedColumns.length - 1 && 'justify-end'
         )}
         key={index}
       >

@@ -41,7 +41,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
     max: null,
   },
   categories: [],
-  sort: 'expiry_date_asc',
+  sort: null,
 }
 
 // Initial State - Status filter is not in openFilters since it's hidden
@@ -64,7 +64,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
-  sort: 'expiry_date_asc',
+  sort: 'last_sale_price_desc',
   scrollTop: 0,
 }
 

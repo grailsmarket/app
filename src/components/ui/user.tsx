@@ -22,7 +22,7 @@ interface UserProps {
   loadingCellWidth?: string
 }
 
-const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '80%' }) => {
+const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '60%' }) => {
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', address],

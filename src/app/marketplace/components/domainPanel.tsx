@@ -15,6 +15,7 @@ import { normalizeName } from '@/lib/ens'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
+import { Cross } from 'ethereum-identity-kit'
 
 const DomainPanel = () => {
   const router = useRouter()
@@ -71,13 +72,20 @@ const DomainPanel = () => {
               }}
               className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
-            <Image
-              src={MagnifyingGlass}
-              alt='Search'
-              width={16}
-              height={16}
-              className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-            />
+            {selectors.filters.search.length > 0 ? (
+              <Cross
+                onClick={() => dispatch(actions.setSearch(''))}
+                className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+              />
+            ) : (
+              <Image
+                src={MagnifyingGlass}
+                alt='Search'
+                width={16}
+                height={16}
+                className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+              />
+            )}
           </div>
           <div className='hidden sm:block'>
             <SortDropdown />

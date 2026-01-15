@@ -347,9 +347,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         <div className='bg-background shadow-bulk hidden rounded-md p-2 lg:flex flex-row gap-1.5'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
           <div className='w-px h-4 bg-neutral' />
-          <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to select all</p>
+          <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to Select All</p>
           <div className='w-px h-4 bg-neutral' />
-          <p className='text-md text-neutral text-end font-semibold'>ESC to close</p>
+          <p className='text-md text-neutral text-end font-semibold'>ESC to Close</p>
         </div>
       )}
 

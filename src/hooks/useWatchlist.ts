@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../state/hooks'
 import {
@@ -16,14 +16,13 @@ import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
-import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
-const useWatchlist = (name: string, tokenId: string, watchlistId: number | undefined) => {
+const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, watchlistId?: number | null) => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
-  const filters = useAppSelector(selectWatchlistFilters)
   const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
   const { userAddress, authStatus } = useUserContext()
+  const [fetchWatchlistItem, setFetchWatchlistItem] = useState(fetchWatchSettings)
   const [hasWatchlistedBefore, setHasWatchlistedBefore] = useState<boolean | undefined>(undefined)
   const [watchlistCountChange, setWatchlistCountChange] = useState(0)
   const [watchlistSettings, setWatchlistSettings] = useState<WatchlistSettingsType>({
@@ -98,7 +97,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
   })
 
   const { data: watchlistItem } = useQuery({
-    queryKey: ['isWatchlisted', name, userAddress],
+    queryKey: ['isWatchlisted', name, userAddress, fetchWatchlistItem],
     queryFn: async () => {
       const result = await checkWatchlist(name)
 
@@ -111,12 +110,13 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
       }
       return result
     },
-    enabled: !!name && !!userAddress && authStatus === 'authenticated' && !watchlistId,
+    enabled: !!name && !!userAddress && authStatus === 'authenticated' && !!fetchWatchlistItem,
   })
 
   useEffect(() => {
     if (watchlistId) {
       const watchlistItem = watchlist?.find((item) => item.id === watchlistId)
+
       if (watchlistItem) {
         setWatchlistSettings({
           notifyOnSale: watchlistItem.notifyOnSale,
@@ -125,6 +125,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
           notifyOnPriceChange: watchlistItem.notifyOnPriceChange,
         })
       }
+
       return
     }
 
@@ -139,7 +140,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
   }, [watchlistItem, watchlistId, watchlist])
 
   const isWatching = useMemo(() => {
-    if (watchlistId) {
+    if (watchlistId && !fetchWatchlistItem) {
       return true
     }
 
@@ -152,45 +153,22 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
     }
 
     return watchlist?.some((item) => item.ensName === name)
-  }, [watchlist, name, tokenId, pendingWatchlistTokenIds, removeFromWatchlistMutation.isPending, watchlistId])
+  }, [
+    watchlist,
+    name,
+    tokenId,
+    pendingWatchlistTokenIds,
+    removeFromWatchlistMutation.isPending,
+    watchlistId,
+    fetchWatchlistItem,
+  ])
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
-    if (watchlistId) {
-      // This logic is here specifically for the watchlist tab in portfolio
-      // It removes the watchlist item from the watchlist list because we fetch those directly from the API
-      // This way we can avoid refetches, but still reflect the real state of the watchlist
+    if (watchlistId && !fetchWatchlistItem) {
       removeFromWatchlistMutation.mutate(watchlistId)
       dispatch(removeUserWatchlistDomain(watchlistId))
-      queryClient.setQueryData(
-        [
-          'profile',
-          'watchlist',
-          userAddress,
-          filters.search,
-          filters.length,
-          filters.priceRange,
-          filters.categories,
-          filters.type,
-          filters.status,
-          filters.sort,
-          filters.textMatch,
-          filters.market,
-        ],
-        (old: any) => {
-          const newData = old.pages.map((page: any) => {
-            return {
-              ...page,
-              domains: page.domains.filter((item: any) => item.watchlist_id !== watchlistId),
-            }
-          })
 
-          return {
-            ...old,
-            pages: newData,
-          }
-        }
-      )
-      // queryClient.refetchQueries({ queryKey: ['profile', 'watchlist'] })
+      setFetchWatchlistItem(true)
       return
     }
 
@@ -215,6 +193,20 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
     addToWatchlistMutation.mutate(domain)
   }
 
+  const updateSettings = useCallback(
+    (settings: WatchlistSettingsType) => {
+      setWatchlistSettings(settings)
+      if (watchlistId && !fetchWatchlistItem) {
+        updateSettingsMutation.mutate({ watchlistId, settings })
+      } else if (watchlistItem?.watchlistEntry?.id) {
+        updateSettingsMutation.mutate({ watchlistId: watchlistItem?.watchlistEntry?.id, settings })
+      } else {
+        console.error('Watchlist item not found')
+      }
+    },
+    [watchlistId, fetchWatchlistItem, watchlistItem, updateSettingsMutation]
+  )
+
   const isLoadingWatchlist = addToWatchlistMutation.isPending || removeFromWatchlistMutation.isPending
 
   return {
@@ -225,16 +217,7 @@ const useWatchlist = (name: string, tokenId: string, watchlistId: number | undef
     watchlistCountChange,
     watchlistSettings,
     setWatchlistSettings,
-    updateWatchlistSettings: (settings: WatchlistSettingsType) => {
-      setWatchlistSettings(settings)
-      if (watchlistId) {
-        updateSettingsMutation.mutate({ watchlistId, settings })
-      } else if (watchlistItem?.watchlistEntry?.id) {
-        updateSettingsMutation.mutate({ watchlistId: watchlistItem?.watchlistEntry?.id, settings })
-      } else {
-        console.error('Watchlist item not found')
-      }
-    },
+    updateWatchlistSettings: updateSettings,
     isUpdatingSettings: updateSettingsMutation.isPending,
   }
 }

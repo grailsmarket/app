@@ -25,6 +25,7 @@ export type MarketplaceDomainType = {
   watchers_count: number
   downvotes: number
   upvotes: number
+  watchlist_record_id: number | null
 }
 
 export type DomainListingType = {

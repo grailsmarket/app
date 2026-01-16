@@ -26,6 +26,8 @@ export const CATEGORIES_PAGE_SORT_OPTIONS = [
   'sales_count_1y',
   'sales_count_1mo',
   'sales_count_1w',
+  'premium_count',
+  'available_count',
   'name',
 ] as const
 
@@ -42,6 +44,8 @@ export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, strin
   sales_count_1y: 'Sales (1y)',
   sales_count_1mo: 'Sales (1mo)',
   sales_count_1w: 'Sales (1w)',
+  premium_count: 'Premium Names',
+  available_count: 'Available Names',
   name: 'Alphabetical',
 }
 

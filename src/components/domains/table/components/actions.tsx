@@ -301,7 +301,8 @@ const Actions: React.FC<ActionsProps> = ({
             showSettings={watchlistId ? true : false}
             tooltipPosition={index === 0 ? 'bottom' : 'top'}
             dropdownPosition='left'
-            watchlistId={watchlistId}
+            watchlistId={watchlistId || domain.watchlist_record_id}
+            fetchWatchSettings={false}
           />
         </div>
         {!isBulkSelecting && !isUnregistered && (

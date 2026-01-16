@@ -187,10 +187,22 @@ export const ALL_SORT_FILTERS = [
   'last_sale_date_desc',
   'expiry_date_asc',
   'expiry_date_desc',
+  'watchers_count_asc',
+  'watchers_count_desc',
+  'view_count_asc',
+  'view_count_desc',
 ] as const
 
 // Sort types for the dropdown (without direction)
-export const SORT_TYPES = ['expiry_date', 'price', 'last_sale_price', 'last_sale_date', 'alphabetical'] as const
+export const SORT_TYPES = [
+  'expiry_date',
+  'price',
+  'last_sale_price',
+  'last_sale_date',
+  'watchers_count',
+  'view_count',
+  'alphabetical',
+] as const
 
 export type SortType = (typeof SORT_TYPES)[number]
 
@@ -199,6 +211,8 @@ export const SORT_TYPE_LABELS: Record<SortType, string> = {
   price: 'Price',
   last_sale_price: 'Last Sale Price',
   last_sale_date: 'Last Sale Date',
+  watchers_count: 'Watchlist Count',
+  view_count: 'View Count',
   alphabetical: 'Alphabetical',
 }
 
@@ -213,6 +227,10 @@ export const SORT_FILTER_LABELS = {
   price_asc: 'Price (Low to High)',
   offer_asc: 'Offer (Low to High)',
   offer_desc: 'Offer (High to Low)',
+  watchers_count_asc: 'Watchlist Count (Low to High)',
+  watchers_count_desc: 'Watchlist Count (High to Low)',
+  view_count_asc: 'View Count (Low to High)',
+  view_count_desc: 'View Count (High to Low)',
   alphabetical_asc: 'Alphabetical (A-Z)',
   alphabetical_desc: 'Alphabetical (Z-A)',
 }

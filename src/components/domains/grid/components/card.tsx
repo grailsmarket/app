@@ -225,9 +225,10 @@ const Card: React.FC<CardProps> = ({
             tooltipPosition='bottom'
             dropdownPosition={isFirstInRow ? 'right' : 'left'}
             tooltipAlign={isFirstInRow ? 'left' : 'right'}
-            watchlistId={watchlistId}
+            watchlistId={watchlistId || domain.watchlist_record_id}
             showSettings={watchlistId ? true : false}
             showSettingsArrow={false}
+            fetchWatchSettings={false}
           />
         </div>
       </div>

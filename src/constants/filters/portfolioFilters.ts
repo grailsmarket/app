@@ -50,6 +50,10 @@ export const ALL_SORT_FILTERS = [
   'offer_desc',
   'expiry_date_asc',
   // 'expiry_date_desc',
+  'watchers_count_asc',
+  'watchers_count_desc',
+  'view_count_asc',
+  'view_count_desc',
 ] as const
 
 export const MY_DOMAINS_CATEGORIES = [

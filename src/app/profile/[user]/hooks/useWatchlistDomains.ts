@@ -82,6 +82,7 @@ export const useWatchlistDomains = (user: Address | undefined) => {
         downvotes: 0,
         upvotes: 0,
         watchers_count: 0,
+        watchlist_record_id: null,
       }))
 
       return {

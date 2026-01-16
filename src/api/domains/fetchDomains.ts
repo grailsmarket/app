@@ -220,6 +220,7 @@ export const fetchDomains = async ({
                 watchers_count: 0,
                 downvotes: 0,
                 upvotes: 0,
+                watchlist_record_id: null,
               })
             }
           }
@@ -253,6 +254,7 @@ export const fetchDomains = async ({
               watchers_count: 0,
               downvotes: 0,
               upvotes: 0,
+              watchlist_record_id: null,
             })
           }
         }

@@ -43,6 +43,7 @@ import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web
 import { useQuery } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { DAY_IN_SECONDS } from '@/constants/time'
+import KeywordMetrics from './keywordMetrics'
 
 type Row = {
   label: string
@@ -231,6 +232,9 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
       <div className='p-lg lg:p-xl flex flex-col items-center gap-3 lg:pt-5'>
+        {/* Keyword Metrics - Search Volume & Quality */}
+        <KeywordMetrics name={name} />
+
         <div className='flex w-full flex-row gap-2'>
           {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
             <>

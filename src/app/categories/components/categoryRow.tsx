@@ -136,11 +136,11 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
       </div>
       <div className='text-premium z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Premium Names</p>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Premium</p>
         <p className='text-xl font-semibold'>{localizeNumber(category.premium_count)}</p>
       </div>
       <div className='text-available z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Available Names</p>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Available</p>
         <p className='text-xl font-semibold'>{localizeNumber(category.available_count)}</p>
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>

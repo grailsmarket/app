@@ -1,6 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { MarketplaceFiltersOpenedState } from '@/state/reducers/filters/marketplaceFilters'
-import { CategoriesPageFiltersOpenedState } from '@/state/reducers/filters/categoriesPageFilters'
+// import { CategoriesPageFiltersOpenedState } from '@/state/reducers/filters/categoriesPageFilters'
 import {
   ALL_SORT_FILTERS,
   MY_DOMAINS_FILTER_LABELS,
@@ -76,6 +76,8 @@ export interface FilterRouterActions {
   setSort: (payload: any) => PayloadAction<any>
   toggleFilterOpen: (payload: any) => PayloadAction<any>
   clearFilters: () => PayloadAction<void>
+  addCategories: (payload: string[]) => PayloadAction<string[]>
+  removeCategories: (payload: string[]) => PayloadAction<string[]>
 }
 
 export interface FilterRouter<T extends FilterContextType> {

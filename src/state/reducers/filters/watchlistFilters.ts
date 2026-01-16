@@ -141,6 +141,16 @@ export const watchlistFiltersSlice = createSlice({
     setWatchlistFiltersCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
       state.categories = [payload]
     },
+    addWatchlistCategories(state, { payload }: PayloadAction<string[]>) {
+      payload.forEach((category) => {
+        if (!state.categories.includes(category)) {
+          state.categories.push(category)
+        }
+      })
+    },
+    removeWatchlistCategories(state, { payload }: PayloadAction<string[]>) {
+      state.categories = state.categories.filter((category) => !payload.includes(category))
+    },
     setWatchlistFiltersSubcategory(state, { payload }: PayloadAction<string>) {
       state.categories = state.categories.filter((category) => category === payload)
     },
@@ -210,6 +220,8 @@ export const {
   toggleWatchlistCategory,
   toggleWatchlistSubcategory,
   setWatchlistFiltersCategory,
+  addWatchlistCategories,
+  removeWatchlistCategories,
   setWatchlistFiltersSubcategory,
   setWatchlistSort,
   setWatchlistSearch,

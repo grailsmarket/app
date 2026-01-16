@@ -166,6 +166,7 @@ export const fetchDomains = async ({
 
     const areExcludingFiltersPresent =
       statusFilter.length > 0 ||
+      inAnyCategory ||
       ownerAddress ||
       category ||
       filters.categories?.length > 0 ||
@@ -180,13 +181,16 @@ export const fetchDomains = async ({
       filters.textMatch?.Contains ||
       filters.textMatch?.['Starts with'] ||
       filters.textMatch?.['Ends with'] ||
+      filters.textMatch?.['Contains'] ||
       filters.textNonMatch?.['Does not contain'] ||
       filters.textNonMatch?.['Does not start with'] ||
       filters.textNonMatch?.['Does not end with'] ||
       filters.market?.Listed !== 'none' ||
       filters.market?.['Has Last Sale'] === 'no' ||
       filters.market?.['Has Offers'] === 'no' ||
-      filters.market?.marketplace !== 'none'
+      filters.market?.marketplace !== 'none' ||
+      filters.status.length > 0 ||
+      filters.sort !== null
 
     if (pageParam === 1) {
       if (isBulkSearching) {

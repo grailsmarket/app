@@ -13,6 +13,11 @@ import { useCategories } from '../../hooks/useCategories'
 import TypeFilter from '../TypeFilter'
 import TextMatchFilter from '../TextMatchFilter'
 import TextNonMatchFilter from '../TextNonMatchFilter'
+import { CategoryType } from '@/types/domains'
+import ExpandableTab from '@/components/ui/expandableTab'
+import { useMemo, useState } from 'react'
+import FilterSelector from '../FilterSelector'
+import { useAppDispatch } from '@/state/hooks'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -29,6 +34,18 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const { marketplaceTab, categoriesPageTab } = useFilterRouter()
   const activeMarketplaceTab = marketplaceTab?.value || 'names'
   const activeCategoriesPageTab = categoriesPageTab?.value || 'categories'
+
+  const classifiedCategories = useMemo(() => {
+    const hashMap = new Map<string, CategoryType[]>()
+
+    categories?.forEach((category) => {
+      category.classifications.forEach((classification) => {
+        hashMap.set(classification, [...(hashMap.get(classification) || []), category])
+      })
+    })
+
+    return hashMap
+  }, [categories])
 
   if (!isClient) return null
 
@@ -76,8 +93,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       {showCategoryTab && (
         <div
           className={cn(
-            'flex min-h-0 min-w-full flex-col gap-y-px overflow-y-auto pb-18 transition-transform lg:min-w-[282px]',
-            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[288px]'
+            'pb-lg flex min-h-0 min-w-full flex-col overflow-y-auto transition-transform lg:min-w-[292px]',
+            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
           )}
         >
           <CategoryFilterAll
@@ -88,16 +105,62 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
                 : categories?.reduce((sum, c) => sum + c.member_count, 0) || 0
             }
           />
-          {categories
+          {classifiedCategories.entries().map(([key, value]) => {
+            return <CategoryExpandableTab key={key} classification={key} value={value} />
+          })}
+          {/* {categories
             ?.sort((a, b) => a.name.localeCompare(b.name))
             .map((category, index) => {
               const categoryCount = showUserCategoryCounts ? userCategoryCounts?.[category.name] : category.member_count
 
               return <CategoryFilter key={index} category={category.name} owner_count={categoryCount} />
-            })}
+            })} */}
         </div>
       )}
     </div>
+  )
+}
+
+interface CategoryExpandableTabProps {
+  classification: string
+  value: CategoryType[]
+}
+
+const CategoryExpandableTab: React.FC<CategoryExpandableTabProps> = ({ classification, value }) => {
+  const [open, setOpen] = useState(true)
+  const dispatch = useAppDispatch()
+  const { actions, selectors } = useFilterRouter()
+  const expandedHeight = 64 + value.length * 52
+  const sortedValue = value.sort((a, b) => a.name.localeCompare(b.name))
+  const totalCount = value.reduce((sum, category) => sum + category.member_count, 0)
+  const areCategoriesSelected = value.every((category) => selectors.filters.categories?.includes(category.name))
+
+  return (
+    <ExpandableTab
+      label={classification}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      headerHeight={56}
+      expandedHeight={expandedHeight}
+      showHeader={true}
+      CustomComponent={
+        <div className='flex items-center gap-2'>
+          <p className='text-md font-medium'>{totalCount}</p>
+          <FilterSelector
+            onClick={() =>
+              areCategoriesSelected
+                ? dispatch(actions.removeCategories(value.map((category) => category.name)))
+                : dispatch(actions.addCategories(value.map((category) => category.name)))
+            }
+            isActive={areCategoriesSelected}
+          />
+        </div>
+      }
+    >
+      {sortedValue.map((category) => {
+        return <CategoryFilter key={category.name} category={category.name} owner_count={category.member_count} />
+      })}
+    </ExpandableTab>
   )
 }
 

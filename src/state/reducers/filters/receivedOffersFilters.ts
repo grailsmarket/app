@@ -136,6 +136,16 @@ export const receivedOffersFiltersSlice = createSlice({
     setReceivedOffersFiltersCategory(state, { payload }: PayloadAction<string>) {
       state.categories = [payload]
     },
+    addReceivedOffersCategories(state, { payload }: PayloadAction<string[]>) {
+      payload.forEach((category) => {
+        if (!state.categories.includes(category)) {
+          state.categories.push(category)
+        }
+      })
+    },
+    removeReceivedOffersCategories(state, { payload }: PayloadAction<string[]>) {
+      state.categories = state.categories.filter((category) => !payload.includes(category))
+    },
     setReceivedOffersSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
@@ -192,6 +202,8 @@ export const {
   setReceivedOffersPriceRange,
   toggleReceivedOffersCategory,
   setReceivedOffersFiltersCategory,
+  addReceivedOffersCategories,
+  removeReceivedOffersCategories,
   setReceivedOffersSort,
   setReceivedOffersSearch,
   setReceivedOffersScrollTop,

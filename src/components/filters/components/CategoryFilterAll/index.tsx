@@ -36,7 +36,10 @@ const CategoryFilterAll: React.FC<CategoryFilterAllProps> = ({ allCategoryNames,
 
   return (
     <PersistGate persistor={persistor}>
-      <div className='p-lg hover:bg-secondary w-full cursor-pointer rounded-sm' onClick={toggleAll}>
+      <div
+        className='p-lg hover:bg-secondary border-tertiary w-full cursor-pointer rounded-sm border-b'
+        onClick={toggleAll}
+      >
         <div className='flex cursor-pointer items-center justify-between'>
           <p className='text-light-100 text-lg leading-[18px] font-medium'>All</p>
           <div className='flex items-center gap-x-2'>

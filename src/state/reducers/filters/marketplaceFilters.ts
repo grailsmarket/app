@@ -188,6 +188,16 @@ export const marketplaceFiltersSlice = createSlice({
     setMarketplaceFiltersCategory(state, { payload }: PayloadAction<string>) {
       state.categories = [payload]
     },
+    addMarketplaceCategories(state, { payload }: PayloadAction<string[]>) {
+      payload.forEach((category) => {
+        if (!state.categories.includes(category)) {
+          state.categories.push(category)
+        }
+      })
+    },
+    removeMarketplaceCategories(state, { payload }: PayloadAction<string[]>) {
+      state.categories = state.categories.filter((category) => !payload.includes(category))
+    },
     setMarketplaceSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
@@ -244,6 +254,8 @@ export const {
   setMarketplacePriceRange,
   toggleMarketplaceCategory,
   setMarketplaceFiltersCategory,
+  addMarketplaceCategories,
+  removeMarketplaceCategories,
   setMarketplaceSort,
   setMarketplaceSearch,
   setMarketplaceScrollTop,

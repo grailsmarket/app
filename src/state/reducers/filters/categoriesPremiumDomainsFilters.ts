@@ -124,6 +124,16 @@ export const categoriesPremiumDomainsFiltersSlice = createSlice({
     setFiltersCategory(state, { payload }: PayloadAction<string>) {
       state.categories = [payload]
     },
+    addCategories(state, { payload }: PayloadAction<string[]>) {
+      payload.forEach((category) => {
+        if (!state.categories.includes(category)) {
+          state.categories.push(category)
+        }
+      })
+    },
+    removeCategories(state, { payload }: PayloadAction<string[]>) {
+      state.categories = state.categories.filter((category) => !payload.includes(category))
+    },
     setSort(state, { payload }: PayloadAction<SortFilterType | null>) {
       state.sort = payload
     },
@@ -170,6 +180,8 @@ export const {
   setPriceRange,
   toggleCategory,
   setFiltersCategory,
+  addCategories,
+  removeCategories,
   setSort,
   setFiltersScrollTop,
   toggleFilterOpen,

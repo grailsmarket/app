@@ -44,8 +44,8 @@ export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, strin
   sales_count_1y: 'Sales (1y)',
   sales_count_1mo: 'Sales (1mo)',
   sales_count_1w: 'Sales (1w)',
-  premium_count: 'Premium Names',
-  available_count: 'Available Names',
+  premium_count: 'Premium',
+  available_count: 'Available',
   name: 'Alphabetical',
 }
 

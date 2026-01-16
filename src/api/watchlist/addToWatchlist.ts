@@ -21,7 +21,10 @@ export const addToWatchlist = async (domain: MarketplaceDomainType) => {
 
   const data = (await response.json()) as APIResponseType<WatchlistItemType>
   return {
-    domain,
+    domain: {
+      ...domain,
+      watchlist_record_id: data.data.id,
+    },
     response: data.data,
   }
 }

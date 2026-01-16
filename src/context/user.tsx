@@ -9,7 +9,7 @@ import { fetchNonce } from '@/api/siwe/fetchNonce'
 import { useAuth } from '@/hooks/useAuthStatus'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { useUserProfile } from '@/hooks/useUserProfile'
-import { WatchlistItemType } from '@/types/domains'
+import { MarketplaceDomainType } from '@/types/domains'
 import { useQuery } from '@tanstack/react-query'
 import { useAppDispatch } from '@/state/hooks'
 import {
@@ -23,7 +23,7 @@ import { setUserPoapClaimed } from '@/state/reducers/portfolio/profile'
 
 type userContextType = {
   userAddress: Address | undefined
-  watchlist: WatchlistItemType[] | null | undefined
+  watchlist: MarketplaceDomainType[] | null | undefined
   authStatus: AuthenticationStatus
   authStatusIsLoading: boolean
   authStatusIsRefetching: boolean

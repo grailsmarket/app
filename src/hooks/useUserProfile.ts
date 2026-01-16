@@ -59,7 +59,7 @@ export const useUserProfile = ({ address, authStatus }: UseUserProfileProps) => 
         searchTerm: '',
       })
 
-      return result.watchlist
+      return result.results
     },
     enabled: !!address && authStatus === 'authenticated',
   })

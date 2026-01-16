@@ -1,4 +1,4 @@
-import { WatchlistItemType } from '@/types/domains'
+import { MarketplaceDomainType } from '@/types/domains'
 import { authFetch } from '../authFetch'
 import { API_URL } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
@@ -84,18 +84,18 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
     sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
   })
 
-  const response = await authFetch(`${API_URL}/watchlist?${paramString}`, {
+  const response = await authFetch(`${API_URL}/watchlist/search?${paramString}`, {
     method: 'GET',
     mode: 'cors',
   })
 
   const data = (await response.json()) as APIResponseType<{
-    watchlist: WatchlistItemType[]
+    results: MarketplaceDomainType[]
     pagination: PaginationType
   }>
 
   return {
-    watchlist: data.data.watchlist,
+    results: data.data.results,
     total: data.data.pagination.total,
     nextPageParam: data.data.pagination.page + 1,
     hasNextPage: data.data.pagination.hasNext,

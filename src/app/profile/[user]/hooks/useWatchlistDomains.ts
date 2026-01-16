@@ -5,9 +5,7 @@ import { useUserContext } from '@/context/user'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { addUserWatchlistDomains } from '@/state/reducers/portfolio/profile'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
-import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
-import { MarketplaceDomainType } from '@/types/domains'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
 export const useWatchlistDomains = (user: Address | undefined) => {
@@ -53,40 +51,10 @@ export const useWatchlistDomains = (user: Address | undefined) => {
         searchTerm: debouncedSearch,
       })
 
-      dispatch(addUserWatchlistDomains(response.watchlist))
-
-      const domains: MarketplaceDomainType[] = response.watchlist.map((domain) => ({
-        id: domain.ensNameId,
-        watchlist_id: domain.id,
-        name: domain.ensName,
-        token_id: domain.nameData.tokenId,
-        expiry_date: domain.nameData.expiryDate,
-        registration_date: null,
-        owner: domain.nameData.ownerAddress,
-        character_count: domain.ensName.length,
-        metadata: {},
-        has_numbers: nameHasNumbers(domain.ensName),
-        has_emoji: nameHasEmoji(domain.ensName),
-        listings: domain.nameData.activeListing ? [domain.nameData.activeListing] : [],
-        clubs: [],
-        listing_created_at: null,
-        highest_offer_currency: null,
-        highest_offer_id: null,
-        highest_offer_wei: null,
-        offer: null,
-        last_sale_price: null,
-        last_sale_currency: null,
-        last_sale_date: null,
-        last_sale_price_usd: null,
-        view_count: 0,
-        downvotes: 0,
-        upvotes: 0,
-        watchers_count: 0,
-        watchlist_record_id: null,
-      }))
+      dispatch(addUserWatchlistDomains(response.results))
 
       return {
-        domains,
+        domains: response.results,
         total: response.total,
         nextPageParam: response.nextPageParam,
         hasNextPage: response.hasNextPage,

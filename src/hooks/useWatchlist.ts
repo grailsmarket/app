@@ -10,12 +10,13 @@ import {
   removeUserWatchlistDomain,
   selectUserProfile,
 } from '../state/reducers/portfolio/profile'
-import type { MarketplaceDomainType, WatchlistItemType } from '../types/domains'
+import type { MarketplaceDomainType } from '../types/domains'
 import { addToWatchlist } from '@/api/watchlist/addToWatchlist'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
+import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
 
 const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, watchlistId?: number | null) => {
   const dispatch = useAppDispatch()
@@ -33,31 +34,14 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
   })
 
   const invalidateWatchlist = () => {
-    queryClient.invalidateQueries({ queryKey: ['isWatchlisted', name] })
+    queryClient.refetchQueries({ queryKey: ['isWatchlisted', name, userAddress, fetchWatchlistItem] })
   }
 
   const addToWatchlistMutation = useMutation({
     mutationFn: addToWatchlist,
     onSuccess: ({ domain, response }) => {
       if (response) {
-        const item: WatchlistItemType = {
-          ...response,
-          notifyOnSale: true,
-          notifyOnOffer: true,
-          notifyOnListing: true,
-          notifyOnPriceChange: false,
-          nameData: {
-            name: domain.name,
-            tokenId: domain.token_id,
-            ownerAddress: domain.owner,
-            hasActiveListing: domain.listings?.length > 0,
-            listingPrice: domain.listings?.[0]?.price,
-            expiryDate: domain.expiry_date,
-            activeListing: domain.listings?.[0],
-          },
-        }
-
-        dispatch(addUserWatchlistDomain(item))
+        dispatch(addUserWatchlistDomain(domain))
         invalidateWatchlist()
       }
     },
@@ -101,13 +85,43 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     queryFn: async () => {
       const result = await checkWatchlist(name)
 
+      console.log('result', result)
+
       if (result.isWatching) {
         if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(true)
-        dispatch(addUserWatchlistDomain(result.watchlistEntry))
+        const domain: MarketplaceDomainType = {
+          id: result.watchlistEntry.ensNameId,
+          watchlist_record_id: result.watchlistEntry.id,
+          name: result.watchlistEntry.ensName,
+          token_id: result.watchlistEntry.nameData.tokenId,
+          expiry_date: result.watchlistEntry.nameData.expiryDate,
+          registration_date: null,
+          owner: result.watchlistEntry.nameData.ownerAddress,
+          metadata: {},
+          has_numbers: nameHasNumbers(result.watchlistEntry.ensName),
+          has_emoji: nameHasEmoji(result.watchlistEntry.ensName),
+          listings: result.watchlistEntry.nameData.activeListing ? [result.watchlistEntry.nameData.activeListing] : [],
+          clubs: [],
+          highest_offer_currency: null,
+          highest_offer_id: null,
+          highest_offer_wei: null,
+          offer: null,
+          last_sale_price: null,
+          last_sale_currency: null,
+          last_sale_date: null,
+          last_sale_price_usd: null,
+          view_count: 0,
+          downvotes: 0,
+          upvotes: 0,
+          watchers_count: 0,
+        }
+
+        dispatch(addUserWatchlistDomain(domain))
       } else {
         if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(false)
         dispatch(removeUserWatchlistDomain(result.watchlistEntry?.id))
       }
+
       return result
     },
     enabled: !!name && !!userAddress && authStatus === 'authenticated' && !!fetchWatchlistItem,
@@ -117,12 +131,12 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     if (watchlistId) {
       const watchlistItem = watchlist?.find((item) => item.id === watchlistId)
 
-      if (watchlistItem) {
+      if (watchlistItem && watchlistItem.watchlist) {
         setWatchlistSettings({
-          notifyOnSale: watchlistItem.notifyOnSale,
-          notifyOnOffer: watchlistItem.notifyOnOffer,
-          notifyOnListing: watchlistItem.notifyOnListing,
-          notifyOnPriceChange: watchlistItem.notifyOnPriceChange,
+          notifyOnSale: watchlistItem.watchlist.notifyOnSale,
+          notifyOnOffer: watchlistItem.watchlist.notifyOnOffer,
+          notifyOnListing: watchlistItem.watchlist.notifyOnListing,
+          notifyOnPriceChange: watchlistItem.watchlist.notifyOnPriceChange,
         })
       }
 
@@ -145,14 +159,14 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     }
 
     if (pendingWatchlistTokenIds?.includes(tokenId) || removeFromWatchlistMutation.isPending) {
-      if (watchlist.some((item) => item.ensName === name) || removeFromWatchlistMutation.isPending) {
+      if (watchlist.some((item) => item.name === name) || removeFromWatchlistMutation.isPending) {
         return false
       }
 
       return true
     }
 
-    return watchlist?.some((item) => item.ensName === name)
+    return watchlist?.some((item) => item.name === name)
   }, [
     watchlist,
     name,
@@ -183,7 +197,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
       setWatchlistCountChange(isWatching ? (hasWatchlistedBefore ? -1 : 0) : hasWatchlistedBefore ? 0 : 1)
 
     const watchlistItemId =
-      watchlistItem?.watchlistEntry?.id || watchlist?.find((item) => item.ensNameId === domain.id)?.id
+      watchlistItem?.watchlistEntry?.id || watchlist?.find((item) => item.id === domain.id)?.watchlist_record_id
 
     if (isWatching && watchlistItemId) {
       removeFromWatchlistMutation.mutate(watchlistItemId)

@@ -26,6 +26,12 @@ export type MarketplaceDomainType = {
   downvotes: number
   upvotes: number
   watchlist_record_id: number | null
+  watchlist?: {
+    notifyOnSale: boolean
+    notifyOnOffer: boolean
+    notifyOnListing: boolean
+    notifyOnPriceChange: boolean
+  }
 }
 
 export type DomainListingType = {

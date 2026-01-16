@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { RootState } from '../../index'
-import { WatchlistItemType } from '@/types/domains'
+import { MarketplaceDomainType } from '@/types/domains'
 import { Address } from 'ethereum-identity-kit'
 
 // Types --------------------------------------------
@@ -16,7 +16,7 @@ type EnsProfileType = {
 type profileState = {
   ensProfile: EnsProfileType
   userId: number | null
-  watchlist: WatchlistItemType[]
+  watchlist: MarketplaceDomainType[]
   pendingWatchlistTokenIds: string[]
   selectedTab: ProfileTabType
   email: {
@@ -79,20 +79,21 @@ export const profileSlice = createSlice({
     setUserPoapClaimed(state, { payload }: PayloadAction<boolean>) {
       state.poapClaimed = payload
     },
-    setWatchlistDomains(state, { payload }: PayloadAction<WatchlistItemType[]>) {
+    setWatchlistDomains(state, { payload }: PayloadAction<MarketplaceDomainType[]>) {
       state.watchlist = payload
     },
-    addUserWatchlistDomain(state, { payload }: PayloadAction<WatchlistItemType>) {
+    addUserWatchlistDomain(state, { payload }: PayloadAction<MarketplaceDomainType>) {
       state.watchlist.push(payload)
     },
-    addUserWatchlistDomains(state, { payload }: PayloadAction<WatchlistItemType[]>) {
+    addUserWatchlistDomains(state, { payload }: PayloadAction<MarketplaceDomainType[]>) {
       const namesNotInWatchlist = payload.filter(
-        (item) => !state.watchlist.some((watchlistItem) => watchlistItem.id === item.id)
+        (item) =>
+          !state.watchlist.some((watchlistItem) => watchlistItem.watchlist_record_id === item.watchlist_record_id)
       )
       state.watchlist = state.watchlist.concat(namesNotInWatchlist)
     },
     removeUserWatchlistDomain(state, { payload }: PayloadAction<number>) {
-      state.watchlist = state.watchlist.filter((item) => item.id !== payload)
+      state.watchlist = state.watchlist.filter((item) => item.watchlist_record_id !== payload)
     },
     addUserPendingWatchlistDomain(state, { payload }: PayloadAction<string>) {
       if (state.pendingWatchlistTokenIds === undefined) state.pendingWatchlistTokenIds = []

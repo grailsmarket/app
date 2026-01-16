@@ -24,7 +24,6 @@ const Profile: React.FC<Props> = ({ user }) => {
       if (!user) return null
 
       const result = await getPoap(user)
-      console.log('result', result)
 
       if (result?.badges.length === 0) return null
 
@@ -66,13 +65,13 @@ const Profile: React.FC<Props> = ({ user }) => {
                 hideEFPPoaps: true,
                 customPoaps: userPoap?.badges
                   ? userPoap.badges.map((badge) => ({
-                      eventId: badge.event.id.toString(),
-                      participated: true,
-                      collection: badge,
-                    }))
+                    eventId: badge.event.id.toString(),
+                    participated: true,
+                    collection: badge,
+                  }))
                   : undefined,
               }}
-              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+            // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
             />
           )}
         </div>

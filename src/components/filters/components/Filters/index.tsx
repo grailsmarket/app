@@ -127,7 +127,7 @@ interface CategoryExpandableTabProps {
 }
 
 const CategoryExpandableTab: React.FC<CategoryExpandableTabProps> = ({ classification, value }) => {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const dispatch = useAppDispatch()
   const { actions, selectors } = useFilterRouter()
   const expandedHeight = 64 + value.length * 52

@@ -413,6 +413,8 @@ export type CategoryType = {
   sales_volume_wei_1y: string
   created_at: string
   updated_at: string
+  premium_count: number
+  available_count: number
 }
 
 export type NameActivityType = {

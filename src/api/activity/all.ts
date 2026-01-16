@@ -7,11 +7,14 @@ interface FetchAllActivityOptions {
   limit: number
   pageParam: number
   eventTypes: ActivityTypeFilterType[]
+  categories?: string
 }
 
-export const fetchAllActivity = async ({ limit, pageParam, eventTypes }: FetchAllActivityOptions) => {
+export const fetchAllActivity = async ({ limit, pageParam, eventTypes, categories }: FetchAllActivityOptions) => {
   const typeFilter = eventTypes.join('&event_type=')
-  const response = await fetch(`${API_URL}/activity?limit=${limit}&page=${pageParam}&event_type=${typeFilter}`)
+  const response = await fetch(
+    `${API_URL}/activity?limit=${limit}&page=${pageParam}&event_type=${typeFilter}${categories ? `&club=${categories}` : ''}`
+  )
   const data = (await response.json()) as APIResponseType<{
     results: ActivityType[]
     pagination: PaginationType

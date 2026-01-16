@@ -12,6 +12,7 @@ import MagnifyingGlass from 'public/icons/search.svg'
 import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import CategoryRow from '../categoryRow'
 import { useFilteredCategories } from '../../hooks/useFilteredCategories'
+import { Cross } from 'ethereum-identity-kit'
 
 const CategoriesPanel: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -56,13 +57,22 @@ const CategoriesPanel: React.FC = () => {
               onChange={handleSearchChange}
               className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
-            <Image
-              src={MagnifyingGlass}
-              alt='Search'
-              width={16}
-              height={16}
-              className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-            />
+            {filters.search.length > 0 ? (
+              <Cross
+                onClick={() => {
+                  dispatch(setCategoriesPageSearch(''))
+                }}
+                className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+              />
+            ) : (
+              <Image
+                src={MagnifyingGlass}
+                alt='Search'
+                width={16}
+                height={16}
+                className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+              />
+            )}
           </div>
 
           {/* Sort dropdown - hidden on mobile */}
@@ -80,9 +90,9 @@ const CategoriesPanel: React.FC = () => {
       {/* Categories grid */}
       <div className='px-md lg:px-lg pb-lg'>
         {isLoading ? (
-          <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4'>
+          <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4'>
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className='bg-secondary h-[320px] animate-pulse rounded-lg' />
+              <div key={i} className='bg-secondary h-[380px] animate-pulse rounded-lg' />
             ))}
           </div>
         ) : categories && categories.length > 0 ? (

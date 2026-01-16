@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeCategoriesPageTab, selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 import { CATEGORIES_PAGE_TABS, CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
 import { useNavbar } from '@/context/navbar'
+import { useRouter } from 'next/navigation'
 
 const CategoriesPageTabSwitcher: React.FC = () => {
   const [mounted, setMounted] = useState(false)
@@ -13,12 +14,21 @@ const CategoriesPageTabSwitcher: React.FC = () => {
   const { selectedTab } = categoriesPage
   const dispatch = useAppDispatch()
   const { isNavbarVisible } = useNavbar()
+  const router = useRouter()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
   const setCategoriesPageTab = (tab: CategoriesPageTabType) => {
     dispatch(changeCategoriesPageTab(tab))
+    // Update URL when switching tabs - clear params and set new tab
+    if (tab.value === 'categories') {
+      // Default tab - clear all URL params
+      router.push('/categories')
+    } else {
+      // Non-default tab - set tab param only, clearing other filters
+      router.push(`/categories?tab=${tab.value}`)
+    }
   }
 
   useEffect(() => {

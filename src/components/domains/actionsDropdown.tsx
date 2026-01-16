@@ -138,7 +138,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
     <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className={cn('relative', className)}>
       <button
         onClick={handleToggle}
-        className='hover:bg-tertiary hover:text-foreground text-neutral flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm transition-colors'
+        className='hover:bg-tertiary hover:text-foreground text-neutral flex h-7 w-5 cursor-pointer items-center justify-center rounded-sm transition-colors'
         aria-label='More actions'
       >
         <ThreeDotsIcon />

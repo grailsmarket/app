@@ -19,6 +19,7 @@ import { useUserContext } from '@/context/user'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
 import { selectCategory } from '@/state/reducers/category/category'
+import { Cross } from 'ethereum-identity-kit'
 
 interface Props {
   category: string
@@ -59,13 +60,22 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
               onChange={(e) => dispatch(actions.setSearch(e.target.value))}
               className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
             />
-            <Image
-              src={MagnifyingGlass}
-              alt='Search'
-              width={16}
-              height={16}
-              className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-            />
+            {selectors.filters.search.length > 0 ? (
+              <Cross
+                onClick={() => {
+                  dispatch(actions.setSearch(''))
+                }}
+                className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+              />
+            ) : (
+              <Image
+                src={MagnifyingGlass}
+                alt='Search'
+                width={16}
+                height={16}
+                className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+              />
+            )}
           </div>
           <div className='hidden sm:block'>
             <SortDropdown />

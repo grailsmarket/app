@@ -83,7 +83,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
         align={tooltipAlign || 'right'}
         showOnMobile
       >
-        <div className='flex min-w-6 flex-row items-center gap-2'>
+        <div className='flex min-w-[22px] flex-row items-center gap-2'>
           <button
             className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
             onClick={(e) => {
@@ -121,7 +121,13 @@ const Watchlist: React.FC<WatchlistProps> = ({
           >
             <Image src={BellIcon} alt='Settings' width={22} height={22} className='h-5 w-5 opacity-100' />
             {showSettingsArrow && (
-              <ShortArrow className={cn('h-4 w-4 transition-transform', settingsOpen ? 'rotate-0' : 'rotate-180')} />
+              <ShortArrow
+                className={cn(
+                  'h-4 w-4 transition-transform',
+                  settingsOpen ? 'rotate-0' : 'rotate-180',
+                  watchlistId ? 'hidden sm:block' : 'block'
+                )}
+              />
             )}
           </button>
           <div

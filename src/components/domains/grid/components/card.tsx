@@ -209,25 +209,27 @@ const Card: React.FC<CardProps> = ({
             </Tooltip>
           </div>
         )}
-        {watchlistId && (
-          <div
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-            className='bg-secondary absolute top-3 right-3 z-10 flex flex-row items-center gap-0 rounded-sm pl-2'
-          >
-            <Watchlist
-              domain={domain}
-              tooltipPosition='bottom'
-              dropdownPosition={isFirstInRow ? 'right' : 'left'}
-              tooltipAlign={isFirstInRow ? 'left' : 'right'}
-              watchlistId={watchlistId}
-              showSettings={true}
-              showSettingsArrow={false}
-            />
-          </div>
-        )}
+
+        <div
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          className={cn(
+            'bg-secondary absolute top-3 right-3 z-10 flex flex-row items-center gap-0 rounded-sm',
+            watchlistId ? 'pl-2' : 'justify-center p-1'
+          )}
+        >
+          <Watchlist
+            domain={domain}
+            tooltipPosition='bottom'
+            dropdownPosition={isFirstInRow ? 'right' : 'left'}
+            tooltipAlign={isFirstInRow ? 'left' : 'right'}
+            watchlistId={watchlistId}
+            showSettings={watchlistId ? true : false}
+            showSettingsArrow={false}
+          />
+        </div>
       </div>
       <div
         className={cn(

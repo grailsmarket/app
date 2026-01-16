@@ -15,7 +15,7 @@ interface CartIconProps {
   hasBorder?: boolean
 }
 
-const CartIcon: React.FC<CartIconProps> = ({ domain, size, className, hasBorder = false }) => {
+const CartIcon: React.FC<CartIconProps> = ({ domain, size = '18px', className, hasBorder = false }) => {
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const { isAddedToCart: isAddedToCartDomains, isModifyingDomain, isCartDomainsLoading, onSelect } = useCartDomains()

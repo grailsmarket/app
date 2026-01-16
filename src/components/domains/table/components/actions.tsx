@@ -284,28 +284,26 @@ const Actions: React.FC<ActionsProps> = ({
   return (
     <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
       <div className='flex h-7 items-center gap-1'>
-        {watchlistId && (
-          <div
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-            className='flex flex-row items-center gap-2'
-          >
-            <Watchlist
-              domain={domain}
-              showSettings={true}
-              tooltipPosition={index === 0 ? 'bottom' : 'top'}
-              dropdownPosition='left'
-              watchlistId={watchlistId}
-            />
-          </div>
-        )}
         {canAddToCart && !isMyDomain && !watchlistId && (
-          <button className={`cursor-pointer rounded-sm p-0`}>
+          <button className={`cursor-pointer rounded-sm p-0 pr-0.5`}>
             <CartIcon domain={domain} />
           </button>
         )}
+        <div
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          className='flex h-7 w-fit flex-row items-center justify-center gap-1'
+        >
+          <Watchlist
+            domain={domain}
+            showSettings={watchlistId ? true : false}
+            tooltipPosition={index === 0 ? 'bottom' : 'top'}
+            dropdownPosition='left'
+            watchlistId={watchlistId}
+          />
+        </div>
         {!isBulkSelecting && !isUnregistered && (
           <ActionsDropdown
             domain={domain}
@@ -318,7 +316,8 @@ const Actions: React.FC<ActionsProps> = ({
           <PrimaryButton
             className={cn(
               'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
-              availableAction.label !== 'Reg' ? 'hidden md:block' : ''
+              availableAction.label !== 'Reg' ? 'hidden md:block' : '',
+              watchlistId ? 'hidden sm:block' : ''
             )}
             onClick={availableAction.onClick}
           >

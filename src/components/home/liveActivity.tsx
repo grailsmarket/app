@@ -93,15 +93,8 @@ const LiveActivity = () => {
       const activities = await fetchAllActivity({
         limit: 30,
         pageParam,
-        eventTypes: [
-          'listed',
-          'bought',
-          'sold',
-          'offer_made',
-          'offer_accepted',
-          'offer_cancelled',
-          'listing_cancelled',
-        ],
+        eventTypes: ['listed', 'bought', 'sold', 'mint', 'offer_made', 'offer_accepted'],
+        categories: 'any',
       })
       return activities
     },

@@ -111,8 +111,7 @@ const DomainPanel = () => {
               <Cross
                 onClick={() => {
                   setLocalSearch('')
-                  dispatch(actions.setSearch(''))
-                  router.push('/marketplace')
+                  handleSearchChange('')
                 }}
                 className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
               />

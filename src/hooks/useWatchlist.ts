@@ -16,7 +16,7 @@ import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
-import { nameHasEmoji, nameHasNumbers } from '@/utils/nameCharacters'
+import { labelhash } from 'viem'
 
 const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, watchlistId?: number | null) => {
   const dispatch = useAppDispatch()
@@ -85,22 +85,21 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     queryFn: async () => {
       const result = await checkWatchlist(name)
 
-      console.log('result', result)
-
       if (result.isWatching) {
         if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(true)
+
         const domain: MarketplaceDomainType = {
           id: result.watchlistEntry.ensNameId,
           watchlist_record_id: result.watchlistEntry.id,
           name: result.watchlistEntry.ensName,
-          token_id: result.watchlistEntry.nameData.tokenId,
-          expiry_date: result.watchlistEntry.nameData.expiryDate,
+          token_id: labelhash(result.watchlistEntry.ensName.replace('.eth', '')),
+          expiry_date: null,
           registration_date: null,
-          owner: result.watchlistEntry.nameData.ownerAddress,
+          owner: null,
           metadata: {},
-          has_numbers: nameHasNumbers(result.watchlistEntry.ensName),
-          has_emoji: nameHasEmoji(result.watchlistEntry.ensName),
-          listings: result.watchlistEntry.nameData.activeListing ? [result.watchlistEntry.nameData.activeListing] : [],
+          has_numbers: false,
+          has_emoji: false,
+          listings: [],
           clubs: [],
           highest_offer_currency: null,
           highest_offer_id: null,
@@ -166,7 +165,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
       return true
     }
 
-    return watchlist?.some((item) => item.name === name)
+    return watchlistItem?.watchlistEntry?.ensName === name || watchlist?.some((item) => item.name === name)
   }, [
     watchlist,
     name,
@@ -175,6 +174,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     removeFromWatchlistMutation.isPending,
     watchlistId,
     fetchWatchlistItem,
+    watchlistItem,
   ])
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {

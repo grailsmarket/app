@@ -400,6 +400,17 @@ export type WatchlistItemType = {
   }
 }
 
+export type WatchlistEntryType = {
+  addedAt: string
+  ensName: string
+  ensNameId: number
+  id: number
+  notifyOnListing: boolean
+  notifyOnOffer: boolean
+  notifyOnPriceChange: boolean
+  notifyOnSale: boolean
+}
+
 export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]
 
 export type CategoryType = {

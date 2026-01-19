@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import NameDetails from './nameDetails'
 import { useName } from '../hooks/useName'
 import Listings from './listings'
@@ -8,6 +8,7 @@ import Offers from './offers'
 import ActivityPanel from './activity'
 import Register from './register'
 import Actions from './actions'
+import SimilarNames from './similarNames'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 
@@ -17,6 +18,21 @@ interface Props {
 
 const NamePage: React.FC<Props> = ({ name }) => {
   const { nameDetails, nameDetailsIsLoading, nameOffers, nameOffersIsLoading } = useName(name)
+  const nameDetailsRef = useRef<HTMLDivElement>(null)
+  const [nameDetailsHeight, setNameDetailsHeight] = useState<number | null>(null)
+
+  // Measure name details panel height for activity panel max-height
+  useEffect(() => {
+    if (nameDetailsRef.current) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          setNameDetailsHeight(entry.contentRect.height)
+        }
+      })
+      resizeObserver.observe(nameDetailsRef.current)
+      return () => resizeObserver.disconnect()
+    }
+  }, [])
 
   // // Pre-warm the OG image cache in the background
   // useEffect(() => {
@@ -57,7 +73,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
         <Actions nameDetails={nameDetails} />
       </div>
       <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div className='bg-secondary sm:border-tertiary flex h-fit flex-col gap-4 overflow-hidden sm:rounded-lg sm:border-2 lg:w-2/5'>
+        <div
+          ref={nameDetailsRef}
+          className='bg-secondary sm:border-tertiary flex h-fit flex-col gap-4 overflow-hidden sm:rounded-lg sm:border-2 lg:w-2/5'
+        >
           <NameDetails
             name={name}
             nameDetails={nameDetails}
@@ -79,8 +98,12 @@ const NamePage: React.FC<Props> = ({ name }) => {
           ) : (
             <Register nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
-          <ActivityPanel name={name} />
+          <ActivityPanel name={name} maxHeight={nameDetailsHeight ? `${nameDetailsHeight}px` : undefined} />
         </div>
+      </div>
+      {/* Similar Names - Full width, spanning both columns */}
+      <div className='w-full'>
+        <SimilarNames name={name} />
       </div>
     </div>
   )

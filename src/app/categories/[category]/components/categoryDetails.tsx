@@ -11,9 +11,9 @@ import TenKHeader from 'public/clubs/10k/header.jpeg'
 import PokemonAvatar from 'public/clubs/pokemon/avatar.jpg'
 import PokemonHeader from 'public/clubs/pokemon/header.jpg'
 import OneKForenamesAvatar from 'public/clubs/1kforenames/avatar.jpg'
-import OneKForenamesHeader from 'public/clubs/1kforenames/header.png'
+import OneKForenamesHeader from 'public/clubs/1kforenames/header.jpg'
 import OneKSurnamesAvatar from 'public/clubs/1ksurnames/avatar.jpg'
-import OneKSurnamesHeader from 'public/clubs/1ksurnames/header.png'
+import OneKSurnamesHeader from 'public/clubs/1ksurnames/header.jpg'
 import NineNinetyNineAvatar from 'public/clubs/999/avatar.jpg'
 import NineNinetyNineHeader from 'public/clubs/999/header.jpeg'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
@@ -112,6 +112,13 @@ import PokemonGen3Avatar from 'public/clubs/pokemon_gen3/avatar.jpg'
 import PokemonGen3Header from 'public/clubs/pokemon_gen3/header.jpg'
 import PokemonGen4Avatar from 'public/clubs/pokemon_gen4/avatar.jpg'
 import PokemonGen4Header from 'public/clubs/pokemon_gen4/header.jpg'
+
+import FamilynamesUsaAvatar from 'public/clubs/familynames_usa/avatar.jpg'
+import FamilynamesUsaHeader from 'public/clubs/familynames_usa/header.png'
+import FirstnamesUsaAvatar from 'public/clubs/firstnames_usa/avatar.png'
+import FirstnamesUsaHeader from 'public/clubs/firstnames_usa/header.png'
+import MythicalCreaturesAvatar from 'public/clubs/mythical_creatures/avatar.jpg'
+import MythicalCreaturesHeader from 'public/clubs/mythical_creatures/header.png'
 
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 
@@ -311,6 +318,18 @@ export const CATEGORY_IMAGES = {
   pokemon_gen4: {
     avatar: PokemonGen4Avatar,
     header: PokemonGen4Header,
+  },
+  familynames_usa: {
+    avatar: FamilynamesUsaAvatar,
+    header: FamilynamesUsaHeader,
+  },
+  firstnames_usa: {
+    avatar: FirstnamesUsaAvatar,
+    header: FirstnamesUsaHeader,
+  },
+  mythical_creatures: {
+    avatar: MythicalCreaturesAvatar,
+    header: MythicalCreaturesHeader,
   },
 }
 

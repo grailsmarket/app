@@ -174,4 +174,7 @@ export const CATEGORY_LABELS = {
   pokemon_gen2: 'Pokemon Gen 2',
   pokemon_gen3: 'Pokemon Gen 3',
   pokemon_gen4: 'Pokemon Gen 4',
+  familynames_usa: 'Surnames USA',
+  firstnames_usa: 'First Names USA',
+  mythical_creatures: 'Mythical Creatures',
 } as const

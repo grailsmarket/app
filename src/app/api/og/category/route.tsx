@@ -18,11 +18,11 @@ export const CATEGORY_IMAGES = {
   },
   '1kforenames': {
     avatar: 'https://grails.app/clubs/1kforenames/avatar.jpg',
-    header: 'https://grails.app/clubs/1kforenames/header.png',
+    header: 'https://grails.app/clubs/1kforenames/header.jpg',
   },
   '1ksurnames': {
     avatar: 'https://grails.app/clubs/1ksurnames/avatar.jpg',
-    header: 'https://grails.app/clubs/1ksurnames/header.png',
+    header: 'https://grails.app/clubs/1ksurnames/header.jpg',
   },
   '999': {
     avatar: 'https://grails.app/clubs/999/avatar.jpg',
@@ -199,6 +199,18 @@ export const CATEGORY_IMAGES = {
   pokemon_gen4: {
     avatar: 'https://grails.app/clubs/pokemon_gen4/avatar.jpg',
     header: 'https://grails.app/clubs/pokemon_gen4/header.jpg',
+  },
+  familynames_usa: {
+    avatar: 'https://grails.app/clubs/familynames_usa/avatar.jpg',
+    header: 'https://grails.app/clubs/familynames_usa/header.png',
+  },
+  firstnames_usa: {
+    avatar: 'https://grails.app/clubs/firstnames_usa/avatar.png',
+    header: 'https://grails.app/clubs/firstnames_usa/header.png',
+  },
+  mythical_creatures: {
+    avatar: 'https://grails.app/clubs/mythical_creatures/avatar.jpg',
+    header: 'https://grails.app/clubs/mythical_creatures/header.png',
   },
 }
 

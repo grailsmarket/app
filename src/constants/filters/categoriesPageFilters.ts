@@ -1,7 +1,7 @@
 // Categories Page Filters Constants
 
 // Category type filter options
-export const CATEGORIES_PAGE_TYPE_OPTIONS = ['ethmojis', 'digits', 'palindromes', 'prepunk', 'geo', 'letters'] as const
+export const CATEGORIES_PAGE_TYPE_OPTIONS = ['ethmojis', 'digits', 'palindromes', 'prepunk', 'geo', 'letters', 'fantasy', 'crypto'] as const
 
 export type CategoriesPageTypeOption = (typeof CATEGORIES_PAGE_TYPE_OPTIONS)[number]
 
@@ -12,6 +12,8 @@ export const CATEGORIES_PAGE_TYPE_LABELS: Record<CategoriesPageTypeOption, strin
   prepunk: 'Prepunk',
   geo: 'Geo',
   letters: 'Letters',
+  fantasy: 'Fantasy',
+  crypto: 'Crypto'
 }
 
 // Sort options for categories page

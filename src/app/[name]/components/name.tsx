@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect } from 'react'
 import PrimaryDetails from './primaryDetails'
 import { useName } from '../hooks/useName'
 import Listings from './listings'
@@ -31,21 +31,6 @@ const NamePage: React.FC<Props> = ({ name }) => {
     roles,
     isRolesLoading,
   } = useName(name)
-  const nameDetailsRef = useRef<HTMLDivElement>(null)
-  const [nameDetailsHeight, setNameDetailsHeight] = useState<number | null>(null)
-
-  // Measure name details panel height for activity panel max-height
-  useEffect(() => {
-    if (nameDetailsRef.current) {
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setNameDetailsHeight(entry.contentRect.height)
-        }
-      })
-      resizeObserver.observe(nameDetailsRef.current)
-      return () => resizeObserver.disconnect()
-    }
-  }, [])
 
   // // Pre-warm the OG image cache in the background
   // useEffect(() => {
@@ -87,10 +72,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
         <Actions nameDetails={nameDetails} />
       </div>
       <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div
-          ref={nameDetailsRef}
-          className='flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg lg:w-2/5'
-        >
+        <div className='flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg lg:w-2/5'>
           <PrimaryDetails
             name={name}
             nameDetails={nameDetails}
@@ -158,7 +140,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='lg:hidden'>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
-          <ActivityPanel name={name} maxHeight={nameDetailsHeight ? `${nameDetailsHeight}px` : undefined} />
+          <ActivityPanel name={name} />
         </div>
       </div>
       {/* Similar Names - Full width, spanning both columns */}

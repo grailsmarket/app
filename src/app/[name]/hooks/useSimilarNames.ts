@@ -10,8 +10,13 @@ interface SimilarNamesAPIResponse {
 /**
  * Fetches AI-generated similar name suggestions from the API
  */
-async function fetchSimilarNames(name: string): Promise<string[]> {
-  const response = await fetch(`/api/ai/similar-names?name=${encodeURIComponent(name)}`)
+async function fetchSimilarNames(name: string, categories?: string[]): Promise<string[]> {
+  let url = `/api/ai/similar-names?name=${encodeURIComponent(name)}`
+  if (categories && categories.length > 0) {
+    url += `&categories=${encodeURIComponent(categories.join(','))}`
+  }
+
+  const response = await fetch(url)
 
   if (!response.ok) {
     throw new Error('Failed to fetch similar names')
@@ -43,16 +48,18 @@ async function fetchDomainsForNames(names: string[]): Promise<MarketplaceDomainT
 
 /**
  * Hook to get AI-suggested similar names with full domain data
+ * @param ensName - The ENS name to find similar names for
+ * @param categories - Optional array of category/club names for context
  */
-export const useSimilarNames = (ensName: string) => {
+export const useSimilarNames = (ensName: string, categories?: string[]) => {
   // First, fetch the AI suggestions
   const {
     data: suggestions,
     isLoading: suggestionsLoading,
     error: suggestionsError,
   } = useQuery({
-    queryKey: ['similar-names', 'suggestions', ensName],
-    queryFn: () => fetchSimilarNames(ensName),
+    queryKey: ['similar-names', 'suggestions', ensName, categories],
+    queryFn: () => fetchSimilarNames(ensName, categories),
     enabled: !!ensName && ensName.length > 0,
     staleTime: 1000 * 60 * 60, // 1 hour - matches server cache
     refetchOnWindowFocus: false,

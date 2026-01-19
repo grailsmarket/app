@@ -103,7 +103,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
       </div>
       {/* Similar Names - Full width, spanning both columns */}
       <div className='w-full'>
-        <SimilarNames name={name} />
+        <SimilarNames name={name} categories={nameDetails?.clubs} />
       </div>
     </div>
   )

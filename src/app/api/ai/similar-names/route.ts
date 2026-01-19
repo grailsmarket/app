@@ -9,7 +9,9 @@ interface SimilarNamesResponse {
   error?: string
 }
 
-const SYSTEM_PROMPT = `3–16 chars per output
+const SYSTEM_PROMPT = `you are a domain agent: given an input string, return exactly 5 outputs that are related and likely to be similarly or more valuable than the input.
+3–16 chars per output
+No spaces in any output
 If input is single word → outputs single words only
 If input is multiword fused (no spaces) → match that fused style
 No random suffixes (x/ix/etc.)
@@ -21,11 +23,25 @@ Emojis-only input → output emojis-only; if input repeats, outputs repeat too
 If input implies a category/theme → stay on-theme
 Return nothing else`
 
+// Categories to exclude from AI prompt (not useful for suggestions)
+const EXCLUDED_CATEGORIES = [
+  'prepunks',
+  'prepunk_100',
+  'prepunk_10k',
+  'prepunk_1k',
+  'prepunk_digits',
+]
+
 async function callOpenAI(name: string, categories?: string[]): Promise<string[]> {
+  // Filter out excluded categories
+  const filteredCategories = categories?.filter(
+    (cat) => !EXCLUDED_CATEGORIES.includes(cat.toLowerCase())
+  )
+
   // Build input with optional categories context
   let input = `name: ${name}`
-  if (categories && categories.length > 0) {
-    input += `\ncategories: ${categories.join(', ')}`
+  if (filteredCategories && filteredCategories.length > 0) {
+    input += `\ncategories: ${filteredCategories.join(', ')}`
   }
 
   const response = await fetch('https://api.openai.com/v1/responses', {

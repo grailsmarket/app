@@ -41,18 +41,20 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
               {beautifyName(domain.name)}
             </p>
             <div className='text-md text-neutral flex max-w-full flex-row items-center gap-2 truncate font-semibold'>
-              {domain.clubs?.map((club) => (
-                <div key={club} className='flex min-w-fit flex-row items-center gap-1'>
-                  <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                    alt={club}
-                    width={16}
-                    height={16}
-                    className='rounded-full'
-                  />
-                  <span>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</span>
-                </div>
-              ))}
+              {domain.clubs
+                ?.filter((club) => club in CATEGORY_IMAGES)
+                .map((club) => (
+                  <div key={club} className='flex min-w-fit flex-row items-center gap-1'>
+                    <Image
+                      src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                      alt={club}
+                      width={16}
+                      height={16}
+                      className='rounded-full'
+                    />
+                    <span>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</span>
+                  </div>
+                ))}
             </div>
           </div>
         </div>

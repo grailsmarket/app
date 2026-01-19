@@ -312,22 +312,22 @@ const Card: React.FC<CardProps> = ({
               )}
             </div>
           )}
-          {domain.clubs && domain.clubs.length > 0 && (
+          {domain.clubs && domain.clubs.filter((club) => club in CATEGORY_IMAGES).length > 0 && (
             <div className='flex max-w-full flex-row items-center gap-1 truncate'>
               <div className='flex max-w-fit min-w-fit items-center gap-1'>
                 <Image
-                  src={CATEGORY_IMAGES[domain.clubs[0] as keyof typeof CATEGORY_IMAGES].avatar}
-                  alt={domain.clubs[0] as string}
+                  src={CATEGORY_IMAGES[domain.clubs.filter((club) => club in CATEGORY_IMAGES)[0] as keyof typeof CATEGORY_IMAGES].avatar}
+                  alt={domain.clubs.filter((club) => club in CATEGORY_IMAGES)[0] as string}
                   width={16}
                   height={16}
                   className='rounded-full'
                 />
                 <p className='text-md text-neutral truncate font-semibold'>
-                  {CATEGORY_LABELS[domain.clubs[0] as keyof typeof CATEGORY_LABELS]}
+                  {CATEGORY_LABELS[domain.clubs.filter((club) => club in CATEGORY_IMAGES)[0] as keyof typeof CATEGORY_LABELS]}
                 </p>
               </div>
-              {domain.clubs.length > 1 && (
-                <p className='text-md text-neutral truncate pt-0.5 font-bold'>+{domain.clubs.length - 1}</p>
+              {domain.clubs.filter((club) => club in CATEGORY_IMAGES).length > 1 && (
+                <p className='text-md text-neutral truncate pt-0.5 font-bold'>+{domain.clubs.filter((club) => club in CATEGORY_IMAGES).length - 1}</p>
               )}
             </div>
           )}

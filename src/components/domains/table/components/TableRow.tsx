@@ -134,6 +134,7 @@ const TableRow: React.FC<TableRowProps> = ({
             address={domain.owner as `0x${string}`}
             className='max-w-[90%]'
             wrapperClassName='justify-start! max-w-full'
+            disableLink={true}
           />
         )}
       </div>

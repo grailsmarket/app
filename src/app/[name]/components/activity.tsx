@@ -7,10 +7,9 @@ import { cn } from '@/utils/tailwind'
 
 interface Props {
   name: string
-  maxHeight?: string
 }
 
-const ActivityPanel: React.FC<Props> = ({ name, maxHeight }) => {
+const ActivityPanel: React.FC<Props> = ({ name }) => {
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity, isActivityEmpty } = useNameActivity(name)
 
   return (
@@ -19,13 +18,10 @@ const ActivityPanel: React.FC<Props> = ({ name, maxHeight }) => {
         'sm:border-tertiary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4',
         isActivityEmpty && 'pb-6'
       )}
-      style={maxHeight ? { maxHeight, overflow: 'hidden' } : undefined}
+      style={{ maxHeight: '580px', overflow: 'hidden' }}
     >
       <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
-      <div
-        className={cn('px-md w-full sm:px-0', maxHeight && 'overflow-y-auto')}
-        style={maxHeight ? { maxHeight: `calc(${maxHeight} - 60px)` } : undefined}
-      >
+      <div className='px-md w-full overflow-y-auto sm:px-0'>
         <Activity
           paddingBottom='0px'
           activity={activity}

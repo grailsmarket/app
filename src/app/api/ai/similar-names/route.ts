@@ -9,13 +9,25 @@ interface SimilarNamesResponse {
   error?: string
 }
 
-const SYSTEM_PROMPT = `you are a domain agent you have a simple task: use your vast llm knowledge to give me 4 words related and likely to be similarly or more highly valuable to the following word. no words longer than 14 chars, consider brandability, seo, username potential, recognizably.
-strict: if input is multiword (they will be without spaces), provide a similar feel for output.
+const SYSTEM_PROMPT = `you are a domain agent you have a simple task: use your vast LLM knowledge to give me 5 words related and likely to be similarly or more highly valuable to the following word. no words longer than 16 chars, none shorter than 3 chars, consider brand-ability, SEO, username potential, recognizably.
+strict: if input is multi-word (they will be without spaces), provide a similar feel for output.
 strict: if input is a single world, return only single words.
 strict: when generating names, don't add arbitrary gamertag like endings like "x" "ix" etc - keep it simple.
-do not provide any other information`
+strict: if in input is unintelligible - provide some clean words that have some of the input characters.
+strict: if a digit-only input is received, ensure ALL outputs are of the exact same length. eg 4 digit input, 4 digit output. consider digit input patterns, and try to follow. 
+strict: if there are any inappropriate inputs - do not give any bad output, keep it pg13.
+strict: if the input has a "." period in it, never return results that have one.
+strict: if input has emojis, output needs emojis (no modifiers allowed).
+strict: if the input has any categories, keep to the theme.
+strict: do not provide any other information.`
 
-async function callOpenAI(name: string): Promise<string[]> {
+async function callOpenAI(name: string, categories?: string[]): Promise<string[]> {
+  // Build input with optional categories context
+  let input = `name: ${name}`
+  if (categories && categories.length > 0) {
+    input += `\ncategories: ${categories.join(', ')}`
+  }
+
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -25,8 +37,8 @@ async function callOpenAI(name: string): Promise<string[]> {
     body: JSON.stringify({
       model: 'gpt-5.2-chat-latest',
       instructions: SYSTEM_PROMPT,
-      input: name,
-      max_output_tokens: 500,
+      input,
+      max_output_tokens: 2000,
       store: false,
     }),
   })
@@ -63,7 +75,7 @@ async function callOpenAI(name: string): Promise<string[]> {
     .split(/[\n,]+/)
     .map((s: string) => s.trim().toLowerCase())
     .filter((s: string) => s.length > 0 && s.length <= 14)
-    .slice(0, 4)
+    .slice(0, 5)
 
   return suggestions
 }
@@ -84,8 +96,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid name', suggestions: [] }, { status: 400 })
     }
 
+    // Get optional categories
+    const categoriesParam = searchParams.get('categories')
+    const categories = categoriesParam ? categoriesParam.split(',').map(c => c.trim()).filter(Boolean) : []
+
+    // Create cache key that includes categories
+    const cacheKey = categories.length > 0 ? `${baseName}:${categories.sort().join(',')}` : baseName
+
     // Check cache first
-    const cached = cache.get(baseName)
+    const cached = cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return NextResponse.json(cached.data, {
         headers: { 'X-Cache': 'HIT' },
@@ -98,15 +117,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'API not configured', suggestions: [] }, { status: 500 })
     }
 
-    // Call OpenAI
-    const suggestions = await callOpenAI(baseName)
+    // Call OpenAI with name and categories
+    const suggestions = await callOpenAI(baseName, categories)
 
     const responseData: SimilarNamesResponse = {
       suggestions,
     }
 
     // Cache the result
-    cache.set(baseName, { data: responseData, timestamp: Date.now() })
+    cache.set(cacheKey, { data: responseData, timestamp: Date.now() })
 
     return NextResponse.json(responseData, {
       headers: { 'X-Cache': 'MISS' },

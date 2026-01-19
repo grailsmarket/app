@@ -9,17 +9,17 @@ interface SimilarNamesResponse {
   error?: string
 }
 
-const SYSTEM_PROMPT = `you are a domain agent you have a simple task: use your vast LLM knowledge to give me 5 words related and likely to be similarly or more highly valuable to the following word. no words longer than 16 chars, none shorter than 3 chars, consider brand-ability, SEO, username potential, recognizably.
-strict: if input is multi-word (they will be without spaces), provide a similar feel for output.
-strict: if input is a single world, return only single words.
-strict: when generating names, don't add arbitrary gamertag like endings like "x" "ix" etc - keep it simple.
-strict: if in input is unintelligible - provide some clean words that have some of the input characters.
-strict: if a digit-only input is received, ensure ALL outputs are of the exact same length. eg 4 digit input, 4 digit output. consider digit input patterns, and try to follow. 
-strict: if there are any inappropriate inputs - do not give any bad output, keep it pg13.
-strict: if the input has a "." period in it, never return results that have one.
-strict: if input has emojis, output needs emojis (no modifiers allowed).
-strict: if the input has any categories, keep to the theme.
-strict: do not provide any other information.`
+const SYSTEM_PROMPT = `3–16 chars per output
+If input is single word → outputs single words only
+If input is multiword fused (no spaces) → match that fused style
+No random suffixes (x/ix/etc.)
+Unintelligible input → return clean words sharing some characters
+Digits-only input → all outputs digits, same length, similar pattern
+PG-13 only
+If input contains “.” → outputs must not contain “.”
+Emojis-only input → output emojis-only; if input repeats, outputs repeat too
+If input implies a category/theme → stay on-theme
+Return nothing else`
 
 async function callOpenAI(name: string, categories?: string[]): Promise<string[]> {
   // Build input with optional categories context

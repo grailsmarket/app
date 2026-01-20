@@ -110,7 +110,11 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
 
   const categoryName = CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]
   const categoryImage = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES]
-  const categoryHeader = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].header
+
+  // Skip rendering if category not configured on frontend
+  if (!categoryImage) return null
+
+  const categoryHeader = categoryImage.header
 
   return (
     <Link

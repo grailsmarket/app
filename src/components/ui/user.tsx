@@ -20,9 +20,10 @@ interface UserProps {
   className?: string
   wrapperClassName?: string
   loadingCellWidth?: string
+  disableLink?: boolean
 }
 
-const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '60%' }) => {
+const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '60%', disableLink = false }) => {
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', address],
@@ -51,36 +52,68 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadi
       showDelay={750}
     >
       <div className={cn('flex justify-end', wrapperClassName)}>
-        <Link
-          href={`/profile/${address}`}
-          className={cn(
-            'bg-tertiary relative flex h-[28px]! w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70 sm:h-10',
-            className
-          )}
-        >
-          {profile?.ens?.records?.header && (
-            <Image
-              src={profile?.ens?.records?.header}
-              alt='Header'
-              width={400}
-              height={80}
-              unoptimized={true}
-              className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+        {disableLink ? (
+          <div
+            className={cn(
+              'bg-tertiary relative flex h-[28px]! w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 sm:h-10',
+              className
+            )}
+          >
+            {profile?.ens?.records?.header && (
+              <Image
+                src={profile?.ens?.records?.header}
+                alt='Header'
+                width={400}
+                height={80}
+                unoptimized={true}
+                className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+              />
+            )}
+            <Avatar
+              address={address}
+              name={profile?.ens?.name}
+              src={profile?.ens?.avatar}
+              fallback={DEFAULT_FALLBACK_AVATAR}
+              style={{ width: '18px', height: '18px', zIndex: 10 }}
             />
-          )}
-          <Avatar
-            address={address}
-            name={profile?.ens?.name}
-            src={profile?.ens?.avatar}
-            fallback={DEFAULT_FALLBACK_AVATAR}
-            style={{ width: '18px', height: '18px', zIndex: 10 }}
-          />
-          <div className='relative' style={{ maxWidth: 'calc(100% - 24px)' }}>
-            <p className='z-10 truncate text-[15px] font-semibold'>
-              {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
-            </p>
+            <div className='relative' style={{ maxWidth: 'calc(100% - 24px)' }}>
+              <p className='z-10 truncate text-[15px] font-semibold'>
+                {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+              </p>
+            </div>
           </div>
-        </Link>
+        ) : (
+          <Link
+            href={`/profile/${address}`}
+            className={cn(
+              'bg-tertiary relative flex h-[28px]! w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70 sm:h-10',
+              className
+            )}
+          >
+            {profile?.ens?.records?.header && (
+              <Image
+                src={profile?.ens?.records?.header}
+                alt='Header'
+                width={400}
+                height={80}
+                unoptimized={true}
+                className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+              />
+            )}
+            <Avatar
+              address={address}
+              name={profile?.ens?.name}
+              src={profile?.ens?.avatar}
+              fallback={DEFAULT_FALLBACK_AVATAR}
+              style={{ width: '18px', height: '18px', zIndex: 10 }}
+            />
+            <div className='relative' style={{ maxWidth: 'calc(100% - 24px)' }}>
+              <p className='z-10 truncate text-[15px] font-semibold'>
+                {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+              </p>
+            </div>
+          </Link>
+        )}
       </div>
     </ProfileTooltip>
   )

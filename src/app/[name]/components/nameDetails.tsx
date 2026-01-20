@@ -99,23 +99,25 @@ const NameDetails: React.FC<NameDetailsProps> = ({
       label: 'Category',
       value: (
         <div className='flex flex-row flex-wrap justify-end gap-2!'>
-          {nameDetails?.clubs && nameDetails?.clubs.length > 0
-            ? nameDetails?.clubs?.map((club) => (
-                <Link
-                  key={club}
-                  href={`/categories/${club}`}
-                  className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
-                >
-                  <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
-                    alt={club}
-                    width={24}
-                    height={24}
-                    className='aspect-square! rounded-full'
-                  />
-                  <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
-                </Link>
-              ))
+          {nameDetails?.clubs && nameDetails?.clubs.filter((club) => club in CATEGORY_IMAGES).length > 0
+            ? nameDetails?.clubs
+                ?.filter((club) => club in CATEGORY_IMAGES)
+                .map((club) => (
+                  <Link
+                    key={club}
+                    href={`/categories/${club}`}
+                    className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
+                  >
+                    <Image
+                      src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                      alt={club}
+                      width={24}
+                      height={24}
+                      className='aspect-square! rounded-full'
+                    />
+                    <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+                  </Link>
+                ))
             : 'None'}
         </div>
       ),

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { Address } from 'viem'
 import { checkNameValidity } from '@/utils/checkNameValidity'
@@ -96,6 +96,31 @@ const Card: React.FC<CardProps> = ({
   const { premiumPrice, timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType)
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
+  const { data: brokerAccount } = useQuery({
+    queryKey: ['brokerAccount', domainListing?.broker_address],
+    queryFn: async () => {
+      if (!domainListing?.broker_address) return null
+      const response = await fetchAccount(domainListing.broker_address)
+      return response
+    },
+    enabled: !!domainListing?.broker_address,
+  })
+
+  const backgroundColor = useMemo(() => {
+    if (isBulkSelecting) {
+      return isSelected ? 'bg-primary/20' : isInPreviewRange ? 'bg-primary/10' : 'hover:bg-primary/10'
+    }
+
+    if (registrationStatus === UNREGISTERED) return 'bg-available/10'
+    if (registrationStatus === PREMIUM) return 'bg-premium/10'
+    if (registrationStatus === GRACE_PERIOD) return 'bg-grace/10'
+    if (registrationStatus === REGISTERED) {
+      if (domainListing) return 'bg-primary/20'
+    }
+
+    return ''
+  }, [isBulkSelecting, isSelected, isInPreviewRange, registrationStatus, domainListing])
+
   const selectDomain = (d: MarketplaceDomainType) => {
     dispatch(addBulkSelectDomain(d))
     const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
@@ -150,16 +175,6 @@ const Card: React.FC<CardProps> = ({
     }
   }
 
-  const { data: brokerAccount } = useQuery({
-    queryKey: ['brokerAccount', domainListing?.broker_address],
-    queryFn: async () => {
-      if (!domainListing?.broker_address) return null
-      const response = await fetchAccount(domainListing.broker_address)
-      return response
-    },
-    enabled: !!domainListing?.broker_address,
-  })
-
   return (
     <Link
       href={`/${normalizeName(domain.name)}`}
@@ -181,13 +196,7 @@ const Card: React.FC<CardProps> = ({
       className={cn(
         'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition hover:opacity-100 md:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
-        isBulkSelecting
-          ? isSelected
-            ? 'bg-primary/20 hover:bg-foreground/30 opacity-100!'
-            : isInPreviewRange
-              ? 'bg-primary/10 opacity-100!'
-              : 'hover:bg-primary/10'
-          : 'hover:bg-foreground/10',
+        backgroundColor,
         className
       )}
     >

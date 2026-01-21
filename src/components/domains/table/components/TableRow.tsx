@@ -1,9 +1,16 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { EXPIRED_STATUSES, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
+import {
+  EXPIRED_STATUSES,
+  GRACE_PERIOD,
+  PREMIUM,
+  REGISTERABLE_STATUSES,
+  REGISTERED,
+  UNREGISTERED,
+} from '@/constants/domains/registrationStatuses'
 import Name from './name'
 import LastSale from './lastSale'
 import HighestOffer from './highestOffer'
@@ -133,6 +140,21 @@ const TableRow: React.FC<TableRowProps> = ({
     ),
   }
 
+  const backgroundColor = useMemo(() => {
+    if (isBulkSelecting) {
+      return isSelected ? 'bg-primary/20' : isInPreviewRange ? 'bg-primary/10' : 'hover:bg-primary/10'
+    }
+
+    if (registrationStatus === UNREGISTERED) return 'bg-available/5 hover:bg-available/10'
+    if (registrationStatus === PREMIUM) return 'bg-premium/5 hover:bg-premium/10'
+    if (registrationStatus === GRACE_PERIOD) return 'bg-grace/5 hover:bg-grace/10'
+    if (registrationStatus === REGISTERED) {
+      if (domainListing) return 'bg-primary/10 hover:bg-primary/20'
+    }
+
+    return 'hover:bg-foreground/10'
+  }, [isBulkSelecting, isSelected, isInPreviewRange, registrationStatus, domainListing])
+
   const selectDomain = (d: MarketplaceDomainType) => {
     dispatch(addBulkSelectDomain(d))
     const listings = d.listings?.filter((listing) => listing.source === 'grails') || []
@@ -208,13 +230,7 @@ const TableRow: React.FC<TableRowProps> = ({
       className={cn(
         'group px-md md:p-md lg:p-lg border-tertiary flex h-[60px] w-full flex-row items-center justify-between border-b transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
-        isBulkSelecting
-          ? isSelected
-            ? 'bg-primary/20 hover:bg-foreground/30'
-            : isInPreviewRange
-              ? 'bg-primary/10'
-              : 'hover:bg-primary/10'
-          : 'hover:bg-foreground/10'
+        backgroundColor
       )}
     >
       <div

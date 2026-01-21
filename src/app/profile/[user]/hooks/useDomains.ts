@@ -11,6 +11,7 @@ import { useProfileDomains } from './useProfileDomains'
 import { Address } from 'viem'
 import { useListings } from './useListings'
 import { useGraceDomains } from './useGraceDomains'
+import { useExpiredDomains } from './useExpiredDomains'
 
 // Router for the portfolio tab content
 // This is done to prevent refetching data when switching tabs
@@ -39,6 +40,9 @@ export const useDomains = (user: Address | undefined) => {
   const { graceDomains, graceDomainsLoading, fetchMoreGraceDomains, hasMoreGraceDomains, totalGraceDomains } =
     useGraceDomains(user)
 
+  const { expiredDomains, expiredDomainsLoading, fetchMoreExpiredDomains, hasMoreExpiredDomains, totalExpiredDomains } =
+    useExpiredDomains(user)
+
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {
       case 'domains':
@@ -46,6 +50,8 @@ export const useDomains = (user: Address | undefined) => {
       case 'listings':
         return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
       case 'grace':
+        return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
+      case 'expired':
         return PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS
       case 'watchlist':
         return PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS
@@ -62,12 +68,14 @@ export const useDomains = (user: Address | undefined) => {
         return listings
       case 'grace':
         return graceDomains
+      case 'expired':
+        return expiredDomains
       case 'watchlist':
         return watchlistDomains
       default:
         return profileDomains
     }
-  }, [selectedTab.value, profileDomains, watchlistDomains, listings, graceDomains])
+  }, [selectedTab.value, profileDomains, watchlistDomains, listings, graceDomains, expiredDomains])
 
   const domains = useMemo(() => {
     return (
@@ -85,6 +93,8 @@ export const useDomains = (user: Address | undefined) => {
         return listingsLoading
       case 'grace':
         return graceDomainsLoading
+      case 'expired':
+        return expiredDomainsLoading
       case 'watchlist':
         return isWatchlistDomainsLoading || isWatchlistDomainsFetchingNextPage
       default:
@@ -95,6 +105,7 @@ export const useDomains = (user: Address | undefined) => {
     profileDomainsLoading,
     listingsLoading,
     graceDomainsLoading,
+    expiredDomainsLoading,
     isWatchlistDomainsLoading,
     isWatchlistDomainsFetchingNextPage,
   ])
@@ -107,12 +118,21 @@ export const useDomains = (user: Address | undefined) => {
         return fetchMoreListings
       case 'grace':
         return fetchMoreGraceDomains
+      case 'expired':
+        return fetchMoreExpiredDomains
       case 'watchlist':
         return fetchMoreWatchlistDomains
       default:
         return profileFetchMoreDomains
     }
-  }, [selectedTab.value, profileFetchMoreDomains, fetchMoreListings, fetchMoreGraceDomains, fetchMoreWatchlistDomains])
+  }, [
+    selectedTab.value,
+    profileFetchMoreDomains,
+    fetchMoreListings,
+    fetchMoreGraceDomains,
+    fetchMoreExpiredDomains,
+    fetchMoreWatchlistDomains,
+  ])
 
   const hasMoreDomains = useMemo(() => {
     switch (selectedTab.value) {
@@ -122,12 +142,21 @@ export const useDomains = (user: Address | undefined) => {
         return hasMoreListings
       case 'grace':
         return hasMoreGraceDomains
+      case 'expired':
+        return hasMoreExpiredDomains
       case 'watchlist':
         return hasMoreWatchlistDomains
       default:
         return profileHasMoreDomains
     }
-  }, [selectedTab.value, profileHasMoreDomains, hasMoreListings, hasMoreGraceDomains, hasMoreWatchlistDomains])
+  }, [
+    selectedTab.value,
+    profileHasMoreDomains,
+    hasMoreListings,
+    hasMoreGraceDomains,
+    hasMoreExpiredDomains,
+    hasMoreWatchlistDomains,
+  ])
 
   return {
     displayedDetails,
@@ -139,5 +168,6 @@ export const useDomains = (user: Address | undefined) => {
     totalWatchlistDomains,
     totalListings,
     totalGraceDomains,
+    totalExpiredDomains,
   }
 }

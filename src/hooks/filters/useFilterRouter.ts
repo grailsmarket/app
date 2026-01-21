@@ -262,6 +262,30 @@ import {
   clearFilters as clearProfileGraceFilters,
 } from '@/state/reducers/filters/profileGraceFilters'
 
+// Import profile expired filters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateProfileExpiredFilters,
+  selectProfileExpiredFilters,
+  setFiltersOpen as setProfileExpiredFiltersOpen,
+  toggleFiltersType as toggleProfileExpiredFiltersType,
+  setFiltersType as setProfileExpiredFiltersType,
+  setMarketFilters as setProfileExpiredMarketFilters,
+  setTextMatchFilters as setProfileExpiredTextMatchFilters,
+  setTextNonMatchFilters as setProfileExpiredTextNonMatchFilters,
+  setFiltersLength as setProfileExpiredFiltersLength,
+  setPriceDenomination as setProfileExpiredPriceDenomination,
+  setPriceRange as setProfileExpiredPriceRange,
+  toggleCategory as toggleProfileExpiredCategory,
+  setFiltersCategory as setProfileExpiredFiltersCategory,
+  addCategories as addProfileExpiredCategories,
+  removeCategories as removeProfileExpiredCategories,
+  setSort as setProfileExpiredSort,
+  setSearch as setProfileExpiredSearch,
+  setFiltersScrollTop as setProfileExpiredFiltersScrollTop,
+  toggleFilterOpen as toggleProfileExpiredFilterOpen,
+  clearFilters as clearProfileExpiredFilters,
+} from '@/state/reducers/filters/profileExpiredFilters'
+
 // Import categoryDomains selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryDomainsFilters,
@@ -509,6 +533,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return selectProfileListingsFilters(state)
       } else if (activeProfileTab === 'grace') {
         return selectProfileGraceFilters(state)
+      } else if (activeProfileTab === 'expired') {
+        return selectProfileExpiredFilters(state)
       } else if (activeProfileTab === 'received_offers') {
         return selectReceivedOffersFilters(state)
       } else if (activeProfileTab === 'sent_offers') {
@@ -836,6 +862,27 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setScrollTop: setProfileGraceFiltersScrollTop,
           toggleFilterOpen: toggleProfileGraceFilterOpen,
           clearFilters: clearProfileGraceFilters,
+        }
+      } else if (activeProfileTab === 'expired') {
+        return {
+          setFiltersOpen: setProfileExpiredFiltersOpen,
+          toggleFiltersType: toggleProfileExpiredFiltersType,
+          setFiltersType: setProfileExpiredFiltersType,
+          setMarketFilters: setProfileExpiredMarketFilters,
+          setTextMatchFilters: setProfileExpiredTextMatchFilters,
+          setTextNonMatchFilters: setProfileExpiredTextNonMatchFilters,
+          setFiltersLength: setProfileExpiredFiltersLength,
+          setPriceDenomination: setProfileExpiredPriceDenomination,
+          setPriceRange: setProfileExpiredPriceRange,
+          toggleCategory: toggleProfileExpiredCategory,
+          setFiltersCategory: setProfileExpiredFiltersCategory,
+          addCategories: addProfileExpiredCategories,
+          removeCategories: removeProfileExpiredCategories,
+          setSort: setProfileExpiredSort,
+          setSearch: setProfileExpiredSearch,
+          setScrollTop: setProfileExpiredFiltersScrollTop,
+          toggleFilterOpen: toggleProfileExpiredFilterOpen,
+          clearFilters: clearProfileExpiredFilters,
         }
       } else if (activeProfileTab === 'sent_offers') {
         return {

@@ -20,6 +20,11 @@ import {
   DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
 } from '@/constants/filters/categoriesPageFilters'
 
+// Maximum search length to include in URL (characters)
+// Above this limit, search will work in the app but won't be reflected in URL
+// This prevents URL truncation issues with bulk search
+export const MAX_SEARCH_URL_LENGTH = 10000
+
 // URL parameter keys
 export const URL_PARAMS = {
   tab: 'tab',
@@ -155,8 +160,8 @@ export function serializeFiltersToUrl(
     params.set(URL_PARAMS.tab, tab)
   }
 
-  // Search
-  if (filters.search && filters.search !== emptyFilterState.search) {
+  // Search (skip if too long to avoid URL truncation with bulk search)
+  if (filters.search && filters.search !== emptyFilterState.search && filters.search.length <= MAX_SEARCH_URL_LENGTH) {
     params.set(URL_PARAMS.search, filters.search)
   }
 
@@ -328,8 +333,8 @@ export function serializeCategoriesPageFiltersToUrl(
     params.set(URL_PARAMS.tab, tab)
   }
 
-  // Search
-  if (filters.search && filters.search !== emptyFilterState.search) {
+  // Search (skip if too long to avoid URL truncation with bulk search)
+  if (filters.search && filters.search !== emptyFilterState.search && filters.search.length <= MAX_SEARCH_URL_LENGTH) {
     params.set(URL_PARAMS.search, filters.search)
   }
 

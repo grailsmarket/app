@@ -6,11 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeCategoryTab, CategoryTabType, selectCategory } from '@/state/reducers/category/category'
 import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
 import { useNavbar } from '@/context/navbar'
-import { API_URL } from '@/constants/api'
 import { useCategories } from '@/components/filters/hooks/useCategories'
-import { useQuery } from '@tanstack/react-query'
-import { APIResponseType, PaginationType } from '@/types/api'
-import { MarketplaceDomainType } from '@/types/domains'
 import Label from '@/components/ui/label'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
 
@@ -28,35 +24,6 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
-
-  const allNames = categoryDetails?.member_count || 0
-  const { data: totalPremiumNames } = useQuery({
-    queryKey: ['totalPremiumNames', category],
-    queryFn: async () => {
-      const res = await fetch(`${API_URL}/search?limit=1&page=1&filters[clubs][]=${category}&filters[status]=premium`)
-      const json = (await res.json()) as APIResponseType<{
-        names: MarketplaceDomainType[]
-        results: MarketplaceDomainType[]
-        pagination: PaginationType
-      }>
-
-      return json.data.pagination.total || 0
-    },
-  })
-
-  const { data: availableNames } = useQuery({
-    queryKey: ['availableNames', category],
-    queryFn: async () => {
-      const res = await fetch(`${API_URL}/search?limit=1&page=1&filters[clubs][]=${category}&filters[status]=available`)
-      const json = (await res.json()) as APIResponseType<{
-        names: MarketplaceDomainType[]
-        results: MarketplaceDomainType[]
-        pagination: PaginationType
-      }>
-
-      return json.data.pagination.total || 0
-    },
-  })
 
   const setCategoryTab = (tab: CategoryTabType) => {
     dispatch(changeCategoryTab(tab))
@@ -97,14 +64,14 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     () => (tab: (typeof CATEGORY_TABS)[number]) => {
       switch (tab.value) {
         case 'names':
-          return formatTotalTabItems(allNames)
+          return formatTotalTabItems(categoryDetails?.member_count || 0)
         case 'premium':
-          return formatTotalTabItems(totalPremiumNames || 0)
+          return formatTotalTabItems(categoryDetails?.premium_count || 0)
         case 'available':
-          return formatTotalTabItems(availableNames || 0)
+          return formatTotalTabItems(categoryDetails?.available_count || 0)
       }
     },
-    [allNames, totalPremiumNames, availableNames]
+    [categoryDetails]
   )
 
   // During SSR and initial mount, render all tabs without active state

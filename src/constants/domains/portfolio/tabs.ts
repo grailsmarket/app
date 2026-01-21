@@ -12,6 +12,10 @@ export const PROFILE_TABS = [
     value: 'listings',
   },
   {
+    label: 'Expired',
+    value: 'expired',
+  },
+  {
     label: 'Received Offers',
     value: 'received_offers',
   },

@@ -12,6 +12,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useRouter } from 'next/navigation'
 import { normalizeName } from '@/lib/ens'
+import { MAX_SEARCH_URL_LENGTH } from '@/utils/filterUrlParams'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
@@ -39,6 +40,20 @@ const DomainPanel = () => {
     }
   }, [selectors.filters.search])
 
+  // Helper to build URL with current tab preserved
+  const buildUrl = (searchParam?: string) => {
+    const params = new URLSearchParams()
+    // Preserve current tab (only add if not default 'names' tab)
+    if (selectedTab.value !== 'names') {
+      params.set('tab', selectedTab.value)
+    }
+    if (searchParam) {
+      params.set('search', searchParam)
+    }
+    const queryString = params.toString()
+    return queryString ? `/marketplace?${queryString}` : '/marketplace'
+  }
+
   // Debounced search handler
   const handleSearchChange = (value: string) => {
     userHasTyped.current = true
@@ -55,22 +70,27 @@ const DomainPanel = () => {
 
       const searchTerm = value.toLowerCase().trim()
       if (searchTerm.length === 0) {
-        router.push('/marketplace')
+        router.push(buildUrl())
+        return
+      }
+
+      // Skip URL update if search is too long (bulk search with many names)
+      // The search will still work in the app via Redux state
+      if (searchTerm.length > MAX_SEARCH_URL_LENGTH) {
         return
       }
 
       const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
       if (isBulkSearching) {
-        router.push(
-          `/marketplace?search=${searchTerm
-            .replaceAll(' ', ',')
-            .split(',')
-            .map((query) => normalizeName(query.toLowerCase().trim()))
-            .filter((query) => query.length > 2)
-            .join(',')}`
-        )
+        const normalizedSearch = searchTerm
+          .replaceAll(' ', ',')
+          .split(',')
+          .map((query) => normalizeName(query.toLowerCase().trim()))
+          .filter((query) => query.length > 2)
+          .join(',')
+        router.push(buildUrl(normalizedSearch))
       } else {
-        router.push(`/marketplace?search=${normalizeName(searchTerm)}`)
+        router.push(buildUrl(normalizeName(searchTerm)))
       }
     }, 300)
   }

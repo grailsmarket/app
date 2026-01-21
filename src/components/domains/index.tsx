@@ -37,7 +37,7 @@ interface DomainsProps {
 const Domains: React.FC<DomainsProps> = ({
   domains,
   isLoading,
-  loadingRowCount = 10,
+  loadingRowCount = 30,
   noResults,
   noResultsLabel = 'No results, try changing your filters.',
   listRef,
@@ -81,8 +81,8 @@ const Domains: React.FC<DomainsProps> = ({
   }, [displayedDetails, width])
 
   const visibleCount = useMemo(() => {
-    if (!height) return 30
-    return Math.floor(height / 60)
+    if (!height) return 50
+    return Math.floor(height / 45)
   }, [height])
 
   const containerWidth = useMemo(() => {
@@ -151,7 +151,7 @@ const Domains: React.FC<DomainsProps> = ({
               gap={4}
               containerPadding={width && width < 768 ? 8 : 0}
               containerWidth={containerWidth}
-              overscanCount={4}
+              overscanCount={6}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}
               scrollThreshold={300}
@@ -181,7 +181,7 @@ const Domains: React.FC<DomainsProps> = ({
               gap={0}
               paddingBottom={paddingBottom ? paddingBottom : '40px'}
               onScrollNearBottom={handleScrollNearBottom}
-              scrollThreshold={200}
+              scrollThreshold={300}
               useLocalScrollTop={useLocalScrollTop}
               renderItem={(item, index) => {
                 if (!item)

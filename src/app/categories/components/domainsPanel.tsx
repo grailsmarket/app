@@ -12,6 +12,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
 import { useRouter } from 'next/navigation'
 import { normalizeName } from '@/lib/ens'
+import { MAX_SEARCH_URL_LENGTH } from '@/utils/filterUrlParams'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -71,6 +72,12 @@ const CategoriesPageDomainsPanel = () => {
       const searchTerm = value.toLowerCase().trim()
       if (searchTerm.length === 0) {
         router.push(buildUrl())
+        return
+      }
+
+      // Skip URL update if search is too long (bulk search with many names)
+      // The search will still work in the app via Redux state
+      if (searchTerm.length > MAX_SEARCH_URL_LENGTH) {
         return
       }
 

@@ -10,6 +10,7 @@ import receivedOffersFiltersReducer from './receivedOffersFilters'
 import profileListingsFiltersReducer from './profileListingsFilter'
 import profileDomainsFiltersReducer from './profileDomainsFilters'
 import profileGraceFiltersReducer from './profileGraceFilters'
+import profileExpiredFiltersReducer from './profileExpiredFilters'
 import profileActivityFiltersReducer from './profileActivityFilters'
 import categoryDomainsFiltersReducer from './categoryDomainsFilters'
 import categoryPremiumFiltersReducer from './categoryPremiumFilters'
@@ -32,6 +33,7 @@ const filtersReducer = combineReducers({
   profileDomainsFilters: profileDomainsFiltersReducer,
   profileGraceFilters: profileGraceFiltersReducer,
   profileListingsFilters: profileListingsFiltersReducer,
+  profileExpiredFilters: profileExpiredFiltersReducer,
   profileActivityFilters: profileActivityFiltersReducer,
   categoryDomainsFilters: categoryDomainsFiltersReducer,
   categoryPremiumFilters: categoryPremiumFiltersReducer,

@@ -170,12 +170,12 @@ const NameDetails: React.FC<NameDetailsProps> = ({
     },
     {
       label: 'Token ID',
-      value: nameDetails?.token_id ? truncateAddress(nameDetails?.token_id as `0x${string}`) : null,
+      value: nameDetails?.token_id ? nameDetails?.token_id : null,
       canCopy: true,
     },
     {
       label: 'Namehash',
-      value: nameDetails?.token_id ? truncateAddress(numberToHex(BigInt(nameDetails.token_id))) : null,
+      value: nameDetails?.token_id ? numberToHex(BigInt(nameDetails.token_id)) : null,
       canCopy: true,
     },
   ]
@@ -289,7 +289,11 @@ const NameDetails: React.FC<NameDetailsProps> = ({
             <div key={row.label} className='flex w-full flex-row items-start justify-between gap-2'>
               <p className='font-sedan-sc text-2xl'>{row.label}</p>
               {typeof row.value === 'string' ? (
-                <CopyValue value={row.value} canCopy={row.canCopy} />
+                <CopyValue
+                  value={row.value}
+                  canCopy={row.canCopy}
+                  truncateValue={row.label === 'Namehash' || row.label === 'Token ID'}
+                />
               ) : (
                 <div className={cn(isUserRow ? 'flex max-w-3/4 flex-col items-end justify-center gap-2' : 'max-w-3/4')}>
                   <div className={cn(isUserRow ? 'flex flex-row items-center gap-2.5 overflow-visible' : 'max-w-full')}>
@@ -353,7 +357,7 @@ const NameDetails: React.FC<NameDetailsProps> = ({
   )
 }
 
-const CopyValue = ({ value, canCopy }: { value: string; canCopy: boolean }) => {
+const CopyValue = ({ value, canCopy, truncateValue }: { value: string; canCopy: boolean; truncateValue?: boolean }) => {
   const [isCopied, setIsCopied] = useState(false)
   const handleCopy = (value: string) => {
     navigator.clipboard.writeText(value)
@@ -370,7 +374,7 @@ const CopyValue = ({ value, canCopy }: { value: string; canCopy: boolean }) => {
         if (canCopy) handleCopy(value)
       }}
     >
-      <p className='max-w-full truncate text-xl'>{value}</p>
+      <p className='max-w-full truncate text-xl'>{truncateValue ? truncateAddress(value as `0x${string}`) : value}</p>
       {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='h-4 w-4' />}
     </div>
   )

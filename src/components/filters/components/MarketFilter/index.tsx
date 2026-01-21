@@ -56,6 +56,8 @@ const MarketFilter = () => {
         return OFFERS_FILTER_LABELS
       } else if (activeProfileTab === 'grace') {
         return GRACE_FILTER_LABELS
+      } else if (activeProfileTab === 'expired') {
+        return ['Has Last Sale'] as const // Only show Has Last Sale for expired tab
       }
     }
 
@@ -101,6 +103,8 @@ const MarketFilter = () => {
         return true
       }
       if (activeProfileTab === 'grace') {
+        return false
+      } else if (activeProfileTab === 'expired') {
         return false
       } else if (activeProfileTab === 'listings') {
         return true

@@ -30,6 +30,8 @@ const StatusFilter: React.FC = () => {
         return MY_DOMAINS_FILTER_LABELS
       } else if (activeProfileTab === 'listings') {
         return []
+      } else if (activeProfileTab === 'expired') {
+        return [] // Status is fixed to Premium/Available for expired tab
       } else if (activeProfileTab === 'received_offers') {
         return RECEIVED_OFFERS_STATUS_FILTER_LABELS
       } else if (activeProfileTab === 'sent_offers') {

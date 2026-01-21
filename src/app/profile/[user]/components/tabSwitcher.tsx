@@ -24,7 +24,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const dispatch = useAppDispatch()
-  const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains } = useDomains(user)
+  const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains, totalExpiredDomains } =
+    useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
   const { totalBrokeredListings } = useBrokeredListings(user)
   const { isNavbarVisible } = useNavbar()
@@ -63,6 +64,10 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       if (tab.value === 'listings') {
         return totalListings > 0
       }
+      // Hide expired tab if no expired domains
+      if (tab.value === 'expired') {
+        return totalExpiredDomains > 0
+      }
       // Hide received offers tab if no received offers
       if (tab.value === 'received_offers') {
         return totalReceivedOffers > 0
@@ -81,6 +86,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     totalBrokeredListings,
     totalGraceDomains,
     totalListings,
+    totalExpiredDomains,
     totalReceivedOffers,
     totalSentOffers,
   ])
@@ -94,6 +100,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return formatTotalTabItems(totalListings)
         case 'grace':
           return formatTotalTabItems(totalGraceDomains)
+        case 'expired':
+          return formatTotalTabItems(totalExpiredDomains)
         case 'watchlist':
           return formatTotalTabItems(totalWatchlistDomains)
         case 'received_offers':
@@ -113,6 +121,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       totalSentOffers,
       totalListings,
       totalGraceDomains,
+      totalExpiredDomains,
       totalBrokeredListings,
     ]
   )
@@ -142,7 +151,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     updateIndicator()
     window.addEventListener('resize', updateIndicator)
     return () => window.removeEventListener('resize', updateIndicator)
-  }, [selectedTab, mounted, displayedTabs])
+  }, [selectedTab, mounted, displayedTabs, getTotalItems])
 
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {

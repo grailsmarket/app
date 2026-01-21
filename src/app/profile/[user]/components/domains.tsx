@@ -133,7 +133,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
       </div>
       <Domains
         domains={domains}
-        loadingRowCount={20}
+        loadingRowCount={30}
         filtersOpen={selectors.filters.open}
         paddingBottom={selectedTab.value === 'watchlist' ? '320px' : '160px'}
         noResults={!domainsLoading && domains?.length === 0}

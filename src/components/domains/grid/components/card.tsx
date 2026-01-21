@@ -115,7 +115,7 @@ const Card: React.FC<CardProps> = ({
     if (registrationStatus === PREMIUM) return 'bg-premium/10'
     if (registrationStatus === GRACE_PERIOD) return 'bg-grace/10'
     if (registrationStatus === REGISTERED) {
-      if (domainListing) return 'bg-primary/20'
+      if (domainListing) return 'bg-foreground/20'
     }
 
     return ''

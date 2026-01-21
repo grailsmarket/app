@@ -188,6 +188,8 @@ export const fetchDomains = async ({
       filters.market?.Listed !== 'none' ||
       filters.market?.['Has Last Sale'] === 'no' ||
       filters.market?.['Has Offers'] === 'no' ||
+      filters.market?.['Has Last Sale'] === 'yes' ||
+      filters.market?.['Has Offers'] === 'yes' ||
       filters.market?.marketplace !== 'none' ||
       filters.status.length > 0 ||
       filters.sort !== null

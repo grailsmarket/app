@@ -10,16 +10,12 @@ import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import MagnifyingGlass from 'public/icons/search.svg'
-import { useRouter } from 'next/navigation'
-import { normalizeName } from '@/lib/ens'
-import { MAX_SEARCH_URL_LENGTH } from '@/utils/filterUrlParams'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { Cross } from 'ethereum-identity-kit'
 
 const DomainPanel = () => {
-  const router = useRouter()
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
   const filtersOpen = selectors.filters.open
@@ -32,7 +28,7 @@ const DomainPanel = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
   const userHasTyped = useRef(false)
 
-  // Sync local state from Redux/URL only on initial page load
+  // Sync local state from Redux only on initial page load
   // Once user starts typing, local state becomes the source of truth
   useEffect(() => {
     if (!userHasTyped.current) {
@@ -40,21 +36,7 @@ const DomainPanel = () => {
     }
   }, [selectors.filters.search])
 
-  // Helper to build URL with current tab preserved
-  const buildUrl = (searchParam?: string) => {
-    const params = new URLSearchParams()
-    // Preserve current tab (only add if not default 'names' tab)
-    if (selectedTab.value !== 'names') {
-      params.set('tab', selectedTab.value)
-    }
-    if (searchParam) {
-      params.set('search', searchParam)
-    }
-    const queryString = params.toString()
-    return queryString ? `/marketplace?${queryString}` : '/marketplace'
-  }
-
-  // Debounced search handler
+  // Debounced search handler - only updates Redux, useFilterUrlSync handles URL
   const handleSearchChange = (value: string) => {
     userHasTyped.current = true
     setLocalSearch(value)
@@ -64,34 +46,9 @@ const DomainPanel = () => {
       clearTimeout(debounceRef.current)
     }
 
-    // Debounce the Redux/URL update
+    // Debounce the Redux update (URL is handled by useFilterUrlSync)
     debounceRef.current = setTimeout(() => {
       dispatch(actions.setSearch(value))
-
-      const searchTerm = value.toLowerCase().trim()
-      if (searchTerm.length === 0) {
-        router.push(buildUrl())
-        return
-      }
-
-      // Skip URL update if search is too long (bulk search with many names)
-      // The search will still work in the app via Redux state
-      if (searchTerm.length > MAX_SEARCH_URL_LENGTH) {
-        return
-      }
-
-      const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
-      if (isBulkSearching) {
-        const normalizedSearch = searchTerm
-          .replaceAll(' ', ',')
-          .split(',')
-          .map((query) => normalizeName(query.toLowerCase().trim()))
-          .filter((query) => query.length > 2)
-          .join(',')
-        router.push(buildUrl(normalizedSearch))
-      } else {
-        router.push(buildUrl(normalizeName(searchTerm)))
-      }
     }, 300)
   }
 

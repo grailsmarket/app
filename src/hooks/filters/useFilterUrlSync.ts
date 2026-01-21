@@ -432,41 +432,9 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     }
   }, [selectors.filters, currentTab, debouncedUpdateUrl])
 
-  // Handle browser back/forward navigation
-  useEffect(() => {
-    // Skip on initial mount
-    if (!isInitialized.current) return
-
-    const currentUrl = searchParams.toString()
-
-    // Skip if this is the URL we just wrote
-    if (currentUrl === lastWrittenUrl.current) return
-
-    // URL changed externally (browser navigation), sync to Redux
-    isSyncingFromUrl.current = true
-
-    const urlFilters = deserializeFiltersFromUrl(searchParams)
-    const urlTab = getTabFromParams(searchParams, defaultTab)
-
-    // Apply tab
-    const validTab = isValidTab(filterType, urlTab, isOwner) ? urlTab : defaultTab
-    const tabObj = findTabByValue(filterType, validTab)
-    dispatch(tabChangeAction(tabObj))
-
-    // Store filters to be applied when actions are ready (after tab change propagates)
-    // Check if there are any URL filters to apply
-    const hasFiltersToApply = Object.keys(urlFilters).some((key) => key !== 'tab')
-    if (hasFiltersToApply) {
-      pendingUrlFilters.current = urlFilters
-    } else {
-      // No filters to apply, reset sync flag
-      requestAnimationFrame(() => {
-        isSyncingFromUrl.current = false
-      })
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  // NOTE: Browser back/forward navigation intentionally does NOT sync URL → Redux
+  // URL params are only read on initial page load for sharing/bookmarking purposes
+  // After initial load, Redux is the source of truth and URL is updated from Redux
 
   return {
     currentTab,

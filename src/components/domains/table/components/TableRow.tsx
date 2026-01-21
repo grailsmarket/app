@@ -149,7 +149,7 @@ const TableRow: React.FC<TableRowProps> = ({
     if (registrationStatus === PREMIUM) return 'bg-premium/5 hover:bg-premium/10'
     if (registrationStatus === GRACE_PERIOD) return 'bg-grace/5 hover:bg-grace/10'
     if (registrationStatus === REGISTERED) {
-      if (domainListing) return 'bg-primary/10 hover:bg-primary/20'
+      if (domainListing) return 'bg-foreground/10 hover:bg-foreground/20'
     }
 
     return 'hover:bg-foreground/10'

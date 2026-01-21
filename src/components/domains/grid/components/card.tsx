@@ -118,7 +118,7 @@ const Card: React.FC<CardProps> = ({
       if (domainListing) return 'bg-primary/20'
     }
 
-    return 'bg-background'
+    return ''
   }, [isBulkSelecting, isSelected, isInPreviewRange, registrationStatus, domainListing])
 
   const selectDomain = (d: MarketplaceDomainType) => {

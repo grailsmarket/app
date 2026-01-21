@@ -180,7 +180,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
           </button>
         </div>
         <p className='text-md text-neutral px-5 pt-3 lg:px-7'>
-          <strong>Bulk Search</strong>: Input up to 2,000 terms separated by commas or spaces, then press ENTER
+          <strong>Bulk Search</strong>: Input up to 10k terms separated by commas or spaces, then press ENTER
         </p>
 
         {/* Results */}

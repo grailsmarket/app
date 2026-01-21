@@ -47,7 +47,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     return hashMap
   }, [categories])
 
-  const categoriesToDisplay = classifiedCategories.entries().map(([key, value]) => {
+  const categoriesToDisplay = Array.from(classifiedCategories.entries()).map(([key, value]) => {
     return {
       classification: key,
       categories: value,

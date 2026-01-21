@@ -137,19 +137,19 @@ export const CATEGORY_IMAGES = {
     header: 'https://grails.app/clubs/quint_ethmoji/header.jpeg',
   },
   top_crypto_names: {
-    avatar: 'https://grails.app/clubs/top_crypto_names/avatar.png',
+    avatar: 'https://grails.app/clubs/top_crypto_names/avatar.jpg',
     header: 'https://grails.app/clubs/top_crypto_names/header.jpg',
   },
   top_crypto_tickers: {
-    avatar: 'https://grails.app/clubs/top_crypto_tickers/avatar.png',
+    avatar: 'https://grails.app/clubs/top_crypto_tickers/avatar.jpg',
     header: 'https://grails.app/clubs/top_crypto_tickers/header.jpg',
   },
   top_cities_global: {
-    avatar: 'https://grails.app/clubs/top_cities_global/avatar.png',
+    avatar: 'https://grails.app/clubs/top_cities_global/avatar.jpg',
     header: 'https://grails.app/clubs/top_cities_global/header.png',
   },
   top_cities_usa: {
-    avatar: 'https://grails.app/clubs/top_cities_usa/avatar.png',
+    avatar: 'https://grails.app/clubs/top_cities_usa/avatar.jpg',
     header: 'https://grails.app/clubs/top_cities_usa/header.png',
   },
   us_states: {
@@ -161,7 +161,7 @@ export const CATEGORY_IMAGES = {
     header: 'https://grails.app/clubs/common_animals/header.jpg',
   },
   common_english: {
-    avatar: 'https://grails.app/clubs/common_english/avatar.jpeg',
+    avatar: 'https://grails.app/clubs/common_english/avatar.jpg',
     header: 'https://grails.app/clubs/common_english/header.jpg',
   },
   country_codes: {
@@ -169,11 +169,11 @@ export const CATEGORY_IMAGES = {
     header: 'https://grails.app/clubs/country_codes/header.jpg',
   },
   gamertags: {
-    avatar: 'https://grails.app/clubs/gamertags/avatar.jpeg',
+    avatar: 'https://grails.app/clubs/gamertags/avatar.jpg',
     header: 'https://grails.app/clubs/gamertags/header.jpeg',
   },
   gamertags_double: {
-    avatar: 'https://grails.app/clubs/gamertags_double/avatar.jpeg',
+    avatar: 'https://grails.app/clubs/gamertags_double/avatar.jpg',
     header: 'https://grails.app/clubs/gamertags_double/header.jpeg',
   },
   crypto_terms: {
@@ -205,7 +205,7 @@ export const CATEGORY_IMAGES = {
     header: 'https://grails.app/clubs/familynames_usa/header.png',
   },
   firstnames_usa: {
-    avatar: 'https://grails.app/clubs/firstnames_usa/avatar.png',
+    avatar: 'https://grails.app/clubs/firstnames_usa/avatar.jpg',
     header: 'https://grails.app/clubs/firstnames_usa/header.png',
   },
   mythical_creatures: {

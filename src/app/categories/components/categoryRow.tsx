@@ -4,11 +4,10 @@ import Image from 'next/image'
 import { Address } from 'viem'
 import Price from '@/components/ui/price'
 import { CategoryType } from '@/types/domains'
-import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
-import { CATEGORY_IMAGES } from '../[category]/components/categoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
 import { selectCategoriesPageFilters } from '@/state/reducers/filters/categoriesPageFilters'
 import { useAppSelector } from '@/state/hooks'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 interface CategoryRowProps {
   category: CategoryType
@@ -108,9 +107,7 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
     }
   }, [categorySort, category])
 
-  const categoryName = CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]
-  const categoryImage = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES]
-  const categoryHeader = CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].header
+  const { name: categoryName, avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
 
   return (
     <Link
@@ -119,13 +116,13 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
     >
       <Image
         src={categoryHeader}
-        alt={categoryName}
+        alt={`${categoryName} header`}
         width={1000}
         height={1000}
         className='absolute top-0 left-0 h-full w-full object-cover opacity-10'
       />
       <div className='z-10 flex items-center gap-3'>
-        <Image src={categoryImage.avatar} alt={categoryName} width={60} height={60} className='rounded-full' />
+        <Image src={categoryAvatar} alt={categoryName} width={60} height={60} className='rounded-full' />
         <div className='flex flex-col gap-0.5'>
           <h3 className='text-xl font-bold md:text-2xl'>{categoryName}</h3>
           <p className='text-neutral text-lg font-medium'>{category.description}</p>

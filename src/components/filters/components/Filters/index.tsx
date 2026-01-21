@@ -47,6 +47,13 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     return hashMap
   }, [categories])
 
+  const categoriesToDisplay = classifiedCategories.entries().map(([key, value]) => {
+    return {
+      classification: key,
+      categories: value,
+    }
+  })
+
   if (!isClient) return null
 
   const showUserCategoryCounts =
@@ -105,16 +112,15 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
                 : categories?.reduce((sum, c) => sum + c.member_count, 0) || 0
             }
           />
-          {classifiedCategories.entries().map(([key, value]) => {
-            return <CategoryExpandableTab key={key} classification={key} value={value} />
+          {categoriesToDisplay.map((category) => {
+            return (
+              <CategoryExpandableTab
+                key={category.classification}
+                classification={category.classification}
+                value={category.categories}
+              />
+            )
           })}
-          {/* {categories
-            ?.sort((a, b) => a.name.localeCompare(b.name))
-            .map((category, index) => {
-              const categoryCount = showUserCategoryCounts ? userCategoryCounts?.[category.name] : category.member_count
-
-              return <CategoryFilter key={index} category={category.name} owner_count={categoryCount} />
-            })} */}
         </div>
       )}
     </div>

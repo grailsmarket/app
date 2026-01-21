@@ -16,7 +16,6 @@ import OneKSurnamesAvatar from 'public/clubs/1ksurnames/avatar.jpg'
 import OneKSurnamesHeader from 'public/clubs/1ksurnames/header.jpg'
 import NineNinetyNineAvatar from 'public/clubs/999/avatar.jpg'
 import NineNinetyNineHeader from 'public/clubs/999/header.jpeg'
-import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import TwitterIcon from 'public/logos/x.svg'
 import GithubIcon from 'public/logos/github.svg'
 import { localizeNumber } from '@/utils/localizeNumber'
@@ -120,7 +119,7 @@ import FirstnamesUsaHeader from 'public/clubs/firstnames_usa/header.png'
 import MythicalCreaturesAvatar from 'public/clubs/mythical_creatures/avatar.jpg'
 import MythicalCreaturesHeader from 'public/clubs/mythical_creatures/header.png'
 
-import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 export const CATEGORY_IMAGES = {
   prepunk_100: {
@@ -434,18 +433,18 @@ interface Props {
 }
 
 const CategoryDetails = ({ categoryDetails }: Props) => {
-  const categoryName = CATEGORY_LABELS[categoryDetails.name as keyof typeof CATEGORY_LABELS] || categoryDetails.name
-  const categoryImage = CATEGORY_IMAGES[categoryDetails.name as keyof typeof CATEGORY_IMAGES] || {
-    avatar: DEFAULT_FALLBACK_AVATAR,
-    header: DEFAULT_FALLBACK_HEADER,
-  }
+  const {
+    name: categoryName,
+    avatar: categoryAvatar,
+    header: categoryHeader,
+  } = getCategoryDetails(categoryDetails.name)
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.twitter || null
   const githubLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.github || null
 
   return (
     <div className='relative w-full items-center justify-center md:px-4'>
       <Image
-        src={categoryImage.header}
+        src={categoryHeader}
         alt={`${categoryName} header`}
         width={1000}
         height={1000}
@@ -454,7 +453,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
       <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between md:flex-row md:gap-8 md:py-4'>
         <div className='relative z-10 flex w-full items-center py-6 md:w-fit md:py-0'>
           <Image
-            src={categoryImage.header}
+            src={categoryHeader}
             alt={`${categoryName} header`}
             width={1000}
             height={1000}
@@ -462,7 +461,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
           />
           <div className='relative z-20 flex items-start gap-4 px-4 md:px-0'>
             <Image
-              src={categoryImage.avatar}
+              src={categoryAvatar}
               alt={`${categoryName} avatar`}
               width={100}
               height={100}

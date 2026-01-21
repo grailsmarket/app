@@ -41,10 +41,10 @@ import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Watchlist from '@/components/ui/watchlist'
 import User from '@/components/ui/user'
 import Image from 'next/image'
-import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -325,7 +325,7 @@ const Card: React.FC<CardProps> = ({
             <div className='flex max-w-full flex-row items-center gap-1 truncate'>
               <div className='flex max-w-fit min-w-fit items-center gap-1'>
                 <Image
-                  src={CATEGORY_IMAGES[domain.clubs[0] as keyof typeof CATEGORY_IMAGES].avatar}
+                  src={getCategoryDetails(domain.clubs[0]).avatar}
                   alt={domain.clubs[0] as string}
                   width={16}
                   height={16}

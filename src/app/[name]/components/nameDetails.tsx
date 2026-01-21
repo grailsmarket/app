@@ -19,9 +19,7 @@ import {
 import Price from '@/components/ui/price'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
-import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import Link from 'next/link'
-import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useAppDispatch } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
@@ -43,6 +41,7 @@ import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web
 import { useQuery } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { DAY_IN_SECONDS } from '@/constants/time'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 type Row = {
   label: string
@@ -107,13 +106,13 @@ const NameDetails: React.FC<NameDetailsProps> = ({
                   className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
                 >
                   <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                    src={getCategoryDetails(club).avatar}
                     alt={club}
                     width={24}
                     height={24}
                     className='aspect-square! rounded-full'
                   />
-                  <p className='text-nowrap'>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+                  <p className='text-nowrap'>{getCategoryDetails(club).name}</p>
                 </Link>
               ))
             : 'None'}

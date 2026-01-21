@@ -15,12 +15,12 @@ import NameLoadingRow from './components/loading-rows/nameLoadingRow'
 import CategoryLoadingRow from './components/loading-rows/categoryLoadingRow'
 import UserLoadingRow from './components/loading-rows/userLoadingRow'
 import Image from 'next/image'
-import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { useQuery } from '@tanstack/react-query'
 import { searchProfiles } from '@/api/search-profiles'
 import { cn } from '@/utils/tailwind'
 import { beautifyName, normalizeName } from '@/lib/ens'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -243,7 +243,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                           >
                             <div className='flex flex-row items-center gap-3'>
                               <Image
-                                src={CATEGORY_IMAGES[category.name as keyof typeof CATEGORY_IMAGES].avatar}
+                                src={getCategoryDetails(category.name).avatar}
                                 alt={`${category.name} avatar`}
                                 width={100}
                                 height={100}

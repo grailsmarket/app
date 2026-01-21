@@ -7,8 +7,8 @@ import { cn } from '@/utils/tailwind'
 import React from 'react'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
-import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 import Image from 'next/image'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -44,7 +44,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
               {domain.clubs?.map((club) => (
                 <div key={club} className='flex min-w-fit flex-row items-center gap-1'>
                   <Image
-                    src={CATEGORY_IMAGES[club as keyof typeof CATEGORY_IMAGES].avatar}
+                    src={getCategoryDetails(club).avatar}
                     alt={club}
                     width={16}
                     height={16}

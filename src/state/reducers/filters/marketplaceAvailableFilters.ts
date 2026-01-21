@@ -63,7 +63,7 @@ export const initialState: MarketplaceFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
-  sort: 'last_sale_price_desc',
+  sort: 'expiry_date_desc',
   scrollTop: 0,
 }
 

@@ -113,11 +113,14 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
             }
           />
           {categoriesToDisplay.map((category) => {
+            const categoriesWithUserCount = showUserCategoryCounts
+              ? category.categories.map((c) => ({ ...c, member_count: userCategoryCounts[c.name] }))
+              : category.categories
             return (
               <CategoryExpandableTab
                 key={category.classification}
                 classification={category.classification}
-                value={category.categories}
+                value={categoriesWithUserCount}
               />
             )
           })}

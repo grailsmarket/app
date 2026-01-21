@@ -33,14 +33,20 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'offer_desc',
   'expiry_date_asc',
   'expiry_date_desc',
+  'watchers_count_asc',
+  'watchers_count_desc',
+  'view_count_asc',
+  'view_count_desc',
+  'clubs_count_asc',
+  'clubs_count_desc',
 ]
 
 export const MY_DOMAINS_FILTER_LABELS = ['Grace'] as const
 
 export const ALL_SORT_FILTERS = [
-  // 'alphabetical_asc',
-  // 'alphabetical_desc',
-  // 'last_sale_price_asc',
+  'alphabetical_asc',
+  'alphabetical_desc',
+  'last_sale_price_asc',
   'last_sale_price_desc',
   'last_sale_date_asc',
   'last_sale_date_desc',
@@ -49,11 +55,13 @@ export const ALL_SORT_FILTERS = [
   'offer_asc',
   'offer_desc',
   'expiry_date_asc',
-  // 'expiry_date_desc',
+  'expiry_date_desc',
   'watchers_count_asc',
   'watchers_count_desc',
   'view_count_asc',
   'view_count_desc',
+  'clubs_count_asc',
+  'clubs_count_desc',
 ] as const
 
 export const MY_DOMAINS_CATEGORIES = [

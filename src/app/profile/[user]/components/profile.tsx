@@ -62,7 +62,6 @@ const Profile: React.FC<Props> = ({ user }) => {
               extraOptions={{
                 // customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
                 hideSocials: ['grails'],
-                hideEFPPoaps: true,
                 customPoaps: userPoap?.badges
                   ? userPoap.badges.map((badge) => ({
                       eventId: badge.event.id.toString(),

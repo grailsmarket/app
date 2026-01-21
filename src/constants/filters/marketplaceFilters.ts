@@ -191,6 +191,8 @@ export const ALL_SORT_FILTERS = [
   'watchers_count_desc',
   'view_count_asc',
   'view_count_desc',
+  'clubs_count_asc',
+  'clubs_count_desc',
 ] as const
 
 // Sort types for the dropdown (without direction)
@@ -201,6 +203,7 @@ export const SORT_TYPES = [
   'last_sale_date',
   'watchers_count',
   'view_count',
+  'clubs_count',
   'alphabetical',
 ] as const
 
@@ -214,6 +217,7 @@ export const SORT_TYPE_LABELS: Record<SortType, string> = {
   watchers_count: 'Watchlist Count',
   view_count: 'View Count',
   alphabetical: 'Alphabetical',
+  clubs_count: 'Categories Count',
 }
 
 export const SORT_FILTER_LABELS = {
@@ -233,4 +237,6 @@ export const SORT_FILTER_LABELS = {
   view_count_desc: 'View Count (High to Low)',
   alphabetical_asc: 'Alphabetical (A-Z)',
   alphabetical_desc: 'Alphabetical (Z-A)',
+  clubs_count_asc: 'Clubs Count (Low to High)',
+  clubs_count_desc: 'Categories Count (High to Low)',
 }

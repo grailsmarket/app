@@ -87,7 +87,7 @@ export const initialState: ExpiredFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
-  sort: 'expiry_date_asc',
+  sort: 'expiry_date_desc',
   scrollTop: 0,
 }
 

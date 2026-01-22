@@ -18,7 +18,12 @@ const DisplayedCards: React.FC = () => {
         pageParam: 1,
         filters: {
           ...emptyFilterState,
-          status: ['Listed'],
+          market: {
+            Listed: 'yes',
+            'Has Offers': 'none',
+            'Has Last Sale': 'none',
+            marketplace: 'grails',
+          },
           categories: ['any'],
         },
         // inAnyCategory: true,

@@ -40,7 +40,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
 
   const columns = {
     event: <Event event={activity.event_type} platform={activity.platform} timestamp={activity.created_at} />,
-    name: <Name name={activity.name} tokenId={activity.token_id} />,
+    name: <Name name={activity.name} tokenId={activity.token_id} clubs={activity.clubs} />,
     price: (
       <Price
         price={activity.price_wei}

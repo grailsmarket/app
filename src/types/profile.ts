@@ -28,6 +28,7 @@ export type ActivityType = {
   created_at: string
   price: string | null
   token_id: string
+  clubs: string[]
   metadata: Record<string, unknown>
 }
 

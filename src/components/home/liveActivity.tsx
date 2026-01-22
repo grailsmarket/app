@@ -112,7 +112,7 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary pt-sm border-tertiary h-[508px] w-full overflow-hidden rounded-md border-2 sm:h-[498px] lg:h-[518px] lg:max-w-[700px] lg:overflow-visible'>
+    <div className='bg-secondary pt-sm border-tertiary h-[502px] w-full overflow-hidden rounded-md border-2 sm:h-[502px] lg:h-[518px] lg:max-w-[700px] lg:overflow-visible'>
       <div className='pt-md p-md lg:p-lg flex items-center justify-between'>
         <div className='flex items-center gap-4'>
           <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
@@ -133,7 +133,7 @@ const LiveActivity = () => {
           <Arrow className='text-primary h-3 w-3 rotate-180' />
         </button>
       </div>
-      <div className='px-md pt-md sm:p-sm md:p-0'>
+      <div className=''>
         <Activity
           activity={allActivities}
           paddingBottom='10px'

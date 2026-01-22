@@ -170,7 +170,17 @@ export const profileListingsFiltersSlice = createSlice({
       state.priceRange = { min: null, max: null }
       state.offerRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
+      state.openFilters = [
+        'Sort',
+        'Status',
+        'Market',
+        'Type',
+        'Text Match',
+        'Text Non-Match',
+        'Length',
+        'Price Range',
+        'Offer',
+      ]
       state.sort = null
     },
   },

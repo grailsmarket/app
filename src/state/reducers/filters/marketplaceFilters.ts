@@ -253,7 +253,17 @@ export const marketplaceFiltersSlice = createSlice({
         max: null,
       }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
+      state.openFilters = [
+        'Sort',
+        'Status',
+        'Market',
+        'Type',
+        'Text Match',
+        'Text Non-Match',
+        'Length',
+        'Price Range',
+        'Offer',
+      ]
       state.sort = null
     },
   },

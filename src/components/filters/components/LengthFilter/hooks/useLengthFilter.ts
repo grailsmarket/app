@@ -54,14 +54,22 @@ export const useLengthFilter = () => {
   }
 
   useEffect(() => {
+    // Skip if debounce hasn't caught up with local state yet
+    if ((currMinVal?.toString() ?? '') !== debouncedMinVal) return
+    // Skip initial null state (waiting for URL sync, not user input)
+    if (currMinVal === null && debouncedMinVal === '') return
     setMinLength(Number(debouncedMinVal))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedMinVal])
+  }, [debouncedMinVal, currMinVal])
 
   useEffect(() => {
+    // Skip if debounce hasn't caught up with local state yet
+    if ((currMaxVal?.toString() ?? '') !== debouncedMaxVal) return
+    // Skip initial null state (waiting for URL sync, not user input)
+    if (currMaxVal === null && debouncedMaxVal === '') return
     setMaxLength(Number(debouncedMaxVal))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedMaxVal])
+  }, [debouncedMaxVal, currMaxVal])
 
   return {
     minVal,

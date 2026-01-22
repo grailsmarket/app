@@ -355,12 +355,8 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   useEffect(() => {
     if (!pendingUrlFilters.current || !actions) return
 
-    // Clear existing filters first (using the new tab's actions)
-    if (actions.clearFilters) {
-      dispatch(actions.clearFilters())
-    }
-
-    // Apply the pending filters
+    // Apply the pending filters directly - no need to clear first
+    // since URL filters will overwrite the relevant values
     applyFiltersFromUrl(pendingUrlFilters.current)
     pendingUrlFilters.current = null
 

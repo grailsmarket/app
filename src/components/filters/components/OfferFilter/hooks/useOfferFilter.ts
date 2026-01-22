@@ -58,15 +58,19 @@ export const useOfferFilter = () => {
   }
 
   useEffect(() => {
-    // Skip if debounce hasn't caught up with local state yet (e.g., initial render after URL sync)
+    // Skip if debounce hasn't caught up with local state yet
     if ((currMinVal ?? '') !== debouncedMinVal) return
+    // Skip initial null state (waiting for URL sync, not user input)
+    if (currMinVal === null && debouncedMinVal === '') return
     setMinOffer(Number(debouncedMinVal))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMinVal, currMinVal])
 
   useEffect(() => {
-    // Skip if debounce hasn't caught up with local state yet (e.g., initial render after URL sync)
+    // Skip if debounce hasn't caught up with local state yet
     if ((currMaxVal ?? '') !== debouncedMaxVal) return
+    // Skip initial null state (waiting for URL sync, not user input)
+    if (currMaxVal === null && debouncedMaxVal === '') return
     setMaxOffer(Number(debouncedMaxVal))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMaxVal, currMaxVal])

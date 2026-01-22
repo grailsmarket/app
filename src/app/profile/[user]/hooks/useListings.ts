@@ -47,7 +47,13 @@ export const useListings = (user: Address | undefined) => {
       const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        filters,
+        filters: {
+          ...filters,
+          market: {
+            ...filters.market,
+            Listed: 'yes',
+          },
+        },
         searchTerm: debouncedSearch,
         ownerAddress: user,
         isAuthenticated: authStatus === 'authenticated',

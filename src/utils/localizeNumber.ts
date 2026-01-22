@@ -1,5 +1,5 @@
 export const localizeNumber = (number: number) => {
-  if (typeof window === 'undefined') {
+  if (typeof navigator === 'undefined') {
     return number.toLocaleString('en-US')
   }
 

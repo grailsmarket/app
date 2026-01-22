@@ -5,6 +5,7 @@ import { persistor } from '@/state'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import FilterSelector from '../FilterSelector'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface CategoryFilterAllProps {
   allCategoryNames: string[]
@@ -43,7 +44,7 @@ const CategoryFilterAll: React.FC<CategoryFilterAllProps> = ({ allCategoryNames,
         <div className='flex cursor-pointer items-center justify-between'>
           <p className='text-light-100 text-lg leading-[18px] font-medium'>All</p>
           <div className='flex items-center gap-x-2'>
-            <p className='text-light-200 text-xs leading-[18px] font-medium'>{totalCount}</p>
+            <p className='text-light-200 text-xs leading-[18px] font-medium'>{localizeNumber(totalCount)}</p>
             <FilterSelector onClick={toggleAll} isActive={areAllSelected} />
           </div>
         </div>

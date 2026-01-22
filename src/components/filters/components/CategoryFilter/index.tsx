@@ -3,6 +3,7 @@ import { useCategoryFilter } from './hooks/useCategoryFilter'
 import { persistor } from '@/state'
 import FilterSelector from '../FilterSelector'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface CategoryFilterProps {
   category: string
@@ -19,7 +20,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ category, owner_count }
         <div className='flex cursor-pointer items-center justify-between'>
           <p className='text-light-100 text-lg leading-[18px] font-medium capitalize'>{categoryLabel}</p>
           <div className='flex items-center gap-x-2'>
-            <p className='text-light-200 text-xs leading-[18px] font-medium'>{owner_count}</p>
+            <p className='text-light-200 text-xs leading-[18px] font-medium'>{localizeNumber(owner_count)}</p>
             <FilterSelector onClick={() => toggleCategory()} isActive={isCategoryActive} />
           </div>
         </div>

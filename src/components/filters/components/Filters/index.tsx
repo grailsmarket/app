@@ -20,6 +20,7 @@ import { useMemo, useState } from 'react'
 import FilterSelector from '../FilterSelector'
 import { useAppDispatch } from '@/state/hooks'
 import CategoryFilterNone from '../CategoryFilterButtons/CategoryFilterNone'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -61,7 +62,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const showUserCategoryCounts =
     filterType === 'profile' &&
     (activeProfileTab === 'domains' || activeProfileTab === 'grace' || activeProfileTab === 'listings') &&
-    userCategoryCounts
+    !!userCategoryCounts
 
   // Use appropriate categories based on filter context
   const showCategoryTab =
@@ -121,7 +122,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
             isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
           )}
         >
-          <CategoryFilterNone />
+          <CategoryFilterNone showUserCategoryCounts={showUserCategoryCounts} />
           <CategoryFilterAll
             allCategoryNames={categories?.map((c) => c.name) || []}
             totalCount={
@@ -172,7 +173,7 @@ const CategoryExpandableTab: React.FC<CategoryExpandableTabProps> = ({ classific
       showHeader={true}
       CustomComponent={
         <div className='flex items-center gap-2'>
-          <p className='text-md font-medium'>{totalCount}</p>
+          <p className='text-md font-medium'>{localizeNumber(totalCount)}</p>
           <FilterSelector
             onClick={() =>
               areCategoriesSelected

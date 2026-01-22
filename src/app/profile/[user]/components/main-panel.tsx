@@ -25,8 +25,8 @@ import { clearReceivedOffersFilters, setReceivedOffersScrollTop } from '@/state/
 import { clearMyOffersFilters, setMyOffersScrollTop } from '@/state/reducers/filters/myOffersFilters'
 import { clearWatchlistFilters, setWatchlistFiltersScrollTop } from '@/state/reducers/filters/watchlistFilters'
 import {
-  clearFilters,
-  setFiltersScrollTop as setDomainsScrollTop,
+  clearFilters as clearListingsFilters,
+  setFiltersScrollTop as setListingsScrollTop,
 } from '@/state/reducers/filters/profileListingsFilter'
 import {
   clearFilters as clearGraceFilters,
@@ -36,6 +36,10 @@ import {
   clearFilters as clearExpiredFilters,
   setFiltersScrollTop as setExpiredScrollTop,
 } from '@/state/reducers/filters/profileExpiredFilters'
+import {
+  clearFilters as clearDomainsFilters,
+  setFiltersScrollTop as setDomainsScrollTop,
+} from '@/state/reducers/filters/profileDomainsFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
@@ -65,7 +69,8 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     if (lastVisitedProfile && lastVisitedProfile !== user) {
       dispatch(changeTab(PROFILE_TABS[0]))
       dispatch(setLastVisitedProfile(user))
-      dispatch(clearFilters())
+      dispatch(clearDomainsFilters())
+      dispatch(clearListingsFilters())
       dispatch(clearMyOffersFilters())
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
@@ -74,6 +79,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearExpiredFilters())
       // Reset all scroll positions
       dispatch(setDomainsScrollTop(0))
+      dispatch(setListingsScrollTop(0))
       dispatch(setActivityScrollTop(0))
       dispatch(setMyOffersScrollTop(0))
       dispatch(setReceivedOffersScrollTop(0))

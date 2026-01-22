@@ -28,7 +28,7 @@ const DisplayedCards: React.FC = () => {
         },
         // inAnyCategory: true,
         searchTerm: '',
-        excludeCategories: ['prepunk'],
+        excludeCategories: ['prepunks'],
         isAuthenticated: authStatus === 'authenticated',
       })
 

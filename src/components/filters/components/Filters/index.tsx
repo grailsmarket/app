@@ -2,7 +2,7 @@ import StatusFilter from '../StatusFilter'
 import MarketFilter from '../MarketFilter'
 import LengthFilter from '../LengthFilter'
 import CategoryFilter from '../CategoryFilter'
-import CategoryFilterAll from '../CategoryFilterAll'
+import CategoryFilterAll from '../CategoryFilterButtons/CategoryFilterAll'
 import PriceRangeFilter from '../PriceRangeFilter'
 import OfferFilter from '../OfferFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
@@ -19,6 +19,7 @@ import ExpandableTab from '@/components/ui/expandableTab'
 import { useMemo, useState } from 'react'
 import FilterSelector from '../FilterSelector'
 import { useAppDispatch } from '@/state/hooks'
+import CategoryFilterNone from '../CategoryFilterButtons/CategoryFilterNone'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -120,6 +121,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
             isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
           )}
         >
+          <CategoryFilterNone />
           <CategoryFilterAll
             allCategoryNames={categories?.map((c) => c.name) || []}
             totalCount={

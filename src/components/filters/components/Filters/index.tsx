@@ -4,6 +4,7 @@ import LengthFilter from '../LengthFilter'
 import CategoryFilter from '../CategoryFilter'
 import CategoryFilterAll from '../CategoryFilterAll'
 import PriceRangeFilter from '../PriceRangeFilter'
+import OfferFilter from '../OfferFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -66,7 +67,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     filterType === 'marketplace' ||
     filterType === 'categoriesPage' ||
     activeProfileTab === 'domains' ||
-    activeProfileTab === 'watchlist' // Only show category tab for marketplace, categoriesPage, and portfolio domains tab
+    activeProfileTab === 'watchlist' ||
+    activeProfileTab === 'listings' ||
+    activeProfileTab === 'grace' ||
+    activeProfileTab === 'expired'
 
   // Hide status filter for category/marketplace/categoriesPage Premium and Available tabs, and profile Grace tab (status is locked for these tabs)
   const showStatusFilter = !(
@@ -76,6 +80,17 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       (activeCategoriesPageTab === 'premium' || activeCategoriesPageTab === 'available')) ||
     (filterType === 'profile' && activeProfileTab === 'grace')
   )
+
+  // Show offer filter for marketplace/categoriesPage/category "Names" tabs and profile domains/grace/watchlist/listings tabs
+  const showOfferFilter =
+    (filterType === 'marketplace' && activeMarketplaceTab === 'names') ||
+    (filterType === 'categoriesPage' && activeCategoriesPageTab === 'names') ||
+    (filterType === 'category' && activeCategoryTab === 'names') ||
+    (filterType === 'profile' &&
+      (activeProfileTab === 'domains' ||
+        activeProfileTab === 'grace' ||
+        activeProfileTab === 'watchlist' ||
+        activeProfileTab === 'listings'))
 
   return (
     <div className='flex min-h-0 flex-1 overflow-x-hidden'>
@@ -94,6 +109,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           <TextNonMatchFilter />
           <LengthFilter />
           <PriceRangeFilter />
+          {showOfferFilter && <OfferFilter />}
           <TypeFilter />
         </div>
       </div>

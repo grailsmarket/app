@@ -62,6 +62,16 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
           .mul(BigNumber.from(10).pow(12))
           .toString()
       : filters.priceRange.min || null,
+    'filters[maxOffer]': filters.offerRange?.max
+      ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
+          .mul(BigNumber.from(10).pow(12))
+          .toString()
+      : filters.offerRange?.max || null,
+    'filters[minOffer]': filters.offerRange?.min
+      ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
+          .mul(BigNumber.from(10).pow(12))
+          .toString()
+      : filters.offerRange?.min || null,
     'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
     'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
     'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,

@@ -19,9 +19,11 @@ const DisplayedCards: React.FC = () => {
         filters: {
           ...emptyFilterState,
           status: ['Listed'],
+          categories: ['any'],
         },
-        inAnyCategory: true,
+        // inAnyCategory: true,
         searchTerm: '',
+        excludeCategories: ['prepunk'],
         isAuthenticated: authStatus === 'authenticated',
       })
 

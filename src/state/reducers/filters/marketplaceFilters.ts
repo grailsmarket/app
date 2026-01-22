@@ -42,6 +42,11 @@ export type MarketplacePriceType = {
   max: number | null
 }
 
+export type MarketplaceOfferType = {
+  min: number | null
+  max: number | null
+}
+
 export type PriceDenominationType = (typeof PRICE_DENOMINATIONS)[number]
 
 export type MarketplaceCategoryType = string
@@ -60,6 +65,7 @@ export type MarketplaceFiltersState = {
   length: MarketplaceLengthType
   denomination: PriceDenominationType
   priceRange: MarketplacePriceType
+  offerRange: MarketplaceOfferType
   categories: string[]
   sort: SortFilterType | null
 }
@@ -86,6 +92,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -109,8 +119,12 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
   sort: null,
   scrollTop: 0,
 }
@@ -176,6 +190,9 @@ export const marketplaceFiltersSlice = createSlice({
     setMarketplacePriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
       state.priceRange = payload
     },
+    setMarketplaceOfferRange(state, { payload }: PayloadAction<MarketplaceOfferType>) {
+      state.offerRange = payload
+    },
     toggleMarketplaceCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -231,8 +248,12 @@ export const marketplaceFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.offerRange = {
+        min: null,
+        max: null,
+      }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
       state.sort = null
     },
   },
@@ -252,6 +273,7 @@ export const {
   setMarketplaceFiltersLength,
   setMarketplacePriceDenomination,
   setMarketplacePriceRange,
+  setMarketplaceOfferRange,
   toggleMarketplaceCategory,
   setMarketplaceFiltersCategory,
   addMarketplaceCategories,

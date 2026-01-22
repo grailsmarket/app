@@ -202,6 +202,11 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         dispatch(actions.setPriceRange(urlFilters.priceRange))
       }
 
+      // Apply offer range
+      if (urlFilters.offerRange !== undefined && actions.setOfferRange) {
+        dispatch(actions.setOfferRange(urlFilters.offerRange))
+      }
+
       // Apply denomination
       if (urlFilters.denomination !== undefined && actions.setPriceDenomination) {
         dispatch(actions.setPriceDenomination(urlFilters.denomination))

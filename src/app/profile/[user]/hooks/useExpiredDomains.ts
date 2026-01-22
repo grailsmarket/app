@@ -3,7 +3,7 @@ import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Address } from 'viem'
-import { selectProfileExpiredFilters, ExpiredFiltersOpenedState } from '@/state/reducers/filters/profileExpiredFilters'
+import { selectProfileExpiredFilters } from '@/state/reducers/filters/profileExpiredFilters'
 import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { MarketplaceDomainType } from '@/types/domains'
@@ -34,6 +34,8 @@ export const useExpiredDomains = (user: Address | undefined) => {
       filters.market,
       filters.textMatch,
       filters.textNonMatch,
+      // @ts-expect-error the offer range filter state will not be used for domains
+      filters.offerRange,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

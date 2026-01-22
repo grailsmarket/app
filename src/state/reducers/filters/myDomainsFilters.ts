@@ -40,6 +40,10 @@ export const emptyFilterState: PortfolioFiltersState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -63,8 +67,12 @@ export const initialState: PortfolioFiltersOpenedState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -184,8 +192,12 @@ export const myDomainsFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.offerRange = {
+        min: null,
+        max: null,
+      }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
       state.sort = null
     },
   },

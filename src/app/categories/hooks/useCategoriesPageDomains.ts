@@ -40,6 +40,7 @@ export const useCategoriesPageDomains = () => {
       (filters as any).market,
       (filters as any).textMatch,
       (filters as any).textNonMatch,
+      (filters as any).offerRange,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

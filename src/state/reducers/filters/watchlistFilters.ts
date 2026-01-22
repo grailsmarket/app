@@ -8,6 +8,7 @@ import {
   MarketplaceLengthType,
   MarketplaceOpenableFilterType,
   MarketplacePriceType,
+  MarketplaceOfferType,
   MarketplaceStatusFilterType,
   PriceDenominationType,
   SortFilterType,
@@ -41,6 +42,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -64,8 +69,12 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
   sort: null,
   scrollTop: 0,
 }
@@ -128,6 +137,9 @@ export const watchlistFiltersSlice = createSlice({
     },
     setWatchlistPriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
       state.priceRange = payload
+    },
+    setWatchlistOfferRange(state, { payload }: PayloadAction<MarketplaceOfferType>) {
+      state.offerRange = payload
     },
     toggleWatchlistCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
@@ -196,8 +208,12 @@ export const watchlistFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.offerRange = {
+        min: null,
+        max: null,
+      }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
       state.sort = null
     },
   },
@@ -217,6 +233,7 @@ export const {
   setWatchlistFiltersLength,
   setWatchlistPriceDenomination,
   setWatchlistPriceRange,
+  setWatchlistOfferRange,
   toggleWatchlistCategory,
   toggleWatchlistSubcategory,
   setWatchlistFiltersCategory,

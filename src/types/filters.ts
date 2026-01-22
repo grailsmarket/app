@@ -47,6 +47,11 @@ export type PriceType = {
   max: number | null
 }
 
+export type OfferType = {
+  min: number | null
+  max: number | null
+}
+
 export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage'
 
 export interface FilterRouterSelectors<T extends FilterContextType> {
@@ -71,6 +76,7 @@ export interface FilterRouterActions {
   setFiltersLength: (payload: LengthType) => PayloadAction<any>
   setPriceDenomination: (payload: any) => PayloadAction<any>
   setPriceRange: (payload: PriceType) => PayloadAction<any>
+  setOfferRange: (payload: OfferType) => PayloadAction<any>
   toggleCategory: (payload: any) => PayloadAction<any>
   setFiltersCategory: (payload: any) => PayloadAction<any>
   setSort: (payload: any) => PayloadAction<any>
@@ -116,6 +122,7 @@ export type PortfolioFiltersState = {
   length: LengthType
   denomination: PriceDenominationType
   priceRange: PriceType
+  offerRange: OfferType
   categories: string[]
   sort: SortFilterType | null
 }

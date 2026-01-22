@@ -19,6 +19,7 @@ import {
   MarketplaceOpenableFilterType,
   MarketplaceLengthType,
   MarketplacePriceType,
+  MarketplaceOfferType,
   PriceDenominationType,
   SortFilterType,
   MarketplaceStatusFilterType,
@@ -37,6 +38,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
   },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
+    min: null,
+    max: null,
+  },
+  offerRange: {
     min: null,
     max: null,
   },
@@ -62,8 +67,12 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
   sort: null,
   scrollTop: 0,
 }
@@ -122,6 +131,9 @@ export const categoriesNamesFiltersSlice = createSlice({
     setPriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
       state.priceRange = payload
     },
+    setOfferRange(state, { payload }: PayloadAction<MarketplaceOfferType>) {
+      state.offerRange = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -168,8 +180,9 @@ export const categoriesNamesFiltersSlice = createSlice({
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
+      state.offerRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
       state.sort = null
     },
   },
@@ -190,6 +203,7 @@ export const {
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,
+  setOfferRange,
   toggleCategory,
   setFiltersCategory,
   addCategories,

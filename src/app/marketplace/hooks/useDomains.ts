@@ -35,6 +35,8 @@ export const useDomains = () => {
       filters.textMatch,
       // @ts-expect-error the text non-match filter state will not be used for domains
       filters.textNonMatch,
+      // @ts-expect-error the offer range filter state will not be used for domains
+      filters.offerRange,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

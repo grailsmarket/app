@@ -40,6 +40,10 @@ export const emptyFilterState: PortfolioFiltersState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -60,6 +64,10 @@ export const initialState: PortfolioFiltersOpenedState = {
   },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
+    min: null,
+    max: null,
+  },
+  offerRange: {
     min: null,
     max: null,
   },
@@ -176,6 +184,10 @@ export const receivedOffersFiltersSlice = createSlice({
       }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = {
+        min: null,
+        max: null,
+      }
+      state.offerRange = {
         min: null,
         max: null,
       }

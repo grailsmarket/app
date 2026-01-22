@@ -6,6 +6,7 @@ export const MARKETPLACE_OPENABLE_FILTERS = [
   'Text Non-Match',
   'Length',
   'Price Range',
+  'Offer',
   'Activity',
   'Sort',
 ] as const

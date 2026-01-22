@@ -33,6 +33,7 @@ export const useGraceDomains = (user: Address | undefined) => {
       filters.market,
       filters.textMatch,
       filters.textNonMatch,
+      filters.offerRange,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

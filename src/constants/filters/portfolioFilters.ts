@@ -7,6 +7,7 @@ export const MY_DOMAINS_OPENABLE_FILTERS = [
   'Text Non-Match',
   'Length',
   'Price Range',
+  'Offer',
 ] as const
 
 // Re-export from marketplace for consistency

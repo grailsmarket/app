@@ -55,6 +55,9 @@ export const URL_PARAMS = {
   notContains: 'not_contains',
   notStartsWith: 'not_starts_with',
   notEndsWith: 'not_ends_with',
+  // Offer range filters
+  offerMin: 'offer_min',
+  offerMax: 'offer_max',
   // Activity type filters
   activityType: 'activity_type',
   // Categories page filters
@@ -84,6 +87,7 @@ export interface BaseFilterState {
   length: { min: number | null; max: number | null }
   denomination: string
   priceRange: { min: number | null; max: number | null }
+  offerRange: { min: number | null; max: number | null }
   categories: string[]
   sort: string | null
 }
@@ -96,6 +100,7 @@ export interface ParsedUrlFilters {
   sort?: string
   length?: { min: number | null; max: number | null }
   priceRange?: { min: number | null; max: number | null }
+  offerRange?: { min: number | null; max: number | null }
   denomination?: string
   categories?: string[]
   type?: Partial<TypeFiltersState>
@@ -120,6 +125,7 @@ const DEFAULT_EMPTY_FILTER_STATE: BaseFilterState = {
   length: { min: null, max: null },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: { min: null, max: null },
+  offerRange: { min: null, max: null },
   categories: [],
   sort: null,
 }
@@ -193,6 +199,14 @@ export function serializeFiltersToUrl(
   }
   if (filters.priceRange.max !== null && filters.priceRange.max !== emptyFilterState.priceRange.max) {
     params.set(URL_PARAMS.priceMax, String(filters.priceRange.max))
+  }
+
+  // Offer Range
+  if (filters.offerRange?.min !== null && filters.offerRange?.min !== emptyFilterState.offerRange?.min) {
+    params.set(URL_PARAMS.offerMin, String(filters.offerRange.min))
+  }
+  if (filters.offerRange?.max !== null && filters.offerRange?.max !== emptyFilterState.offerRange?.max) {
+    params.set(URL_PARAMS.offerMax, String(filters.offerRange.max))
   }
 
   // Denomination (only if not default)
@@ -404,6 +418,16 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     result.priceRange = {
       min: priceMin ? Number(priceMin) : null,
       max: priceMax ? Number(priceMax) : null,
+    }
+  }
+
+  // Offer Range
+  const offerMin = searchParams.get(URL_PARAMS.offerMin)
+  const offerMax = searchParams.get(URL_PARAMS.offerMax)
+  if (offerMin !== null || offerMax !== null) {
+    result.offerRange = {
+      min: offerMin ? Number(offerMin) : null,
+      max: offerMax ? Number(offerMax) : null,
     }
   }
 

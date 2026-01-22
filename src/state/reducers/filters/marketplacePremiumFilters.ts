@@ -39,6 +39,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: 'expiry_date_asc',
 }
@@ -58,6 +62,10 @@ export const initialState: MarketplaceFiltersOpenedState = {
   },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
+    min: null,
+    max: null,
+  },
+  offerRange: {
     min: null,
     max: null,
   },
@@ -157,6 +165,7 @@ export const marketplacePremiumFiltersSlice = createSlice({
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
+      state.offerRange = { min: null, max: null }
       state.categories = []
       state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
       state.sort = 'expiry_date_asc'

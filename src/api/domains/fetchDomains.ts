@@ -21,6 +21,7 @@ interface FetchDomainsOptions {
   enableBulkSearch?: boolean
   isAuthenticated?: boolean
   inAnyCategory?: boolean
+  excludeCategories?: string[]
   signal?: AbortSignal
 }
 
@@ -34,6 +35,7 @@ export const fetchDomains = async ({
   enableBulkSearch = false,
   isAuthenticated = false,
   inAnyCategory = false,
+  excludeCategories = [],
   signal,
 }: FetchDomainsOptions) => {
   try {
@@ -122,6 +124,16 @@ export const fetchDomains = async ({
             .mul(BigNumber.from(10).pow(12))
             .toString()
         : filters.priceRange.min || null,
+      'filters[maxOffer]': filters.offerRange?.max
+        ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
+            .mul(BigNumber.from(10).pow(12))
+            .toString()
+        : filters.offerRange?.max || null,
+      'filters[minOffer]': filters.offerRange?.min
+        ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
+            .mul(BigNumber.from(10).pow(12))
+            .toString()
+        : filters.offerRange?.min || null,
       'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
       'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
       'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,
@@ -143,6 +155,7 @@ export const fetchDomains = async ({
       sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
       'filters[inAnyClub]': inAnyCategory ? 'true' : undefined,
+      'filters[excludeClubs][]': excludeCategories.length > 0 ? excludeCategories.join(',') : undefined,
     })
 
     const fetchFunction = isAuthenticated ? fetch : authFetch
@@ -174,6 +187,8 @@ export const fetchDomains = async ({
       filters.length.max ||
       filters.priceRange.min ||
       filters.priceRange.max ||
+      filters.offerRange?.min ||
+      filters.offerRange?.max ||
       filters.type.Letters === 'exclude' ||
       filters.type.Digits === 'exclude' ||
       filters.type.Emojis === 'exclude' ||

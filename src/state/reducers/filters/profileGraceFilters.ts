@@ -20,6 +20,7 @@ import {
   PriceDenominationType,
   PriceType,
   LengthType,
+  OfferType,
   PortfolioFiltersState,
   TypeFiltersState,
 } from '@/types/filters'
@@ -37,6 +38,10 @@ export const emptyFilterState: PortfolioFiltersState = {
   },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
+    min: null,
+    max: null,
+  },
+  offerRange: {
     min: null,
     max: null,
   },
@@ -62,8 +67,12 @@ export const initialState: PortfolioFiltersOpenedState = {
     min: null,
     max: null,
   },
+  offerRange: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
+  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -122,6 +131,9 @@ export const profileGraceFiltersSlice = createSlice({
     setPriceRange(state, { payload }: PayloadAction<PriceType>) {
       state.priceRange = payload
     },
+    setOfferRange(state, { payload }: PayloadAction<OfferType>) {
+      state.offerRange = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -168,8 +180,9 @@ export const profileGraceFiltersSlice = createSlice({
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
+      state.offerRange = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
+      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
       state.sort = 'expiry_date_asc'
     },
   },
@@ -190,6 +203,7 @@ export const {
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,
+  setOfferRange,
   toggleCategory,
   setFiltersCategory,
   addCategories,

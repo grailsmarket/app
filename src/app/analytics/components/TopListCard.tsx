@@ -35,7 +35,7 @@ const EmptyState = ({ title }: { title: string }) => (
 
 const TopListCard: React.FC<TopListCardProps> = ({ title, isLoading, type, data }) => {
   return (
-    <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r xl:border-b-0'>
+    <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
       <div className='px-4 py-3'>
         <h3 className='text-xl font-bold'>{title}</h3>
       </div>

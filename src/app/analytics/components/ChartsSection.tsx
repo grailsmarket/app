@@ -23,13 +23,7 @@ const ChartsSection: React.FC = () => {
             isLoading={listingsLoading}
           />
           <AnalyticsChart title='Offers' data={offersData?.data?.points} source={source} isLoading={offersLoading} />
-          <AnalyticsChart
-            title='Sales'
-            data={salesData?.data?.points}
-            source={source}
-            isLoading={salesLoading}
-            isLast
-          />
+          <AnalyticsChart title='Sales' data={salesData?.data?.points} source={source} isLoading={salesLoading} />
         </div>
       </div>
     </section>

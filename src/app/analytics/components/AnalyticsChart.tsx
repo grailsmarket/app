@@ -10,7 +10,6 @@ interface AnalyticsChartProps {
   data?: ChartDataPoint[]
   source: AnalyticsSource
   isLoading: boolean
-  isLast?: boolean
 }
 
 const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, isLoading }) => {
@@ -140,7 +139,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
     focus
       .append('line')
       .attr('class', 'x-hover-line')
-      .attr('stroke', '#444444')
+      .attr('stroke', 'white')
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', '3,3')
 
@@ -177,21 +176,29 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
           .attr('y1', 0)
           .attr('y2', height - yScale(d.value))
 
+        // Shift tooltip left when near right edge to prevent cutoff
+        const xPos = xScale(d.date)
+        const isNearRightEdge = xPos > width - 60
+        const isNearLeftEdge = xPos < 60
+        const translateX = isNearRightEdge ? '-100%' : isNearLeftEdge ? '0%' : '-50%'
+
         tooltip
           .html(
-            `<div class="text-sm font-semibold">${d.value.toLocaleString()}</div>
-             <div class="text-xs text-neutral">${d3.timeFormat('%b %d, %Y')(d.date)}</div>`
+            `<div class="text-lg font-semibold">${d.value.toLocaleString()}</div>
+             <div class="text-md text-neutral font-medium">${d3.timeFormat('%b %d, %Y')(d.date)}</div>`
           )
-          .style('left', `${xScale(d.date) + margin.left}px`)
-          .style('top', `${yScale(d.value) + margin.top - 40}px`)
+          .style('left', `${xPos + margin.left}px`)
+          .style('top', `${yScale(d.value) + margin.top - 48}px`)
+          .style('transform', `translateX(${translateX})`)
+          .style('box-shadow', '0 4px 4px rgba(0,0,0,0.2)')
       })
   }, [chartData, dimensions])
 
   if (isLoading) {
     return (
-      <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r xl:border-b-0'>
-        <div className='px-4 py-3'>
-          <h3 className='text-lg font-bold'>{title}</h3>
+      <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
+        <div className='px-4 pt-3'>
+          <h3 className='text-xl font-bold'>{title}</h3>
         </div>
         <div className='flex h-[200px] items-center justify-center p-4'>
           <LoadingCell width='100%' height='160px' />
@@ -202,9 +209,9 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
 
   if (!data || data.length === 0) {
     return (
-      <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r xl:border-b-0'>
-        <div className='px-4 py-3'>
-          <h3 className='text-lg font-bold'>{title}</h3>
+      <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
+        <div className='px-4 pt-3'>
+          <h3 className='text-xl font-bold'>{title}</h3>
         </div>
         <div className='flex h-auto w-full items-center justify-center'>
           <p className='text-neutral'>No data available</p>
@@ -214,14 +221,14 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
   }
 
   return (
-    <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r xl:border-b-0'>
-      <div className='px-4 py-3'>
-        <h3 className='text-lg font-bold'>{title}</h3>
+    <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
+      <div className='px-4 pt-3'>
+        <h3 className='text-xl font-bold'>{title}</h3>
       </div>
       <div ref={containerRef} className='relative px-0 py-3'>
         <div
           ref={tooltipRef}
-          className='bg-background border-tertiary pointer-events-none absolute z-10 translate-x-[-50%] rounded border px-2 py-1 whitespace-nowrap opacity-0 transition-opacity'
+          className='bg-background border-tertiary pointer-events-none absolute z-10 rounded border px-2 py-1 whitespace-nowrap opacity-0 transition-opacity'
         />
         <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
       </div>

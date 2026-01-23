@@ -120,7 +120,7 @@ const DownloadButton = ({ ownerAddress, category }: DownloadButtonProps) => {
   }
 
   return (
-    <Tooltip label='Download reults CSV'
+    <Tooltip label='Download results CSV'
       padding={0}
     >
       <button

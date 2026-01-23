@@ -69,7 +69,9 @@ const CategoryFilterNone: React.FC<CategoryFilterNoneProps> = ({ showUserCategor
           <p className='text-light-100 text-lg leading-[18px] font-medium'>None</p>
           <div className='flex items-center gap-x-2'>
             {showUserCategoryCounts && (
-              <p className='text-light-200 text-xs leading-[18px] font-medium'>{localizeNumber(totalNamesCount || 0)}</p>
+              <p className='text-light-200 text-xs leading-[18px] font-medium'>
+                {localizeNumber(totalNamesCount || 0)}
+              </p>
             )}
             <FilterSelector onClick={toggleNone} isActive={isNoneSelected} />
           </div>

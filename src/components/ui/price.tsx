@@ -16,6 +16,7 @@ interface PriceProps {
   fontSize?: string
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
   alignTooltip?: 'left' | 'center' | 'right'
+  showFullPrice?: boolean
 }
 
 const Price: React.FC<PriceProps> = ({

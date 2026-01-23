@@ -14,6 +14,7 @@ import categoriesPageReducer from './categoriesPage'
 import transactionReducer from './transactions'
 import registrationReducer from './registration'
 import viewReducer from './view'
+import analyticsReducer from './analytics'
 
 const PERSISTED_KEYS: string[] = ['registration', 'view']
 
@@ -37,6 +38,7 @@ const reducer = combineReducers({
   scroll: scrollPosition,
   registration: registrationReducer,
   view: viewReducer,
+  analytics: analyticsReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, reducer)

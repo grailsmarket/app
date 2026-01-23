@@ -6,6 +6,8 @@ import { AnalyticsListing, AnalyticsOffer, AnalyticsSale, ChartDataPoint } from 
 import { ListingRow, OfferRow, SaleRow } from './AnalyticsRow'
 import { useAppSelector } from '@/state/hooks'
 import { selectAnalytics } from '@/state/reducers/analytics'
+import Price from '@/components/ui/price'
+import { ETH_ADDRESS } from '@/constants/web3/tokens'
 
 interface TopListCardProps {
   title: string
@@ -14,6 +16,8 @@ interface TopListCardProps {
   data?: AnalyticsListing[] | AnalyticsOffer[] | AnalyticsSale[]
   chartData?: ChartDataPoint[]
   chartLoading?: boolean
+  volumeData?: ChartDataPoint[]
+  volumeLoading?: boolean
 }
 
 const LoadingSkeleton = () => (
@@ -37,7 +41,15 @@ const EmptyState = ({ title }: { title: string }) => (
   </div>
 )
 
-const TopListCard: React.FC<TopListCardProps> = ({ title, isLoading, type, data, chartData, chartLoading }) => {
+const TopListCard: React.FC<TopListCardProps> = ({
+  title,
+  isLoading,
+  type,
+  data,
+  chartData,
+  chartLoading,
+  volumeData,
+}) => {
   const { source } = useAppSelector(selectAnalytics)
   const totalListings = useMemo(
     () =>
@@ -48,17 +60,43 @@ const TopListCard: React.FC<TopListCardProps> = ({ title, isLoading, type, data,
     [chartData, source]
   )
 
+  const totalVolume = useMemo(
+    () =>
+      volumeData?.reduce(
+        (acc, curr) =>
+          acc +
+          (source === 'all' ? BigInt(curr.total) : source === 'grails' ? BigInt(curr.grails) : BigInt(curr.opensea)),
+        BigInt(0)
+      ),
+    [volumeData, source]
+  )
+
   return (
-    <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
+    <div className='border-tertiary flex flex-col border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
       <div className='flex items-center justify-between px-4 py-3'>
         <h3 className='text-xl font-bold'>{title}</h3>
         <div className='text-md text-neutral font-medium'>
           {chartLoading ? (
             <LoadingCell width='24px' height='24px' radius='4px' />
           ) : (
-            <p>
-              {totalListings?.toLocaleString()} {type.toLowerCase()}
-            </p>
+            <div className='flex items-center'>
+              <p>
+                {totalListings?.toLocaleString()} {type.toLowerCase()}
+              </p>
+              {totalVolume ? (
+                <>
+                  <p className='mr-1'>,</p>
+                  <Price
+                    price={Number(totalVolume)}
+                    currencyAddress={ETH_ADDRESS}
+                    iconSize='16px'
+                    fontSize='text-md font-medium'
+                    showFullPrice
+                  />
+                  <p className='ml-1'>vol</p>
+                </>
+              ) : null}
+            </div>
           )}
         </div>
       </div>

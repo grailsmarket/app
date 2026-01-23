@@ -9,6 +9,7 @@ import {
   useTopListings,
   useTopOffers,
   useTopSales,
+  useVolumeChart,
 } from '../hooks/useAnalyticsData'
 
 const TopListsSection: React.FC = () => {
@@ -18,10 +19,11 @@ const TopListsSection: React.FC = () => {
   const { data: saleChartData, isLoading: saleChartLoading } = useSalesChart()
   const { data: offerChartData, isLoading: offerChartLoading } = useOffersChart()
   const { data: listingChartData, isLoading: listingChartLoading } = useListingsChart()
+  const { data: volumeChartData, isLoading: volumeChartLoading } = useVolumeChart()
 
   return (
     <section>
-      <div className='border-tertiary overflow-hidden border-b-2'>
+      <div className='border-tertiary border-b-2'>
         <div className='grid grid-cols-1 xl:grid-cols-3'>
           <TopListCard
             title='Top Sales'
@@ -30,6 +32,8 @@ const TopListsSection: React.FC = () => {
             data={salesData?.data?.results}
             chartData={saleChartData?.data?.points}
             chartLoading={saleChartLoading}
+            volumeData={volumeChartData?.data?.points}
+            volumeLoading={volumeChartLoading}
           />
           <TopListCard
             title='Top Offers'

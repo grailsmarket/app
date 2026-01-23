@@ -8,6 +8,7 @@ import {
   fetchListingsChart,
   fetchOffersChart,
   fetchSalesChart,
+  fetchVolumeChart,
 } from '@/api/analytics'
 
 export const useTopListings = () => {
@@ -66,6 +67,16 @@ export const useSalesChart = () => {
   return useQuery({
     queryKey: ['analytics', 'salesChart', period],
     queryFn: () => fetchSalesChart({ period }),
+    refetchOnWindowFocus: false,
+  })
+}
+
+export const useVolumeChart = () => {
+  const { period } = useAppSelector(selectAnalytics)
+
+  return useQuery({
+    queryKey: ['analytics', 'volumeChart', period],
+    queryFn: () => fetchVolumeChart({ period }),
     refetchOnWindowFocus: false,
   })
 }

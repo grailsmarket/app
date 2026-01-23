@@ -11,6 +11,7 @@ import User from '@/components/ui/user'
 import NameImage from '@/components/ui/nameImage'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
+import EthGray from 'public/icons/eth-gray.svg'
 import { AnalyticsListing, AnalyticsOffer, AnalyticsSale } from '@/types/analytics'
 
 interface SourceIconProps {
@@ -18,7 +19,7 @@ interface SourceIconProps {
 }
 
 const SourceIcon: React.FC<SourceIconProps> = ({ source }) => {
-  const icon = source === 'opensea' ? OpenSea : source === 'grails' ? Grails : null
+  const icon = source === 'opensea' ? OpenSea : source === 'grails' ? Grails : EthGray
 
   if (!icon) return <div className='h-6 w-6' />
 

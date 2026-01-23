@@ -114,3 +114,13 @@ export const fetchSalesChart = async ({ period }: FetchChartParams): Promise<Cha
 
   return response.json()
 }
+
+export const fetchVolumeChart = async ({ period }: FetchChartParams): Promise<ChartResponse> => {
+  const response = await fetch(`${API_BASE_URL}/charts/volume?period=${period === '24h' ? '1d' : period}`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch volume chart data')
+  }
+
+  return response.json()
+}

@@ -197,7 +197,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
   if (isLoading) {
     return (
       <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
-        <div className='px-4 pt-3'>
+        <div className='bg-secondary px-2 py-3 sm:px-4 xl:bg-transparent xl:pb-0'>
           <h3 className='text-xl font-bold'>{title}</h3>
         </div>
         <div className='flex h-[200px] items-center justify-center p-4'>
@@ -210,7 +210,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
   if (!data || data.length === 0) {
     return (
       <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
-        <div className='px-4 pt-3'>
+        <div className='bg-secondary px-2 py-3 sm:px-4 xl:bg-transparent xl:pb-0'>
           <h3 className='text-xl font-bold'>{title}</h3>
         </div>
         <div className='flex h-auto w-full items-center justify-center'>
@@ -222,7 +222,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
 
   return (
     <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
-      <div className='px-4 pt-3'>
+      <div className='bg-secondary px-2 py-3 sm:px-4 xl:bg-transparent xl:pb-0'>
         <h3 className='text-xl font-bold'>{title}</h3>
       </div>
       <div ref={containerRef} className='relative px-0 py-3'>

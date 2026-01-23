@@ -73,7 +73,7 @@ const TopListCard: React.FC<TopListCardProps> = ({
 
   return (
     <div className='border-tertiary flex flex-col border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
-      <div className='flex items-center justify-between px-4 py-3'>
+      <div className='bg-secondary flex items-center justify-between px-2 py-3 sm:px-4 xl:bg-transparent'>
         <h3 className='text-xl font-bold'>{title}</h3>
         <div className='text-md text-neutral font-medium'>
           {chartLoading ? (
@@ -100,7 +100,7 @@ const TopListCard: React.FC<TopListCardProps> = ({
           )}
         </div>
       </div>
-      <div className='min-h-[200px]'>
+      <div className=''>
         {isLoading ? (
           <LoadingSkeleton />
         ) : !data || data.length === 0 ? (

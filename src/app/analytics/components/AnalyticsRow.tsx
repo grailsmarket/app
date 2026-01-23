@@ -13,6 +13,7 @@ import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
 import EthGray from 'public/icons/eth-gray.svg'
 import { AnalyticsListing, AnalyticsOffer, AnalyticsSale } from '@/types/analytics'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 interface SourceIconProps {
   source: string
@@ -40,14 +41,29 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
     <Link
       href={`/${normalizeName(listing.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-3 transition',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
         index === 0 && 'border-t'
       )}
     >
       <div className='flex w-[45%] max-w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={listing.source} />
         <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(listing.name)}</p>
+        <div>
+          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(listing.name)}</p>
+          {listing.clubs && listing.clubs.length > 0 && (
+            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+              <Image
+                src={getCategoryDetails(listing.clubs[0]).avatar}
+                alt={listing.clubs[0]}
+                width={16}
+                height={16}
+                className='rounded-full'
+              />
+              <p>{getCategoryDetails(listing.clubs[0]).name}</p>
+              <p className='ml-0.5'>{listing.clubs.length > 1 && `+${listing.clubs.length - 1}`}</p>
+            </div>
+          )}
+        </div>
       </div>
       <div className='flex w-[20%] max-w-[20%] flex-1 items-center'>
         <Price
@@ -74,14 +90,29 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
     <Link
       href={`/${normalizeName(offer.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-3 transition',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
         index === 0 && 'border-t'
       )}
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={offer.source} />
         <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(offer.name)}</p>
+        <div>
+          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(offer.name)}</p>
+          {offer.clubs && offer.clubs.length > 0 && (
+            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+              <Image
+                src={getCategoryDetails(offer.clubs[0]).avatar}
+                alt={offer.clubs[0]}
+                width={16}
+                height={16}
+                className='rounded-full'
+              />
+              <p>{getCategoryDetails(offer.clubs[0]).name}</p>
+              <p className='ml-0.5'>{offer.clubs.length > 1 && `+${offer.clubs.length - 1}`}</p>
+            </div>
+          )}
+        </div>{' '}
       </div>
       <div className='flex w-[20%] flex-1 items-center'>
         <Price
@@ -108,14 +139,29 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index }) => {
     <Link
       href={`/${normalizeName(sale.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-1 border-b px-3 transition',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-1 border-b px-2 transition sm:px-3',
         index === 0 && 'border-t'
       )}
     >
       <div className='flex w-[40%] flex-row items-center gap-2'>
         <SourceIcon source={sale.source} />
         <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(sale.name)}</p>
+        <div>
+          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(sale.name)}</p>
+          {sale.clubs && sale.clubs.length > 0 && (
+            <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
+              <Image
+                src={getCategoryDetails(sale.clubs[0]).avatar}
+                alt={sale.clubs[0]}
+                width={16}
+                height={16}
+                className='rounded-full'
+              />
+              <p>{getCategoryDetails(sale.clubs[0]).name}</p>
+              <p className='ml-0.5'>{sale.clubs.length > 1 && `+${sale.clubs.length - 1}`}</p>
+            </div>
+          )}
+        </div>
       </div>
       <div className='flex w-[20%] max-w-[20%] flex-1 items-center'>
         <Price

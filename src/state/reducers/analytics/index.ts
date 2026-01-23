@@ -5,11 +5,13 @@ import { AnalyticsPeriod, AnalyticsSource } from '@/types/analytics'
 interface AnalyticsState {
   period: AnalyticsPeriod
   source: AnalyticsSource
+  category: string | null
 }
 
 const initialState: AnalyticsState = {
   period: '7d',
   source: 'all',
+  category: null,
 }
 
 const analyticsSlice = createSlice({
@@ -22,10 +24,13 @@ const analyticsSlice = createSlice({
     setSource: (state, action: PayloadAction<AnalyticsSource>) => {
       state.source = action.payload
     },
+    setCategory: (state, action: PayloadAction<string | null>) => {
+      state.category = action.payload
+    },
   },
 })
 
-export const { setPeriod, setSource } = analyticsSlice.actions
+export const { setPeriod, setSource, setCategory } = analyticsSlice.actions
 
 export const selectAnalytics = (state: RootState) => state.analytics
 

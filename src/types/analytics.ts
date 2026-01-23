@@ -45,6 +45,7 @@ export interface AnalyticsListing {
   seller_address: string
   source: string
   created_at: string
+  clubs: string[] | null
 }
 
 export interface AnalyticsOffer {
@@ -55,6 +56,7 @@ export interface AnalyticsOffer {
   buyer_address: string
   source: string
   created_at: string
+  clubs: string[] | null
 }
 
 export interface AnalyticsSale {
@@ -66,6 +68,7 @@ export interface AnalyticsSale {
   buyer_address: string
   source: string
   sale_date: string
+  clubs: string[] | null
 }
 
 export interface ChartDataPoint {

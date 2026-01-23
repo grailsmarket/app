@@ -31,11 +31,11 @@ const Pages = ({ className, onClick }: PagesProps) => {
 
   // Determine which link is active
   const getActiveIndex = () => {
-    if (pathname === '/') return 0
-    if (pathname === '/marketplace') return 1
-    if (pathname === '/categories') return 2
-    if (pathname === '/analytics') return 3
-    if (isPortfolioPage && userAddress) return 4
+    // if (pathname === '/') return 0
+    if (pathname === '/marketplace') return 0
+    if (pathname === '/categories') return 1
+    if (pathname === '/analytics') return 2
+    if (isPortfolioPage && userAddress) return 3
     return -1
   }
 
@@ -76,7 +76,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
         className='bg-primary absolute -bottom-0.5 hidden h-0.5 rounded-full transition-all duration-300 ease-out md:block'
         style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
       />
-      <Link
+      {/* <Link
         href='/'
         className={cn(
           'font-semibold transition-all',
@@ -85,7 +85,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
         onClick={onClick}
       >
         Home
-      </Link>
+      </Link> */}
       <Link
         href='/marketplace'
         className={cn(

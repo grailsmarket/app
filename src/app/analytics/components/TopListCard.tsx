@@ -1,15 +1,19 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import LoadingCell from '@/components/ui/loadingCell'
-import { AnalyticsListing, AnalyticsOffer, AnalyticsSale } from '@/types/analytics'
+import { AnalyticsListing, AnalyticsOffer, AnalyticsSale, ChartDataPoint } from '@/types/analytics'
 import { ListingRow, OfferRow, SaleRow } from './AnalyticsRow'
+import { useAppSelector } from '@/state/hooks'
+import { selectAnalytics } from '@/state/reducers/analytics'
 
 interface TopListCardProps {
   title: string
   isLoading: boolean
   type: 'listings' | 'offers' | 'sales'
   data?: AnalyticsListing[] | AnalyticsOffer[] | AnalyticsSale[]
+  chartData?: ChartDataPoint[]
+  chartLoading?: boolean
 }
 
 const LoadingSkeleton = () => (
@@ -33,11 +37,30 @@ const EmptyState = ({ title }: { title: string }) => (
   </div>
 )
 
-const TopListCard: React.FC<TopListCardProps> = ({ title, isLoading, type, data }) => {
+const TopListCard: React.FC<TopListCardProps> = ({ title, isLoading, type, data, chartData, chartLoading }) => {
+  const { source } = useAppSelector(selectAnalytics)
+  const totalListings = useMemo(
+    () =>
+      chartData?.reduce(
+        (acc, curr) => acc + (source === 'all' ? curr.total : source === 'grails' ? curr.grails : curr.opensea),
+        0
+      ),
+    [chartData, source]
+  )
+
   return (
     <div className='border-tertiary flex flex-col overflow-hidden border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
-      <div className='px-4 py-3'>
+      <div className='flex items-center justify-between px-4 py-3'>
         <h3 className='text-xl font-bold'>{title}</h3>
+        <div className='text-md text-neutral font-medium'>
+          {chartLoading ? (
+            <LoadingCell width='24px' height='24px' radius='4px' />
+          ) : (
+            <p>
+              {totalListings?.toLocaleString()} {type.toLowerCase()}
+            </p>
+          )}
+        </div>
       </div>
       <div className='min-h-[200px]'>
         {isLoading ? (

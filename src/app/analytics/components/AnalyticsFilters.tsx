@@ -24,7 +24,7 @@ const AnalyticsFilters: React.FC = () => {
 
   return (
     <div className='border-tertiary flex flex-col gap-2 border-b-2 px-4 py-2.5 sm:flex-row sm:items-center'>
-      <h1 className='text-2xl font-bold'>Analytics</h1>
+      <h1 className='mr-2 text-2xl font-bold'>Analytics</h1>
 
       {/* Period Dropdown */}
       <div ref={periodDropdownRef as React.RefObject<HTMLDivElement>} className='relative'>

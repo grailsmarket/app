@@ -16,14 +16,14 @@ const ChartsSection: React.FC = () => {
     <section>
       <div className='border-tertiary overflow-hidden border-b-2'>
         <div className='grid grid-cols-1 xl:grid-cols-3'>
+          <AnalyticsChart title='Sales' data={salesData?.data?.points} source={source} isLoading={salesLoading} />
+          <AnalyticsChart title='Offers' data={offersData?.data?.points} source={source} isLoading={offersLoading} />
           <AnalyticsChart
             title='Listings'
             data={listingsData?.data?.points}
             source={source}
             isLoading={listingsLoading}
           />
-          <AnalyticsChart title='Offers' data={offersData?.data?.points} source={source} isLoading={offersLoading} />
-          <AnalyticsChart title='Sales' data={salesData?.data?.points} source={source} isLoading={salesLoading} />
         </div>
       </div>
     </section>

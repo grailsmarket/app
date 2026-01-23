@@ -60,7 +60,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
 
     // Primary color from globals.css
     const primaryColor = '#ffdfc0'
-    const primaryColorAlpha = '#ffdfc04d' // 30% opacity
+    const primaryColorAlpha = '#ffdfc02f' // 30% opacity
 
     // Scales
     const xScale = d3
@@ -134,7 +134,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ title, data, source, is
 
     const focus = g.append('g').style('display', 'none')
 
-    focus.append('circle').attr('r', 5).attr('fill', primaryColor).attr('stroke', 'white').attr('stroke-width', 2)
+    focus.append('circle').attr('r', 6).attr('fill', primaryColor).attr('stroke-width', 2)
 
     focus
       .append('line')

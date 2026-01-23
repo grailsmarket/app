@@ -34,7 +34,7 @@ export type DomainAnalyticsAggregationType = {
 }
 
 // Analytics page types
-export type AnalyticsPeriod = '1d' | '7d' | '30d' | '1y' | 'all'
+export type AnalyticsPeriod = '24h' | '7d' | '30d' | '1y' | 'all'
 export type AnalyticsSource = 'all' | 'grails' | 'opensea'
 
 export interface AnalyticsListing {

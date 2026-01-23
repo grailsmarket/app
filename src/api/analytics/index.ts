@@ -86,7 +86,7 @@ interface FetchChartParams {
 }
 
 export const fetchListingsChart = async ({ period }: FetchChartParams): Promise<ChartResponse> => {
-  const response = await fetch(`${API_BASE_URL}/charts/listings?period=${period}`)
+  const response = await fetch(`${API_BASE_URL}/charts/listings?period=${period === '24h' ? '1d' : period}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch listings chart data')
@@ -96,7 +96,7 @@ export const fetchListingsChart = async ({ period }: FetchChartParams): Promise<
 }
 
 export const fetchOffersChart = async ({ period }: FetchChartParams): Promise<ChartResponse> => {
-  const response = await fetch(`${API_BASE_URL}/charts/offers?period=${period}`)
+  const response = await fetch(`${API_BASE_URL}/charts/offers?period=${period === '24h' ? '1d' : period}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch offers chart data')
@@ -106,7 +106,7 @@ export const fetchOffersChart = async ({ period }: FetchChartParams): Promise<Ch
 }
 
 export const fetchSalesChart = async ({ period }: FetchChartParams): Promise<ChartResponse> => {
-  const response = await fetch(`${API_BASE_URL}/charts/sales?period=${period}`)
+  const response = await fetch(`${API_BASE_URL}/charts/sales?period=${period === '24h' ? '1d' : period}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch sales chart data')

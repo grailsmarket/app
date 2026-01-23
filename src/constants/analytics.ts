@@ -3,11 +3,11 @@ import Grails from 'public/logo.png'
 import { DropdownOption } from '@/components/ui/dropdown'
 
 export const PERIOD_OPTIONS: DropdownOption[] = [
-  { value: '1d', label: '1 Day' },
+  { value: '24h', label: '1 Day' },
   { value: '7d', label: '7 Days' },
   { value: '30d', label: '30 Days' },
-  { value: '1y', label: '1 Year' },
-  { value: 'all', label: 'All Time' },
+  // { value: '1y', label: '1 Year' },
+  // { value: 'all', label: 'All Time' },
 ]
 
 export const SOURCE_OPTIONS: DropdownOption[] = [

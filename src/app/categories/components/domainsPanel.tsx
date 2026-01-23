@@ -17,6 +17,7 @@ import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 import { Cross } from 'ethereum-identity-kit'
+import DownloadButton from '@/components/ui/downloadButton'
 
 const CategoriesPageDomainsPanel = () => {
   const router = useRouter()
@@ -154,6 +155,7 @@ const CategoriesPageDomainsPanel = () => {
           <div className='block sm:hidden'>
             <SortDropdown />
           </div>
+          <DownloadButton />
           <ViewSelector />
         </div>
       </div>

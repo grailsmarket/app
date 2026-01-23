@@ -25,6 +25,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
+import DownloadButton from '@/components/ui/downloadButton'
 
 interface Props {
   user: Address | undefined
@@ -128,6 +129,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
           <div className='block sm:hidden'>
             <SortDropdown />
           </div>
+          <DownloadButton ownerAddress={user} />
           <ViewSelector />
         </div>
       </div>

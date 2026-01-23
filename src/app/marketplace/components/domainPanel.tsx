@@ -14,6 +14,7 @@ import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { Cross } from 'ethereum-identity-kit'
+import DownloadButton from '@/components/ui/downloadButton'
 
 const DomainPanel = () => {
   const dispatch = useAppDispatch()
@@ -110,6 +111,7 @@ const DomainPanel = () => {
           <div className='block sm:hidden'>
             <SortDropdown />
           </div>
+          <DownloadButton />
           <ViewSelector />
         </div>
       </div>

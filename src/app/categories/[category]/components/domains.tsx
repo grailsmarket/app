@@ -20,6 +20,7 @@ import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFil
 import BulkSelect from '@/components/ui/bulkSelect'
 import { selectCategory } from '@/state/reducers/category/category'
 import { Cross } from 'ethereum-identity-kit'
+import DownloadButton from '@/components/ui/downloadButton'
 
 interface Props {
   category: string
@@ -85,6 +86,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
           <div className='block sm:hidden'>
             <SortDropdown />
           </div>
+          <DownloadButton category={category} />
           <ViewSelector />
         </div>
       </div>

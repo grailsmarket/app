@@ -25,6 +25,13 @@ interface FetchDomainsOptions {
   signal?: AbortSignal
 }
 
+export const API_STATUS_FILTER_OPTIONS = {
+  Registered: 'registered',
+  Grace: 'grace',
+  Available: 'available',
+  Premium: 'premium',
+}
+
 export const fetchDomains = async ({
   limit = DEFAULT_FETCH_LIMIT,
   pageParam,
@@ -77,13 +84,6 @@ export const fetchDomains = async ({
         nextPageParam: json.data.pagination.page + 1,
         hasNextPage: json.data.pagination.hasNext,
       }
-    }
-
-    const API_STATUS_FILTER_OPTIONS = {
-      Registered: 'registered',
-      Grace: 'grace',
-      Premium: 'premium',
-      Available: 'available',
     }
 
     const search = normalizeName(searchTerm.replace('.eth', '').toLowerCase().trim())

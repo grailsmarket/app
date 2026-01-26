@@ -10,6 +10,7 @@ import { useCategories } from '@/components/filters/hooks/useCategories'
 import Label from '@/components/ui/label'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { useHoldersCount } from '../hooks/useHolders'
 
 interface Props {
   category: string
@@ -23,12 +24,13 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   const { actions } = useFilterRouter()
   const { categories: allCategories } = useCategories()
   const categoryDetails = allCategories?.find((item) => item.name === category)
+  const { data: holdersCount } = useHoldersCount(category)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
   const setCategoryTab = (tab: CategoryTabType) => {
-    if (tab.value === 'analytics') {
+    if (tab.value === 'analytics' || tab.value === 'holders') {
       dispatch(actions.setFiltersOpen(false))
     }
 
@@ -75,9 +77,11 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
           return formatTotalTabItems(categoryDetails?.premium_count || 0)
         case 'available':
           return formatTotalTabItems(categoryDetails?.available_count || 0)
+        case 'holders':
+          return formatTotalTabItems(holdersCount || 0)
       }
     },
-    [categoryDetails]
+    [categoryDetails, holdersCount]
   )
 
   // During SSR and initial mount, render all tabs without active state

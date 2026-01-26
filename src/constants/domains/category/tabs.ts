@@ -12,6 +12,10 @@ export const CATEGORY_TABS = [
     value: 'available',
   },
   {
+    label: 'Holders',
+    value: 'holders',
+  },
+  {
     label: 'Activity',
     value: 'activity',
   },

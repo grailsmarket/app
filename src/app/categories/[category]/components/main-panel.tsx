@@ -5,6 +5,7 @@ import { FilterProvider } from '@/context/filters'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
 import ActivityPanel from './activity'
+import HoldersPanel from './holders'
 import TabSwitcher from './tabSwitcher'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
@@ -69,14 +70,18 @@ const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
   const getContentWidth = () => {
     if (!isClient || !windowWidth) return '100%'
     if (windowWidth < 1024) return '100%'
-    // Analytics tab should always be full width (no filter panel)
-    if (activeTab === 'analytics' || activeTab === 'activity') return '100%'
+    // These tabs should always be full width (no filter panel)
+    if (activeTab === 'analytics' || activeTab === 'activity' || activeTab === 'holders') return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 
   const renderContent = () => {
     if (activeTab === 'activity') {
       return <ActivityPanel category={category} />
+    }
+
+    if (activeTab === 'holders') {
+      return <HoldersPanel category={category} />
     }
 
     if (activeTab === 'analytics') {

@@ -27,7 +27,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains, totalExpiredDomains } =
     useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
-  const { totalBrokeredListings } = useBrokeredListings(user)
+  const { totalActiveBrokeredListings, totalBrokeredListings } = useBrokeredListings(user)
   const { isNavbarVisible } = useNavbar()
   const { actions } = useFilterRouter()
 
@@ -109,7 +109,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
         case 'sent_offers':
           return formatTotalTabItems(totalSentOffers)
         case 'broker':
-          return formatTotalTabItems(totalBrokeredListings)
+          return formatTotalTabItems(totalActiveBrokeredListings || 0)
         case 'activity':
           return 0
       }
@@ -122,7 +122,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       totalListings,
       totalGraceDomains,
       totalExpiredDomains,
-      totalBrokeredListings,
+      totalActiveBrokeredListings,
     ]
   )
 

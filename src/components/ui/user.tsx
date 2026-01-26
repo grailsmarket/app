@@ -25,7 +25,15 @@ interface UserProps {
   alignTooltip?: 'left' | 'right'
 }
 
-const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '60%', avatarSize = '18px', fontSize = '15px', alignTooltip = 'right' }) => {
+const User: React.FC<UserProps> = ({
+  address,
+  className,
+  wrapperClassName,
+  loadingCellWidth = '60%',
+  avatarSize = '18px',
+  fontSize = '15px',
+  alignTooltip = 'right',
+}) => {
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', address],

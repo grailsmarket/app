@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { Address } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
 
@@ -65,11 +65,22 @@ export const useBrokeredListings = (brokerAddress: Address | undefined, options:
     enabled: !!brokerAddress,
   })
 
+  const { data: totalBrokeredListings } = useQuery({
+    queryKey: ['totalBrokeredListings', brokerAddress, status],
+    queryFn: async () => {
+      const response = await fetch(`/api/brokered-listings/broker/${brokerAddress}?page=1&limit=1&status=active`)
+      const data: BrokeredListingsResponse = await response.json()
+      return data.data.pagination.total
+    },
+    enabled: !!brokerAddress,
+  })
+
   const domains = data?.pages?.flatMap((page) => page.domains) ?? []
   const total = data?.pages?.[0]?.total ?? 0
 
   return {
     brokeredListings: domains,
+    totalActiveBrokeredListings: totalBrokeredListings,
     totalBrokeredListings: total,
     brokeredListingsLoading: isLoading,
     fetchMoreBrokeredListings: fetchNextPage,

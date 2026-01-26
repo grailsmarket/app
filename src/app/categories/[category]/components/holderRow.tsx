@@ -66,7 +66,17 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category }) => {
             {profile?.ens?.name ? beautifyName(profile.ens.name) : truncateAddress(holder.address)}
           </p>
         )} */}
-        <div className='max-w-fit'><User address={holder.address} alignTooltip='left' wrapperClassName='justify-start max-w-fit' className='max-w-fit px-2 py-1.5' loadingCellWidth='180px' avatarSize='28px' fontSize='16px' /></div>
+        <div className='max-w-fit'>
+          <User
+            address={holder.address}
+            alignTooltip='left'
+            wrapperClassName='justify-start max-w-fit'
+            className='max-w-fit px-2 py-1.5'
+            loadingCellWidth='180px'
+            avatarSize='28px'
+            fontSize='16px'
+          />
+        </div>
       </div>
 
       <div className='flex w-[50%] items-center gap-1'>

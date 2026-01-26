@@ -47,6 +47,22 @@ const Footer = () => {
           </div>
         </section>
         <section className='flex'>
+          <div className='flex flex-col gap-4 text-lg sm:gap-6'>
+            <Link
+              href='/terms-of-service'
+              className='text-foreground font-semibold opacity-80 transition-all hover:opacity-100'
+            >
+              <span>Terms of Service</span>
+            </Link>
+            <Link
+              href='/privacy-policy'
+              className='text-foreground font-semibold opacity-80 transition-all hover:opacity-100'
+            >
+              <span>Privacy Policy</span>
+            </Link>
+          </div>
+        </section>
+        <section className='flex'>
           <div className='flex flex-col gap-4 sm:gap-6'>
             <Sources />
           </div>

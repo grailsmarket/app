@@ -198,7 +198,7 @@ const Domains: React.FC<DomainsProps> = ({
                     allDomains={domains}
                     displayedColumns={displayedColumns}
                     // @ts-expect-error - watchlist_id is not defined in the type
-                    watchlistId={showWatchlist ? item.watchlist_id : undefined}
+                    watchlistId={showWatchlist ? item.watchlist_record_id : undefined}
                     isBulkSelecting={isBulkSelecting}
                     showPreviousOwner={showPreviousOwner}
                   />

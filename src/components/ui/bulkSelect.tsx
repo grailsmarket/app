@@ -32,8 +32,10 @@ import { cn } from '@/utils/tailwind'
 import { useShiftKeyListener } from '@/hooks/useShiftKey'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { useQueryClient } from '@tanstack/react-query'
-import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import Label from './label'
+import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
+import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -93,7 +95,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       domain.expiry_date && new Date(domain.expiry_date).getTime() + 90 * DAY_IN_SECONDS * 1000 > new Date().getTime()
   )
   const namesList = userAddress
-    ? selectedDomains.filter((domain) => domain.owner?.toLowerCase() === userAddress.toLowerCase())
+    ? selectedDomains.filter(
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          getRegistrationStatus(domain.expiry_date) === REGISTERED
+      )
     : []
   const namesTransfer = userAddress
     ? selectedDomains.filter((domain) => domain.owner?.toLowerCase() === userAddress.toLowerCase())
@@ -151,7 +157,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }, [isSelecting, selectAllContext, handleCancelBulkSelect])
 
   const handleListAction = () => {
-    dispatch(setMakeListingModalDomains(namesList))
+    const namesToList = namesList.filter((domain) => getRegistrationStatus(domain.expiry_date) === REGISTERED)
+    dispatch(setMakeListingModalDomains(namesToList))
     dispatch(setMakeListingModalPreviousListings(previousListings))
     dispatch(setMakeListingModalOpen(true))
   }
@@ -164,6 +171,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const handleRemoveFromWatchlistAction = async () => {
     setIsRemovingFromWatchlist(true)
 
+    console.log('Selected watchlist IDs:', selectedWatchlistIds)
+
     const results = await Promise.all(
       selectedWatchlistIds.map(async (id) => {
         const result = await removeFromWatchlist(id)
@@ -173,6 +182,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         return result
       })
     )
+
+    console.log('Results:', results)
 
     if (results.some((result) => !result.success)) {
       console.error(
@@ -186,8 +197,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       dispatch(clearBulkSelect())
     }
 
-    queryClient.setQueryData(
-      [
+    queryClient.refetchQueries({
+      queryKey: ['marketplace', 'domains'],
+    })
+
+    queryClient.refetchQueries({
+      queryKey: [
         'profile',
         'watchlist',
         userAddress,
@@ -201,20 +216,21 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         watchlistFilters.textMatch,
         watchlistFilters.market,
       ],
-      (old: any) => {
-        const newData = old.pages.map((page: any) => {
-          return {
-            ...page,
-            domains: page.domains.filter((item: any) => !selectedWatchlistIds.includes(item.watchlist_id)),
-          }
-        })
+      // (old: any) => {
+      //   const newData = old.pages.map((page: any) => {
+      //     return {
+      //       ...page,
+      //       domains: page.domains.filter((item: any) => !selectedWatchlistIds.includes(item.watchlist_record_id)),
+      //       total: page.total - selectedWatchlistIds.length,
+      //     }
+      //   })
 
-        return {
-          ...old,
-          pages: newData,
-        }
-      }
-    )
+      //   return {
+      //     ...old,
+      //     pages: newData,
+      //   }
+      // }
+    })
 
     setIsRemovingFromWatchlist(false)
   }
@@ -321,8 +337,15 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
     >
       {isSelecting && selectAllError && (
-        <div className='shadow-bulk flex w-full flex-row items-center justify-between gap-2 rounded-md bg-yellow-900/90 p-2 text-yellow-100 sm:p-3'>
-          <p className='text-sm'>{selectAllError}</p>
+        <div
+          className='shadow-bulk bg-secondary text-grace flex flex-row items-center justify-between gap-2 rounded-md p-2 sm:p-3'
+          onAnimationEnd={() => {
+            setTimeout(() => {
+              handleDismissError()
+            }, 3000)
+          }}
+        >
+          <p className='text-md font-bold'>{selectAllError}</p>
           <button onClick={handleDismissError} className='text-yellow-100 hover:text-white'>
             <Cross className='h-3 w-3' />
           </button>

@@ -8,6 +8,8 @@ export const removeFromWatchlist = async (watchlistId: number) => {
     mode: 'cors',
   })
 
+  console.log('Remove from watchlist response:', response)
+
   const json = (await response.json()) as APIResponseType<null>
   return {
     success: json.success,

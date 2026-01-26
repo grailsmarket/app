@@ -44,3 +44,11 @@ export type PaginationType = {
   hasNext: boolean
   hasPrev: boolean
 }
+
+export type CreateListingsResultType = {
+  index: number
+  token_id: string
+  order_hash: string
+  status: 'failed' | 'success'
+  error?: { code: string; message: string }
+}

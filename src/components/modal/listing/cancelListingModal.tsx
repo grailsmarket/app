@@ -76,7 +76,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
               <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
                 <Check className='text-background h-6 w-6' />
               </div>
-              <div className='mb-2 w-4/5 text-center text-xl font-bold'>
+              <div className='mb-2 text-center text-xl font-bold'>
                 Listings for {listings.map((listing) => listing.name).join(', ')} on{' '}
                 <span className='capitalize'>{listings[0].source}</span> was cancelled successfully!
               </div>
@@ -95,7 +95,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
                 </div>
               )}
               {listings.map((listing, index) => (
-                <div key={listing.id} className={'flex flex-col gap-2 py-2'}>
+                <div key={listing.id} className='flex flex-col gap-2 border-t border-white/30 py-2'>
                   <div className='flex justify-between'>
                     <p className='font-sedan-sc text-label text-xl'>Name</p>
                     <p className='max-w-2/3 truncate text-xl font-bold'>{beautifyName(listing.name)}</p>

@@ -158,19 +158,34 @@ const Card: React.FC<CardProps> = ({
       // Add all domains in range to selection
       domainsInRange.forEach((d) => selectDomain(d))
 
+      if (watchlistId) {
+        domainsInRange.forEach(
+          (d) => d.watchlist_record_id && dispatch(addBulkSelectWatchlistId(d.watchlist_record_id))
+        )
+      }
+
       // Update anchor to current index
       dispatch(setAnchorIndex(index))
     } else if (isShiftClick && anchorIndex === null) {
       // Shift-click without anchor: select single item and set anchor
       selectDomain(domain)
+      if (watchlistId && domain.watchlist_record_id) {
+        dispatch(addBulkSelectWatchlistId(domain.watchlist_record_id))
+      }
       dispatch(setAnchorIndex(index))
     } else if (!isShiftClick && isSelected) {
       // Regular click on selected item: deselect and reset anchor
       deselectDomain(domain)
+      if (watchlistId && domain.watchlist_record_id) {
+        dispatch(removeBulkSelectWatchlistId(domain.watchlist_record_id))
+      }
       dispatch(setAnchorIndex(null))
     } else if (!isShiftClick && !isSelected) {
       // Regular click on unselected item: select and set as anchor
       selectDomain(domain)
+      if (watchlistId && domain.watchlist_record_id) {
+        dispatch(addBulkSelectWatchlistId(domain.watchlist_record_id))
+      }
       dispatch(setAnchorIndex(index))
     }
   }

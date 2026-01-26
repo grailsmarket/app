@@ -158,11 +158,11 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     }
 
     if (pendingWatchlistTokenIds?.includes(tokenId) || removeFromWatchlistMutation.isPending) {
-      if (watchlist.some((item) => item.name === name) || removeFromWatchlistMutation.isPending) {
-        return false
+      if (!watchlist.some((item) => item.name === name)) {
+        return true
       }
 
-      return true
+      return false
     }
 
     return watchlistItem?.watchlistEntry?.ensName === name || watchlist?.some((item) => item.name === name)

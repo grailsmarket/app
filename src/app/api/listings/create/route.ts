@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
+import { APIResponseType, CreateListingsResultType } from '@/types/api'
 
 const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
@@ -52,36 +53,39 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const CREATE_BATCH_SIZE = 500
+    const ordersToCreate = []
+    for (let i = 0; i < orders.length; i += CREATE_BATCH_SIZE) {
+      ordersToCreate.push(orders.slice(i, i + CREATE_BATCH_SIZE))
+    }
+
+    console.log('Orders to create:', ordersToCreate.length)
+
     try {
       const responses = await Promise.all(
-        orders.map(async (order: SeaportStoredOrder, index: number) => {
-          let currencyAddress = ZERO_ADDRESS // Default to native ETH
-          let decimals: number = TOKEN_DECIMALS.ETH
-          const currency = currencies?.[index]
-          const price = prices?.[index]
+        ordersToCreate.map(async (orders: SeaportStoredOrder[], index: number) => {
+          const formattedOrders = orders.map((order, orderIndex) => {
+            let currencyAddress = ZERO_ADDRESS // Default to native ETH
+            let decimals: number = TOKEN_DECIMALS.ETH
+            const currency = currencies?.[index * CREATE_BATCH_SIZE + orderIndex]
+            const price = prices?.[index * CREATE_BATCH_SIZE + orderIndex]
 
-          if (currency === 'USDC') {
-            currencyAddress = USDC_ADDRESS
-            decimals = TOKEN_DECIMALS.USDC
-          } else if (currency === 'ETH') {
-            currencyAddress = ZERO_ADDRESS
-            decimals = TOKEN_DECIMALS.ETH
-          }
+            if (currency === 'USDC') {
+              currencyAddress = USDC_ADDRESS
+              decimals = TOKEN_DECIMALS.USDC
+            } else if (currency === 'ETH') {
+              currencyAddress = ZERO_ADDRESS
+              decimals = TOKEN_DECIMALS.ETH
+            }
 
-          // Calculate price_wei with correct decimals
-          const priceInSmallestUnit = price
-            ? BigInt(Math.floor(parseFloat(price) * Math.pow(10, decimals))).toString()
-            : '0'
+            // Calculate price_wei with correct decimals
+            const priceInSmallestUnit = price
+              ? BigInt(Math.floor(parseFloat(price) * Math.pow(10, decimals))).toString()
+              : '0'
 
-          // Forward to backend API
-          const response = await fetch(`${API_URL}/orders`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+            return {
               type,
-              token_id: domains[index].token_id,
+              token_id: domains[index * CREATE_BATCH_SIZE + orderIndex].token_id,
               price_wei: priceInSmallestUnit,
               currency_address: currencyAddress.toLowerCase(),
               order_data: JSON.stringify(order),
@@ -91,6 +95,17 @@ export async function POST(request: NextRequest) {
               traits: body.traits,
               status: 'active',
               source: marketplace, // Track where the order is listed
+            }
+          })
+
+          // Forward to backend API
+          const response = await fetch(`${API_URL}/orders/bulk`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              listings: formattedOrders,
             }),
           })
 
@@ -99,7 +114,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: `Failed to save order: ${error}` }, { status: response.status })
           }
 
-          const result = await response.json()
+          const result = (await response.json()) as APIResponseType<{
+            results: CreateListingsResultType[]
+            summary: {
+              total: number
+              succeeded: number
+              failed: number
+              skipped: number
+            }
+          }>
+
           return result
         })
       )

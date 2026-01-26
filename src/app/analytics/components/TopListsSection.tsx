@@ -12,14 +12,19 @@ import {
   useVolumeChart,
 } from '../hooks/useAnalyticsData'
 
-const TopListsSection: React.FC = () => {
-  const { data: listingsData, isLoading: listingsLoading } = useTopListings()
-  const { data: offersData, isLoading: offersLoading } = useTopOffers()
-  const { data: salesData, isLoading: salesLoading } = useTopSales()
-  const { data: saleChartData, isLoading: saleChartLoading } = useSalesChart()
-  const { data: offerChartData, isLoading: offerChartLoading } = useOffersChart()
-  const { data: listingChartData, isLoading: listingChartLoading } = useListingsChart()
-  const { data: volumeChartData, isLoading: volumeChartLoading } = useVolumeChart()
+interface TopListsSectionProps {
+  category?: string
+}
+
+const TopListsSection: React.FC<TopListsSectionProps> = ({ category }) => {
+  const hookOptions = category ? { categoryOverride: category } : undefined
+  const { data: listingsData, isLoading: listingsLoading } = useTopListings(hookOptions)
+  const { data: offersData, isLoading: offersLoading } = useTopOffers(hookOptions)
+  const { data: salesData, isLoading: salesLoading } = useTopSales(hookOptions)
+  const { data: saleChartData, isLoading: saleChartLoading } = useSalesChart(hookOptions)
+  const { data: offerChartData, isLoading: offerChartLoading } = useOffersChart(hookOptions)
+  const { data: listingChartData, isLoading: listingChartLoading } = useListingsChart(hookOptions)
+  const { data: volumeChartData, isLoading: volumeChartLoading } = useVolumeChart(hookOptions)
 
   return (
     <section>

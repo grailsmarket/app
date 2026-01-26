@@ -15,6 +15,9 @@ import { clearFilters as clearCategoryDomainsFilters } from '@/state/reducers/fi
 import { clearFilters as clearCategoryPremiumFilters } from '@/state/reducers/filters/categoryPremiumFilters'
 import { clearFilters as clearCategoryAvailableFilters } from '@/state/reducers/filters/categoryAvailableFilters'
 import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
+import AnalyticsFilters from '@/app/analytics/components/AnalyticsFilters'
+import TopListsSection from '@/app/analytics/components/TopListsSection'
+import ChartsSection from '@/app/analytics/components/ChartsSection'
 
 interface Props {
   category: string
@@ -61,18 +64,29 @@ const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
   const { width: windowWidth } = useWindowSize()
   const { selectors, categoryTab } = useFilterRouter()
   const filtersOpen = selectors.filters.open
+  const activeTab = categoryTab?.value || 'names'
 
   const getContentWidth = () => {
     if (!isClient || !windowWidth) return '100%'
     if (windowWidth < 1024) return '100%'
+    // Analytics tab should always be full width (no filter panel)
+    if (activeTab === 'analytics' || activeTab === 'activity') return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 
   const renderContent = () => {
-    const activeTab = categoryTab?.value || 'names'
-
     if (activeTab === 'activity') {
       return <ActivityPanel category={category} />
+    }
+
+    if (activeTab === 'analytics') {
+      return (
+        <div className='w-full'>
+          <AnalyticsFilters hideTitle hideCategory />
+          <TopListsSection category={category} />
+          <ChartsSection category={category} />
+        </div>
+      )
     }
 
     // Names, Premium, and Available all use the DomainPanel

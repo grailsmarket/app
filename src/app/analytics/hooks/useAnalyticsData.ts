@@ -11,8 +11,13 @@ import {
   fetchVolumeChart,
 } from '@/api/analytics'
 
-export const useTopListings = () => {
-  const { period, source, category } = useAppSelector(selectAnalytics)
+interface UseAnalyticsOptions {
+  categoryOverride?: string | null
+}
+
+export const useTopListings = (options?: UseAnalyticsOptions) => {
+  const { period, source, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'topListings', period, source, category],
@@ -21,8 +26,9 @@ export const useTopListings = () => {
   })
 }
 
-export const useTopOffers = () => {
-  const { period, source, category } = useAppSelector(selectAnalytics)
+export const useTopOffers = (options?: UseAnalyticsOptions) => {
+  const { period, source, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'topOffers', period, source, category],
@@ -31,8 +37,9 @@ export const useTopOffers = () => {
   })
 }
 
-export const useTopSales = () => {
-  const { period, source, category } = useAppSelector(selectAnalytics)
+export const useTopSales = (options?: UseAnalyticsOptions) => {
+  const { period, source, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'topSales', period, source, category],
@@ -41,8 +48,9 @@ export const useTopSales = () => {
   })
 }
 
-export const useListingsChart = () => {
-  const { period, category } = useAppSelector(selectAnalytics)
+export const useListingsChart = (options?: UseAnalyticsOptions) => {
+  const { period, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'listingsChart', period, category],
@@ -51,8 +59,9 @@ export const useListingsChart = () => {
   })
 }
 
-export const useOffersChart = () => {
-  const { period, category } = useAppSelector(selectAnalytics)
+export const useOffersChart = (options?: UseAnalyticsOptions) => {
+  const { period, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'offersChart', period, category],
@@ -61,8 +70,9 @@ export const useOffersChart = () => {
   })
 }
 
-export const useSalesChart = () => {
-  const { period, category } = useAppSelector(selectAnalytics)
+export const useSalesChart = (options?: UseAnalyticsOptions) => {
+  const { period, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'salesChart', period, category],
@@ -71,8 +81,9 @@ export const useSalesChart = () => {
   })
 }
 
-export const useVolumeChart = () => {
-  const { period, category } = useAppSelector(selectAnalytics)
+export const useVolumeChart = (options?: UseAnalyticsOptions) => {
+  const { period, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
 
   return useQuery({
     queryKey: ['analytics', 'volumeChart', period, category],

@@ -9,6 +9,7 @@ import { useNavbar } from '@/context/navbar'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import Label from '@/components/ui/label'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 interface Props {
   category: string
@@ -19,6 +20,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   const { selectedTab } = useAppSelector(selectCategory)
   const dispatch = useAppDispatch()
   const { isNavbarVisible } = useNavbar()
+  const { actions } = useFilterRouter()
   const { categories: allCategories } = useCategories()
   const categoryDetails = allCategories?.find((item) => item.name === category)
 
@@ -26,6 +28,10 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
   const setCategoryTab = (tab: CategoryTabType) => {
+    if (tab.value === 'analytics') {
+      dispatch(actions.setFiltersOpen(false))
+    }
+
     dispatch(changeCategoryTab(tab))
   }
 
@@ -101,7 +107,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
                 )}
               >
                 <p>{tab.label}</p>
-                {tab.value !== 'activity' && (
+                {tab.value !== 'activity' && tab.value !== 'analytics' && (
                   <Label
                     label={getTotalItems(tab)}
                     className={cn(
@@ -143,7 +149,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
             )}
           >
             <p>{tab.label}</p>
-            {tab.value !== 'activity' && (
+            {tab.value !== 'activity' && tab.value !== 'analytics' && (
               <Label
                 label={getTotalItems(tab)}
                 className={cn(

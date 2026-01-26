@@ -12,7 +12,12 @@ import { AnalyticsPeriod, AnalyticsSource } from '@/types/analytics'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
-const AnalyticsFilters: React.FC = () => {
+interface AnalyticsFiltersProps {
+  hideTitle?: boolean
+  hideCategory?: boolean
+}
+
+const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, hideCategory = false }) => {
   const dispatch = useAppDispatch()
   const { categories } = useCategories()
   const { period, source, category: selectedCategory } = useAppSelector(selectAnalytics)
@@ -31,7 +36,7 @@ const AnalyticsFilters: React.FC = () => {
 
   return (
     <div className='border-tertiary flex flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2.5 sm:px-4'>
-      <h1 className='mr-2 text-2xl font-bold'>Analytics</h1>
+      {!hideTitle && <h1 className='mr-2 text-2xl font-bold'>Analytics</h1>}
 
       {/* Period Dropdown */}
       <div ref={periodDropdownRef as React.RefObject<HTMLDivElement>} className='relative'>
@@ -116,76 +121,78 @@ const AnalyticsFilters: React.FC = () => {
       </div>
 
       {/* Category Dropdown */}
-      <div ref={categoryDropdownRef as React.RefObject<HTMLDivElement>} className='relative'>
-        <button
-          type='button'
-          onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-          className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[200px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
-          )}
-        >
-          <div className='flex items-center gap-2'>
-            {selectedCategoryDetails?.avatar && (
-              <Image
-                src={selectedCategoryDetails.avatar}
-                alt={selectedCategoryDetails.name}
-                width={20}
-                height={20}
-                className='h-auto w-5 rounded-full'
-              />
+      {!hideCategory && (
+        <div ref={categoryDropdownRef as React.RefObject<HTMLDivElement>} className='relative'>
+          <button
+            type='button'
+            onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+            className={cn(
+              'border-tertiary hover:border-foreground/50 flex h-9 w-[200px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
             )}
-            <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
-              {selectedCategoryDetails?.name || 'All Categories'}
-            </p>
-          </div>
-          <ShortArrow className={cn('h-3 w-3 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')} />
-        </button>
-
-        {isCategoryOpen && (
-          <div className='bg-background border-tertiary absolute left-0 z-50 mt-1 max-h-[max(200px,50vh)] w-full overflow-scroll rounded-md border-2 shadow-lg'>
-            <button
-              key='all'
-              onClick={() => {
-                dispatch(setCategory(null))
-                setIsCategoryOpen(false)
-              }}
-              className={cn(
-                'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
-                selectedCategory === null && 'bg-secondary'
+          >
+            <div className='flex items-center gap-2'>
+              {selectedCategoryDetails?.avatar && (
+                <Image
+                  src={selectedCategoryDetails.avatar}
+                  alt={selectedCategoryDetails.name}
+                  width={20}
+                  height={20}
+                  className='h-auto w-5 rounded-full'
+                />
               )}
-            >
-              All Categories
-            </button>
-            {categories?.map((category) => {
-              const categoryDetails = getCategoryDetails(category.name)
-              return (
-                <button
-                  key={category.name}
-                  onClick={() => {
-                    dispatch(setCategory(category.name))
-                    setIsCategoryOpen(false)
-                  }}
-                  className={cn(
-                    'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
-                    selectedCategory === category.name && 'bg-secondary'
-                  )}
-                >
-                  {categoryDetails.avatar && (
-                    <Image
-                      src={categoryDetails.avatar}
-                      alt={categoryDetails.name}
-                      width={20}
-                      height={20}
-                      className='h-auto w-5 rounded-full'
-                    />
-                  )}
-                  {categoryDetails.name}
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
+              <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
+                {selectedCategoryDetails?.name || 'Pick a Category'}
+              </p>
+            </div>
+            <ShortArrow className={cn('h-3 w-3 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')} />
+          </button>
+
+          {isCategoryOpen && (
+            <div className='bg-background border-tertiary absolute left-0 z-50 mt-1 max-h-[max(200px,50vh)] w-full overflow-scroll rounded-md border-2 shadow-lg'>
+              <button
+                key='all'
+                onClick={() => {
+                  dispatch(setCategory(null))
+                  setIsCategoryOpen(false)
+                }}
+                className={cn(
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  selectedCategory === null && 'bg-secondary'
+                )}
+              >
+                All Categories
+              </button>
+              {categories?.map((category) => {
+                const categoryDetails = getCategoryDetails(category.name)
+                return (
+                  <button
+                    key={category.name}
+                    onClick={() => {
+                      dispatch(setCategory(category.name))
+                      setIsCategoryOpen(false)
+                    }}
+                    className={cn(
+                      'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                      selectedCategory === category.name && 'bg-secondary'
+                    )}
+                  >
+                    {categoryDetails.avatar && (
+                      <Image
+                        src={categoryDetails.avatar}
+                        alt={categoryDetails.name}
+                        width={20}
+                        height={20}
+                        className='h-auto w-5 rounded-full'
+                      />
+                    )}
+                    {categoryDetails.name}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

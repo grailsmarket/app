@@ -16,11 +16,11 @@ export const CATEGORY_TABS = [
     value: 'holders',
   },
   {
-    label: 'Activity',
-    value: 'activity',
-  },
-  {
     label: 'Analytics',
     value: 'analytics',
+  },
+  {
+    label: 'Activity',
+    value: 'activity',
   },
 ] as const

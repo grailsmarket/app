@@ -7,6 +7,10 @@ import { changeCategoriesPageTab, selectCategoriesPage } from '@/state/reducers/
 import { CATEGORIES_PAGE_TABS, CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
 import { useNavbar } from '@/context/navbar'
 import { useRouter } from 'next/navigation'
+import { useAllHoldersCount } from '../hooks/useAllHolders'
+import Label from '@/components/ui/label'
+import { formatTotalTabItems } from '@/utils/formatTabItems'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 const CategoriesPageTabSwitcher: React.FC = () => {
   const [mounted, setMounted] = useState(false)
@@ -15,6 +19,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
   const dispatch = useAppDispatch()
   const { isNavbarVisible } = useNavbar()
   const router = useRouter()
+  const { data: holdersCount } = useAllHoldersCount()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
@@ -60,7 +65,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
     updateIndicator()
     window.addEventListener('resize', updateIndicator)
     return () => window.removeEventListener('resize', updateIndicator)
-  }, [selectedTab, mounted])
+  }, [selectedTab, mounted, holdersCount])
 
   // During SSR and initial mount, render without active state
   if (!mounted) {
@@ -82,13 +87,22 @@ const CategoriesPageTabSwitcher: React.FC = () => {
                 key={tab.value}
                 onClick={() => setCategoriesPageTab(tab)}
                 className={cn(
-                  'py-md w-full cursor-pointer text-lg sm:text-xl',
+                  'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
                   selectedTab.value === tab.value
                     ? 'text-primary font-bold opacity-100'
                     : 'font-semibold opacity-50 transition-colors hover:opacity-80'
                 )}
               >
-                {tab.label}
+                <p>{tab.label}</p>
+                {tab.value === 'holders' && (
+                  <Label
+                    label={formatTotalTabItems(holdersCount || 0)}
+                    className={cn(
+                      'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                      selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                    )}
+                  />
+                )}
               </button>
             ))}
           </div>
@@ -122,6 +136,17 @@ const CategoriesPageTabSwitcher: React.FC = () => {
             )}
           >
             <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+            {tab.value === 'holders' && (
+              <Label
+                label={
+                  tab.value === 'holders' ? localizeNumber(holdersCount || 0) : formatTotalTabItems(holdersCount || 0)
+                }
+                className={cn(
+                  'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                  selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                )}
+              />
+            )}
           </button>
         ))}
       </div>

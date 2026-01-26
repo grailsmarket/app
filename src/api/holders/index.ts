@@ -48,3 +48,27 @@ export const fetchHolders = async ({
 
   return response.json()
 }
+
+interface FetchAllHoldersParams {
+  page?: number
+  limit?: number
+}
+
+export const fetchAllHolders = async ({
+  page = 1,
+  limit = 20,
+}: FetchAllHoldersParams = {}): Promise<HoldersResponse> => {
+  const params = new URLSearchParams({
+    sortOrder: 'desc',
+    page: String(page),
+    limit: String(limit),
+  })
+
+  const response = await fetch(`${API_BASE_URL}/clubs/holders?${params}`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch all holders')
+  }
+
+  return response.json()
+}

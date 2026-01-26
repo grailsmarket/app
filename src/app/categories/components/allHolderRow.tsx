@@ -7,10 +7,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Avatar, DEFAULT_FALLBACK_AVATAR, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { beautifyName } from '@/lib/ens'
 import { useAppDispatch } from '@/state/hooks'
+import { useCategories } from '@/components/filters/hooks/useCategories'
 import LoadingCell from '@/components/ui/loadingCell'
 import ExternalLinkIcon from 'public/icons/external-link.svg'
 import type { Holder } from '@/api/holders'
-import { setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
+import { addCategories, clearFilters as clearDomainsFilters } from '@/state/reducers/filters/profileDomainsFilters'
 import { clearActivityFilters } from '@/state/reducers/filters/profileActivityFilters'
 import { clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
 import { clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
@@ -18,18 +19,15 @@ import { clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters
 import { clearFilters as clearListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
 import { clearFilters as clearGraceFilters } from '@/state/reducers/filters/profileGraceFilters'
 import { clearFilters as clearExpiredFilters } from '@/state/reducers/filters/profileExpiredFilters'
-import {
-  clearFilters as clearDomainsFilters,
-  setFiltersCategory as setProfileDomainsFiltersCategory,
-} from '@/state/reducers/filters/profileDomainsFilters'
+import { setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
 
-interface HolderRowProps {
+interface AllHolderRowProps {
   holder: Holder
-  category: string
 }
 
-const HolderRow: React.FC<HolderRowProps> = ({ holder, category }) => {
+const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
   const dispatch = useAppDispatch()
+  const { categories } = useCategories()
 
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', holder.address],
@@ -40,16 +38,20 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category }) => {
   })
 
   const handleClick = () => {
-    dispatch(setLastVisitedProfile(null))
-    dispatch(clearDomainsFilters())
-    dispatch(clearListingsFilters())
-    dispatch(clearMyOffersFilters())
-    dispatch(clearReceivedOffersFilters())
-    dispatch(clearWatchlistFilters())
-    dispatch(clearActivityFilters())
-    dispatch(clearGraceFilters())
-    dispatch(clearExpiredFilters())
-    dispatch(setProfileDomainsFiltersCategory(category))
+    if (categories) {
+      dispatch(setLastVisitedProfile(null))
+      dispatch(clearDomainsFilters())
+      dispatch(clearListingsFilters())
+      dispatch(clearMyOffersFilters())
+      dispatch(clearReceivedOffersFilters())
+      dispatch(clearWatchlistFilters())
+      dispatch(clearActivityFilters())
+      dispatch(clearGraceFilters())
+      dispatch(clearExpiredFilters())
+
+      const allCategoryNames = categories.map((cat) => cat.name)
+      dispatch(addCategories(allCategoryNames))
+    }
   }
 
   return (
@@ -80,8 +82,8 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category }) => {
       </div>
 
       <div className='flex w-[50%] items-center gap-1'>
-        <span className='text-xl font-medium'>{holder.name_count}</span>
-        <span className='text-neutral text-xl'>names</span>
+        <p className='text-xl font-medium'>{holder.name_count}</p>
+        {/* <span className='text-neutral text-xl'>names</span> */}
       </div>
 
       <div className='flex w-[5%] justify-end opacity-50 transition-opacity group-hover:opacity-100'>
@@ -91,4 +93,4 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category }) => {
   )
 }
 
-export default HolderRow
+export default AllHolderRow

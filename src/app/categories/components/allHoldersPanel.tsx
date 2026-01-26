@@ -5,15 +5,11 @@ import { useWindowSize } from 'ethereum-identity-kit'
 import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
-import HolderRow from './holderRow'
-import { useHolders, flattenHolders } from '../hooks/useHolders'
+import AllHolderRow from './allHolderRow'
+import { useAllHolders, flattenAllHolders } from '../hooks/useAllHolders'
 import type { Holder } from '@/api/holders'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
-
-interface HoldersPanelProps {
-  category: string
-}
 
 const LoadingRow = () => (
   <div className='border-tertiary flex h-[60px] w-full items-center gap-3 border-b px-4'>
@@ -25,12 +21,12 @@ const LoadingRow = () => (
   </div>
 )
 
-const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
+const AllHoldersPanel: React.FC = () => {
   const { height } = useWindowSize()
   const { isNavbarVisible } = useNavbar()
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useHolders(category)
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useAllHolders()
 
-  const holders = useMemo(() => flattenHolders(data), [data])
+  const holders = useMemo(() => flattenAllHolders(data), [data])
   const noResults = !isLoading && holders.length === 0
 
   const handleScrollNearBottom = useCallback(() => {
@@ -60,7 +56,7 @@ const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
     <div className='w-full'>
       <div
         className={cn(
-          'py-md px-md lg:px-lg transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300',
+          'py-md px-md transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300 lg:px-4',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
@@ -82,7 +78,7 @@ const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
               if (!item) {
                 return <LoadingRow />
               }
-              return <HolderRow key={item.address} holder={item} category={category} />
+              return <AllHolderRow key={item.address} holder={item} />
             }}
           />
         ) : (
@@ -93,4 +89,4 @@ const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
   )
 }
 
-export default HoldersPanel
+export default AllHoldersPanel

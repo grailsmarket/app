@@ -20,9 +20,12 @@ interface UserProps {
   className?: string
   wrapperClassName?: string
   loadingCellWidth?: string
+  avatarSize?: string
+  fontSize?: string
+  alignTooltip?: 'left' | 'right'
 }
 
-const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '60%' }) => {
+const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadingCellWidth = '60%', avatarSize = '18px', fontSize = '15px', alignTooltip = 'right' }) => {
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', address],
@@ -43,7 +46,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadi
       showStatus={true}
       darkMode={true}
       horizontalOffset={12}
-      horizontalPlacement='right'
+      horizontalPlacement={alignTooltip || 'right'}
       verticalPlacement='auto'
       boundary='scrollParent'
       keepTooltipOnHover={true}
@@ -54,7 +57,7 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadi
         <Link
           href={`/profile/${address}`}
           className={cn(
-            'bg-tertiary relative flex h-[28px]! w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70 sm:h-10',
+            'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
             className
           )}
         >
@@ -73,10 +76,10 @@ const User: React.FC<UserProps> = ({ address, className, wrapperClassName, loadi
             name={profile?.ens?.name}
             src={profile?.ens?.avatar}
             fallback={DEFAULT_FALLBACK_AVATAR}
-            style={{ width: '18px', height: '18px', zIndex: 10 }}
+            style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
           />
           <div className='relative' style={{ maxWidth: 'calc(100% - 24px)' }}>
-            <p className='z-10 truncate text-[15px] font-semibold'>
+            <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
               {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
             </p>
           </div>

@@ -3,12 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useQuery } from '@tanstack/react-query'
-import { Avatar, DEFAULT_FALLBACK_AVATAR, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
-import { beautifyName } from '@/lib/ens'
 import { useAppDispatch } from '@/state/hooks'
 import { useCategories } from '@/components/filters/hooks/useCategories'
-import LoadingCell from '@/components/ui/loadingCell'
 import ExternalLinkIcon from 'public/icons/external-link.svg'
 import type { Holder } from '@/api/holders'
 import { addCategories, clearFilters as clearDomainsFilters } from '@/state/reducers/filters/profileDomainsFilters'
@@ -20,6 +16,7 @@ import { clearFilters as clearListingsFilters } from '@/state/reducers/filters/p
 import { clearFilters as clearGraceFilters } from '@/state/reducers/filters/profileGraceFilters'
 import { clearFilters as clearExpiredFilters } from '@/state/reducers/filters/profileExpiredFilters'
 import { setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
+import User from '@/components/ui/user'
 
 interface AllHolderRowProps {
   holder: Holder
@@ -28,14 +25,6 @@ interface AllHolderRowProps {
 const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
   const dispatch = useAppDispatch()
   const { categories } = useCategories()
-
-  const { data: profile, isLoading: profileIsLoading } = useQuery({
-    queryKey: ['profile', holder.address],
-    queryFn: async () => {
-      const profile = await fetchAccount(holder.address)
-      return profile
-    },
-  })
 
   const handleClick = () => {
     if (categories) {
@@ -61,7 +50,7 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
       className='group border-tertiary hover:bg-foreground/10 flex h-[60px] w-full flex-row items-center border-b px-4 transition'
     >
       <div className='flex w-[45%] flex-row items-center gap-3'>
-        {profileIsLoading ? (
+        {/* {profileIsLoading ? (
           <LoadingCell width='40px' height='40px' radius='50%' />
         ) : (
           <Avatar
@@ -78,7 +67,8 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
           <p className='truncate text-base font-semibold'>
             {profile?.ens?.name ? beautifyName(profile.ens.name) : truncateAddress(holder.address)}
           </p>
-        )}
+        )} */}
+        <div className='max-w-fit'><User address={holder.address} alignTooltip='left' wrapperClassName='justify-start max-w-fit' className='max-w-fit px-2 py-1.5' loadingCellWidth='180px' avatarSize='28px' fontSize='16px' /></div>
       </div>
 
       <div className='flex w-[50%] items-center gap-1'>

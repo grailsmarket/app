@@ -18,7 +18,11 @@ const RecentListings = () => {
         pageParam: 1,
         filters: {
           ...emptyFilterState,
-          status: ['Listed'],
+          market: {
+            ...emptyFilterState.market,
+            Listed: 'yes',
+          },
+          status: ['Registered'],
         },
         inAnyCategory: true,
         searchTerm: '',
@@ -32,15 +36,15 @@ const RecentListings = () => {
       <div className='border-tertiary flex flex-col gap-0 border-t'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
-                <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
-              </div>
-            ))
+            <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+              <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
+            </div>
+          ))
           : listings?.domains?.map((domain, index) => (
-              <div key={domain.token_id}>
-                <TableRow domain={domain} index={index} displayedColumns={['domain', 'price', 'actions']} />
-              </div>
-            ))}
+            <div key={domain.token_id}>
+              <TableRow domain={domain} index={index} displayedColumns={['domain', 'price', 'actions']} />
+            </div>
+          ))}
       </div>
     </div>
   )

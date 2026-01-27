@@ -64,9 +64,9 @@ const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
-        <p className='text-neutral text-md w-[45%] font-medium'>Users</p>
-        <p className='text-neutral text-md w-[50%] font-medium'>Names</p>
-        <p className='text-neutral text-md w-[5%] font-medium'></p>
+        <p className='text-neutral text-md w-[75%] font-medium sm:w-[55%] lg:w-[45%]'>Users</p>
+        <p className='text-neutral text-md w-[25%] font-medium sm:w-[35%] lg:w-[50%]'>Names</p>
+        <p className='text-neutral text-md w-[10%] font-medium lg:w-[5%]'></p>
       </div>
       <div className='w-full'>
         {!noResults ? (

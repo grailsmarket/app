@@ -56,13 +56,13 @@ const AllHoldersPanel: React.FC = () => {
     <div className='w-full'>
       <div
         className={cn(
-          'py-md px-md transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300 lg:px-4',
+          'py-md px-md lg:px-lg transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
-        <p className='text-neutral text-md w-[45%] font-medium'>Users</p>
-        <p className='text-neutral text-md w-[50%] font-medium'>Names</p>
-        <p className='text-neutral text-md w-[5%] font-medium'></p>
+        <p className='text-neutral text-md w-[75%] font-medium sm:w-[55%] lg:w-[45%]'>Users</p>
+        <p className='text-neutral text-md w-[25%] font-medium sm:w-[35%] lg:w-[50%]'>Names</p>
+        <p className='text-neutral text-md w-[10%] font-medium lg:w-[5%]'></p>
       </div>
       <div className='w-full'>
         {!noResults ? (

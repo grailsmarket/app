@@ -47,9 +47,9 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
     <Link
       href={`/profile/${holder.address}`}
       onClick={handleClick}
-      className='group border-tertiary hover:bg-foreground/10 flex h-[60px] w-full flex-row items-center border-b px-4 transition'
+      className='group border-tertiary hover:bg-foreground/10 px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
     >
-      <div className='flex w-[45%] flex-row items-center gap-3'>
+      <div className='flex w-[75%] flex-row items-center gap-3 sm:w-[55%] lg:w-[45%]'>
         {/* {profileIsLoading ? (
           <LoadingCell width='40px' height='40px' radius='50%' />
         ) : (
@@ -81,12 +81,12 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
         </div>
       </div>
 
-      <div className='flex w-[50%] items-center gap-1'>
+      <div className='flex w-[25%] items-center gap-1 sm:w-[35%] lg:w-[50%]'>
         <p className='text-xl font-medium'>{holder.name_count}</p>
         {/* <span className='text-neutral text-xl'>names</span> */}
       </div>
 
-      <div className='flex w-[5%] justify-end opacity-50 transition-opacity group-hover:opacity-100'>
+      <div className='flex w-[10%] justify-end opacity-50 transition-opacity group-hover:opacity-100 lg:w-[5%]'>
         <Image src={ExternalLinkIcon} alt='View profile' width={20} height={20} />
       </div>
     </Link>

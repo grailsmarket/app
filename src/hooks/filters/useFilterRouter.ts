@@ -296,7 +296,6 @@ import {
 
 // Import profile expired filters selectors and actions
 import {
-  emptyFilterState as emptyFilterStateProfileExpiredFilters,
   selectProfileExpiredFilters,
   setFiltersOpen as setProfileExpiredFiltersOpen,
   toggleFiltersType as toggleProfileExpiredFiltersType,

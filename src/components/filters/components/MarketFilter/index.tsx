@@ -38,6 +38,8 @@ const MarketFilter = () => {
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
         return MARKET_FILTER_LABELS
+      } else if (activeCategoryTab === 'listings') {
+        return LISTED_FILTER_LABELS
       } else if (activeCategoryTab === 'premium') {
         return GRACE_FILTER_LABELS
       } else if (activeCategoryTab === 'available') {
@@ -64,6 +66,8 @@ const MarketFilter = () => {
     if (filterType === 'marketplace') {
       if (activeMarketplaceTab === 'names') {
         return MARKET_FILTER_LABELS
+      } else if (activeMarketplaceTab === 'listings') {
+        return LISTED_FILTER_LABELS
       } else if (activeMarketplaceTab === 'premium') {
         return GRACE_FILTER_LABELS
       } else if (activeMarketplaceTab === 'available') {
@@ -74,6 +78,8 @@ const MarketFilter = () => {
     if (filterType === 'categoriesPage') {
       if (activeCategoriesPageTab === 'names') {
         return MARKET_FILTER_LABELS
+      } else if (activeCategoriesPageTab === 'listings') {
+        return LISTED_FILTER_LABELS
       } else if (activeCategoriesPageTab === 'premium') {
         return GRACE_FILTER_LABELS
       } else if (activeCategoriesPageTab === 'available') {
@@ -87,6 +93,8 @@ const MarketFilter = () => {
   const showMarketplaceDropdown = useMemo(() => {
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
+        return true
+      } else if (activeCategoryTab === 'listings') {
         return true
       } else if (activeCategoryTab === 'premium') {
         return false
@@ -123,6 +131,8 @@ const MarketFilter = () => {
     if (filterType === 'marketplace') {
       if (activeMarketplaceTab === 'names') {
         return true
+      } else if (activeMarketplaceTab === 'listings') {
+        return true
       } else if (activeMarketplaceTab === 'premium') {
         return false
       } else if (activeMarketplaceTab === 'available') {
@@ -134,6 +144,8 @@ const MarketFilter = () => {
 
     if (filterType === 'categoriesPage') {
       if (activeCategoriesPageTab === 'names') {
+        return true
+      } else if (activeCategoriesPageTab === 'listings') {
         return true
       } else if (activeCategoriesPageTab === 'premium') {
         return false

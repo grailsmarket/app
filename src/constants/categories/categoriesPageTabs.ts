@@ -8,6 +8,10 @@ export const CATEGORIES_PAGE_TABS = [
     value: 'names',
   },
   {
+    label: 'Listings',
+    value: 'listings',
+  },
+  {
     label: 'Premium',
     value: 'premium',
   },

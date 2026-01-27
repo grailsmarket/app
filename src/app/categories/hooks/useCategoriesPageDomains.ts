@@ -16,6 +16,7 @@ export const useCategoriesPageDomains = () => {
   // Only fetch domains for domain tabs (names, premium, available), not categories tab
   const isDomainTab =
     categoriesPageTab?.value === 'names' ||
+    categoriesPageTab?.value === 'listings' ||
     categoriesPageTab?.value === 'premium' ||
     categoriesPageTab?.value === 'available'
 

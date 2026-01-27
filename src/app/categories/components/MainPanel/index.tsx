@@ -27,7 +27,10 @@ const MainPanel: React.FC = () => {
 
   const showCategoriesPanel = selectedTab.value === 'categories'
   const showDomainsPanel =
-    selectedTab.value === 'names' || selectedTab.value === 'premium' || selectedTab.value === 'available'
+    selectedTab.value === 'names' ||
+    selectedTab.value === 'listings' ||
+    selectedTab.value === 'premium' ||
+    selectedTab.value === 'available'
   const showHoldersPanel = selectedTab.value === 'holders'
 
   // On mobile: always 100%, on desktop: adjust based on filter open state

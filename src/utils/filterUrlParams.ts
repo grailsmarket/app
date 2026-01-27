@@ -173,7 +173,7 @@ export function serializeFiltersToUrl(
 
   // Status (array) - skip if tab implies this status
   if (
-    filters.status.length > 0 &&
+    (filters.status?.length ?? 0) > 0 &&
     JSON.stringify(filters.status) !== JSON.stringify(emptyFilterState.status) &&
     !shouldSkipStatusForTab(tab, filters.status)
   ) {

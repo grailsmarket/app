@@ -19,7 +19,10 @@ const MainPanel: React.FC = () => {
   const { open: filtersOpen } = useAppSelector(selectMarketplaceFilters)
 
   const showDomainsPanel =
-    selectedTab.value === 'names' || selectedTab.value === 'premium' || selectedTab.value === 'available'
+    selectedTab.value === 'names' ||
+    selectedTab.value === 'listings' ||
+    selectedTab.value === 'premium' ||
+    selectedTab.value === 'available'
   const showActivityPanel = selectedTab.value === 'activity'
 
   // On mobile: always 100%, on desktop: adjust based on filter open state

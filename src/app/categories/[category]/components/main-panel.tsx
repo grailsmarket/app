@@ -13,6 +13,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeCategoryTab, selectCategory, setLastVisitedCategory } from '@/state/reducers/category/category'
 import { clearFilters as clearCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
+import { clearFilters as clearCategoryListingsFilters } from '@/state/reducers/filters/categoryListingsFilters'
 import { clearFilters as clearCategoryPremiumFilters } from '@/state/reducers/filters/categoryPremiumFilters'
 import { clearFilters as clearCategoryAvailableFilters } from '@/state/reducers/filters/categoryAvailableFilters'
 import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
@@ -31,6 +32,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
   useEffect(() => {
     if (lastVisitedCategory && lastVisitedCategory !== category) {
       dispatch(clearCategoryDomainsFilters())
+      dispatch(clearCategoryListingsFilters())
       dispatch(clearCategoryPremiumFilters())
       dispatch(clearCategoryAvailableFilters())
       dispatch(changeCategoryTab(CATEGORY_TABS[0]))
@@ -47,7 +49,7 @@ const MainPanel: React.FC<Props> = ({ category }) => {
           <div className='bg-background z-10 mx-auto flex min-h-[calc(100dvh-56px)] gap-0 md:min-h-[calc(100dvh-70px)]'>
             <FilterPanel />
             <CategoryContent category={category} />
-            <ActionButtons hideDomainActions={selectedTab.value !== 'names'} />
+            <ActionButtons hideDomainActions={selectedTab.value !== 'names' && selectedTab.value !== 'listings'} />
           </div>
         </div>
       </FilterProvider>
@@ -94,7 +96,7 @@ const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
       )
     }
 
-    // Names, Premium, and Available all use the DomainPanel
+    // Names, Listings, Premium, and Available all use the DomainPanel
     // The filter state is automatically handled by useFilterRouter based on the active tab
     return <DomainPanel category={category} />
   }

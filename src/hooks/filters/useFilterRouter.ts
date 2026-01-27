@@ -32,6 +32,33 @@ import {
   clearMarketplaceFilters,
 } from '@/state/reducers/filters/marketplaceFilters'
 
+// Import marketplace listings selectors and actions
+import {
+  emptyFilterState as emptyFilterStateMarketplaceListingsFilters,
+  selectMarketplaceListingsFilters,
+  setFiltersOpen as setMarketplaceListingsFiltersOpen,
+  toggleFiltersStatus as toggleMarketplaceListingsFiltersStatus,
+  setFiltersStatus as setMarketplaceListingsFiltersStatus,
+  toggleFiltersType as toggleMarketplaceListingsFiltersType,
+  setFiltersType as setMarketplaceListingsFiltersType,
+  setMarketFilters as setMarketplaceListingsMarketFilters,
+  setTextMatchFilters as setMarketplaceListingsTextMatchFilters,
+  setTextNonMatchFilters as setMarketplaceListingsTextNonMatchFilters,
+  setFiltersLength as setMarketplaceListingsFiltersLength,
+  setPriceDenomination as setMarketplaceListingsPriceDenomination,
+  setPriceRange as setMarketplaceListingsPriceRange,
+  setOfferRange as setMarketplaceListingsOfferRange,
+  toggleCategory as toggleMarketplaceListingsCategory,
+  setFiltersCategory as setMarketplaceListingsFiltersCategory,
+  addCategories as addMarketplaceListingsCategories,
+  removeCategories as removeMarketplaceListingsCategories,
+  setSort as setMarketplaceListingsSort,
+  setSearch as setMarketplaceListingsSearch,
+  setFiltersScrollTop as setMarketplaceListingsFiltersScrollTop,
+  toggleFilterOpen as toggleMarketplaceListingsFilterOpen,
+  clearFilters as clearMarketplaceListingsFilters,
+} from '@/state/reducers/filters/marketplaceListingsFilters'
+
 // Import marketplace activity filters selectors and actions
 import {
   emptyFilterState as emptyFilterStateMarketplaceActivityFilters,
@@ -318,6 +345,33 @@ import {
   clearFilters as clearCategoryDomainsFilters,
 } from '@/state/reducers/filters/categoryDomainsFilters'
 
+// Import categoryListings selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoryListingsFilters,
+  selectCategoryListingsFilters,
+  setFiltersOpen as setCategoryListingsFiltersOpen,
+  toggleFiltersStatus as toggleCategoryListingsFiltersStatus,
+  setFiltersStatus as setCategoryListingsFiltersStatus,
+  toggleFiltersType as toggleCategoryListingsFiltersType,
+  setFiltersType as setCategoryListingsFiltersType,
+  setMarketFilters as setCategoryListingsMarketFilters,
+  setTextMatchFilters as setCategoryListingsTextMatchFilters,
+  setTextNonMatchFilters as setCategoryListingsTextNonMatchFilters,
+  setFiltersLength as setCategoryListingsFiltersLength,
+  setPriceDenomination as setCategoryListingsPriceDenomination,
+  setPriceRange as setCategoryListingsPriceRange,
+  setOfferRange as setCategoryListingsOfferRange,
+  toggleCategory as toggleCategoryListingsCategory,
+  setFiltersCategory as setCategoryListingsFiltersCategory,
+  addCategories as addCategoryListingsCategories,
+  removeCategories as removeCategoryListingsCategories,
+  setSort as setCategoryListingsSort,
+  setSearch as setCategoryListingsSearch,
+  setFiltersScrollTop as setCategoryListingsFiltersScrollTop,
+  toggleFilterOpen as toggleCategoryListingsFilterOpen,
+  clearFilters as clearCategoryListingsFilters,
+} from '@/state/reducers/filters/categoryListingsFilters'
+
 // Import categoryPremium selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryPremiumFilters,
@@ -412,6 +466,33 @@ import {
   clearFilters as clearCategoriesNamesFilters,
 } from '@/state/reducers/filters/categoriesNamesFilters'
 
+// Import categoriesListingsFilters selectors and actions
+import {
+  emptyFilterState as emptyFilterStateCategoriesListingsFilters,
+  selectCategoriesListingsFilters,
+  setFiltersOpen as setCategoriesListingsFiltersOpen,
+  toggleFiltersStatus as toggleCategoriesListingsFiltersStatus,
+  setFiltersStatus as setCategoriesListingsFiltersStatus,
+  toggleFiltersType as toggleCategoriesListingsFiltersType,
+  setFiltersType as setCategoriesListingsFiltersType,
+  setMarketFilters as setCategoriesListingsMarketFilters,
+  setTextMatchFilters as setCategoriesListingsTextMatchFilters,
+  setTextNonMatchFilters as setCategoriesListingsTextNonMatchFilters,
+  setFiltersLength as setCategoriesListingsFiltersLength,
+  setPriceDenomination as setCategoriesListingsPriceDenomination,
+  setPriceRange as setCategoriesListingsPriceRange,
+  setOfferRange as setCategoriesListingsOfferRange,
+  toggleCategory as toggleCategoriesListingsCategory,
+  setFiltersCategory as setCategoriesListingsFiltersCategory,
+  addCategories as addCategoriesListingsCategories,
+  removeCategories as removeCategoriesListingsCategories,
+  setSort as setCategoriesListingsSort,
+  setSearch as setCategoriesListingsSearch,
+  setFiltersScrollTop as setCategoriesListingsFiltersScrollTop,
+  toggleFilterOpen as toggleCategoriesListingsFilterOpen,
+  clearFilters as clearCategoriesListingsFilters,
+} from '@/state/reducers/filters/categoriesListingsFilters'
+
 // Import categoriesPremiumDomainsFilters selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesPremiumDomainsFilters,
@@ -499,6 +580,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return selectCategoriesPageFilters(state)
       } else if (activeCategoriesPageTab === 'names') {
         return selectCategoriesNamesFilters(state)
+      } else if (activeCategoriesPageTab === 'listings') {
+        return selectCategoriesListingsFilters(state)
       } else if (activeCategoriesPageTab === 'premium') {
         return selectCategoriesPremiumDomainsFilters(state)
       } else if (activeCategoriesPageTab === 'available') {
@@ -510,6 +593,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
         return selectCategoryDomainsFilters(state)
+      } else if (activeCategoryTab === 'listings') {
+        return selectCategoryListingsFilters(state)
       } else if (activeCategoryTab === 'premium') {
         return selectCategoryPremiumFilters(state)
       } else if (activeCategoryTab === 'available') {
@@ -523,6 +608,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     if (filterType === 'marketplace') {
       if (activeMarketplaceTab === 'names') {
         return selectMarketplaceFilters(state)
+      } else if (activeMarketplaceTab === 'listings') {
+        return selectMarketplaceListingsFilters(state)
       } else if (activeMarketplaceTab === 'premium') {
         return selectMarketplacePremiumFilters(state)
       } else if (activeMarketplaceTab === 'available') {
@@ -596,6 +683,30 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setScrollTop: setCategoriesNamesFiltersScrollTop,
           toggleFilterOpen: toggleCategoriesNamesFilterOpen,
           clearFilters: clearCategoriesNamesFilters,
+        }
+      } else if (activeCategoriesPageTab === 'listings') {
+        return {
+          setFiltersOpen: setCategoriesListingsFiltersOpen,
+          toggleFiltersStatus: toggleCategoriesListingsFiltersStatus,
+          setFiltersStatus: setCategoriesListingsFiltersStatus,
+          toggleFiltersType: toggleCategoriesListingsFiltersType,
+          setFiltersType: setCategoriesListingsFiltersType,
+          setMarketFilters: setCategoriesListingsMarketFilters,
+          setTextMatchFilters: setCategoriesListingsTextMatchFilters,
+          setTextNonMatchFilters: setCategoriesListingsTextNonMatchFilters,
+          setFiltersLength: setCategoriesListingsFiltersLength,
+          setPriceDenomination: setCategoriesListingsPriceDenomination,
+          setPriceRange: setCategoriesListingsPriceRange,
+          setOfferRange: setCategoriesListingsOfferRange,
+          toggleCategory: toggleCategoriesListingsCategory,
+          setFiltersCategory: setCategoriesListingsFiltersCategory,
+          addCategories: addCategoriesListingsCategories,
+          removeCategories: removeCategoriesListingsCategories,
+          setSort: setCategoriesListingsSort,
+          setSearch: setCategoriesListingsSearch,
+          setScrollTop: setCategoriesListingsFiltersScrollTop,
+          toggleFilterOpen: toggleCategoriesListingsFilterOpen,
+          clearFilters: clearCategoriesListingsFilters,
         }
       } else if (activeCategoriesPageTab === 'premium') {
         return {
@@ -677,6 +788,30 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           setScrollTop: setCategoryDomainsFiltersScrollTop,
           toggleFilterOpen: toggleCategoryDomainsFilterOpen,
           clearFilters: clearCategoryDomainsFilters,
+        }
+      } else if (activeCategoryTab === 'listings') {
+        return {
+          setFiltersOpen: setCategoryListingsFiltersOpen,
+          toggleFiltersStatus: toggleCategoryListingsFiltersStatus,
+          setFiltersStatus: setCategoryListingsFiltersStatus,
+          toggleFiltersType: toggleCategoryListingsFiltersType,
+          setFiltersType: setCategoryListingsFiltersType,
+          setMarketFilters: setCategoryListingsMarketFilters,
+          setTextMatchFilters: setCategoryListingsTextMatchFilters,
+          setTextNonMatchFilters: setCategoryListingsTextNonMatchFilters,
+          setFiltersLength: setCategoryListingsFiltersLength,
+          setPriceDenomination: setCategoryListingsPriceDenomination,
+          setPriceRange: setCategoryListingsPriceRange,
+          setOfferRange: setCategoryListingsOfferRange,
+          toggleCategory: toggleCategoryListingsCategory,
+          setFiltersCategory: setCategoryListingsFiltersCategory,
+          addCategories: addCategoryListingsCategories,
+          removeCategories: removeCategoryListingsCategories,
+          setSort: setCategoryListingsSort,
+          setSearch: setCategoryListingsSearch,
+          setScrollTop: setCategoryListingsFiltersScrollTop,
+          toggleFilterOpen: toggleCategoryListingsFilterOpen,
+          clearFilters: clearCategoryListingsFilters,
         }
       } else if (activeCategoryTab === 'premium') {
         return {
@@ -1027,6 +1162,30 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleFilterOpen: toggleMarketplaceFilterOpen,
           clearFilters: clearMarketplaceFilters,
         }
+      } else if (activeMarketplaceTab === 'listings') {
+        return {
+          setFiltersOpen: setMarketplaceListingsFiltersOpen,
+          toggleFiltersStatus: toggleMarketplaceListingsFiltersStatus,
+          setFiltersStatus: setMarketplaceListingsFiltersStatus,
+          toggleFiltersType: toggleMarketplaceListingsFiltersType,
+          setFiltersType: setMarketplaceListingsFiltersType,
+          setMarketFilters: setMarketplaceListingsMarketFilters,
+          setTextMatchFilters: setMarketplaceListingsTextMatchFilters,
+          setTextNonMatchFilters: setMarketplaceListingsTextNonMatchFilters,
+          setFiltersLength: setMarketplaceListingsFiltersLength,
+          setPriceDenomination: setMarketplaceListingsPriceDenomination,
+          setPriceRange: setMarketplaceListingsPriceRange,
+          setOfferRange: setMarketplaceListingsOfferRange,
+          toggleCategory: toggleMarketplaceListingsCategory,
+          setFiltersCategory: setMarketplaceListingsFiltersCategory,
+          addCategories: addMarketplaceListingsCategories,
+          removeCategories: removeMarketplaceListingsCategories,
+          setSort: setMarketplaceListingsSort,
+          setSearch: setMarketplaceListingsSearch,
+          setScrollTop: setMarketplaceListingsFiltersScrollTop,
+          toggleFilterOpen: toggleMarketplaceListingsFilterOpen,
+          clearFilters: clearMarketplaceListingsFilters,
+        }
       } else if (activeMarketplaceTab === 'premium') {
         return {
           setFiltersOpen: setMarketplacePremiumFiltersOpen,
@@ -1135,6 +1294,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return emptyFilterStateCategoriesPageFilters
       } else if (activeCategoriesPageTab === 'names') {
         return emptyFilterStateCategoriesNamesFilters
+      } else if (activeCategoriesPageTab === 'listings') {
+        return emptyFilterStateCategoriesListingsFilters
       } else if (activeCategoriesPageTab === 'premium') {
         return emptyFilterStateCategoriesPremiumDomainsFilters
       } else if (activeCategoriesPageTab === 'available') {
@@ -1146,6 +1307,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     if (filterType === 'category') {
       if (activeCategoryTab === 'names') {
         return emptyFilterStateCategoryDomainsFilters
+      } else if (activeCategoryTab === 'listings') {
+        return emptyFilterStateCategoryListingsFilters
       } else if (activeCategoryTab === 'premium') {
         return emptyFilterStateCategoryPremiumFilters
       } else if (activeCategoryTab === 'available') {
@@ -1159,6 +1322,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     if (filterType === 'marketplace') {
       if (activeMarketplaceTab === 'names') {
         return emptyFilterStateMarketplaceFilters
+      } else if (activeMarketplaceTab === 'listings') {
+        return emptyFilterStateMarketplaceListingsFilters
       } else if (activeMarketplaceTab === 'premium') {
         return emptyFilterStateMarketplacePremiumFilters
       } else if (activeMarketplaceTab === 'available') {

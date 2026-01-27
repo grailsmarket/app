@@ -6,6 +6,9 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeMarketplaceTab, MarketplaceTabType, selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { useNavbar } from '@/context/navbar'
+import { useListingsCount } from '../hooks/useListingsCount'
+import Label from '@/components/ui/label'
+import { formatTotalTabItems } from '@/utils/formatTabItems'
 
 interface MarketplaceTabSwitcherProps {
   isLiveActivityConnected: boolean
@@ -16,6 +19,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
   const { selectedTab } = useAppSelector(selectMarketplace)
   const dispatch = useAppDispatch()
   const { isNavbarVisible } = useNavbar()
+  const { data: listingsCount } = useListingsCount()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
@@ -75,13 +79,22 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
                 key={tab.value}
                 onClick={() => setMarketplaceTab(tab)}
                 className={cn(
-                  'py-md w-full cursor-pointer text-lg sm:text-xl',
+                  'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
                   selectedTab.value === tab.value
                     ? 'text-primary font-bold opacity-100'
                     : 'font-semibold opacity-50 transition-colors hover:opacity-80'
                 )}
               >
-                {tab.label}
+                <p>{tab.label}</p>
+                {tab.value === 'listings' && (
+                  <Label
+                    label={formatTotalTabItems(listingsCount || 0)}
+                    className={cn(
+                      'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                      selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                    )}
+                  />
+                )}
               </button>
             ))}
           </div>
@@ -123,6 +136,15 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = ({ isLiveA
             )}
           >
             <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+            {tab.value === 'listings' && (
+              <Label
+                label={formatTotalTabItems(listingsCount || 0)}
+                className={cn(
+                  'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                  selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                )}
+              />
+            )}
           </button>
         ))}
       </div>

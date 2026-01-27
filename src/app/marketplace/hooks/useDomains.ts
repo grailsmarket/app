@@ -53,6 +53,7 @@ export const useDomains = () => {
         domains: domains.domains,
         nextPageParam: domains.nextPageParam,
         hasNextPage: domains.hasNextPage,
+        total: domains.total,
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
@@ -66,6 +67,12 @@ export const useDomains = () => {
       }, [] as MarketplaceDomainType[]) || []
     )
   }, [domains])
+
+  // Get total count from first page of data
+  const total = useMemo(() => {
+    return domains?.pages?.[0]?.total || 0
+  }, [domains])
+
   const domainsLoading = isLoading || isFetchingNextPage
 
   return {
@@ -73,5 +80,6 @@ export const useDomains = () => {
     domainsLoading,
     fetchMoreDomains,
     hasMoreDomains,
+    total,
   }
 }

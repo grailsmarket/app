@@ -18,7 +18,10 @@ import { SortFilterType } from '@/types/filters'
 
 // Mapping of column headers to their sort values
 const COLUMN_SORT_MAP: Partial<
-  Record<MarketplaceHeaderColumn, { asc: SortFilterType; desc: SortFilterType; shiftAsc?: SortFilterType; shiftDesc?: SortFilterType }>
+  Record<
+    MarketplaceHeaderColumn,
+    { asc: SortFilterType; desc: SortFilterType; shiftAsc?: SortFilterType; shiftDesc?: SortFilterType }
+  >
 > = {
   domain: { asc: 'alphabetical_asc', desc: 'alphabetical_desc' },
   price: { asc: 'price_asc', desc: 'price_desc' },
@@ -201,10 +204,7 @@ const Domains: React.FC<DomainsProps> = ({
                   onClick={isSortable ? (e) => handleHeaderClick(header, e) : undefined}
                 >
                   <p
-                    className={cn(
-                      'text-neutral w-fit text-left text-sm font-medium',
-                      sortDirection && 'text-primary'
-                    )}
+                    className={cn('text-neutral w-fit text-left text-sm font-medium', sortDirection && 'text-primary')}
                   >
                     {displayLabel}
                   </p>

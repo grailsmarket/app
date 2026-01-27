@@ -34,8 +34,9 @@ const Pages = ({ className, onClick }: PagesProps) => {
     // if (pathname === '/') return 0
     if (pathname === '/marketplace') return 0
     if (pathname === '/categories') return 1
-    if (pathname === '/analytics') return 2
-    if (isPortfolioPage && userAddress) return 3
+    if (pathname === '/leaderboard') return 2
+    if (pathname === '/analytics') return 3
+    if (isPortfolioPage && userAddress) return 4
     return -1
   }
 
@@ -114,6 +115,16 @@ const Pages = ({ className, onClick }: PagesProps) => {
         onClick={onClick}
       >
         Categories
+      </Link>
+      <Link
+        href='/leaderboard'
+        className={cn(
+          'font-semibold transition-all',
+          pathname === '/leaderboard' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Leaderboard
       </Link>
       <Link
         href='/analytics'

@@ -40,22 +40,28 @@ const DisplayedCards: React.FC = () => {
       <div className='shadow-homeCard absolute -top-28 left-0 z-20 h-[360px] w-[190px] rounded-lg sm:-top-24 sm:left-0 sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
-        ) : domains[0] && (
-          <Card domain={domains[0]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+        ) : (
+          domains[0] && (
+            <Card domain={domains[0]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+          )
         )}
       </div>
       <div className='shadow-homeCard absolute top-0 left-28 z-30 h-[360px] w-[190px] rounded-lg sm:top-0 sm:left-36 sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
-        ) : domains[1] && (
-          <Card domain={domains[1]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+        ) : (
+          domains[1] && (
+            <Card domain={domains[1]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+          )
         )}
       </div>
       <div className='shadow-homeCard absolute top-14 -left-12 z-10 h-[360px] w-[190px] rounded-lg sm:top-24 sm:-left-20 sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
-        ) : domains[2] && (
-          <Card domain={domains[2]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+        ) : (
+          domains[2] && (
+            <Card domain={domains[2]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+          )
         )}
       </div>
     </div>

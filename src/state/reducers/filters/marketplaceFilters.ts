@@ -145,7 +145,7 @@ export const marketplaceFiltersSlice = createSlice({
       if (state.status.includes(payload)) {
         state.status = state.status.filter((status) => status !== payload)
       } else {
-        if(payload === null) {
+        if (payload === null) {
           state.status = []
         } else {
           state.status.push(payload)
@@ -153,7 +153,7 @@ export const marketplaceFiltersSlice = createSlice({
       }
     },
     setMarketplaceFiltersStatus(state, { payload }: PayloadAction<MarketplaceStatusFilterType>) {
-      if(payload === null) {
+      if (payload === null) {
         state.status = []
       } else {
         state.status = [payload]

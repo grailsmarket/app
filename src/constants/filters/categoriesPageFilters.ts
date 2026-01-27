@@ -41,6 +41,8 @@ export const CATEGORIES_PAGE_SORT_OPTIONS = [
   'available_count',
   'premium_percent',
   'available_percent',
+  'holders_count',
+  'holders_ratio',
   'name',
 ] as const
 
@@ -61,6 +63,8 @@ export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, strin
   available_count: 'Available',
   premium_percent: 'Premium %',
   available_percent: 'Available %',
+  holders_count: 'Holders Count',
+  holders_ratio: 'Holders Ratio',
   name: 'Alphabetical',
 }
 

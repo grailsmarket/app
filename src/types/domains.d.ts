@@ -434,6 +434,8 @@ export type CategoryType = {
   premium_count: number
   available_count: number
   classifications: string[]
+  holders_count: number
+  holders_ratio: number
 }
 
 export type NameActivityType = {

@@ -1,6 +1,6 @@
-import { ENS_SUBGRAPH_URL } from '@/constants'
 import { SearchENSProfilesResults } from '@/types/profile'
 import { normalizeName } from '@/lib/ens'
+import { API_URL } from '@/constants/api'
 
 const searchQuery = /*GraphQL*/ `
   query SearchQuery($search: String) {
@@ -29,7 +29,7 @@ export const searchProfiles = async ({ search }: { search: string }) => {
     const results = await Promise.all(
       searchTerms.map(async (term) => {
         const sanitizedSearch = normalizeName(term.trim())
-        const response = await fetch(ENS_SUBGRAPH_URL, {
+        const response = await fetch(`${API_URL}/subgraph`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

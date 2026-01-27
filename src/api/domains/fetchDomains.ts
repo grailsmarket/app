@@ -66,6 +66,8 @@ export const fetchDomains = async ({
           terms: search.split(','),
           page: pageParam,
           limit,
+          sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
+          sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : undefined,
           filters: {
             listed: filters.market?.Listed === 'yes' ? true : filters.market?.Listed === 'no' ? false : undefined,
             maxLength: filters.length.max || undefined,
@@ -94,7 +96,7 @@ export const fetchDomains = async ({
             digits: filters.type.Digits !== 'none' ? filters.type.Digits : undefined,
             emoji: filters.type.Emojis !== 'none' ? filters.type.Emojis : undefined,
             repeatingChars: filters.type.Repeating !== 'none' ? filters.type.Repeating : undefined,
-            clubs: filters.categories?.join(',') || undefined,
+            clubs: filters.categories || undefined,
             status: filters.status.length === 1 ? filters.status[0].toLowerCase() : undefined,
             hasSales:
               filters.market?.['Has Last Sale'] === 'yes'
@@ -116,9 +118,7 @@ export const fetchDomains = async ({
             doesNotStartWith: filters.textNonMatch?.['Does not start with'] || undefined,
             doesNotEndWith: filters.textNonMatch?.['Does not end with'] || undefined,
             inAnyClub: inAnyCategory ? true : undefined,
-            excludeClubs: excludeCategories.length > 0 ? excludeCategories.join(',') : undefined,
-            sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
-            sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : undefined,
+            excludeClubs: excludeCategories.length > 0 ? excludeCategories : undefined,
           },
         }),
         signal,

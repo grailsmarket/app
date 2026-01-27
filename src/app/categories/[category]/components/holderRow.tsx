@@ -81,7 +81,7 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category }) => {
 
       <div className='flex w-[50%] items-center gap-1'>
         <span className='text-xl font-medium'>{holder.name_count}</span>
-        <span className='text-neutral text-xl'>names</span>
+        {/* <span className='text-neutral text-xl'>names</span> */}
       </div>
 
       <div className='flex w-[5%] justify-end opacity-50 transition-opacity group-hover:opacity-100'>

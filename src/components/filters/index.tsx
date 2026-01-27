@@ -13,7 +13,6 @@ import CloseIcon from 'public/icons/cross.svg'
 import { useFilterContext } from '@/context/filters'
 import ActivityTypeFilter from './ActivityFilter/TypeFilter'
 import { useEffect, useRef } from 'react'
-import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
 import SecondaryButton from '../ui/buttons/secondary'
@@ -31,7 +30,7 @@ const FilterPanel: React.FC = () => {
   }, [isPanelCategories])
 
   const dispatch = useAppDispatch()
-  const { search } = useAppSelector(selectMarketplaceFilters)
+  // const { search } = useAppSelector(selectMarketplaceFilters)
   const { selectors, actions, isFiltersClear } = useFilterRouter()
   const { profileTab, filterType, categoryTab } = useFilterContext()
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
@@ -46,8 +45,8 @@ const FilterPanel: React.FC = () => {
 
   const isMobile = windowWidth < 1024
   const isOpen = filtersOpen
-  const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
-  const isDisabled = filterType === 'marketplace' && isBulkSearch
+  // const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
+  // const isDisabled = filterType === 'marketplace' && isBulkSearch
   const isActivityFilter =
     (filterType === 'profile' && profileTab?.value === 'activity') ||
     (filterType === 'marketplace' && marketplaceTab?.value === 'activity') ||
@@ -69,7 +68,7 @@ const FilterPanel: React.FC = () => {
         !isMobile && 'sticky',
         !isMobile && (isNavbarVisible ? 'top-[128px] h-[calc(100dvh-128px)]' : 'top-14 h-[calc(100dvh-56px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
-        isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
+        // isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? 'md:border-r-2' : 'w-0'
       )}
     >

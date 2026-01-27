@@ -56,7 +56,7 @@ export const fetchDomains = async ({
         .filter((name) => name.length > 2)
         .join(',')
 
-      const res = await fetch(`${API_URL}/search/bulk`, {
+      const res = await fetch(`${API_URL}/search/bulk-filters`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -66,6 +66,60 @@ export const fetchDomains = async ({
           terms: search.split(','),
           page: pageParam,
           limit,
+          filters: {
+            listed: filters.market?.Listed === 'yes' ? true : filters.market?.Listed === 'no' ? false : undefined,
+            maxLength: filters.length.max || undefined,
+            minLength: filters.length.min || undefined,
+            maxPrice: filters.priceRange.max
+              ? BigNumber.from(Math.floor(filters.priceRange.max * 10 ** 6))
+                  .mul(BigNumber.from(10).pow(12))
+                  .toString()
+              : filters.priceRange.max || undefined,
+            minPrice: filters.priceRange.min
+              ? BigNumber.from(Math.floor(filters.priceRange.min * 10 ** 6))
+                  .mul(BigNumber.from(10).pow(12))
+                  .toString()
+              : filters.priceRange.min || undefined,
+            maxOffer: filters.offerRange?.max
+              ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
+                  .mul(BigNumber.from(10).pow(12))
+                  .toString()
+              : filters.offerRange?.max || undefined,
+            minOffer: filters.offerRange?.min
+              ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
+                  .mul(BigNumber.from(10).pow(12))
+                  .toString()
+              : filters.offerRange?.min || undefined,
+            letters: filters.type.Letters !== 'none' ? filters.type.Letters : undefined,
+            digits: filters.type.Digits !== 'none' ? filters.type.Digits : undefined,
+            emoji: filters.type.Emojis !== 'none' ? filters.type.Emojis : undefined,
+            repeatingChars: filters.type.Repeating !== 'none' ? filters.type.Repeating : undefined,
+            clubs: filters.categories?.join(',') || undefined,
+            status: filters.status.length === 1 ? filters.status[0].toLowerCase() : undefined,
+            hasSales:
+              filters.market?.['Has Last Sale'] === 'yes'
+                ? true
+                : filters.market?.['Has Last Sale'] === 'no'
+                  ? false
+                  : undefined,
+            hasOffer:
+              filters.market?.['Has Offers'] === 'yes'
+                ? true
+                : filters.market?.['Has Offers'] === 'no'
+                  ? false
+                  : undefined,
+            marketplace: filters.market?.marketplace !== 'none' ? filters.market?.marketplace : undefined,
+            contains: filters.textMatch?.Contains || undefined,
+            startsWith: filters.textMatch?.['Starts with'] || undefined,
+            endsWith: filters.textMatch?.['Ends with'] || undefined,
+            doesNotContain: filters.textNonMatch?.['Does not contain'] || undefined,
+            doesNotStartWith: filters.textNonMatch?.['Does not start with'] || undefined,
+            doesNotEndWith: filters.textNonMatch?.['Does not end with'] || undefined,
+            inAnyClub: inAnyCategory ? true : undefined,
+            excludeClubs: excludeCategories.length > 0 ? excludeCategories.join(',') : undefined,
+            sortBy: filters.sort?.replace('_desc', '').replace('_asc', ''),
+            sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : undefined,
+          },
         }),
         signal,
       })

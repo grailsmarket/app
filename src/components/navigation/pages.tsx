@@ -99,7 +99,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <p
         className='text-foreground cursor-pointer font-semibold opacity-80 transition-all hover:opacity-100'
         onClick={() => {
-          dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
+          dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
           router.push('/marketplace')
         }}
       >

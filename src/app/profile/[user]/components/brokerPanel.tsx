@@ -25,7 +25,7 @@ const STATUS_OPTIONS = [
 ]
 
 const BrokerPanel: React.FC<Props> = ({ user }) => {
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>('active')
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false)
   const { isNavbarVisible } = useNavbar()
   const { selectors } = useFilterRouter()

@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useMemo } from 'react'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize, ShortArrow } from 'ethereum-identity-kit'
 import TableRow from './table/components/TableRow'
 import NoResults from '@/components/ui/noResults'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
@@ -7,12 +7,30 @@ import { ALL_MARKETPLACE_COLUMNS, MARKETPLACE_DISPLAYED_COLUMNS } from '@/consta
 import TableLoadingRow from './table/components/TableLoadingRow'
 import VirtualList from '@/components/ui/virtuallist'
 import VirtualGrid from '@/components/ui/virtualgrid'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectViewType } from '@/state/reducers/view'
 import Card from './grid/components/card'
 import LoadingCard from './grid/components/loadingCard'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { SortFilterType } from '@/types/filters'
+
+// Mapping of column headers to their sort values
+const COLUMN_SORT_MAP: Partial<
+  Record<MarketplaceHeaderColumn, { asc: SortFilterType; desc: SortFilterType; shiftAsc?: SortFilterType; shiftDesc?: SortFilterType }>
+> = {
+  domain: { asc: 'alphabetical_asc', desc: 'alphabetical_desc' },
+  price: { asc: 'price_asc', desc: 'price_desc' },
+  highest_offer: { asc: 'offer_asc', desc: 'offer_desc' },
+  last_sale: {
+    asc: 'last_sale_price_asc',
+    desc: 'last_sale_price_desc',
+    shiftAsc: 'last_sale_date_asc',
+    shiftDesc: 'last_sale_date_desc',
+  },
+  expires: { asc: 'expiry_date_asc', desc: 'expiry_date_desc' },
+}
 
 interface DomainsProps {
   domains: MarketplaceDomainType[]
@@ -53,6 +71,9 @@ const Domains: React.FC<DomainsProps> = ({
   useLocalScrollTop = false,
   showPreviousOwner = false,
 }) => {
+  const dispatch = useAppDispatch()
+  const { selectors, actions } = useFilterRouter()
+  const currentSort = selectors.filters.sort
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
@@ -62,6 +83,47 @@ const Domains: React.FC<DomainsProps> = ({
       fetchMoreDomains()
     }
   }, [fetchMoreDomains, hasMoreDomains, isLoading])
+
+  // Handle header click for sorting
+  const handleHeaderClick = useCallback(
+    (column: MarketplaceHeaderColumn, event: React.MouseEvent) => {
+      const sortConfig = COLUMN_SORT_MAP[column]
+      if (!sortConfig) return // Column is not sortable
+
+      const isShiftClick = event.shiftKey
+      const ascSort = isShiftClick && sortConfig.shiftAsc ? sortConfig.shiftAsc : sortConfig.asc
+      const descSort = isShiftClick && sortConfig.shiftDesc ? sortConfig.shiftDesc : sortConfig.desc
+
+      // Check if currently sorted by this column (either asc or desc, normal or shift variant)
+      const isCurrentAsc = currentSort === sortConfig.asc || currentSort === sortConfig.shiftAsc
+      const isCurrentDesc = currentSort === sortConfig.desc || currentSort === sortConfig.shiftDesc
+
+      if (isCurrentAsc) {
+        // Currently ascending, switch to descending
+        dispatch(actions.setSort(descSort))
+      } else if (isCurrentDesc) {
+        // Currently descending, switch to ascending
+        dispatch(actions.setSort(ascSort))
+      } else {
+        // Not sorted by this column, set to ascending
+        dispatch(actions.setSort(ascSort))
+      }
+    },
+    [currentSort, dispatch, actions]
+  )
+
+  // Get sort direction for a column (null if not sorted by this column)
+  const getColumnSortDirection = useCallback(
+    (column: MarketplaceHeaderColumn): 'asc' | 'desc' | null => {
+      const sortConfig = COLUMN_SORT_MAP[column]
+      if (!sortConfig || !currentSort) return null
+
+      if (currentSort === sortConfig.asc || currentSort === sortConfig.shiftAsc) return 'asc'
+      if (currentSort === sortConfig.desc || currentSort === sortConfig.shiftDesc) return 'desc'
+      return null
+    },
+    [currentSort]
+  )
 
   const displayedColumns = useMemo(() => {
     const allColumns = ['domain', ...displayedDetails, 'actions'] as MarketplaceHeaderColumn[]
@@ -119,18 +181,41 @@ const Domains: React.FC<DomainsProps> = ({
           >
             {displayedColumns.map((header, index) => {
               const item = ALL_MARKETPLACE_COLUMNS[header]
+              const isSortable = !!COLUMN_SORT_MAP[header]
+              const sortDirection = getColumnSortDirection(header)
+              const displayLabel =
+                item.label === 'Actions'
+                  ? ''
+                  : showPreviousOwner && item.label === 'Owner'
+                    ? 'Previous Owner'
+                    : item.label
+
               return (
                 <div
                   key={index}
-                  className={`flex flex-row items-center gap-1 ${item.getWidth(displayedColumns.length)}`}
+                  className={cn(
+                    'flex flex-row items-center gap-1',
+                    item.getWidth(displayedColumns.length),
+                    isSortable && 'cursor-pointer select-none hover:opacity-80'
+                  )}
+                  onClick={isSortable ? (e) => handleHeaderClick(header, e) : undefined}
                 >
-                  <p className='text-neutral w-fit text-left text-sm font-medium'>
-                    {item.label === 'Actions'
-                      ? ''
-                      : showPreviousOwner && item.label === 'Owner'
-                        ? 'Previous Owner'
-                        : item.label}
+                  <p
+                    className={cn(
+                      'text-neutral w-fit text-left text-sm font-medium',
+                      sortDirection && 'text-primary'
+                    )}
+                  >
+                    {displayLabel}
                   </p>
+                  {sortDirection && (
+                    <ShortArrow
+                      className={cn(
+                        'text-primary h-3 w-3 transition-transform',
+                        sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'
+                      )}
+                    />
+                  )}
                 </div>
               )
             })}

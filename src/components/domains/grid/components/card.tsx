@@ -70,7 +70,7 @@ const Card: React.FC<CardProps> = ({
   const { ethPrice } = useETHPrice()
   const { filterType } = useFilterContext()
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
-  const domainIsValid = checkNameValidity(domain.name)
+  const domainIsValid = checkNameValidity(domain?.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isMyDomain = address?.toLowerCase() === domain.owner?.toLowerCase()
   const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || isMyDomain)

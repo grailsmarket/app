@@ -82,11 +82,11 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
   }
 
   // Get first selected category's avatar for display
-  const getFirstSelectedCategoryAvatar = () => {
-    if (selectedClubs.length === 0) return null
-    const details = getCategoryDetails(selectedClubs[0])
-    return details.avatar
-  }
+  // const getFirstSelectedCategoryAvatar = () => {
+  //   if (selectedClubs.length === 0) return null
+  //   const details = getCategoryDetails(selectedClubs[0])
+  //   return details.avatar
+  // }
 
   return (
     <div className='border-tertiary flex flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2.5 sm:px-4'>

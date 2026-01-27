@@ -2,6 +2,9 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import LeaderboardList from './components/LeaderboardList'
 
+// Prevent static generation since this page uses window-dependent hooks
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Leaderboard',
   description: 'ENS leaderboard - top holders ranked by names owned, category names, and expired names',

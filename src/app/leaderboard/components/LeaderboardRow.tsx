@@ -7,7 +7,7 @@ import ExternalLinkIcon from 'public/icons/external-link.svg'
 import type { LeaderboardUser } from '@/types/leaderboard'
 import User from '@/components/ui/user'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useWindowSize, useIsClient } from 'ethereum-identity-kit'
 
 interface LeaderboardRowProps {
   user: LeaderboardUser
@@ -17,8 +17,9 @@ interface LeaderboardRowProps {
 const MAX_VISIBLE_CATEGORIES = 10
 
 const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
+  const isClient = useIsClient()
   const { width } = useWindowSize()
-  const visibleCategoriesCount = width ? Math.floor(((width / 100) * 30) / 26) : MAX_VISIBLE_CATEGORIES
+  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 30) / 26) : MAX_VISIBLE_CATEGORIES
   const visibleCategories = user.clubs.slice(0, visibleCategoriesCount)
   const remainingCount = user.clubs.length - visibleCategoriesCount
 

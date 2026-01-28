@@ -131,7 +131,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
             )}
           >
             <div className='flex items-center gap-2'>
-              {selectedCategoryDetails?.avatar && (
+              {selectedCategoryDetails?.avatar && selectedCategory !== 'none' && selectedCategory !== 'any' ? (
                 <Image
                   src={selectedCategoryDetails.avatar}
                   alt={selectedCategoryDetails.name}
@@ -139,9 +139,13 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   height={20}
                   className='h-auto w-5 rounded-full'
                 />
-              )}
+              ) : null}
               <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
-                {selectedCategoryDetails?.name || 'Pick a Category'}
+                {selectedCategory === 'none'
+                  ? 'No Categories'
+                  : selectedCategory === 'any'
+                    ? 'All Categories'
+                    : selectedCategoryDetails?.name || 'Pick a Category'}
               </p>
             </div>
             <ShortArrow className={cn('h-3 w-3 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')} />
@@ -153,6 +157,32 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                 key='all'
                 onClick={() => {
                   dispatch(setCategory(null))
+                  setIsCategoryOpen(false)
+                }}
+                className={cn(
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  selectedCategory === null && 'bg-secondary'
+                )}
+              >
+                ---------
+              </button>
+              <button
+                key='all'
+                onClick={() => {
+                  dispatch(setCategory('none'))
+                  setIsCategoryOpen(false)
+                }}
+                className={cn(
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  selectedCategory === null && 'bg-secondary'
+                )}
+              >
+                No Categories
+              </button>
+              <button
+                key='all'
+                onClick={() => {
+                  dispatch(setCategory('any'))
                   setIsCategoryOpen(false)
                 }}
                 className={cn(

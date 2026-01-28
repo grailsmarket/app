@@ -17,7 +17,7 @@ interface TopListsSectionProps {
 }
 
 const TopListsSection: React.FC<TopListsSectionProps> = ({ category }) => {
-  const hookOptions = category ? { categoryOverride: category } : undefined
+  const hookOptions = category ? { categoriesOverride: [category] } : undefined
   const { data: listingsData, isLoading: listingsLoading } = useTopListings(hookOptions)
   const { data: offersData, isLoading: offersLoading } = useTopOffers(hookOptions)
   const { data: salesData, isLoading: salesLoading } = useTopSales(hookOptions)

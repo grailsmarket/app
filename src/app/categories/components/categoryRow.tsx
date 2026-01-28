@@ -227,7 +227,9 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
       <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Holders</p>
         <div className='flex items-center gap-1'>
-          <p className='text-lg font-semibold'>({category.holders_ratio.toFixed(1)}%)</p>
+          <p className='text-lg font-semibold'>({(category.member_count / category.holders_count).toLocaleString(navigator.language, {
+            maximumFractionDigits: 1,
+          })})</p>
           <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
         </div>
       </div>

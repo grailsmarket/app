@@ -321,7 +321,7 @@ const Card: React.FC<CardProps> = ({
                     <p>$</p>
                     <p>
                       {regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}&nbsp;
-                      <span className='text-neutral font-medium'>/&nbsp;Year</span>
+                      <span className='text-neutral font-medium'>/&nbsp;yr</span>
                     </p>
                   </>
                 )}

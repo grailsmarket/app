@@ -436,6 +436,12 @@ export type CategoryType = {
   classifications: string[]
   holders_count: number
   holders_ratio: number
+  registered_count: number
+  grace_count: number
+  listings_count: number
+  registered_percent: number
+  grace_percent: number
+  listings_percent: number
 }
 
 export type NameActivityType = {

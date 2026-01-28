@@ -132,6 +132,27 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         <p className='font-sedan-sc text-xl md:text-2xl'>Names</p>
         <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
       </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Registered</p>
+        <p className='text-xl font-semibold'>
+          <span className='mr-1 text-lg font-medium'>({category.registered_percent.toFixed(1)}%)</span>
+          {localizeNumber(category.registered_count)}
+        </p>
+      </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Listings</p>
+        <p className='text-xl font-semibold'>
+          <span className='mr-1 text-lg font-medium'>({category.listings_percent.toFixed(1)}%)</span>
+          {localizeNumber(category.listings_count)}
+        </p>
+      </div>
+      <div className='text-grace z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Grace</p>
+        <p className='text-xl font-semibold'>
+          <span className='mr-1 text-lg font-medium'>({category.grace_percent.toFixed(1)}%)</span>
+          {localizeNumber(category.grace_count)}
+        </p>
+      </div>
       <div className='text-premium z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Premium</p>
         <p className='text-xl font-semibold'>

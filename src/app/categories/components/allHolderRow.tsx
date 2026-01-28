@@ -20,9 +20,10 @@ import User from '@/components/ui/user'
 
 interface AllHolderRowProps {
   holder: Holder
+  rank: number
 }
 
-const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
+const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder, rank }) => {
   const dispatch = useAppDispatch()
   const { categories } = useCategories()
 
@@ -49,6 +50,7 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder }) => {
       onClick={handleClick}
       className='group border-tertiary hover:bg-foreground/10 px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
     >
+      <p className='text-neutral w-[30px] text-center text-lg font-semibold sm:w-[48px] sm:text-xl'>{rank}</p>
       <div className='flex w-[75%] flex-row items-center gap-3 sm:w-[55%] lg:w-[45%]'>
         {/* {profileIsLoading ? (
           <LoadingCell width='40px' height='40px' radius='50%' />

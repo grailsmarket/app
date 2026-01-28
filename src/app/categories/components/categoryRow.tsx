@@ -139,13 +139,6 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
           {localizeNumber(category.registered_count)}
         </p>
       </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Listings</p>
-        <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>({category.listings_percent.toFixed(1)}%)</span>
-          {localizeNumber(category.listings_count)}
-        </p>
-      </div>
       <div className='text-grace z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Grace</p>
         <p className='text-xl font-semibold'>
@@ -191,8 +184,24 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         </p>
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Listings</p>
+        <p className='text-xl font-semibold'>
+          <span className='mr-1 text-lg font-medium'>({category.listings_percent.toFixed(1)}%)</span>
+          {localizeNumber(category.listings_count)}
+        </p>
+      </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Holders</p>
+        <div className='flex items-center gap-1'>
+          <p className='text-lg font-semibold'>({(category.member_count / category.holders_count).toLocaleString(navigator.language, {
+            maximumFractionDigits: 1,
+          })})</p>
+          <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
+        </div>
+      </div>
+      <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>
-          Sales{' '}
+          Sales&nbsp;
           <span className='text-lg font-medium md:text-xl'>
             {salesTimeWindow?.label && salesTimeWindow.label.length > 0 ? `(${salesTimeWindow.label})` : ''}
           </span>
@@ -203,7 +212,7 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>
-          Volume{' '}
+          Volume&nbsp;
           <span className='text-lg font-medium md:text-xl'>
             {volumeTimeWindow?.label && volumeTimeWindow.label.length > 0 ? `(${volumeTimeWindow.label})` : ''}
           </span>
@@ -216,22 +225,13 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         />
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Floor Price</p>
+        <p className='font-sedan-sc text-xl md:text-2xl'>Floor</p>
         <Price
           price={category.floor_price_wei}
           currencyAddress={category.floor_price_currency as Address}
           iconSize='22px'
           fontSize='text-xl font-semibold'
         />
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Holders</p>
-        <div className='flex items-center gap-1'>
-          <p className='text-lg font-semibold'>({(category.member_count / category.holders_count).toLocaleString(navigator.language, {
-            maximumFractionDigits: 1,
-          })})</p>
-          <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
-        </div>
       </div>
       {/* <PrimaryButton className='z-10 mt-2 h-8! w-full' onClick={() => router.push(`/categories/${category.name}`)}>
         View

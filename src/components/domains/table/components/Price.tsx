@@ -128,8 +128,8 @@ const Price: React.FC<PriceProps> = ({
                 position={index === 0 ? 'bottom' : 'top'}
                 align='left'
               >
-                <p className='bg-primary/20 text-primary hover:bg-primary/30 rounded-sm px-1.5 py-0.5 text-xs font-semibold transition-colors'>
-                  Brokered
+                <p className='bg-primary/20 text-primary hover:bg-primary/30 rounded-sm px-1 sm:px-1.5 py-0.5 text-xs font-semibold transition-colors'>
+                  Broker<span className='hidden sm:inline'>ed</span>
                 </p>
               </Tooltip>
             )}

@@ -11,13 +11,13 @@ import {
 interface FetchTopItemsParams {
   period: AnalyticsPeriod
   source: AnalyticsSource
-  category: string | null
+  categories: string[]
 }
 
 export const fetchTopListings = async ({
   period,
   source,
-  category,
+  categories,
 }: FetchTopItemsParams): Promise<AnalyticsListingsResponse> => {
   const params = new URLSearchParams({
     period,
@@ -32,9 +32,9 @@ export const fetchTopListings = async ({
     params.append('source', source)
   }
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('clubs[]', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/analytics/listings?${params}`)
 
@@ -48,7 +48,7 @@ export const fetchTopListings = async ({
 export const fetchTopOffers = async ({
   period,
   source,
-  category,
+  categories,
 }: FetchTopItemsParams): Promise<AnalyticsOffersResponse> => {
   const params = new URLSearchParams({
     period,
@@ -63,9 +63,9 @@ export const fetchTopOffers = async ({
     params.append('source', source)
   }
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('clubs[]', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/analytics/offers?${params}`)
 
@@ -79,7 +79,7 @@ export const fetchTopOffers = async ({
 export const fetchTopSales = async ({
   period,
   source,
-  category,
+  categories,
 }: FetchTopItemsParams): Promise<AnalyticsSalesResponse> => {
   const params = new URLSearchParams({
     period,
@@ -93,9 +93,9 @@ export const fetchTopSales = async ({
     params.append('source', source)
   }
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('clubs[]', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/analytics/sales?${params}`)
 
@@ -108,17 +108,17 @@ export const fetchTopSales = async ({
 
 interface FetchChartParams {
   period: AnalyticsPeriod
-  category: string | null
+  categories: string[]
 }
 
-export const fetchListingsChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {
+export const fetchListingsChart = async ({ period, categories }: FetchChartParams): Promise<ChartResponse> => {
   const params = new URLSearchParams({
     period: period === '24h' ? '1d' : period,
   })
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('club', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/charts/listings?${params}`)
 
@@ -129,14 +129,14 @@ export const fetchListingsChart = async ({ period, category }: FetchChartParams)
   return response.json()
 }
 
-export const fetchOffersChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {
+export const fetchOffersChart = async ({ period, categories }: FetchChartParams): Promise<ChartResponse> => {
   const params = new URLSearchParams({
     period: period === '24h' ? '1d' : period,
   })
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('club', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/charts/offers?${params}`)
 
@@ -147,14 +147,14 @@ export const fetchOffersChart = async ({ period, category }: FetchChartParams): 
   return response.json()
 }
 
-export const fetchSalesChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {
+export const fetchSalesChart = async ({ period, categories }: FetchChartParams): Promise<ChartResponse> => {
   const params = new URLSearchParams({
     period: period === '24h' ? '1d' : period,
   })
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('club', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/charts/sales?${params}`)
 
@@ -165,14 +165,14 @@ export const fetchSalesChart = async ({ period, category }: FetchChartParams): P
   return response.json()
 }
 
-export const fetchVolumeChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {
+export const fetchVolumeChart = async ({ period, categories }: FetchChartParams): Promise<ChartResponse> => {
   const params = new URLSearchParams({
     period: period === '24h' ? '1d' : period,
   })
 
-  if (category) {
+  categories.forEach((category) => {
     params.append('club', category)
-  }
+  })
 
   const response = await fetch(`${API_BASE_URL}/charts/volume?${params}`)
 

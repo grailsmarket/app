@@ -12,7 +12,7 @@ interface ChartsSectionProps {
 
 const ChartsSection: React.FC<ChartsSectionProps> = ({ category }) => {
   const { source } = useAppSelector(selectAnalytics)
-  const hookOptions = category ? { categoryOverride: category } : undefined
+  const hookOptions = category ? { categoriesOverride: [category] } : undefined
   const { data: listingsData, isLoading: listingsLoading } = useListingsChart(hookOptions)
   const { data: offersData, isLoading: offersLoading } = useOffersChart(hookOptions)
   const { data: salesData, isLoading: salesLoading } = useSalesChart(hookOptions)

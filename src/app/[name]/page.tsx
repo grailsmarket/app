@@ -36,7 +36,6 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: `${name}`,
       description: `${name} - Available on Grails`,
-      images: [imageUrl],
       creator: '@grailsmarket',
       site: '@grailsmarket',
     },

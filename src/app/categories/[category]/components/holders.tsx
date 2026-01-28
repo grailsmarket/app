@@ -65,9 +65,9 @@ const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
         )}
       >
         <p className='text-neutral text-md w-[30px] text-center font-medium sm:w-[48px]'>#</p>
-        <p className='text-neutral text-md w-[75%] font-medium sm:w-[55%] lg:w-[45%]'>Users</p>
+        <p className='text-neutral text-md w-[55%] font-medium sm:w-[55%] lg:w-[45%]'>Users</p>
         <p className='text-neutral text-md w-[25%] font-medium sm:w-[35%] lg:w-[50%]'>Names</p>
-        <p className='text-neutral text-md w-[10%] font-medium lg:w-[5%]'></p>
+        <p className='text-neutral text-md w-[10%] min-w-[120px] font-medium lg:w-[5%]'></p>
       </div>
       <div className='w-full'>
         {!noResults ? (

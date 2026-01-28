@@ -208,7 +208,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
   // Calculate startIndex and endIndex for the items to be rendered
   const { startIndex, endIndex } = useMemo(() => {
     const effectiveRowHeight = rowHeight + gap
-    const viewportHeight = scrollState.viewportHeight || window.innerHeight
+    const viewportHeight = scrollState.viewportHeight || (typeof window !== 'undefined' ? window.innerHeight : 0)
 
     const start = Math.max(0, Math.floor(relativeScrollTop / effectiveRowHeight) - overscanCount)
     const end = Math.min(

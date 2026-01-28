@@ -126,7 +126,7 @@ const LeaderboardList: React.FC = () => {
       {/* Headers */}
       <div
         className={cn(
-          'py-md px-md lg:px-lg transition-top bg-background border-tertiary sticky z-40 flex w-full items-center justify-start border-b duration-300',
+          'py-md px-sm sm:px-md lg:px-lg transition-top bg-background border-tertiary sticky z-40 flex w-full items-center justify-start border-b duration-300',
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
@@ -136,7 +136,7 @@ const LeaderboardList: React.FC = () => {
         {/* Names - Sortable */}
         <div
           onClick={() => handleHeaderClick('names')}
-          className='flex w-[20%] cursor-pointer items-center gap-1 select-none hover:opacity-80 sm:w-[15%] lg:w-[10%]'
+          className='flex w-[17.5%] cursor-pointer items-center gap-0.5 select-none hover:opacity-80 sm:w-[15%] sm:gap-1 lg:w-[10%]'
         >
           <p className={cn('text-md font-medium', isSortedBy('names') ? 'text-primary' : 'text-neutral')}>Names</p>
           {isSortedBy('names') && (
@@ -184,7 +184,7 @@ const LeaderboardList: React.FC = () => {
         </div>
 
         <p className='text-neutral text-md w-[25%] font-medium sm:w-[32.5%] md:w-[30%]'>Categories</p>
-        <p className='text-neutral text-md hidden w-[5%] font-medium sm:block'></p>
+        <p className='text-neutral text-md hidden w-[5%] min-w-[120px] font-medium sm:block'></p>
       </div>
 
       {/* List */}

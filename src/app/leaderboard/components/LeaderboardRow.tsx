@@ -3,11 +3,12 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import ExternalLinkIcon from 'public/icons/external-link.svg'
 import type { LeaderboardUser } from '@/types/leaderboard'
 import User from '@/components/ui/user'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useWindowSize, useIsClient } from 'ethereum-identity-kit'
+import { useWindowSize, useIsClient, FollowButton } from 'ethereum-identity-kit'
+import { useUserContext } from '@/context/user'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 interface LeaderboardRowProps {
   user: LeaderboardUser
@@ -19,14 +20,16 @@ const MAX_VISIBLE_CATEGORIES = 10
 const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
   const isClient = useIsClient()
   const { width } = useWindowSize()
-  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 30) / 26) : MAX_VISIBLE_CATEGORIES
+  const { userAddress } = useUserContext()
+  const { openConnectModal } = useConnectModal()
+  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 30) / 30) : MAX_VISIBLE_CATEGORIES
   const visibleCategories = user.clubs.slice(0, visibleCategoriesCount)
   const remainingCount = user.clubs.length - visibleCategoriesCount
 
   return (
     <Link
       href={`/profile/${user.address}`}
-      className='group border-tertiary hover:bg-foreground/10 px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
+      className='group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
     >
       {/* Rank */}
       <div className='text-neutral w-[5%] min-w-[30px] text-center text-lg font-medium sm:min-w-[40px] sm:text-base'>
@@ -47,7 +50,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* Names Owned */}
-      <div className='flex w-[20%] items-center sm:w-[15%] lg:w-[10%]'>
+      <div className='flex w-[17%] items-center sm:w-[15%] lg:w-[10%]'>
         <span className='text-base font-medium'>{user.names_owned.toLocaleString()}</span>
       </div>
 
@@ -62,8 +65,8 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* Categories */}
-      <div className='flex w-[25%] items-center gap-1 sm:w-[32.5%] md:w-[30%]'>
-        <div className='flex items-center -space-x-1.5'>
+      <div className='flex w-[25%] max-w-[32.5%] items-center gap-0.5 sm:w-[32.5%] sm:gap-1 md:w-[30%]'>
+        <div className='flex items-center -space-x-2 sm:-space-x-1.5'>
           {visibleCategories.map((club) => {
             const categoryDetails = getCategoryDetails(club)
             return (
@@ -88,8 +91,19 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* External Link Icon */}
-      <div className='hidden w-[7.5%] justify-end opacity-50 transition-opacity group-hover:opacity-100 sm:flex sm:w-[5%]'>
-        <Image src={ExternalLinkIcon} alt='View profile' width={20} height={20} />
+      <div
+        className='hidden w-[7.5%] min-w-[120px] justify-end sm:flex sm:w-[5%]'
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+        }}
+      >
+        {/* <Image src={ExternalLinkIcon} alt='View profile' width={20} height={20} /> */}
+        <FollowButton
+          lookupAddress={user.address}
+          connectedAddress={userAddress}
+          onDisconnectedClick={() => openConnectModal?.()}
+        />
       </div>
     </Link>
   )

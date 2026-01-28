@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 import { ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { formatPrice } from '@/utils/formatPrice'
+import PremiumPriceGraph from './PremiumPriceGraph'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -88,9 +89,9 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     const premiumPriceWei = rentPriceData?.premium?.toString() || '0'
 
     return (
-      <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+      <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col sm:rounded-lg sm:border-2'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
-        <div className='flex w-full flex-row items-center justify-between gap-4'>
+        <div className='mt-4 flex w-full flex-row items-center justify-between gap-4'>
           <div className='flex flex-row items-center gap-2 text-2xl sm:text-3xl'>
             {isLoadingRentPrice ? (
               <span className='font-bold'>Loading...</span>
@@ -125,6 +126,9 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             Register
           </PrimaryButton>
         </div>
+        {nameDetails?.expiry_date && ethPrice && (
+          <PremiumPriceGraph expiryDate={nameDetails.expiry_date} ethPrice={ethPrice} />
+        )}
       </div>
     )
   }

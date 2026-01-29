@@ -2,15 +2,20 @@
 
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectCategoriesPageFilters, clearCategoriesPageFilters } from '@/state/reducers/filters/categoriesPageFilters'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import {
+  selectCategoriesPageFilters,
+  clearCategoriesPageFilters,
+  setCategoriesPageSearch,
+} from '@/state/reducers/filters/categoriesPageFilters'
+import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
-import CloseIcon from 'public/icons/cross.svg'
 import { useNavbar } from '@/context/navbar'
 import CategoryTypeFilter from '../CategoryTypeFilter'
-import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
+import { selectFilterPanel } from '@/state/reducers/filterPanel'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import CategoriesSortDropdown from '../CategoriesSortDropdown'
+import MagnifyingGlass from 'public/icons/search.svg'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
@@ -27,8 +32,12 @@ const CategoriesFilterPanel: React.FC = () => {
   const isMobile = windowWidth < 1024
   const isOpen = filtersOpen
 
-  const handleClose = () => {
-    dispatch(setFilterPanelOpen(false))
+  // const handleClose = () => {
+  //   dispatch(setFilterPanelOpen(false))
+  // }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(setCategoriesPageSearch(e.target.value))
   }
 
   const handleClearFilters = () => {
@@ -66,12 +75,12 @@ const CategoriesFilterPanel: React.FC = () => {
         {/* Header */}
         <div className='pt-md relative flex items-center justify-between'>
           <div className='px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
-            <button
+            {/* <button
               onClick={handleClose}
               className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
-            </button>
+            </button> */}
             <div className='flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
               <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
               <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
@@ -84,6 +93,34 @@ const CategoriesFilterPanel: React.FC = () => {
       </div>
 
       <div className='flex-1 overflow-x-hidden overflow-y-auto'>
+        <div className='px-lg py-md flex w-full flex-col gap-2'>
+          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
+            <input
+              type='text'
+              placeholder='Search categories'
+              value={filters.search || ''}
+              onChange={handleSearchChange}
+              className='w-full bg-transparent text-lg outline-none'
+            />
+            {filters.search.length > 0 ? (
+              <Cross
+                onClick={() => {
+                  dispatch(setCategoriesPageSearch(''))
+                }}
+                className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+              />
+            ) : (
+              <Image
+                src={MagnifyingGlass}
+                alt='Search'
+                width={16}
+                height={16}
+                className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+              />
+            )}
+          </div>
+          <CategoriesSortDropdown />
+        </div>
         <div className='w-full'>
           <CategoryTypeFilter />
         </div>

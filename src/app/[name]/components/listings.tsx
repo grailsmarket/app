@@ -224,7 +224,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
 
   return (
     <div className='flex flex-row items-center gap-2'>
-      <PrimaryButton onClick={openBuyNowModal}>Buy<span className='hidden sm:inline'> Now</span></PrimaryButton>
+      <PrimaryButton onClick={openBuyNowModal}>
+        Buy<span className='hidden sm:inline'> Now</span>
+      </PrimaryButton>
       <button
         onClick={(e) => {
           e.preventDefault()

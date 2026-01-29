@@ -14,6 +14,10 @@ import { useBrokeredListings } from '../hooks/useBrokeredListings'
 import { useNavbar } from '@/context/navbar'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import ViewSelector from '@/components/domains/viewSelector'
+import DownloadButton from '@/components/ui/downloadButton'
+import Image from 'next/image'
+import FilterIcon from 'public/icons/filter.svg'
 
 interface TabSwitcherProps {
   user: Address | undefined
@@ -29,7 +33,24 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
   const { totalActiveBrokeredListings, totalBrokeredListings } = useBrokeredListings(user)
   const { isNavbarVisible } = useNavbar()
-  const { actions } = useFilterRouter()
+  const { actions, selectors } = useFilterRouter()
+
+  const showDownloadButton = useMemo(() => {
+    return (
+      selectedTab.value !== 'activity' &&
+      selectedTab.value !== 'broker' &&
+      selectedTab.value !== 'sent_offers' &&
+      selectedTab.value !== 'received_offers'
+    )
+  }, [selectedTab.value])
+  const showViewSelector = useMemo(() => {
+    return (
+      selectedTab.value !== 'activity' && selectedTab.value !== 'sent_offers' && selectedTab.value !== 'received_offers'
+    )
+  }, [selectedTab.value])
+  const showFilterButton = useMemo(() => {
+    return selectedTab.value !== 'broker'
+  }, [selectedTab.value])
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
@@ -158,10 +179,18 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     return (
       <div
         className={cn(
-          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
+          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
+        {showFilterButton && (
+          <button
+            className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+          >
+            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+          </button>
+        )}
         <div ref={containerRef} className='relative flex h-10 gap-4'>
           <div
             className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -193,6 +222,10 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
             ))}
           </div>
         </div>
+        <div className='hidden items-center gap-2 md:flex'>
+          {showDownloadButton && <DownloadButton />}
+          {showViewSelector && <ViewSelector />}
+        </div>
       </div>
     )
   }
@@ -201,38 +234,52 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   return (
     <div
       className={cn(
-        'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
+        'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
-      <div ref={containerRef} className='relative flex h-10 gap-4'>
-        <div
-          className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
-          style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-        />
-        {displayedTabs.map((tab) => (
+      <div className='flex items-center justify-between gap-3 md:gap-4'>
+        {showFilterButton && (
           <button
-            key={tab.value}
-            onClick={() => setProfileTab(tab)}
-            className={cn(
-              'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
-              selectedTab.value === tab.value
-                ? 'text-primary font-bold opacity-100'
-                : 'font-semibold opacity-50 transition-colors hover:opacity-80'
-            )}
+            className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
-            <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
-            {tab.value !== 'activity' && (
-              <Label
-                label={getTotalItems(tab)}
-                className={cn(
-                  'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] text-xs sm:h-[18px] sm:min-w-[18px]',
-                  selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
-                )}
-              />
-            )}
+            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
-        ))}
+        )}
+        <div ref={containerRef} className='relative flex h-10 gap-4'>
+          <div
+            className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
+            style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+          />
+          {displayedTabs.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setProfileTab(tab)}
+              className={cn(
+                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+                selectedTab.value === tab.value
+                  ? 'text-primary font-bold opacity-100'
+                  : 'font-semibold opacity-50 transition-colors hover:opacity-80'
+              )}
+            >
+              <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+              {tab.value !== 'activity' && (
+                <Label
+                  label={getTotalItems(tab)}
+                  className={cn(
+                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] text-xs sm:h-[18px] sm:min-w-[18px]',
+                    selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                  )}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className='hidden items-center gap-2 md:flex'>
+        {showDownloadButton && <DownloadButton />}
+        {showViewSelector && <ViewSelector />}
       </div>
     </div>
   )

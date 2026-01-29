@@ -121,15 +121,11 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
 
     const yScaleUsd = d3
       .scalePow()
-      .exponent(0.20) // < 1 compresses top, expands bottom
+      .exponent(0.2) // < 1 compresses top, expands bottom
       .domain([0, maxUsd])
       .range([height, 0])
 
-    const yScaleEth = d3
-      .scalePow()
-      .exponent(0.20)
-      .domain([0, maxEth])
-      .range([height, 0])
+    const yScaleEth = d3.scalePow().exponent(0.2).domain([0, maxEth]).range([height, 0])
 
     // Area generator
     const area = d3
@@ -238,10 +234,7 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
       return `${num.toFixed(2)}`
     }
 
-    const yAxisRight = d3
-      .axisRight(yScaleEth)
-      .tickValues(ethTickValues)
-      .tickFormat(formatEth)
+    const yAxisRight = d3.axisRight(yScaleEth).tickValues(ethTickValues).tickFormat(formatEth)
 
     g.append('g')
       .attr('transform', `translate(${width},0)`)

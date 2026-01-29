@@ -1,29 +1,20 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
 import { Address } from 'ethereum-identity-kit'
 import Activity from '@/components/activity'
 import { useProfileActivity } from '../hooks/useActivity'
-import FilterIcon from 'public/icons/filter.svg'
-import { useAppDispatch } from '@/state/hooks'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { cn } from '@/utils/tailwind'
-import { useNavbar } from '@/context/navbar'
 
 interface Props {
   user: Address | undefined
 }
 
 const ActivityPanel: React.FC<Props> = ({ user }) => {
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useProfileActivity(user)
-  const { isNavbarVisible } = useNavbar()
 
   return (
     <div className='z-0 flex w-full flex-col'>
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full items-center justify-between gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
@@ -37,7 +28,7 @@ const ActivityPanel: React.FC<Props> = ({ user }) => {
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
         </div>
-      </div>
+      </div> */}
       <Activity
         activity={activity}
         loadingRowCount={20}

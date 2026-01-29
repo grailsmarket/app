@@ -1,29 +1,19 @@
 'use client'
 
 import React from 'react'
-import FilterIcon from 'public/icons/filter.svg'
-import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import MagnifyingGlass from 'public/icons/search.svg'
 import { useCategoryActivity } from '../hooks/useActivity'
 import Activity from '@/components/activity'
-import { cn } from '@/utils/tailwind'
-import { useNavbar } from '@/context/navbar'
 
 interface Props {
   category: string
 }
 
 const ActivityPanel: React.FC<Props> = ({ category }) => {
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
   const { activity, activityLoading, fetchMoreActivity, hasMoreActivity } = useCategoryActivity(category)
-  const { isNavbarVisible } = useNavbar()
 
   return (
     <>
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
@@ -53,7 +43,7 @@ const ActivityPanel: React.FC<Props> = ({ category }) => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
       <Activity
         containerHeight='calc(100vh - 200px)'
         activity={activity}

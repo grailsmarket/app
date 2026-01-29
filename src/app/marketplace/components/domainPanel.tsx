@@ -1,70 +1,60 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React from 'react'
 import { useDomains } from '../hooks/useDomains'
 import Domains from '@/components/domains'
-import ViewSelector from '@/components/domains/viewSelector'
-import SortDropdown from '@/components/domains/sortDropdown'
-import FilterIcon from 'public/icons/filter.svg'
-import Image from 'next/image'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import MagnifyingGlass from 'public/icons/search.svg'
-import { useNavbar } from '@/context/navbar'
-import { cn } from '@/utils/tailwind'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
-import { Cross } from 'ethereum-identity-kit'
-import DownloadButton from '@/components/ui/downloadButton'
 
 const DomainPanel = () => {
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
+  const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
-  const { isNavbarVisible } = useNavbar()
+  // const { isNavbarVisible } = useNavbar()
   const { selectedTab } = useAppSelector(selectMarketplace)
 
-  // Local state for search input to prevent glitchy typing
-  const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
-  const userHasTyped = useRef(false)
+  // // Local state for search input to prevent glitchy typing
+  // const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
+  // const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  // const userHasTyped = useRef(false)
 
-  // Sync local state from Redux only on initial page load
-  // Once user starts typing, local state becomes the source of truth
-  useEffect(() => {
-    if (!userHasTyped.current) {
-      setLocalSearch(selectors.filters.search || '')
-    }
-  }, [selectors.filters.search])
+  // // Sync local state from Redux only on initial page load
+  // // Once user starts typing, local state becomes the source of truth
+  // useEffect(() => {
+  //   if (!userHasTyped.current) {
+  //     setLocalSearch(selectors.filters.search || '')
+  //   }
+  // }, [selectors.filters.search])
 
-  // Debounced search handler - only updates Redux, useFilterUrlSync handles URL
-  const handleSearchChange = (value: string) => {
-    userHasTyped.current = true
-    setLocalSearch(value)
+  // // Debounced search handler - only updates Redux, useFilterUrlSync handles URL
+  // const handleSearchChange = (value: string) => {
+  //   userHasTyped.current = true
+  //   setLocalSearch(value)
 
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
+  //   // Clear previous timeout
+  //   if (debounceRef.current) {
+  //     clearTimeout(debounceRef.current)
+  //   }
 
-    // Debounce the Redux update (URL is handled by useFilterUrlSync)
-    debounceRef.current = setTimeout(() => {
-      dispatch(actions.setSearch(value))
-    }, 300)
-  }
+  //   // Debounce the Redux update (URL is handled by useFilterUrlSync)
+  //   debounceRef.current = setTimeout(() => {
+  //     dispatch(actions.setSearch(value))
+  //   }, 300)
+  // }
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
-    }
-  }, [])
+  // // Cleanup timeout on unmount
+  // useEffect(() => {
+  //   return () => {
+  //     if (debounceRef.current) {
+  //       clearTimeout(debounceRef.current)
+  //     }
+  //   }
+  // }, [])
 
   return (
     <div className='z-0 flex w-full flex-col'>
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
@@ -114,7 +104,7 @@ const DomainPanel = () => {
           <DownloadButton />
           <ViewSelector />
         </div>
-      </div>
+      </div> */}
       <Domains
         domains={domains}
         loadingRowCount={20}

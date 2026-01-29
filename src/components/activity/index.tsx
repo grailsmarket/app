@@ -96,7 +96,7 @@ const Activity: React.FC<ActivityProps> = ({
           className={cn(
             'pt-sm transition-top border-tertiary px-md lg:px-lg sm:py-md sticky flex w-full items-center justify-start border-b duration-300 sm:flex',
             stickyHeaders ? 'sitcky bg-background z-50' : '',
-            stickyHeaders && (isNavbarVisible ? 'top-38 md:top-48' : 'top-24 md:top-30')
+            stickyHeaders && (isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14')
           )}
         >
           {displayedColumns.map((header, index) => {

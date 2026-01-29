@@ -27,7 +27,7 @@ const DownloadButton = ({ ownerAddress, category }: DownloadButtonProps) => {
 
   const searchTerm = filters.search
   const search = normalizeName(searchTerm.replace('.eth', '').toLowerCase().trim())
-  const statusFilter = filters.status.filter(
+  const statusFilter = filters.status?.filter(
     (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
   )
 

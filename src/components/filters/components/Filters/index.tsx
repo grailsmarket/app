@@ -9,18 +9,21 @@ import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
-import { useIsClient } from 'ethereum-identity-kit'
+import { Cross, useIsClient } from 'ethereum-identity-kit'
 import { useCategories } from '../../hooks/useCategories'
 import TypeFilter from '../TypeFilter'
 import TextMatchFilter from '../TextMatchFilter'
 import TextNonMatchFilter from '../TextNonMatchFilter'
 import { CategoryType } from '@/types/domains'
 import ExpandableTab from '@/components/ui/expandableTab'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import FilterSelector from '../FilterSelector'
 import { useAppDispatch } from '@/state/hooks'
 import CategoryFilterNone from '../CategoryFilterButtons/CategoryFilterNone'
 import { localizeNumber } from '@/utils/localizeNumber'
+import SortDropdown from '@/components/domains/sortDropdown'
+import Image from 'next/image'
+import MagnifyingGlass from 'public/icons/search.svg'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -34,9 +37,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
   const isClient = useIsClient()
   const { categories, userCategoryCounts } = useCategories()
   // Get marketplace and categoriesPage tabs from filter router
-  const { marketplaceTab, categoriesPageTab } = useFilterRouter()
+  const { marketplaceTab, categoriesPageTab, selectors, actions } = useFilterRouter()
   const activeMarketplaceTab = marketplaceTab?.value || 'names'
   const activeCategoriesPageTab = categoriesPageTab?.value || 'categories'
+  const dispatch = useAppDispatch()
 
   const classifiedCategories = useMemo(() => {
     const hashMap = new Map<string, CategoryType[]>()
@@ -56,6 +60,44 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       categories: value,
     }
   })
+
+  // Local state for search input to prevent glitchy typing
+  const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const userHasTyped = useRef(false)
+
+  // Sync local state from Redux only on initial page load
+  // Once user starts typing, local state becomes the source of truth
+  useEffect(() => {
+    if (!userHasTyped.current) {
+      setLocalSearch(selectors.filters.search || '')
+    }
+  }, [selectors.filters.search])
+
+  // Debounced search handler - only updates Redux, useFilterUrlSync handles URL
+  const handleSearchChange = (value: string) => {
+    userHasTyped.current = true
+    setLocalSearch(value)
+
+    // Clear previous timeout
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
+
+    // Debounce the Redux update (URL is handled by useFilterUrlSync)
+    debounceRef.current = setTimeout(() => {
+      dispatch(actions.setSearch(value))
+    }, 300)
+  }
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
+    }
+  }, [])
 
   if (!isClient) return null
 
@@ -103,6 +145,35 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
         )}
       >
         <div className='flex flex-col'>
+          <div className='px-lg mb-2 flex w-full flex-col gap-2'>
+            <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
+              <input
+                type='text'
+                placeholder='Search'
+                value={localSearch}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className='w-full bg-transparent text-lg outline-none'
+              />
+              {localSearch.length > 0 ? (
+                <Cross
+                  onClick={() => {
+                    setLocalSearch('')
+                    handleSearchChange('')
+                  }}
+                  className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+                />
+              ) : (
+                <Image
+                  src={MagnifyingGlass}
+                  alt='Search'
+                  width={16}
+                  height={16}
+                  className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+                />
+              )}
+            </div>
+            <SortDropdown />
+          </div>
           {/* <SortFilter /> */}
           {showCategoryTab && <CategoryFilterTab setPanelCategories={setPanelCategories} />}
           {showStatusFilter && <StatusFilter />}

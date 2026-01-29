@@ -1,46 +1,22 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectCategoriesPageFilters, setCategoriesPageSearch } from '@/state/reducers/filters/categoriesPageFilters'
-import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
-import { useNavbar } from '@/context/navbar'
-import { cn } from '@/utils/tailwind'
-import FilterIcon from 'public/icons/filter.svg'
-import MagnifyingGlass from 'public/icons/search.svg'
-import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import CategoryRow from '../categoryRow'
 import { useFilteredCategories } from '../../hooks/useFilteredCategories'
-import { Cross } from 'ethereum-identity-kit'
 
 const CategoriesPanel: React.FC = () => {
-  const dispatch = useAppDispatch()
-  const filters = useAppSelector(selectCategoriesPageFilters)
-  const filterPanel = useAppSelector(selectFilterPanel)
-  const filtersOpen = filterPanel.open
-  const { isNavbarVisible } = useNavbar()
   const { categories, isLoading } = useFilteredCategories()
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setCategoriesPageSearch(e.target.value))
-  }
-
-  const toggleFilters = () => {
-    dispatch(setFilterPanelOpen(!filtersOpen))
-  }
 
   return (
     <div className='z-0 flex w-full flex-col'>
       {/* Top bar */}
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
         <div className='flex w-full items-center gap-2 sm:w-fit'>
-          {/* Filter toggle button */}
           <button
             className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             onClick={toggleFilters}
@@ -48,7 +24,6 @@ const CategoriesPanel: React.FC = () => {
             <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
 
-          {/* Search input */}
           <div className='group border-tertiary flex h-9 w-[calc(100%-39px)] items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10 sm:w-fit'>
             <input
               type='text'
@@ -75,20 +50,18 @@ const CategoriesPanel: React.FC = () => {
             )}
           </div>
 
-          {/* Sort dropdown - hidden on mobile */}
           <div className='hidden sm:block'>
             <CategoriesSortDropdown />
           </div>
         </div>
 
-        {/* Sort dropdown - visible on mobile */}
         <div className='flex w-full items-center justify-between gap-2 sm:hidden'>
           <CategoriesSortDropdown />
         </div>
-      </div>
+      </div> */}
 
       {/* Categories grid */}
-      <div className='px-md lg:px-lg pb-lg'>
+      <div className='px-md lg:px-lg py-lg'>
         {isLoading ? (
           <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4'>
             {Array.from({ length: 12 }).map((_, i) => (

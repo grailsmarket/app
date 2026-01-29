@@ -28,6 +28,10 @@ export const PROFILE_TABS = [
     value: 'watchlist',
   },
   {
+    label: 'Private For Me',
+    value: 'private_for_me',
+  },
+  {
     label: 'Broker',
     value: 'broker',
   },

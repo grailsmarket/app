@@ -10,6 +10,7 @@ import { fetchAccount } from 'ethereum-identity-kit'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import ActivityPanel from './activity'
 import BrokerPanel from './brokerPanel'
+import PrivateForMePanel from './privateForMePanel'
 import { useQuery } from '@tanstack/react-query'
 import OfferPanel from './offerPanel'
 import { changeTab, selectUserProfile, setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
@@ -95,9 +96,9 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  // ensure that only the owner of the profile can see the watchlist
+  // ensure that only the owner of the profile can see the watchlist and private_for_me tabs
   useEffect(() => {
-    if (profileTab === 'watchlist') {
+    if (profileTab === 'watchlist' || profileTab === 'private_for_me') {
       if (
         !(
           userAddress &&
@@ -119,6 +120,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   const showOfferPanel = profileTab === 'sent_offers' || profileTab === 'received_offers'
   const showActivityPanel = profileTab === 'activity'
   const showBrokerPanel = profileTab === 'broker'
+  const showPrivateForMePanel = profileTab === 'private_for_me'
 
   return (
     <Suspense>
@@ -140,6 +142,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                   showOfferPanel={showOfferPanel}
                   showActivityPanel={showActivityPanel}
                   showBrokerPanel={showBrokerPanel}
+                  showPrivateForMePanel={showPrivateForMePanel}
                   isMyProfile={isMyProfile}
                 />
               </div>
@@ -159,6 +162,7 @@ interface ProfileContentProps {
   showOfferPanel: boolean
   showActivityPanel: boolean
   showBrokerPanel: boolean
+  showPrivateForMePanel: boolean
   isMyProfile: boolean
 }
 
@@ -168,6 +172,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   showOfferPanel,
   showActivityPanel,
   showBrokerPanel,
+  showPrivateForMePanel,
   isMyProfile,
 }) => {
   const isClient = useIsClient()
@@ -187,6 +192,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}
       {showBrokerPanel && <BrokerPanel user={userAddress} />}
+      {showPrivateForMePanel && <PrivateForMePanel user={userAddress} />}
     </div>
   )
 }

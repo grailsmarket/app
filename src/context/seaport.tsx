@@ -26,6 +26,7 @@ type SeaportContextValue = {
     currencies?: ('ETH' | 'USDC')[]
     brokerAddress?: string // Address to receive broker fee
     brokerFeeBps?: number // Broker fee in basis points (e.g., 100 = 1%)
+    privateBuyerAddress?: string // Address for private listing (only this buyer can purchase)
     setStatus?: (status: ListingStatus) => void
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void

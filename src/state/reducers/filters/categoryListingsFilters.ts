@@ -79,7 +79,7 @@ export const initialState: PortfolioFiltersOpenedState = {
   },
   categories: [],
   openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
-  sort: null,
+  sort: 'price_asc',
   scrollTop: 0,
 }
 

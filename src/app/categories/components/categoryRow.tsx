@@ -147,9 +147,13 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
         </p>
       </div>
       <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Reg+<span className='text-grace'>Grace</span></p>
+        <p className='font-sedan-sc text-xl md:text-2xl'>
+          Reg+<span className='text-grace'>Grace</span>
+        </p>
         <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>({(category.registered_percent + category.grace_percent).toFixed(1)}%)</span>
+          <span className='mr-1 text-lg font-medium'>
+            ({(category.registered_percent + category.grace_percent).toFixed(1)}%)
+          </span>
           {localizeNumber(category.registered_count + category.grace_count)}
         </p>
       </div>
@@ -160,8 +164,8 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
             (
             {category.member_count > 0
               ? ((category.premium_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                maximumFractionDigits: 1,
-              })
+                  maximumFractionDigits: 1,
+                })
               : 0}
             %)
           </span>
@@ -175,8 +179,8 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
             (
             {category.member_count > 0
               ? ((category.available_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                maximumFractionDigits: 1,
-              })
+                  maximumFractionDigits: 1,
+                })
               : 0}
             %)
           </span>
@@ -193,9 +197,13 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
       <div className='z-10 flex items-center justify-between gap-2'>
         <p className='font-sedan-sc text-xl md:text-2xl'>Holders</p>
         <div className='flex items-center gap-1'>
-          <p className='text-lg font-semibold'>({(category.member_count / category.holders_count).toLocaleString(navigator.language, {
-            maximumFractionDigits: 1,
-          })})</p>
+          <p className='text-lg font-semibold'>
+            (
+            {(category.member_count / category.holders_count).toLocaleString(navigator.language, {
+              maximumFractionDigits: 1,
+            })}
+            )
+          </p>
           <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
         </div>
       </div>

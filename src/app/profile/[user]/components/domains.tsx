@@ -2,14 +2,9 @@
 
 import React, { useMemo } from 'react'
 import Domains from '@/components/domains'
-import ViewSelector from '@/components/domains/viewSelector'
-import SortDropdown from '@/components/domains/sortDropdown'
-import FilterIcon from 'public/icons/filter.svg'
-import Image from 'next/image'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { Address, Cross } from 'ethereum-identity-kit'
-import MagnifyingGlass from 'public/icons/search.svg'
+import { Address } from 'ethereum-identity-kit'
 import { useDomains } from '../hooks/useDomains'
 import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -18,14 +13,11 @@ import {
   PORTFOLIO_MY_LISTINGS_DISPLAYED_COLUMNS,
   PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS,
 } from '@/constants/domains/marketplaceDomains'
-import { cn } from '@/utils/tailwind'
-import { useNavbar } from '@/context/navbar'
 import { SelectAllProvider } from '@/context/selectAll'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
-import DownloadButton from '@/components/ui/downloadButton'
 
 interface Props {
   user: Address | undefined
@@ -33,8 +25,7 @@ interface Props {
 }
 
 const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
+  const { selectors } = useFilterRouter()
   const {
     domains,
     domainsLoading,
@@ -47,7 +38,6 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
   } = useDomains(user)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
-  const { isNavbarVisible } = useNavbar()
   const { authStatus } = useUserContext()
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
 
@@ -85,7 +75,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
 
   const content = (
     <div className='z-0 flex w-full flex-col'>
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-sm md:px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
@@ -132,7 +122,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
           <DownloadButton ownerAddress={user} />
           <ViewSelector />
         </div>
-      </div>
+      </div> */}
       <Domains
         domains={domains}
         loadingRowCount={30}

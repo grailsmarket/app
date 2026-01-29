@@ -12,6 +12,12 @@ import { useCategoriesListingsCount } from '../hooks/useCategoriesListingsCount'
 import Label from '@/components/ui/label'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
 import { localizeNumber } from '@/utils/localizeNumber'
+import DownloadButton from '@/components/ui/downloadButton'
+import Image from 'next/image'
+import FilterIcon from 'public/icons/filter.svg'
+import CloseIcon from 'public/icons/cross.svg'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import ViewSelector from '@/components/domains/viewSelector'
 
 const CategoriesPageTabSwitcher: React.FC = () => {
   const [mounted, setMounted] = useState(false)
@@ -22,7 +28,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
   const router = useRouter()
   const { data: holdersCount } = useAllHoldersCount()
   const { data: listingsCount } = useCategoriesListingsCount()
-
+  const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
@@ -78,45 +84,57 @@ const CategoriesPageTabSwitcher: React.FC = () => {
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
-        <div ref={containerRef} className='relative flex h-10 w-full gap-4'>
-          <div
-            className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
-            style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-          />
-          <div className='flex gap-4'>
-            {CATEGORIES_PAGE_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setCategoriesPageTab(tab)}
-                className={cn(
-                  'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
-                  selectedTab.value === tab.value
-                    ? 'text-primary font-bold opacity-100'
-                    : 'font-semibold opacity-50 transition-colors hover:opacity-80'
-                )}
-              >
-                <p>{tab.label}</p>
-                {tab.value === 'holders' && (
-                  <Label
-                    label={formatTotalTabItems(holdersCount || 0)}
-                    className={cn(
-                      'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
-                      selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
-                    )}
-                  />
-                )}
-                {tab.value === 'listings' && (
-                  <Label
-                    label={formatTotalTabItems(listingsCount || 0)}
-                    className={cn(
-                      'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
-                      selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
-                    )}
-                  />
-                )}
-              </button>
-            ))}
+        <div className='flex items-center justify-between gap-3 md:gap-4'>
+          <button
+            className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+          >
+            <Image src={selectors.filters.open ? CloseIcon : FilterIcon} alt='Filter' width={16} height={16} />
+          </button>
+          <div ref={containerRef} className='relative flex h-10 w-full gap-4'>
+            <div
+              className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
+              style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+            />
+            <div className='flex gap-4'>
+              {CATEGORIES_PAGE_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setCategoriesPageTab(tab)}
+                  className={cn(
+                    'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
+                    selectedTab.value === tab.value
+                      ? 'text-primary font-bold opacity-100'
+                      : 'font-semibold opacity-50 transition-colors hover:opacity-80'
+                  )}
+                >
+                  <p>{tab.label}</p>
+                  {tab.value === 'holders' && (
+                    <Label
+                      label={formatTotalTabItems(holdersCount || 0)}
+                      className={cn(
+                        'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                        selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                      )}
+                    />
+                  )}
+                  {tab.value === 'listings' && (
+                    <Label
+                      label={formatTotalTabItems(listingsCount || 0)}
+                      className={cn(
+                        'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                        selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                      )}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
+        </div>
+        <div className='hidden items-center gap-2 md:flex'>
+          <ViewSelector />
+          {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <DownloadButton />}
         </div>
       </div>
     )
@@ -126,47 +144,59 @@ const CategoriesPageTabSwitcher: React.FC = () => {
   return (
     <div
       className={cn(
-        'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-8',
+        'bg-background px-sm sm:px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
-      <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
-        <div
-          className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
-          style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-        />
-        {CATEGORIES_PAGE_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setCategoriesPageTab(tab)}
-            className={cn(
-              'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
-              selectedTab.value === tab.value
-                ? 'text-primary font-bold opacity-100'
-                : 'font-semibold opacity-50 transition-colors hover:opacity-80'
-            )}
-          >
-            <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
-            {tab.value === 'holders' && (
-              <Label
-                label={localizeNumber(holdersCount || 0)}
-                className={cn(
-                  'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
-                  selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
-                )}
-              />
-            )}
-            {tab.value === 'listings' && (
-              <Label
-                label={formatTotalTabItems(listingsCount || 0)}
-                className={cn(
-                  'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
-                  selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
-                )}
-              />
-            )}
-          </button>
-        ))}
+      <div className='flex items-center justify-between gap-3 md:gap-4'>
+        <button
+          className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+          onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+        >
+          <Image src={selectors.filters.open ? CloseIcon : FilterIcon} alt='Filter' width={16} height={16} />
+        </button>
+        <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
+          <div
+            className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
+            style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+          />
+          {CATEGORIES_PAGE_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setCategoriesPageTab(tab)}
+              className={cn(
+                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+                selectedTab.value === tab.value
+                  ? 'text-primary font-bold opacity-100'
+                  : 'font-semibold opacity-50 transition-colors hover:opacity-80'
+              )}
+            >
+              <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+              {tab.value === 'holders' && (
+                <Label
+                  label={localizeNumber(holdersCount || 0)}
+                  className={cn(
+                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                    selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                  )}
+                />
+              )}
+              {tab.value === 'listings' && (
+                <Label
+                  label={formatTotalTabItems(listingsCount || 0)}
+                  className={cn(
+                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                    selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                  )}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className='hidden items-center gap-2 md:flex'>
+        <ViewSelector />
+        {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <DownloadButton />}
       </div>
     </div>
   )

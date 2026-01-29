@@ -16,6 +16,8 @@ import { useEffect, useRef } from 'react'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
 import SecondaryButton from '../ui/buttons/secondary'
+import ViewSelector from '../domains/viewSelector'
+import DownloadButton from '../ui/downloadButton'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
@@ -86,26 +88,34 @@ const FilterPanel: React.FC = () => {
               isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
             )}
           >
-            <button
-              onClick={() => {
-                dispatch(actions.setFiltersOpen(false))
-              }}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
-            >
-              <Image src={CloseIcon} alt='Close' width={16} height={16} />
-            </button>
-            <div className='flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
-              <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
-              <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
+            <div className='flex items-center gap-2'>
+              <button
+                onClick={() => {
+                  dispatch(actions.setFiltersOpen(false))
+                }}
+                className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10 lg:hidden'
+              >
+                <Image src={CloseIcon} alt='Close' width={16} height={16} />
+              </button>
+              <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
+                <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
+                <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
+              </div>
             </div>
-            <SecondaryButton
-              onClick={() => {
-                dispatch(actions.clearFilters())
-              }}
-              disabled={isFiltersClear}
-            >
-              Clear
-            </SecondaryButton>
+            <div className='flex items-center gap-2'>
+              <SecondaryButton
+                onClick={() => {
+                  dispatch(actions.clearFilters())
+                }}
+                disabled={isFiltersClear}
+              >
+                Clear
+              </SecondaryButton>
+              <span className='md:hidden'>
+                <ViewSelector />
+                <DownloadButton />
+              </span>
+            </div>
           </div>
           <button
             onClick={setPanelAll}

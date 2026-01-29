@@ -114,16 +114,21 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
       .domain(d3.extent(chartData, (d) => d.date) as [Date, Date])
       .range([0, width])
 
+    // Use power scale to compress high values and expand low values
+    // This keeps the exponential curve shape but shows more detail at the bottom
+    const maxUsd = d3.max(chartData, (d) => d.usd) || 100000000
+    const maxEth = d3.max(chartData, (d) => d.eth) || 1
+
     const yScaleUsd = d3
-      .scaleLinear()
-      .domain([0, d3.max(chartData, (d) => d.usd) || 0])
-      .nice()
+      .scalePow()
+      .exponent(0.20) // < 1 compresses top, expands bottom
+      .domain([0, maxUsd])
       .range([height, 0])
 
     const yScaleEth = d3
-      .scaleLinear()
-      .domain([0, d3.max(chartData, (d) => d.eth) || 0])
-      .nice()
+      .scalePow()
+      .exponent(0.20)
+      .domain([0, maxEth])
       .range([height, 0])
 
     // Area generator
@@ -191,7 +196,11 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
     g.selectAll('.domain').attr('stroke', '#444444')
     g.selectAll('.tick line').attr('stroke', '#444444')
 
-    // Y axis left (USD)
+    // Y axis left (USD) - custom tick values to show more detail at lower values
+    const usdTickValues = isMobile
+      ? [0, 4000, 175000, 1500000, 6000000, 20000000, 50000000, 100000000]
+      : [0, 1000, 25000, 200000, 1000000, 3500000, 10000000, 25000000, 50000000, 100000000]
+
     const formatUsd = (value: d3.NumberValue) => {
       const num = value.valueOf()
       if (num >= 1000000) return `$${(num / 1000000).toFixed(0)}M`
@@ -199,10 +208,7 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
       return `$${num.toFixed(0)}`
     }
 
-    const yAxisLeft = d3
-      .axisLeft(yScaleUsd)
-      .ticks(isMobile ? 4 : 6)
-      .tickFormat(formatUsd)
+    const yAxisLeft = d3.axisLeft(yScaleUsd).tickValues(usdTickValues).tickFormat(formatUsd)
 
     g.append('g')
       .call(yAxisLeft)
@@ -221,17 +227,20 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
     //   .style('font-size', isMobile ? '10px' : '11px')
     //   .text('USD')
 
-    // Y axis right (ETH)
+    // Y axis right (ETH) - custom tick values matching USD scale
+    const ethTickValues = usdTickValues.map((usd) => (ethPrice > 0 ? usd / ethPrice : 0))
+
     const formatEth = (value: d3.NumberValue) => {
       const num = value.valueOf()
       if (num >= 1000) return `${(num / 1000).toFixed(0)}K`
       if (num >= 1) return `${num.toFixed(0)}`
-      return `${num.toFixed(1)}`
+      if (num >= 0.1) return `${num.toFixed(1)}`
+      return `${num.toFixed(2)}`
     }
 
     const yAxisRight = d3
       .axisRight(yScaleEth)
-      .ticks(isMobile ? 4 : 6)
+      .tickValues(ethTickValues)
       .tickFormat(formatEth)
 
     g.append('g')
@@ -293,11 +302,12 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
 
         const d = d1 && x0.getTime() - d0.date.getTime() > d1.date.getTime() - x0.getTime() ? d1 : d0
 
-        focus.attr('transform', `translate(${xScale(d.date)},${yScaleUsd(d.usd)})`)
+        const yPos = yScaleUsd(d.usd)
+        focus.attr('transform', `translate(${xScale(d.date)},${yPos})`)
         focus
           .select('.x-hover-line')
-          .attr('y1', -yScaleUsd(d.usd))
-          .attr('y2', height - yScaleUsd(d.usd))
+          .attr('y1', -yPos)
+          .attr('y2', height - yPos)
 
         // Shift tooltip left when near right edge
         const xPos = xScale(d.date)
@@ -320,11 +330,11 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
              <div class="text-md text-neutral font-medium">${d3.timeFormat('%b %d, %Y %H:%M')(d.date)}</div>`
           )
           .style('left', `${xPos + margin.left}px`)
-          .style('top', `${yScaleUsd(d.usd) + margin.top - 64}px`)
+          .style('top', `${yPos + margin.top - 64}px`)
           .style('transform', `translateX(${translateX})`)
           .style('box-shadow', '0 4px 4px rgba(0,0,0,0.2)')
       })
-  }, [chartData, currentData, dimensions, isMobile])
+  }, [chartData, currentData, dimensions, isMobile, ethPrice])
 
   if (!chartData.length) {
     return null

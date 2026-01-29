@@ -35,6 +35,23 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { isNavbarVisible } = useNavbar()
   const { actions, selectors } = useFilterRouter()
 
+  const showDownloadButton = useMemo(() => {
+    return (
+      selectedTab.value !== 'activity' &&
+      selectedTab.value !== 'broker' &&
+      selectedTab.value !== 'sent_offers' &&
+      selectedTab.value !== 'received_offers'
+    )
+  }, [selectedTab.value])
+  const showViewSelector = useMemo(() => {
+    return (
+      selectedTab.value !== 'activity' && selectedTab.value !== 'sent_offers' && selectedTab.value !== 'received_offers'
+    )
+  }, [selectedTab.value])
+  const showFilterButton = useMemo(() => {
+    return selectedTab.value !== 'broker'
+  }, [selectedTab.value])
+
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
@@ -162,10 +179,18 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     return (
       <div
         className={cn(
-          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
+          'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
+        {showFilterButton && (
+          <button
+            className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+          >
+            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+          </button>
+        )}
         <div ref={containerRef} className='relative flex h-10 gap-4'>
           <div
             className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -198,8 +223,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           </div>
         </div>
         <div className='hidden items-center gap-2 md:flex'>
-          <ViewSelector />
-          {selectedTab.value !== 'activity' && selectedTab.value !== 'broker' && <DownloadButton />}
+          {showDownloadButton && <DownloadButton />}
+          {showViewSelector && <ViewSelector />}
         </div>
       </div>
     )
@@ -209,17 +234,19 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   return (
     <div
       className={cn(
-        'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-xl xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
+        'bg-background px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
       <div className='flex items-center justify-between gap-3 md:gap-4'>
-        <button
-          className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
-          onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
-        >
-          <Image src={FilterIcon} alt='Filter' width={16} height={16} />
-        </button>
+        {showFilterButton && (
+          <button
+            className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+          >
+            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+          </button>
+        )}
         <div ref={containerRef} className='relative flex h-10 gap-4'>
           <div
             className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -251,8 +278,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
         </div>
       </div>
       <div className='hidden items-center gap-2 md:flex'>
-        <ViewSelector />
-        {selectedTab.value !== 'activity' && selectedTab.value !== 'broker' && <DownloadButton />}
+        {showDownloadButton && <DownloadButton />}
+        {showViewSelector && <ViewSelector />}
       </div>
     </div>
   )

@@ -1,30 +1,22 @@
 'use client'
 
 import React from 'react'
-import FilterIcon from 'public/icons/filter.svg'
-import Image from 'next/image'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import MagnifyingGlass from 'public/icons/search.svg'
+import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import Offers from '@/components/offers'
 import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { Address } from 'viem'
-import { cn } from '@/utils/tailwind'
-import { useNavbar } from '@/context/navbar'
 
 interface OfferPanelProps {
   user: Address | undefined
 }
 
 const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
-  const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
-  const { selectors, actions } = useFilterRouter()
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers(user)
-  const { isNavbarVisible } = useNavbar()
+  // const { isNavbarVisible } = useNavbar()
   const disconnectMessage = {
     sent_offers: 'Sign in to view your offers.',
     received_offers: 'Sign in to view your received offers.',
@@ -37,7 +29,7 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
 
   return (
     <div className='z-0 flex w-full flex-col'>
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-start justify-start gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
@@ -67,7 +59,7 @@ const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
       <Offers
         offers={offers}
         loadingRowCount={20}

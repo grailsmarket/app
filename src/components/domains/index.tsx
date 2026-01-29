@@ -174,7 +174,7 @@ const Domains: React.FC<DomainsProps> = ({
           <div
             className={cn(
               'px-md pt-sm bg-background transition-top border-tertiary lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
-              isNavbarVisible ? 'top-28 md:top-32' : 'top-12 md:top-14'
+              isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
             )}
           >
             {displayedColumns.map((header, index) => {

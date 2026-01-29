@@ -98,8 +98,8 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
           </div>
         </div>
         <div className='hidden items-center gap-2 md:flex'>
-          <ViewSelector />
           {selectedTab.value !== 'activity' && <DownloadButton />}
+          {selectedTab.value !== 'activity' && <ViewSelector />}
         </div>
       </div>
     )
@@ -142,8 +142,8 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
         </div>
       </div>
       <div className='hidden items-center gap-2 md:flex'>
-        <ViewSelector />
         {selectedTab.value !== 'activity' && <DownloadButton />}
+        {selectedTab.value !== 'activity' && <ViewSelector />}
       </div>
       {/* {selectedTab.value === 'activity' && (
         <div className='hidden items-center justify-end gap-1 sm:gap-2 lg:flex'>

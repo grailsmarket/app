@@ -15,7 +15,6 @@ import { localizeNumber } from '@/utils/localizeNumber'
 import DownloadButton from '@/components/ui/downloadButton'
 import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
-import CloseIcon from 'public/icons/cross.svg'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import ViewSelector from '@/components/domains/viewSelector'
 
@@ -89,7 +88,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
             className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
-            <Image src={selectors.filters.open ? CloseIcon : FilterIcon} alt='Filter' width={16} height={16} />
+            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
           </button>
           <div ref={containerRef} className='relative flex h-10 w-full gap-4'>
             <div
@@ -133,8 +132,8 @@ const CategoriesPageTabSwitcher: React.FC = () => {
           </div>
         </div>
         <div className='hidden items-center gap-2 md:flex'>
-          <ViewSelector />
           {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <DownloadButton />}
+          <ViewSelector />
         </div>
       </div>
     )
@@ -153,7 +152,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
           className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
           onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
         >
-          <Image src={selectors.filters.open ? CloseIcon : FilterIcon} alt='Filter' width={16} height={16} />
+          <Image src={FilterIcon} alt='Filter' width={16} height={16} />
         </button>
         <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
           <div
@@ -195,8 +194,8 @@ const CategoriesPageTabSwitcher: React.FC = () => {
         </div>
       </div>
       <div className='hidden items-center gap-2 md:flex'>
-        <ViewSelector />
         {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <DownloadButton />}
+        {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <ViewSelector />}
       </div>
     </div>
   )

@@ -48,7 +48,7 @@ const FilterPanel: React.FC = () => {
   const isMobile = windowWidth < 1024
   const isOpen = filtersOpen
   // const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
-  // const isDisabled = filterType === 'marketplace' && isBulkSearch
+  const isDisabled = filterType === 'profile' && profileTab?.value === 'broker'
   const isActivityFilter =
     (filterType === 'profile' && profileTab?.value === 'activity') ||
     (filterType === 'marketplace' && marketplaceTab?.value === 'activity') ||
@@ -70,7 +70,7 @@ const FilterPanel: React.FC = () => {
         !isMobile && 'sticky',
         !isMobile && (isNavbarVisible ? 'top-[128px] h-[calc(100dvh-128px)]' : 'top-14 h-[calc(100dvh-56px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
-        // isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
+        isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? 'md:border-r-2' : 'w-0'
       )}
     >
@@ -111,7 +111,7 @@ const FilterPanel: React.FC = () => {
               >
                 Clear
               </SecondaryButton>
-              <span className='md:hidden'>
+              <span className='flex items-center gap-2 md:hidden'>
                 <ViewSelector />
                 <DownloadButton />
               </span>

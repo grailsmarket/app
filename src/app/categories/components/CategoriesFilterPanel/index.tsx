@@ -12,10 +12,11 @@ import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
 import { useNavbar } from '@/context/navbar'
 import CategoryTypeFilter from '../CategoryTypeFilter'
-import { selectFilterPanel } from '@/state/reducers/filterPanel'
+import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
+import CloseIcon from 'public/icons/cross.svg'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
@@ -32,9 +33,9 @@ const CategoriesFilterPanel: React.FC = () => {
   const isMobile = windowWidth < 1024
   const isOpen = filtersOpen
 
-  // const handleClose = () => {
-  //   dispatch(setFilterPanelOpen(false))
-  // }
+  const handleClose = () => {
+    dispatch(setFilterPanelOpen(false))
+  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setCategoriesPageSearch(e.target.value))
@@ -59,9 +60,9 @@ const CategoriesFilterPanel: React.FC = () => {
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
-          (isNavbarVisible
-            ? 'top-26 h-[calc(100dvh-104px)] md:top-32 md:h-[calc(100dvh-128px)]'
-            : 'top-12 h-[calc(100dvh-56px)] md:top-14'),
+        (isNavbarVisible
+          ? 'top-26 h-[calc(100dvh-104px)] md:top-32 md:h-[calc(100dvh-128px)]'
+          : 'top-12 h-[calc(100dvh-56px)] md:top-14'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? 'md:border-r-2' : 'w-0'
       )}
@@ -75,12 +76,12 @@ const CategoriesFilterPanel: React.FC = () => {
         {/* Header */}
         <div className='pt-md relative flex items-center justify-between'>
           <div className='px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
-            {/* <button
+            <button
               onClick={handleClose}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
+              className='border-foreground flex h-9 w-9 md:hidden cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
-            </button> */}
+            </button>
             <div className='flex max-w-full items-center gap-1.5 text-sm leading-6 font-bold'>
               <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
               <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>

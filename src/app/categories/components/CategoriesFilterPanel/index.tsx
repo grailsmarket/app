@@ -60,9 +60,9 @@ const CategoriesFilterPanel: React.FC = () => {
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
-        (isNavbarVisible
-          ? 'top-26 h-[calc(100dvh-104px)] md:top-32 md:h-[calc(100dvh-128px)]'
-          : 'top-12 h-[calc(100dvh-56px)] md:top-14'),
+          (isNavbarVisible
+            ? 'top-26 h-[calc(100dvh-104px)] md:top-32 md:h-[calc(100dvh-128px)]'
+            : 'top-12 h-[calc(100dvh-56px)] md:top-14'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? 'md:border-r-2' : 'w-0'
       )}
@@ -78,7 +78,7 @@ const CategoriesFilterPanel: React.FC = () => {
           <div className='px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
             <button
               onClick={handleClose}
-              className='border-foreground flex h-9 w-9 md:hidden cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:hidden md:h-10 md:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button>

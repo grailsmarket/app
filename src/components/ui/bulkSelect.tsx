@@ -322,10 +322,14 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const selectAllError = selectAll?.error
 
   const bulkSelectWidth = showOwnedActionButtons
-    ? 'min(820px,95vw)'
+    ? pageType === 'profile'
+      ? 'min(820px,95vw)'
+      : 'min(720px,95vw)'
     : showWatchlistButton
       ? 'min(650px,95vw)'
-      : 'min(420px,95vw)'
+      : pageType === 'profile'
+        ? 'min(420px,95vw)'
+        : 'min(320px,95vw)'
 
   if (!isBulkSelectSupportedTab) return null
 

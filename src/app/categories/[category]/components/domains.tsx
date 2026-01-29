@@ -2,16 +2,9 @@
 
 import React from 'react'
 import Domains from '@/components/domains'
-import ViewSelector from '@/components/domains/viewSelector'
-import SortDropdown from '@/components/domains/sortDropdown'
-import FilterIcon from 'public/icons/filter.svg'
-import Image from 'next/image'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import MagnifyingGlass from 'public/icons/search.svg'
 import { useCategoryDomains } from '../hooks/useDomains'
-import { cn } from '@/utils/tailwind'
-import { useNavbar } from '@/context/navbar'
 import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { SelectAllProvider } from '@/context/selectAll'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -19,28 +12,24 @@ import { useUserContext } from '@/context/user'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
 import { selectCategory } from '@/state/reducers/category/category'
-import { Cross } from 'ethereum-identity-kit'
-import DownloadButton from '@/components/ui/downloadButton'
 
 interface Props {
   category: string
 }
 
 const DomainPanel: React.FC<Props> = ({ category }) => {
-  const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
+  const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
   const { selectedTab } = useAppSelector(selectCategory)
   const { domains, categoryDomainsLoading, fetchMoreCategoryDomains, hasMoreCategoryDomains, totalCategoryDomains } =
     useCategoryDomains(category)
-  const { isNavbarVisible } = useNavbar()
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { authStatus } = useUserContext()
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
 
   const content = (
     <>
-      <div
+      {/* <div
         className={cn(
           'py-md md:py-lg px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
@@ -89,7 +78,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
           <DownloadButton category={category} />
           <ViewSelector />
         </div>
-      </div>
+      </div> */}
       <Domains
         domains={domains}
         loadingRowCount={20}

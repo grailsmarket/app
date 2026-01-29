@@ -50,12 +50,12 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
 
   return (
     <div className={cn('flex items-center gap-1', className)}>
-      <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className='relative'>
+      <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className='relative w-[calc(100%-44px)]'>
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[190px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
           )}
         >
           <p className='text-md font-medium whitespace-nowrap sm:text-lg'>

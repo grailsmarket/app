@@ -143,7 +143,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
   return (
     <div
       className={cn(
-        'bg-background px-sm sm:px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-8 max-w-full overflow-x-auto',
+        'bg-background px-sm sm:px-md md:px-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >

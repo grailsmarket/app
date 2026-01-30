@@ -30,7 +30,7 @@ const WatchersFilter = () => {
         }
       >
         <div className='px-lg py-md flex w-full flex-row items-center justify-between'>
-          <p className='text-lg font-medium'>Watchers</p>
+          <p className='text-lg font-medium'>Watchlists</p>
           <div className='flex w-2/3 flex-row gap-x-2'>
             <input
               type='number'

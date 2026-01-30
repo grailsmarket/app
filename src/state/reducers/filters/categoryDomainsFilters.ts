@@ -21,6 +21,9 @@ import {
   PriceType,
   LengthType,
   OfferType,
+  WatchersCountType,
+  ViewCountType,
+  ClubsCountType,
   PortfolioFiltersState,
   TypeFiltersState,
 } from '@/types/filters'
@@ -42,6 +45,18 @@ export const emptyFilterState: PortfolioFiltersState = {
     max: null,
   },
   offerRange: {
+    min: null,
+    max: null,
+  },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
     min: null,
     max: null,
   },
@@ -71,8 +86,33 @@ export const initialState: PortfolioFiltersOpenedState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
+  openFilters: [
+    'Sort',
+    'Status',
+    'Market',
+    'Type',
+    'Text Match',
+    'Text Non-Match',
+    'Length',
+    'Price Range',
+    'Offer',
+    'Watchers',
+    'Views',
+    'Categories Count',
+  ],
   sort: null,
   scrollTop: 0,
 }
@@ -135,6 +175,15 @@ export const categoryDomainsFiltersSlice = createSlice({
     setOfferRange(state, { payload }: PayloadAction<OfferType>) {
       state.offerRange = payload
     },
+    setWatchersCount(state, { payload }: PayloadAction<WatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setViewCount(state, { payload }: PayloadAction<ViewCountType>) {
+      state.viewCount = payload
+    },
+    setClubsCount(state, { payload }: PayloadAction<ClubsCountType>) {
+      state.clubsCount = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -182,6 +231,9 @@ export const categoryDomainsFiltersSlice = createSlice({
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.offerRange = { min: null, max: null }
+      state.watchersCount = { min: null, max: null }
+      state.viewCount = { min: null, max: null }
+      state.clubsCount = { min: null, max: null }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -193,6 +245,9 @@ export const categoryDomainsFiltersSlice = createSlice({
         'Length',
         'Price Range',
         'Offer',
+        'Watchers',
+        'Views',
+        'Categories Count',
       ]
       state.sort = null
     },
@@ -215,6 +270,9 @@ export const {
   setPriceDenomination,
   setPriceRange,
   setOfferRange,
+  setWatchersCount,
+  setViewCount,
+  setClubsCount,
   toggleCategory,
   setFiltersCategory,
   addCategories,

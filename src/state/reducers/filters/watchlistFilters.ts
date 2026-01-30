@@ -9,6 +9,9 @@ import {
   MarketplaceOpenableFilterType,
   MarketplacePriceType,
   MarketplaceOfferType,
+  MarketplaceWatchersCountType,
+  MarketplaceViewCountType,
+  MarketplaceClubsCountType,
   MarketplaceStatusFilterType,
   PriceDenominationType,
   SortFilterType,
@@ -46,6 +49,18 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -73,8 +88,33 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
+  openFilters: [
+    'Sort',
+    'Status',
+    'Market',
+    'Type',
+    'Text Match',
+    'Text Non-Match',
+    'Length',
+    'Price Range',
+    'Offer',
+    'Watchers',
+    'Views',
+    'Categories Count',
+  ],
   sort: null,
   scrollTop: 0,
 }
@@ -140,6 +180,15 @@ export const watchlistFiltersSlice = createSlice({
     },
     setWatchlistOfferRange(state, { payload }: PayloadAction<MarketplaceOfferType>) {
       state.offerRange = payload
+    },
+    setWatchlistWatchersCount(state, { payload }: PayloadAction<MarketplaceWatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setWatchlistViewCount(state, { payload }: PayloadAction<MarketplaceViewCountType>) {
+      state.viewCount = payload
+    },
+    setWatchlistClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
+      state.clubsCount = payload
     },
     toggleWatchlistCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
@@ -212,6 +261,18 @@ export const watchlistFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.watchersCount = {
+        min: null,
+        max: null,
+      }
+      state.viewCount = {
+        min: null,
+        max: null,
+      }
+      state.clubsCount = {
+        min: null,
+        max: null,
+      }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -223,6 +284,9 @@ export const watchlistFiltersSlice = createSlice({
         'Length',
         'Price Range',
         'Offer',
+        'Watchers',
+        'Views',
+        'Categories Count',
       ]
       state.sort = null
     },
@@ -244,6 +308,9 @@ export const {
   setWatchlistPriceDenomination,
   setWatchlistPriceRange,
   setWatchlistOfferRange,
+  setWatchlistWatchersCount,
+  setWatchlistViewCount,
+  setWatchlistClubsCount,
   toggleWatchlistCategory,
   toggleWatchlistSubcategory,
   setWatchlistFiltersCategory,

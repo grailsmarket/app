@@ -47,6 +47,21 @@ export type MarketplaceOfferType = {
   max: number | null
 }
 
+export type MarketplaceWatchersCountType = {
+  min: number | null
+  max: number | null
+}
+
+export type MarketplaceViewCountType = {
+  min: number | null
+  max: number | null
+}
+
+export type MarketplaceClubsCountType = {
+  min: number | null
+  max: number | null
+}
+
 export type PriceDenominationType = (typeof PRICE_DENOMINATIONS)[number]
 
 export type MarketplaceCategoryType = string
@@ -66,6 +81,9 @@ export type MarketplaceFiltersState = {
   denomination: PriceDenominationType
   priceRange: MarketplacePriceType
   offerRange: MarketplaceOfferType
+  watchersCount: MarketplaceWatchersCountType
+  viewCount: MarketplaceViewCountType
+  clubsCount: MarketplaceClubsCountType
   categories: string[]
   sort: SortFilterType | null
 }
@@ -96,6 +114,18 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -123,8 +153,33 @@ export const initialState: MarketplaceFiltersOpenedState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Status', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
+  openFilters: [
+    'Sort',
+    'Status',
+    'Market',
+    'Type',
+    'Text Match',
+    'Text Non-Match',
+    'Length',
+    'Price Range',
+    'Offer',
+    'Watchers',
+    'Views',
+    'Categories Count',
+  ],
   sort: null,
   scrollTop: 0,
 }
@@ -201,6 +256,15 @@ export const marketplaceFiltersSlice = createSlice({
     setMarketplaceOfferRange(state, { payload }: PayloadAction<MarketplaceOfferType>) {
       state.offerRange = payload
     },
+    setMarketplaceWatchersCount(state, { payload }: PayloadAction<MarketplaceWatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setMarketplaceViewCount(state, { payload }: PayloadAction<MarketplaceViewCountType>) {
+      state.viewCount = payload
+    },
+    setMarketplaceClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
+      state.clubsCount = payload
+    },
     toggleMarketplaceCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -260,6 +324,18 @@ export const marketplaceFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.watchersCount = {
+        min: null,
+        max: null,
+      }
+      state.viewCount = {
+        min: null,
+        max: null,
+      }
+      state.clubsCount = {
+        min: null,
+        max: null,
+      }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -271,6 +347,9 @@ export const marketplaceFiltersSlice = createSlice({
         'Length',
         'Price Range',
         'Offer',
+        'Watchers',
+        'Views',
+        'Categories Count',
       ]
       state.sort = null
     },
@@ -292,6 +371,9 @@ export const {
   setMarketplacePriceDenomination,
   setMarketplacePriceRange,
   setMarketplaceOfferRange,
+  setMarketplaceWatchersCount,
+  setMarketplaceViewCount,
+  setMarketplaceClubsCount,
   toggleMarketplaceCategory,
   setMarketplaceFiltersCategory,
   addMarketplaceCategories,

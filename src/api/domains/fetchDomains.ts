@@ -92,6 +92,12 @@ export const fetchDomains = async ({
                   .mul(BigNumber.from(10).pow(12))
                   .toString()
               : filters.offerRange?.min || undefined,
+            minWatchersCount: filters.watchersCount?.min || undefined,
+            maxWatchersCount: filters.watchersCount?.max || undefined,
+            minViewCount: filters.viewCount?.min || undefined,
+            maxViewCount: filters.viewCount?.max || undefined,
+            minClubsCount: filters.clubsCount?.min || undefined,
+            maxClubsCount: filters.clubsCount?.max || undefined,
             letters: filters.type.Letters !== 'none' ? filters.type.Letters : undefined,
             digits: filters.type.Digits !== 'none' ? filters.type.Digits : undefined,
             emoji: filters.type.Emojis !== 'none' ? filters.type.Emojis : undefined,
@@ -188,6 +194,12 @@ export const fetchDomains = async ({
             .mul(BigNumber.from(10).pow(12))
             .toString()
         : filters.offerRange?.min || null,
+      'filters[minWatchersCount]': filters.watchersCount?.min || null,
+      'filters[maxWatchersCount]': filters.watchersCount?.max || null,
+      'filters[minViewCount]': filters.viewCount?.min || null,
+      'filters[maxViewCount]': filters.viewCount?.max || null,
+      'filters[minClubsCount]': filters.clubsCount?.min || null,
+      'filters[maxClubsCount]': filters.clubsCount?.max || null,
       'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
       'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
       'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,
@@ -243,6 +255,12 @@ export const fetchDomains = async ({
       filters.priceRange.max ||
       filters.offerRange?.min ||
       filters.offerRange?.max ||
+      filters.watchersCount?.min ||
+      filters.watchersCount?.max ||
+      filters.viewCount?.min ||
+      filters.viewCount?.max ||
+      filters.clubsCount?.min ||
+      filters.clubsCount?.max ||
       filters.type.Letters === 'exclude' ||
       filters.type.Digits === 'exclude' ||
       filters.type.Emojis === 'exclude' ||

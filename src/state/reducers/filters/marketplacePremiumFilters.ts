@@ -43,6 +43,18 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: 'expiry_date_asc',
 }
@@ -66,6 +78,18 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   offerRange: {
+    min: null,
+    max: null,
+  },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
     min: null,
     max: null,
   },

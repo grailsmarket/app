@@ -37,6 +37,12 @@ export const useDomains = () => {
       filters.textNonMatch,
       // @ts-expect-error the offer range filter state will not be used for domains
       filters.offerRange,
+      // @ts-expect-error the watchers count filter state will not be used for domains
+      filters.watchersCount,
+      // @ts-expect-error the view count filter state will not be used for domains
+      filters.viewCount,
+      // @ts-expect-error the clubs count filter state will not be used for domains
+      filters.clubsCount,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

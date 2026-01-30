@@ -33,7 +33,12 @@ export const useWatchlistDomains = (user: Address | undefined) => {
       filters.status,
       filters.sort,
       filters.textMatch,
+      filters.textNonMatch,
       filters.market,
+      filters.offerRange,
+      filters.watchersCount,
+      filters.viewCount,
+      filters.clubsCount,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user || user.toLowerCase() !== userAddress?.toLowerCase())

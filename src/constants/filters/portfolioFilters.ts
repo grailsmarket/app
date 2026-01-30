@@ -8,6 +8,9 @@ export const MY_DOMAINS_OPENABLE_FILTERS = [
   'Length',
   'Price Range',
   'Offer',
+  'Watchers',
+  'Views',
+  'Categories Count',
 ] as const
 
 // Re-export from marketplace for consistency

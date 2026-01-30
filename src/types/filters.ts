@@ -52,6 +52,21 @@ export type OfferType = {
   max: number | null
 }
 
+export type WatchersCountType = {
+  min: number | null
+  max: number | null
+}
+
+export type ViewCountType = {
+  min: number | null
+  max: number | null
+}
+
+export type ClubsCountType = {
+  min: number | null
+  max: number | null
+}
+
 export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage'
 
 export interface FilterRouterSelectors<T extends FilterContextType> {
@@ -77,6 +92,9 @@ export interface FilterRouterActions {
   setPriceDenomination: (payload: any) => PayloadAction<any>
   setPriceRange: (payload: PriceType) => PayloadAction<any>
   setOfferRange: (payload: OfferType) => PayloadAction<any>
+  setWatchersCount: (payload: WatchersCountType) => PayloadAction<any>
+  setViewCount: (payload: ViewCountType) => PayloadAction<any>
+  setClubsCount: (payload: ClubsCountType) => PayloadAction<any>
   toggleCategory: (payload: any) => PayloadAction<any>
   setFiltersCategory: (payload: any) => PayloadAction<any>
   setSort: (payload: any) => PayloadAction<any>
@@ -123,6 +141,9 @@ export type PortfolioFiltersState = {
   denomination: PriceDenominationType
   priceRange: PriceType
   offerRange: OfferType
+  watchersCount: WatchersCountType
+  viewCount: ViewCountType
+  clubsCount: ClubsCountType
   categories: string[]
   sort: SortFilterType | null
 }

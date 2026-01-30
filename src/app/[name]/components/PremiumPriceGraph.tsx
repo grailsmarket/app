@@ -8,6 +8,7 @@ import { ONE_HOUR } from '@/constants/time'
 interface PremiumPriceGraphProps {
   expiryDate: string // ISO date string
   ethPrice: number
+  targetPoint?: { date: Date; usd: number; eth: number } | null
 }
 
 interface DataPoint {
@@ -18,7 +19,7 @@ interface DataPoint {
 
 const TOTAL_HOURS = 21 * 24 // 504 hours
 
-const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPrice }) => {
+const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPrice, targetPoint }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -175,6 +176,35 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
         .attr('fill', primaryColor)
     }
 
+    // Target point marker (green)
+    if (targetPoint) {
+      const targetColor = '#22c55e' // Tailwind green-500
+      const targetX = xScale(targetPoint.date)
+      const targetY = yScaleUsd(targetPoint.usd)
+
+      // Only draw if within chart bounds
+      if (targetX >= 0 && targetX <= width) {
+        // Vertical dashed line
+        g.append('line')
+          .attr('x1', targetX)
+          .attr('x2', targetX)
+          .attr('y1', 0)
+          .attr('y2', height)
+          .attr('stroke', targetColor)
+          .attr('stroke-width', 1.5)
+          .attr('stroke-dasharray', '4,4')
+
+        // Target price dot
+        g.append('circle')
+          .attr('cx', targetX)
+          .attr('cy', targetY)
+          .attr('r', 6)
+          .attr('fill', targetColor)
+          .attr('stroke', 'white')
+          .attr('stroke-width', 2)
+      }
+    }
+
     // X axis
     const xAxis = d3
       .axisBottom(xScale)
@@ -327,7 +357,7 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
           .style('transform', `translateX(${translateX})`)
           .style('box-shadow', '0 4px 4px rgba(0,0,0,0.2)')
       })
-  }, [chartData, currentData, dimensions, isMobile, ethPrice])
+  }, [chartData, currentData, dimensions, isMobile, ethPrice, targetPoint])
 
   if (!chartData.length) {
     return null

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Price from '@/components/ui/price'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -20,6 +20,7 @@ import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 import { ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
+import PremiumPriceControls from './PremiumPriceControls'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -34,6 +35,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const publicClient = usePublicClient({ chainId: mainnet.id })
+  const [targetPoint, setTargetPoint] = useState<{ date: Date; usd: number; eth: number } | null>(null)
 
   // Fetch rent price (including premium) directly from ENS contract
   const { data: rentPriceData, isLoading: isLoadingRentPrice } = useQuery({
@@ -127,7 +129,15 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           </PrimaryButton>
         </div>
         {nameDetails?.expiry_date && ethPrice && (
-          <PremiumPriceGraph expiryDate={nameDetails.expiry_date} ethPrice={ethPrice} />
+          <>
+            <PremiumPriceControls
+              expiryDate={nameDetails.expiry_date}
+              ethPrice={ethPrice}
+              domainName={nameDetails.name || ''}
+              onTargetChange={setTargetPoint}
+            />
+            <PremiumPriceGraph expiryDate={nameDetails.expiry_date} ethPrice={ethPrice} targetPoint={targetPoint} />
+          </>
         )}
       </div>
     )

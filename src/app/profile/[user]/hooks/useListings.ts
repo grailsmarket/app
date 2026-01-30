@@ -34,6 +34,9 @@ export const useListings = (user: Address | undefined) => {
       filters.textMatch,
       filters.textNonMatch,
       filters.offerRange,
+      filters.watchersCount,
+      filters.viewCount,
+      filters.clubsCount,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

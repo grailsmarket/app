@@ -72,6 +72,12 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
           .mul(BigNumber.from(10).pow(12))
           .toString()
       : filters.offerRange?.min || null,
+    'filters[minWatchersCount]': filters.watchersCount?.min || null,
+    'filters[maxWatchersCount]': filters.watchersCount?.max || null,
+    'filters[minViewCount]': filters.viewCount?.min || null,
+    'filters[maxViewCount]': filters.viewCount?.max || null,
+    'filters[minClubsCount]': filters.clubsCount?.min || null,
+    'filters[maxClubsCount]': filters.clubsCount?.max || null,
     'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
     'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
     'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,

@@ -5,6 +5,9 @@ import CategoryFilter from '../CategoryFilter'
 import CategoryFilterAll from '../CategoryFilterButtons/CategoryFilterAll'
 import PriceRangeFilter from '../PriceRangeFilter'
 import OfferFilter from '../OfferFilter'
+import WatchersFilter from '../WatchersFilter'
+import ViewsFilter from '../ViewsFilter'
+import CategoriesCountFilter from '../CategoriesCountFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -183,6 +186,9 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           <LengthFilter />
           <PriceRangeFilter />
           {showOfferFilter && <OfferFilter />}
+          {showOfferFilter && <WatchersFilter />}
+          {showOfferFilter && <ViewsFilter />}
+          {showOfferFilter && <CategoriesCountFilter />}
           <TypeFilter />
         </div>
       </div>

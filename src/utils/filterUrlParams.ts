@@ -58,6 +58,15 @@ export const URL_PARAMS = {
   // Offer range filters
   offerMin: 'offer_min',
   offerMax: 'offer_max',
+  // Watchers count filters
+  watchersMin: 'watchers_min',
+  watchersMax: 'watchers_max',
+  // View count filters
+  viewsMin: 'views_min',
+  viewsMax: 'views_max',
+  // Clubs count filters (categories count)
+  categoriesCountMin: 'categories_count_min',
+  categoriesCountMax: 'categories_count_max',
   // Activity type filters
   activityType: 'activity_type',
   // Categories page filters
@@ -88,6 +97,9 @@ export interface BaseFilterState {
   denomination: string
   priceRange: { min: number | null; max: number | null }
   offerRange: { min: number | null; max: number | null }
+  watchersCount: { min: number | null; max: number | null }
+  viewCount: { min: number | null; max: number | null }
+  clubsCount: { min: number | null; max: number | null }
   categories: string[]
   sort: string | null
 }
@@ -101,6 +113,9 @@ export interface ParsedUrlFilters {
   length?: { min: number | null; max: number | null }
   priceRange?: { min: number | null; max: number | null }
   offerRange?: { min: number | null; max: number | null }
+  watchersCount?: { min: number | null; max: number | null }
+  viewCount?: { min: number | null; max: number | null }
+  clubsCount?: { min: number | null; max: number | null }
   denomination?: string
   categories?: string[]
   type?: Partial<TypeFiltersState>
@@ -126,6 +141,9 @@ const DEFAULT_EMPTY_FILTER_STATE: BaseFilterState = {
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: { min: null, max: null },
   offerRange: { min: null, max: null },
+  watchersCount: { min: null, max: null },
+  viewCount: { min: null, max: null },
+  clubsCount: { min: null, max: null },
   categories: [],
   sort: null,
 }
@@ -207,6 +225,30 @@ export function serializeFiltersToUrl(
   }
   if (filters.offerRange?.max !== null && filters.offerRange?.max !== emptyFilterState.offerRange?.max) {
     params.set(URL_PARAMS.offerMax, String(filters.offerRange.max))
+  }
+
+  // Watchers Count
+  if (filters.watchersCount?.min !== null && filters.watchersCount?.min !== emptyFilterState.watchersCount?.min) {
+    params.set(URL_PARAMS.watchersMin, String(filters.watchersCount.min))
+  }
+  if (filters.watchersCount?.max !== null && filters.watchersCount?.max !== emptyFilterState.watchersCount?.max) {
+    params.set(URL_PARAMS.watchersMax, String(filters.watchersCount.max))
+  }
+
+  // View Count
+  if (filters.viewCount?.min !== null && filters.viewCount?.min !== emptyFilterState.viewCount?.min) {
+    params.set(URL_PARAMS.viewsMin, String(filters.viewCount.min))
+  }
+  if (filters.viewCount?.max !== null && filters.viewCount?.max !== emptyFilterState.viewCount?.max) {
+    params.set(URL_PARAMS.viewsMax, String(filters.viewCount.max))
+  }
+
+  // Clubs Count (Categories Count)
+  if (filters.clubsCount?.min !== null && filters.clubsCount?.min !== emptyFilterState.clubsCount?.min) {
+    params.set(URL_PARAMS.categoriesCountMin, String(filters.clubsCount.min))
+  }
+  if (filters.clubsCount?.max !== null && filters.clubsCount?.max !== emptyFilterState.clubsCount?.max) {
+    params.set(URL_PARAMS.categoriesCountMax, String(filters.clubsCount.max))
   }
 
   // Denomination (only if not default)
@@ -428,6 +470,36 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     result.offerRange = {
       min: offerMin ? Number(offerMin) : null,
       max: offerMax ? Number(offerMax) : null,
+    }
+  }
+
+  // Watchers Count
+  const watchersMin = searchParams.get(URL_PARAMS.watchersMin)
+  const watchersMax = searchParams.get(URL_PARAMS.watchersMax)
+  if (watchersMin !== null || watchersMax !== null) {
+    result.watchersCount = {
+      min: watchersMin ? Number(watchersMin) : null,
+      max: watchersMax ? Number(watchersMax) : null,
+    }
+  }
+
+  // View Count
+  const viewsMin = searchParams.get(URL_PARAMS.viewsMin)
+  const viewsMax = searchParams.get(URL_PARAMS.viewsMax)
+  if (viewsMin !== null || viewsMax !== null) {
+    result.viewCount = {
+      min: viewsMin ? Number(viewsMin) : null,
+      max: viewsMax ? Number(viewsMax) : null,
+    }
+  }
+
+  // Clubs Count (Categories Count)
+  const categoriesCountMin = searchParams.get(URL_PARAMS.categoriesCountMin)
+  const categoriesCountMax = searchParams.get(URL_PARAMS.categoriesCountMax)
+  if (categoriesCountMin !== null || categoriesCountMax !== null) {
+    result.clubsCount = {
+      min: categoriesCountMin ? Number(categoriesCountMin) : null,
+      max: categoriesCountMax ? Number(categoriesCountMax) : null,
     }
   }
 

@@ -8,9 +8,10 @@ interface DatePickerProps {
   onClose?: () => void
   className?: string
   minDate?: Date
+  maxDate?: Date
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, minDate }) => {
+const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, minDate, maxDate }) => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -90,10 +91,12 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, m
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(viewYear, viewMonth, i)
       date.setHours(0, 0, 0, 0)
+      const isBeforeMin = date < today
+      const isAfterMax = maxDate ? date > maxDate : false
       days.push({
         date: i,
         month: 'current',
-        disabled: date < today,
+        disabled: isBeforeMin || isAfterMax,
       })
     }
 

@@ -42,6 +42,9 @@ export const useCategoriesPageDomains = () => {
       (filters as any).textMatch,
       (filters as any).textNonMatch,
       (filters as any).offerRange,
+      (filters as any).watchersCount,
+      (filters as any).viewCount,
+      (filters as any).clubsCount,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

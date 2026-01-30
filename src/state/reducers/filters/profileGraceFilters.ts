@@ -21,6 +21,9 @@ import {
   PriceType,
   LengthType,
   OfferType,
+  WatchersCountType,
+  ViewCountType,
+  ClubsCountType,
   PortfolioFiltersState,
   TypeFiltersState,
 } from '@/types/filters'
@@ -42,6 +45,18 @@ export const emptyFilterState: PortfolioFiltersState = {
     max: null,
   },
   offerRange: {
+    min: null,
+    max: null,
+  },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
     min: null,
     max: null,
   },
@@ -71,8 +86,32 @@ export const initialState: PortfolioFiltersOpenedState = {
     min: null,
     max: null,
   },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   categories: [],
-  openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer'],
+  openFilters: [
+    'Sort',
+    'Market',
+    'Type',
+    'Text Match',
+    'Text Non-Match',
+    'Length',
+    'Price Range',
+    'Offer',
+    'Watchers',
+    'Views',
+    'Categories Count',
+  ],
   sort: 'expiry_date_asc',
   scrollTop: 0,
 }
@@ -134,6 +173,15 @@ export const profileGraceFiltersSlice = createSlice({
     setOfferRange(state, { payload }: PayloadAction<OfferType>) {
       state.offerRange = payload
     },
+    setProfileGraceWatchersCount(state, { payload }: PayloadAction<WatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setProfileGraceViewCount(state, { payload }: PayloadAction<ViewCountType>) {
+      state.viewCount = payload
+    },
+    setProfileGraceClubsCount(state, { payload }: PayloadAction<ClubsCountType>) {
+      state.clubsCount = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -181,8 +229,23 @@ export const profileGraceFiltersSlice = createSlice({
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.offerRange = { min: null, max: null }
+      state.watchersCount = { min: null, max: null }
+      state.viewCount = { min: null, max: null }
+      state.clubsCount = { min: null, max: null }
       state.categories = []
-      state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range', 'Offer']
+      state.openFilters = [
+        'Sort',
+        'Market',
+        'Type',
+        'Text Match',
+        'Text Non-Match',
+        'Length',
+        'Price Range',
+        'Offer',
+        'Watchers',
+        'Views',
+        'Categories Count',
+      ]
       state.sort = 'expiry_date_asc'
     },
   },
@@ -204,6 +267,9 @@ export const {
   setPriceDenomination,
   setPriceRange,
   setOfferRange,
+  setProfileGraceWatchersCount,
+  setProfileGraceViewCount,
+  setProfileGraceClubsCount,
   toggleCategory,
   setFiltersCategory,
   addCategories,

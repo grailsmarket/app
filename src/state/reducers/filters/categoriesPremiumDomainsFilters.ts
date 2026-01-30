@@ -57,7 +57,7 @@ export const emptyFilterState: MarketplaceFiltersState = {
     max: null,
   },
   categories: [],
-  sort: 'expiry_date_asc',
+  sort: null,
 }
 
 // Initial State - Status filter is not in openFilters since it's hidden
@@ -193,7 +193,7 @@ export const categoriesPremiumDomainsFiltersSlice = createSlice({
       state.offerRange = { min: null, max: null }
       state.categories = []
       state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
-      state.sort = 'expiry_date_asc'
+      state.sort = null
     },
   },
 })

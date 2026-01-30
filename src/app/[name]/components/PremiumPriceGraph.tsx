@@ -9,6 +9,7 @@ interface PremiumPriceGraphProps {
   expiryDate: string // ISO date string
   ethPrice: number
   targetPoint?: { date: Date; usd: number; eth: number } | null
+  onPointClick?: (timestamp: number) => void
 }
 
 interface DataPoint {
@@ -19,7 +20,7 @@ interface DataPoint {
 
 const TOTAL_HOURS = 21 * 24 // 504 hours
 
-const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPrice, targetPoint }) => {
+const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPrice, targetPoint, onPointClick }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -304,6 +305,7 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
       .attr('height', height)
       .style('fill', 'none')
       .style('pointer-events', 'all')
+      .style('cursor', onPointClick ? 'pointer' : 'default')
 
     overlay
       .on('mouseover', () => {
@@ -357,7 +359,24 @@ const PremiumPriceGraph: React.FC<PremiumPriceGraphProps> = ({ expiryDate, ethPr
           .style('transform', `translateX(${translateX})`)
           .style('box-shadow', '0 4px 4px rgba(0,0,0,0.2)')
       })
-  }, [chartData, currentData, dimensions, isMobile, ethPrice, targetPoint])
+      .on('click', (event) => {
+        if (!onPointClick) return
+
+        const [mx] = d3.pointer(event)
+        const x0 = xScale.invert(mx)
+        const i = bisect(chartData, x0, 1)
+        const d0 = chartData[i - 1]
+        const d1 = chartData[i]
+
+        if (!d0) return
+
+        const d = d1 && x0.getTime() - d0.date.getTime() > d1.date.getTime() - x0.getTime() ? d1 : d0
+
+        // Convert to timestamp in seconds
+        const timestamp = Math.floor(d.date.getTime() / 1000)
+        onPointClick(timestamp)
+      })
+  }, [chartData, currentData, dimensions, isMobile, ethPrice, targetPoint, onPointClick])
 
   if (!chartData.length) {
     return null

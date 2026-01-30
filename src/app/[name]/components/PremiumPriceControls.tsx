@@ -26,7 +26,10 @@ interface PremiumPriceControlsProps {
   expiryDate: string
   ethPrice: number
   domainName: string
-  onTargetChange: (target: { date: Date; usd: number; eth: number } | null) => void
+  priceInput: string
+  targetDate: Date | null
+  onPriceChange: (value: string) => void
+  onDateChange: (timestamp: number) => void
 }
 
 interface CalendarOption {
@@ -40,17 +43,18 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
   expiryDate,
   ethPrice,
   domainName,
-  onTargetChange,
+  priceInput,
+  targetDate,
+  onPriceChange,
+  onDateChange,
 }) => {
-  const [priceInput, setPriceInput] = useState<string>('')
-  const [targetDate, setTargetDate] = useState<Date | null>(null)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCalendarDropdown, setShowCalendarDropdown] = useState(false)
 
   const datePickerRef = useClickAway(() => setShowDatePicker(false))
   const calendarDropdownRef = useClickAway(() => setShowCalendarDropdown(false))
 
-  // Create oracle instance
+  // Create oracle instance for bounds
   const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000)
   const oracle = new PremiumPriceOracle(expiryTimestamp)
 
@@ -61,45 +65,10 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
   // Get the maximum premium (at start of premium period) for validation
   const maxPremiumUsd = oracle.getPremiumUsd(oracle.releasedDate)
 
-  // Handle price input change
-  const handlePriceChange = (value: string) => {
-    setPriceInput(value)
-
-    const price = parseFloat(value)
-    if (isNaN(price) || price <= 0) {
-      setTargetDate(null)
-      onTargetChange(null)
-      return
-    }
-
-    // Price must be within the premium period range
-    if (price > maxPremiumUsd) {
-      setTargetDate(null)
-      onTargetChange(null)
-      return
-    }
-
-    // Calculate the date when this price will be reached
-    const timestamp = oracle.getTargetDateByAmount(price)
-    const date = new Date(timestamp * 1000)
-    setTargetDate(date)
-
-    const eth = ethPrice > 0 ? price / ethPrice : 0
-    onTargetChange({ date, usd: price, eth })
-  }
-
-  // Handle date selection
+  // Handle date selection from picker
   const handleDateSelect = (timestamp: number) => {
-    const date = new Date(timestamp * 1000)
-    setTargetDate(date)
     setShowDatePicker(false)
-
-    // Calculate the price at this date
-    const usd = oracle.getPremiumUsd(timestamp)
-    const eth = ethPrice > 0 ? usd / ethPrice : 0
-
-    setPriceInput(usd.toFixed(2))
-    onTargetChange({ date, usd, eth })
+    onDateChange(timestamp)
   }
 
   // Format date for display
@@ -177,7 +146,7 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
           <input
             type='number'
             value={priceInput}
-            onChange={(e) => handlePriceChange(e.target.value)}
+            onChange={(e) => onPriceChange(e.target.value)}
             placeholder='0.00'
             min={0}
             max={maxPremiumUsd}

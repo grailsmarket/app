@@ -61,7 +61,7 @@ export const emptyFilterState: PortfolioFiltersState = {
     max: null,
   },
   categories: [],
-  sort: 'expiry_date_asc',
+  sort: null,
 }
 
 // Initial State
@@ -246,7 +246,7 @@ export const profileGraceFiltersSlice = createSlice({
         'Views',
         'Categories Count',
       ]
-      state.sort = 'expiry_date_asc'
+      state.sort = null
     },
   },
 })

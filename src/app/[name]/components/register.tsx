@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import Price from '@/components/ui/price'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -21,6 +21,7 @@ import { ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
 import PremiumPriceControls from './PremiumPriceControls'
+import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -35,7 +36,66 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const publicClient = usePublicClient({ chainId: mainnet.id })
-  const [targetPoint, setTargetPoint] = useState<{ date: Date; usd: number; eth: number } | null>(null)
+
+  // Lifted state for premium price controls
+  const [priceInput, setPriceInput] = useState<string>('')
+  const [targetDate, setTargetDate] = useState<Date | null>(null)
+
+  // Create oracle instance for price/date calculations
+  const oracle = useMemo(() => {
+    if (!nameDetails?.expiry_date) return null
+    const expiryTimestamp = Math.floor(new Date(nameDetails.expiry_date).getTime() / 1000)
+    return new PremiumPriceOracle(expiryTimestamp)
+  }, [nameDetails?.expiry_date])
+
+  // Calculate target point for the graph
+  const targetPoint = useMemo(() => {
+    if (!targetDate || !priceInput || !ethPrice) return null
+    const usd = parseFloat(priceInput)
+    if (isNaN(usd) || usd <= 0) return null
+    const eth = ethPrice > 0 ? usd / ethPrice : 0
+    return { date: targetDate, usd, eth }
+  }, [targetDate, priceInput, ethPrice])
+
+  // Handle price input change - calculates corresponding date
+  const handlePriceChange = useCallback(
+    (value: string) => {
+      setPriceInput(value)
+
+      if (!oracle) return
+
+      const price = parseFloat(value)
+      if (isNaN(price) || price <= 0) {
+        setTargetDate(null)
+        return
+      }
+
+      const maxPremiumUsd = oracle.getPremiumUsd(oracle.releasedDate)
+      if (price > maxPremiumUsd) {
+        setTargetDate(null)
+        return
+      }
+
+      const timestamp = oracle.getTargetDateByAmount(price)
+      const date = new Date(timestamp * 1000)
+      setTargetDate(date)
+    },
+    [oracle]
+  )
+
+  // Handle date selection - calculates corresponding price
+  const handleDateChange = useCallback(
+    (timestamp: number) => {
+      if (!oracle || !ethPrice) return
+
+      const date = new Date(timestamp * 1000)
+      setTargetDate(date)
+
+      const usd = oracle.getPremiumUsd(timestamp)
+      setPriceInput(usd.toFixed(2))
+    },
+    [oracle, ethPrice]
+  )
 
   // Fetch rent price (including premium) directly from ENS contract
   const { data: rentPriceData, isLoading: isLoadingRentPrice } = useQuery({
@@ -128,15 +188,23 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             Register
           </PrimaryButton>
         </div>
-        {nameDetails?.expiry_date && ethPrice && (
+        {nameDetails?.expiry_date && ethPrice && oracle && (
           <>
             <PremiumPriceControls
               expiryDate={nameDetails.expiry_date}
               ethPrice={ethPrice}
               domainName={nameDetails.name || ''}
-              onTargetChange={setTargetPoint}
+              priceInput={priceInput}
+              targetDate={targetDate}
+              onPriceChange={handlePriceChange}
+              onDateChange={handleDateChange}
             />
-            <PremiumPriceGraph expiryDate={nameDetails.expiry_date} ethPrice={ethPrice} targetPoint={targetPoint} />
+            <PremiumPriceGraph
+              expiryDate={nameDetails.expiry_date}
+              ethPrice={ethPrice}
+              targetPoint={targetPoint}
+              onPointClick={handleDateChange}
+            />
           </>
         )}
       </div>

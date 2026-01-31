@@ -11,6 +11,7 @@ import { useUserContext } from '@/context/user'
 import { useOffers } from '../hooks/useOffers'
 import { useDomains } from '../hooks/useDomains'
 import { useBrokeredListings } from '../hooks/useBrokeredListings'
+import { usePrivateListings } from '../hooks/usePrivateListings'
 import { useNavbar } from '@/context/navbar'
 import { formatTotalTabItems } from '@/utils/formatTabItems'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -32,6 +33,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     useDomains(user)
   const { totalReceivedOffers, totalSentOffers } = useOffers(user)
   const { totalActiveBrokeredListings, totalBrokeredListings } = useBrokeredListings(user)
+  const { totalPrivateListings } = usePrivateListings(user)
   const { isNavbarVisible } = useNavbar()
   const { actions, selectors } = useFilterRouter()
 
@@ -73,6 +75,16 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       if (tab.value === 'watchlist') {
         return user && userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated'
       }
+      // Only show private_for_me tab to profile owner and if there are private listings
+      if (tab.value === 'private_for_me') {
+        return (
+          user &&
+          userAddress &&
+          user.toLowerCase() === userAddress.toLowerCase() &&
+          authStatus === 'authenticated' &&
+          totalPrivateListings > 0
+        )
+      }
       // Only show broker tab if there are brokered listings
       if (tab.value === 'broker') {
         return totalBrokeredListings > 0
@@ -110,6 +122,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     totalExpiredDomains,
     totalReceivedOffers,
     totalSentOffers,
+    totalPrivateListings,
   ])
 
   const getTotalItems = useMemo(
@@ -131,6 +144,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           return formatTotalTabItems(totalSentOffers)
         case 'broker':
           return formatTotalTabItems(totalActiveBrokeredListings || 0)
+        case 'private_for_me':
+          return formatTotalTabItems(totalPrivateListings)
         case 'activity':
           return 0
       }
@@ -144,6 +159,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       totalGraceDomains,
       totalExpiredDomains,
       totalActiveBrokeredListings,
+      totalPrivateListings,
     ]
   )
 

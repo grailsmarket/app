@@ -85,6 +85,11 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const [minBrokerFeePercent, setMinBrokerFeePercent] = useState<number>(0.0001) // Default 1%
   const [showBrokerSection, setShowBrokerSection] = useState(false)
 
+  // Private listing fields
+  const [showPrivateSection, setShowPrivateSection] = useState(false)
+  const [privateBuyerAddress, setPrivateBuyerAddress] = useState<string>('')
+  const [privateBuyerAddressInput, setPrivateBuyerAddressInput] = useState<string>('')
+
   const debouncedBrokerAddress = useDebounce(brokerAddress, 500)
 
   const { data: brokerAccount, isLoading: isBrokerAccountLoading } = useQuery({
@@ -98,6 +103,22 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       return response
     },
     enabled: !!debouncedBrokerAddress,
+  })
+
+  // Private buyer address resolution
+  const debouncedPrivateBuyerInput = useDebounce(privateBuyerAddressInput, 500)
+
+  const { data: privateBuyerAccount, isLoading: isPrivateBuyerAccountLoading } = useQuery({
+    queryKey: ['account', debouncedPrivateBuyerInput],
+    queryFn: async () => {
+      if (!isAddress(debouncedPrivateBuyerInput) && !debouncedPrivateBuyerInput.includes('.')) return null
+
+      const response = await fetchAccount(debouncedPrivateBuyerInput)
+      if (!isAddress(response?.address ?? '')) return null
+
+      return response
+    },
+    enabled: !!debouncedPrivateBuyerInput,
   })
 
   useEffect(() => {
@@ -123,14 +144,28 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     fetchBrokerConfig()
   }, [])
 
-  // Clear broker fields when Grails is deselected
+  // Clear broker and private listing fields when Grails is deselected
   useEffect(() => {
     if (!selectedMarketplace.includes('grails')) {
       setBrokerAddress('')
       setBrokerFeePercent('')
       setShowBrokerSection(false)
+      setShowPrivateSection(false)
+      setPrivateBuyerAddress('')
+      setPrivateBuyerAddressInput('')
     }
   }, [selectedMarketplace])
+
+  // Sync private buyer address from resolved account
+  useEffect(() => {
+    if (privateBuyerAccount?.address) {
+      setPrivateBuyerAddress(privateBuyerAccount.address)
+    } else if (isAddress(debouncedPrivateBuyerInput)) {
+      setPrivateBuyerAddress(debouncedPrivateBuyerInput)
+    } else {
+      setPrivateBuyerAddress('')
+    }
+  }, [privateBuyerAccount, debouncedPrivateBuyerInput])
 
   useEffect(() => {
     domains.forEach((domain, index) => {
@@ -226,6 +261,20 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       }
     }
 
+    // Validate private buyer address
+    if (showPrivateSection && privateBuyerAddressInput.length > 0) {
+      if (!privateBuyerAddress) {
+        setError('Invalid private buyer address')
+        setStatus('error')
+        return
+      }
+      if (privateBuyerAddress.toLowerCase() === userAddress.toLowerCase()) {
+        setError('Cannot create a private listing for yourself')
+        setStatus('error')
+        return
+      }
+    }
+
     try {
       const params: any = {
         domains,
@@ -243,6 +292,11 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
       if (isAddress(brokerAccount?.address || brokerAddress) && Number(brokerFeePercent) > 0) {
         params.brokerAddress = brokerAccount?.address || brokerAddress
         params.brokerFeeBps = Math.round(Number(brokerFeePercent) * 100) // Convert percent to basis points
+      }
+
+      // Add private buyer address if specified
+      if (showPrivateSection && privateBuyerAddress) {
+        params.privateBuyerAddress = privateBuyerAddress
       }
 
       // console.log('Params:', params)
@@ -677,6 +731,77 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                         <p className='text-neutral text-md font-medium'>
                           The broker will get <span className='font-bold'>{brokerFeePercent}%</span> of the sale when
                           this listing is sold.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Private Listing section - only show when only Grails is selected */}
+            {selectedMarketplace.length === 1 && selectedMarketplace[0] === 'grails' && (
+              <div className='border-tertiary flex flex-col gap-0 rounded-md border p-3'>
+                <div
+                  onClick={() => setShowPrivateSection(!showPrivateSection)}
+                  className='flex cursor-pointer items-center justify-between'
+                >
+                  <div className='flex flex-col'>
+                    <div className='flex items-center gap-1.5 text-lg font-semibold'>
+                      <p>Private Listing</p>
+                      <p className='text-neutral text-md font-medium'>(Optional)</p>
+                    </div>
+                    <p className='text-neutral text-md font-medium'>Only the specified buyer can purchase</p>
+                  </div>
+                  <Image
+                    src={ArrowDownIcon}
+                    alt='Arrow'
+                    width={16}
+                    height={16}
+                    className={cn(showPrivateSection ? 'rotate-180' : '', 'transition-transform')}
+                  />
+                </div>
+
+                {showPrivateSection && (
+                  <div className='mt-2 flex flex-col gap-2'>
+                    <div className='relative flex w-full flex-col gap-1.5'>
+                      <Input
+                        type='text'
+                        label='Buyer Address'
+                        value={privateBuyerAddressInput}
+                        labelClassName='min-w-[144px]!'
+                        onChange={(e) => setPrivateBuyerAddressInput(e.target.value)}
+                        placeholder='ENS or Address'
+                      />
+                      {debouncedPrivateBuyerInput.length > 0 &&
+                        (isPrivateBuyerAccountLoading ? (
+                          <div className='px-md flex items-center gap-1.5'>
+                            <LoadingCell height='20px' width='20px' radius='10px' />
+                            <LoadingCell height='16px' width='240px' radius='4px' />
+                          </div>
+                        ) : privateBuyerAccount ? (
+                          <div className='px-md flex items-center gap-1.5'>
+                            <Avatar
+                              address={privateBuyerAccount.address}
+                              name={privateBuyerAccount.ens.name}
+                              src={privateBuyerAccount.ens.avatar}
+                              style={{ width: 20, height: 20 }}
+                            />
+                            <p className='text-neutral text-md font-medium'>
+                              {isAddress(privateBuyerAddressInput) && privateBuyerAccount.ens.name
+                                ? beautifyName(privateBuyerAccount.ens.name)
+                                : privateBuyerAccount.address || privateBuyerAddressInput}
+                            </p>
+                          </div>
+                        ) : isAddress(privateBuyerAddressInput) ? null : (
+                          <p className='text-md px-md font-medium text-red-400'>Invalid ENS name or Address</p>
+                        ))}
+                    </div>
+
+                    {privateBuyerAddress && (
+                      <div className='bg-secondary rounded-md p-2'>
+                        <p className='text-neutral text-md font-medium'>
+                          This listing will only be visible to the specified buyer.
                         </p>
                       </div>
                     )}

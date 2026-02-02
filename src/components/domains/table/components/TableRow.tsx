@@ -51,12 +51,12 @@ const TableRow: React.FC<TableRowProps> = ({
   allDomains,
   displayedColumns,
   watchlistId,
-  isBulkSelecting,
   showPreviousOwner,
 }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const domainListing = domain.listings[0]
+  const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)

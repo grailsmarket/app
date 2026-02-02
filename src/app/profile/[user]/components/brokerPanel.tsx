@@ -95,9 +95,6 @@ const BrokerPanel: React.FC<Props> = ({ user }) => {
             {totalBrokeredListings} {totalBrokeredListings === 1 ? 'listing' : 'listings'}
           </p>
         </div>
-        <div className='px-sm flex w-full items-center justify-end gap-2 sm:w-fit'>
-          <ViewSelector />
-        </div>
       </div>
       <Domains
         domains={brokeredListings}
@@ -114,7 +111,6 @@ const BrokerPanel: React.FC<Props> = ({ user }) => {
         }}
         displayedDetails={PORTFOLIO_BROKER_DISPLAYED_COLUMNS}
         showWatchlist={false}
-        isBulkSelecting={false}
       />
     </div>
   )

@@ -11,6 +11,7 @@ import FilterIcon from 'public/icons/filter.svg'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import DownloadButton from '@/components/ui/downloadButton'
 import ViewSelector from '@/components/domains/viewSelector'
+import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 interface MarketplaceTabSwitcherProps {
   isLiveActivityConnected: boolean
@@ -27,6 +28,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
 
   const setMarketplaceTab = (tab: MarketplaceTabType) => {
     dispatch(changeMarketplaceTab(tab))
+    dispatch(setBulkSelectIsSelecting(false))
   }
 
   useEffect(() => {

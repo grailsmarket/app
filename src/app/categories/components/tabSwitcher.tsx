@@ -17,6 +17,8 @@ import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import ViewSelector from '@/components/domains/viewSelector'
+import { useCategories } from '@/components/filters/hooks/useCategories'
+import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 const CategoriesPageTabSwitcher: React.FC = () => {
   const [mounted, setMounted] = useState(false)
@@ -25,6 +27,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
   const dispatch = useAppDispatch()
   const { isNavbarVisible } = useNavbar()
   const router = useRouter()
+  const { categories } = useCategories()
   const { data: holdersCount } = useAllHoldersCount()
   const { data: listingsCount } = useCategoriesListingsCount()
   const { selectors, actions } = useFilterRouter()
@@ -41,6 +44,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
       // Non-default tab - set tab param only, clearing other filters
       router.push(`/categories?tab=${tab.value}`)
     }
+    dispatch(setBulkSelectIsSelecting(false))
   }
 
   useEffect(() => {
@@ -126,6 +130,15 @@ const CategoriesPageTabSwitcher: React.FC = () => {
                       )}
                     />
                   )}
+                  {tab.value === 'categories' && (
+                    <Label
+                      label={categories?.length || 0}
+                      className={cn(
+                        'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                        selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                      )}
+                    />
+                  )}
                 </button>
               ))}
             </div>
@@ -183,6 +196,15 @@ const CategoriesPageTabSwitcher: React.FC = () => {
               {tab.value === 'listings' && (
                 <Label
                   label={formatTotalTabItems(listingsCount || 0)}
+                  className={cn(
+                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                    selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                  )}
+                />
+              )}
+              {tab.value === 'categories' && (
+                <Label
+                  label={categories?.length || 0}
                   className={cn(
                     'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
                     selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'

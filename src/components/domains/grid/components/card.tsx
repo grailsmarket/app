@@ -53,23 +53,15 @@ interface CardProps {
   className?: string
   isFirstInRow?: boolean
   watchlistId?: number | undefined
-  isBulkSelecting?: boolean
 }
 
-const Card: React.FC<CardProps> = ({
-  domain,
-  index,
-  allDomains,
-  className,
-  isFirstInRow,
-  watchlistId,
-  isBulkSelecting,
-}) => {
+const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFirstInRow, watchlistId }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { ethPrice } = useETHPrice()
   const { filterType } = useFilterContext()
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
+  const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
   const domainIsValid = checkNameValidity(domain?.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isMyDomain = address?.toLowerCase() === domain.owner?.toLowerCase()

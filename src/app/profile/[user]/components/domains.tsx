@@ -6,7 +6,6 @@ import { useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { Address } from 'ethereum-identity-kit'
 import { useDomains } from '../hooks/useDomains'
-import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import {
   PORTFOLIO_MY_DOMAINS_DISPLAYED_COLUMNS,
@@ -36,7 +35,6 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     totalGraceDomains,
     totalWatchlistDomains,
   } = useDomains(user)
-  const { isSelecting } = useAppSelector(selectBulkSelect)
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { authStatus } = useUserContext()
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
@@ -71,7 +69,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
   }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains, totalWatchlistDomains])
 
   // Check if bulk select is enabled for this tab
-  const isBulkSelectEnabled = isSelecting
+  // const isBulkSelectEnabled = isSelecting
 
   const content = (
     <div className='z-0 flex w-full flex-col'>
@@ -138,7 +136,6 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
         }}
         displayedDetails={displayedDetails}
         showWatchlist={selectedTab.value === 'watchlist'}
-        isBulkSelecting={isBulkSelectEnabled}
       />
     </div>
   )

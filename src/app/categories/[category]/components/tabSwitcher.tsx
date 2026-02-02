@@ -16,6 +16,7 @@ import DownloadButton from '@/components/ui/downloadButton'
 import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
 import ViewSelector from '@/components/domains/viewSelector'
+import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 interface Props {
   category: string
@@ -41,6 +42,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     }
 
     dispatch(changeCategoryTab(tab))
+    dispatch(setBulkSelectIsSelecting(false))
   }
 
   useEffect(() => {

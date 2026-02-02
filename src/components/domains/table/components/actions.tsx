@@ -5,7 +5,6 @@ import React, { MouseEventHandler, useMemo } from 'react'
 import CartIcon from './CartIcon'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { useFilterContext } from '@/context/filters'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import {
@@ -54,7 +53,7 @@ const Actions: React.FC<ActionsProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
-  const { filterType, categoryTab } = useFilterContext()
+  // const { filterType, categoryTab } = useFilterContext()
   const { userAddress, authStatus } = useUserContext()
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
@@ -175,101 +174,89 @@ const Actions: React.FC<ActionsProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [domainListing, registrationStatus, isMyDomain])
 
-  if (filterType === 'profile' || filterType === 'category') {
-    if (
-      profileTab.value === 'domains' ||
-      profileTab.value === 'listings' ||
-      profileTab.value === 'grace' ||
-      profileTab.value === 'watchlist' ||
-      categoryTab?.value === 'names' ||
-      categoryTab?.value === 'premium' ||
-      categoryTab?.value === 'available'
-    ) {
-      if (isBulkSelecting) {
-        return (
-          <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
-            {isSelected ? (
-              <PrimaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(removeBulkSelectDomain(domain))
-                  if (grailsListings.length > 0) {
-                    grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
-                  }
-                }}
-                className='flex flex-row items-center gap-1'
-              >
-                <p>Selected</p>
-                <Check className='text-background h-3 w-3' />
-              </PrimaryButton>
-            ) : (
-              <SecondaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(addBulkSelectDomain(domain))
-                  if (grailsListings.length > 0) {
-                    grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
-                  }
-                }}
-              >
-                Select
-              </SecondaryButton>
-            )}
+  if (isBulkSelecting) {
+    return (
+      <div className={cn('flex flex-row justify-end gap-2 opacity-100', width)}>
+        {isSelected ? (
+          <PrimaryButton
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch(removeBulkSelectDomain(domain))
+              if (grailsListings.length > 0) {
+                grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+              }
+            }}
+            className='flex flex-row items-center gap-1'
+          >
+            <p>Selected</p>
+            <Check className='text-background h-3 w-3' />
+          </PrimaryButton>
+        ) : (
+          <SecondaryButton
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch(addBulkSelectDomain(domain))
+              if (grailsListings.length > 0) {
+                grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+              }
+            }}
+          >
+            Select
+          </SecondaryButton>
+        )}
+      </div>
+    )
+  }
+
+  if (isMyDomain && profileTab.value !== 'watchlist') {
+    if (domainListing?.price) {
+      return (
+        <>
+          <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+            <SecondaryButton
+              className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
+              onClick={(e) => openListModal(e, true)}
+            >
+              Edit
+            </SecondaryButton>
+            <SecondaryButton
+              className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
+              onClick={openCancelListingModal}
+            >
+              Cancel
+            </SecondaryButton>
           </div>
-        )
-      }
+          <div className={cn('flex flex-row justify-end sm:hidden', width)}>
+            <SecondaryButton
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                router.push(`/${domain.name}`)
+              }}
+            >
+              Edit
+            </SecondaryButton>
+          </div>
+        </>
+      )
+    }
 
-      if (isMyDomain && profileTab.value !== 'watchlist') {
-        if (domainListing?.price) {
-          return (
-            <>
-              <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
-                <SecondaryButton
-                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
-                  onClick={(e) => openListModal(e, true)}
-                >
-                  Edit
-                </SecondaryButton>
-                <SecondaryButton
-                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
-                  onClick={openCancelListingModal}
-                >
-                  Cancel
-                </SecondaryButton>
-              </div>
-              <div className={cn('flex flex-row justify-end sm:hidden', width)}>
-                <SecondaryButton
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    router.push(`/${domain.name}`)
-                  }}
-                >
-                  Edit
-                </SecondaryButton>
-              </div>
-            </>
-          )
-        }
-
-        if (registrationStatus !== GRACE_PERIOD) {
-          return (
-            <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
-              <PrimaryButton
-                onClick={(e) => openListModal(e, false)}
-                className={cn(
-                  'border-primary/80 text-primary hover:bg-primary! hover:text-background flex w-16! flex-row items-center justify-center gap-2 border-2 bg-transparent opacity-100 hover:opacity-100',
-                  width
-                )}
-              >
-                List
-              </PrimaryButton>
-            </div>
-          )
-        }
-      }
+    if (registrationStatus !== GRACE_PERIOD) {
+      return (
+        <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+          <PrimaryButton
+            onClick={(e) => openListModal(e, false)}
+            className={cn(
+              'border-primary/80 text-primary hover:bg-primary! hover:text-background flex w-16! flex-row items-center justify-center gap-2 border-2 bg-transparent opacity-100 hover:opacity-100',
+              width
+            )}
+          >
+            List
+          </PrimaryButton>
+        </div>
+      )
     }
   }
 

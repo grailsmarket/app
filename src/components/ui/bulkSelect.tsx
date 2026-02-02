@@ -36,10 +36,12 @@ import Label from './label'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
+import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
+import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
-  pageType?: 'profile' | 'category'
+  pageType?: 'profile' | 'category' | 'marketplace' | 'categories'
 }
 
 const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType = 'profile' }) => {
@@ -74,6 +76,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   useShiftKeyListener()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
+  const marketplaceState = useAppSelector(selectMarketplace)
+  const categoriesState = useAppSelector(selectCategoriesPage)
   const selectAllContext = useSelectAll()
   const { userAddress } = useUserContext()
   const { cartIsEmpty } = useCartDomains()
@@ -81,9 +85,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const watchlistFilters = useAppSelector(selectWatchlistFilters)
 
   // Get the selected tab based on page type
+  const marketplaceTab = marketplaceState.selectedTab
   const categoryTab = categoryState.selectedTab
+  const categoriesTab = categoriesState.categoriesPage.selectedTab
   const profileTab = profileState.selectedTab
-  const selectedTab = pageType === 'category' ? categoryTab : profileTab
+  const selectedTab =
+    pageType === 'category'
+      ? categoryTab
+      : pageType === 'categories'
+        ? categoriesTab
+        : pageType === 'marketplace'
+          ? marketplaceTab
+          : profileTab
 
   useEffect(() => {
     dispatch(setBulkSelectIsSelecting(false))
@@ -136,7 +149,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       if (isInputField) return
 
       // SHIFT + A: Select all (only when bulk select is active)
-      if (e.shiftKey && e.key.toLowerCase() === 'a' && isSelecting) {
+      if (e.shiftKey && e.key.toLowerCase() === 'a' && isSelecting && pageType === 'profile') {
         e.preventDefault()
         if (selectAllContext?.canSelectAll) {
           selectAllContext.startSelectAll()
@@ -154,7 +167,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isSelecting, selectAllContext, handleCancelBulkSelect])
+  }, [isSelecting, selectAllContext, handleCancelBulkSelect, pageType])
 
   const handleListAction = () => {
     const namesToList = namesList.filter((domain) => getRegistrationStatus(domain.expiry_date) === REGISTERED)
@@ -282,18 +295,32 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }
 
   // For profile tabs
+  const isMarketplaceTab = pageType === 'marketplace'
   const isProfileTab = pageType === 'profile'
   const isCategoryTab = pageType === 'category'
+  const isCategoriesTab = pageType === 'categories'
   const isActionButtonsVisible =
-    (isCategoryTab ? selectedTab?.value === 'names' : selectedTab?.value === 'watchlist') && !cartIsEmpty
+    (isCategoryTab
+      ? selectedTab?.value === 'names'
+      : isCategoriesTab
+        ? selectedTab?.value === 'names'
+        : isMarketplaceTab
+          ? selectedTab?.value !== 'activity'
+          : selectedTab?.value === 'watchlist') && !cartIsEmpty
 
   // Define which tabs support bulk select for each page type
+  const marketplaceBulkSelectTabs = ['names', 'listings']
   const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'watchlist']
-  const categoryBulkSelectTabs = ['names', 'premium', 'available']
+  const categoryBulkSelectTabs = ['names', 'listings']
+  const categoriesBulkSelectTabs = ['names', 'listings']
 
   const isBulkSelectSupportedTab = isProfileTab
     ? profileBulkSelectTabs.includes(selectedTab?.value || '')
-    : categoryBulkSelectTabs.includes(selectedTab?.value || '')
+    : isMarketplaceTab
+      ? marketplaceBulkSelectTabs.includes(selectedTab?.value || '')
+      : isCategoriesTab
+        ? categoriesBulkSelectTabs.includes(selectedTab?.value || '')
+        : categoryBulkSelectTabs.includes(selectedTab?.value || '')
 
   const showOwnedActionButtons = isCategoryTab
     ? selectedTab?.value === 'names'
@@ -373,8 +400,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       {isSelecting && !isSelectAllLoading && (
         <div className='bg-background shadow-bulk hidden flex-row gap-1.5 rounded-md p-2 lg:flex'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
-          <div className='bg-neutral h-4 w-px' />
-          <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to Select All</p>
+          {pageType === 'profile' && (
+            <>
+              <div className='bg-neutral h-4 w-px' />
+              <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to Select All</p>
+            </>
+          )}
           <div className='bg-neutral h-4 w-px' />
           <p className='text-md text-neutral text-end font-semibold'>ESC to Close</p>
         </div>

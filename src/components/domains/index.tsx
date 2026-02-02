@@ -50,7 +50,6 @@ interface DomainsProps {
   forceViewType?: 'grid' | 'list'
   paddingBottom?: string
   showWatchlist?: boolean
-  isBulkSelecting?: boolean
   useLocalScrollTop?: boolean
   showPreviousOwner?: boolean
 }
@@ -70,7 +69,6 @@ const Domains: React.FC<DomainsProps> = ({
   forceViewType,
   paddingBottom,
   showWatchlist = false,
-  isBulkSelecting = false,
   useLocalScrollTop = false,
   showPreviousOwner = false,
 }) => {
@@ -247,7 +245,6 @@ const Domains: React.FC<DomainsProps> = ({
                     isFirstInRow={index % columnsCount === 0}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
-                    isBulkSelecting={isBulkSelecting}
                   />
                 )
               }}
@@ -279,7 +276,6 @@ const Domains: React.FC<DomainsProps> = ({
                     displayedColumns={displayedColumns}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_record_id : undefined}
-                    isBulkSelecting={isBulkSelecting}
                     showPreviousOwner={showPreviousOwner}
                   />
                 )

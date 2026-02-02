@@ -1,8 +1,6 @@
 import React from 'react'
-import { useFilterContext } from '@/context/filters'
 import CartIcon from '../../table/components/CartIcon'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
@@ -50,8 +48,6 @@ const Actions: React.FC<ActionsProps> = ({
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const { filterType, categoryTab } = useFilterContext()
-  const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const domainListing = domain.listings[0]
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
@@ -115,86 +111,74 @@ const Actions: React.FC<ActionsProps> = ({
     handler()
   }
 
-  if (filterType === 'profile' || filterType === 'category') {
-    if (
-      profileTab.value === 'domains' ||
-      profileTab.value === 'listings' ||
-      profileTab.value === 'grace' ||
-      profileTab.value === 'watchlist' ||
-      categoryTab?.value === 'names' ||
-      categoryTab?.value === 'premium' ||
-      categoryTab?.value === 'available'
-    ) {
-      if (isBulkSelecting) {
+  if (isBulkSelecting) {
+    return (
+      <div className='flex flex-row justify-end gap-4 opacity-100'>
+        {isSelected ? (
+          <PrimaryButton
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch(removeBulkSelectDomain(domain))
+              if (grailsListings.length > 0) {
+                grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+              }
+            }}
+            className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border-2 px-2.5! py-[5px]!'
+          >
+            Selected
+            <Check className='h-3 w-3' />
+          </PrimaryButton>
+        ) : (
+          <SecondaryButton
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch(addBulkSelectDomain(domain))
+              if (grailsListings.length > 0) {
+                grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+              }
+            }}
+            className='border-tertiary h-fit! w-fit! border-2 px-2.5! py-[5px]!'
+          >
+            Select
+          </SecondaryButton>
+        )}
+      </div>
+    )
+  }
+
+  if (isMyDomain) {
+    if (registrationStatus === REGISTERED) {
+      if (domainListing?.price) {
         return (
-          <div className='flex flex-row justify-end gap-4 opacity-100'>
-            {isSelected ? (
-              <PrimaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(removeBulkSelectDomain(domain))
-                  if (grailsListings.length > 0) {
-                    grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
-                  }
-                }}
-                className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border-2 px-2.5! py-[5px]!'
-              >
-                Selected
-                <Check className='h-3 w-3' />
-              </PrimaryButton>
-            ) : (
-              <SecondaryButton
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  dispatch(addBulkSelectDomain(domain))
-                  if (grailsListings.length > 0) {
-                    grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
-                  }
-                }}
-                className='border-tertiary h-fit! w-fit! border-2 px-2.5! py-[5px]!'
-              >
-                Select
-              </SecondaryButton>
-            )}
+          <div className='flex flex-row justify-end gap-1 opacity-100'>
+            <button
+              className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+              onClick={(e) => clickHandler(e, openMakeListingModal)}
+            >
+              Edit
+            </button>
+            <p
+              className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+              onClick={(e) => clickHandler(e, openCancelListingModal)}
+            >
+              Cancel
+            </p>
           </div>
         )
       }
 
-      if (isMyDomain) {
-        if (registrationStatus === REGISTERED) {
-          if (domainListing?.price) {
-            return (
-              <div className='flex flex-row justify-end gap-1 opacity-100'>
-                <button
-                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
-                  onClick={(e) => clickHandler(e, openMakeListingModal)}
-                >
-                  Edit
-                </button>
-                <p
-                  className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
-                  onClick={(e) => clickHandler(e, openCancelListingModal)}
-                >
-                  Cancel
-                </p>
-              </div>
-            )
-          }
-
-          return (
-            <div className='flex flex-row justify-end opacity-100'>
-              <p
-                className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
-                onClick={(e) => clickHandler(e, openMakeListingModal)}
-              >
-                List
-              </p>
-            </div>
-          )
-        }
-      }
+      return (
+        <div className='flex flex-row justify-end opacity-100'>
+          <p
+            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+            onClick={(e) => clickHandler(e, openMakeListingModal)}
+          >
+            List
+          </p>
+        </div>
+      )
     }
   }
 

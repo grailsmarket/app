@@ -18,6 +18,7 @@ import ViewSelector from '@/components/domains/viewSelector'
 import DownloadButton from '@/components/ui/downloadButton'
 import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
+import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 interface TabSwitcherProps {
   user: Address | undefined
@@ -57,6 +58,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
 
   const setProfileTab = (tab: ProfileTabType) => {
     dispatch(changeTab(tab))
+    dispatch(setBulkSelectIsSelecting(false))
 
     if (tab.value === 'broker') {
       dispatch(actions.setFiltersOpen(false))

@@ -11,6 +11,7 @@ import ArrowDown from 'public/icons/arrow-down.svg'
 import { useFilterContext } from '@/context/filters'
 import { useAppSelector } from '@/state/hooks'
 import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 
 interface ActionButtonsProps {
   hideDomainActions?: boolean
@@ -18,6 +19,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
   const { filterType, categoryTab } = useFilterContext()
+  const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const { setIsCartOpen } = useUserContext()
   const { clearCart, cartIsEmpty } = useCartDomains()
   const [showScrollTop, setShowScrollTop] = useState(false)
@@ -35,8 +37,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const activeTab = filterType === 'category' ? categoryTab : marketplaceTab
   const isActionBarVisible = !(cartIsEmpty || hideDomainActions)
-  const isBulkSelectVisible = filterType === 'category' && categoryTab?.value !== 'activity'
+  const isBulkSelectVisible = activeTab?.value !== 'activity'
   const isSelecting = useAppSelector(selectBulkSelect).isSelecting
 
   return (

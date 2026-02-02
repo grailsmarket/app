@@ -6,6 +6,10 @@ import Domains from '@/components/domains'
 import { useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
+import { SelectAllProvider } from '@/context/selectAll'
+import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
+import { useUserContext } from '@/context/user'
+import BulkSelect from '@/components/ui/bulkSelect'
 
 const DomainPanel = () => {
   const { selectors } = useFilterRouter()
@@ -13,6 +17,7 @@ const DomainPanel = () => {
   const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
   // const { isNavbarVisible } = useNavbar()
   const { selectedTab } = useAppSelector(selectMarketplace)
+  const { authStatus } = useUserContext()
 
   // // Local state for search input to prevent glitchy typing
   // const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
@@ -53,74 +58,33 @@ const DomainPanel = () => {
   // }, [])
 
   return (
-    <div className='z-0 flex w-full flex-col'>
-      {/* <div
-        className={cn(
-          'py-md md:py-lg px-md transition-top lg:px-lg bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
-          isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
-        )}
-      >
-        <div className='flex w-full items-center gap-2 sm:w-fit'>
-          <button
-            className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
-            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
-          >
-            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
-          </button>
-          <div className='group border-tertiary flex h-9 w-[calc(100%-39px)] items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10 sm:w-fit'>
-            <input
-              type='text'
-              placeholder='Search'
-              value={localSearch}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className='w-full bg-transparent text-lg outline-none sm:w-[200px] lg:w-[260px]'
-            />
-            {localSearch.length > 0 ? (
-              <Cross
-                onClick={() => {
-                  setLocalSearch('')
-                  handleSearchChange('')
-                }}
-                className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
-              />
-            ) : (
-              <Image
-                src={MagnifyingGlass}
-                alt='Search'
-                width={16}
-                height={16}
-                className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-              />
-            )}
-          </div>
-          <div className='hidden sm:block'>
-            <SortDropdown />
-          </div>
-        </div>
-        <div className='flex w-full items-center justify-between gap-2 sm:w-fit sm:justify-end'>
-          <div className='block sm:hidden'>
-            <SortDropdown />
-          </div>
-          <DownloadButton />
-          <ViewSelector />
-        </div>
-      </div> */}
-      <Domains
-        domains={domains}
-        loadingRowCount={20}
-        paddingBottom='80px'
-        filtersOpen={filtersOpen}
-        noResults={!domainsLoading && domains?.length === 0}
-        isLoading={domainsLoading}
-        hasMoreDomains={hasMoreDomains}
-        fetchMoreDomains={() => {
-          if (hasMoreDomains && !domainsLoading) {
-            fetchMoreDomains()
-          }
-        }}
-        showPreviousOwner={selectedTab.value === 'available' || selectedTab.value === 'premium'}
-      />
-    </div>
+    <SelectAllProvider
+      loadedDomains={domains}
+      totalCount={0}
+      filters={selectors.filters as MarketplaceFiltersState}
+      searchTerm={selectors.filters.search}
+      isAuthenticated={authStatus === 'authenticated'}
+      disableSelectAll={true}
+    >
+      <div className='z-0 flex w-full flex-col'>
+        <Domains
+          domains={domains}
+          loadingRowCount={20}
+          paddingBottom='80px'
+          filtersOpen={filtersOpen}
+          noResults={!domainsLoading && domains?.length === 0}
+          isLoading={domainsLoading}
+          hasMoreDomains={hasMoreDomains}
+          fetchMoreDomains={() => {
+            if (hasMoreDomains && !domainsLoading) {
+              fetchMoreDomains()
+            }
+          }}
+          showPreviousOwner={selectedTab.value === 'available' || selectedTab.value === 'premium'}
+        />
+        <BulkSelect pageType='marketplace' />
+      </div>
+    </SelectAllProvider>
   )
 }
 

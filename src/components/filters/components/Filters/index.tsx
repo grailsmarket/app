@@ -130,7 +130,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
 
   // Show offer filter for marketplace/categoriesPage/category "Names" tabs and profile domains/grace/watchlist/listings tabs
   const showOfferFilter =
-    (filterType === 'marketplace' && activeMarketplaceTab === 'names') ||
+    (filterType === 'marketplace' && (activeMarketplaceTab === 'names' || activeMarketplaceTab === 'listings')) ||
     (filterType === 'categoriesPage' && activeCategoriesPageTab === 'names') ||
     (filterType === 'category' && activeCategoryTab === 'names') ||
     (filterType === 'profile' &&
@@ -186,9 +186,9 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           <LengthFilter />
           <PriceRangeFilter />
           {showOfferFilter && <OfferFilter />}
-          {showOfferFilter && <WatchersFilter />}
-          {showOfferFilter && <ViewsFilter />}
-          {showOfferFilter && <CategoriesCountFilter />}
+          <WatchersFilter />
+          <ViewsFilter />
+          <CategoriesCountFilter />
           <TypeFilter />
         </div>
       </div>

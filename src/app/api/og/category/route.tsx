@@ -290,16 +290,12 @@ export async function GET(req: NextRequest) {
 
   const categoryData = await getResponse()
 
-  // Return 404 if category not configured on frontend
-  if (!categoryData?.name || !(categoryData.name in CATEGORY_IMAGES)) {
-    return new Response('Category not found', { status: 404 })
-  }
-
-  const categoryImage = CATEGORY_IMAGES[categoryData.name as keyof typeof CATEGORY_IMAGES]
-  const categoryName = CATEGORY_LABELS[categoryData.name as keyof typeof CATEGORY_LABELS]
+  const categoryImage = CATEGORY_IMAGES[categoryData?.name as keyof typeof CATEGORY_IMAGES]
+  const categoryName = CATEGORY_LABELS[categoryData?.name as keyof typeof CATEGORY_LABELS]
   const categoryDescription = categoryData?.description
   const categoryImageUrl = categoryImage.header
   const categoryAvatarUrl = categoryImage.avatar
+  console.log(categoryImageUrl, categoryAvatarUrl)
 
   return new ImageResponse(
     (

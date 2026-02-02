@@ -49,7 +49,7 @@ const SimilarNames: React.FC<Props> = ({ name, categories }) => {
           ))}
         </div>
 
-        {/* Loading overlay - maintains same height as 5 rows */}
+        {/* Loading overlay - maintains same height as 20 rows */}
         {isLoading ? (
           <div className='flex h-[300px] w-full animate-pulse flex-col items-center justify-center gap-3'>
             <LoadingCell height='20px' width='140px' radius='4px' />
@@ -57,7 +57,7 @@ const SimilarNames: React.FC<Props> = ({ name, categories }) => {
           </div>
         ) : (
           // Loaded - show domain rows
-          domains.slice(0, 5).map((domain, index) => (
+          domains.slice(0, 10).map((domain, index) => (
             <TableRow
               key={domain.name}
               domain={domain}

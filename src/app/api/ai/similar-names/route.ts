@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ens_normalize } from '@adraffy/ens-normalize'
 
 // Simple in-memory cache with 1 hour TTL
 const cache = new Map<string, { data: SimilarNamesResponse; timestamp: number }>()
@@ -9,19 +10,48 @@ interface SimilarNamesResponse {
   error?: string
 }
 
-const SYSTEM_PROMPT = `you are a domain agent: given an input string, return exactly 5 outputs that are related and likely to be similarly or more valuable than the input.
-3–16 chars per output
-No spaces in any output
-If input is single word → outputs single words only
-If input is multiword fused (no spaces) → match that fused style
-No random suffixes (x/ix/etc.)
-Unintelligible input → return clean words sharing some characters
-Digits-only input → all outputs digits, same length, similar pattern
+const SYSTEM_PROMPT = `given an input string, return exactly 10 results that are related and likely to be similarly or more valuable than the input.
+Rules (strict!):
+3–16 chars per result
+No spaces in any result
+If input is single word → results = single words only
+Digits-only input → all results digits, same length, similar pattern
 PG-13 only
-If input contains “.” → outputs must not contain “.”
-Emojis-only input → output emojis-only; if input repeats, outputs repeat too
+results must not contain “.”
+Emojis-only input → output emojis-only; if input repeats, results repeat too
 If input implies a category/theme → stay on-theme
-Return nothing else`
+order the results by highest recognition first.
+Return no other data.`
+
+/**
+ * Attempts to normalize a name for ENS validity.
+ * Returns the normalized name if valid, or null if it can't be healed.
+ */
+function tryNormalizeName(name: string): string | null {
+  // Step 1: Basic cleanup - remove spaces, trim, lowercase
+  let cleaned = name.replaceAll(' ', '').trim().toLowerCase()
+  
+  // Step 2: Remove any dots (not allowed in our suggestions)
+  cleaned = cleaned.replaceAll('.', '')
+  
+  // Step 3: Skip empty or too short/long
+  if (cleaned.length === 0 || cleaned.length > 16) {
+    return null
+  }
+  
+  // Step 4: Try to normalize with ENS library
+  try {
+    const normalized = ens_normalize(cleaned)
+    // Ensure normalized result is still within bounds
+    if (normalized.length > 0 && normalized.length <= 16) {
+      return normalized
+    }
+    return null
+  } catch {
+    // Name cannot be normalized - invalid for ENS
+    return null
+  }
+}
 
 // Categories to exclude from AI prompt (not useful for suggestions)
 const EXCLUDED_CATEGORIES = [
@@ -86,14 +116,23 @@ async function callOpenAI(name: string, categories?: string[]): Promise<string[]
     throw new Error('No text in OpenAI response')
   }
 
-  // Parse the response - expecting 4 words/names separated by newlines or commas
-  const suggestions = text
+  // Parse the response - split by newlines or commas
+  const rawSuggestions = text
     .split(/[\n,]+/)
-    .map((s: string) => s.trim().toLowerCase())
-    .filter((s: string) => s.length > 0 && s.length <= 14)
-    .slice(0, 5)
+    .map((s: string) => s.trim())
+    .filter((s: string) => s.length > 0)
 
-  return suggestions
+  // Normalize and validate each suggestion
+  const validSuggestions: string[] = []
+  for (const raw of rawSuggestions) {
+    const normalized = tryNormalizeName(raw)
+    if (normalized && !validSuggestions.includes(normalized)) {
+      validSuggestions.push(normalized)
+      if (validSuggestions.length >= 10) break
+    }
+  }
+
+  return validSuggestions
 }
 
 export async function GET(request: NextRequest) {

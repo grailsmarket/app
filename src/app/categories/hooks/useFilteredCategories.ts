@@ -6,7 +6,6 @@ import { selectCategoriesPageFilters } from '@/state/reducers/filters/categories
 import { fetchFilteredCategories } from '@/api/categories/fetchFilteredCategories'
 import { useMemo } from 'react'
 import { CategoryType } from '@/types/domains'
-import { CATEGORY_IMAGES } from '@/app/categories/[category]/components/categoryDetails'
 
 export const useFilteredCategories = () => {
   const filters = useAppSelector(selectCategoriesPageFilters)
@@ -23,21 +22,14 @@ export const useFilteredCategories = () => {
     },
   })
 
-  // Apply local search filter and exclude categories without frontend configuration
+  // Apply local search filter
   const filteredCategories = useMemo(() => {
     if (!categories) return []
 
-    // Filter out categories that don't have frontend images configured
-    const configuredCategories = categories.filter(
-      (category: CategoryType) => category.name in CATEGORY_IMAGES
-    )
-
     const searchTerm = filters.search.toLowerCase().trim()
-    if (!searchTerm) return configuredCategories
+    if (!searchTerm) return categories
 
-    return configuredCategories.filter((category: CategoryType) =>
-      category.name.toLowerCase().includes(searchTerm)
-    )
+    return categories.filter((category: CategoryType) => category.name.toLowerCase().includes(searchTerm))
   }, [categories, filters.search])
 
   return {

@@ -57,7 +57,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
                     height={16}
                     className='rounded-full'
                   />
-                  <span>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</span>
+                  <p>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
                 </div>
               ))}
               {remainingCategories?.length > 0 && <p>+{remainingCategories.length}</p>}

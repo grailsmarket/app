@@ -69,9 +69,8 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
     return (
       categories?.filter(
         (category) =>
-          category.name in CATEGORY_IMAGES &&
-          (category.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-            category.description.toLowerCase().includes(debouncedQuery.toLowerCase()))
+          category.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          category.description.toLowerCase().includes(debouncedQuery.toLowerCase())
       ) || [].slice(0, 5)
     )
   }, [categories, debouncedQuery])

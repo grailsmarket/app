@@ -41,8 +41,19 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   const { address: userAddress } = useAccount()
   const { openConnectModal } = useConnectModal()
   const [viewAll, setViewAll] = useState(false)
-  const showViewAllButton = offers.length > 2
-  const displayedOffers = viewAll ? offers : offers.slice(0, 2)
+  const sortedOffers = useMemo(
+    () =>
+      [...offers].sort((a, b) => {
+        const priceDiff = Number(b.offer_amount_wei) - Number(a.offer_amount_wei)
+        if (priceDiff !== 0) return priceDiff
+        if (a.source === 'grails' && b.source !== 'grails') return -1
+        if (b.source === 'grails' && a.source !== 'grails') return 1
+        return 0
+      }),
+    [offers]
+  )
+  const showViewAllButton = sortedOffers.length > 2
+  const displayedOffers = viewAll ? sortedOffers : sortedOffers.slice(0, 2)
   const isMyDomain = useMemo(
     () => domain?.owner?.toLowerCase() === userAddress?.toLowerCase(),
     [domain?.owner, userAddress]
@@ -65,35 +76,33 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
       {offersLoading ? (
         <LoadingCell height='60px' width='100%' />
       ) : (
-        displayedOffers
-          .sort((a, b) => Number(b.offer_amount_wei) - Number(a.offer_amount_wei))
-          .map((offer) => (
-            <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
-              <div className='flex flex-row items-center gap-2 sm:gap-4'>
+        displayedOffers.map((offer) => (
+          <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
+            <div className='flex flex-row items-center gap-2 sm:gap-4'>
+              <div className='flex flex-row items-center gap-2'>
+                <Image
+                  src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
+                  width={32}
+                  height={32}
+                  alt={offer.source}
+                  className='h-auto min-w-7 sm:w-8'
+                />
+              </div>
+              <div className='flex flex-col gap-1'>
                 <div className='flex flex-row items-center gap-2'>
-                  <Image
-                    src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
-                    width={32}
-                    height={32}
-                    alt={offer.source}
-                    className='h-auto min-w-7 sm:w-8'
+                  <Price
+                    price={offer.offer_amount_wei}
+                    currencyAddress={offer.currency_address}
+                    fontSize='text-2xl font-semibold'
+                    iconSize='24px'
                   />
                 </div>
-                <div className='flex flex-col gap-1'>
-                  <div className='flex flex-row items-center gap-2'>
-                    <Price
-                      price={offer.offer_amount_wei}
-                      currencyAddress={offer.currency_address}
-                      fontSize='text-2xl font-semibold'
-                      iconSize='24px'
-                    />
-                  </div>
-                  <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
-                </div>
+                <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
               </div>
-              <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
             </div>
-          ))
+            <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
+          </div>
+        ))
       )}
       {!offersLoading && offers.length === 0 && (
         <div className='p-2xl flex w-full flex-row items-center justify-center gap-2'>

@@ -41,8 +41,19 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
   const [viewAll, setViewAll] = useState(false)
   const dispatch = useAppDispatch()
   const { address: userAddress } = useAccount()
-  const showViewAllButton = listings.length > 2
-  const displayedListings = viewAll ? listings : listings.slice(0, 2)
+  const sortedListings = useMemo(
+    () =>
+      [...listings].sort((a, b) => {
+        const priceDiff = Number(a.price) - Number(b.price)
+        if (priceDiff !== 0) return priceDiff
+        if (a.source === 'grails' && b.source !== 'grails') return -1
+        if (b.source === 'grails' && a.source !== 'grails') return 1
+        return 0
+      }),
+    [listings]
+  )
+  const showViewAllButton = sortedListings.length > 2
+  const displayedListings = viewAll ? sortedListings : sortedListings.slice(0, 2)
   const isMyDomain = useMemo(
     () => domain?.owner?.toLowerCase() === userAddress?.toLowerCase(),
     [domain?.owner, userAddress]

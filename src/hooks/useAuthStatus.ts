@@ -3,7 +3,7 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { logout } from '@/api/siwe/logout'
-import { WEEK_IN_SECONDS } from '@/constants/time'
+import { DAY_IN_SECONDS } from '@/constants/time'
 import { verifySignature } from '@/api/siwe/verifySignature'
 import { checkAuthentication } from '@/api/siwe/checkAuthentication'
 import { useAppDispatch } from '@/state/hooks'
@@ -41,6 +41,13 @@ export const useAuth = () => {
       }
 
       dispatch(resetUserProfile())
+
+      // check if the token exists, since auth verification fialed, the user should be disconnected
+      if((document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1]?.length || 0) > 0) {
+        disconnect()
+        document.cookie = `token=; path=/; max-age=0;`
+      }
+
       return 'unauthenticated'
     },
     placeholderData: 'loading',
@@ -58,9 +65,6 @@ export const useAuth = () => {
       logout()
       dispatch(resetUserProfile())
       document.cookie = `token=; path=/; max-age=0;`
-      refetchAuthStatus()
-      setCurrAddress(address)
-      return
     }
 
     refetchAuthStatus()
@@ -78,7 +82,7 @@ export const useAuth = () => {
       return
     }
 
-    document.cookie = `token=${token}; path=/; max-age=${WEEK_IN_SECONDS};`
+    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS}; timestamp=${Date.now()};`
     return
   }
 

@@ -80,7 +80,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       {/* <Link
         href='/'
         className={cn(
-          'font-semibold transition-all',
+          'font-medium transition-all',
           pathname === '/' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -90,7 +90,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/marketplace'
         className={cn(
-          'font-semibold transition-all',
+          'font-medium transition-all',
           pathname === '/marketplace' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -98,7 +98,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
         Explore
       </Link>
       <p
-        className='text-foreground cursor-pointer font-semibold opacity-80 transition-all hover:opacity-100'
+        className='text-foreground cursor-pointer font-medium opacity-80 transition-all hover:opacity-100'
         onClick={() => {
           dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
           router.push('/marketplace')
@@ -109,7 +109,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/categories'
         className={cn(
-          'font-semibold transition-all',
+          'font-medium transition-all',
           pathname === '/categories' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -119,7 +119,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/leaderboard'
         className={cn(
-          'font-semibold transition-all',
+          'font-medium transition-all',
           pathname === '/leaderboard' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -129,7 +129,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/analytics'
         className={cn(
-          'font-semibold transition-all',
+          'font-medium transition-all',
           pathname === '/analytics' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
         )}
         onClick={onClick}
@@ -140,7 +140,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
         <Link
           href={`/profile/${userAddress}`}
           className={cn(
-            'font-semibold text-nowrap transition-all',
+            'font-medium text-nowrap transition-all',
             isPortfolioPage ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
           )}
           onClick={(e) => {

@@ -17,6 +17,8 @@
     "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@reduxjs/toolkit": "^2.9.0",
+    "@safe-global/safe-apps-provider": "~0.18.6",
+    "@safe-global/safe-apps-sdk": "^9.1.0",
     "@sparticuz/chromium": "^141.0.0",
     "@sparticuz/chromium-min": "^141.0.0",
     "@tanstack/react-query": "^5.90.2",

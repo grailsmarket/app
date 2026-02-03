@@ -11,6 +11,7 @@ import { mainnet, optimism, base } from 'wagmi/chains'
 import { type Chain, connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { http, fallback, createStorage, cookieStorage, createConfig } from 'wagmi'
 import { APP_DESCRIPTION, APP_ICON, APP_NAME, APP_URL } from '@/constants'
+import { safe } from 'wagmi/connectors'
 
 coinbaseWallet.preference = 'all'
 // Define the connectors for the app
@@ -114,7 +115,7 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
 
 const config = createConfig({
   ssr: true,
-  connectors,
+  connectors: [...connectors, safe()],
   chains,
   storage: createStorage({
     storage: cookieStorage,

@@ -124,7 +124,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
                     'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
                     selectedTab.value === tab.value
                       ? 'text-primary font-bold opacity-100'
-                      : 'font-semibold opacity-50 transition-colors hover:opacity-80'
+                      : 'font-medium opacity-50 transition-colors hover:opacity-80'
                   )}
                 >
                   <p>{tab.label}</p>
@@ -178,7 +178,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
                 'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
                 selectedTab.value === tab.value
                   ? 'text-primary font-bold opacity-100'
-                  : 'font-semibold opacity-50 transition-colors hover:opacity-80'
+                  : 'font-medium opacity-50 transition-colors hover:opacity-80'
               )}
             >
               <p>{tab.label}</p>

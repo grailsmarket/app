@@ -78,7 +78,7 @@ const Price: React.FC<PriceProps> = ({
               <>
                 <p>$</p>
                 <p>{regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}</p>
-                <p className='text-neutral font-medium'>&nbsp;/&nbsp;Year</p>
+                <p className='text-neutral font-medium'>&nbsp;/&nbsp;yr</p>
               </>
             )}
           </p>

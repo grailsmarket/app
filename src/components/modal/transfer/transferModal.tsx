@@ -16,10 +16,10 @@ import { setTransferModalDomains, TransferDomainType } from '@/state/reducers/mo
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { formatAddress } from '@/utils/formatAddress'
-import { isAddress, Address } from 'viem'
+import { isAddress, Address, labelhash, namehash } from 'viem'
 import Input from '@/components/ui/input'
 import { mainnet } from 'viem/chains'
-import { beautifyName } from '@/lib/ens'
+import { beautifyName, normalizeName } from '@/lib/ens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -180,11 +180,13 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       const items = await Promise.all(
         domains.map(async (domain) => {
           const isWrapped = await checkIfWrapped(domain.name)
+          const normalizedName = normalizeName(domain.name)
+          const tokenId = isWrapped ? namehash(normalizedName) : labelhash(normalizedName.replace('.eth', ''))
 
           return {
             itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721,
             token: isWrapped ? ENS_NAME_WRAPPER_ADDRESS : (ENS_REGISTRAR_ADDRESS as Address),
-            identifier: BigInt(domain.tokenId),
+            identifier: BigInt(tokenId),
             amount: BigInt(1),
           }
         })

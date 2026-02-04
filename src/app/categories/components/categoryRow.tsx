@@ -116,7 +116,7 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
       href={`/categories/${category.name}`}
       className='bg-secondary relative flex h-full w-full flex-col justify-between gap-2 rounded-lg hover:bg-white/10'
     >
-      <div className='p-lg relative flex flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
+      <div className='p-lg relative flex flex-row items-center gap-3 overflow-hidden rounded-t-lg min-h-[102px] max-h-[102px]'>
         <Image
           src={categoryHeader}
           alt={`${categoryName} header`}
@@ -208,8 +208,8 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
               (
               {category.member_count > 0
                 ? ((category.premium_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                    maximumFractionDigits: 1,
-                  })
+                  maximumFractionDigits: 1,
+                })
                 : 0}
               %)
             </span>
@@ -223,8 +223,8 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
               (
               {category.member_count > 0
                 ? ((category.available_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                    maximumFractionDigits: 1,
-                  })
+                  maximumFractionDigits: 1,
+                })
                 : 0}
               %)
             </span>

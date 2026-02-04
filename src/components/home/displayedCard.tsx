@@ -65,11 +65,23 @@ const DisplayedCards: React.FC = () => {
       )}
     >
       {isLoading &&
-        Array.from({ length: cardCount }).map((_, index) => (
-          <div key={index}>
-            <LoadingCard key={index} />
-          </div>
-        ))}
+        Array.from({ length: cardCount }).map((_, index) => {
+          const leftMobile = index * 120
+          const leftDesktop = index * 170
+
+          return (
+            <div key={index} className={cn(
+              'shadow-homeCard absolute bg-secondary -top-40 left-0 z-20 h-[360px] w-[190px] rounded-xl sm:h-[410px] sm:w-[240px]',
+              index % 2 === 0 ? 'sm:-top-40' : '-top-56'
+            )}
+              style={{
+                left: width && width < 640 ? leftMobile : leftDesktop,
+                zIndex: index,
+              }}>
+              <LoadingCard key={index} />
+            </div>
+          )
+        })}
       {!isLoading && domains ? (
         domains.slice(0, cardCount).map((domain, index) => {
           const leftMobile = index * 120

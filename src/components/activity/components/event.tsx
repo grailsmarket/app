@@ -55,13 +55,13 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
 
   return (
     <div className='flex w-full flex-row items-center gap-1.5 sm:gap-2'>
-      <div className='flex h-7 w-7 items-center justify-center sm:h-8 sm:w-8'>
+      <div className='flex h-7 w-7 items-center justify-center'>
         <Image
           src={platformIcon || ETHGray}
           alt='Opensea'
           width={platformIcon ? 32 : 24}
           height={platformIcon ? 32 : 24}
-          className='h-full w-auto'
+          className='h-auto w-7'
         />
       </div>
       <div className='flex flex-col items-start'>

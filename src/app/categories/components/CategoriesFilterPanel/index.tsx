@@ -78,7 +78,7 @@ const CategoriesFilterPanel: React.FC = () => {
           <div className='px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
             <button
               onClick={handleClose}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:hidden md:h-10 md:w-10'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10 lg:hidden'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button>

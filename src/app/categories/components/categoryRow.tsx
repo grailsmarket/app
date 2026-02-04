@@ -8,12 +8,14 @@ import { localizeNumber } from '@/utils/localizeNumber'
 import { selectCategoriesPageFilters } from '@/state/reducers/filters/categoriesPageFilters'
 import { useAppSelector } from '@/state/hooks'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
+import { cn } from '@/utils/tailwind'
 
 interface CategoryRowProps {
   category: CategoryType
+  reduceColumns?: boolean
 }
 
-const CategoryRow = ({ category }: CategoryRowProps) => {
+const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
   const categoriesFilters = useAppSelector(selectCategoriesPageFilters)
   const categorySort = categoriesFilters.sort
 
@@ -112,134 +114,143 @@ const CategoryRow = ({ category }: CategoryRowProps) => {
   return (
     <Link
       href={`/categories/${category.name}`}
-      className='bg-secondary p-lg relative flex h-full w-full flex-col justify-between gap-2 rounded-lg hover:bg-white/10'
+      className='bg-secondary relative flex h-full w-full flex-col justify-between gap-2 rounded-lg hover:bg-white/10'
     >
-      <Image
-        src={categoryHeader}
-        alt={`${categoryName} header`}
-        width={1000}
-        height={1000}
-        className='absolute top-0 left-0 h-full w-full object-cover opacity-10'
-      />
-      <div className='z-10 flex items-center gap-3'>
-        <Image src={categoryAvatar} alt={categoryName} width={60} height={60} className='rounded-full' />
-        <div className='flex flex-col gap-0.5'>
-          <h3 className='text-xl font-bold md:text-2xl'>{categoryName}</h3>
-          <p className='text-neutral text-lg font-medium'>{category.description}</p>
+      <div className='p-lg relative flex flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
+        <Image
+          src={categoryHeader}
+          alt={`${categoryName} header`}
+          width={1000}
+          height={1000}
+          className='absolute top-0 left-0 h-full w-full object-cover opacity-20'
+        />
+        <div className='z-10 flex items-center gap-3'>
+          <Image src={categoryAvatar} alt={categoryName} width={60} height={60} className='rounded-full' />
+          <div className='flex flex-col'>
+            <h3 className='text-2xl font-bold md:text-2xl'>{categoryName}</h3>
+            <p className='text-neutral text-xl font-medium'>{category.description}</p>
+          </div>
         </div>
       </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Names</p>
-        <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Registered</p>
-        <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>({category.registered_percent.toFixed(1)}%)</span>
-          {localizeNumber(category.registered_count)}
-        </p>
-      </div>
-      <div className='text-grace z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Grace</p>
-        <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>({category.grace_percent.toFixed(1)}%)</span>
-          {localizeNumber(category.grace_count)}
-        </p>
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>
-          Reg+<span className='text-grace'>Grace</span>
-        </p>
-        <p className='text-xl font-semibold'>
+      <div
+        className={cn(
+          'p-lg grid gap-4 gap-y-6',
+          reduceColumns ? 'grid-cols-2 md:grid-cols-2 2xl:grid-cols-3' : 'grid-cols-3 2xl:grid-cols-4'
+        )}
+      >
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
+          <p className='text-neutral text-lg'>Names</p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <Price
+            price={volumeTimeWindow ? volumeTimeWindow.value : category.total_sales_volume_wei}
+            currencyAddress={category.floor_price_currency as Address}
+            iconSize='20px'
+            fontSize='text-xl font-semibold'
+          />
+          <p className='text-neutral text-lg font-medium'>
+            Volume&nbsp;
+            <span className='text-lg'>
+              {volumeTimeWindow?.label && volumeTimeWindow.label.length > 0 ? `(${volumeTimeWindow.label})` : ''}
+            </span>
+          </p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <Price
+            price={category.floor_price_wei}
+            currencyAddress={category.floor_price_currency as Address}
+            iconSize='20px'
+            fontSize='text-xl font-semibold'
+          />
+          <p className='text-neutral text-lg font-medium'>Floor</p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>
+            {localizeNumber(salesTimeWindow ? salesTimeWindow.value : category.total_sales_count)}
+          </p>
+          <p className='text-neutral text-lg font-medium'>
+            Sales&nbsp;
+            <span className='text-lg'>
+              {salesTimeWindow?.label && salesTimeWindow.label.length > 0 ? `(${salesTimeWindow.label})` : ''}
+            </span>
+          </p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>
+            {localizeNumber(category.registered_count)}
+            <span className='ml-1 text-lg font-medium'>({category.registered_percent.toFixed(1)}%)</span>
+          </p>
+          <p className='text-neutral text-lg'>Registered</p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>
+            {localizeNumber(category.grace_count)}
+            <span className='ml-1 text-lg font-medium'>({category.grace_percent.toFixed(1)}%)</span>
+          </p>
+          <p className='text-grace text-lg font-medium'>Grace</p>
+        </div>
+        {/* <div className='z-10 flex h-fit flex-col items-start border-l-2 border-neutral pl-2'>
+          <p className='text-xl font-semibold'>
           <span className='mr-1 text-lg font-medium'>
-            ({(category.registered_percent + category.grace_percent).toFixed(1)}%)
+          ({(category.registered_percent + category.grace_percent).toFixed(1)}%)
           </span>
           {localizeNumber(category.registered_count + category.grace_count)}
-        </p>
-      </div>
-      <div className='text-premium z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Premium</p>
-        <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>
-            (
-            {category.member_count > 0
-              ? ((category.premium_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
-              : 0}
-            %)
-          </span>
-          {localizeNumber(category.premium_count)}
-        </p>
-      </div>
-      <div className='text-available z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Available</p>
-        <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>
-            (
-            {category.member_count > 0
-              ? ((category.available_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
-              : 0}
-            %)
-          </span>
-          {localizeNumber(category.available_count)}
-        </p>
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Listings</p>
-        <p className='text-xl font-semibold'>
-          <span className='mr-1 text-lg font-medium'>({category.listings_percent.toFixed(1)}%)</span>
-          {localizeNumber(category.listings_count)}
-        </p>
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Holders</p>
-        <div className='flex items-center gap-1'>
-          <p className='text-lg font-semibold'>
-            (
-            {(category.member_count / category.holders_count).toLocaleString(navigator.language, {
-              maximumFractionDigits: 1,
-            })}
-            )
           </p>
-          <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
+          <p className='font-sedan-sc text-xl md:text-2xl'>
+            Reg+<span className='text-grace'>Grace</span>
+          </p>
+        </div> */}
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>
+            {localizeNumber(category.premium_count)}
+            <span className='ml-1 text-lg font-medium'>
+              (
+              {category.member_count > 0
+                ? ((category.premium_count / category.member_count) * 100).toLocaleString(navigator.language, {
+                    maximumFractionDigits: 1,
+                  })
+                : 0}
+              %)
+            </span>
+          </p>
+          <p className='text-premium text-lg font-medium'>Premium</p>
         </div>
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>
-          Sales&nbsp;
-          <span className='text-lg font-medium md:text-xl'>
-            {salesTimeWindow?.label && salesTimeWindow.label.length > 0 ? `(${salesTimeWindow.label})` : ''}
-          </span>
-        </p>
-        <p className='text-xl font-semibold'>
-          {localizeNumber(salesTimeWindow ? salesTimeWindow.value : category.total_sales_count)}
-        </p>
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>
-          Volume&nbsp;
-          <span className='text-lg font-medium md:text-xl'>
-            {volumeTimeWindow?.label && volumeTimeWindow.label.length > 0 ? `(${volumeTimeWindow.label})` : ''}
-          </span>
-        </p>
-        <Price
-          price={volumeTimeWindow ? volumeTimeWindow.value : category.total_sales_volume_wei}
-          currencyAddress={category.floor_price_currency as Address}
-          iconSize='22px'
-          fontSize='text-xl font-semibold'
-        />
-      </div>
-      <div className='z-10 flex items-center justify-between gap-2'>
-        <p className='font-sedan-sc text-xl md:text-2xl'>Floor</p>
-        <Price
-          price={category.floor_price_wei}
-          currencyAddress={category.floor_price_currency as Address}
-          iconSize='22px'
-          fontSize='text-xl font-semibold'
-        />
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>
+            {localizeNumber(category.available_count)}
+            <span className='ml-1 text-lg font-medium'>
+              (
+              {category.member_count > 0
+                ? ((category.available_count / category.member_count) * 100).toLocaleString(navigator.language, {
+                    maximumFractionDigits: 1,
+                  })
+                : 0}
+              %)
+            </span>
+          </p>
+          <p className='text-available text-lg font-medium'>Available</p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <p className='text-xl font-semibold'>
+            {localizeNumber(category.listings_count)}
+            <span className='ml-1 text-lg font-medium'>({category.listings_percent.toFixed(1)}%)</span>
+          </p>
+          <p className='text-neutral text-lg font-medium'>Listings</p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <div className='flex items-center gap-1'>
+            <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
+            <p className='text-lg font-semibold'>
+              (
+              {(category.member_count / category.holders_count).toLocaleString(navigator.language, {
+                maximumFractionDigits: 1,
+              })}
+              )
+            </p>
+          </div>
+          <p className='text-neutral text-lg font-medium'>Holders</p>
+        </div>
       </div>
       {/* <PrimaryButton className='z-10 mt-2 h-8! w-full' onClick={() => router.push(`/categories/${category.name}`)}>
         View

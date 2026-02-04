@@ -3,9 +3,14 @@
 import React from 'react'
 import CategoryRow from '../categoryRow'
 import { useFilteredCategories } from '../../hooks/useFilteredCategories'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { cn } from '@/utils/tailwind'
 
 const CategoriesPanel: React.FC = () => {
   const { categories, isLoading } = useFilteredCategories()
+  const { selectors } = useFilterRouter()
+  const isOpen = selectors.filters.open
+  console.log(isOpen)
 
   return (
     <div className='z-0 flex w-full flex-col'>
@@ -63,13 +68,27 @@ const CategoriesPanel: React.FC = () => {
       {/* Categories grid */}
       <div className='px-md lg:px-lg py-lg'>
         {isLoading ? (
-          <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4'>
+          <div
+            className={cn(
+              'grid gap-2 md:gap-4',
+              isOpen
+                ? '3xl:grid-cols-3 grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2'
+                : '3xl:grid-cols-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3'
+            )}
+          >
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className='bg-secondary h-[380px] animate-pulse rounded-lg' />
             ))}
           </div>
         ) : categories && categories.length > 0 ? (
-          <div className='grid grid-cols-1 gap-2 sm:grid-cols-2 md:gap-4 xl:grid-cols-3 2xl:grid-cols-4'>
+          <div
+            className={cn(
+              'grid gap-2 md:gap-4',
+              isOpen
+                ? '3xl:grid-cols-3 grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2'
+                : '4xl:grid-cols-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3'
+            )}
+          >
             {categories.map((category) => (
               <CategoryRow key={category.name} category={category} />
             ))}

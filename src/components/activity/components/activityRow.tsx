@@ -148,7 +148,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           </div>
         </div>
       )}
-      <div className='hidden items-center justify-end gap-1 min-h-1 min-w-6 max-w-6 sm:flex'>
+      <div className='hidden min-h-1 max-w-6 min-w-6 items-center justify-end gap-1 sm:flex'>
         {activity.transaction_hash && (
           <Link
             href={`https://etherscan.io/tx/${activity.transaction_hash}`}

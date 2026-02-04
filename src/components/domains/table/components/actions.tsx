@@ -38,6 +38,7 @@ interface ActionsProps {
   columnCount: number
   canAddToCart: boolean
   watchlistId?: number | undefined
+  showWatchlist?: boolean
   isBulkSelecting?: boolean
   registrationStatus: RegistrationStatus
 }
@@ -48,6 +49,7 @@ const Actions: React.FC<ActionsProps> = ({
   index,
   columnCount,
   watchlistId,
+  showWatchlist = true,
   isBulkSelecting,
   registrationStatus,
 }) => {
@@ -276,22 +278,24 @@ const Actions: React.FC<ActionsProps> = ({
             <CartIcon domain={domain} />
           </button>
         )}
-        <div
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-          className='flex h-7 w-fit flex-row items-center justify-center gap-1'
-        >
-          <Watchlist
-            domain={domain}
-            showSettings={watchlistId ? true : false}
-            tooltipPosition={index === 0 ? 'bottom' : 'top'}
-            dropdownPosition='left'
-            watchlistId={watchlistId || domain.watchlist_record_id}
-            fetchWatchSettings={false}
-          />
-        </div>
+        {showWatchlist && (
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            className='flex h-7 w-fit flex-row items-center justify-center gap-1'
+          >
+            <Watchlist
+              domain={domain}
+              showSettings={watchlistId ? true : false}
+              tooltipPosition={index === 0 ? 'bottom' : 'top'}
+              dropdownPosition='left'
+              watchlistId={watchlistId || domain.watchlist_record_id}
+              fetchWatchSettings={false}
+            />
+          </div>
+        )}
         {!isBulkSelecting && !isUnregistered && (
           <ActionsDropdown
             domain={domain}

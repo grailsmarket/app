@@ -72,9 +72,9 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/english_adjectives/avatar.jpg',
     header: 'https://grails.app/clubs/english_adjectives/header.jpeg',
   },
-  wikidata_top_nouns: {
-    avatar: 'https://grails.app/clubs/wikidata_top_nouns/avatar.jpg',
-    header: 'https://grails.app/clubs/wikidata_top_nouns/header.jpeg',
+  top_nouns: {
+    avatar: 'https://grails.app/clubs/top_nouns/avatar.jpg',
+    header: 'https://grails.app/clubs/top_nouns/header.jpeg',
   },
   wikidata_top_fantasy_char: {
     avatar: 'https://grails.app/clubs/wikidata_top_fantasy_char/avatar.jpg',
@@ -211,6 +211,10 @@ export const CATEGORY_IMAGES = {
   mythical_creatures: {
     avatar: 'https://grails.app/clubs/mythical_creatures/avatar.jpg',
     header: 'https://grails.app/clubs/mythical_creatures/header.png',
+  },
+  personas: {
+    avatar: 'https://grails.app/clubs/personas/avatar.png',
+    header: 'https://grails.app/clubs/personas/header.jpg',
   },
 }
 

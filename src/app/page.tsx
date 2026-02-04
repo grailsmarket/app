@@ -19,7 +19,7 @@ const Home = () => {
         />
         <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
       </div> */}
-      <div className='z-10 mx-auto flex h-full w-full max-w-[1296px] flex-col items-center gap-12 px-4 pt-14 sm:gap-20 md:gap-28 md:px-8 lg:pt-20 xl:px-4'>
+      <div className='z-10 mx-auto flex h-full w-full max-w-[1296px] flex-col items-center gap-12 px-4 pt-14 sm:gap-20 md:gap-28 md:px-8 lg:pt-8 xl:px-4'>
         <div className='flex w-full flex-col items-center justify-center gap-32 md:gap-24 lg:flex-row lg:items-start lg:justify-start xl:gap-0'>
           <div className='flex w-full flex-col items-center justify-center gap-2'>
             <h1 className='font-sedan-sc text-center text-4xl sm:text-7xl xl:text-9xl'>ENS Manager & Market</h1>

@@ -41,8 +41,8 @@ import PeriodicTableAvatar from 'public/clubs/periodic_table/avatar.jpg'
 import PeriodicTableHeader from 'public/clubs/periodic_table/header.jpeg'
 import EnglishAdjectivesAvatar from 'public/clubs/english_adjectives/avatar.jpg'
 import EnglishAdjectivesHeader from 'public/clubs/english_adjectives/header.jpeg'
-import WikidataTopNounsAvatar from 'public/clubs/wikidata_top_nouns/avatar.jpg'
-import WikidataTopNounsHeader from 'public/clubs/wikidata_top_nouns/header.jpeg'
+import TopNounsAvatar from 'public/clubs/top_nouns/avatar.jpg'
+import TopNounsHeader from 'public/clubs/top_nouns/header.jpeg'
 import WikidataTopFantasyCharAvatar from 'public/clubs/wikidata_top_fantasy_char/avatar.jpg'
 import WikidataTopFantasyCharHeader from 'public/clubs/wikidata_top_fantasy_char/header.jpeg'
 import UnCapitalCitiesAvatar from 'public/clubs/un_capital_cities/avatar.jpg'
@@ -118,6 +118,8 @@ import FirstnamesUsaAvatar from 'public/clubs/firstnames_usa/avatar.jpg'
 import FirstnamesUsaHeader from 'public/clubs/firstnames_usa/header.png'
 import MythicalCreaturesAvatar from 'public/clubs/mythical_creatures/avatar.jpg'
 import MythicalCreaturesHeader from 'public/clubs/mythical_creatures/header.png'
+import PersonasAvatar from 'public/clubs/personas/avatar.png'
+import PersonasHeader from 'public/clubs/personas/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -190,9 +192,9 @@ export const CATEGORY_IMAGES = {
     avatar: EnglishAdjectivesAvatar,
     header: EnglishAdjectivesHeader,
   },
-  wikidata_top_nouns: {
-    avatar: WikidataTopNounsAvatar,
-    header: WikidataTopNounsHeader,
+  top_nouns: {
+    avatar: TopNounsAvatar,
+    header: TopNounsHeader,
   },
   wikidata_top_fantasy_char: {
     avatar: WikidataTopFantasyCharAvatar,
@@ -329,6 +331,10 @@ export const CATEGORY_IMAGES = {
   mythical_creatures: {
     avatar: MythicalCreaturesAvatar,
     header: MythicalCreaturesHeader,
+  },
+  personas: {
+    avatar: PersonasAvatar,
+    header: PersonasHeader,
   },
 }
 

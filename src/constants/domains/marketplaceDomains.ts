@@ -145,7 +145,7 @@ export const CATEGORY_LABELS = {
   bip_39: 'BIP 39',
   periodic_table: 'Periodic Table',
   english_adjectives: 'English Adjectives',
-  wikidata_top_nouns: 'Top Nouns',
+  top_nouns: 'Top Nouns',
   wikidata_top_fantasy_char: 'Top Fantasy',
   '3_letter_palindromes': '3 Letter Palindromes',
   '3_digit_palindromes': '3 Digit Palindromes',
@@ -178,4 +178,5 @@ export const CATEGORY_LABELS = {
   familynames_usa: 'Surnames USA',
   firstnames_usa: 'First Names USA',
   mythical_creatures: 'Mythical Creatures',
+  personas: 'Personas',
 } as const

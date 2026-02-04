@@ -122,6 +122,7 @@ const Activity: React.FC<ActivityProps> = ({
               </div>
             )
           })}
+          <div className='h-1 w-8' />
         </div>
       )}
       <div className='h-full w-full rounded-sm px-0' ref={listRef}>

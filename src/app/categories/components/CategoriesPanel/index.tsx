@@ -10,7 +10,6 @@ const CategoriesPanel: React.FC = () => {
   const { categories, isLoading } = useFilteredCategories()
   const { selectors } = useFilterRouter()
   const isOpen = selectors.filters.open
-  console.log(isOpen)
 
   return (
     <div className='z-0 flex w-full flex-col'>
@@ -85,8 +84,8 @@ const CategoriesPanel: React.FC = () => {
             className={cn(
               'grid gap-2 md:gap-4',
               isOpen
-                ? '3xl:grid-cols-3 grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2'
-                : '4xl:grid-cols-4 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3'
+                ? '3xl:grid-cols-4 grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
+                : '4xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
             )}
           >
             {categories.map((category) => (

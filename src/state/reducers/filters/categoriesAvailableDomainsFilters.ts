@@ -21,6 +21,9 @@ import {
   MarketplacePriceType,
   PriceDenominationType,
   SortFilterType,
+  MarketplaceClubsCountType,
+  MarketplaceViewCountType,
+  MarketplaceWatchersCountType,
 } from './marketplaceFilters'
 
 // Status is always 'Available' for this tab
@@ -144,6 +147,15 @@ export const categoriesAvailableDomainsFiltersSlice = createSlice({
     setPriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
       state.priceRange = payload
     },
+    setWatchersCount(state, { payload }: PayloadAction<MarketplaceWatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setViewCount(state, { payload }: PayloadAction<MarketplaceViewCountType>) {
+      state.viewCount = payload
+    },
+    setClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
+      state.clubsCount = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -219,6 +231,9 @@ export const {
   setFiltersScrollTop,
   toggleFilterOpen,
   clearFilters,
+  setWatchersCount,
+  setViewCount,
+  setClubsCount,
 } = categoriesAvailableDomainsFiltersSlice.actions
 
 // Selectors

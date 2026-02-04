@@ -7,7 +7,7 @@ export const getEtherPrice = async (short?: boolean) => {
   try {
     const client = createPublicClient({
       chain: mainnet,
-      transport: http(),
+      transport: http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_MAINNET_ALCHEMY_ID}`),
     })
 
     const price = await client.readContract({

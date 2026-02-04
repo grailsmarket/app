@@ -21,6 +21,9 @@ import {
   MarketplacePriceType,
   PriceDenominationType,
   SortFilterType,
+  MarketplaceClubsCountType,
+  MarketplaceViewCountType,
+  MarketplaceWatchersCountType,
 } from './marketplaceFilters'
 
 export const emptyFilterState: MarketplaceFiltersState = {
@@ -143,6 +146,15 @@ export const marketplaceAvailableFiltersSlice = createSlice({
     setPriceRange(state, { payload }: PayloadAction<MarketplacePriceType>) {
       state.priceRange = payload
     },
+    setWatchersCount(state, { payload }: PayloadAction<MarketplaceWatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setViewCount(state, { payload }: PayloadAction<MarketplaceViewCountType>) {
+      state.viewCount = payload
+    },
+    setClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
+      state.clubsCount = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -210,6 +222,9 @@ export const {
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,
+  setWatchersCount,
+  setViewCount,
+  setClubsCount,
   toggleCategory,
   setFiltersCategory,
   addCategories,

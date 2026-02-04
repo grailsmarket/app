@@ -39,8 +39,8 @@ import {
 import { cn } from '@/utils/tailwind'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Hex } from 'viem'
-import { useIsClient } from 'ethereum-identity-kit'
+import { Hex, isAddress } from 'viem'
+import { Avatar, fetchAccount, LoadingCell, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import Link from 'next/link'
 import ClaimPoap from '../poap/claimPoap'
@@ -51,6 +51,7 @@ import Calendar from 'public/icons/calendar.svg'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { mainnet } from 'viem/chains'
+import { useDebounce } from '@/hooks/useDebounce'
 
 const MIN_REGISTRATION_DURATION = 28 * DAY_IN_SECONDS // 28 days minimum
 
@@ -83,6 +84,21 @@ const RegistrationModal: React.FC = () => {
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
   const [gasEstimate, setGasEstimate] = useState<bigint | null>(BigInt(500000))
+  const [showCustomOwner, setShowCustomOwner] = useState(false)
+  const [customOwner, setCustomOwner] = useState<string>('')
+  const debouncedCustomOwner = useDebounce(customOwner, 500)
+
+  const { data: account, isLoading: isResolving } = useQuery({
+    queryKey: ['account', debouncedCustomOwner],
+    queryFn: async () => {
+      if (!isAddress(debouncedCustomOwner) && !debouncedCustomOwner.includes('.')) return null
+      const response = await fetchAccount(debouncedCustomOwner)
+
+      if (!isAddress(response?.address ?? '')) return null
+      return response
+    },
+    enabled: !!customOwner,
+  })
 
   // Get persisted state from Redux
   const { registrationMode, quantity, timeUnit, customDuration, isNameAvailable } = registrationState
@@ -369,7 +385,14 @@ const RegistrationModal: React.FC = () => {
   const checkForExistingCommitment = async () => {
     // console.log('checkForExistingCommitment', registrationState)
     // Only check if we have all required data
-    if (!registrationState.name || !registrationState.domain || !address || !secret || !calculationResults) {
+    if (
+      !registrationState.name ||
+      !registrationState.domain ||
+      !address ||
+      !secret ||
+      !calculationResults ||
+      registrationState.flowState === 'success'
+    ) {
       return
     }
 
@@ -479,10 +502,21 @@ const RegistrationModal: React.FC = () => {
       if (!secret) dispatch(setSecret(commitSecret))
 
       const nameLabel = normalizeName(registrationState.name.replace('.eth', ''))
+      const owner = showCustomOwner
+        ? isAddress(debouncedCustomOwner) || isAddress(account?.address ?? '')
+          ? ((account?.address || debouncedCustomOwner) as `0x${string}`)
+          : null
+        : address
+
+      if (!owner) {
+        dispatch(setRegistrationFlowState('error'))
+        dispatch(setRegistrationError('Invalid owner address'))
+        throw new Error('Invalid owner address')
+      }
 
       const commitment = await makeCommitment({
         label: nameLabel,
-        owner: address,
+        owner,
         duration: calculationResults.durationSeconds,
         secret: commitSecret,
         resolver: ENS_PUBLIC_RESOLVER_ADDRESS,
@@ -546,10 +580,22 @@ const RegistrationModal: React.FC = () => {
         throw new Error('Failed to get registration price')
       }
 
+      const owner = showCustomOwner
+        ? isAddress(debouncedCustomOwner) || isAddress(account?.address ?? '')
+          ? ((account?.address || debouncedCustomOwner) as `0x${string}`)
+          : null
+        : address
+
+      if (!owner) {
+        dispatch(setRegistrationFlowState('error'))
+        dispatch(setRegistrationError('Invalid owner address'))
+        throw new Error('Invalid owner address')
+      }
+
       const tx = await submitRegister(
         {
           label: nameLabel,
-          owner: address,
+          owner,
           duration: duration,
           secret,
           resolver: ENS_PUBLIC_RESOLVER_ADDRESS,
@@ -919,6 +965,59 @@ const RegistrationModal: React.FC = () => {
               <p>Select a custom date</p>
               <Image src={Calendar} alt='calendar' width={18} height={18} />
             </button>
+            <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-col'>
+                  <p className='text-lg font-medium'>Mint to address</p>
+                  <p className='text-neutral text-sm'>Set a custom owner for the registration</p>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => setShowCustomOwner(!showCustomOwner)}
+                  className={cn(
+                    'group relative h-6 w-11 cursor-pointer rounded-full transition-colors duration-200',
+                    showCustomOwner ? 'bg-primary' : 'bg-tertiary'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
+                      showCustomOwner ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+              </div>
+              {showCustomOwner && (
+                <>
+                  <input
+                    type='text'
+                    className='bg-background border-tertiary hover:bg-secondary focus:bg-secondary flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-left text-lg transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
+                    placeholder='ENS Name or Address'
+                    value={customOwner || ''}
+                    onChange={(e) => setCustomOwner(e.target.value)}
+                    disabled={!showCustomOwner}
+                  />
+                  {isResolving ? (
+                    <div className='flex items-center gap-2'>
+                      <LoadingCell height='24px' width='24px' radius='50%' />
+                      <LoadingCell height='14px' width='160px' radius='4px' />
+                    </div>
+                  ) : account?.address ? (
+                    <div key={account.address} className='flex items-center gap-2'>
+                      <Avatar
+                        address={account.address}
+                        src={account.ens.avatar}
+                        name={account.ens.name}
+                        style={{ width: '24px', height: '24px' }}
+                      />
+                      <p className='text-md text-neutral max-w-full truncate pt-0.5 font-medium'>
+                        {isAddress(debouncedCustomOwner) ? account.ens.name : account.address}
+                      </p>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </div>
             <div className='flex flex-col gap-2'>
               {calculationResults && (
                 <div className='bg-secondary border-tertiary rounded-lg border p-3'>

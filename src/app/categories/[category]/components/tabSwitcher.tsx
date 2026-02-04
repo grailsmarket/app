@@ -143,7 +143,9 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
           </div>
         </div>
         <div className='hidden items-center gap-2 md:flex'>
-          {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && <DownloadButton />}
+          {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && (
+            <DownloadButton category={category} />
+          )}
           <ViewSelector />
         </div>
       </div>
@@ -196,7 +198,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
         </div>
       </div>
       <div className='hidden items-center gap-2 md:flex'>
-        {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && <DownloadButton />}
+        {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && <DownloadButton category={category} />}
         <ViewSelector />
       </div>
     </div>

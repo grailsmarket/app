@@ -21,6 +21,7 @@ import {
   TextNonMatchFiltersState,
   MARKETPLACE_STATUS_FILTER_LABELS,
 } from '@/constants/filters/marketplaceFilters'
+import { MarketplaceClubsCountType, MarketplaceViewCountType, MarketplaceWatchersCountType } from './marketplaceFilters'
 
 // Status type for expired tab - uses marketplace status labels
 type ExpiredStatusFilterType = (typeof MARKETPLACE_STATUS_FILTER_LABELS)[number]
@@ -38,6 +39,9 @@ export type ExpiredFiltersState = {
   priceRange: PriceType
   categories: string[]
   sort: SortFilterType | null
+  watchersCount: MarketplaceWatchersCountType
+  viewCount: MarketplaceViewCountType
+  clubsCount: MarketplaceClubsCountType
 }
 
 export type ExpiredFiltersOpenedState = ExpiredFiltersState & {
@@ -60,6 +64,18 @@ export const emptyFilterState: ExpiredFiltersState = {
   },
   denomination: PRICE_DENOMINATIONS[0],
   priceRange: {
+    min: null,
+    max: null,
+  },
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
     min: null,
     max: null,
   },
@@ -86,6 +102,18 @@ export const initialState: ExpiredFiltersOpenedState = {
     max: null,
   },
   categories: [],
+  watchersCount: {
+    min: null,
+    max: null,
+  },
+  viewCount: {
+    min: null,
+    max: null,
+  },
+  clubsCount: {
+    min: null,
+    max: null,
+  },
   openFilters: ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range'],
   sort: 'expiry_date_desc',
   scrollTop: 0,
@@ -134,6 +162,15 @@ export const profileExpiredFiltersSlice = createSlice({
     },
     setPriceRange(state, { payload }: PayloadAction<PriceType>) {
       state.priceRange = payload
+    },
+    setWatchersCount(state, { payload }: PayloadAction<MarketplaceWatchersCountType>) {
+      state.watchersCount = payload
+    },
+    setViewCount(state, { payload }: PayloadAction<MarketplaceViewCountType>) {
+      state.viewCount = payload
+    },
+    setClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
+      state.clubsCount = payload
     },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
@@ -209,6 +246,9 @@ export const {
   setFiltersScrollTop,
   toggleFilterOpen,
   clearFilters,
+  setWatchersCount,
+  setViewCount,
+  setClubsCount,
 } = profileExpiredFiltersSlice.actions
 
 // Selectors

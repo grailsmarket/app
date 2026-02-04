@@ -8,6 +8,9 @@ import User from '@/components/ui/user'
 import { ActivityColumnType } from '@/types/domains'
 import { ActivityType } from '@/types/profile'
 import ActivityTime from '@/components/ui/activityTime'
+import Image from 'next/image'
+import ExternalLinkIcon from 'public/logos/etherscan.svg'
+import Link from 'next/link'
 
 interface ActivityRowProps {
   activity: ActivityType
@@ -97,6 +100,22 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
             currencyAddress={activity.currency_address}
             tooltipPosition={index === 0 ? 'bottom' : 'top'}
           />
+          <div className='flex items-center gap-1 pl-4'>
+            {activity.transaction_hash && (
+              <Link
+                href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                target='_blank'
+                className='cursor-pointer hover:opacity-80'
+              >
+                <Image
+                  src={ExternalLinkIcon}
+                  alt={`transaction hash ${activity.transaction_hash}`}
+                  width={20}
+                  height={20}
+                />
+              </Link>
+            )}
+          </div>
         </div>
       ) : (
         <div className='flex w-full flex-row justify-between sm:hidden'>
@@ -111,8 +130,40 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           {activity.counterparty_address && (
             <User address={activity.counterparty_address} className='max-w-[50%]' loadingCellWidth='120px' />
           )}
+          <div className='flex items-center gap-1 pl-4'>
+            {activity.transaction_hash && (
+              <Link
+                href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                target='_blank'
+                className='cursor-pointer hover:opacity-80'
+              >
+                <Image
+                  src={ExternalLinkIcon}
+                  alt={`transaction hash ${activity.transaction_hash}`}
+                  width={20}
+                  height={20}
+                />
+              </Link>
+            )}
+          </div>
         </div>
       )}
+      <div className='hidden items-center gap-1 pl-2 sm:flex'>
+        {activity.transaction_hash && (
+          <Link
+            href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+            target='_blank'
+            className='cursor-pointer hover:opacity-80'
+          >
+            <Image
+              src={ExternalLinkIcon}
+              alt={`transaction hash ${activity.transaction_hash}`}
+              width={20}
+              height={20}
+            />
+          </Link>
+        )}
+      </div>
     </div>
   )
 }

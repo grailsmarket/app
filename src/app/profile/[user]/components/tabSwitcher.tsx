@@ -225,7 +225,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           </div>
         </div>
         <div className='hidden items-center gap-2 md:flex'>
-          {showDownloadButton && <DownloadButton />}
+          {showDownloadButton && <DownloadButton ownerAddress={user as Address} />}
           {showViewSelector && <ViewSelector />}
         </div>
       </div>
@@ -280,7 +280,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
         </div>
       </div>
       <div className='hidden items-center gap-2 md:flex'>
-        {showDownloadButton && <DownloadButton />}
+        {showDownloadButton && <DownloadButton ownerAddress={user as Address} />}
         {showViewSelector && <ViewSelector />}
       </div>
     </div>

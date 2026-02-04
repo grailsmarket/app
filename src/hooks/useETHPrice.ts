@@ -1,16 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { getEtherPrice } from '@/utils/web3/getEtherPrice'
+import { ONE_MINUTE } from '@/constants/time'
 
 const useETHPrice = () => {
   const { data: ethPrice, isLoading } = useQuery({
     queryKey: ['ethPrice'],
     queryFn: () => getEtherPrice(true),
-    refetchInterval: 10 * 1000,
+    refetchInterval: ONE_MINUTE * 1000,
   })
 
   return {
     isLoading,
-    ethPrice: ethPrice || 3100,
+    ethPrice: ethPrice || 2200,
   }
 }
 

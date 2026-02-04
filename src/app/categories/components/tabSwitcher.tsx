@@ -145,7 +145,9 @@ const CategoriesPageTabSwitcher: React.FC = () => {
           </div>
         </div>
         <div className='hidden items-center gap-2 md:flex'>
-          {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <DownloadButton />}
+          {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
+            <DownloadButton inAnyCategory={true} />
+          )}
           {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <ViewSelector />}
         </div>
       </div>
@@ -216,7 +218,9 @@ const CategoriesPageTabSwitcher: React.FC = () => {
         </div>
       </div>
       <div className='hidden items-center gap-2 md:flex'>
-        {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <DownloadButton />}
+        {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
+          <DownloadButton inAnyCategory={true} />
+        )}
         {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <ViewSelector />}
       </div>
     </div>

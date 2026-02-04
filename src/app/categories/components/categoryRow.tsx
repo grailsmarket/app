@@ -116,7 +116,7 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
       href={`/categories/${category.name}`}
       className='bg-secondary relative flex h-full w-full flex-col justify-between gap-2 rounded-lg hover:bg-white/10'
     >
-      <div className='p-lg relative flex flex-row items-center gap-3 overflow-hidden rounded-t-lg min-h-[102px] max-h-[102px]'>
+      <div className='p-lg relative flex max-h-[102px] min-h-[102px] flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
         <Image
           src={categoryHeader}
           alt={`${categoryName} header`}
@@ -134,20 +134,20 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
       </div>
       <div
         className={cn(
-          'p-lg grid gap-4 gap-y-6',
-          reduceColumns ? 'grid-cols-2 md:grid-cols-2 2xl:grid-cols-3' : 'grid-cols-3 2xl:grid-cols-4'
+          'p-md sm:p-lg grid gap-4 gap-y-4 sm:gap-y-6',
+          reduceColumns ? 'grid-cols-2 md:grid-cols-2 2xl:grid-cols-3' : '4xl:grid-cols-4 grid-cols-3'
         )}
       >
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>{localizeNumber(category.member_count ?? 0)}</p>
+          <p className='text-lg font-semibold'>{localizeNumber(category.member_count ?? 0)}</p>
           <p className='text-neutral text-lg'>Names</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <Price
             price={volumeTimeWindow ? volumeTimeWindow.value : category.total_sales_volume_wei}
             currencyAddress={category.floor_price_currency as Address}
-            iconSize='20px'
-            fontSize='text-xl font-semibold'
+            iconSize='18px'
+            fontSize='text-lg font-semibold'
           />
           <p className='text-neutral text-lg font-medium'>
             Volume&nbsp;
@@ -160,13 +160,13 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
           <Price
             price={category.floor_price_wei}
             currencyAddress={category.floor_price_currency as Address}
-            iconSize='20px'
-            fontSize='text-xl font-semibold'
+            iconSize='18px'
+            fontSize='text-lg font-semibold'
           />
           <p className='text-neutral text-lg font-medium'>Floor</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>
+          <p className='text-lg font-semibold'>
             {localizeNumber(salesTimeWindow ? salesTimeWindow.value : category.total_sales_count)}
           </p>
           <p className='text-neutral text-lg font-medium'>
@@ -177,21 +177,21 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
           </p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>
-            {localizeNumber(category.registered_count ?? 0)}
-            <span className='ml-1 text-lg font-medium'>({(category.registered_percent ?? 0).toFixed(1)}%)</span>
-          </p>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(category.registered_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>({(category.registered_percent ?? 0).toFixed(1)}%)</p>
+          </div>
           <p className='text-neutral text-lg'>Registered</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>
-            {localizeNumber(category.grace_count ?? 0)}
-            <span className='ml-1 text-lg font-medium'>({(category.grace_percent ?? 0).toFixed(1)}%)</span>
-          </p>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(category.grace_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>({(category.grace_percent ?? 0).toFixed(1)}%)</p>
+          </div>
           <p className='text-grace text-lg font-medium'>Grace</p>
         </div>
         {/* <div className='z-10 flex h-fit flex-col items-start border-l-2 border-neutral pl-2'>
-          <p className='text-xl font-semibold'>
+          <p className='text-lg font-semibold'>
           <span className='mr-1 text-lg font-medium'>
           ({(category.registered_percent + category.grace_percent).toFixed(1)}%)
           </span>
@@ -202,9 +202,9 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
           </p>
         </div> */}
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>
-            {localizeNumber(category.premium_count ?? 0)}
-            <span className='ml-1 text-lg font-medium'>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(category.premium_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>
               (
               {category.member_count && category.member_count > 0
                 ? (((category.premium_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
@@ -212,14 +212,14 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
                   })
                 : 0}
               %)
-            </span>
-          </p>
+            </p>
+          </div>
           <p className='text-premium text-lg font-medium'>Premium</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>
-            {localizeNumber(category.available_count ?? 0)}
-            <span className='ml-1 text-lg font-medium'>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(category.available_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>
               (
               {category.member_count && category.member_count > 0
                 ? (((category.available_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
@@ -227,21 +227,21 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
                   })
                 : 0}
               %)
-            </span>
-          </p>
+            </p>
+          </div>
           <p className='text-available text-lg font-medium'>Available</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>
-            {localizeNumber(category.listings_count ?? 0)}
-            <span className='ml-1 text-lg font-medium'>({(category.listings_percent ?? 0).toFixed(1)}%)</span>
-          </p>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(category.listings_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>({(category.listings_percent ?? 0).toFixed(1)}%)</p>
+          </div>
           <p className='text-neutral text-lg font-medium'>Listings</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <div className='flex items-center gap-1'>
-            <p className='text-xl font-semibold'>{localizeNumber(category.holders_count ?? 0)}</p>
-            <p className='text-lg font-semibold'>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(category.holders_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>
               (
               {category.holders_count && category.holders_count > 0
                 ? (category.member_count / category.holders_count).toLocaleString(navigator.language, {

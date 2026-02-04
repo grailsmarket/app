@@ -139,7 +139,7 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
         )}
       >
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-xl font-semibold'>{localizeNumber(category.member_count)}</p>
+          <p className='text-xl font-semibold'>{localizeNumber(category.member_count ?? 0)}</p>
           <p className='text-neutral text-lg'>Names</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
@@ -178,15 +178,15 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <p className='text-xl font-semibold'>
-            {localizeNumber(category.registered_count)}
-            <span className='ml-1 text-lg font-medium'>({category.registered_percent.toFixed(1)}%)</span>
+            {localizeNumber(category.registered_count ?? 0)}
+            <span className='ml-1 text-lg font-medium'>({(category.registered_percent ?? 0).toFixed(1)}%)</span>
           </p>
           <p className='text-neutral text-lg'>Registered</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <p className='text-xl font-semibold'>
-            {localizeNumber(category.grace_count)}
-            <span className='ml-1 text-lg font-medium'>({category.grace_percent.toFixed(1)}%)</span>
+            {localizeNumber(category.grace_count ?? 0)}
+            <span className='ml-1 text-lg font-medium'>({(category.grace_percent ?? 0).toFixed(1)}%)</span>
           </p>
           <p className='text-grace text-lg font-medium'>Grace</p>
         </div>
@@ -203,13 +203,13 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
         </div> */}
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <p className='text-xl font-semibold'>
-            {localizeNumber(category.premium_count)}
+            {localizeNumber(category.premium_count ?? 0)}
             <span className='ml-1 text-lg font-medium'>
               (
-              {category.member_count > 0
-                ? ((category.premium_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
+              {category.member_count && category.member_count > 0
+                ? (((category.premium_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
+                    maximumFractionDigits: 1,
+                  })
                 : 0}
               %)
             </span>
@@ -218,13 +218,13 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <p className='text-xl font-semibold'>
-            {localizeNumber(category.available_count)}
+            {localizeNumber(category.available_count ?? 0)}
             <span className='ml-1 text-lg font-medium'>
               (
-              {category.member_count > 0
-                ? ((category.available_count / category.member_count) * 100).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
+              {category.member_count && category.member_count > 0
+                ? (((category.available_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
+                    maximumFractionDigits: 1,
+                  })
                 : 0}
               %)
             </span>
@@ -233,19 +233,21 @@ const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <p className='text-xl font-semibold'>
-            {localizeNumber(category.listings_count)}
-            <span className='ml-1 text-lg font-medium'>({category.listings_percent.toFixed(1)}%)</span>
+            {localizeNumber(category.listings_count ?? 0)}
+            <span className='ml-1 text-lg font-medium'>({(category.listings_percent ?? 0).toFixed(1)}%)</span>
           </p>
           <p className='text-neutral text-lg font-medium'>Listings</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <div className='flex items-center gap-1'>
-            <p className='text-xl font-semibold'>{localizeNumber(category.holders_count)}</p>
+            <p className='text-xl font-semibold'>{localizeNumber(category.holders_count ?? 0)}</p>
             <p className='text-lg font-semibold'>
               (
-              {(category.member_count / category.holders_count).toLocaleString(navigator.language, {
-                maximumFractionDigits: 1,
-              })}
+              {category.holders_count && category.holders_count > 0
+                ? (category.member_count / category.holders_count).toLocaleString(navigator.language, {
+                    maximumFractionDigits: 1,
+                  })
+                : 0}
               )
             </p>
           </div>

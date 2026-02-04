@@ -49,7 +49,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     const hashMap = new Map<string, CategoryType[]>()
 
     categories?.forEach((category) => {
-      category.classifications.forEach((classification) => {
+      category.classifications?.forEach((classification) => {
         hashMap.set(classification, [...(hashMap.get(classification) || []), category])
       })
     })

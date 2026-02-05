@@ -8,6 +8,7 @@ import Offers from './offers'
 import ActivityPanel from './activity'
 import Register from './register'
 import Actions from './actions'
+import SimilarNames from './similarNames'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 
@@ -81,6 +82,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
           )}
           <ActivityPanel name={name} />
         </div>
+      </div>
+      {/* Similar Names - Full width, spanning both columns */}
+      <div className='w-full'>
+        <SimilarNames name={name} categories={nameDetails?.clubs} />
       </div>
     </div>
   )

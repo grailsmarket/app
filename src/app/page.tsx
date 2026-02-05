@@ -8,17 +8,7 @@ import TwitterBot from '@/components/home/twitterBot'
 
 const Home = () => {
   return (
-    <main className='relative'>
-      {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
-        <Image
-          src={heroBackground}
-          alt='hero-background'
-          className='-translate-x-12 object-cover'
-          width={400}
-          height={900}
-        />
-        <Image src={heroBackgroundRight} alt='hero-background' className='object-cover' width={600} height={1200} />
-      </div> */}
+    <main className='relative max-w-screen overflow-hidden'>
       <div className='z-10 mx-auto flex h-full w-full max-w-[1296px] flex-col items-center gap-12 px-4 pt-14 sm:gap-20 md:gap-28 md:px-8 lg:pt-8 xl:px-4'>
         <div className='flex w-full flex-col items-center justify-center gap-32 md:gap-24 lg:flex-row lg:items-start lg:justify-start xl:gap-0'>
           <div className='flex w-full flex-col items-center justify-center gap-2'>

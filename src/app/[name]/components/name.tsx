@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import NameDetails from './nameDetails'
+import PrimaryDetails from './primaryDetails'
 import { useName } from '../hooks/useName'
 import Listings from './listings'
 import Offers from './offers'
@@ -10,6 +10,9 @@ import Register from './register'
 import Actions from './actions'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
+import Categories from './categories'
+import SecondaryDetails from './secondaryDetails'
+// import Metadata from './metadata'
 
 interface Props {
   name: string
@@ -57,14 +60,21 @@ const NamePage: React.FC<Props> = ({ name }) => {
         <Actions nameDetails={nameDetails} />
       </div>
       <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div className='bg-secondary sm:border-tertiary flex h-fit flex-col gap-4 overflow-hidden sm:rounded-lg sm:border-2 lg:w-2/5'>
-          <NameDetails
+        <div className='flex h-fit flex-col gap-1 overflow-hidden sm:gap-4 sm:rounded-lg lg:w-2/5'>
+          <PrimaryDetails
             name={name}
             nameDetails={nameDetails}
             nameDetailsIsLoading={nameDetailsIsLoading}
             registrationStatus={registrationStatus}
             isSubname={isSubname}
           />
+          <div className='hidden lg:block'>
+            <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+          </div>
+          {/* <div className='hidden lg:block'><Metadata name={name} /></div> */}
+          <div className='hidden lg:block'>
+            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+          </div>
         </div>
         <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>
           {isRegistered ? (
@@ -79,6 +89,13 @@ const NamePage: React.FC<Props> = ({ name }) => {
           ) : (
             <Register nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
+          <div className='lg:hidden'>
+            <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+          </div>
+          {/* <div className='lg:hidden'><Metadata name={name} /></div> */}
+          <div className='lg:hidden'>
+            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+          </div>
           <ActivityPanel name={name} />
         </div>
       </div>

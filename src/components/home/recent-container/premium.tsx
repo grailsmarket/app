@@ -22,10 +22,17 @@ const Premium = () => {
           ...emptyFilterState,
           status: ['Premium'],
           sort: 'expiry_date_asc',
+          type: {
+            Digits: 'exclude',
+            Emojis: 'exclude',
+            Repeating: 'include',
+            Letters: 'include',
+          },
         },
         searchTerm: '',
         isAuthenticated: authStatus === 'authenticated',
         inAnyCategory: true,
+        excludeCategories: ['prepunk'],
       }),
   })
 

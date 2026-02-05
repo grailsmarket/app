@@ -11,7 +11,7 @@ import TableLoadingRow from '@/components/domains/table/components/TableLoadingR
 const Sales = () => {
   const { data: sales, isLoading } = useQuery({
     queryKey: ['analytics', 'topSales', '7d', 'all', 'any'],
-    queryFn: () => fetchTopSales({ period: '7d', source: 'all', category: 'any' }),
+    queryFn: () => fetchTopSales({ period: '7d', source: 'all', category: null }),
   })
 
   return (

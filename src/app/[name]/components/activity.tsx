@@ -20,7 +20,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
       )}
     >
       <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
-      <div className='px-md w-full sm:px-0'>
+      <div className='w-full'>
         <Activity
           paddingBottom='0px'
           activity={activity}

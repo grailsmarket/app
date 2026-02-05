@@ -44,8 +44,8 @@ const Profile: React.FC<Props> = ({ user }) => {
           </div>
         </div>
       )}
-      <div className='dark relative z-0 w-full'>
-        <div className='z-20 w-full' suppressHydrationWarning={true}>
+      <div className='dark relative w-full'>
+        <div className='relative z-50 w-full' suppressHydrationWarning={true}>
           {/* Issues inside of EIK, so having to render on the client */}
           {isClient && (
             <FullWidthProfile

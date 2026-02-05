@@ -61,7 +61,7 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
   const { domains } = useAppSelector(selectBulkSelect)
 
   const canSelectAll =
-    disableSelectAll && isSelecting && !selectAll?.isLoading && totalCount > 0 && domains.length !== totalCount
+    !disableSelectAll && isSelecting && !selectAll?.isLoading && totalCount > 0 && domains.length !== totalCount
 
   const handleStartSelectAll = useCallback(async () => {
     if (!canSelectAll || selectAll?.isLoading) return

@@ -356,14 +356,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       ? 'min(650px,95vw)'
       : pageType === 'profile'
         ? 'min(420px,95vw)'
-        : 'min(320px,95vw)'
+        : pageType === 'marketplace'
+          ? 'min(136px,95vw)'
+          : 'min(320px,95vw)'
 
   if (!isBulkSelectSupportedTab) return null
 
   return (
     <div
       className={cn(
-        'bulk-select-container fixed flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all sm:right-2 sm:bottom-2 sm:gap-1.5',
+        'bulk-select-container fixed z-10 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all sm:right-2 sm:bottom-2 sm:gap-1.5',
         isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
       )}
     >
@@ -523,7 +525,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           </div>
         ) : (
           <div className='p-2 sm:p-3'>
-            <PrimaryButton onClick={handleBulkSelect} className='w-28'>
+            <PrimaryButton onClick={handleBulkSelect} className='w-30 sm:w-28'>
               Bulk&nbsp;Select
             </PrimaryButton>
           </div>

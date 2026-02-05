@@ -7,8 +7,10 @@ import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import TableRow from '@/components/domains/table/components/TableRow'
 import TableLoadingRow from '@/components/domains/table/components/TableLoadingRow'
 import { useUserContext } from '@/context/user'
+import { Arrow } from 'ethereum-identity-kit'
+import Link from 'next/link'
 
-const SalesAndRegs = () => {
+const Premium = () => {
   const { authStatus } = useUserContext()
   const { data: listings, isLoading } = useQuery({
     queryKey: ['recentSalesAndRegs'],
@@ -18,17 +20,28 @@ const SalesAndRegs = () => {
         pageParam: 1,
         filters: {
           ...emptyFilterState,
-          sort: 'last_sale_date_desc',
+          status: ['Premium'],
+          sort: 'expiry_date_asc',
         },
         searchTerm: '',
         isAuthenticated: authStatus === 'authenticated',
+        inAnyCategory: true,
       }),
   })
 
   return (
     <div className='flex flex-col'>
-      <h2 className='p-md lg:p-lg text-2xl font-bold'>Recent Sales</h2>
-      <div className='border-tertiary flex flex-col gap-0 border-t'>
+      <div className='p-md lg:px-lg flex w-full items-center justify-between'>
+        <h2 className='font-sedan-sc text-4xl font-medium'>In Premium</h2>
+        <Link
+          href='/marketplace?tab=premium'
+          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-xl font-semibold'
+        >
+          <p>View All</p>
+          <Arrow className='text-primary h-3 w-3 rotate-180 transition-all duration-300 group-hover:translate-x-1' />
+        </Link>
+      </div>
+      <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (
               <div key={index} className='md:px-md border-tertiary flex h-[60px] w-full items-center border-b'>
@@ -37,7 +50,13 @@ const SalesAndRegs = () => {
             ))
           : listings?.domains?.map((domain, index) => (
               <div key={domain.token_id}>
-                <TableRow domain={domain} index={index} displayedColumns={['domain', 'last_sale', 'actions']} />
+                <TableRow
+                  domain={domain}
+                  index={index}
+                  displayedColumns={['domain', 'price', 'actions']}
+                  showWatchlist={false}
+                  hideCartIcon={true}
+                />
               </div>
             ))}
       </div>
@@ -45,4 +64,4 @@ const SalesAndRegs = () => {
   )
 }
 
-export default SalesAndRegs
+export default Premium

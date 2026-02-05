@@ -132,18 +132,21 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
 interface SaleRowProps {
   sale: AnalyticsSale
   index: number
+  hideSeller?: boolean
+  className?: string
 }
 
-export const SaleRow: React.FC<SaleRowProps> = ({ sale, index }) => {
+export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = false, className }) => {
   return (
     <Link
       href={`/${normalizeName(sale.name)}`}
       className={cn(
         'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-1 border-b px-2 transition sm:px-3',
+        className,
         index === 0 && 'border-t'
       )}
     >
-      <div className='flex w-[40%] flex-row items-center gap-2'>
+      <div className={cn('flex flex-row items-center gap-2', hideSeller ? 'w-[50%]' : 'w-[40%]')}>
         <SourceIcon source={sale.source} />
         <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div>
@@ -171,10 +174,12 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index }) => {
           iconSize='16px'
         />
       </div>
-      <div className='w-[20%]'>
-        <User address={sale.seller_address as Address} className='max-w-[99%]' wrapperClassName='justify-end' />
-      </div>
-      <div className='w-[20%]'>
+      {!hideSeller && (
+        <div className='w-[20%]'>
+          <User address={sale.seller_address as Address} className='max-w-[99%]' wrapperClassName='justify-end' />
+        </div>
+      )}
+      <div className={cn(hideSeller ? 'w-[30%]' : 'w-[20%]')}>
         <User address={sale.buyer_address as Address} className='max-w-[99%]' wrapperClassName='justify-end' />
       </div>
     </Link>

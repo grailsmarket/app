@@ -1,15 +1,19 @@
 import React from 'react'
-import RecentListings from './listings'
-import SalesAndRegs from './salesAndRegs'
+import Registrations from './registrations'
+import Sales from './sales'
+import Premium from './premium'
 
 const RecentContainer = () => {
   return (
-    <div className='mf:flex-row flex w-full flex-col items-center justify-center gap-4 md:flex-row'>
-      <div className='bg-secondary p-md border-tertiary w-full rounded-md border md:w-1/2'>
-        <SalesAndRegs />
+    <div className='flex w-full flex-row flex-wrap items-center justify-center gap-4 xl:flex-nowrap'>
+      <div className='w-full lg:w-[calc(50%-8px)] xl:w-1/3'>
+        <Sales />
       </div>
-      <div className='bg-secondary p-md border-tertiary w-full rounded-md border md:w-1/2'>
-        <RecentListings />
+      <div className='w-full lg:w-[calc(50%-8px)] xl:w-1/3'>
+        <Premium />
+      </div>
+      <div className='w-full xl:w-1/3'>
+        <Registrations />
       </div>
     </div>
   )

@@ -43,6 +43,8 @@ interface TableRowProps {
   watchlistId?: number | undefined
   isBulkSelecting?: boolean
   showPreviousOwner?: boolean
+  hideCartIcon?: boolean
+  showWatchlist?: boolean
 }
 
 const TableRow: React.FC<TableRowProps> = ({
@@ -52,6 +54,8 @@ const TableRow: React.FC<TableRowProps> = ({
   displayedColumns,
   watchlistId,
   showPreviousOwner,
+  hideCartIcon,
+  showWatchlist,
 }) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
@@ -60,9 +64,9 @@ const TableRow: React.FC<TableRowProps> = ({
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart = !(
-    EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase()
-  )
+  const canAddToCart =
+    !hideCartIcon &&
+    !(EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase())
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 
@@ -122,6 +126,7 @@ const TableRow: React.FC<TableRowProps> = ({
         watchlistId={watchlistId}
         isBulkSelecting={isBulkSelecting}
         registrationStatus={registrationStatus}
+        showWatchlist={showWatchlist}
       />
     ),
     owner: (

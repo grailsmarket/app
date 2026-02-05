@@ -3,18 +3,21 @@
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useQuery } from '@tanstack/react-query'
-import React from 'react'
+import React, { useMemo } from 'react'
 import Card from '../domains/grid/components/card'
 import LoadingCard from '../domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
+import { cn } from '@/utils/tailwind'
+import { useWindowSize } from 'ethereum-identity-kit'
 
 const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
+  const { width } = useWindowSize()
   const { data: domains, isLoading } = useQuery({
     queryKey: ['domains'],
     queryFn: async () => {
       const domains = await fetchDomains({
-        limit: 3,
+        limit: 7,
         pageParam: 1,
         filters: {
           ...emptyFilterState,
@@ -35,18 +38,79 @@ const DisplayedCards: React.FC = () => {
       return domains.domains
     },
   })
+
+  const cardCount = useMemo(() => {
+    if (width && width < 640) return 5
+    if (width && width < 780) return 3
+    if (width && width < 968) return 4
+    if (width && width < 1100) return 5
+    if (width && width < 1280) return 6
+    return 7
+  }, [width])
+
+  const containerWidth = useMemo(() => {
+    if (width && width < 640) return 'w-[670px]'
+    if (width && width < 780) return 'w-[580px]'
+    if (width && width < 968) return 'w-[750px]'
+    if (width && width < 1100) return 'w-[920px]'
+    if (width && width < 1280) return 'w-[1090px]'
+    return 'w-[1260px]'
+  }, [width])
+
   return (
-    <div className='shadow-primary background-radial-primary relative mt-28 h-[280px] w-[240px] rounded-full sm:mt-24 lg:mt-40'>
-      <div className='shadow-homeCard absolute -top-28 left-0 z-20 h-[360px] w-[190px] rounded-lg sm:-top-24 sm:left-0 sm:h-[410px] sm:w-[240px]'>
-        {isLoading || !domains ? (
-          <LoadingCard />
-        ) : (
-          domains[0] && (
-            <Card domain={domains[0]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
+    <div
+      className={cn(
+        'shadow-primary background-radial-primary relative mt-56 mb-32 h-[60px] rounded-full sm:mt-40',
+        containerWidth
+      )}
+    >
+      {isLoading &&
+        Array.from({ length: cardCount }).map((_, index) => {
+          const leftMobile = index * 120
+          const leftDesktop = index * 170
+
+          return (
+            <div key={index} className={cn(
+              'shadow-homeCard absolute bg-secondary -top-40 left-0 z-20 h-[360px] w-[190px] rounded-xl sm:h-[410px] sm:w-[240px]',
+              index % 2 === 0 ? 'sm:-top-40' : '-top-56'
+            )}
+              style={{
+                left: width && width < 640 ? leftMobile : leftDesktop,
+                zIndex: index,
+              }}>
+              <LoadingCard key={index} />
+            </div>
           )
-        )}
-      </div>
-      <div className='shadow-homeCard absolute top-0 left-28 z-30 h-[360px] w-[190px] rounded-lg sm:top-0 sm:left-36 sm:h-[410px] sm:w-[240px]'>
+        })}
+      {!isLoading && domains ? (
+        domains.slice(0, cardCount).map((domain, index) => {
+          const leftMobile = index * 120
+          const leftDesktop = index * 170
+
+          return (
+            <div
+              key={index}
+              className={cn(
+                'shadow-homeCard absolute -top-40 left-0 z-20 h-[360px] w-[190px] rounded-xl sm:h-[410px] sm:w-[240px]',
+                index % 2 === 0 ? 'sm:-top-40' : '-top-56'
+              )}
+              style={{
+                left: width && width < 640 ? leftMobile : leftDesktop,
+                zIndex: index,
+              }}
+            >
+              <Card
+                domain={domain}
+                className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+              />
+            </div>
+          )
+        })
+      ) : (
+        <div>No domains found</div>
+      )}
+
+      {/* <div className='shadow-homeCard absolute top-0 left-28 z-30 h-[360px] w-[190px] rounded-lg sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
         ) : (
@@ -55,7 +119,7 @@ const DisplayedCards: React.FC = () => {
           )
         )}
       </div>
-      <div className='shadow-homeCard absolute top-14 -left-12 z-10 h-[360px] w-[190px] rounded-lg sm:top-24 sm:-left-20 sm:h-[410px] sm:w-[240px]'>
+      <div className='shadow-homeCard absolute top-8 left-56 z-10 h-[360px] w-[190px] rounded-lg sm:h-[410px] sm:w-[240px]'>
         {isLoading || !domains ? (
           <LoadingCard />
         ) : (
@@ -63,7 +127,7 @@ const DisplayedCards: React.FC = () => {
             <Card domain={domains[2]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
           )
         )}
-      </div>
+      </div> */}
     </div>
   )
 }

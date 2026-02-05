@@ -11,7 +11,7 @@ import TableLoadingRow from '@/components/domains/table/components/TableLoadingR
 const Sales = () => {
   const { data: sales, isLoading } = useQuery({
     queryKey: ['analytics', 'topSales', '7d', 'all', 'any'],
-    queryFn: () => fetchTopSales({ period: '7d', source: 'all', category: 'any' }),
+    queryFn: () => fetchTopSales({ period: '7d', source: 'all', category: null }),
   })
 
   return (
@@ -29,15 +29,15 @@ const Sales = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div key={index} className='md:px-md border-tertiary flex h-[60px] w-full items-center border-b'>
-                <TableLoadingRow displayedColumns={['domain', 'last_sale', 'actions']} />
-              </div>
-            ))
+            <div key={index} className='md:px-md border-tertiary flex h-[60px] w-full items-center border-b'>
+              <TableLoadingRow displayedColumns={['domain', 'last_sale', 'actions']} />
+            </div>
+          ))
           : sales?.data?.results?.slice(0, 7).map((sale, index) => (
-              <div key={sale.id} className='w-full'>
-                <SaleRow sale={sale} index={index} hideSeller={true} className='h-[60px] w-full' />
-              </div>
-            ))}
+            <div key={sale.id} className='w-full'>
+              <SaleRow sale={sale} index={index} hideSeller={true} className='h-[60px] w-full' />
+            </div>
+          ))}
       </div>
     </div>
   )

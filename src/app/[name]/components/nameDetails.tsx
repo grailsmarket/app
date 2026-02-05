@@ -100,21 +100,21 @@ const NameDetails: React.FC<NameDetailsProps> = ({
         <div className='flex flex-row flex-wrap justify-end gap-2!'>
           {nameDetails?.clubs && nameDetails?.clubs.length > 0
             ? nameDetails?.clubs?.map((club) => (
-                <Link
-                  key={club}
-                  href={`/categories/${club}`}
-                  className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
-                >
-                  <Image
-                    src={getCategoryDetails(club).avatar}
-                    alt={club}
-                    width={24}
-                    height={24}
-                    className='aspect-square! rounded-full'
-                  />
-                  <p className='text-nowrap'>{getCategoryDetails(club).name}</p>
-                </Link>
-              ))
+              <Link
+                key={club}
+                href={`/categories/${club}`}
+                className='text-primary flex min-w-fit gap-1 font-medium transition-colors hover:opacity-80'
+              >
+                <Image
+                  src={getCategoryDetails(club).avatar}
+                  alt={club}
+                  width={24}
+                  height={24}
+                  className='aspect-square! rounded-full'
+                />
+                <p className='text-nowrap'>{getCategoryDetails(club).name}</p>
+              </Link>
+            ))
             : 'None'}
         </div>
       ),
@@ -279,6 +279,9 @@ const NameDetails: React.FC<NameDetailsProps> = ({
             </button>
           </div>
         </div>
+        {/* <div className='flex w-full flex-row items-start justify-between gap-2'>
+          <CopyValue value={nameDetails?.name ? beautifyName(nameDetails.name) : name} canCopy={true} truncateValue={false} />
+        </div> */}
         {rows.map((row) => {
           // Subnames don't have a status
           if (isSubname && row.label === 'Status') return null

@@ -22,10 +22,17 @@ const Premium = () => {
           ...emptyFilterState,
           status: ['Premium'],
           sort: 'expiry_date_asc',
+          type: {
+            Digits: 'exclude',
+            Emojis: 'exclude',
+            Repeating: 'include',
+            Letters: 'include',
+          }
         },
         searchTerm: '',
         isAuthenticated: authStatus === 'authenticated',
         inAnyCategory: true,
+        excludeCategories: ['prepunk'],
       }),
   })
 
@@ -44,21 +51,21 @@ const Premium = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {isLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div key={index} className='md:px-md border-tertiary flex h-[60px] w-full items-center border-b'>
-                <TableLoadingRow displayedColumns={['domain', 'last_sale', 'actions']} />
-              </div>
-            ))
+            <div key={index} className='md:px-md border-tertiary flex h-[60px] w-full items-center border-b'>
+              <TableLoadingRow displayedColumns={['domain', 'last_sale', 'actions']} />
+            </div>
+          ))
           : listings?.domains?.map((domain, index) => (
-              <div key={domain.token_id}>
-                <TableRow
-                  domain={domain}
-                  index={index}
-                  displayedColumns={['domain', 'price', 'actions']}
-                  showWatchlist={false}
-                  hideCartIcon={true}
-                />
-              </div>
-            ))}
+            <div key={domain.token_id}>
+              <TableRow
+                domain={domain}
+                index={index}
+                displayedColumns={['domain', 'price', 'actions']}
+                showWatchlist={false}
+                hideCartIcon={true}
+              />
+            </div>
+          ))}
       </div>
     </div>
   )

@@ -8,7 +8,7 @@ import TwitterBot from '@/components/home/twitterBot'
 
 const Home = () => {
   return (
-    <main className='relative'>
+    <main className='relative overflow-x-hidden'>
       {/* <div className='absolute top-0 left-0 z-0 flex h-full w-screen -translate-y-56 items-center justify-between'>
         <Image
           src={heroBackground}

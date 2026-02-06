@@ -42,7 +42,7 @@ const Details: React.FC<Props> = ({ user }) => {
   return (
     <div className='border-neutral bg-secondary lg:bg-background flex w-full flex-col justify-between gap-2 p-2 sm:gap-4 md:p-4 lg:w-[380px] lg:border-l-2'>
       <div className='flex flex-col gap-4'>
-        <h3 className='font-sedan-sc hidden text-3xl lg:block'>Profile Info</h3>
+        <h3 className='font-sedan-sc hidden text-3xl lg:block'>Account</h3>
         <div className='grid grid-cols-4 gap-y-4 lg:grid-cols-2'>
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
             {balancesLoading ? (

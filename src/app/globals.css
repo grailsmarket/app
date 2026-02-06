@@ -174,13 +174,13 @@ body {
   box-sizing: border-box;
 }
 
-.user-profile-content {
+/* .user-profile-content {
   max-width: 1280px;
   margin: 0 auto;
   padding-left: 0 !important;
   padding-right: 0 !important;
   position: relative;
-}
+} */
 
 @media screen and (min-width: 2340px) {
   .bulk-select-container {
@@ -196,7 +196,7 @@ body {
 /* Got some issue with FullWidthProfile from Ethereum Identity Kit,
    so I have created this abominable media queries to fix the issue,
    please don't judge me, I'll fix it later */
-@media screen and (min-width: 1380px) and (max-width: 1440px) {
+/* @media screen and (min-width: 1380px) and (max-width: 1440px) {
   .more-options {
     right: 60px !important;
   }
@@ -244,7 +244,7 @@ body {
   .user-profile-status-container {
     right: 320px !important;
   }
-}
+} */
 
 .common-followers-modal-backdrop {
   z-index: 1000 !important;

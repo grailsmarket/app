@@ -7,6 +7,7 @@ import MainPanel from './main-panel'
 import { useUserContext } from '@/context/user'
 import { useQuery } from '@tanstack/react-query'
 import { getPoap } from '@/api/user/getPoap'
+import Details from './details'
 
 interface Props {
   user: Address | string
@@ -45,33 +46,36 @@ const Profile: React.FC<Props> = ({ user }) => {
         </div>
       )}
       <div className='dark relative z-0 w-full'>
-        <div className='z-20 w-full' suppressHydrationWarning={true}>
+        <div className='z-20 flex w-full flex-col lg:flex-row' suppressHydrationWarning={true}>
           {/* Issues inside of EIK, so having to render on the client */}
           {isClient && (
-            <FullWidthProfile
-              connectedAddress={userAddress}
-              addressOrName={user}
-              showPoaps={true}
-              showFollowButton={true}
-              showFollowerState={true}
-              style={{ paddingLeft: '10px' }}
-              onStatClick={({ stat }) => {
-                setIsFollowersAndFollowingOpen(true)
-                setDefaultTab(stat)
-              }}
-              extraOptions={{
-                // customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
-                hideSocials: ['grails'],
-                customPoaps: userPoap?.badges
-                  ? userPoap.badges.map((badge) => ({
-                      eventId: badge.event.id.toString(),
-                      participated: true,
-                      collection: badge,
-                    }))
-                  : undefined,
-              }}
-              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
-            />
+            <>
+              <FullWidthProfile
+                connectedAddress={userAddress}
+                addressOrName={user}
+                showPoaps={true}
+                showFollowButton={true}
+                showFollowerState={true}
+                style={{ paddingLeft: '10px' }}
+                onStatClick={({ stat }) => {
+                  setIsFollowersAndFollowingOpen(true)
+                  setDefaultTab(stat)
+                }}
+                extraOptions={{
+                  // customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
+                  hideSocials: ['grails'],
+                  customPoaps: userPoap?.badges
+                    ? userPoap.badges.map((badge) => ({
+                        eventId: badge.event.id.toString(),
+                        participated: true,
+                        collection: badge,
+                      }))
+                    : undefined,
+                }}
+                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+              />
+              <Details user={user} />
+            </>
           )}
         </div>
         <div className='w-full'>

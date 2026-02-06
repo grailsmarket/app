@@ -36,8 +36,10 @@ const Price: React.FC<PriceProps> = ({
       if (usdPrice) return usdPrice
       const USDPrice = ((formatEtherPrice(price, true) as number) ?? 0) * ((ethPrice as number) ?? 0)
       return formatPrice(USDPrice * 10 ** 6, 'USDC') as number
+    } else if (asset === 'ENS') {
+      return null
     } else {
-      return formatPrice(price, asset, true) as number
+      return null
     }
   }, [price, ethPrice, asset, usdPrice])
 
@@ -46,6 +48,7 @@ const Price: React.FC<PriceProps> = ({
       label={`${diffCurrencyPrice?.toLocaleString(navigator?.language ?? 'en-US', { maximumFractionDigits: 2 })} USD`}
       position={tooltipPosition}
       align={alignTooltip}
+      showTooltip={diffCurrencyPrice !== null}
     >
       <div className='flex flex-row items-center gap-1'>
         <Asset currencyAddress={currencyAddress} iconSize={iconSize} />

@@ -1,3 +1,5 @@
+import { Address } from 'viem'
+
 export type MetaType = {
   version?: string
   timestamp: string
@@ -51,4 +53,36 @@ export type CreateListingsResultType = {
   order_hash: string
   status: 'failed' | 'success'
   error?: { code: string; message: string }
+}
+
+export type BalanceType = {
+  symbol: string
+  address: Address | null
+  wei: string
+  formatted: string
+  decimals: number
+}
+
+export type BalancesResponseType = {
+  balances: Record<string, BalanceType>
+}
+
+export type BadgeMintType = {
+  name: string
+  txHash: string
+  blockNumber: number
+  blockTime: string
+  labelhash: string
+  namehash: string
+}
+
+export type BadgeType = {
+  qualified: boolean
+  count: number
+  mints: BadgeMintType[]
+}
+
+export type BadgesResponseType = {
+  address: Address
+  legends: Record<string, BadgeType>
 }

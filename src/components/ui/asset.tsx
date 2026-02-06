@@ -4,6 +4,7 @@ import Image from 'next/image'
 import ethGray from 'public/tokens/eth.svg'
 import usdc from 'public/tokens/usdc.svg'
 import weth from 'public/tokens/weth.svg'
+import ens from 'public/logos/ens-circle.svg'
 
 import { Address } from 'viem'
 import { TOKENS } from '@/constants/web3/tokens'
@@ -22,6 +23,7 @@ const Asset: React.FC<AssetProps> = ({ currencyAddress, iconSize = '14px' }) => 
     ETH: ethGray,
     USDC: usdc,
     WETH: weth,
+    ENS: ens,
   }[asset]
 
   return <Image src={assetImage} alt={asset} style={{ height: iconSize }} className='w-auto' />

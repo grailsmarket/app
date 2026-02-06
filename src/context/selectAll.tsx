@@ -53,15 +53,13 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
   category,
   isWatchlist = false,
   isAuthenticated = false,
-  disableSelectAll = false,
 }) => {
   const dispatch = useAppDispatch()
   const { selectAll, isSelecting } = useAppSelector(selectBulkSelect)
   const abortControllerRef = useRef<AbortController | null>(null)
   const { domains } = useAppSelector(selectBulkSelect)
 
-  const canSelectAll =
-    disableSelectAll && isSelecting && !selectAll?.isLoading && totalCount > 0 && domains.length !== totalCount
+  const canSelectAll = isSelecting && !selectAll?.isLoading && totalCount > 0 && domains.length !== totalCount
 
   const handleStartSelectAll = useCallback(async () => {
     if (!canSelectAll || selectAll?.isLoading) return
@@ -71,7 +69,7 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
     const signal = abortControllerRef.current.signal
 
     // Start loading state
-    dispatch(startSelectAll({ total: totalCount }))
+    dispatch(startSelectAll({ total: Math.min(totalCount, 10000) }))
 
     try {
       // Start with already loaded domains

@@ -149,7 +149,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       if (isInputField) return
 
       // SHIFT + A: Select all (only when bulk select is active)
-      if (e.shiftKey && e.key.toLowerCase() === 'a' && isSelecting && pageType === 'profile') {
+      if (e.shiftKey && e.key.toLowerCase() === 'a' && isSelecting) {
         e.preventDefault()
         if (selectAllContext?.canSelectAll) {
           selectAllContext.startSelectAll()
@@ -349,14 +349,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const selectAllError = selectAll?.error
 
   const bulkSelectWidth = showOwnedActionButtons
-    ? pageType === 'profile'
-      ? 'min(820px,95vw)'
-      : 'min(720px,95vw)'
+    ? 'min(820px,95vw)'
     : showWatchlistButton
       ? 'min(650px,95vw)'
-      : pageType === 'profile'
-        ? 'min(420px,95vw)'
-        : 'min(320px,95vw)'
+      : 'min(420px,95vw)'
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -416,11 +412,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
             {selectedDomains.length}
           </SecondaryButton>
-          {pageType === 'profile' && (
-            <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
-              Select All
-            </SecondaryButton>
-          )}
+          <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
+            Select All
+          </SecondaryButton>
           <SecondaryButton
             onClick={handleCancelBulkSelect}
             className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
@@ -500,18 +494,21 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
             </div>
             <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 sm:flex'>
               <div className='flex flex-row gap-1.5'>
-                <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
+                <SecondaryButton
+                  className={cn(
+                    'hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-nowrap md:h-10 md:min-w-10',
+                    selectedDomains.length > 999 ? 'text-xl' : 'text-2xl'
+                  )}
+                >
                   {selectedDomains.length}
                 </SecondaryButton>
-                {pageType === 'profile' && (
-                  <SecondaryButton
-                    className='hidden sm:block'
-                    onClick={handleSelectAll}
-                    disabled={!selectAllContext?.canSelectAll}
-                  >
-                    Select&nbsp;All
-                  </SecondaryButton>
-                )}
+                <SecondaryButton
+                  className='hidden sm:block'
+                  onClick={handleSelectAll}
+                  disabled={!selectAllContext?.canSelectAll}
+                >
+                  Select&nbsp;All
+                </SecondaryButton>
                 <SecondaryButton
                   onClick={handleCancelBulkSelect}
                   className='hidden w-28 items-center justify-center sm:flex'

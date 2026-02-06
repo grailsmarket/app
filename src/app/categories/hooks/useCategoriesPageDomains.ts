@@ -63,6 +63,7 @@ export const useCategoriesPageDomains = () => {
         domains: domains.domains,
         nextPageParam: domains.nextPageParam,
         hasNextPage: domains.hasNextPage,
+        total: domains.total,
       }
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
@@ -78,11 +79,13 @@ export const useCategoriesPageDomains = () => {
     )
   }, [domains])
   const domainsLoading = isLoading || isFetchingNextPage
+  const totalDomains = domains?.pages[0]?.total || 0
 
   return {
     domains: domainsData,
     domainsLoading,
     fetchMoreDomains,
     hasMoreDomains,
+    totalDomains,
   }
 }

@@ -14,7 +14,7 @@ import BulkSelect from '@/components/ui/bulkSelect'
 const DomainPanel = () => {
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useDomains()
+  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, total: totalDomains } = useDomains()
   // const { isNavbarVisible } = useNavbar()
   const { selectedTab } = useAppSelector(selectMarketplace)
   const { authStatus } = useUserContext()
@@ -60,11 +60,10 @@ const DomainPanel = () => {
   return (
     <SelectAllProvider
       loadedDomains={domains}
-      totalCount={0}
+      totalCount={totalDomains}
       filters={selectors.filters as MarketplaceFiltersState}
       searchTerm={selectors.filters.search}
       isAuthenticated={authStatus === 'authenticated'}
-      disableSelectAll={true}
     >
       <div className='z-0 flex w-full flex-col'>
         <Domains

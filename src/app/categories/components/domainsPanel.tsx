@@ -14,7 +14,7 @@ import BulkSelect from '@/components/ui/bulkSelect'
 const CategoriesPageDomainsPanel = () => {
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains } = useCategoriesPageDomains()
+  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, totalDomains } = useCategoriesPageDomains()
   // const { isNavbarVisible } = useNavbar()
   const { categoriesPage } = useAppSelector(selectCategoriesPage)
   const { selectedTab } = categoriesPage
@@ -100,7 +100,7 @@ const CategoriesPageDomainsPanel = () => {
   return (
     <SelectAllProvider
       loadedDomains={domains}
-      totalCount={0}
+      totalCount={totalDomains}
       filters={selectors.filters as MarketplaceFiltersState}
       searchTerm={selectors.filters.search}
       isAuthenticated={authStatus === 'authenticated'}

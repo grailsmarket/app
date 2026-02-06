@@ -179,4 +179,6 @@ export const CATEGORY_LABELS = {
   firstnames_usa: 'First Names USA',
   mythical_creatures: 'Mythical Creatures',
   personas: 'Personas',
+  ai_words: 'AI Words',
+  instruments: 'Instruments',
 } as const

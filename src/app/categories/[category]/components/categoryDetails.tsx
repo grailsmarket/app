@@ -120,6 +120,10 @@ import MythicalCreaturesAvatar from 'public/clubs/mythical_creatures/avatar.jpg'
 import MythicalCreaturesHeader from 'public/clubs/mythical_creatures/header.png'
 import PersonasAvatar from 'public/clubs/personas/avatar.png'
 import PersonasHeader from 'public/clubs/personas/header.jpg'
+import AiWordsAvatar from 'public/clubs/ai_words/avatar.jpeg'
+import AiWordsHeader from 'public/clubs/ai_words/header.jpg'
+import InstrumentsAvatar from 'public/clubs/instruments/avatar.png'
+import InstrumentsHeader from 'public/clubs/instruments/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -335,6 +339,14 @@ export const CATEGORY_IMAGES = {
   personas: {
     avatar: PersonasAvatar,
     header: PersonasHeader,
+  },
+  ai_words: {
+    avatar: AiWordsAvatar,
+    header: AiWordsHeader,
+  },
+  instruments: {
+    avatar: InstrumentsAvatar,
+    header: InstrumentsHeader,
   },
 }
 

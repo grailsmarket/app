@@ -216,6 +216,14 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/personas/avatar.png',
     header: 'https://grails.app/clubs/personas/header.jpg',
   },
+  ai_words: {
+    avatar: 'https://grails.app/clubs/ai_words/avatar.jpeg',
+    header: 'https://grails.app/clubs/ai_words/header.jpg',
+  },
+  instruments: {
+    avatar: 'https://grails.app/clubs/instruments/avatar.png',
+    header: 'https://grails.app/clubs/instruments/header.jpg',
+  },
 }
 
 export async function GET(req: NextRequest) {

@@ -46,7 +46,10 @@ const Profile: React.FC<Props> = ({ user }) => {
         </div>
       )}
       <div className='dark relative z-0 w-full'>
-        <div className='z-20 flex w-full flex-col lg:flex-row' suppressHydrationWarning={true}>
+        <div
+          className='border-tertiary relative z-20 flex w-full flex-col border-b-2 lg:flex-row'
+          suppressHydrationWarning={true}
+        >
           {/* Issues inside of EIK, so having to render on the client */}
           {isClient && (
             <>

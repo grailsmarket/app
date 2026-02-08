@@ -66,7 +66,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   }
 
   return (
-    <div className='group px-md lg:px-lg border-tertiary flex h-[86px] w-full flex-row flex-wrap items-center justify-start border-b bg-transparent py-1 transition hover:bg-white/10 sm:h-[60px] sm:flex-nowrap sm:py-0'>
+    <div className='group px-md lg:px-lg border-tertiary flex h-[86px] w-full max-w-full flex-row flex-wrap items-center justify-start overflow-x-hidden border-b bg-transparent py-1 transition hover:bg-white/10 sm:h-[60px] sm:flex-nowrap sm:py-0'>
       {displayedColumns.map((column, index) => (
         <div
           key={column}
@@ -122,15 +122,20 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           {activity.actor_address && (
             <User
               address={activity.actor_address}
-              className='max-w-[50%]'
-              wrapperClassName='justify-start'
+              className='max-w-full'
+              wrapperClassName='justify-start w-fit'
               loadingCellWidth='120px'
             />
           )}
           {activity.counterparty_address && (
-            <User address={activity.counterparty_address} className='max-w-[50%]' loadingCellWidth='120px' />
+            <User
+              address={activity.counterparty_address}
+              className='w-fit max-w-full'
+              wrapperClassName='w-full justify-end'
+              loadingCellWidth='120px'
+            />
           )}
-          <div className='flex items-center gap-1 pl-4'>
+          <div className='ml-2 flex min-h-5 w-5 min-w-5 items-center gap-1'>
             {activity.transaction_hash && (
               <Link
                 href={`https://etherscan.io/tx/${activity.transaction_hash}`}
@@ -148,7 +153,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           </div>
         </div>
       )}
-      <div className='hidden min-h-1 max-w-6 min-w-6 items-center justify-end gap-1 sm:flex'>
+      <div className='hidden min-h-4! max-w-6 min-w-6! items-center justify-end gap-1 sm:flex'>
         {activity.transaction_hash && (
           <Link
             href={`https://etherscan.io/tx/${activity.transaction_hash}`}

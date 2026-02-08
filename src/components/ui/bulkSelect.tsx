@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Cross } from 'ethereum-identity-kit'
+import { Cross, useWindowSize } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -74,6 +74,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   // Listen for shift key events and update Redux state
   useShiftKeyListener()
+  const { width: windowWidth } = useWindowSize()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
@@ -352,7 +353,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     ? 'min(820px,95vw)'
     : showWatchlistButton
       ? 'min(650px,95vw)'
-      : 'min(420px,95vw)'
+      : windowWidth && windowWidth < 640
+        ? 'min(130px,95vw)'
+        : 'min(420px,95vw)'
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -426,7 +429,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           // isSelecting ? bulkSelectWidth : 'w-34'
         )}
         style={{
-          width: isSelecting ? bulkSelectWidth : '136px',
+          width: isSelecting ? bulkSelectWidth : windowWidth && windowWidth < 640 ? '130px' : '136px',
           // transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)'
         }}
       >

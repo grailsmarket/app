@@ -32,7 +32,7 @@ const Premium = () => {
         searchTerm: '',
         isAuthenticated: authStatus === 'authenticated',
         inAnyCategory: true,
-        excludeCategories: ['prepunk'],
+        excludeCategories: ['prepunks'],
       }),
   })
 

@@ -8,7 +8,13 @@ import User from '@/components/ui/user'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { PREMIUM, GRACE_PERIOD, UNREGISTERED, REGISTERED_STATUSES } from '@/constants/domains/registrationStatuses'
+import {
+  PREMIUM,
+  GRACE_PERIOD,
+  UNREGISTERED,
+  REGISTERED_STATUSES,
+  REGISTERABLE_STATUSES,
+} from '@/constants/domains/registrationStatuses'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -28,6 +34,9 @@ import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { useQuery } from '@tanstack/react-query'
+import Tooltip from '@/components/ui/tooltip'
+import { useRouter } from 'next/navigation'
+import { DAY_IN_SECONDS } from '@/constants/time'
 
 interface NameDetailsProps {
   name: string
@@ -55,6 +64,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
     queryFn: () => checkIfWrapped(name),
   })
 
+  const router = useRouter()
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
@@ -151,7 +161,9 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                   />
                 )}
               </div>
-              <p className='text-neutral text-lg font-medium'>Owner</p>
+              <p className='text-neutral text-lg font-medium'>
+                {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
+              </p>
             </div>
           )}
           {nameDetailsIsLoading ? (
@@ -181,14 +193,29 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 <LoadingCell height='44px' width='128px' />
               ) : (
                 <>
-                  <div className='flex flex-row items-center gap-1'>
+                  {registrationStatus === GRACE_PERIOD ? (
+                    <Tooltip
+                      label={`Ends ${formatExpiryDate(new Date(new Date(nameDetails?.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+                      align='right'
+                      position='top'
+                    >
+                      <p className='text-grace text-xl font-medium'>
+                        Grace {timeLeftString ? `(${timeLeftString})` : ''}
+                      </p>
+                    </Tooltip>
+                  ) : (
                     <p
-                      className={`text-xl font-semibold ${registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground'}`}
+                      className={`cursor-pointer text-xl font-semibold hover:opacity-80 ${registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground/70 cursor-text hover:opacity-100'}`}
+                      onClick={() => {
+                        if (registrationStatus === PREMIUM || registrationStatus === UNREGISTERED) {
+                          router.push(`/marketplace?tab=${registrationStatus.toLowerCase()}&sort=expiry_date_asc`)
+                        }
+                      }}
                     >
                       {registrationStatus}
+                      {timeLeftString && registrationStatus === PREMIUM && <> ({timeLeftString})</>}
                     </p>
-                    {timeLeftString && registrationStatus === PREMIUM && <p>({timeLeftString})</p>}
-                  </div>
+                  )}
                   <p className='text-neutral text-lg font-medium'>Status</p>
                 </>
               )}

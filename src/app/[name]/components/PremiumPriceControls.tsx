@@ -41,7 +41,6 @@ interface CalendarOption {
 
 const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
   expiryDate,
-  ethPrice,
   domainName,
   priceInput,
   targetDate,

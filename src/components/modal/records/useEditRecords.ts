@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { namehash, encodeFunctionData, bytesToHex, toHex } from 'viem'
+import { namehash, encodeFunctionData, toHex } from 'viem'
 import { mainnet } from 'viem/chains'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'

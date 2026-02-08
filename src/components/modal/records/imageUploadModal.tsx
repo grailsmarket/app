@@ -8,6 +8,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import Input from '@/components/ui/input'
 import { cn } from '@/utils/tailwind'
+import Image from 'next/image'
 
 interface ImageUploadModalProps {
   name: string
@@ -201,10 +202,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, on
               onClick={() => fileInputRef.current?.click()}
             >
               {previewUrl ? (
-                <img
+                <Image
                   src={previewUrl}
                   alt='Preview'
                   className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
+                  width={512}
+                  height={512}
                 />
               ) : (
                 <>
@@ -225,10 +228,12 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, on
             />
             {previewUrl && (
               <div className='flex justify-center'>
-                <img
+                <Image
                   src={previewUrl}
                   alt='Preview'
                   className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
+                  width={512}
+                  height={512}
                 />
               </div>
             )}

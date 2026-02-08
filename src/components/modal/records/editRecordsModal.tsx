@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
-import { cn } from '@/utils/tailwind'
 import { useEditRecords } from './useEditRecords'
 import ImageUploadModal from './imageUploadModal'
 import Input from '@/components/ui/input'
@@ -47,7 +46,6 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
     addVisibleAddressRecord,
     hiddenAddressRecords,
     step,
-    setStep,
     imageUploadTarget,
     setImageUploadTarget,
     hasChanges,

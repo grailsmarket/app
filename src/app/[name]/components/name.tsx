@@ -12,6 +12,7 @@ import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Categories from './categories'
 import SecondaryDetails from './secondaryDetails'
+import Metadata from './metadata'
 // import Metadata from './metadata'
 
 interface Props {
@@ -71,7 +72,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='hidden lg:block'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          {/* <div className='hidden lg:block'><Metadata name={name} /></div> */}
+          <div className='hidden lg:block'>
+            <Metadata name={name} />
+          </div>
           <div className='hidden lg:block'>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
@@ -92,7 +95,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='lg:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          {/* <div className='lg:hidden'><Metadata name={name} /></div> */}
+          <div className='lg:hidden'>
+            <Metadata name={name} />
+          </div>
           <div className='lg:hidden'>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>

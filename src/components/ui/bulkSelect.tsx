@@ -109,22 +109,22 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   )
   const namesList = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        getRegistrationStatus(domain.expiry_date) === REGISTERED
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          getRegistrationStatus(domain.expiry_date) === REGISTERED
+      )
     : []
   const namesTransfer = userAddress
     ? selectedDomains.filter((domain) => domain.owner?.toLowerCase() === userAddress.toLowerCase())
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        domain.listings?.some(
-          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-        )
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          domain.listings?.some(
+            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+          )
+      )
     : []
 
   const handleBulkSelect = () => {
@@ -201,10 +201,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     if (results.some((result) => !result.success)) {
       console.error(
         'Failed to remove from watchlist' +
-        results
-          .filter((result) => !result.success)
-          .map((result) => result.watchlistId)
-          .join(', ')
+          results
+            .filter((result) => !result.success)
+            .map((result) => result.watchlistId)
+            .join(', ')
       )
     } else {
       dispatch(clearBulkSelect())

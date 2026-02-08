@@ -66,13 +66,13 @@ const Profile: React.FC<Props> = ({ user }) => {
                   hideSocials: ['grails'],
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
-                      eventId: badge.event.id.toString(),
-                      participated: true,
-                      collection: badge,
-                    }))
+                        eventId: badge.event.id.toString(),
+                        participated: true,
+                        collection: badge,
+                      }))
                     : undefined,
                 }}
-              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
               <Details user={user} />
             </>

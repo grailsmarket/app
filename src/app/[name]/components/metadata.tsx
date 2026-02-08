@@ -9,6 +9,14 @@ import { fetchNameMetadata } from '@/api/name/metadata'
 import Image from 'next/image'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import LoadingCell from '@/components/ui/loadingCell'
+import { useAccount } from 'wagmi'
+import { useAppDispatch } from '@/state/hooks'
+import {
+  setEditRecordsModalOpen,
+  setEditRecordsModalName,
+  setEditRecordsModalMetadata,
+} from '@/state/reducers/modals/editRecordsModal'
+import PencilIcon from 'public/icons/pencil.svg'
 
 interface NameDetailsProps {
   name: string
@@ -16,6 +24,8 @@ interface NameDetailsProps {
 
 const Metadata: React.FC<NameDetailsProps> = ({ name }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
+  const { isConnected } = useAccount()
+  const dispatch = useAppDispatch()
   const { data: fetchedMetadata, isLoading: isMetadataLoading } = useQuery({
     queryKey: ['name', 'metadata', name],
     queryFn: async () => {
@@ -38,7 +48,29 @@ const Metadata: React.FC<NameDetailsProps> = ({ name }) => {
         className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
         onClick={() => setIsMetadataOpen(!isMetadataOpen)}
       >
-        <h3 className='font-sedan-sc text-3xl'>Records</h3>
+        <div className='flex items-center gap-2'>
+          <h3 className='font-sedan-sc text-3xl'>Records</h3>
+          {isConnected && (
+            <button
+              className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
+              onClick={(e) => {
+                e.stopPropagation()
+                const metadataRecord = fetchedMetadata
+                  ? (Object.fromEntries(
+                      Object.entries(fetchedMetadata).filter(
+                        ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
+                      )
+                    ) as Record<string, string>)
+                  : null
+                dispatch(setEditRecordsModalName(name))
+                dispatch(setEditRecordsModalMetadata(metadataRecord))
+                dispatch(setEditRecordsModalOpen(true))
+              }}
+            >
+              <Image src={PencilIcon} alt='Edit records' width={16} height={16} className='invert' />
+            </button>
+          )}
+        </div>
         <div className='flex flex-row items-center gap-2'>
           {isMetadataLoading ? (
             <LoadingCell height='20px' width='16px' />

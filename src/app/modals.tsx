@@ -27,6 +27,8 @@ import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/moda
 import RegistrationModal from '@/components/modal/registration/registrationModal'
 import ShareModal from '@/components/modal/share/shareModal'
 import { selectShareModal, setShareModalOpen } from '@/state/reducers/modals/shareModal'
+import EditRecordsModal from '@/components/modal/records/editRecordsModal'
+import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducers/modals/editRecordsModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 
 const Modals: React.FC = () => {
@@ -69,6 +71,11 @@ const Modals: React.FC = () => {
     ownerAddress: shareModalOwnerAddress,
     categories: shareModalCategories,
   } = useAppSelector(selectShareModal)
+  const {
+    open: editRecordsModalOpen,
+    name: editRecordsModalName,
+    metadata: editRecordsModalMetadata,
+  } = useAppSelector(selectEditRecordsModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
 
   return (
@@ -135,6 +142,13 @@ const Modals: React.FC = () => {
           domainName={shareModalDomainName}
           ownerAddress={shareModalOwnerAddress}
           categories={shareModalCategories}
+        />
+      )}
+      {editRecordsModalOpen && editRecordsModalName && (
+        <EditRecordsModal
+          name={editRecordsModalName}
+          metadata={editRecordsModalMetadata}
+          onClose={() => dispatch(setEditRecordsModalOpen(false))}
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}

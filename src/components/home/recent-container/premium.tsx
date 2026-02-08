@@ -32,17 +32,17 @@ const Premium = () => {
         searchTerm: '',
         isAuthenticated: authStatus === 'authenticated',
         inAnyCategory: true,
-        excludeCategories: ['prepunk'],
+        excludeCategories: ['prepunks'],
       }),
   })
 
   return (
     <div className='flex flex-col'>
       <div className='p-md lg:px-lg flex w-full items-center justify-between'>
-        <h2 className='font-sedan-sc text-4xl font-medium'>In Premium</h2>
+        <h2 className='font-sedan-sc text-3xl font-medium sm:text-4xl'>In Premium</h2>
         <Link
           href='/marketplace?tab=premium'
-          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-xl font-semibold'
+          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold sm:text-xl'
         >
           <p>View All</p>
           <Arrow className='text-primary h-3 w-3 rotate-180 transition-all duration-300 group-hover:translate-x-1' />

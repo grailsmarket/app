@@ -42,13 +42,12 @@ export const useAuth = () => {
 
       dispatch(resetUserProfile())
 
-      // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
-      // check if the token exists, since auth verification fialed, the user should be disconnected
+      // check if the token exists but is invalid/expired, disconnect to force fresh auth
       const token = document.cookie
         .split(';')
         .find((cookie) => cookie.trim().startsWith('token='))
         ?.split('=')[1]
-      if ((token && token.length > 0) || !currAddress) {
+      if (token && token.length > 0) {
         disconnect()
         document.cookie = `token=; path=/; max-age=0;`
       }

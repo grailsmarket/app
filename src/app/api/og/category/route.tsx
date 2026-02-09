@@ -224,6 +224,18 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/instruments/avatar.png',
     header: 'https://grails.app/clubs/instruments/header.jpg',
   },
+  catholicism: {
+    avatar: 'https://grails.app/clubs/catholicism/avatar.jpeg',
+    header: 'https://grails.app/clubs/catholicism/header.jpg',
+  },
+  crayola_classic: {
+    avatar: 'https://grails.app/clubs/crayola_classic/avatar.jpg',
+    header: 'https://grails.app/clubs/crayola_classic/header.jpg',
+  },
+  holidays: {
+    avatar: 'https://grails.app/clubs/holidays/avatar.jpg',
+    header: 'https://grails.app/clubs/holidays/header.jpg',
+  },
 }
 
 export async function GET(req: NextRequest) {

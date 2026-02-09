@@ -2,8 +2,14 @@
 
 import React, { useMemo } from 'react'
 import LoadingCell from '@/components/ui/loadingCell'
-import { AnalyticsListing, AnalyticsOffer, AnalyticsSale, ChartDataPoint } from '@/types/analytics'
-import { ListingRow, OfferRow, SaleRow } from './AnalyticsRow'
+import {
+  AnalyticsListing,
+  AnalyticsOffer,
+  AnalyticsRegistration,
+  AnalyticsSale,
+  ChartDataPoint,
+} from '@/types/analytics'
+import { ListingRow, OfferRow, RegistrationRow, SaleRow } from './AnalyticsRow'
 import { useAppSelector } from '@/state/hooks'
 import { selectAnalytics } from '@/state/reducers/analytics'
 import Price from '@/components/ui/price'
@@ -12,8 +18,8 @@ import { ETH_ADDRESS } from '@/constants/web3/tokens'
 interface TopListCardProps {
   title: string
   isLoading: boolean
-  type: 'listings' | 'offers' | 'sales'
-  data?: AnalyticsListing[] | AnalyticsOffer[] | AnalyticsSale[]
+  type: 'listings' | 'offers' | 'sales' | 'registrations'
+  data?: AnalyticsListing[] | AnalyticsOffer[] | AnalyticsSale[] | AnalyticsRegistration[]
   chartData?: ChartDataPoint[]
   chartLoading?: boolean
   volumeData?: ChartDataPoint[]
@@ -109,6 +115,10 @@ const TopListCard: React.FC<TopListCardProps> = ({
           (data as AnalyticsListing[]).map((item, index) => <ListingRow key={item.id} listing={item} index={index} />)
         ) : type === 'offers' ? (
           (data as AnalyticsOffer[]).map((item, index) => <OfferRow key={item.id} offer={item} index={index} />)
+        ) : type === 'registrations' ? (
+          (data as AnalyticsRegistration[]).map((item, index) => (
+            <RegistrationRow key={item.id} registration={item} index={index} />
+          ))
         ) : (
           (data as AnalyticsSale[]).map((item, index) => <SaleRow key={item.id} sale={item} index={index} />)
         )}

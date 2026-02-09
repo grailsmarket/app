@@ -4,12 +4,12 @@ import React from 'react'
 import TopListCard from './TopListCard'
 import {
   useSalesChart,
-  useListingsChart,
   useOffersChart,
-  useTopListings,
   useTopOffers,
   useTopSales,
   useVolumeChart,
+  useTopRegistrations,
+  useRegistrationsChart,
 } from '../hooks/useAnalyticsData'
 
 interface TopListsSectionProps {
@@ -18,13 +18,13 @@ interface TopListsSectionProps {
 
 const TopListsSection: React.FC<TopListsSectionProps> = ({ category }) => {
   const hookOptions = category ? { categoryOverride: category } : undefined
-  const { data: listingsData, isLoading: listingsLoading } = useTopListings(hookOptions)
   const { data: offersData, isLoading: offersLoading } = useTopOffers(hookOptions)
   const { data: salesData, isLoading: salesLoading } = useTopSales(hookOptions)
   const { data: saleChartData, isLoading: saleChartLoading } = useSalesChart(hookOptions)
   const { data: offerChartData, isLoading: offerChartLoading } = useOffersChart(hookOptions)
-  const { data: listingChartData, isLoading: listingChartLoading } = useListingsChart(hookOptions)
   const { data: volumeChartData, isLoading: volumeChartLoading } = useVolumeChart(hookOptions)
+  const { data: registrationsData, isLoading: registrationsLoading } = useTopRegistrations(hookOptions)
+  const { data: registrationChartData, isLoading: registrationChartLoading } = useRegistrationsChart(hookOptions)
 
   return (
     <section>
@@ -48,13 +48,21 @@ const TopListsSection: React.FC<TopListsSectionProps> = ({ category }) => {
             chartData={offerChartData?.data?.points}
             chartLoading={offerChartLoading}
           />
-          <TopListCard
+          {/* <TopListCard
             title='Top Listings'
             type='listings'
             isLoading={listingsLoading}
             data={listingsData?.data?.results}
             chartData={listingChartData?.data?.points}
             chartLoading={listingChartLoading}
+          /> */}
+          <TopListCard
+            title='Top Registrations'
+            type='registrations'
+            isLoading={registrationsLoading}
+            data={registrationsData?.data?.results}
+            chartData={registrationChartData?.data?.points}
+            chartLoading={registrationChartLoading}
           />
         </div>
       </div>

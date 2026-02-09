@@ -6,12 +6,15 @@ import {
   AnalyticsOffersResponse,
   AnalyticsSalesResponse,
   ChartResponse,
+  AnalyticsRegistrationsResponse,
+  AnalyticsRegistrationsChartResponse,
 } from '@/types/analytics'
 
 interface FetchTopItemsParams {
   period: AnalyticsPeriod
   source: AnalyticsSource
   category: string | null
+  limit?: number
 }
 
 export const fetchTopListings = async ({
@@ -111,6 +114,42 @@ interface FetchChartParams {
   category: string | null
 }
 
+export const fetchTopRegistrations = async ({
+  period,
+  source,
+  category,
+  limit,
+}: FetchTopItemsParams): Promise<AnalyticsRegistrationsResponse> => {
+  const params = new URLSearchParams({
+    period,
+    sortBy: 'cost',
+    sortOrder: 'desc',
+    limit: limit?.toString() || '10',
+    page: '1',
+  })
+
+  if (source !== 'all') {
+    params.append('source', source)
+  }
+
+  if (category) {
+    params.append('clubs[]', category)
+  }
+
+  const response = await fetch(`${API_BASE_URL}/analytics/registrations?${params}`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch top registrations')
+  }
+
+  return response.json()
+}
+
+interface FetchChartParams {
+  period: AnalyticsPeriod
+  category: string | null
+}
+
 export const fetchListingsChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {
   const params = new URLSearchParams({
     period: period === '24h' ? '1d' : period,
@@ -163,6 +202,39 @@ export const fetchSalesChart = async ({ period, category }: FetchChartParams): P
   }
 
   return response.json()
+}
+
+export const fetchRegistrationsChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {
+  const params = new URLSearchParams({
+    period: period === '24h' ? '1d' : period,
+  })
+
+  if (category) {
+    params.append('club', category)
+  }
+
+  const response = await fetch(`${API_BASE_URL}/charts/registrations?${params}`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch registrations chart data')
+  }
+
+  const data = (await response.json()) as AnalyticsRegistrationsChartResponse
+  const transformedData = data.data.points.map((point) => ({
+    date: point.date,
+    total: point.count,
+    grails: point.count,
+    opensea: point.count,
+  }))
+
+  return {
+    success: true,
+    data: {
+      period: data.data.period,
+      club: data.data.club,
+      points: transformedData,
+    },
+  }
 }
 
 export const fetchVolumeChart = async ({ period, category }: FetchChartParams): Promise<ChartResponse> => {

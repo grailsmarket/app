@@ -4,7 +4,7 @@ import React from 'react'
 import { useAppSelector } from '@/state/hooks'
 import { selectAnalytics } from '@/state/reducers/analytics'
 import AnalyticsChart from './AnalyticsChart'
-import { useListingsChart, useOffersChart, useSalesChart } from '../hooks/useAnalyticsData'
+import { useOffersChart, useRegistrationsChart, useSalesChart } from '../hooks/useAnalyticsData'
 
 interface ChartsSectionProps {
   category?: string
@@ -13,9 +13,10 @@ interface ChartsSectionProps {
 const ChartsSection: React.FC<ChartsSectionProps> = ({ category }) => {
   const { source } = useAppSelector(selectAnalytics)
   const hookOptions = category ? { categoryOverride: category } : undefined
-  const { data: listingsData, isLoading: listingsLoading } = useListingsChart(hookOptions)
+  // const { data: listingsData, isLoading: listingsLoading } = useListingsChart(hookOptions)
   const { data: offersData, isLoading: offersLoading } = useOffersChart(hookOptions)
   const { data: salesData, isLoading: salesLoading } = useSalesChart(hookOptions)
+  const { data: registrationsData, isLoading: registrationsLoading } = useRegistrationsChart(hookOptions)
 
   return (
     <section>
@@ -23,11 +24,17 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({ category }) => {
         <div className='grid grid-cols-1 xl:grid-cols-3'>
           <AnalyticsChart title='Sales' data={salesData?.data?.points} source={source} isLoading={salesLoading} />
           <AnalyticsChart title='Offers' data={offersData?.data?.points} source={source} isLoading={offersLoading} />
-          <AnalyticsChart
+          {/* <AnalyticsChart
             title='Listings'
             data={listingsData?.data?.points}
             source={source}
             isLoading={listingsLoading}
+          /> */}
+          <AnalyticsChart
+            title='Registrations'
+            data={registrationsData?.data?.points}
+            source={source}
+            isLoading={registrationsLoading}
           />
         </div>
       </div>

@@ -1006,12 +1006,12 @@ const RegistrationModal: React.FC = () => {
                     <div key={account.address} className='flex items-center gap-2'>
                       <Avatar
                         address={account.address}
-                        src={account.ens.avatar}
-                        name={account.ens.name}
+                        src={account.ens?.avatar}
+                        name={account.ens?.name}
                         style={{ width: '24px', height: '24px' }}
                       />
                       <p className='text-md text-neutral max-w-full truncate pt-0.5 font-medium'>
-                        {isAddress(debouncedCustomOwner) ? account.ens.name : account.address}
+                        {isAddress(debouncedCustomOwner) ? account.ens?.name : account.address}
                       </p>
                     </div>
                   ) : null}

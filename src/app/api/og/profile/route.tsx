@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   const address = response.address as Address
 
   const fetchedUser = response.address
-    ? response.ens.name || truncateAddress(address)
+    ? response.ens?.name || truncateAddress(address)
     : isAddress(address)
       ? truncateAddress(address)
       : ens_beautify(address)

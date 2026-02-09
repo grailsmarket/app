@@ -2,7 +2,7 @@
 
 import React, { Suspense, useEffect, useMemo } from 'react'
 import { FilterProvider } from '@/context/filters'
-import { Address } from 'viem'
+import { Address, isAddress } from 'viem'
 import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
 import TabSwitcher from './tabSwitcher'
@@ -54,7 +54,21 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   const profileTab = selectedTab.value
   const { data: userAccount } = useQuery({
     queryKey: ['account', user],
-    queryFn: () => fetchAccount(user),
+    queryFn: async () => {
+      const account = await fetchAccount(user)
+      if (!account?.address) {
+        if (isAddress(user)) {
+          return {
+            address: user,
+            ens: null,
+            primary_list: null,
+          }
+        }
+
+        return null
+      }
+      return account
+    },
     enabled: !!user,
   })
 

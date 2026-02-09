@@ -124,6 +124,12 @@ import AiWordsAvatar from 'public/clubs/ai_words/avatar.jpeg'
 import AiWordsHeader from 'public/clubs/ai_words/header.jpg'
 import InstrumentsAvatar from 'public/clubs/instruments/avatar.png'
 import InstrumentsHeader from 'public/clubs/instruments/header.jpg'
+import CatholicismAvatar from 'public/clubs/catholicism/avatar.jpeg'
+import CatholicismHeader from 'public/clubs/catholicism/header.jpg'
+import CrayolaClassicAvatar from 'public/clubs/crayola_classic/avatar.jpg'
+import CrayolaClassicHeader from 'public/clubs/crayola_classic/header.jpg'
+import HolidaysAvatar from 'public/clubs/holidays/avatar.jpg'
+import HolidaysHeader from 'public/clubs/holidays/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -347,6 +353,18 @@ export const CATEGORY_IMAGES = {
   instruments: {
     avatar: InstrumentsAvatar,
     header: InstrumentsHeader,
+  },
+  catholicism: {
+    avatar: CatholicismAvatar,
+    header: CatholicismHeader,
+  },
+  crayola_classic: {
+    avatar: CrayolaClassicAvatar,
+    header: CrayolaClassicHeader,
+  },
+  holidays: {
+    avatar: HolidaysAvatar,
+    header: HolidaysHeader,
   },
 }
 

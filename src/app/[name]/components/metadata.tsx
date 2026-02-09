@@ -59,10 +59,10 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                 e.stopPropagation()
                 const metadataRecord = fetchedMetadata
                   ? (Object.fromEntries(
-                      Object.entries(fetchedMetadata).filter(
-                        ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
-                      )
-                    ) as Record<string, string>)
+                    Object.entries(fetchedMetadata).filter(
+                      ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
+                    )
+                  ) as Record<string, string>)
                   : null
                 dispatch(setEditRecordsModalName(name))
                 dispatch(setEditRecordsModalMetadata(metadataRecord))
@@ -122,7 +122,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                   ) : (
                     <div className='text-xl font-medium'>{row.value}</div>
                   )}
-                  <p className='text-neutral text-lg font-medium capitalize'>{row.label}</p>
+                  <p className='text-neutral text-lg font-medium'>{row.label}</p>
                 </div>
               )
             })}

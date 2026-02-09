@@ -49,8 +49,8 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
       <div className='flex w-[45%] max-w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={listing.source} />
         <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <div>
-          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(listing.name)}</p>
+        <div className='max-w-[calc(100%-34px)]'>
+          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(listing.name)}</p>
           {listing.clubs && listing.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
@@ -98,8 +98,8 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={offer.source} />
         <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <div>
-          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(offer.name)}</p>
+        <div className='w-full max-w-[calc(100%-34px)]'>
+          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(offer.name)}</p>
           {offer.clubs && offer.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
@@ -150,8 +150,8 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
       <div className={cn('flex flex-row items-center gap-2', hideSeller ? 'w-[50%]' : 'w-[40%]')}>
         <SourceIcon source={sale.source} />
         <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <div>
-          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(sale.name)}</p>
+        <div className='w-full max-w-[calc(100%-34px)]'>
+          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(sale.name)}</p>
           {sale.clubs && sale.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
@@ -205,8 +205,8 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <NameImage name={registration.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
-        <div>
-          <p className='text-md max-w-[100%-60px] truncate font-semibold'>{beautifyName(registration.name)}</p>
+        <div className='w-full max-w-[calc(100%-34px)]'>
+          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(registration.name)}</p>
           {registration.clubs && registration.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <p>{getCategoryDetails(registration.clubs[0]).name}</p>

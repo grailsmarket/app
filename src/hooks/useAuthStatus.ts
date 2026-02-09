@@ -44,14 +44,14 @@ export const useAuth = () => {
 
       // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
       // check if the token exists, since auth verification fialed, the user should be disconnected
-      const token = document.cookie
-        .split(';')
-        .find((cookie) => cookie.trim().startsWith('token='))
-        ?.split('=')[1]
-      if ((token && token.length > 0) || !currAddress) {
-        disconnect()
-        document.cookie = `token=; path=/; max-age=0;`
-      }
+      // const token = document.cookie
+      //   .split(';')
+      //   .find((cookie) => cookie.trim().startsWith('token='))
+      //   ?.split('=')[1]
+      // if ((token && token.length > 0) || !currAddress) {
+      //   disconnect()
+      //   document.cookie = `token=; path=/; max-age=0;`
+      // }
 
       return 'unauthenticated'
     },
@@ -72,8 +72,8 @@ export const useAuth = () => {
       document.cookie = `token=; path=/; max-age=0;`
     }
 
-    refetchAuthStatus()
     setCurrAddress(address)
+    refetchAuthStatus()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])

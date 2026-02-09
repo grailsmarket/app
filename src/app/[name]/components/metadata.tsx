@@ -9,7 +9,6 @@ import { fetchNameMetadata } from '@/api/name/metadata'
 import Image from 'next/image'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import LoadingCell from '@/components/ui/loadingCell'
-import { useAccount } from 'wagmi'
 import { useAppDispatch } from '@/state/hooks'
 import {
   setEditRecordsModalOpen,
@@ -17,14 +16,17 @@ import {
   setEditRecordsModalMetadata,
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil.svg'
+import { useUserContext } from '@/context/user'
 
 interface NameDetailsProps {
   name: string
+  nameOwner?: string | null
 }
 
-const Metadata: React.FC<NameDetailsProps> = ({ name }) => {
+const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
-  const { isConnected } = useAccount()
+  const { userAddress, authStatus } = useUserContext()
+  const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
   const dispatch = useAppDispatch()
   const { data: fetchedMetadata, isLoading: isMetadataLoading } = useQuery({
     queryKey: ['name', 'metadata', name],
@@ -50,7 +52,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name }) => {
       >
         <div className='flex items-center gap-2'>
           <h3 className='font-sedan-sc text-3xl'>Records</h3>
-          {isConnected && (
+          {isNameOwner && (
             <button
               className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
               onClick={(e) => {

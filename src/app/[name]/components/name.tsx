@@ -73,7 +73,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden lg:block'>
-            <Metadata name={name} />
+            <Metadata name={name} nameOwner={nameDetails?.owner} />
           </div>
           <div className='hidden lg:block'>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />

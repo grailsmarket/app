@@ -13,6 +13,7 @@ import Image from 'next/image'
 interface ImageUploadModalProps {
   name: string
   imageType: 'avatar' | 'header'
+  currentValue?: string
   onSave: (url: string) => void
   onClose: () => void
 }
@@ -20,14 +21,15 @@ interface ImageUploadModalProps {
 type UploadMode = 'file' | 'url'
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error'
 
-const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, onSave, onClose }) => {
+const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, currentValue, onSave, onClose }) => {
   const { address } = useAccount()
   const { signTypedDataAsync } = useSignTypedData()
 
-  const [mode, setMode] = useState<UploadMode>('file')
+  const hasExistingUrl = currentValue && currentValue.startsWith('http')
+  const [mode, setMode] = useState<UploadMode>(hasExistingUrl ? 'url' : 'file')
   const [dataURL, setDataURL] = useState<string | null>(null)
-  const [manualUrl, setManualUrl] = useState('')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [manualUrl, setManualUrl] = useState(hasExistingUrl ? currentValue : '')
+  const [previewUrl, setPreviewUrl] = useState<string | null>(hasExistingUrl ? currentValue : null)
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)

@@ -56,6 +56,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [step, setStep] = useState<EditStep>('editing')
   const [imageUploadTarget, setImageUploadTarget] = useState<'avatar' | 'header' | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [txHash, setTxHash] = useState<string | null>(null)
   const [resolverAddress, setResolverAddress] = useState<`0x${string}` | null>(null)
 
   // Initialize state from metadata
@@ -144,6 +145,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
     setStep('confirming')
     setErrorMessage(null)
+    setTxHash(null)
 
     try {
       const node = namehash(name)
@@ -197,8 +199,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
       if (calls.length === 0) return
 
-      setStep('processing')
-
       const hash = await walletClient.writeContract({
         address: resolverAddress,
         abi: PublicResolverAbi,
@@ -207,10 +207,14 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         chain: mainnet,
       })
 
+      setTxHash(hash)
+      setStep('processing')
+
       await publicClient.waitForTransactionReceipt({ hash })
 
-      // Invalidate metadata cache
+      // Invalidate metadata + name details cache
       queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
+      queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
 
       setStep('success')
     } catch (err: unknown) {
@@ -229,6 +233,13 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     queryClient,
   ])
 
+  // Reset to editing state (for "Try Again") — keeps current record values
+  const resetToEditing = useCallback(() => {
+    setStep('editing')
+    setErrorMessage(null)
+    setTxHash(null)
+  }, [])
+
   return {
     records,
     setRecord,
@@ -243,7 +254,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setImageUploadTarget,
     hasChanges,
     saveRecords,
+    resetToEditing,
     errorMessage,
+    txHash,
     resolverAddress,
     address,
   }

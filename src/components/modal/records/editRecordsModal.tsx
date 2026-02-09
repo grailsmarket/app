@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
+import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER, Check } from 'ethereum-identity-kit'
 import { useEditRecords } from './useEditRecords'
 import ImageUploadModal from './imageUploadModal'
 import Input from '@/components/ui/input'
@@ -15,6 +15,7 @@ import XLogo from 'public/logos/x.svg'
 import GithubLogo from 'public/logos/github.svg'
 import TelegramLogo from 'public/logos/telegram.svg'
 import DiscordLogo from 'public/logos/discord.svg'
+import { useClickAway } from '@/hooks/useClickAway'
 
 interface EditRecordsModalProps {
   name: string
@@ -23,10 +24,10 @@ interface EditRecordsModalProps {
 }
 
 const SOCIAL_RECORDS = [
-  { key: 'com.twitter', label: 'Twitter / X', icon: XLogo },
-  { key: 'com.github', label: 'GitHub', icon: GithubLogo },
-  { key: 'org.telegram', label: 'Telegram', icon: TelegramLogo },
-  { key: 'com.discord', label: 'Discord', icon: DiscordLogo },
+  { key: 'com.twitter', label: 'Twitter / X', icon: XLogo, placeholder: 'username' },
+  { key: 'com.github', label: 'GitHub', icon: GithubLogo, placeholder: 'username' },
+  { key: 'org.telegram', label: 'Telegram', icon: TelegramLogo, placeholder: 'username' },
+  { key: 'com.discord', label: 'Discord', icon: DiscordLogo, placeholder: 'username' },
 ] as const
 
 const ADDRESS_LABELS: Record<string, string> = {
@@ -50,10 +51,13 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
     setImageUploadTarget,
     hasChanges,
     saveRecords,
+    resetToEditing,
     errorMessage,
+    txHash,
   } = useEditRecords(name, metadata)
 
   const [addRecordOpen, setAddRecordOpen] = useState(false)
+  const clickAwayRecordRef = useClickAway<HTMLDivElement>(() => setAddRecordOpen(false))
 
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
@@ -91,171 +95,239 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
           className='bg-background border-tertiary relative flex max-h-[calc(100dvh-56px)] w-full flex-col rounded-md border-t shadow-lg md:max-w-xl md:border-2'
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Scrollable content */}
-          <div className='flex flex-col gap-4 overflow-y-auto p-0'>
-            {/* Header Image + Avatar */}
-            <div className='relative'>
-              {/* Header image */}
-              <div className='relative h-32 w-full overflow-hidden rounded-t-md sm:h-40'>
-                <Image src={headerUrl} alt='Header' className='h-full w-full object-cover' width={1000} height={200} />
-                <button
-                  className='absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 transition-opacity hover:opacity-80'
-                  onClick={() => setImageUploadTarget('header')}
-                >
-                  <Image
-                    src={records.header ? PencilIcon : PlusIcon}
-                    alt='Edit header'
-                    width={16}
-                    height={16}
-                    className='invert'
-                  />
-                </button>
-              </div>
-
-              {/* Avatar overlapping header */}
-              <div className='absolute -bottom-10 left-4'>
-                <div className='relative h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--background)] sm:h-24 sm:w-24'>
-                  <Image src={avatarUrl} alt='Avatar' width={80} height={80} className='h-full w-full object-cover' />
-                  <button
-                    className='absolute inset-0 top-2/3 flex items-center justify-center bg-black/50 transition-opacity hover:opacity-80'
-                    onClick={() => setImageUploadTarget('avatar')}
+          {/* Confirming / Processing state */}
+          {(step === 'confirming' || step === 'processing') && (
+            <div className='flex flex-col items-center gap-12 p-6'>
+              <h2 className='text-2xl font-bold'>Uploading Records</h2>
+              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
+              <div className='flex flex-col items-center gap-4'>
+                <p className='text-xl'>{step === 'confirming' ? 'Confirm in Wallet' : 'Uploading Records'}</p>
+                {txHash && (
+                  <a
+                    href={`https://etherscan.io/tx/${txHash}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-primary hover:text-primary/80 text-lg underline transition-colors'
                   >
-                    <Image
-                      src={records.avatar ? PencilIcon : PlusIcon}
-                      alt='Edit avatar'
-                      width={14}
-                      height={14}
-                      className='invert'
-                    />
-                  </button>
-                </div>
+                    View on Etherscan
+                  </a>
+                )}
               </div>
             </div>
+          )}
 
-            {/* Spacer for avatar overlap */}
-            <div className='h-6' />
-
-            {/* Text records */}
-            <div className='flex flex-col gap-3 px-4 sm:px-6'>
-              <Textarea
-                label='Description'
-                value={records.description || ''}
-                onChange={(e) => setRecord('description', e.target.value)}
-                placeholder='Tell us about yourself...'
-              />
-              <Input
-                label='Status'
-                value={records.status || ''}
-                onChange={(e) => setRecord('status', e.target.value)}
-                placeholder='What are you up to?'
-              />
-              <Input
-                label='Location'
-                value={records.location || ''}
-                onChange={(e) => setRecord('location', e.target.value)}
-                placeholder='Where are you based?'
-              />
-              <Input
-                label='Website'
-                value={records.url || ''}
-                onChange={(e) => setRecord('url', e.target.value)}
-                placeholder='https://yoursite.com'
-              />
-              <Input
-                label='Email'
-                value={records.email || ''}
-                onChange={(e) => setRecord('email', e.target.value)}
-                placeholder='you@example.com'
-              />
-            </div>
-
-            {/* Social records - 2x2 grid */}
-            <div className='grid grid-cols-2 gap-3 px-4 sm:px-6'>
-              {SOCIAL_RECORDS.map((social) => (
-                <div key={social.key} className='flex'>
-                  <div className='bg-background border-tertiary flex h-12 min-w-[48px] items-center justify-center rounded-l-md border border-r-0'>
-                    <Image src={social.icon} alt={social.label} width={20} height={20} />
-                  </div>
-                  <input
-                    type='text'
-                    value={records[social.key] || ''}
-                    onChange={(e) => setRecord(social.key, e.target.value)}
-                    className='bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center rounded-r-md border px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
-                    placeholder={social.key}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Address records */}
-            {visibleAddressRecords.size > 0 && (
-              <div className='flex flex-col gap-3 px-4 sm:px-6'>
-                <h3 className='text-neutral text-lg font-semibold'>Address Records</h3>
-                {Array.from(visibleAddressRecords).map((key) => (
-                  <Input
-                    key={key}
-                    label={ADDRESS_LABELS[key] || key.toUpperCase()}
-                    value={addressRecords[key] || ''}
-                    onChange={(e) => setAddressRecord(key, e.target.value)}
-                    placeholder={`${ADDRESS_LABELS[key] || key.toUpperCase()} address`}
-                  />
-                ))}
+          {/* Success state */}
+          {step === 'success' && (
+            <div className='flex flex-col items-center gap-8 p-6'>
+              <h2 className='text-2xl font-bold'>Uploading Records</h2>
+              <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-2'>
+                <Check className='text-background h-6 w-6' />
               </div>
-            )}
-
-            {/* Add Record button */}
-            {hiddenAddressRecords.length > 0 && (
-              <div className='relative px-4 sm:px-6'>
-                <SecondaryButton className='flex items-center gap-2' onClick={() => setAddRecordOpen(!addRecordOpen)}>
-                  <Image src={PlusIcon} alt='Add' width={16} height={16} className='invert' />
-                  Add Record
+              <div className='flex w-full flex-col items-center gap-4'>
+                <p className='text-xl font-bold'>Records Updated Successfully!</p>
+                {txHash && (
+                  <a
+                    href={`https://etherscan.io/tx/${txHash}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+                  >
+                    View on Etherscan
+                  </a>
+                )}
+                <SecondaryButton className='w-full' onClick={onClose}>
+                  Close
                 </SecondaryButton>
+              </div>
+            </div>
+          )}
 
-                {addRecordOpen && (
-                  <div className='bg-secondary border-tertiary absolute bottom-full left-4 z-10 mb-1 flex flex-col rounded-md border shadow-lg sm:left-6'>
-                    {hiddenAddressRecords.map((key) => (
+          {/* Error state */}
+          {step === 'error' && (
+            <div className='flex flex-col gap-4 p-6'>
+              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
+                <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
+                <p className='line-clamp-6 text-red-400'>{errorMessage || 'An unknown error occurred'}</p>
+              </div>
+              <div className='flex w-full flex-col gap-2'>
+                <PrimaryButton onClick={resetToEditing} className='w-full'>
+                  Try Again
+                </PrimaryButton>
+                <SecondaryButton onClick={onClose} className='w-full'>
+                  Close
+                </SecondaryButton>
+              </div>
+            </div>
+          )}
+
+          {/* Editing state — form content */}
+          {step === 'editing' && (
+            <>
+              <div className='flex flex-col gap-3 overflow-y-auto pb-4'>
+                {/* Header Image + Avatar */}
+                <div className='relative'>
+                  {/* Header image */}
+                  <div className='relative h-32 w-full overflow-hidden rounded-t-md sm:h-36'>
+                    <Image
+                      src={headerUrl}
+                      alt='Header'
+                      className='h-full w-full object-cover'
+                      width={1000}
+                      height={200}
+                    />
+                    <button
+                      className='absolute top-2 right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black/50 transition-opacity hover:opacity-80'
+                      onClick={() => setImageUploadTarget('header')}
+                    >
+                      <Image
+                        src={records.header ? PencilIcon : PlusIcon}
+                        alt='Edit header'
+                        width={16}
+                        height={16}
+                        className='invert'
+                      />
+                    </button>
+                  </div>
+
+                  {/* Avatar overlapping header */}
+                  <div className='absolute -bottom-9 left-4'>
+                    <div className='relative h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--background)] sm:h-26 sm:w-26'>
+                      <Image
+                        src={avatarUrl}
+                        alt='Avatar'
+                        width={80}
+                        height={80}
+                        className='h-full w-full object-cover'
+                      />
                       <button
-                        key={key}
-                        className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors first:rounded-t-md last:rounded-b-md'
-                        onClick={() => {
-                          addVisibleAddressRecord(key)
-                          setAddRecordOpen(false)
-                        }}
+                        className='absolute inset-0 top-2/3 flex cursor-pointer items-center justify-center bg-black/50 transition-opacity hover:opacity-80'
+                        onClick={() => setImageUploadTarget('avatar')}
                       >
-                        {ADDRESS_LABELS[key] || key.toUpperCase()}
+                        <Image
+                          src={records.avatar ? PencilIcon : PlusIcon}
+                          alt='Edit avatar'
+                          width={14}
+                          height={14}
+                          className='invert'
+                        />
                       </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Spacer for avatar overlap */}
+                <div className='h-6' />
+
+                {/* Text records */}
+                <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                  <Textarea
+                    label='Short Bio'
+                    value={records.description || ''}
+                    onChange={(e) => setRecord('description', e.target.value)}
+                    placeholder='Tell us about yourself...'
+                  />
+                  <Input
+                    label='Status'
+                    value={records.status || ''}
+                    onChange={(e) => setRecord('status', e.target.value)}
+                    placeholder='What are you up to?'
+                  />
+                  <Input
+                    label='Location'
+                    value={records.location || ''}
+                    onChange={(e) => setRecord('location', e.target.value)}
+                    placeholder='Where are you based?'
+                  />
+                  <Input
+                    label='Website'
+                    value={records.url || ''}
+                    onChange={(e) => setRecord('url', e.target.value)}
+                    placeholder='https://yoursite.com'
+                  />
+                  <Input
+                    label='Email'
+                    value={records.email || ''}
+                    onChange={(e) => setRecord('email', e.target.value)}
+                    placeholder='you@example.com'
+                  />
+                </div>
+
+                {/* Social records - 2x2 grid */}
+                <div className='grid grid-cols-2 gap-3 px-4 sm:px-6'>
+                  {SOCIAL_RECORDS.map((social) => (
+                    <div key={social.key} className='flex'>
+                      <div className='bg-background border-tertiary flex h-12 min-w-[48px] items-center justify-center rounded-l-md border border-r-0'>
+                        <Image src={social.icon} alt={social.label} width={20} height={20} />
+                      </div>
+                      <input
+                        type='text'
+                        value={records[social.key] || ''}
+                        onChange={(e) => setRecord(social.key, e.target.value)}
+                        className='bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center rounded-r-md border px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
+                        placeholder={social.placeholder}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Address records */}
+                {visibleAddressRecords.size > 0 && (
+                  <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                    <h3 className='text-neutral text-lg font-semibold'>Address Records</h3>
+                    {Array.from(visibleAddressRecords).map((key) => (
+                      <Input
+                        key={key}
+                        label={ADDRESS_LABELS[key] || key.toUpperCase()}
+                        value={addressRecords[key] || ''}
+                        onChange={(e) => setAddressRecord(key, e.target.value)}
+                        placeholder={`${ADDRESS_LABELS[key] || key.toUpperCase()} address`}
+                      />
                     ))}
                   </div>
                 )}
-              </div>
-            )}
-          </div>
 
-          {/* Footer - fixed at bottom */}
-          <div className='border-tertiary flex flex-col gap-2 border-t p-4 sm:px-6'>
-            {step === 'error' && errorMessage && (
-              <p className='text-md mb-1 font-medium text-red-400'>{errorMessage}</p>
-            )}
-            {step === 'success' && (
-              <p className='text-md mb-1 font-medium text-green-400'>Records updated successfully!</p>
-            )}
-            <PrimaryButton
-              className='w-full'
-              onClick={saveRecords}
-              disabled={!hasChanges || step === 'confirming' || step === 'processing'}
-            >
-              {step === 'confirming'
-                ? 'Confirm in wallet...'
-                : step === 'processing'
-                  ? 'Processing...'
-                  : step === 'success'
-                    ? 'Done'
-                    : 'Save'}
-            </PrimaryButton>
-            <SecondaryButton className='w-full' onClick={handleClose} disabled={step === 'processing'}>
-              {step === 'success' ? 'Close' : 'Cancel'}
-            </SecondaryButton>
-          </div>
+                {/* Add Record button */}
+                {hiddenAddressRecords.length > 0 && (
+                  <div className='relative max-w-full px-4 sm:px-6' ref={clickAwayRecordRef}>
+                    <button
+                      className='border-tertiary hover:bg-tertiary focus:bg-tertiary flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-2 px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
+                      onClick={() => setAddRecordOpen(!addRecordOpen)}
+                    >
+                      <Image src={PlusIcon} alt='Add' width={16} height={16} className='invert' />
+                      Add Record
+                    </button>
+
+                    {addRecordOpen && (
+                      <div className='bg-secondary border-tertiary absolute bottom-12 z-10 mb-1 flex w-[calc(100%-48px)] flex-col rounded-md border shadow-lg'>
+                        {hiddenAddressRecords.map((key) => (
+                          <button
+                            key={key}
+                            className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors first:rounded-t-md last:rounded-b-md'
+                            onClick={() => {
+                              addVisibleAddressRecord(key)
+                              setAddRecordOpen(false)
+                            }}
+                          >
+                            {ADDRESS_LABELS[key] || key.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className='border-tertiary flex flex-col gap-2 border-t p-4 sm:px-6'>
+                <PrimaryButton className='w-full' onClick={saveRecords} disabled={!hasChanges}>
+                  Save
+                </PrimaryButton>
+                <SecondaryButton className='w-full' onClick={handleClose}>
+                  Close
+                </SecondaryButton>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -264,6 +336,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
         <ImageUploadModal
           name={name}
           imageType={imageUploadTarget}
+          currentValue={records[imageUploadTarget] || ''}
           onSave={handleImageSave}
           onClose={() => setImageUploadTarget(null)}
         />

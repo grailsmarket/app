@@ -50,7 +50,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
         <SourceIcon source={listing.source} />
         <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='max-w-[calc(100%-60px)] truncate'>
-          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(listing.name)}</p>
+          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(listing.name)}</p>
           {listing.clubs && listing.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
@@ -99,7 +99,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
         <SourceIcon source={offer.source} />
         <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
-          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(offer.name)}</p>
+          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(offer.name)}</p>
           {offer.clubs && offer.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
@@ -151,7 +151,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
         <SourceIcon source={sale.source} />
         <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
-          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(sale.name)}</p>
+          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(sale.name)}</p>
           {sale.clubs && sale.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
@@ -206,7 +206,7 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <NameImage name={registration.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-34px)] truncate'>
-          <p className='text-md truncate max-w-full font-semibold'>{beautifyName(registration.name)}</p>
+          <p className='text-md max-w-full truncate font-semibold'>{beautifyName(registration.name)}</p>
           {registration.clubs && registration.clubs.length > 0 && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image

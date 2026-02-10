@@ -36,15 +36,15 @@ const Registrations = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {registrationsLoading
           ? new Array(7).fill(null).map((_, index) => (
-            <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
-              <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
-            </div>
-          ))
+              <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+                <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
+              </div>
+            ))
           : registrationsData?.data?.results?.map((registration, index) => (
-            <div key={registration.id}>
-              <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
-            </div>
-          ))}
+              <div key={registration.id}>
+                <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
+              </div>
+            ))}
       </div>
     </div>
   )

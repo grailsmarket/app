@@ -28,6 +28,8 @@ import RegistrationModal from '@/components/modal/registration/registrationModal
 import ShareModal from '@/components/modal/share/shareModal'
 import { selectShareModal, setShareModalOpen } from '@/state/reducers/modals/shareModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
+import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
+import ListSettings from '@/components/modal/list-settings'
 
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
@@ -70,6 +72,7 @@ const Modals: React.FC = () => {
     categories: shareModalCategories,
   } = useAppSelector(selectShareModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
+  const { open: listSettingsModalOpen, user: listSettingsModalUser, list: listSettingsModalList } = useAppSelector(selectListSettingsModal)
 
   return (
     <div>
@@ -138,6 +141,7 @@ const Modals: React.FC = () => {
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
+      {listSettingsModalOpen && listSettingsModalUser && listSettingsModalList && <ListSettings onClose={() => dispatch(setListSettingsModalOpen(false))} profile={listSettingsModalUser} selectedList={listSettingsModalList} />}
     </div>
   )
 }

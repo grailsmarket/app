@@ -7,6 +7,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string
   hideLabel?: boolean
   labelClassName?: string
+  disabled?: boolean
 }
 
 const Input: React.FC<InputProps> = ({
@@ -21,6 +22,7 @@ const Input: React.FC<InputProps> = ({
   max,
   hideLabel = false,
   labelClassName,
+  disabled = false,
 }) => {
   return (
     <div className={cn('w-full', className)}>
@@ -44,12 +46,14 @@ const Input: React.FC<InputProps> = ({
           onChange={onChange}
           className={cn(
             'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
-            hideLabel && 'rounded-md'
+            hideLabel && 'rounded-md',
+            disabled && 'opacity-50 cursor-not-allowed'
           )}
           placeholder={placeholder}
           step={step}
           min={min}
           max={max}
+          disabled={disabled}
         />
       </div>
     </div>

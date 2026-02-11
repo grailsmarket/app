@@ -35,11 +35,13 @@ const SettingsInput: React.FC<SettingsInputProps> = ({
     queryKey: ['ens metadata', isAddress(value) ? value : resolvedAddress],
     queryFn: async () => {
       const account = await fetchAccount((isAddress(value) ? value : resolvedAddress) as Address)
-      return account?.ens || {
-        name: null,
-        avatar: null,
-      }
-    }
+      return (
+        account?.ens || {
+          name: null,
+          avatar: null,
+        }
+      )
+    },
   })
 
   return (
@@ -82,7 +84,7 @@ const SettingsInput: React.FC<SettingsInputProps> = ({
                 style={{ height: '26px', width: '26px' }}
                 src={resolvedProfile?.avatar}
               />
-              <p className='truncate font-semibold text-lg'>
+              <p className='truncate text-lg font-semibold'>
                 {value.includes('.')
                   ? resolvedAddress && resolvedAddress?.length > 0
                     ? resolvedAddress

@@ -59,10 +59,10 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                 e.stopPropagation()
                 const metadataRecord = fetchedMetadata
                   ? (Object.fromEntries(
-                    Object.entries(fetchedMetadata).filter(
-                      ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
-                    )
-                  ) as Record<string, string>)
+                      Object.entries(fetchedMetadata).filter(
+                        ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
+                      )
+                    ) as Record<string, string>)
                   : null
                 dispatch(setEditRecordsModalName(name))
                 dispatch(setEditRecordsModalMetadata(metadataRecord))
@@ -92,10 +92,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
         ) : metadata.length > 0 ? (
           <div className='grid grid-cols-2 gap-4'>
             {metadata.find((row) => row.label === 'avatar') && (
-              <div
-                key='avatar'
-                className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'
-              >
+              <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
                   src={`https://metadata.ens.domains/mainnet/avatar/${name}`}
                   alt='Avatar'
@@ -109,10 +106,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
               </div>
             )}
             {metadata.find((row) => row.label === 'header') && (
-              <div
-                key='header'
-                className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'
-              >
+              <div key='header' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
                   src={`https://metadata.ens.domains/mainnet/header/${name}`}
                   alt='Header'
@@ -125,21 +119,23 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                 <p className='text-neutral text-lg font-medium'>header</p>
               </div>
             )}
-            {metadata.filter((row) => row.label !== 'avatar' && row.label !== 'header').map((row) => {
-              return (
-                <div
-                  key={row.label}
-                  className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'
-                >
-                  {row.canCopy && typeof row.value === 'string' ? (
-                    <CopyValue value={row.value} canCopy={row.canCopy} />
-                  ) : (
-                    <div className='text-xl font-medium'>{row.value}</div>
-                  )}
-                  <p className='text-neutral text-lg font-medium'>{row.label}</p>
-                </div>
-              )
-            })}
+            {metadata
+              .filter((row) => row.label !== 'avatar' && row.label !== 'header')
+              .map((row) => {
+                return (
+                  <div
+                    key={row.label}
+                    className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'
+                  >
+                    {row.canCopy && typeof row.value === 'string' ? (
+                      <CopyValue value={row.value} canCopy={row.canCopy} />
+                    ) : (
+                      <div className='text-xl font-medium'>{row.value}</div>
+                    )}
+                    <p className='text-neutral text-lg font-medium'>{row.label}</p>
+                  </div>
+                )
+              })}
           </div>
         ) : (
           <div className='text-neutral pb-2 text-center text-xl font-medium'>No records found</div>

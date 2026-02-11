@@ -94,17 +94,13 @@ const ListSettings: React.FC<ListSettingsProps> = ({ selectedList, onClose, prof
       >
         <div className='flex w-full items-center justify-between px-3'>
           <div className='flex cursor-pointer items-center gap-2'>
-            <h3 className='text-4xl font-bold'>
-              List #{selectedList}
-            </h3>
+            <h3 className='text-4xl font-bold'>List #{selectedList}</h3>
           </div>
           {roles?.isOwner && isOwner && (
             <button
               className={cn(
-                'hover text-text flex items-center gap-2 rounded-sm bg-red-400 py-1.5 px-lg font-semibold transition-all',
-                isEditingSettings
-                  ? 'cursor-pointer hover:bg-red-400 hover:opacity-80'
-                  : 'cursor-not-allowed opacity-60'
+                'hover text-text px-lg flex items-center gap-2 rounded-sm bg-red-400 py-1.5 font-semibold transition-all',
+                isEditingSettings ? 'cursor-pointer hover:bg-red-400 hover:opacity-80' : 'cursor-not-allowed opacity-60'
               )}
               onClick={() => {
                 if (isEditingSettings) setIsResetSlotWarningOpen(true)
@@ -154,12 +150,26 @@ const ListSettings: React.FC<ListSettingsProps> = ({ selectedList, onClose, prof
                 <LoadingCell height='24px' width='100%' radius='4px' />
               ) : (
                 <div className='flex items-center gap-2'>
-                  {chain && <Image src={(chain as ChainWithDetails)?.iconUrl as string} alt={(chain as ChainWithDetails)?.name} width={24} height={24} className={'h-5 w-5 rounded-sm'} />}
+                  {chain && (
+                    <Image
+                      src={(chain as ChainWithDetails)?.iconUrl as string}
+                      alt={(chain as ChainWithDetails)?.name}
+                      width={24}
+                      height={24}
+                      className={'h-5 w-5 rounded-sm'}
+                    />
+                  )}
                   <p className='truncate font-bold sm:text-lg'>{chain?.name}</p>
                 </div>
               )}
               {isEditingSettings ? (
-                <Image src='/icons/arrow-down.svg' alt='Arrow down' width={24} height={24} className={`${chainDropdownOpen ? 'rotate-180' : ''} h-5 w-5 transition-transform`} />
+                <Image
+                  src='/icons/arrow-down.svg'
+                  alt='Arrow down'
+                  width={24}
+                  height={24}
+                  className={`${chainDropdownOpen ? 'rotate-180' : ''} h-5 w-5 transition-transform`}
+                />
               ) : (
                 <div />
               )}
@@ -180,7 +190,13 @@ const ListSettings: React.FC<ListSettingsProps> = ({ selectedList, onClose, prof
                     }}
                     className='hover:bg-neutral/20 flex w-full cursor-pointer items-center gap-3 rounded-sm p-3'
                   >
-                    <Image src={item.iconUrl as string} alt={item.name} width={24} height={24} className={'h-5 w-5 sm:h-6 sm:w-6'} />
+                    <Image
+                      src={item.iconUrl as string}
+                      alt={item.name}
+                      width={24}
+                      height={24}
+                      className={'h-5 w-5 sm:h-6 sm:w-6'}
+                    />
                     <p className='truncate font-bold sm:text-lg'>{item?.name}</p>
                   </div>
                 ))}
@@ -238,10 +254,7 @@ const ListSettings: React.FC<ListSettingsProps> = ({ selectedList, onClose, prof
                 </PrimaryButton>
               </div>
             ) : (
-              <SecondaryButton
-                onClick={() => setIsEditingSettings(true)}
-                className='w-full'
-              >
+              <SecondaryButton onClick={() => setIsEditingSettings(true)} className='w-full'>
                 Edit settings
               </SecondaryButton>
             )

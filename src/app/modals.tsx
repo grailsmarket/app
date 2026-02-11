@@ -79,7 +79,11 @@ const Modals: React.FC = () => {
     metadata: editRecordsModalMetadata,
   } = useAppSelector(selectEditRecordsModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
-  const { open: listSettingsModalOpen, user: listSettingsModalUser, list: listSettingsModalList } = useAppSelector(selectListSettingsModal)
+  const {
+    open: listSettingsModalOpen,
+    user: listSettingsModalUser,
+    list: listSettingsModalList,
+  } = useAppSelector(selectListSettingsModal)
 
   return (
     <div>
@@ -155,7 +159,13 @@ const Modals: React.FC = () => {
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
-      {listSettingsModalOpen && listSettingsModalUser && listSettingsModalList && <ListSettings onClose={() => dispatch(setListSettingsModalOpen(false))} profile={listSettingsModalUser} selectedList={listSettingsModalList} />}
+      {listSettingsModalOpen && listSettingsModalUser && listSettingsModalList && (
+        <ListSettings
+          onClose={() => dispatch(setListSettingsModalOpen(false))}
+          profile={listSettingsModalUser}
+          selectedList={listSettingsModalList}
+        />
+      )}
     </div>
   )
 }

@@ -29,14 +29,14 @@ const Input: React.FC<InputProps> = ({
       <div className='flex'>
         {/* Label section */}
         {!hideLabel && (
-          <div
+          <p
             className={cn(
-              'bg-background border-tertiary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3',
+              'bg-background border-tertiary flex min-h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3 text-lg font-semibold',
               labelClassName
             )}
           >
-            <span className='text-lg font-semibold text-nowrap'>{label}</span>
-          </div>
+            {label}
+          </p>
         )}
 
         {/* Input section */}
@@ -45,9 +45,9 @@ const Input: React.FC<InputProps> = ({
           value={value}
           onChange={onChange}
           className={cn(
-            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
             hideLabel && 'rounded-md',
-            disabled && 'opacity-50 cursor-not-allowed'
+            disabled && 'cursor-not-allowed opacity-50'
           )}
           placeholder={placeholder}
           step={step}

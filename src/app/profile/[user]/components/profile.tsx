@@ -2,13 +2,23 @@
 
 import React, { useState } from 'react'
 import { Address } from 'viem'
-import { fetchProfileDetails, FollowersAndFollowing, FullWidthProfile, ProfileTabType, useIsClient } from 'ethereum-identity-kit'
+import {
+  fetchProfileDetails,
+  FollowersAndFollowing,
+  FullWidthProfile,
+  ProfileTabType,
+  useIsClient,
+} from 'ethereum-identity-kit'
 import MainPanel from './main-panel'
 import { useUserContext } from '@/context/user'
 import { useQuery } from '@tanstack/react-query'
 import { getPoap } from '@/api/user/getPoap'
 import Details from './details'
-import { setListSettingsModalList, setListSettingsModalOpen, setListSettingsModalUser } from '@/state/reducers/modals/listSettingsModal'
+import {
+  setListSettingsModalList,
+  setListSettingsModalOpen,
+  setListSettingsModalUser,
+} from '@/state/reducers/modals/listSettingsModal'
 import { useAppDispatch } from '@/state/hooks'
 
 interface Props {
@@ -83,13 +93,13 @@ const Profile: React.FC<Props> = ({ user }) => {
                   hideSocials: ['grails'],
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
-                      eventId: badge.event.id.toString(),
-                      participated: true,
-                      collection: badge,
-                    }))
+                        eventId: badge.event.id.toString(),
+                        participated: true,
+                        collection: badge,
+                      }))
                     : undefined,
                 }}
-              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
               <Details user={user} />
             </>

@@ -23,7 +23,7 @@ const TEXT_RECORD_KEYS = [
   'header',
 ] as const
 
-const ADDRESS_RECORD_KEYS = ['eth', 'btc', 'sol', 'doge'] as const
+const ADDRESS_RECORD_KEYS = ['eth', 'btc'] as const
 
 const COIN_TYPES: Record<string, number> = {
   eth: 60,
@@ -51,6 +51,11 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     doge: '',
   })
   const [visibleAddressRecords, setVisibleAddressRecords] = useState<Set<string>>(new Set())
+
+  // Custom records state (any metadata key not in TEXT_RECORD_KEYS or ADDRESS_RECORD_KEYS)
+  const [customRecords, setCustomRecords] = useState<Record<string, string>>({})
+  const [initialCustomRecords, setInitialCustomRecords] = useState<Record<string, string>>({})
+  const [visibleCustomRecords, setVisibleCustomRecords] = useState<Set<string>>(new Set())
 
   // UI state
   const [step, setStep] = useState<EditStep>('editing')
@@ -80,6 +85,20 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setAddressRecords(addrRecs)
     setInitialAddressRecords(addrRecs)
     setVisibleAddressRecords(visible)
+
+    // Custom records: any key not in predefined sets
+    const knownKeys = new Set<string>([...TEXT_RECORD_KEYS, ...ADDRESS_RECORD_KEYS, 'resolverAddress'])
+    const customRecs: Record<string, string> = {}
+    const visibleCustom = new Set<string>()
+    for (const [key, value] of Object.entries(metadata)) {
+      if (!knownKeys.has(key) && typeof value === 'string') {
+        customRecs[key] = value
+        visibleCustom.add(key)
+      }
+    }
+    setCustomRecords(customRecs)
+    setInitialCustomRecords(customRecs)
+    setVisibleCustomRecords(visibleCustom)
   }, [metadata])
 
   // Resolve the resolver address
@@ -116,8 +135,13 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     for (const key of ADDRESS_RECORD_KEYS) {
       if ((addressRecords[key] || '') !== (initialAddressRecords[key] || '')) return true
     }
+    // Check custom records (includes both edits and deletions)
+    const allCustomKeys = new Set([...Object.keys(customRecords), ...Object.keys(initialCustomRecords)])
+    for (const key of allCustomKeys) {
+      if ((customRecords[key] ?? '') !== (initialCustomRecords[key] ?? '')) return true
+    }
     return false
-  }, [records, initialRecords, addressRecords, initialAddressRecords])
+  }, [records, initialRecords, addressRecords, initialAddressRecords, customRecords, initialCustomRecords])
 
   // Update text record
   const setRecord = useCallback((key: string, value: string) => {
@@ -138,6 +162,31 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const hiddenAddressRecords = useMemo(() => {
     return ADDRESS_RECORD_KEYS.filter((key) => !visibleAddressRecords.has(key))
   }, [visibleAddressRecords])
+
+  // Custom record functions
+  const setCustomRecord = useCallback((key: string, value: string) => {
+    setCustomRecords((prev) => ({ ...prev, [key]: value }))
+  }, [])
+
+  const addCustomRecord = useCallback((key: string) => {
+    setCustomRecords((prev) => ({ ...prev, [key]: '' }))
+    setVisibleCustomRecords((prev) => new Set([...prev, key]))
+  }, [])
+
+  const removeCustomRecord = useCallback((key: string) => {
+    setVisibleCustomRecords((prev) => {
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
+    // Set value to '' so it gets saved as a deletion if it existed before
+    setCustomRecords((prev) => ({ ...prev, [key]: '' }))
+  }, [])
+
+  // Visible custom record keys (ordered)
+  const visibleCustomRecordKeys = useMemo(() => {
+    return Array.from(visibleCustomRecords)
+  }, [visibleCustomRecords])
 
   // Save all changed records
   const saveRecords = useCallback(async () => {
@@ -197,6 +246,22 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         }
       }
 
+      // Encode changed custom records (includes deletions where value is '')
+      const allCustomKeys = new Set([...Object.keys(customRecords), ...Object.keys(initialCustomRecords)])
+      for (const key of allCustomKeys) {
+        const current = customRecords[key] ?? ''
+        const initial = initialCustomRecords[key] ?? ''
+        if (current !== initial) {
+          calls.push(
+            encodeFunctionData({
+              abi: PublicResolverAbi,
+              functionName: 'setText',
+              args: [node, key, current],
+            })
+          )
+        }
+      }
+
       if (calls.length === 0) return
 
       const hash = await walletClient.writeContract({
@@ -230,6 +295,8 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     initialRecords,
     addressRecords,
     initialAddressRecords,
+    customRecords,
+    initialCustomRecords,
     queryClient,
   ])
 
@@ -248,6 +315,11 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     visibleAddressRecords,
     addVisibleAddressRecord,
     hiddenAddressRecords,
+    customRecords,
+    setCustomRecord,
+    addCustomRecord,
+    removeCustomRecord,
+    visibleCustomRecordKeys,
     step,
     setStep,
     imageUploadTarget,

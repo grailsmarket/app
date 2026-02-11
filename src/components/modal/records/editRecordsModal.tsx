@@ -11,6 +11,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PencilIcon from 'public/icons/pencil.svg'
 import PlusIcon from 'public/icons/plus.svg'
+import CrossIcon from 'public/icons/cross.svg'
 import XLogo from 'public/logos/x.svg'
 import GithubLogo from 'public/logos/github.svg'
 import TelegramLogo from 'public/logos/telegram.svg'
@@ -33,8 +34,8 @@ const SOCIAL_RECORDS = [
 const ADDRESS_LABELS: Record<string, string> = {
   eth: 'ETH',
   btc: 'BTC',
-  sol: 'SOL',
-  doge: 'DOGE',
+  // sol: 'SOL',
+  // doge: 'DOGE',
 }
 
 const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onClose }) => {
@@ -46,6 +47,11 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
     visibleAddressRecords,
     addVisibleAddressRecord,
     hiddenAddressRecords,
+    customRecords,
+    setCustomRecord,
+    addCustomRecord,
+    removeCustomRecord,
+    visibleCustomRecordKeys,
     step,
     imageUploadTarget,
     setImageUploadTarget,
@@ -57,7 +63,13 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
   } = useEditRecords(name, metadata)
 
   const [addRecordOpen, setAddRecordOpen] = useState(false)
-  const clickAwayRecordRef = useClickAway<HTMLDivElement>(() => setAddRecordOpen(false))
+  const [customKeyInput, setCustomKeyInput] = useState('')
+  const [isAddingCustomKey, setIsAddingCustomKey] = useState(false)
+  const clickAwayRecordRef = useClickAway<HTMLDivElement>(() => {
+    setAddRecordOpen(false)
+    setIsAddingCustomKey(false)
+    setCustomKeyInput('')
+  })
 
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
@@ -215,11 +227,8 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
                   </div>
                 </div>
 
-                {/* Spacer for avatar overlap */}
-                <div className='h-6' />
-
                 {/* Text records */}
-                <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                <div className='mt-8 flex flex-col gap-3 px-4 sm:px-6'>
                   <Textarea
                     label='Short Bio'
                     value={records.description || ''}
@@ -286,35 +295,98 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
                   </div>
                 )}
 
-                {/* Add Record button */}
-                {hiddenAddressRecords.length > 0 && (
-                  <div className='relative max-w-full px-4 sm:px-6' ref={clickAwayRecordRef}>
-                    <button
-                      className='border-tertiary hover:bg-tertiary focus:bg-tertiary flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-2 px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
-                      onClick={() => setAddRecordOpen(!addRecordOpen)}
-                    >
-                      <Image src={PlusIcon} alt='Add' width={16} height={16} className='invert' />
-                      Add Record
-                    </button>
-
-                    {addRecordOpen && (
-                      <div className='bg-secondary border-tertiary absolute bottom-12 z-10 mb-1 flex w-[calc(100%-48px)] flex-col rounded-md border shadow-lg'>
-                        {hiddenAddressRecords.map((key) => (
-                          <button
-                            key={key}
-                            className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors first:rounded-t-md last:rounded-b-md'
-                            onClick={() => {
-                              addVisibleAddressRecord(key)
-                              setAddRecordOpen(false)
-                            }}
-                          >
-                            {ADDRESS_LABELS[key] || key.toUpperCase()}
-                          </button>
-                        ))}
+                {/* Custom records */}
+                {visibleCustomRecordKeys.length > 0 && (
+                  <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                    {visibleCustomRecordKeys.map((key) => (
+                      <div key={key} className='flex items-center gap-1'>
+                        <Input
+                          label={key}
+                          value={customRecords[key] || ''}
+                          onChange={(e) => setCustomRecord(key, e.target.value)}
+                          placeholder={`Value for ${key}`}
+                          className='flex-1'
+                          labelClassName='w-[128px] max-w-[128px] break-all block py-3'
+                        />
+                        <button
+                          className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
+                          onClick={() => removeCustomRecord(key)}
+                        >
+                          <Image src={CrossIcon} alt='Remove' width={14} height={14} />
+                        </button>
                       </div>
-                    )}
+                    ))}
                   </div>
                 )}
+
+                {/* Add Record button */}
+                <div className='relative max-w-full px-4 sm:px-6' ref={clickAwayRecordRef}>
+                  <button
+                    className='border-tertiary hover:bg-tertiary focus:bg-tertiary flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-2 px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
+                    onClick={() => setAddRecordOpen(!addRecordOpen)}
+                  >
+                    <Image src={PlusIcon} alt='Add' width={16} height={16} className='invert' />
+                    Add Record
+                  </button>
+
+                  {addRecordOpen && (
+                    <div className='bg-secondary border-tertiary absolute bottom-12 z-10 mb-1 flex w-[calc(100%-48px)] flex-col rounded-md border shadow-lg'>
+                      {hiddenAddressRecords.map((key) => (
+                        <button
+                          key={key}
+                          className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors first:rounded-t-md last:rounded-b-md'
+                          onClick={() => {
+                            addVisibleAddressRecord(key)
+                            setAddRecordOpen(false)
+                          }}
+                        >
+                          {ADDRESS_LABELS[key] || key.toUpperCase()}
+                        </button>
+                      ))}
+                      {isAddingCustomKey ? (
+                        <div className='flex items-center gap-1 px-3 py-2'>
+                          <input
+                            type='text'
+                            value={customKeyInput}
+                            onChange={(e) => setCustomKeyInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && customKeyInput.trim()) {
+                                addCustomRecord(customKeyInput.trim())
+                                setCustomKeyInput('')
+                                setIsAddingCustomKey(false)
+                                setAddRecordOpen(false)
+                              }
+                            }}
+                            className='bg-tertiary flex-1 rounded-md px-3 py-1.5 text-lg font-semibold focus:outline-none'
+                            placeholder='Record key...'
+                            autoFocus
+                          />
+                          <button
+                            className='bg-primary text-background rounded-md px-3 py-1.5 text-lg font-semibold disabled:opacity-50'
+                            disabled={!customKeyInput.trim()}
+                            onClick={() => {
+                              if (customKeyInput.trim()) {
+                                addCustomRecord(customKeyInput.trim())
+                                setCustomKeyInput('')
+                                setIsAddingCustomKey(false)
+                                setAddRecordOpen(false)
+                              }
+                            }}
+                          >
+                            Add
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors last:rounded-b-md'
+                          onClick={() => setIsAddingCustomKey(true)}
+                        >
+                          Custom Record
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Footer */}

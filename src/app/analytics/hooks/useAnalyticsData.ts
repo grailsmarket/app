@@ -9,10 +9,16 @@ import {
   fetchOffersChart,
   fetchSalesChart,
   fetchVolumeChart,
+  fetchTopRegistrations,
+  fetchRegistrationsChart,
 } from '@/api/analytics'
+import { AnalyticsPeriod, AnalyticsSource } from '@/types/analytics'
 
 interface UseAnalyticsOptions {
   categoryOverride?: string | null
+  periodOverride?: AnalyticsPeriod
+  sourceOverride?: AnalyticsSource
+  limitOverride?: number
 }
 
 export const useTopListings = (options?: UseAnalyticsOptions) => {
@@ -48,6 +54,20 @@ export const useTopSales = (options?: UseAnalyticsOptions) => {
   })
 }
 
+export const useTopRegistrations = (options?: UseAnalyticsOptions) => {
+  const { period: reduxPeriod, source: reduxSource, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
+  const period = options?.periodOverride !== undefined ? options.periodOverride : reduxPeriod
+  const source = options?.sourceOverride !== undefined ? options.sourceOverride : reduxSource
+  const limit = options?.limitOverride !== undefined ? options.limitOverride : 10
+
+  return useQuery({
+    queryKey: ['analytics', 'topRegistrations', period, source, category],
+    queryFn: () => fetchTopRegistrations({ period, source, category, limit }),
+    refetchOnWindowFocus: false,
+  })
+}
+
 export const useListingsChart = (options?: UseAnalyticsOptions) => {
   const { period, category: reduxCategory } = useAppSelector(selectAnalytics)
   const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
@@ -77,6 +97,17 @@ export const useSalesChart = (options?: UseAnalyticsOptions) => {
   return useQuery({
     queryKey: ['analytics', 'salesChart', period, category],
     queryFn: () => fetchSalesChart({ period, category }),
+    refetchOnWindowFocus: false,
+  })
+}
+
+export const useRegistrationsChart = (options?: UseAnalyticsOptions) => {
+  const { period, category: reduxCategory } = useAppSelector(selectAnalytics)
+  const category = options?.categoryOverride !== undefined ? options.categoryOverride : reduxCategory
+
+  return useQuery({
+    queryKey: ['analytics', 'registrationsChart', period, category],
+    queryFn: () => fetchRegistrationsChart({ period, category }),
     refetchOnWindowFocus: false,
   })
 }

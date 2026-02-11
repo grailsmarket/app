@@ -71,6 +71,19 @@ export interface AnalyticsSale {
   clubs: string[] | null
 }
 
+export interface AnalyticsRegistration {
+  id: number
+  name: string
+  registrant_address: string
+  owner_address: string
+  base_cost_wei: string
+  premium_wei: string
+  total_cost_wei: string
+  name_length: number
+  registration_date: string
+  clubs: string[] | null
+}
+
 export interface ChartDataPoint {
   date: string
   total: number
@@ -123,11 +136,44 @@ export interface AnalyticsSalesResponse {
   }
 }
 
+export interface AnalyticsRegistrationsResponse {
+  success: boolean
+  data: {
+    results: AnalyticsRegistration[]
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+      hasPrev: boolean
+    }
+  }
+}
+
 export interface ChartResponse {
   success: boolean
   data: {
     period: string
     club: string | null
     points: ChartDataPoint[]
+  }
+}
+
+export interface AnalyticsRegistrationsChartDataPoint {
+  date: string
+  count: number
+  total_cost_wei: string
+  avg_cost_wei: string
+  total_base_cost_wei: string
+  total_premium_wei: string
+  premium_count: number
+}
+
+export interface AnalyticsRegistrationsChartResponse {
+  success: boolean
+  data: {
+    period: string
+    club: string | null
+    points: AnalyticsRegistrationsChartDataPoint[]
   }
 }

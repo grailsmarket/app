@@ -61,7 +61,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
         <Actions nameDetails={nameDetails} />
       </div>
       <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div className='flex h-fit flex-col gap-1 overflow-hidden sm:gap-4 sm:rounded-lg lg:w-2/5'>
+        <div className='flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg lg:w-2/5'>
           <PrimaryDetails
             name={name}
             nameDetails={nameDetails}

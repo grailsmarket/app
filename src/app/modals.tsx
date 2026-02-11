@@ -30,6 +30,8 @@ import { selectShareModal, setShareModalOpen } from '@/state/reducers/modals/sha
 import EditRecordsModal from '@/components/modal/records/editRecordsModal'
 import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducers/modals/editRecordsModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
+import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
+import ListSettings from '@/components/modal/list-settings'
 
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
@@ -77,6 +79,7 @@ const Modals: React.FC = () => {
     metadata: editRecordsModalMetadata,
   } = useAppSelector(selectEditRecordsModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
+  const { open: listSettingsModalOpen, user: listSettingsModalUser, list: listSettingsModalList } = useAppSelector(selectListSettingsModal)
 
   return (
     <div>
@@ -152,6 +155,7 @@ const Modals: React.FC = () => {
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
+      {listSettingsModalOpen && listSettingsModalUser && listSettingsModalList && <ListSettings onClose={() => dispatch(setListSettingsModalOpen(false))} profile={listSettingsModalUser} selectedList={listSettingsModalList} />}
     </div>
   )
 }

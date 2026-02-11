@@ -141,7 +141,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
             />
             {listing.broker_address && listing.broker_fee_bps && (
               <Tooltip
-                label={`${brokerAccount?.ens.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(listing.broker_address)} - ${listing.broker_fee_bps / 100}%`}
+                label={`${brokerAccount?.ens?.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(listing.broker_address)} - ${listing.broker_fee_bps / 100}%`}
                 position='top'
                 align='left'
               >

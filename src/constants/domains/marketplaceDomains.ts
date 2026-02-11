@@ -181,4 +181,8 @@ export const CATEGORY_LABELS = {
   personas: 'Personas',
   ai_words: 'AI Words',
   instruments: 'Musical Instruments',
+  catholicism: 'Catholicism',
+  crayola_classic: 'Crayola Classic',
+  holidays: 'Holidays',
+  paranormal: 'Paranormal',
 } as const

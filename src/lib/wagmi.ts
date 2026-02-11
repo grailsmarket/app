@@ -59,7 +59,7 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   {
     ...mainnet,
     iconBackground: 'bg-zinc-300',
-    iconUrl: '/assets/icons/chains/ethereum.svg',
+    iconUrl: '/chains/ethereum.svg',
     custom: {
       chainDetail: '',
       gasFeeDetail: 'High gas fees',
@@ -77,7 +77,7 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   },
   {
     ...base,
-    iconUrl: '/assets/icons/chains/base.svg',
+    iconUrl: '/chains/base.svg',
     custom: {
       chainDetail: 'Ethereum L2',
       gasFeeDetail: 'Super Low gas fees',
@@ -95,7 +95,7 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   },
   {
     ...optimism,
-    iconUrl: '/assets/icons/chains/optimism.svg',
+    iconUrl: '/chains/optimism.svg',
     custom: {
       chainDetail: 'Ethereum L2',
       gasFeeDetail: 'Low gas fees',
@@ -113,6 +113,40 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   },
 ]
 
+export const transports = {
+  [mainnet.id]: fallback([
+    http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_MAINNET_ALCHEMY_ID}`, {
+      batch: true,
+    }),
+    http(`https://smart-cosmological-telescope.quiknode.pro/${process.env.NEXT_PUBLIC_QUICKNODE_ID}`, {
+      batch: true,
+    }),
+    http('https://eth.llamarpc.com', {
+      batch: true,
+    }),
+  ]),
+  [optimism.id]: fallback([
+    http(`https://opt-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_OPTIMISM_ALCHEMY_ID}`, {
+      batch: true,
+    }),
+    http(`https://smart-cosmological-telescope.optimism.quiknode.pro/${process.env.NEXT_PUBLIC_QUICKNODE_ID}`, {
+      batch: true,
+    }),
+    http(`https://mainnet.optimism.io`, {
+      batch: true,
+    }),
+  ]),
+  [base.id]: fallback([
+    http(`https://base-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_BASE_ALCHEMY_ID}`, {
+      batch: true,
+    }),
+    http(`https://smart-cosmological-telescope.base-mainnet.quiknode.pro/${process.env.NEXT_PUBLIC_QUICKNODE_ID}`, {
+      batch: true,
+    }),
+    http('https://mainnet.base.org/', { batch: true }),
+  ]),
+}
+
 const config = createConfig({
   ssr: true,
   connectors: [...connectors, safe()],
@@ -120,39 +154,7 @@ const config = createConfig({
   storage: createStorage({
     storage: cookieStorage,
   }),
-  transports: {
-    [mainnet.id]: fallback([
-      http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_MAINNET_ALCHEMY_ID}`, {
-        batch: true,
-      }),
-      http(`https://smart-cosmological-telescope.quiknode.pro/${process.env.NEXT_PUBLIC_QUICKNODE_ID}`, {
-        batch: true,
-      }),
-      http('https://eth.llamarpc.com', {
-        batch: true,
-      }),
-    ]),
-    [optimism.id]: fallback([
-      http(`https://opt-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_OPTIMISM_ALCHEMY_ID}`, {
-        batch: true,
-      }),
-      http(`https://smart-cosmological-telescope.optimism.quiknode.pro/${process.env.NEXT_PUBLIC_QUICKNODE_ID}`, {
-        batch: true,
-      }),
-      http(`https://mainnet.optimism.io`, {
-        batch: true,
-      }),
-    ]),
-    [base.id]: fallback([
-      http(`https://base-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_BASE_ALCHEMY_ID}`, {
-        batch: true,
-      }),
-      http(`https://smart-cosmological-telescope.base-mainnet.quiknode.pro/${process.env.NEXT_PUBLIC_QUICKNODE_ID}`, {
-        batch: true,
-      }),
-      http('https://mainnet.base.org/', { batch: true }),
-    ]),
-  },
+  transports 
 })
 
 export default config

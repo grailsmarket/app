@@ -297,16 +297,16 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               />
               {account?.address && !isResolving && (
                 <div key={account.address} className='flex items-center gap-2'>
-                  {account.ens.avatar && (
+                  {account.ens?.avatar && (
                     <Avatar
                       address={account.address}
-                      src={account.ens.avatar}
-                      name={account.ens.name}
+                      src={account.ens?.avatar}
+                      name={account.ens?.name}
                       style={{ width: '24px', height: '24px' }}
                     />
                   )}
                   <p className='text-md text-neutral max-w-full truncate pt-0.5 font-medium'>
-                    {isAddress(recipientInput) ? account.ens.name : account.address}
+                    {isAddress(recipientInput) ? account.ens?.name : account.address}
                   </p>
                 </div>
               )}
@@ -415,7 +415,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
                 <Check className='text-background h-6 w-6' />
               </div>
               <p className='text-center text-lg font-medium'>
-                Transfer of {formatDomainsText()} to {account?.ens.name || formatAddress(account?.address ?? '')} was
+                Transfer of {formatDomainsText()} to {account?.ens?.name || formatAddress(account?.address ?? '')} was
                 successful!
               </p>
               {txHash && (

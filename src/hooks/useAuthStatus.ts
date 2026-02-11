@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
@@ -22,6 +22,19 @@ export const useAuth = () => {
   const dispatch = useAppDispatch()
   const { disconnect } = useDisconnect()
 
+  // Tracks whether the user has interacted with the page.
+  // Auto-connect happens on load without interaction; manual connect requires
+  // a click/tap on "Connect Wallet" which fires pointerdown first.
+  const hasUserInteracted = useRef(false)
+
+  useEffect(() => {
+    const handler = () => {
+      hasUserInteracted.current = true
+    }
+    window.addEventListener('pointerdown', handler)
+    return () => window.removeEventListener('pointerdown', handler)
+  }, [])
+
   const {
     data: authStatus,
     isLoading: authStatusIsLoading,
@@ -44,14 +57,14 @@ export const useAuth = () => {
 
       // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
       // check if the token exists, since auth verification fialed, the user should be disconnected
-      const token = document.cookie
-        .split(';')
-        .find((cookie) => cookie.trim().startsWith('token='))
-        ?.split('=')[1]
-      if ((token && token.length > 0) || !currAddress) {
-        disconnect()
-        document.cookie = `token=; path=/; max-age=0;`
-      }
+      // const token = document.cookie
+      //   .split(';')
+      //   .find((cookie) => cookie.trim().startsWith('token='))
+      //   ?.split('=')[1]
+      // if ((token && token.length > 0)) {
+      //   disconnect()
+      //   document.cookie = `token=; path=/; max-age=0;`
+      // }
 
       return 'unauthenticated'
     },
@@ -63,6 +76,17 @@ export const useAuth = () => {
     // refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
 
+  // If the wallet auto-connected (no user interaction) but auth is unauthenticated,
+  // disconnect so the user gets a clean state and can reconnect fresh.
+  // This fixes mobile where a stale WalletConnect session blocks sign-in.
+  useEffect(() => {
+    if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
+      disconnect()
+      document.cookie = `token=; path=/; max-age=0;`
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus])
+
   useEffect(() => {
     if (!address) return
 
@@ -72,9 +96,7 @@ export const useAuth = () => {
       document.cookie = `token=; path=/; max-age=0;`
     }
 
-    refetchAuthStatus()
     setCurrAddress(address)
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])
 

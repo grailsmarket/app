@@ -11,6 +11,7 @@ import ActivityTime from '@/components/ui/activityTime'
 import Image from 'next/image'
 import ExternalLinkIcon from 'public/logos/etherscan.svg'
 import Link from 'next/link'
+import { ETH_ADDRESS } from '@/constants/web3/tokens'
 
 interface ActivityRowProps {
   activity: ActivityType
@@ -47,7 +48,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
     price: (
       <Price
         price={activity.price_wei}
-        currencyAddress={activity.currency_address}
+        currencyAddress={activity.currency_address || ETH_ADDRESS}
         tooltipPosition={index === 0 ? 'bottom' : 'top'}
       />
     ),
@@ -66,7 +67,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   }
 
   return (
-    <div className='group px-md lg:px-lg border-tertiary flex h-[86px] w-full max-w-full flex-row flex-wrap items-center justify-start overflow-x-hidden border-b bg-transparent py-1 transition hover:bg-white/10 sm:h-[60px] sm:flex-nowrap sm:py-0'>
+    <div className='group px-md lg:px-lg border-tertiary flex h-[86px] w-full max-w-full flex-row flex-wrap items-center justify-start border-b bg-transparent py-1 transition hover:bg-white/10 sm:h-[60px] sm:flex-nowrap sm:py-0'>
       {displayedColumns.map((column, index) => (
         <div
           key={column}
@@ -97,7 +98,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           )}
           <Price
             price={activity.price_wei}
-            currencyAddress={activity.currency_address}
+            currencyAddress={activity.currency_address || ETH_ADDRESS}
             tooltipPosition={index === 0 ? 'bottom' : 'top'}
           />
           <div className='flex items-center gap-1 pl-4'>

@@ -274,7 +274,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                 />
                 {domainListing.broker_address && domainListing.broker_fee_bps && (
                   <Tooltip
-                    label={`${brokerAccount?.ens.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(domainListing.broker_address)} - ${domainListing.broker_fee_bps / 100}%`}
+                    label={`${brokerAccount?.ens?.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(domainListing.broker_address)} - ${domainListing.broker_fee_bps / 100}%`}
                     position={index === 0 ? 'bottom' : 'top'}
                     align='left'
                   >

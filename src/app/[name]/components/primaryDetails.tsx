@@ -130,7 +130,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           ) : (
             <div className='flex flex-col items-start gap-0.5'>
               <div className='flex flex-row items-center gap-2'>
-                {nameDetails?.owner && <User address={nameDetails.owner} />}
+                {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
                 {nameDetails?.owner && (
                   <Image
                     src={isOwnerCopied ? CheckIcon : CopyIcon}

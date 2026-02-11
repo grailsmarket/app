@@ -124,7 +124,7 @@ const Price: React.FC<PriceProps> = ({
             />
             {listing.broker_address && listing.broker_fee_bps && (
               <Tooltip
-                label={`${brokerAccount?.ens.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(listing.broker_address)} - ${listing.broker_fee_bps / 100}%`}
+                label={`${brokerAccount?.ens?.name ? beautifyName(brokerAccount?.ens?.name) : truncateAddress(listing.broker_address)} - ${listing.broker_fee_bps / 100}%`}
                 position={index === 0 ? 'bottom' : 'top'}
                 align='left'
               >

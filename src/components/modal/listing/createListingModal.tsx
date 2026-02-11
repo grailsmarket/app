@@ -631,13 +631,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                           <div className='px-md flex items-center gap-1.5'>
                             <Avatar
                               address={brokerAccount.address}
-                              name={brokerAccount.ens.name}
-                              src={brokerAccount.ens.avatar}
+                              name={brokerAccount.ens?.name}
+                              src={brokerAccount.ens?.avatar}
                               style={{ width: 20, height: 20 }}
                             />
                             <p className='text-neutral text-md font-medium'>
-                              {isAddress(brokerAddress) && brokerAccount.ens.name
-                                ? beautifyName(brokerAccount.ens.name)
+                              {isAddress(brokerAddress) && brokerAccount.ens?.name
+                                ? beautifyName(brokerAccount.ens?.name)
                                 : brokerAccount.address || brokerAddress}
                             </p>
                           </div>

@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react'
 import { Address } from 'viem'
-import { FollowersAndFollowing, FullWidthProfile, ProfileTabType, useIsClient } from 'ethereum-identity-kit'
+import { fetchProfileDetails, FollowersAndFollowing, FullWidthProfile, ProfileTabType, useIsClient } from 'ethereum-identity-kit'
 import MainPanel from './main-panel'
 import { useUserContext } from '@/context/user'
 import { useQuery } from '@tanstack/react-query'
 import { getPoap } from '@/api/user/getPoap'
 import Details from './details'
+import { setListSettingsModalList, setListSettingsModalOpen, setListSettingsModalUser } from '@/state/reducers/modals/listSettingsModal'
+import { useAppDispatch } from '@/state/hooks'
 
 interface Props {
   user: Address | string
@@ -18,6 +20,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const [defaultTab, setDefaultTab] = useState<ProfileTabType>('following')
 
   const isClient = useIsClient()
+  const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { data: userPoap } = useQuery({
     queryKey: ['userPoap', user],
@@ -31,6 +34,11 @@ const Profile: React.FC<Props> = ({ user }) => {
       return result
     },
     enabled: !!user,
+  })
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['profile', user, undefined, false, undefined],
+    queryFn: () => (user ? fetchProfileDetails(user) : null),
   })
 
   return (
@@ -66,16 +74,22 @@ const Profile: React.FC<Props> = ({ user }) => {
                 }}
                 extraOptions={{
                   // customPoaps: isPoapClaimed ? [GRAILS_POAP] : undefined,
+                  openListSettings: () => {
+                    if (!userProfile || !userProfile?.primary_list) return
+                    dispatch(setListSettingsModalOpen(true))
+                    dispatch(setListSettingsModalUser(userProfile))
+                    dispatch(setListSettingsModalList(parseInt(userProfile?.primary_list)))
+                  },
                   hideSocials: ['grails'],
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
-                        eventId: badge.event.id.toString(),
-                        participated: true,
-                        collection: badge,
-                      }))
+                      eventId: badge.event.id.toString(),
+                      participated: true,
+                      collection: badge,
+                    }))
                     : undefined,
                 }}
-                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
               <Details user={user} />
             </>

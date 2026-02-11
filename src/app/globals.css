@@ -306,3 +306,56 @@ body {
 .avatar-container {
   position: relative !important;
 }
+
+/* Primary list toggle */
+.toggle {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 62px;
+  height: 32px;
+  display: inline-block;
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  background-color: #707070;
+  transition: background-color ease 0.3s;
+}
+
+.toggle:before {
+  content: 'yes no';
+  display: block;
+  position: absolute;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  background: #fff;
+  left: 3px;
+  top: 3px;
+  border-radius: 4px;
+  font: 12px/29px Helvetica;
+  text-transform: uppercase;
+  font-weight: bold;
+  text-indent: -28px;
+  word-spacing: 34px;
+  color: #fff;
+  text-shadow: -1px -1px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+}
+
+.toggle:checked:before {
+  color: #222;
+}
+
+.toggle:checked {
+  background-color: var(--primary);
+}
+
+.toggle:checked:before {
+  left: 33px;
+}

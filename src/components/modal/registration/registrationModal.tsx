@@ -38,6 +38,7 @@ import {
 } from '@/constants/web3/contracts'
 import { cn } from '@/utils/tailwind'
 import { beautifyName, normalizeName } from '@/lib/ens'
+import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Hex, isAddress } from 'viem'
 import { Avatar, fetchAccount, LoadingCell, useIsClient } from 'ethereum-identity-kit'
@@ -103,6 +104,13 @@ const RegistrationModal: React.FC = () => {
   // Get persisted state from Redux
   const { registrationMode, quantity, timeUnit, customDuration, isNameAvailable } = registrationState
   const secret = registrationState.secret
+
+  // Check if the name is valid (can be normalized)
+  const isNameValid = useMemo(() => {
+    if (!registrationState.name) return false
+    const label = registrationState.name.replace('.eth', '')
+    return checkNameValidity(label)
+  }, [registrationState.name])
 
   const { data: ethBalance } = useBalance({
     address,
@@ -1064,6 +1072,13 @@ const RegistrationModal: React.FC = () => {
                   </p>
                 </div>
               )}
+              {!isNameValid && (
+                <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+                  <p className='text-md text-red-400'>
+                    This name contains invalid characters and cannot be registered.
+                  </p>
+                </div>
+              )}
             </div>
             <div className='flex flex-col gap-2'>
               <PrimaryButton
@@ -1071,19 +1086,22 @@ const RegistrationModal: React.FC = () => {
                 disabled={
                   !calculationResults ||
                   !hasSufficientBalance ||
+                  !isNameValid ||
                   (registrationMode === 'register_to' && customDuration === 0) ||
                   isNameAvailable === null ||
                   calculationResults?.isBelowMinimum
                 }
                 className='w-full'
               >
-                {!hasSufficientBalance
-                  ? 'Insufficient ETH Balance'
-                  : calculationResults?.isBelowMinimum
-                    ? 'Duration Too Short (28 days minimum)'
-                    : isNameAvailable === null
-                      ? 'Checking Availability...'
-                      : `Register ${beautifyName(registrationState.name)}`}
+                {!isNameValid
+                  ? 'Invalid Name'
+                  : !hasSufficientBalance
+                    ? 'Insufficient ETH Balance'
+                    : calculationResults?.isBelowMinimum
+                      ? 'Duration Too Short (28 days minimum)'
+                      : isNameAvailable === null
+                        ? 'Checking Availability...'
+                        : `Register ${beautifyName(registrationState.name)}`}
               </PrimaryButton>
               <SecondaryButton onClick={handleClose} className='w-full'>
                 Close

@@ -1,7 +1,7 @@
-import { normalizeName } from "@/lib/ens"
-import { transports } from "@/lib/wagmi"
-import { createPublicClient } from "viem"
-import { mainnet } from "viem/chains"
+import { normalizeName } from '@/lib/ens'
+import { transports } from '@/lib/wagmi'
+import { createPublicClient } from 'viem'
+import { mainnet } from 'viem/chains'
 
 export const resolveEnsAddress = async (name: string) => {
   try {

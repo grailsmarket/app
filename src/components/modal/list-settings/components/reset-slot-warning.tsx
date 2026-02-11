@@ -12,9 +12,14 @@ const ResetSlotWarning: React.FC<ResetSlotWarningProps> = ({ closeModal, onSubmi
         <div className='flex items-center justify-between'>
           <h2 className='text-2xl font-bold'>Reset slot</h2>
         </div>
-        <p className='px-4 text-lg font-medium'>Are you sure you want to reset the List? This will clear your list and set all the roles back to your wallet address. This action cannot be undone.</p>
+        <p className='px-4 text-lg font-medium'>
+          Are you sure you want to reset the List? This will clear your list and set all the roles back to your wallet
+          address. This action cannot be undone.
+        </p>
         <div className='pt- flex justify-between gap-2'>
-          <SecondaryButton onClick={closeModal} className='w-1/2'>Cancel</SecondaryButton>
+          <SecondaryButton onClick={closeModal} className='w-1/2'>
+            Cancel
+          </SecondaryButton>
           <button
             onClick={() => {
               onSubmit()

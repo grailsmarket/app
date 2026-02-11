@@ -34,7 +34,8 @@ export const ListSettingsModalSlice = createSlice({
 })
 
 // Actions --------------------------------------------
-export const { setListSettingsModalOpen, setListSettingsModalUser, setListSettingsModalList } = ListSettingsModalSlice.actions
+export const { setListSettingsModalOpen, setListSettingsModalUser, setListSettingsModalList } =
+  ListSettingsModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectListSettingsModal = (state: RootState) => state.modals.listSettingsReducer

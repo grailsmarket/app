@@ -10,7 +10,6 @@ import { listRegistryContract } from '@/lib/contracts'
 // import { rpcProviders } from '#/lib/constants/rpc-providers'
 // import { coreEfpContracts, listRegistryContract } from '#/lib/constants/contracts'
 
-
 export const fetchProfileRoles = async ({
   list,
   userAddress,
@@ -47,7 +46,7 @@ export const fetchProfileRoles = async ({
     abi: efpListRecordsAbi,
     client: createPublicClient({
       chain: listStorageLocationChain || DEFAULT_CHAIN,
-      transport: transports[(listStorageLocationChain?.id || DEFAULT_CHAIN.id) as keyof typeof transports]
+      transport: transports[(listStorageLocationChain?.id || DEFAULT_CHAIN.id) as keyof typeof transports],
     }),
   })
 

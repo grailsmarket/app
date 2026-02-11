@@ -154,7 +154,7 @@ const config = createConfig({
   storage: createStorage({
     storage: cookieStorage,
   }),
-  transports 
+  transports,
 })
 
 export default config

@@ -1,4 +1,4 @@
-import { FollowingResponse } from "ethereum-identity-kit"
+import { FollowingResponse } from 'ethereum-identity-kit'
 
 export const fetchListState = async (list: number) => {
   try {

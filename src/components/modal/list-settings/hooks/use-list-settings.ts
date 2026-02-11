@@ -14,13 +14,19 @@ import { useQuery } from '@tanstack/react-query'
 // import { INITIAL_CHANGED_VALUES } from '#/lib/constants/list-settings'
 // import { coreEfpContracts, listRegistryContract } from '#/lib/constants/contracts'
 import { fetchProfileRoles } from '@/api/user/getEfpProfileRoles'
-import { coreEfpContracts, DEFAULT_CHAIN, efpListRecordsAbi, ProfileDetailsResponse, SECOND } from 'ethereum-identity-kit'
+import {
+  coreEfpContracts,
+  DEFAULT_CHAIN,
+  efpListRecordsAbi,
+  ProfileDetailsResponse,
+  SECOND,
+} from 'ethereum-identity-kit'
 import { resolveEnsAddress } from '@/utils/web3/ens'
 import { listRegistryContract } from '@/lib/contracts'
 import { transports } from '@/lib/wagmi'
 import { fetchListState } from '@/api/user/getListState'
 
-type ListSettingsKey = "user" | "owner" | "chain" | "manager" | "setPrimary" | "resetSlot"
+type ListSettingsKey = 'user' | 'owner' | 'chain' | 'manager' | 'setPrimary' | 'resetSlot'
 
 export const INITIAL_CHANGED_VALUES = {
   chain: false,

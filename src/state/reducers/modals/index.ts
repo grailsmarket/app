@@ -13,6 +13,7 @@ import bulkRenewalModal from './bulkRenewalModal'
 import transferModal from './transferModal'
 import bulkSelectModal from './bulkSelectModal'
 import shareModal from './shareModal'
+import editRecordsModal from './editRecordsModal'
 import listSettingsModal from './listSettingsModal'
 
 const modalReducer = combineReducers({
@@ -29,6 +30,7 @@ const modalReducer = combineReducers({
   transferReducer: transferModal,
   bulkSelectReducer: bulkSelectModal,
   shareReducer: shareModal,
+  editRecordsReducer: editRecordsModal,
   listSettingsReducer: listSettingsModal,
 })
 

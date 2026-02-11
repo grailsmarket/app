@@ -130,6 +130,8 @@ import CrayolaClassicAvatar from 'public/clubs/crayola_classic/avatar.jpg'
 import CrayolaClassicHeader from 'public/clubs/crayola_classic/header.jpg'
 import HolidaysAvatar from 'public/clubs/holidays/avatar.jpg'
 import HolidaysHeader from 'public/clubs/holidays/header.jpg'
+import ParanormalAvatar from 'public/clubs/paranormal/avatar.jpg'
+import ParanormalHeader from 'public/clubs/paranormal/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -365,6 +367,10 @@ export const CATEGORY_IMAGES = {
   holidays: {
     avatar: HolidaysAvatar,
     header: HolidaysHeader,
+  },
+  paranormal: {
+    avatar: ParanormalAvatar,
+    header: ParanormalHeader,
   },
 }
 

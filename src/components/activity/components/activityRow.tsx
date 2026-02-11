@@ -11,6 +11,7 @@ import ActivityTime from '@/components/ui/activityTime'
 import Image from 'next/image'
 import ExternalLinkIcon from 'public/logos/etherscan.svg'
 import Link from 'next/link'
+import { ETH_ADDRESS } from '@/constants/web3/tokens'
 
 interface ActivityRowProps {
   activity: ActivityType
@@ -47,7 +48,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
     price: (
       <Price
         price={activity.price_wei}
-        currencyAddress={activity.currency_address}
+        currencyAddress={activity.currency_address || ETH_ADDRESS}
         tooltipPosition={index === 0 ? 'bottom' : 'top'}
       />
     ),
@@ -97,7 +98,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           )}
           <Price
             price={activity.price_wei}
-            currencyAddress={activity.currency_address}
+            currencyAddress={activity.currency_address || ETH_ADDRESS}
             tooltipPosition={index === 0 ? 'bottom' : 'top'}
           />
           <div className='flex items-center gap-1 pl-4'>

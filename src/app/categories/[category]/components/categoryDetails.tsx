@@ -635,11 +635,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   (
                   {categoryDetails.member_count && categoryDetails.member_count > 0
                     ? (((categoryDetails.premium_count ?? 0) / categoryDetails.member_count) * 100).toLocaleString(
-                      navigator.language,
-                      {
-                        maximumFractionDigits: 1,
-                      }
-                    )
+                        navigator.language,
+                        {
+                          maximumFractionDigits: 1,
+                        }
+                      )
                     : 0}
                   %)
                 </p>
@@ -653,11 +653,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   (
                   {categoryDetails.member_count && categoryDetails.member_count > 0
                     ? (((categoryDetails.available_count ?? 0) / categoryDetails.member_count) * 100).toLocaleString(
-                      navigator.language,
-                      {
-                        maximumFractionDigits: 1,
-                      }
-                    )
+                        navigator.language,
+                        {
+                          maximumFractionDigits: 1,
+                        }
+                      )
                     : 0}
                   %)
                 </p>
@@ -680,11 +680,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   (
                   {categoryDetails.holders_count && categoryDetails.holders_count > 0
                     ? (categoryDetails.member_count / categoryDetails.holders_count).toLocaleString(
-                      navigator.language,
-                      {
-                        maximumFractionDigits: 1,
-                      }
-                    )
+                        navigator.language,
+                        {
+                          maximumFractionDigits: 1,
+                        }
+                      )
                     : 0}
                   )
                 </p>

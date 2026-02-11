@@ -23,7 +23,7 @@ const Registrations = () => {
       <div className='p-md lg:px-lg flex w-full items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl font-medium sm:text-4xl'>Top Registrations</h2>
         <Link
-          href='/marketplace?tab=activity'
+          href='/analytics'
           onClick={() => {
             dispatch(setMarketplaceActivityFiltersType('mint'))
           }}
@@ -36,15 +36,15 @@ const Registrations = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {registrationsLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
-                <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
-              </div>
-            ))
+            <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+              <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
+            </div>
+          ))
           : registrationsData?.data?.results?.map((registration, index) => (
-              <div key={registration.id}>
-                <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
-              </div>
-            ))}
+            <div key={registration.id}>
+              <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
+            </div>
+          ))}
       </div>
     </div>
   )

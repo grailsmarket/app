@@ -533,8 +533,8 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
             </div>
           </div>
         </div>
-        <div className='bg-background p-lg border-tertiary relative z-20 flex w-full flex-col items-center gap-2 border-t-2 md:w-72 md:rounded-md md:border-2'>
-          <div className='flex w-full items-center justify-between'>
+        <div className='bg-background px-md py-lg sm:p-xl border-tertiary relative z-20 flex flex-col items-center gap-2 border-t-2 md:rounded-md md:border-2'>
+          {/* <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
             <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>
           </div>
@@ -559,6 +559,132 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               iconSize='18px'
               fontSize='font-semibold text-xl'
             />
+          </div> */}
+          <div className='xs:grid-cols-4 grid grid-cols-3 gap-4 gap-y-4 sm:gap-y-6'>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <p className='text-lg font-semibold'>{localizeNumber(categoryDetails.member_count ?? 0)}</p>
+              <p className='text-neutral text-lg'>Names</p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <Price
+                price={categoryDetails.sales_volume_wei_1mo}
+                currencyAddress={categoryDetails.floor_price_currency as Address}
+                iconSize='18px'
+                fontSize='text-lg font-semibold'
+              />
+              <p className='text-neutral text-lg font-medium'>
+                Volume&nbsp;
+                <span className='text-lg'>(1mo)</span>
+              </p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <Price
+                price={categoryDetails.floor_price_wei}
+                currencyAddress={categoryDetails.floor_price_currency as Address}
+                iconSize='18px'
+                fontSize='text-lg font-semibold'
+              />
+              <p className='text-neutral text-lg font-medium'>Floor</p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <p className='text-lg font-semibold'>{localizeNumber(categoryDetails.sales_count_1mo)}</p>
+              <p className='text-neutral text-lg font-medium'>
+                Sales&nbsp;
+                <span className='text-lg'>(1mo)</span>
+              </p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+                <p>{localizeNumber(categoryDetails.registered_count ?? 0)}</p>
+                <p className='text-md text-neutral pt-px font-medium'>
+                  ({(categoryDetails.registered_percent ?? 0).toFixed(1)}%)
+                </p>
+              </div>
+              <p className='text-neutral text-lg'>Registered</p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+                <p>{localizeNumber(categoryDetails.grace_count ?? 0)}</p>
+                <p className='text-md text-neutral pt-px font-medium'>
+                  ({(categoryDetails.grace_percent ?? 0).toFixed(1)}%)
+                </p>
+              </div>
+              <p className='text-grace text-lg font-medium'>Grace</p>
+            </div>
+            {/* <div className='z-10 flex h-fit flex-col items-start border-l-2 border-neutral pl-2'>
+          <p className='text-lg font-semibold'>
+          <span className='mr-1 text-lg font-medium'>
+          ({(categoryDetails.registered_percent + categoryDetails.grace_percent).toFixed(1)}%)
+          </span>
+          {localizeNumber(categoryDetails.registered_count + categoryDetails.grace_count)}
+          </p>
+          <p className='font-sedan-sc text-xl md:text-2xl'>
+            Reg+<span className='text-grace'>Grace</span>
+          </p>
+        </div> */}
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+                <p>{localizeNumber(categoryDetails.premium_count ?? 0)}</p>
+                <p className='text-md text-neutral pt-px font-medium'>
+                  (
+                  {categoryDetails.member_count && categoryDetails.member_count > 0
+                    ? (((categoryDetails.premium_count ?? 0) / categoryDetails.member_count) * 100).toLocaleString(
+                      navigator.language,
+                      {
+                        maximumFractionDigits: 1,
+                      }
+                    )
+                    : 0}
+                  %)
+                </p>
+              </div>
+              <p className='text-premium text-lg font-medium'>Premium</p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+                <p>{localizeNumber(categoryDetails.available_count ?? 0)}</p>
+                <p className='text-md text-neutral pt-px font-medium'>
+                  (
+                  {categoryDetails.member_count && categoryDetails.member_count > 0
+                    ? (((categoryDetails.available_count ?? 0) / categoryDetails.member_count) * 100).toLocaleString(
+                      navigator.language,
+                      {
+                        maximumFractionDigits: 1,
+                      }
+                    )
+                    : 0}
+                  %)
+                </p>
+              </div>
+              <p className='text-available text-lg font-medium'>Available</p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+                <p>{localizeNumber(categoryDetails.listings_count ?? 0)}</p>
+                <p className='text-md text-neutral pt-px font-medium'>
+                  ({(categoryDetails.listings_percent ?? 0).toFixed(1)}%)
+                </p>
+              </div>
+              <p className='text-neutral text-lg font-medium'>Listings</p>
+            </div>
+            <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+              <div className='flex items-center gap-[3px] text-lg font-semibold'>
+                <p>{localizeNumber(categoryDetails.holders_count ?? 0)}</p>
+                <p className='text-md text-neutral pt-px font-medium'>
+                  (
+                  {categoryDetails.holders_count && categoryDetails.holders_count > 0
+                    ? (categoryDetails.member_count / categoryDetails.holders_count).toLocaleString(
+                      navigator.language,
+                      {
+                        maximumFractionDigits: 1,
+                      }
+                    )
+                    : 0}
+                  )
+                </p>
+              </div>
+              <p className='text-neutral text-lg font-medium'>Holders</p>
+            </div>
           </div>
         </div>
       </div>

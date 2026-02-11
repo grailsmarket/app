@@ -236,6 +236,10 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/holidays/avatar.jpg',
     header: 'https://grails.app/clubs/holidays/header.jpg',
   },
+  paranormal: {
+    avatar: 'https://grails.app/clubs/paranormal/avatar.jpg',
+    header: 'https://grails.app/clubs/paranormal/header.jpg',
+  },
 }
 
 export async function GET(req: NextRequest) {

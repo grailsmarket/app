@@ -20,6 +20,12 @@ import {
   setListSettingsModalUser,
 } from '@/state/reducers/modals/listSettingsModal'
 import { useAppDispatch } from '@/state/hooks'
+import { fetchNameMetadata } from '@/api/name/metadata'
+import {
+  setEditRecordsModalMetadata,
+  setEditRecordsModalName,
+  setEditRecordsModalOpen,
+} from '@/state/reducers/modals/editRecordsModal'
 
 interface Props {
   user: Address | string
@@ -49,6 +55,43 @@ const Profile: React.FC<Props> = ({ user }) => {
   const { data: userProfile } = useQuery({
     queryKey: ['profile', user, undefined, false, undefined],
     queryFn: () => (user ? fetchProfileDetails(user) : null),
+  })
+  const isSubname = userProfile?.ens?.name ? userProfile?.ens?.name.split('.').length > 2 : false
+
+  const { data: profileMetadata } = useQuery({
+    queryKey: ['profileMetadata', userProfile],
+    queryFn: async () => {
+      if (!userProfile?.ens?.name) return null
+
+      const result = await fetchNameMetadata(userProfile?.ens?.name)
+      const metadata = Object.entries(result || {})
+        .flatMap(([key, value]) => {
+          if (key === 'chains') {
+            return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
+              label: chainName,
+              value: address,
+              canCopy: true,
+            }))
+          }
+
+          return {
+            label: key,
+            value: value,
+            canCopy: true,
+          }
+        })
+        .filter((row) => row.label !== 'resolverAddress')
+        .reduce(
+          (acc, row) => {
+            acc[row.label] = row.value
+            return acc
+          },
+          {} as Record<string, string>
+        )
+
+      return metadata
+    },
+    enabled: !!userProfile?.ens?.name,
   })
 
   return (
@@ -90,17 +133,25 @@ const Profile: React.FC<Props> = ({ user }) => {
                     dispatch(setListSettingsModalUser(userProfile))
                     dispatch(setListSettingsModalList(parseInt(userProfile?.primary_list)))
                   },
+                  onEditProfileClick:
+                    userProfile?.ens?.name && !isSubname
+                      ? () => {
+                          if (!profileMetadata || !userProfile?.ens?.name) return
+                          dispatch(setEditRecordsModalName(userProfile?.ens?.name))
+                          dispatch(setEditRecordsModalMetadata(profileMetadata))
+                          dispatch(setEditRecordsModalOpen(true))
+                        }
+                      : undefined,
                   hideSocials: ['grails'],
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
-                      eventId: badge.event.id.toString(),
-                      participated: true,
-                      collection: badge,
-                    }))
+                        eventId: badge.event.id.toString(),
+                        participated: true,
+                        collection: badge,
+                      }))
                     : undefined,
-
                 }}
-              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
               <Details user={user} />
             </>

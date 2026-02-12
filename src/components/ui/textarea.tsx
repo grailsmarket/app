@@ -7,6 +7,7 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   placeholder?: string
   hideLabel?: boolean
   labelClassName?: string
+  disabled?: boolean
 }
 
 const Textarea: React.FC<TextareaProps> = ({
@@ -17,6 +18,7 @@ const Textarea: React.FC<TextareaProps> = ({
   placeholder = 'Enter text...',
   hideLabel = false,
   labelClassName,
+  disabled = false,
 }) => {
   return (
     <div className={cn('w-full', className)}>
@@ -36,10 +38,12 @@ const Textarea: React.FC<TextareaProps> = ({
           onChange={onChange}
           className={cn(
             'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full resize-y items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
-            hideLabel && 'rounded-md'
+            hideLabel && 'rounded-md',
+            disabled && 'cursor-not-allowed opacity-50'
           )}
           placeholder={placeholder}
           rows={3}
+          disabled={disabled}
         />
       </div>
     </div>

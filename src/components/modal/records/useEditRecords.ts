@@ -1,11 +1,17 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { namehash, encodeFunctionData, toHex } from 'viem'
+import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
 import { mainnet } from 'viem/chains'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { RegistryAbi } from '@/constants/abi/RegistryAbi'
-import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS } from '@/constants/web3/contracts'
+import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
+import {
+  ENS_REGISTRY_CONTRACT_ADDRESS,
+  ENS_REGISTRAR_ADDRESS,
+  ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
+} from '@/constants/web3/contracts'
+import { resolveEnsAddress } from '@/utils/web3/ens'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
@@ -23,10 +29,9 @@ const TEXT_RECORD_KEYS = [
   'header',
 ] as const
 
-const ADDRESS_RECORD_KEYS = ['eth', 'btc'] as const
+const ADDRESS_RECORD_KEYS = ['btc'] as const
 
 const COIN_TYPES: Record<string, number> = {
-  eth: 60,
   btc: 0,
   sol: 501,
   doge: 3,
@@ -42,10 +47,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [records, setRecords] = useState<Record<string, string>>({})
   const [initialRecords, setInitialRecords] = useState<Record<string, string>>({})
 
-  // Address records state
-  const [addressRecords, setAddressRecords] = useState<Record<string, string>>({ eth: '', btc: '', sol: '', doge: '' })
+  // Address records state (non-ETH only — ETH is in roles)
+  const [addressRecords, setAddressRecords] = useState<Record<string, string>>({ btc: '', sol: '', doge: '' })
   const [initialAddressRecords, setInitialAddressRecords] = useState<Record<string, string>>({
-    eth: '',
     btc: '',
     sol: '',
     doge: '',
@@ -56,6 +60,26 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [customRecords, setCustomRecords] = useState<Record<string, string>>({})
   const [initialCustomRecords, setInitialCustomRecords] = useState<Record<string, string>>({})
   const [visibleCustomRecords, setVisibleCustomRecords] = useState<Set<string>>(new Set())
+
+  // Roles state
+  const [roleOwner, setRoleOwnerState] = useState('')
+  const [initialRoleOwner, setInitialRoleOwner] = useState('')
+  const [roleManager, setRoleManagerState] = useState('')
+  const [initialRoleManager, setInitialRoleManager] = useState('')
+  const [roleEthRecord, setRoleEthRecordState] = useState('')
+  const [initialRoleEthRecord, setInitialRoleEthRecord] = useState('')
+
+  // Contract-fetched addresses (for permission checks)
+  const [ownerAddress, setOwnerAddress] = useState<`0x${string}` | null>(null)
+  const [managerAddress, setManagerAddress] = useState<`0x${string}` | null>(null)
+
+  // Resolved ENS addresses for role fields
+  const [resolvedRoleOwner, setResolvedRoleOwner] = useState<string | null>(null)
+  const [resolvedRoleManager, setResolvedRoleManager] = useState<string | null>(null)
+  const [resolvedRoleEthRecord, setResolvedRoleEthRecord] = useState<string | null>(null)
+  const [roleOwnerResolving, setRoleOwnerResolving] = useState(false)
+  const [roleManagerResolving, setRoleManagerResolving] = useState(false)
+  const [roleEthRecordResolving, setRoleEthRecordResolving] = useState(false)
 
   // UI state
   const [step, setStep] = useState<EditStep>('editing')
@@ -75,7 +99,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setRecords(textRecs)
     setInitialRecords(textRecs)
 
-    const addrRecs: Record<string, string> = { eth: '', btc: '', sol: '', doge: '' }
+    const addrRecs: Record<string, string> = { btc: '', sol: '', doge: '' }
     const visible = new Set<string>()
     for (const key of ADDRESS_RECORD_KEYS) {
       const value = metadata[key] || ''
@@ -86,8 +110,20 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setInitialAddressRecords(addrRecs)
     setVisibleAddressRecords(visible)
 
+    // ETH record for Roles tab (metadata key is 'Ethereum' from chains, or 'eth')
+    const ethValue = metadata['Ethereum'] || metadata['ethereum'] || metadata['eth'] || ''
+    setRoleEthRecordState(ethValue)
+    setInitialRoleEthRecord(ethValue)
+
     // Custom records: any key not in predefined sets
-    const knownKeys = new Set<string>([...TEXT_RECORD_KEYS, ...ADDRESS_RECORD_KEYS, 'resolverAddress'])
+    const knownKeys = new Set<string>([
+      ...TEXT_RECORD_KEYS,
+      ...ADDRESS_RECORD_KEYS,
+      'eth',
+      'Ethereum',
+      'ethereum',
+      'resolverAddress',
+    ])
     const customRecs: Record<string, string> = {}
     const visibleCustom = new Set<string>()
     for (const [key, value] of Object.entries(metadata)) {
@@ -101,31 +137,142 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setVisibleCustomRecords(visibleCustom)
   }, [metadata])
 
-  // Resolve the resolver address
+  // Resolve the resolver, manager, and owner addresses
   useEffect(() => {
     if (!name || !publicClient) return
 
     const resolve = async () => {
       try {
         const node = namehash(name)
-        const resolverAddr = (await publicClient.readContract({
-          address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
-          abi: RegistryAbi,
-          functionName: 'resolver',
-          args: [node],
-        })) as `0x${string}`
+        const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
+        const tokenId = hexToBigInt(labelhash(label))
+
+        const [resolverAddr, managerAddr, nftOwnerAddr] = await Promise.all([
+          publicClient.readContract({
+            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
+            abi: RegistryAbi,
+            functionName: 'resolver',
+            args: [node],
+          }) as Promise<`0x${string}`>,
+          publicClient.readContract({
+            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
+            abi: RegistryAbi,
+            functionName: 'owner',
+            args: [node],
+          }) as Promise<`0x${string}`>,
+          publicClient.readContract({
+            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+            abi: BaseRegistrarAbi,
+            functionName: 'ownerOf',
+            args: [tokenId],
+          }) as Promise<`0x${string}`>,
+        ])
 
         setResolverAddress(
           resolverAddr !== '0x0000000000000000000000000000000000000000'
             ? resolverAddr
             : (ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS as `0x${string}`)
         )
+        setManagerAddress(managerAddr)
+        setOwnerAddress(nftOwnerAddr)
+
+        // Initialize editable role state from fetched values
+        setRoleManagerState(managerAddr)
+        setInitialRoleManager(managerAddr)
+        setRoleOwnerState(nftOwnerAddr)
+        setInitialRoleOwner(nftOwnerAddr)
       } catch {
         setResolverAddress(ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS as `0x${string}`)
       }
     }
     resolve()
   }, [name, publicClient])
+
+  // Resolve ENS names for role fields (debounced)
+  useEffect(() => {
+    if (!roleOwner) {
+      setResolvedRoleOwner(null)
+      setRoleOwnerResolving(false)
+      return
+    }
+    if (isAddress(roleOwner)) {
+      setResolvedRoleOwner(roleOwner)
+      setRoleOwnerResolving(false)
+      return
+    }
+    if (roleOwner.includes('.')) {
+      setRoleOwnerResolving(true)
+      const timeout = setTimeout(async () => {
+        const resolved = await resolveEnsAddress(roleOwner)
+        setResolvedRoleOwner(resolved || null)
+        setRoleOwnerResolving(false)
+      }, 500)
+      return () => clearTimeout(timeout)
+    }
+    setResolvedRoleOwner(null)
+    setRoleOwnerResolving(false)
+  }, [roleOwner])
+
+  useEffect(() => {
+    if (!roleManager) {
+      setResolvedRoleManager(null)
+      setRoleManagerResolving(false)
+      return
+    }
+    if (isAddress(roleManager)) {
+      setResolvedRoleManager(roleManager)
+      setRoleManagerResolving(false)
+      return
+    }
+    if (roleManager.includes('.')) {
+      setRoleManagerResolving(true)
+      const timeout = setTimeout(async () => {
+        const resolved = await resolveEnsAddress(roleManager)
+        setResolvedRoleManager(resolved || null)
+        setRoleManagerResolving(false)
+      }, 500)
+      return () => clearTimeout(timeout)
+    }
+    setResolvedRoleManager(null)
+    setRoleManagerResolving(false)
+  }, [roleManager])
+
+  useEffect(() => {
+    if (!roleEthRecord) {
+      setResolvedRoleEthRecord(null)
+      setRoleEthRecordResolving(false)
+      return
+    }
+    if (isAddress(roleEthRecord)) {
+      setResolvedRoleEthRecord(roleEthRecord)
+      setRoleEthRecordResolving(false)
+      return
+    }
+    if (roleEthRecord.includes('.')) {
+      setRoleEthRecordResolving(true)
+      const timeout = setTimeout(async () => {
+        const resolved = await resolveEnsAddress(roleEthRecord)
+        setResolvedRoleEthRecord(resolved || null)
+        setRoleEthRecordResolving(false)
+      }, 500)
+      return () => clearTimeout(timeout)
+    }
+    setResolvedRoleEthRecord(null)
+    setRoleEthRecordResolving(false)
+  }, [roleEthRecord])
+
+  const isRoleResolving = roleOwnerResolving || roleManagerResolving || roleEthRecordResolving
+
+  // Permission checks (based on on-chain values, not edited values)
+  const isManager = useMemo(() => {
+    if (!address || !managerAddress) return false
+    return address.toLowerCase() === managerAddress.toLowerCase()
+  }, [address, managerAddress])
+
+  const isOwner = useMemo(() => {
+    if (!address || !ownerAddress) return false
+    return address.toLowerCase() === ownerAddress.toLowerCase()
+  }, [address, ownerAddress])
 
   // Track dirty state
   const hasChanges = useMemo(() => {
@@ -135,13 +282,29 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     for (const key of ADDRESS_RECORD_KEYS) {
       if ((addressRecords[key] || '') !== (initialAddressRecords[key] || '')) return true
     }
-    // Check custom records (includes both edits and deletions)
     const allCustomKeys = new Set([...Object.keys(customRecords), ...Object.keys(initialCustomRecords)])
     for (const key of allCustomKeys) {
       if ((customRecords[key] ?? '') !== (initialCustomRecords[key] ?? '')) return true
     }
+    // Check role changes
+    if (roleEthRecord !== initialRoleEthRecord) return true
+    if (roleManager.toLowerCase() !== initialRoleManager.toLowerCase()) return true
+    if (roleOwner.toLowerCase() !== initialRoleOwner.toLowerCase()) return true
     return false
-  }, [records, initialRecords, addressRecords, initialAddressRecords, customRecords, initialCustomRecords])
+  }, [
+    records,
+    initialRecords,
+    addressRecords,
+    initialAddressRecords,
+    customRecords,
+    initialCustomRecords,
+    roleEthRecord,
+    initialRoleEthRecord,
+    roleManager,
+    initialRoleManager,
+    roleOwner,
+    initialRoleOwner,
+  ])
 
   // Update text record
   const setRecord = useCallback((key: string, value: string) => {
@@ -179,7 +342,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       next.delete(key)
       return next
     })
-    // Set value to '' so it gets saved as a deletion if it existed before
     setCustomRecords((prev) => ({ ...prev, [key]: '' }))
   }, [])
 
@@ -188,7 +350,12 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     return Array.from(visibleCustomRecords)
   }, [visibleCustomRecords])
 
-  // Save all changed records
+  // Role setters
+  const setRoleOwner = useCallback((value: string) => setRoleOwnerState(value), [])
+  const setRoleManager = useCallback((value: string) => setRoleManagerState(value), [])
+  const setRoleEthRecord = useCallback((value: string) => setRoleEthRecordState(value), [])
+
+  // Save all changed records and roles
   const saveRecords = useCallback(async () => {
     if (!name || !walletClient || !resolverAddress || !publicClient) return
 
@@ -196,8 +363,17 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setErrorMessage(null)
     setTxHash(null)
 
+    // Helper: resolve an input value to an effective address
+    const resolveRole = (value: string, resolved: string | null): `0x${string}` | null => {
+      if (isAddress(value)) return value as `0x${string}`
+      if (resolved && isAddress(resolved)) return resolved as `0x${string}`
+      return null
+    }
+
     try {
       const node = namehash(name)
+
+      // --- Step 1: Resolver multicall (text records + address records + custom records + ETH record) ---
       const calls: `0x${string}`[] = []
 
       // Encode changed text records
@@ -215,38 +391,26 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         }
       }
 
-      // Encode changed address records
+      // Encode changed address records (BTC etc, not ETH)
       for (const key of ADDRESS_RECORD_KEYS) {
         const current = addressRecords[key] || ''
         const initial = initialAddressRecords[key] || ''
         if (current !== initial) {
-          if (key === 'eth') {
-            // ETH uses the 2-arg setAddr overload
-            calls.push(
-              encodeFunctionData({
-                abi: PublicResolverAbi,
-                functionName: 'setAddr',
-                args: [node, current as `0x${string}`],
-              })
-            )
-          } else {
-            // BTC/SOL/DOGE use the 3-arg setAddr overload with coinType
-            const coinType = BigInt(COIN_TYPES[key])
-            const addressBytes = current
-              ? (toHex(new TextEncoder().encode(current)) as `0x${string}`)
-              : ('0x' as `0x${string}`)
-            calls.push(
-              encodeFunctionData({
-                abi: PublicResolverAbi,
-                functionName: 'setAddr',
-                args: [node, coinType, addressBytes],
-              })
-            )
-          }
+          const coinType = BigInt(COIN_TYPES[key])
+          const addressBytes = current
+            ? (toHex(new TextEncoder().encode(current)) as `0x${string}`)
+            : ('0x' as `0x${string}`)
+          calls.push(
+            encodeFunctionData({
+              abi: PublicResolverAbi,
+              functionName: 'setAddr',
+              args: [node, coinType, addressBytes],
+            })
+          )
         }
       }
 
-      // Encode changed custom records (includes deletions where value is '')
+      // Encode changed custom records
       const allCustomKeys = new Set([...Object.keys(customRecords), ...Object.keys(initialCustomRecords)])
       for (const key of allCustomKeys) {
         const current = customRecords[key] ?? ''
@@ -262,24 +426,104 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         }
       }
 
-      if (calls.length === 0) return
+      // Encode ETH record change from Roles tab
+      if (roleEthRecord !== initialRoleEthRecord) {
+        const effectiveEthAddr =
+          resolveRole(roleEthRecord, resolvedRoleEthRecord) ||
+          ('0x0000000000000000000000000000000000000000' as `0x${string}`)
+        calls.push(
+          encodeFunctionData({
+            abi: PublicResolverAbi,
+            functionName: 'setAddr',
+            args: [node, effectiveEthAddr],
+          })
+        )
+      }
 
-      const hash = await walletClient.writeContract({
-        address: resolverAddress,
-        abi: PublicResolverAbi,
-        functionName: 'multicall',
-        args: [calls],
-        chain: mainnet,
-      })
+      // Submit multicall if there are resolver changes
+      if (calls.length > 0) {
+        const hash = await walletClient.writeContract({
+          address: resolverAddress,
+          abi: PublicResolverAbi,
+          functionName: 'multicall',
+          args: [calls],
+          chain: mainnet,
+        })
 
-      setTxHash(hash)
-      setStep('processing')
+        setTxHash(hash)
+        setStep('processing')
+        await publicClient.waitForTransactionReceipt({ hash })
+      }
 
-      await publicClient.waitForTransactionReceipt({ hash })
+      // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
+      const managerChanged = roleManager.toLowerCase() !== initialRoleManager.toLowerCase()
+      if (managerChanged && roleManager) {
+        const effectiveManager = resolveRole(roleManager, resolvedRoleManager)
+        if (!effectiveManager) {
+          throw new Error(`Could not resolve "${roleManager}" to an address`)
+        }
 
-      // Invalidate metadata + name details cache
+        setStep('confirming')
+        const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
+        const tokenId = hexToBigInt(labelhash(label))
+
+        let hash: `0x${string}`
+        if (isManager) {
+          // Current manager can use setOwner on the Registry
+          hash = await walletClient.writeContract({
+            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
+            abi: RegistryAbi,
+            functionName: 'setOwner',
+            args: [node, effectiveManager],
+            chain: mainnet,
+          })
+        } else {
+          // NFT owner can use reclaim on the BaseRegistrar
+          hash = await walletClient.writeContract({
+            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+            abi: BaseRegistrarAbi,
+            functionName: 'reclaim',
+            args: [tokenId, effectiveManager],
+            chain: mainnet,
+          })
+        }
+
+        setTxHash(hash)
+        setStep('processing')
+        await publicClient.waitForTransactionReceipt({ hash })
+      }
+
+      // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
+      const ownerChanged = roleOwner.toLowerCase() !== initialRoleOwner.toLowerCase()
+      if (ownerChanged && roleOwner && ownerAddress) {
+        const effectiveOwner = resolveRole(roleOwner, resolvedRoleOwner)
+        if (!effectiveOwner) {
+          throw new Error(`Could not resolve "${roleOwner}" to an address`)
+        }
+
+        setStep('confirming')
+        const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
+        const tokenId = hexToBigInt(labelhash(label))
+
+        const hash = await walletClient.writeContract({
+          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+          abi: BaseRegistrarAbi,
+          functionName: 'safeTransferFrom',
+          args: [ownerAddress, effectiveOwner, tokenId],
+          chain: mainnet,
+        })
+
+        setTxHash(hash)
+        setStep('processing')
+        await publicClient.waitForTransactionReceipt({ hash })
+      }
+
+      // Invalidate caches
       queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
       queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['profileMetadata', name] })
+
 
       setStep('success')
     } catch (err: unknown) {
@@ -297,6 +541,17 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     initialAddressRecords,
     customRecords,
     initialCustomRecords,
+    roleEthRecord,
+    initialRoleEthRecord,
+    roleManager,
+    initialRoleManager,
+    roleOwner,
+    initialRoleOwner,
+    ownerAddress,
+    isManager,
+    resolvedRoleOwner,
+    resolvedRoleManager,
+    resolvedRoleEthRecord,
     queryClient,
   ])
 
@@ -320,6 +575,19 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     addCustomRecord,
     removeCustomRecord,
     visibleCustomRecordKeys,
+    roleOwner,
+    setRoleOwner,
+    resolvedRoleOwner,
+    roleOwnerResolving,
+    roleManager,
+    setRoleManager,
+    resolvedRoleManager,
+    roleManagerResolving,
+    roleEthRecord,
+    setRoleEthRecord,
+    resolvedRoleEthRecord,
+    roleEthRecordResolving,
+    isRoleResolving,
     step,
     setStep,
     imageUploadTarget,
@@ -331,5 +599,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     txHash,
     resolverAddress,
     address,
+    isManager,
+    isOwner,
   }
 }

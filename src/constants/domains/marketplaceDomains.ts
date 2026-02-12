@@ -187,5 +187,5 @@ export const CATEGORY_LABELS = {
   paranormal: 'Paranormal',
   finance_terms: 'Finance Terms',
   gen_alpha: 'Gen Alpha',
-  historic_figures: 'Historic Figures',
+  historic_figures: 'Historical Figures',
 } as const

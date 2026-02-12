@@ -68,13 +68,13 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
               className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
               onClick={(e) => {
                 e.stopPropagation()
-                const metadataRecord = fetchedMetadata
-                  ? (Object.fromEntries(
-                    Object.entries(fetchedMetadata).filter(
-                      ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
-                    )
-                  ) as Record<string, string>)
-                  : null
+                const metadataRecord = metadata.reduce(
+                  (acc, row) => {
+                    acc[row.label] = row.value
+                    return acc
+                  },
+                  {} as Record<string, string>
+                )
                 dispatch(setEditRecordsModalName(name))
                 dispatch(setEditRecordsModalMetadata(metadataRecord))
                 dispatch(setEditRecordsModalOpen(true))
@@ -102,6 +102,18 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
           </div>
         ) : metadata.length > 0 ? (
           <div className='grid grid-cols-2 gap-4'>
+            {metadata.find((row) => row.label.toLowerCase() === 'ethereum') && (
+              <>
+                <div key='ethereum' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
+                  <CopyValue
+                    value={metadata.find((row) => row.label.toLowerCase() === 'ethereum')?.value as string}
+                    canCopy={true}
+                  />
+                  <p className='text-neutral text-lg font-medium'>ethereum</p>
+                </div>
+                <div />
+              </>
+            )}
             {metadata.find((row) => row.label === 'avatar') && (
               <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
@@ -131,7 +143,9 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
               </div>
             )}
             {metadata
-              .filter((row) => row.label !== 'avatar' && row.label !== 'header')
+              .filter(
+                (row) => row.label !== 'avatar' && row.label !== 'header' && row.label.toLowerCase() !== 'ethereum'
+              )
               .map((row) => {
                 return (
                   <div

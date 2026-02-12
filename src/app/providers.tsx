@@ -37,7 +37,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
   const providers = useMemo(
     () => (
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={config} initialState={initialState}>
+        <WagmiProvider config={config} initialState={initialState} reconnectOnMount={true}>
           <RainbowKitProvider coolMode={false} theme={darkTheme()}>
             <TransactionProvider batchTransactions={false}>
               <ReduxProvider store={store}>

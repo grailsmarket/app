@@ -86,7 +86,7 @@ export const CATEGORY_IMAGES = {
   },
   un_countries: {
     avatar: 'https://grails.app/clubs/un_countries/avatar.jpg',
-    header: 'https://grails.app/clubs/un_countries/header.jpeg',
+    header: 'https://grails.app/clubs/un_countries/header.jpg',
   },
   '3_letter_palindromes': {
     avatar: 'https://grails.app/clubs/3_letter_palindromes/avatar.jpg',
@@ -202,11 +202,11 @@ export const CATEGORY_IMAGES = {
   },
   familynames_usa: {
     avatar: 'https://grails.app/clubs/familynames_usa/avatar.jpg',
-    header: 'https://grails.app/clubs/familynames_usa/header.png',
+    header: 'https://grails.app/clubs/familynames_usa/header.jpg',
   },
   firstnames_usa: {
     avatar: 'https://grails.app/clubs/firstnames_usa/avatar.jpg',
-    header: 'https://grails.app/clubs/firstnames_usa/header.png',
+    header: 'https://grails.app/clubs/firstnames_usa/header.jpg',
   },
   mythical_creatures: {
     avatar: 'https://grails.app/clubs/mythical_creatures/avatar.jpg',

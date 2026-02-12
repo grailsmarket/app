@@ -35,13 +35,15 @@ export const useAuth = () => {
     return () => window.removeEventListener('pointerdown', handler)
   }, [])
 
+  console.log('address', address)
+
   const {
     data: authStatus,
     isLoading: authStatusIsLoading,
     refetch: refetchAuthStatus,
     isRefetching: authStatusIsRefetching,
   } = useQuery<AuthenticationStatus>({
-    queryKey: ['auth', 'status'],
+    queryKey: ['auth', 'status', address],
     queryFn: async () => {
       const authenticateRes = await checkAuthentication()
 
@@ -99,6 +101,7 @@ export const useAuth = () => {
     }
 
     setCurrAddress(address)
+    refetchAuthStatus()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])
 
@@ -111,7 +114,7 @@ export const useAuth = () => {
       return
     }
 
-    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS}; timestamp=${Date.now()};`
+    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS};`
     return
   }
 

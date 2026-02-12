@@ -13,6 +13,7 @@ import AllHoldersPanel from '../allHoldersPanel'
 import FilterPanel from '@/components/filters'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
 import { useFilterUrlSync } from '@/hooks/filters/useFilterUrlSync'
+import ActivityPanel from '../activity'
 
 const MainPanel: React.FC = () => {
   const isClient = useIsClient()
@@ -32,6 +33,7 @@ const MainPanel: React.FC = () => {
     selectedTab.value === 'premium' ||
     selectedTab.value === 'available'
   const showHoldersPanel = selectedTab.value === 'holders'
+  const showActivityPanel = selectedTab.value === 'activity'
 
   // On mobile: always 100%, on desktop: adjust based on filter open state
   const getContentWidth = () => {
@@ -47,11 +49,12 @@ const MainPanel: React.FC = () => {
       <CategoriesPageTabSwitcher />
       <div className='flex w-full flex-row gap-0'>
         {showCategoriesPanel && <CategoriesFilterPanel />}
-        {showDomainsPanel && <FilterPanel />}
+        {showDomainsPanel || (showActivityPanel && <FilterPanel />)}
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
           {showCategoriesPanel && <CategoriesPanel />}
           {showDomainsPanel && <CategoriesPageDomainsPanel />}
           {showHoldersPanel && <AllHoldersPanel />}
+          {showActivityPanel && <ActivityPanel />}
         </div>
       </div>
       {showDomainsPanel && <ActionButtons />}

@@ -18,6 +18,7 @@ import { useNavbar } from '@/context/navbar'
 import SecondaryButton from '../ui/buttons/secondary'
 import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
+import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
@@ -35,6 +36,8 @@ const FilterPanel: React.FC = () => {
   // const { search } = useAppSelector(selectMarketplaceFilters)
   const { selectors, actions, isFiltersClear } = useFilterRouter()
   const { profileTab, filterType, categoryTab } = useFilterContext()
+  const { categoriesPage } = useAppSelector(selectCategoriesPage)
+  const { selectedTab: categoriesPageTab } = categoriesPage
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const filtersOpen = selectors.filters.open
   const { isNavbarVisible } = useNavbar()
@@ -52,7 +55,8 @@ const FilterPanel: React.FC = () => {
   const isActivityFilter =
     (filterType === 'profile' && profileTab?.value === 'activity') ||
     (filterType === 'marketplace' && marketplaceTab?.value === 'activity') ||
-    (filterType === 'category' && categoryTab?.value === 'activity')
+    (filterType === 'category' && categoryTab?.value === 'activity') ||
+    (filterType === 'categoriesPage' && categoriesPageTab?.value === 'activity')
 
   // On mobile: slide in/out overlay
   // On desktop: collapse/expand sidebar with width transition

@@ -1,29 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { LengthType, PriceDenominationType, PriceType, SortFilterType } from '@/types/filters'
 import { PROFILE_ACTIVITY_FILTERS } from '@/constants/filters/portfolioFilters'
-
-// Types
-export type CategoryActivityTypeFilterType = (typeof PROFILE_ACTIVITY_FILTERS)[number]['value']
-
-export type CategoryActivityOpenableFilterType = 'Type'
-
-export type CategoryActivityFiltersState = {
-  type: CategoryActivityTypeFilterType[]
-  search: string
-  categories: string[]
-  sort: SortFilterType | null
-  denomination: PriceDenominationType
-  priceRange: PriceType
-  length: LengthType
-  status: string[]
-}
-
-export type CategoryActivityFiltersOpenedState = CategoryActivityFiltersState & {
-  openFilters: CategoryActivityOpenableFilterType[]
-  open: boolean
-  scrollTop: number
-}
+import {
+  CategoryActivityFiltersOpenedState,
+  CategoryActivityFiltersState,
+  CategoryActivityOpenableFilterType,
+  CategoryActivityTypeFilterType,
+} from './categoryActivityFilters'
 
 export const emptyFilterState: CategoryActivityFiltersState = {
   type: [],
@@ -64,8 +47,8 @@ export const initialState: CategoryActivityFiltersOpenedState = {
 }
 
 // Slice
-export const categoryActivityFiltersSlice = createSlice({
-  name: 'categoryActivityFilters',
+export const categoriesActivityFiltersSlice = createSlice({
+  name: 'categoriesActivityFilters',
   initialState,
   reducers: {
     toggleActivityFiltersType(state, { payload }: PayloadAction<CategoryActivityTypeFilterType>) {
@@ -112,10 +95,10 @@ export const {
   setFiltersOpen,
   setSearch,
   setFiltersScrollTop,
-} = categoryActivityFiltersSlice.actions
+} = categoriesActivityFiltersSlice.actions
 
 // Selectors
-export const selectCategoryActivityFilters = (state: RootState) => state.filters.categoryActivityFilters
+export const selectCategoriesActivityFilters = (state: RootState) => state.filters.categoriesActivityFilters
 
 // Reducer
-export default categoryActivityFiltersSlice.reducer
+export default categoriesActivityFiltersSlice.reducer

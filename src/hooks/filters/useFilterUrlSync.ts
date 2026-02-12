@@ -31,6 +31,7 @@ import { emptyFilterState as categoriesPageEmptyFilterState } from '@/state/redu
 import { emptyFilterState as categoriesNamesEmptyFilterState } from '@/state/reducers/filters/categoriesNamesFilters'
 import { emptyFilterState as categoriesPremiumEmptyFilterState } from '@/state/reducers/filters/categoriesPremiumDomainsFilters'
 import { emptyFilterState as categoriesAvailableEmptyFilterState } from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
+import { emptyFilterState as categoriesActivityEmptyFilterState } from '@/state/reducers/filters/categoriesActivityFilters'
 
 // Import tab change actions
 import { changeTab } from '@/state/reducers/portfolio/profile'
@@ -390,7 +391,10 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
                 ? categoriesNamesEmptyFilterState
                 : tab === 'premium'
                   ? categoriesPremiumEmptyFilterState
-                  : categoriesAvailableEmptyFilterState
+                  : tab === 'available'
+                    ? categoriesAvailableEmptyFilterState
+                    : categoriesActivityEmptyFilterState
+
             newUrl = serializeFiltersToUrl(
               filters as BaseFilterState,
               tab,

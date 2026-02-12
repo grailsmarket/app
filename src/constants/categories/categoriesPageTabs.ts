@@ -23,6 +23,10 @@ export const CATEGORIES_PAGE_TABS = [
     label: 'Holders',
     value: 'holders',
   },
+  {
+    label: 'Activity',
+    value: 'activity',
+  },
 ] as const
 
 export type CategoriesPageTabType = (typeof CATEGORIES_PAGE_TABS)[number]

@@ -35,8 +35,6 @@ export const useAuth = () => {
     return () => window.removeEventListener('pointerdown', handler)
   }, [])
 
-  console.log('address', address)
-
   const {
     data: authStatus,
     isLoading: authStatusIsLoading,
@@ -78,14 +76,13 @@ export const useAuth = () => {
     // refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
 
-  // If the wallet auto-connected (no user interaction) but auth is unauthenticated,
+  // If the wallet auto connected (no user interaction) but auth fails,
   // disconnect so the user gets a clean state and can reconnect fresh.
-  // This fixes mobile where a stale WalletConnect session blocks sign-in.
+  // This fixes mobile where a stale WalletConnect session was preventing users from signing in.
   useEffect(() => {
     if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
-      console.log('disconnect')
-      document.cookie = `token=; path=/; max-age=0;`
       disconnect()
+      document.cookie = `token=; path=/; max-age=0;`
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus])
@@ -94,7 +91,6 @@ export const useAuth = () => {
     if (!address) return
 
     if (currAddress && address.toLowerCase() !== currAddress.toLowerCase()) {
-      console.log('logout')
       logout()
       dispatch(resetUserProfile())
       document.cookie = `token=; path=/; max-age=0;`

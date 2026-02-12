@@ -26,7 +26,7 @@ export type ActivityFiltersOpenedState = ActivityFiltersState & {
 }
 
 export const emptyFilterState: ActivityFiltersState = {
-  type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
+  type: [],
   search: '',
   categories: [],
   sort: null,
@@ -45,7 +45,7 @@ export const emptyFilterState: ActivityFiltersState = {
 // Initial State
 export const initialState: ActivityFiltersOpenedState = {
   open: false,
-  type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
+  type: [],
   openFilters: ['Type'],
   search: '',
   categories: [],

@@ -23,6 +23,7 @@ import categoriesNamesFiltersReducer from './categoriesNamesFilters'
 import categoriesListingsFiltersReducer from './categoriesListingsFilters'
 import categoriesPremiumDomainsFiltersReducer from './categoriesPremiumDomainsFilters'
 import categoriesAvailableDomainsFiltersReducer from './categoriesAvailableDomainsFilters'
+import categoriesActivityFiltersReducer from './categoriesActivityFilters'
 
 const filtersReducer = combineReducers({
   myOffersFilters: myOffersFiltersReducer,
@@ -49,6 +50,7 @@ const filtersReducer = combineReducers({
   categoriesListingsFilters: categoriesListingsFiltersReducer,
   categoriesPremiumDomainsFilters: categoriesPremiumDomainsFiltersReducer,
   categoriesAvailableDomainsFilters: categoriesAvailableDomainsFiltersReducer,
+  categoriesActivityFilters: categoriesActivityFiltersReducer,
 })
 
 export default filtersReducer

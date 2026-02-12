@@ -600,6 +600,18 @@ import {
   clearCategoriesPageFilters,
 } from '@/state/reducers/filters/categoriesPageFilters'
 
+import {
+  emptyFilterState as emptyFilterStateCategoriesActivityFilters,
+  selectCategoriesActivityFilters,
+  toggleActivityFiltersType as toggleCategoriesActivityFiltersType,
+  setActivityFiltersType as setCategoriesActivityFiltersType,
+  toggleFilterOpen as toggleCategoriesActivityFilterOpen,
+  setFiltersOpen as setCategoriesActivityFiltersOpen,
+  setSearch as setCategoriesActivitySearch,
+  setFiltersScrollTop as setCategoriesActivityFiltersScrollTop,
+  clearActivityFilters as clearCategoriesActivityFilters,
+} from '@/state/reducers/filters/categoriesActivityFilters'
+
 export function useFilterRouter(): FilterRouter<FilterContextType> {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
@@ -630,6 +642,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return selectCategoriesPremiumDomainsFilters(state)
       } else if (activeCategoriesPageTab === 'available') {
         return selectCategoriesAvailableDomainsFilters(state)
+      } else if (activeCategoriesPageTab === 'activity') {
+        return selectCategoriesActivityFilters(state)
       }
       return selectCategoriesPageFilters(state)
     }
@@ -806,7 +820,19 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
           toggleFilterOpen: toggleCategoriesAvailableDomainsFilterOpen,
           clearFilters: clearCategoriesAvailableDomainsFilters,
         }
+      } else if (activeCategoriesPageTab === 'activity') {
+        return {
+          setScrollTop: setCategoriesActivityFiltersScrollTop,
+          setFiltersOpen: setCategoriesActivityFiltersOpen,
+          toggleFilterOpen: toggleCategoriesActivityFilterOpen,
+          toggleFiltersType: toggleCategoriesActivityFiltersType,
+          setFiltersType: setCategoriesActivityFiltersType,
+          setSearch: setCategoriesActivitySearch,
+          setFiltersScrollTop: setCategoriesActivityFiltersScrollTop,
+          clearFilters: clearCategoriesActivityFilters,
+        }
       }
+
       return {
         setFiltersOpen: setCategoriesPageFiltersOpen,
         setSearch: setCategoriesPageSearch,
@@ -1398,6 +1424,8 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
         return emptyFilterStateCategoriesPremiumDomainsFilters
       } else if (activeCategoriesPageTab === 'available') {
         return emptyFilterStateCategoriesAvailableDomainsFilters
+      } else if (activeCategoriesPageTab === 'activity') {
+        return emptyFilterStateCategoriesActivityFilters
       }
       return emptyFilterStateCategoriesPageFilters
     }

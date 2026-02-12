@@ -26,7 +26,7 @@ export type MarketplaceActivityFiltersOpenedState = MarketplaceActivityFiltersSt
 }
 
 export const emptyFilterState: MarketplaceActivityFiltersState = {
-  type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
+  type: [],
   search: '',
   categories: [],
   sort: null,
@@ -45,7 +45,7 @@ export const emptyFilterState: MarketplaceActivityFiltersState = {
 // Initial State
 export const initialState: MarketplaceActivityFiltersOpenedState = {
   open: false,
-  type: [...PROFILE_ACTIVITY_FILTERS.map((item) => item.value)],
+  type: [],
   openFilters: ['Type'],
   search: '',
   categories: [],

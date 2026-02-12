@@ -23,6 +23,7 @@ interface FetchDomainsOptions {
   inAnyCategory?: boolean
   excludeCategories?: string[]
   signal?: AbortSignal
+  showUniqueSeller?: boolean
 }
 
 export const API_STATUS_FILTER_OPTIONS = {
@@ -44,6 +45,7 @@ export const fetchDomains = async ({
   inAnyCategory = false,
   excludeCategories = [],
   signal,
+  showUniqueSeller = false,
 }: FetchDomainsOptions) => {
   try {
     const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
@@ -222,6 +224,7 @@ export const fetchDomains = async ({
       sortOrder: filters.sort ? (filters.sort.includes('asc') ? 'asc' : 'desc') : null,
       'filters[inAnyClub]': inAnyCategory ? 'true' : undefined,
       'filters[excludeClubs][]': excludeCategories.length > 0 ? excludeCategories.join(',') : undefined,
+      'filters[uniqueSeller]': showUniqueSeller ? 'true' : undefined,
     })
 
     const fetchFunction = isAuthenticated ? fetch : authFetch

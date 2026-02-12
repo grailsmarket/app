@@ -17,7 +17,7 @@ const DisplayedCards: React.FC = () => {
     queryKey: ['domains'],
     queryFn: async () => {
       const domains = await fetchDomains({
-        limit: 7,
+        limit: 10,
         pageParam: 1,
         filters: {
           ...emptyFilterState,
@@ -33,6 +33,7 @@ const DisplayedCards: React.FC = () => {
         searchTerm: '',
         excludeCategories: ['prepunks'],
         isAuthenticated: authStatus === 'authenticated',
+        showUniqueSeller: true,
       })
 
       return domains.domains

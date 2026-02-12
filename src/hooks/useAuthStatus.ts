@@ -79,18 +79,18 @@ export const useAuth = () => {
   // If the wallet auto-connected (no user interaction) but auth is unauthenticated,
   // disconnect so the user gets a clean state and can reconnect fresh.
   // This fixes mobile where a stale WalletConnect session blocks sign-in.
-  useEffect(() => {
-    if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
-      disconnect()
-      document.cookie = `token=; path=/; max-age=0;`
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authStatus])
+  // useEffect(() => {
+  //   if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
+  //     disconnect()
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [authStatus])
 
   useEffect(() => {
     if (!address) return
 
     if (currAddress && address.toLowerCase() !== currAddress.toLowerCase()) {
+      console.log('logout')
       logout()
       dispatch(resetUserProfile())
       document.cookie = `token=; path=/; max-age=0;`

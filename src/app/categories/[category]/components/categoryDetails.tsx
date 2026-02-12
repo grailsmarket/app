@@ -48,7 +48,7 @@ import WikidataTopFantasyCharHeader from 'public/clubs/wikidata_top_fantasy_char
 import UnCapitalCitiesAvatar from 'public/clubs/un_capital_cities/avatar.jpg'
 import UnCapitalCitiesHeader from 'public/clubs/un_capital_cities/header.jpeg'
 import UnCountriesAvatar from 'public/clubs/un_countries/avatar.jpg'
-import UnCountriesHeader from 'public/clubs/un_countries/header.jpeg'
+import UnCountriesHeader from 'public/clubs/un_countries/header.jpg'
 
 import ThreeLetterPalindromesAvatar from 'public/clubs/3_letter_palindromes/avatar.jpg'
 import ThreeLetterPalindromesHeader from 'public/clubs/3_letter_palindromes/header.jpg'
@@ -113,9 +113,9 @@ import PokemonGen4Avatar from 'public/clubs/pokemon_gen4/avatar.jpg'
 import PokemonGen4Header from 'public/clubs/pokemon_gen4/header.jpg'
 
 import FamilynamesUsaAvatar from 'public/clubs/familynames_usa/avatar.jpg'
-import FamilynamesUsaHeader from 'public/clubs/familynames_usa/header.png'
+import FamilynamesUsaHeader from 'public/clubs/familynames_usa/header.jpg'
 import FirstnamesUsaAvatar from 'public/clubs/firstnames_usa/avatar.jpg'
-import FirstnamesUsaHeader from 'public/clubs/firstnames_usa/header.png'
+import FirstnamesUsaHeader from 'public/clubs/firstnames_usa/header.jpg'
 import MythicalCreaturesAvatar from 'public/clubs/mythical_creatures/avatar.jpg'
 import MythicalCreaturesHeader from 'public/clubs/mythical_creatures/header.png'
 import PersonasAvatar from 'public/clubs/personas/avatar.png'
@@ -132,6 +132,12 @@ import HolidaysAvatar from 'public/clubs/holidays/avatar.jpg'
 import HolidaysHeader from 'public/clubs/holidays/header.jpg'
 import ParanormalAvatar from 'public/clubs/paranormal/avatar.jpg'
 import ParanormalHeader from 'public/clubs/paranormal/header.jpg'
+import FinanceTermsAvatar from 'public/clubs/finance_terms/avatar.jpg'
+import FinanceTermsHeader from 'public/clubs/finance_terms/header.jpg'
+import GenAlphaAvatar from 'public/clubs/gen_alpha/avatar.jpg'
+import GenAlphaHeader from 'public/clubs/gen_alpha/header.jpg'
+import HistoricFiguresAvatar from 'public/clubs/historic_figures/avatar.jpg'
+import HistoricFiguresHeader from 'public/clubs/historic_figures/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -371,6 +377,18 @@ export const CATEGORY_IMAGES = {
   paranormal: {
     avatar: ParanormalAvatar,
     header: ParanormalHeader,
+  },
+  finance_terms: {
+    avatar: FinanceTermsAvatar,
+    header: FinanceTermsHeader,
+  },
+  gen_alpha: {
+    avatar: GenAlphaAvatar,
+    header: GenAlphaHeader,
+  },
+  historic_figures: {
+    avatar: HistoricFiguresAvatar,
+    header: HistoricFiguresHeader,
   },
 }
 

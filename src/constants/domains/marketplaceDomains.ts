@@ -129,8 +129,8 @@ export const CATEGORY_LABELS = {
   prepunks: 'Prepunk',
   '10k': '10k Club',
   pokemon: 'Pokemon',
-  '1kforenames': '1k Forenames',
-  '1ksurnames': '1k Surnames',
+  '1kforenames': 'First Names Global',
+  '1ksurnames': 'Surnames Global',
   '999': '999 Club',
   single_ethmoji: 'Single Ethmoji',
   triple_ethmoji: 'Triple Ethmoji',
@@ -185,4 +185,7 @@ export const CATEGORY_LABELS = {
   crayola_classic: 'Crayola Classic',
   holidays: 'Holidays',
   paranormal: 'Paranormal',
+  finance_terms: 'Finance Terms',
+  gen_alpha: 'Gen Alpha',
+  historic_figures: 'Historic Figures',
 } as const

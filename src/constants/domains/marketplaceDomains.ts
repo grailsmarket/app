@@ -185,4 +185,7 @@ export const CATEGORY_LABELS = {
   crayola_classic: 'Crayola Classic',
   holidays: 'Holidays',
   paranormal: 'Paranormal',
+  finance_terms: 'Finance Terms',
+  gen_alpha: 'Gen Alpha',
+  historic_figures: 'Historic Figures',
 } as const

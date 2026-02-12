@@ -132,6 +132,12 @@ import HolidaysAvatar from 'public/clubs/holidays/avatar.jpg'
 import HolidaysHeader from 'public/clubs/holidays/header.jpg'
 import ParanormalAvatar from 'public/clubs/paranormal/avatar.jpg'
 import ParanormalHeader from 'public/clubs/paranormal/header.jpg'
+import FinanceTermsAvatar from 'public/clubs/finance_terms/avatar.jpg'
+import FinanceTermsHeader from 'public/clubs/finance_terms/header.jpg'
+import GenAlphaAvatar from 'public/clubs/gen_alpha/avatar.jpg'
+import GenAlphaHeader from 'public/clubs/gen_alpha/header.jpg'
+import HistoricFiguresAvatar from 'public/clubs/historic_figures/avatar.jpg'
+import HistoricFiguresHeader from 'public/clubs/historic_figures/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -371,6 +377,18 @@ export const CATEGORY_IMAGES = {
   paranormal: {
     avatar: ParanormalAvatar,
     header: ParanormalHeader,
+  },
+  finance_terms: {
+    avatar: FinanceTermsAvatar,
+    header: FinanceTermsHeader,
+  },
+  gen_alpha: {
+    avatar: GenAlphaAvatar,
+    header: GenAlphaHeader,
+  },
+  historic_figures: {
+    avatar: HistoricFiguresAvatar,
+    header: HistoricFiguresHeader,
   },
 }
 

@@ -80,6 +80,7 @@ export function useSeaportClient() {
       currencies?: ('ETH' | 'USDC')[]
       brokerAddress?: string // Address to receive broker fee
       brokerFeeBps?: number // Broker fee in basis points (e.g., 100 = 1%)
+      privateBuyerAddress?: string // Address for private listing (only this buyer can purchase)
       setStatus?: (status: ListingStatus) => void
       setApproveTxHash?: (txHash: string | null) => void
       setCreateListingTxHash?: (txHash: string | null) => void
@@ -191,6 +192,7 @@ export function useSeaportClient() {
                       broker_address: params.brokerAddress,
                       broker_fee_bps: params.brokerFeeBps,
                       expires_at: new Date(params.expiryDate * 1000).toISOString(),
+                      private_buyer_address: params.privateBuyerAddress || null,
                     }),
                   })
                 })
@@ -221,6 +223,7 @@ export function useSeaportClient() {
                 currencies: params.currencies,
                 orders: grailsOrders,
                 seller_address: address,
+                private_buyer_address: params.privateBuyerAddress || null,
               }),
             })
           }
@@ -289,6 +292,7 @@ export function useSeaportClient() {
                   broker_address: params.brokerAddress,
                   broker_fee_bps: params.brokerFeeBps,
                   expires_at: new Date(params.expiryDate * 1000).toISOString(),
+                  private_buyer_address: params.privateBuyerAddress || null,
                 }),
               })
             })
@@ -319,6 +323,7 @@ export function useSeaportClient() {
             currencies: params.currencies,
             orders: formattedOrders,
             seller_address: address,
+            private_buyer_address: params.privateBuyerAddress || null,
           }),
         })
 

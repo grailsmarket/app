@@ -26,6 +26,12 @@ export const PORTFOLIO_WATCHLIST_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = 
   'last_sale',
   'highest_offer',
 ]
+export const PORTFOLIO_PRIVATE_FOR_ME_DISPLAYED_COLUMNS: MarketplaceHeaderColumn[] = [
+  'price',
+  'owner',
+  'expires',
+  'last_sale',
+]
 
 export const ALL_MARKETPLACE_COLUMNS: Record<MarketplaceHeaderColumn, MarketplaceHeaderItem> = {
   domain: {

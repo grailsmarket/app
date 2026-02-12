@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const API_URL = 'https://grails-api.ethid.org/api/v1'
+const API_URL = 'https://api.grails.app/api/v1'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)

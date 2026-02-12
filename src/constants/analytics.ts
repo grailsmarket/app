@@ -16,4 +16,4 @@ export const SOURCE_OPTIONS: DropdownOption[] = [
   { value: 'opensea', label: 'OpenSea', icon: OpenSea },
 ]
 
-export const API_BASE_URL = 'https://grails-api.ethid.org/api/v1'
+export const API_BASE_URL = 'https://api.grails.app/api/v1'

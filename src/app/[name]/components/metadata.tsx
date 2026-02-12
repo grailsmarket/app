@@ -36,13 +36,24 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
     },
     enabled: !!name,
   })
+
   const metadata = Object.entries(fetchedMetadata || {})
-    .filter(([key, value]) => key !== 'resolverAddress' && typeof value === 'string')
-    .map(([key, value]) => ({
-      label: key,
-      value: value,
-      canCopy: true,
-    }))
+    .flatMap(([key, value]) => {
+      if (key === 'chains') {
+        return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
+          label: chainName,
+          value: address,
+          canCopy: true,
+        }))
+      }
+
+      return {
+        label: key,
+        value: value,
+        canCopy: true,
+      }
+    })
+    .filter((row) => row.label !== 'resolverAddress')
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -59,10 +70,10 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                 e.stopPropagation()
                 const metadataRecord = fetchedMetadata
                   ? (Object.fromEntries(
-                      Object.entries(fetchedMetadata).filter(
-                        ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
-                      )
-                    ) as Record<string, string>)
+                    Object.entries(fetchedMetadata).filter(
+                      ([key, value]) => key !== 'resolverAddress' && typeof value === 'string'
+                    )
+                  ) as Record<string, string>)
                   : null
                 dispatch(setEditRecordsModalName(name))
                 dispatch(setEditRecordsModalMetadata(metadataRecord))

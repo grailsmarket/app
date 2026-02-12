@@ -12,7 +12,8 @@ interface Props {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const name = beautifyName(decodeURIComponent(params.name))
-  const imageUrl = `https://grails.app/api/og/name?name=${encodeURIComponent(name)}`
+  // const imageUrl = `https://grails.app/api/og/name?name=${encodeURIComponent(name)}`
+  const imageUrl = `https://grails.app/previews/home.jpeg`
 
   return {
     title: `${name}`,

@@ -191,4 +191,6 @@ export const CATEGORY_LABELS = {
   conspiracy_theories: 'Conspiracy Theories',
   memes: 'Memes',
   natural_wonders: 'Natural Wonders',
+  currency_names: 'Currency Names',
+  currency_symbols: 'Currency Symbols',
 } as const

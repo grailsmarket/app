@@ -144,6 +144,10 @@ import MemesAvatar from 'public/clubs/memes/avatar.jpg'
 import MemesHeader from 'public/clubs/memes/header.jpg'
 import NaturalWondersAvatar from 'public/clubs/natural_wonders/avatar.jpeg'
 import NaturalWondersHeader from 'public/clubs/natural_wonders/header.jpg'
+import CurrencyNamesAvatar from 'public/clubs/currency_names/avatar.jpg'
+import CurrencyNamesHeader from 'public/clubs/currency_names/header.jpg'
+import CurrencySymbolsAvatar from 'public/clubs/currency_symbols/avatar.jpg'
+import CurrencySymbolsHeader from 'public/clubs/currency_symbols/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -407,6 +411,14 @@ export const CATEGORY_IMAGES = {
   natural_wonders: {
     avatar: NaturalWondersAvatar,
     header: NaturalWondersHeader,
+  },
+  currency_names: {
+    avatar: CurrencyNamesAvatar,
+    header: CurrencyNamesHeader,
+  },
+  currency_symbols: {
+    avatar: CurrencySymbolsAvatar,
+    header: CurrencySymbolsHeader,
   },
 }
 

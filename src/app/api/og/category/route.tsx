@@ -264,6 +264,14 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/natural_wonders/avatar.jpeg',
     header: 'https://grails.app/clubs/natural_wonders/header.jpg',
   },
+  currency_names: {
+    avatar: 'https://grails.app/clubs/currency_names/avatar.jpg',
+    header: 'https://grails.app/clubs/currency_names/header.jpg',
+  },
+  currency_symbols: {
+    avatar: 'https://grails.app/clubs/currency_symbols/avatar.jpg',
+    header: 'https://grails.app/clubs/currency_symbols/header.jpg',
+  },
 }
 
 export async function GET(req: NextRequest) {

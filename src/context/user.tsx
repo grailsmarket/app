@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi'
 import type { Address } from 'viem'
-import { useContext, createContext, useCallback, useState, SetStateAction, Dispatch } from 'react'
+import { useContext, createContext, useCallback, useState, useRef, SetStateAction, Dispatch } from 'react'
 import { useSiwe } from 'ethereum-identity-kit'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { fetchNonce } from '@/api/siwe/fetchNonce'
@@ -59,6 +59,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const signInRef = useRef<(() => void) | null>(null)
+  const signInRetryCount = useRef(0)
 
   const { address } = useAccount()
   const dispatch = useAppDispatch()
@@ -105,6 +107,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   }, [address])
 
   const handleSignInSuccess = async () => {
+    signInRetryCount.current = 0
     await refetchAuthStatus()
     setIsSigningIn(false)
   }
@@ -112,6 +115,20 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   const handleSignInError = (error: Error) => {
     console.error('Sign in error:', error)
     setIsSigningIn(false)
+
+    // Race condition: autoSignInAfterConnection fires before the connector is fully ready.
+    // Retry after a short delay instead of disconnecting.
+    const isConnectorError =
+      error.name === 'ConnectorNotConnectedError' || error.message?.includes('Connector not connected')
+    if (isConnectorError && signInRetryCount.current < 3) {
+      signInRetryCount.current += 1
+      setTimeout(() => {
+        signInRef.current?.()
+      }, 500)
+      return
+    }
+
+    signInRetryCount.current = 0
     disconnect()
   }
 
@@ -123,6 +140,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
     getNonce: handleGetNonce,
     expirationTime: DAY_IN_SECONDS * 1000, // day in milliseconds
   })
+  signInRef.current = handleSignIn
 
   // useEffect(() => {
   //   if (address && authStatus === 'unauthenticated') {

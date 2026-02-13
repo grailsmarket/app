@@ -28,7 +28,6 @@ import DiscordLogo from 'public/logos/discord.svg'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
-import { useAccount } from 'wagmi'
 
 interface EditRecordsModalProps {
   name: string
@@ -105,7 +104,6 @@ const RoleInputResolution: React.FC<{
 }
 
 const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onClose }) => {
-  const { address: userAddress } = useAccount()
   const {
     records,
     setRecord,
@@ -343,6 +341,25 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
                   <>
                     {/* Text records */}
                     <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                      <div className='flex flex-col'>
+                        <Input
+                          label='ETH Record'
+                          value={roleEthRecord}
+                          onChange={(e) => {
+                            const input = e.target.value
+                            if (input.includes(' ')) return
+                            setRoleEthRecord(input)
+                          }}
+                          placeholder='0x... or name.eth'
+                          disabled={!isManager}
+                          labelClassName='w-[140px]! text-nowrap'
+                        />
+                        <RoleInputResolution
+                          value={roleEthRecord}
+                          resolvedAddress={resolvedRoleEthRecord}
+                          isResolving={roleEthRecordResolving}
+                        />
+                      </div>
                       <Textarea
                         label='Short Bio'
                         value={records.description || ''}
@@ -579,15 +596,15 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
               <div className='border-tertiary flex flex-col gap-2 border-t p-4 sm:px-6'>
                 {activeTab === 'records' && !isManager && (
                   <div className='bg-grace/10 border-tertiary flex flex-row items-center justify-between gap-2 rounded-md border p-4'>
-                    <p className='text-grace text-sm'>
-                      You are not the manager of this name, therefore you cannot make changes. To edit the record, set
-                      your current address as the manager.
+                    <p className='text-grace text-md'>
+                      You are not the <b>Manager</b> of this name. To edit records, set your current address as the{' '}
+                      <b>Manager</b>.
                     </p>
                     <button
                       className='bg-grace text-background hover:bg-grace/80 cursor-pointer rounded-md px-2.5 py-1.5 text-lg font-semibold text-nowrap disabled:opacity-50'
                       onClick={() => {
                         setActiveTab('roles')
-                        if (userAddress) setRoleManager(userAddress)
+                        // if (userAddress) setRoleManager(userAddress)
                       }}
                     >
                       Set Role

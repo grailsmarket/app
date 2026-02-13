@@ -48,6 +48,13 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
         }))
       }
 
+      if (key === 'contenthash')
+        return {
+          label: key,
+          value: value.value,
+          canCopy: true,
+        }
+
       return {
         label: key,
         value: value,
@@ -159,7 +166,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                     ) : (
                       <div className='text-xl font-medium'>{row.value}</div>
                     )}
-                    <p className='text-neutral text-lg font-medium'>{row.label}</p>
+                    <p className='text-neutral text-lg font-medium'>{row.label.toLowerCase()}</p>
                   </div>
                 )
               })}

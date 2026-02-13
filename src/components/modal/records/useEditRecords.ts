@@ -524,7 +524,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       queryClient.invalidateQueries({ queryKey: ['profileMetadata', name] })
 
-
       setStep('success')
     } catch (err: unknown) {
       setStep('error')

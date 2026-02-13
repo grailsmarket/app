@@ -22,7 +22,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
   const { width } = useWindowSize()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 30) / 30) : MAX_VISIBLE_CATEGORIES
+  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 25) / 30) : MAX_VISIBLE_CATEGORIES
   const visibleCategories = user.clubs.slice(0, visibleCategoriesCount)
   const remainingCount = user.clubs.length - visibleCategoriesCount
 
@@ -32,12 +32,12 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       className='group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
     >
       {/* Rank */}
-      <div className='text-neutral w-[5%] min-w-[30px] text-center text-lg font-medium sm:min-w-[40px] sm:text-base'>
+      <div className='text-neutral xs:min-w-[36px] w-[5%] min-w-[30px] text-center text-lg font-medium sm:min-w-[40px] sm:text-base'>
         {rank}
       </div>
 
       {/* User */}
-      <div className='flex w-[40%] flex-row items-center gap-3 md:w-[30%]'>
+      <div className='flex w-[40%] flex-row items-center gap-3 md:w-[25%]'>
         <User
           address={user.address}
           alignTooltip='left'
@@ -50,7 +50,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* Names Owned */}
-      <div className='flex w-[17%] items-center sm:w-[15%] lg:w-[10%]'>
+      <div className='flex w-[20%] items-center sm:w-[15%] lg:w-[10%]'>
         <span className='text-base font-medium'>{user.names_owned.toLocaleString()}</span>
       </div>
 
@@ -59,13 +59,18 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
         <span className='text-base font-medium'>{user.names_in_clubs.toLocaleString()}</span>
       </div>
 
+      {/* Listed Names */}
+      <div className='hidden w-[10%] items-center lg:flex'>
+        <span className='text-base font-medium'>{user.names_listed.toLocaleString()}</span>
+      </div>
+
       {/* Expired */}
       <div className='hidden w-[10%] items-center lg:flex'>
         <span className='text-base font-medium'>{user.expired_names.toLocaleString()}</span>
       </div>
 
       {/* Categories */}
-      <div className='flex w-[25%] max-w-[32.5%] items-center gap-0.5 sm:w-[32.5%] sm:gap-1 md:w-[30%]'>
+      <div className='flex w-[25%] max-w-[27.5%] items-center gap-0.5 sm:w-[27.5%] sm:gap-1 md:w-[25%]'>
         <div className='flex items-center -space-x-2 sm:-space-x-1.5'>
           {visibleCategories.map((club) => {
             const categoryDetails = getCategoryDetails(club)

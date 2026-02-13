@@ -17,6 +17,7 @@ import {
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil.svg'
 import { useUserContext } from '@/context/user'
+import { isAddress } from 'viem'
 
 interface NameDetailsProps {
   name: string
@@ -108,6 +109,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                   <CopyValue
                     value={metadata.find((row) => row.label.toLowerCase() === 'ethereum')?.value as string}
                     canCopy={true}
+                    truncateValue={true}
                   />
                   <p className='text-neutral text-lg font-medium'>ethereum</p>
                 </div>
@@ -153,7 +155,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
                     className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'
                   >
                     {row.canCopy && typeof row.value === 'string' ? (
-                      <CopyValue value={row.value} canCopy={row.canCopy} />
+                      <CopyValue value={row.value} canCopy={row.canCopy} truncateValue={isAddress(row.value)} />
                     ) : (
                       <div className='text-xl font-medium'>{row.value}</div>
                     )}

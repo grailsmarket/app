@@ -32,6 +32,7 @@ import { beautifyName } from '@/lib/ens'
 interface EditRecordsModalProps {
   name: string
   metadata: Record<string, string> | null
+  defaultTab: 'records' | 'roles'
   onClose: () => void
 }
 
@@ -103,7 +104,7 @@ const RoleInputResolution: React.FC<{
   )
 }
 
-const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onClose }) => {
+const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, defaultTab, onClose }) => {
   const {
     records,
     setRecord,
@@ -142,7 +143,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
     isOwner,
   } = useEditRecords(name, metadata)
 
-  const [activeTab, setActiveTab] = useState<'records' | 'roles'>('records')
+  const [activeTab, setActiveTab] = useState<'records' | 'roles'>(defaultTab || 'records')
   const [addRecordOpen, setAddRecordOpen] = useState(false)
   const [customKeyInput, setCustomKeyInput] = useState('')
   const [isAddingCustomKey, setIsAddingCustomKey] = useState(false)
@@ -581,6 +582,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, onC
                         }}
                         placeholder='0x... or name.eth'
                         disabled={!isManager}
+                        labelClassName='w-[140px]! text-nowrap'
                       />
                       <RoleInputResolution
                         value={roleEthRecord}

@@ -6,6 +6,7 @@ type EditRecordsModalState = {
   open: boolean
   name: string | null
   metadata: Record<string, string> | null
+  defaultTab: 'records' | 'roles'
 }
 
 // Initial State ------------------------------------
@@ -13,6 +14,7 @@ const initialState: EditRecordsModalState = {
   open: false,
   name: null,
   metadata: null,
+  defaultTab: 'records',
 }
 
 // Slice -------------------------------------------
@@ -29,12 +31,19 @@ export const EditRecordsModalSlice = createSlice({
     setEditRecordsModalMetadata(state, { payload }: PayloadAction<Record<string, string> | null>) {
       state.metadata = payload
     },
+    setEditRecordsModalDefaultTab(state, { payload }: PayloadAction<'records' | 'roles'>) {
+      state.defaultTab = payload
+    },
   },
 })
 
 // Actions --------------------------------------------
-export const { setEditRecordsModalOpen, setEditRecordsModalName, setEditRecordsModalMetadata } =
-  EditRecordsModalSlice.actions
+export const {
+  setEditRecordsModalOpen,
+  setEditRecordsModalName,
+  setEditRecordsModalMetadata,
+  setEditRecordsModalDefaultTab,
+} = EditRecordsModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectEditRecordsModal = (state: RootState) => state.modals.editRecordsReducer

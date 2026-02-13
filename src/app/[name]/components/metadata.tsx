@@ -4,8 +4,6 @@ import React, { useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import { ShortArrow } from 'ethereum-identity-kit'
 import { CopyValue } from './primaryDetails'
-import { useQuery } from '@tanstack/react-query'
-import { fetchNameMetadata } from '@/api/name/metadata'
 import Image from 'next/image'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -18,50 +16,20 @@ import {
 import PencilIcon from 'public/icons/pencil.svg'
 import { useUserContext } from '@/context/user'
 import { isAddress } from 'viem'
+import { MetadataType } from '@/types/api'
 
 interface NameDetailsProps {
   name: string
   nameOwner?: string | null
+  metadata?: MetadataType[]
+  isMetadataLoading: boolean
 }
 
-const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner }) => {
+const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], isMetadataLoading }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
   const dispatch = useAppDispatch()
-  const { data: fetchedMetadata, isLoading: isMetadataLoading } = useQuery({
-    queryKey: ['name', 'metadata', name],
-    queryFn: async () => {
-      const details = await fetchNameMetadata(name)
-      return details
-    },
-    enabled: !!name,
-  })
-
-  const metadata = Object.entries(fetchedMetadata || {})
-    .flatMap(([key, value]) => {
-      if (key === 'chains') {
-        return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
-          label: chainName,
-          value: address,
-          canCopy: true,
-        }))
-      }
-
-      if (key === 'contenthash')
-        return {
-          label: key,
-          value: value.value,
-          canCopy: true,
-        }
-
-      return {
-        label: key,
-        value: value,
-        canCopy: true,
-      }
-    })
-    .filter((row) => row.label !== 'resolverAddress')
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>

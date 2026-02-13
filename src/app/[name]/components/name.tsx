@@ -13,6 +13,7 @@ import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatus
 import Categories from './categories'
 import SecondaryDetails from './secondaryDetails'
 import Metadata from './metadata'
+import Roles from './roles'
 // import Metadata from './metadata'
 
 interface Props {
@@ -20,7 +21,16 @@ interface Props {
 }
 
 const NamePage: React.FC<Props> = ({ name }) => {
-  const { nameDetails, nameDetailsIsLoading, nameOffers, nameOffersIsLoading } = useName(name)
+  const {
+    nameDetails,
+    nameDetailsIsLoading,
+    nameOffers,
+    nameOffersIsLoading,
+    metadata,
+    isMetadataLoading,
+    roles,
+    isRolesLoading,
+  } = useName(name)
 
   // // Pre-warm the OG image cache in the background
   // useEffect(() => {
@@ -54,6 +64,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
       : getRegistrationStatus(nameDetails.expiry_date)
     : UNREGISTERED
   const isRegistered = registrationStatus === REGISTERED
+  // const isUnregistered = registrationStatus === UNREGISTERED || registrationStatus === PREMIUM
 
   return (
     <div className='dark mx-auto flex min-h-[calc(100dvh-52px)] max-w-7xl flex-col items-center gap-3 pt-3 md:min-h-[calc(100dvh-70px)]'>
@@ -73,10 +84,24 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden lg:block'>
-            <Metadata name={name} nameOwner={nameDetails?.owner} />
+            <Metadata
+              name={name}
+              nameOwner={nameDetails?.owner}
+              metadata={metadata}
+              isMetadataLoading={isMetadataLoading}
+            />
           </div>
           <div className='hidden lg:block'>
-            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+            <Roles
+              name={name}
+              nameOwner={nameDetails?.owner}
+              metadata={metadata}
+              roles={roles}
+              isRolesLoading={isRolesLoading}
+            />
+          </div>
+          <div className='hidden lg:block'>
+            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
         </div>
         <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>
@@ -96,10 +121,24 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='lg:hidden'>
-            <Metadata name={name} />
+            <Metadata
+              name={name}
+              nameOwner={nameDetails?.owner}
+              metadata={metadata}
+              isMetadataLoading={isMetadataLoading}
+            />
           </div>
           <div className='lg:hidden'>
-            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+            <Roles
+              name={name}
+              nameOwner={nameDetails?.owner}
+              metadata={metadata}
+              roles={roles}
+              isRolesLoading={isRolesLoading}
+            />
+          </div>
+          <div className='lg:hidden'>
+            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />
         </div>

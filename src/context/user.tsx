@@ -84,9 +84,9 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   })
 
   const { data: poapClaimData } = useQuery({
-    queryKey: ['isPoapClaimed', address],
+    queryKey: ['isPoapClaimed', address, authStatus],
     queryFn: async () => {
-      if (!address) return { has_claimed: false }
+      if (!address || authStatus !== 'authenticated') return { has_claimed: false }
 
       const result = await checkPoap()
       dispatch(setUserPoapClaimed(result.has_claimed))

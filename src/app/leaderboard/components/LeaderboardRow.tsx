@@ -22,7 +22,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
   const { width } = useWindowSize()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 25) / 30) : MAX_VISIBLE_CATEGORIES
+  const visibleCategoriesCount = isClient && width ? Math.floor(((width / 100) * 20) / 30) : MAX_VISIBLE_CATEGORIES
   const visibleCategories = user.clubs.slice(0, visibleCategoriesCount)
   const remainingCount = user.clubs.length - visibleCategoriesCount
 
@@ -50,18 +50,23 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* Names Owned */}
-      <div className='flex w-[20%] items-center sm:w-[15%] lg:w-[10%]'>
+      <div className='flex w-[20%] items-center sm:w-[12.5%] lg:w-[10%]'>
         <span className='text-base font-medium'>{user.names_owned.toLocaleString()}</span>
       </div>
 
       {/* Category Names */}
-      <div className='hidden w-[15%] items-center md:flex lg:w-[10%]'>
+      <div className='hidden w-[12.5%] items-center md:flex lg:w-[10%]'>
         <span className='text-base font-medium'>{user.names_in_clubs.toLocaleString()}</span>
       </div>
 
       {/* Listed Names */}
-      <div className='hidden w-[10%] items-center lg:flex'>
+      <div className='hidden w-[12.5%] items-center md:flex lg:w-[10%]'>
         <span className='text-base font-medium'>{user.names_listed.toLocaleString()}</span>
+      </div>
+
+      {/* Sold Names */}
+      <div className='hidden w-[10%] items-center lg:flex'>
+        <span className='text-base font-medium'>{user.names_sold.toLocaleString()}</span>
       </div>
 
       {/* Expired */}
@@ -70,7 +75,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* Categories */}
-      <div className='flex w-[25%] max-w-[27.5%] items-center gap-0.5 sm:w-[27.5%] sm:gap-1 md:w-[25%]'>
+      <div className='flex w-[25%] max-w-[27.5%] items-center gap-0.5 sm:w-[27.5%] sm:gap-1 md:w-[20%]'>
         <div className='flex items-center -space-x-2 sm:-space-x-1.5'>
           {visibleCategories.map((club) => {
             const categoryDetails = getCategoryDetails(club)

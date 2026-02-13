@@ -17,6 +17,8 @@ const HEADER_SORT_MAP: Record<string, LeaderboardSortBy> = {
   names: 'names_owned',
   category_names: 'names_in_clubs',
   expired: 'expired_names',
+  names_listed: 'names_listed',
+  names_sold: 'names_sold',
 }
 
 const LoadingRow = () => (
@@ -42,39 +44,44 @@ const LoadingRow = () => (
       <LoadingCell width='24px' height='24px' radius='50%' />
     </div>
     <div className='hidden w-[5%] sm:block'></div> */}
-    <div className='xs:min-w-[36px] w-[5%] min-w-[30px] sm:min-w-[40px]'>
+    <div className='xs:min-w-[36px] w-[5%] min-w-[30px] flex justify-center sm:min-w-[40px]'>
       <LoadingCell width='30px' height='20px' />
     </div>
     <div className='text-neutral text-md w-[40%] font-medium md:w-[25%]'>
       <LoadingCell width='140px' height='28px' />
     </div>
 
-    {/* Names - Sortable */}
-    <div className='flex w-[20%] cursor-pointer items-center gap-0.5 select-none hover:opacity-80 sm:w-[15%] sm:gap-1 lg:w-[10%]'>
+    {/* Names */}
+    <div className='flex w-[20%] cursor-pointer items-center gap-0.5 select-none hover:opacity-80 sm:w-[12.5%] sm:gap-1 lg:w-[10%]'>
       <LoadingCell width='50px' height='20px' />
     </div>
 
-    {/* Category Names - Sortable */}
-    <div className='hidden w-[15%] md:flex lg:w-[10%]'>
+    {/* Category Names */}
+    <div className='hidden w-[12.5%] md:flex lg:w-[10%]'>
       <LoadingCell width='50px' height='20px' />
     </div>
 
-    {/* Listed Names - Sortable */}
-    <div className='hidden w-[15%] md:flex lg:w-[10%]'>
+    {/* Listed Names */}
+    <div className='hidden w-[12.5%] md:flex lg:w-[10%]'>
       <LoadingCell width='50px' height='20px' />
     </div>
 
-    {/* Expired - Sortable */}
+    {/* Listed Names */}
+    <div className='hidden w-[12.5%] md:flex lg:w-[10%]'>
+      <LoadingCell width='50px' height='20px' />
+    </div>
+
+    {/* Expired */}
     <div className='hidden w-[10%] lg:flex'>
       <LoadingCell width='50px' height='20px' />
     </div>
 
-    <div className='flex w-[25%] gap-1 sm:w-[27.5%] md:w-[25%]'>
+    <div className='flex w-[25%] gap-1 sm:w-[27.5%] md:w-[20%]'>
       <LoadingCell width='24px' height='24px' radius='50%' />
       <LoadingCell width='24px' height='24px' radius='50%' />
       <LoadingCell width='24px' height='24px' radius='50%' />
     </div>
-    <div className='hidden w-[5%] min-w-[120px] sm:block'>
+    <div className='hidden w-[5%] min-w-[120px] sm:flex justify-end'>
       <LoadingCell width='110px' height='37px' radius='8px' />
     </div>
   </div>
@@ -173,7 +180,7 @@ const LeaderboardList: React.FC = () => {
         {/* Names - Sortable */}
         <div
           onClick={() => handleHeaderClick('names')}
-          className='flex w-[20%] cursor-pointer items-center gap-0.5 select-none hover:opacity-80 sm:w-[15%] sm:gap-1 lg:w-[10%]'
+          className='flex w-[20%] cursor-pointer items-center gap-0.5 select-none hover:opacity-80 sm:w-[12.5%] sm:gap-1 lg:w-[10%]'
         >
           <p className={cn('text-md font-medium', isSortedBy('names') ? 'text-primary' : 'text-neutral')}>Names</p>
           {isSortedBy('names') && (
@@ -189,7 +196,7 @@ const LeaderboardList: React.FC = () => {
         {/* Category Names - Sortable */}
         <div
           onClick={() => handleHeaderClick('category_names')}
-          className='hidden w-[15%] cursor-pointer items-center gap-1 select-none hover:opacity-80 md:flex lg:w-[10%]'
+          className='hidden w-[12.5%] cursor-pointer items-center gap-1 select-none hover:opacity-80 md:flex lg:w-[10%]'
         >
           <p className={cn('text-md font-medium', isSortedBy('category_names') ? 'text-primary' : 'text-neutral')}>
             Category Names
@@ -206,13 +213,29 @@ const LeaderboardList: React.FC = () => {
 
         {/* Listed Names - Sortable */}
         <div
-          onClick={() => handleHeaderClick('category_names')}
-          className='hidden w-[15%] cursor-pointer items-center gap-1 select-none hover:opacity-80 md:flex lg:w-[10%]'
+          onClick={() => handleHeaderClick('names_listed')}
+          className='hidden w-[12.5%] cursor-pointer items-center gap-1 select-none hover:opacity-80 md:flex lg:w-[10%]'
         >
-          <p className={cn('text-md font-medium', isSortedBy('category_names') ? 'text-primary' : 'text-neutral')}>
+          <p className={cn('text-md font-medium', isSortedBy('names_listed') ? 'text-primary' : 'text-neutral')}>
             Listed
           </p>
-          {isSortedBy('category_names') && (
+          {isSortedBy('names_listed') && (
+            <ShortArrow
+              className={cn(
+                'text-primary h-3 w-3 transition-transform',
+                sortOrder === 'asc' ? 'rotate-0' : 'rotate-180'
+              )}
+            />
+          )}
+        </div>
+
+        {/* Sold Names - Sortable */}
+        <div
+          onClick={() => handleHeaderClick('names_sold')}
+          className='hidden w-[10%] cursor-pointer items-center gap-1 select-none hover:opacity-80 lg:flex'
+        >
+          <p className={cn('text-md font-medium', isSortedBy('names_sold') ? 'text-primary' : 'text-neutral')}>Sold</p>
+          {isSortedBy('names_sold') && (
             <ShortArrow
               className={cn(
                 'text-primary h-3 w-3 transition-transform',
@@ -238,7 +261,7 @@ const LeaderboardList: React.FC = () => {
           )}
         </div>
 
-        <p className='text-neutral text-md w-[25%] font-medium sm:w-[27.5%] md:w-[25%]'>Categories</p>
+        <p className='text-neutral text-md w-[25%] font-medium sm:w-[27.5%] md:w-[20%]'>Categories</p>
         <p className='text-neutral text-md hidden w-[5%] min-w-[120px] font-medium sm:block'></p>
       </div>
 

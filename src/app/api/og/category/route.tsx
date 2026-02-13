@@ -86,7 +86,7 @@ export const CATEGORY_IMAGES = {
   },
   un_countries: {
     avatar: 'https://grails.app/clubs/un_countries/avatar.jpg',
-    header: 'https://grails.app/clubs/un_countries/header.jpeg',
+    header: 'https://grails.app/clubs/un_countries/header.jpg',
   },
   '3_letter_palindromes': {
     avatar: 'https://grails.app/clubs/3_letter_palindromes/avatar.jpg',
@@ -202,11 +202,11 @@ export const CATEGORY_IMAGES = {
   },
   familynames_usa: {
     avatar: 'https://grails.app/clubs/familynames_usa/avatar.jpg',
-    header: 'https://grails.app/clubs/familynames_usa/header.png',
+    header: 'https://grails.app/clubs/familynames_usa/header.jpg',
   },
   firstnames_usa: {
     avatar: 'https://grails.app/clubs/firstnames_usa/avatar.jpg',
-    header: 'https://grails.app/clubs/firstnames_usa/header.png',
+    header: 'https://grails.app/clubs/firstnames_usa/header.jpg',
   },
   mythical_creatures: {
     avatar: 'https://grails.app/clubs/mythical_creatures/avatar.jpg',
@@ -239,6 +239,18 @@ export const CATEGORY_IMAGES = {
   paranormal: {
     avatar: 'https://grails.app/clubs/paranormal/avatar.jpg',
     header: 'https://grails.app/clubs/paranormal/header.jpg',
+  },
+  finance_terms: {
+    avatar: 'https://grails.app/clubs/finance_terms/avatar.jpg',
+    header: 'https://grails.app/clubs/finance_terms/header.jpg',
+  },
+  gen_alpha: {
+    avatar: 'https://grails.app/clubs/gen_alpha/avatar.jpg',
+    header: 'https://grails.app/clubs/gen_alpha/header.jpg',
+  },
+  historic_figures: {
+    avatar: 'https://grails.app/clubs/historic_figures/avatar.jpg',
+    header: 'https://grails.app/clubs/historic_figures/header.jpg',
   },
 }
 

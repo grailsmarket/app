@@ -49,7 +49,7 @@ const MainPanel: React.FC = () => {
       <CategoriesPageTabSwitcher />
       <div className='flex w-full flex-row gap-0'>
         {showCategoriesPanel && <CategoriesFilterPanel />}
-        {showDomainsPanel || (showActivityPanel && <FilterPanel />)}
+        {(showDomainsPanel || showActivityPanel) && <FilterPanel />}
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
           {showCategoriesPanel && <CategoriesPanel />}
           {showDomainsPanel && <CategoriesPageDomainsPanel />}

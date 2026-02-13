@@ -344,7 +344,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                     <div className='flex flex-col gap-3 px-4 sm:px-6'>
                       <div className='flex flex-col'>
                         <Input
-                          label='ETH Record'
+                          label='Ethereum'
                           value={roleEthRecord}
                           onChange={(e) => {
                             const input = e.target.value
@@ -573,7 +573,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                     </div>
                     <div className='flex flex-col'>
                       <Input
-                        label='ETH Record'
+                        label='Ethereum'
                         value={roleEthRecord}
                         onChange={(e) => {
                           const input = e.target.value

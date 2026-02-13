@@ -324,7 +324,7 @@ export const CopyValue = ({
       }}
     >
       <p className={cn('max-w-[calc(100%-16px)] truncate', className)}>
-        {truncateValue ? truncateAddress(value as `0x${string}`) : value}
+        {truncateValue && value ? truncateAddress(value as `0x${string}`) : value}
       </p>
       {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='h-4 w-4' />}
     </div>

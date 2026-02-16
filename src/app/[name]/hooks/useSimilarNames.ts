@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { MarketplaceDomainType } from '@/types/domains'
 import { API_URL } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
+import { hexToBigInt, labelhash } from 'viem'
 
 interface SimilarNamesAPIResponse {
   suggestions: string[]
@@ -55,7 +56,42 @@ async function fetchDomainsForNames(names: string[]): Promise<MarketplaceDomainT
       pagination: PaginationType
     }>
 
-    return json.data.names || json.data.results || []
+    const domains = json.data.names || json.data.results || []
+
+    // Insert placeholders for names not returned by the DB (same pattern as fetchDomains)
+    for (const name of names) {
+      const domainName = name + '.eth'
+      if (!domains.some((d) => d.name === domainName)) {
+        domains.push({
+          id: 0,
+          name: domainName,
+          token_id: hexToBigInt(labelhash(name)).toString(),
+          expiry_date: null,
+          registration_date: null,
+          owner: null,
+          metadata: {},
+          has_numbers: false,
+          has_emoji: false,
+          listings: [],
+          clubs: [],
+          highest_offer_wei: null,
+          highest_offer_id: null,
+          highest_offer_currency: null,
+          last_sale_price_usd: null,
+          offer: null,
+          last_sale_price: null,
+          last_sale_currency: null,
+          last_sale_date: null,
+          view_count: 0,
+          watchers_count: 0,
+          downvotes: 0,
+          upvotes: 0,
+          watchlist_record_id: null,
+        })
+      }
+    }
+
+    return domains
   } catch (error) {
     console.error('Error bulk fetching domain details:', error)
     return []

@@ -141,11 +141,8 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />
+          <SimilarNames name={name} categories={nameDetails?.clubs} />
         </div>
-      </div>
-      {/* Similar Names - Full width, spanning both columns */}
-      <div className='w-full'>
-        <SimilarNames name={name} categories={nameDetails?.clubs} />
       </div>
     </div>
   )

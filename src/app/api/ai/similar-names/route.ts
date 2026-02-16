@@ -126,10 +126,10 @@ async function callOpenAI(name: string, categories?: string[]): Promise<string[]
     throw new Error('No text in OpenAI response')
   }
 
-  // Parse the response - split by newlines or commas
+  // Parse the response - split by newlines or commas, strip leading list numbers (e.g. "1.", "2)", "3 ")
   const rawSuggestions = text
     .split(/[\n,]+/)
-    .map((s: string) => s.trim())
+    .map((s: string) => s.trim().replace(/^\d+[.):\-\s]+/, '').trim())
     .filter((s: string) => s.length > 0)
 
   // Normalize and validate each suggestion

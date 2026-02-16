@@ -16,7 +16,7 @@ interface Props {
 const SIMILAR_NAMES_COLUMNS: MarketplaceHeaderColumn[] = ['domain', 'price', 'owner', 'actions']
 
 const SimilarNames: React.FC<Props> = ({ name, categories }) => {
-  const { domains, isLoading, error } = useSimilarNames(name, categories)
+  const { domains, isLoading, loadingPhase, error } = useSimilarNames(name, categories)
 
   // Don't render if there's an error or no results after loading
   if (error || (!isLoading && domains.length === 0)) {
@@ -53,7 +53,9 @@ const SimilarNames: React.FC<Props> = ({ name, categories }) => {
         {isLoading ? (
           <div className='flex h-[300px] w-full animate-pulse flex-col items-center justify-center gap-3'>
             <LoadingCell height='20px' width='140px' radius='4px' />
-            <span className='text-neutral text-lg'>AI Thinking...</span>
+            <span className='text-neutral text-lg'>
+              {loadingPhase === 'ai' ? 'AI Thinking...' : 'Loading name data...'}
+            </span>
           </div>
         ) : (
           // Loaded - show domain rows

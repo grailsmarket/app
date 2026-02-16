@@ -74,6 +74,7 @@ async function callOpenAI(name: string, categories?: string[]): Promise<string[]
     input += `\ncategories: ${filteredCategories.join(', ')}`
   }
 
+  const t0 = performance.now()
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -81,15 +82,24 @@ async function callOpenAI(name: string, categories?: string[]): Promise<string[]
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-5.2-chat-latest',
+      model: 'gpt-5-nano',
       instructions: SYSTEM_PROMPT,
       input,
-      max_output_tokens: 2000,
-      store: false,
+      max_output_tokens: 1000,
+      store: true,
+      reasoning: {
+        effort: 'minimal',
+      },
+      text: {
+        format: { type: 'text' },
+      },
     }),
   })
+  const t1 = performance.now()
 
   const data = await response.json()
+  const t2 = performance.now()
+  console.log(`[similar-names] fetch: ${(t1 - t0).toFixed(0)}ms | parse: ${(t2 - t1).toFixed(0)}ms | reasoning_tokens: ${data.usage?.output_tokens_details?.reasoning_tokens ?? '?'} | output_tokens: ${data.usage?.output_tokens ?? '?'}`)
 
   // Check if response is completed (allow incomplete if we have output)
   if (data.status !== 'completed' && data.status !== 'incomplete') {

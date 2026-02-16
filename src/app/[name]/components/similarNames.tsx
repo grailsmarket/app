@@ -24,7 +24,7 @@ const SimilarNames: React.FC<Props> = ({ name, categories }) => {
   }
 
   return (
-    <div className='bg-secondary sm:border-tertiary mt-1 flex w-full flex-col gap-4 pt-4 pb-2 sm:mt-4 sm:rounded-lg sm:border-2 sm:pt-6 sm:pb-4'>
+    <div className='sm:border-tertiary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4'>
       <div className='px-lg xl:px-xl flex items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Recommended</h2>
         <span className='text-neutral text-lg'>GrailsAI (beta)</span>

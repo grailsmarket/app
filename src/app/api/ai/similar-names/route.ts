@@ -82,16 +82,17 @@ async function callOpenAI(name: string, categories?: string[]): Promise<string[]
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-5-nano',
+      model: 'gpt-5.2-2025-12-11',
       instructions: SYSTEM_PROMPT,
       input,
       max_output_tokens: 1000,
       store: true,
       reasoning: {
-        effort: 'minimal',
+        effort: 'none',
       },
       text: {
         format: { type: 'text' },
+        verbosity: 'low',
       },
     }),
   })

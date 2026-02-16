@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchNameDetails } from '@/api/name/details'
 import { MarketplaceDomainType } from '@/types/domains'
+import { API_URL } from '@/constants/api'
+import { APIResponseType, PaginationType } from '@/types/api'
 
 interface SimilarNamesAPIResponse {
   suggestions: string[]
@@ -27,23 +28,38 @@ async function fetchSimilarNames(name: string, categories?: string[]): Promise<s
 }
 
 /**
- * Fetches domain details for multiple names in parallel
+ * Fetches domain details for multiple names in a single bulk request
  */
 async function fetchDomainsForNames(names: string[]): Promise<MarketplaceDomainType[]> {
-  const domains = await Promise.all(
-    names.map(async (name) => {
-      try {
-        const details = await fetchNameDetails(`${name}.eth`)
-        return details
-      } catch (error) {
-        console.error(`Error fetching details for ${name}:`, error)
-        return null
-      }
+  try {
+    const res = await fetch(`${API_URL}/search/bulk-filters`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        terms: names,
+        page: 1,
+        limit: names.length,
+      }),
     })
-  )
 
-  // Filter out any failed fetches
-  return domains.filter((d): d is MarketplaceDomainType => d !== null)
+    if (!res.ok) {
+      throw new Error('Bulk fetch failed')
+    }
+
+    const json = (await res.json()) as APIResponseType<{
+      names: MarketplaceDomainType[]
+      results: MarketplaceDomainType[]
+      pagination: PaginationType
+    }>
+
+    return json.data.names || json.data.results || []
+  } catch (error) {
+    console.error('Error bulk fetching domain details:', error)
+    return []
+  }
 }
 
 /**
@@ -79,12 +95,14 @@ export const useSimilarNames = (ensName: string, categories?: string[]) => {
   })
 
   const isLoading = suggestionsLoading || (!!suggestions && suggestions.length > 0 && domainsLoading)
+  const loadingPhase = suggestionsLoading ? 'ai' : domainsLoading ? 'domains' : null
   const error = suggestionsError || domainsError
 
   return {
     domains: domains || [],
     suggestions: suggestions || [],
     isLoading,
+    loadingPhase,
     error,
   }
 }

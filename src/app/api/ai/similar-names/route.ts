@@ -136,7 +136,7 @@ async function callOpenAI(name: string, categories?: string[]): Promise<string[]
   const validSuggestions: string[] = []
   for (const raw of rawSuggestions) {
     const normalized = tryNormalizeName(raw)
-    if (normalized && !validSuggestions.includes(normalized)) {
+    if (normalized && normalized !== name && !validSuggestions.includes(normalized)) {
       validSuggestions.push(normalized)
       if (validSuggestions.length >= 10) break
     }

@@ -8,13 +8,13 @@ import Offers from './offers'
 import ActivityPanel from './activity'
 import Register from './register'
 import Actions from './actions'
+import SimilarNames from './similarNames'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Categories from './categories'
 import SecondaryDetails from './secondaryDetails'
 import Metadata from './metadata'
 import Roles from './roles'
-// import Metadata from './metadata'
 
 interface Props {
   name: string
@@ -141,6 +141,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />
+          <SimilarNames name={name} categories={nameDetails?.clubs} />
         </div>
       </div>
     </div>

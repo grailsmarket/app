@@ -71,8 +71,15 @@ const TopCategories = () => {
                   <LoadingCell radius='8px' height={'230px'} width={'100%'} />
                 </div>
               ))
-          : categories?.slice(0, 6).map((category) => (
-              <div className='w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]' key={category.name}>
+          : categories?.slice(0, 6).map((category, index) => (
+              <div
+                className={cn(
+                  index === 0
+                    ? 'w-full lg:w-[calc(33.33%-12px)]'
+                    : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+                )}
+                key={category.name}
+              >
                 <CategoryRow category={category} reduceColumns={true} />
               </div>
             ))}

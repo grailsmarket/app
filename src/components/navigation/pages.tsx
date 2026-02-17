@@ -14,9 +14,11 @@ import React, { useRef, useState, useEffect } from 'react'
 interface PagesProps {
   className?: string
   onClick?: () => void
+  setDropdownOption?: (option: string) => void
+  dropdownOption?: string | null
 }
 
-const Pages = ({ className, onClick }: PagesProps) => {
+const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesProps) => {
   const router = useRouter()
   const pathname = usePathname()
   const dispatch = useAppDispatch()
@@ -90,14 +92,16 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/marketplace'
         className={cn(
-          'font-medium transition-all',
-          pathname === '/marketplace' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
+          'font-medium transition-all hover-underline',
+          pathname === '/marketplace' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'explore' && 'active text-primary opacity-100',
         )}
+        onMouseEnter={() => setDropdownOption?.('explore')}
         onClick={onClick}
       >
         Explore
       </Link>
-      <p
+      {/* <p
         className='text-foreground cursor-pointer font-medium opacity-80 transition-all hover:opacity-100'
         onClick={() => {
           dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
@@ -105,13 +109,15 @@ const Pages = ({ className, onClick }: PagesProps) => {
         }}
       >
         Premium
-      </p>
+      </p> */}
       <Link
         href='/categories'
         className={cn(
-          'font-medium transition-all',
-          pathname === '/categories' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
+          'font-medium transition-all hover-underline',
+          pathname === '/categories' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'categories' && 'active text-primary opacity-100',
         )}
+        onMouseEnter={() => setDropdownOption?.('categories')}
         onClick={onClick}
       >
         Categories
@@ -119,9 +125,11 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/leaderboard'
         className={cn(
-          'font-medium transition-all',
-          pathname === '/leaderboard' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
+          'font-medium transition-all hover-underline',
+          pathname === '/leaderboard' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'leaderboard' && 'active text-primary opacity-100',
         )}
+        onMouseEnter={() => setDropdownOption?.('leaderboard')}
         onClick={onClick}
       >
         Leaderboard
@@ -129,20 +137,25 @@ const Pages = ({ className, onClick }: PagesProps) => {
       <Link
         href='/analytics'
         className={cn(
-          'font-medium transition-all',
-          pathname === '/analytics' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
+          'font-medium transition-all hover-underline',
+          pathname === '/analytics' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'analytics' && 'active text-primary opacity-100',
         )}
+        onMouseEnter={() => setDropdownOption?.('analytics')}
         onClick={onClick}
       >
         Analytics
       </Link>
+
       {userAddress && (
         <Link
           href={`/profile/${userAddress}`}
           className={cn(
-            'font-medium text-nowrap transition-all',
-            isPortfolioPage ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100'
+            'font-medium text-nowrap transition-all hover-underline',
+            isPortfolioPage ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+            dropdownOption === 'my-profile' && 'active text-primary opacity-100',
           )}
+          onMouseEnter={() => setDropdownOption?.('my-profile')}
           onClick={(e) => {
             if (!userAddress) {
               e.preventDefault()

@@ -19,8 +19,10 @@ import SignInButton from '../ui/buttons/signInButton/index'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { selectProfileListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
 import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
+import Explore from './dropdowns/explore'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
+  const [dropdownOption, setDropdownOption] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const { setNavbarVisible } = useNavbar()
@@ -59,13 +61,14 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
 
   return (
     <header
+      onMouseLeave={() => setDropdownOption(null)}
       className={cn(
-        'bg-background border-tertiary app:border-r-2 app:border-l-2 sticky top-0 left-0 z-50 mx-auto h-14 w-full max-w-[2340px] border-b-2 backdrop-blur-md transition-transform duration-300 md:h-18',
+        'bg-background border-tertiary app:border-r-2 app:border-l-2 sticky top-0 left-0 z-50 mx-auto h-14 w-full max-w-[2340px] border-b-2 transition-transform duration-300 md:h-18',
         showInfo ? 'mt-6' : '',
         !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
-      <nav className='px-md md:px-lg lg:px-xl mx-auto flex h-full max-w-[2340px] items-center justify-between'>
+      <nav className='px-md md:px-lg lg:px-xl mx-auto flex h-full max-w-[2340px] bg-background items-center z-20 relative justify-between'>
         <div className='flex items-center gap-4'>
           <Link href='/'>
             <Image
@@ -84,9 +87,9 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
-          <Pages className='hidden md:flex' />
+          <Pages className='hidden md:flex' setDropdownOption={setDropdownOption} dropdownOption={dropdownOption} />
         </div>
         <div className='flex items-center justify-end gap-3 md:gap-5'>
           <div className='flex items-center gap-3'>
@@ -99,6 +102,11 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <SignInButton />
         </div>
       </nav>
+      <div className={cn('absolute top-16 z-0 p-xl border-tertiary shadow-md border-b-2 left-0 w-full h-[460px] bg-background/80 backdrop-blur-md transition-all duration-300 starting:-translate-y-full', dropdownOption ? 'translate-y-0' : '-translate-y-full')}>
+        {dropdownOption !== null && <div className={cn('w-full', dropdownOption === 'explore' ? 'block' : 'hidden')}>
+          <Explore setDropdownOption={setDropdownOption} />
+        </div>}
+      </div>
     </header>
   )
 }

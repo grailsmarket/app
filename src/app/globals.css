@@ -413,3 +413,11 @@ body {
     transform: translateX(0);
   }
 }
+
+.sign-in-button {
+  max-width: 210px !important;
+}
+
+.signed-in-user-profile-name {
+  max-width: 126px !important;
+}

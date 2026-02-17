@@ -9,15 +9,18 @@ import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { useWindowSize, useIsClient, FollowButton } from 'ethereum-identity-kit'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { cn } from '@/utils/tailwind'
 
 interface LeaderboardRowProps {
   user: LeaderboardUser
   rank: number
+  className?: string
+  hideRows?: string[]
 }
 
 const MAX_VISIBLE_CATEGORIES = 10
 
-const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
+const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, hideRows }) => {
   const isClient = useIsClient()
   const { width } = useWindowSize()
   const { userAddress } = useUserContext()
@@ -29,7 +32,10 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
   return (
     <Link
       href={`/profile/${user.address}`}
-      className='group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
+      className={cn(
+        'group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition',
+        className
+      )}
     >
       {/* Rank */}
       <div className='text-neutral xs:min-w-[36px] w-[5%] min-w-[30px] text-center text-lg font-medium sm:min-w-[40px] sm:text-base'>
@@ -50,32 +56,52 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
       </div>
 
       {/* Names Owned */}
-      <div className='flex w-[20%] items-center sm:w-[12.5%] lg:w-[10%]'>
+      <div
+        className={cn(
+          'w-[20%] items-center sm:w-[12.5%] lg:w-[10%]',
+          hideRows?.includes('names_owned') ? 'hidden' : 'flex'
+        )}
+      >
         <span className='text-base font-medium'>{user.names_owned.toLocaleString()}</span>
       </div>
 
       {/* Category Names */}
-      <div className='hidden w-[12.5%] items-center md:flex lg:w-[10%]'>
+      <div
+        className={cn(
+          'w-[12.5%] items-center lg:w-[10%]',
+          hideRows?.includes('names_in_clubs') ? 'hidden' : 'hidden md:flex'
+        )}
+      >
         <span className='text-base font-medium'>{user.names_in_clubs.toLocaleString()}</span>
       </div>
 
       {/* Listed Names */}
-      <div className='hidden w-[12.5%] items-center md:flex lg:w-[10%]'>
+      <div
+        className={cn(
+          'w-[12.5%] items-center lg:w-[10%]',
+          hideRows?.includes('names_listed') ? 'hidden' : 'hidden md:flex'
+        )}
+      >
         <span className='text-base font-medium'>{user.names_listed.toLocaleString()}</span>
       </div>
 
       {/* Sold Names */}
-      <div className='hidden w-[10%] items-center lg:flex'>
+      <div className={cn('w-[10%] items-center', hideRows?.includes('names_sold') ? 'hidden' : 'hidden lg:flex')}>
         <span className='text-base font-medium'>{user.names_sold.toLocaleString()}</span>
       </div>
 
       {/* Expired */}
-      <div className='hidden w-[10%] items-center lg:flex'>
+      <div className={cn('w-[10%] items-center', hideRows?.includes('expired_names') ? 'hidden' : 'hidden lg:flex')}>
         <span className='text-base font-medium'>{user.expired_names.toLocaleString()}</span>
       </div>
 
       {/* Categories */}
-      <div className='flex w-[25%] max-w-[27.5%] items-center gap-0.5 sm:w-[27.5%] sm:gap-1 md:w-[20%]'>
+      <div
+        className={cn(
+          'flex w-[25%] max-w-[27.5%] items-center gap-0.5 sm:w-[27.5%] sm:gap-1 md:w-[20%]',
+          hideRows?.includes('clubs') ? 'hidden' : ''
+        )}
+      >
         <div className='flex items-center -space-x-2 sm:-space-x-1.5'>
           {visibleCategories.map((club) => {
             const categoryDetails = getCategoryDetails(club)
@@ -102,7 +128,10 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank }) => {
 
       {/* External Link Icon */}
       <div
-        className='hidden w-[7.5%] min-w-[120px] justify-end sm:flex sm:w-[5%]'
+        className={cn(
+          'hidden w-[7.5%] min-w-[120px] justify-end sm:flex sm:w-[5%]',
+          hideRows?.includes('follow_button') ? 'hidden' : ''
+        )}
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()

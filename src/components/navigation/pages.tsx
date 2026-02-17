@@ -1,27 +1,23 @@
 'use client'
 
-import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { useUserContext } from '@/context/user'
-import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
+import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import React, { useRef, useState, useEffect } from 'react'
 
 interface PagesProps {
   className?: string
   onClick?: () => void
-  setDropdownOption?: (option: string) => void
+  setDropdownOption?: (option: string | null) => void
   dropdownOption?: string | null
 }
 
 const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesProps) => {
-  const router = useRouter()
   const pathname = usePathname()
-  const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { ensProfile } = useAppSelector(selectUserProfile)
   const { openConnectModal } = useConnectModal()
@@ -92,9 +88,9 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       <Link
         href='/marketplace'
         className={cn(
-          'font-medium transition-all hover-underline',
+          'hover-underline font-medium transition-all',
           pathname === '/marketplace' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-          dropdownOption === 'explore' && 'active text-primary opacity-100',
+          dropdownOption === 'explore' && 'active text-primary opacity-100'
         )}
         onMouseEnter={() => setDropdownOption?.('explore')}
         onClick={onClick}
@@ -113,9 +109,9 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       <Link
         href='/categories'
         className={cn(
-          'font-medium transition-all hover-underline',
+          'hover-underline font-medium transition-all',
           pathname === '/categories' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-          dropdownOption === 'categories' && 'active text-primary opacity-100',
+          dropdownOption === 'categories' && 'active text-primary opacity-100'
         )}
         onMouseEnter={() => setDropdownOption?.('categories')}
         onClick={onClick}
@@ -125,9 +121,9 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       <Link
         href='/leaderboard'
         className={cn(
-          'font-medium transition-all hover-underline',
+          'hover-underline font-medium transition-all',
           pathname === '/leaderboard' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-          dropdownOption === 'leaderboard' && 'active text-primary opacity-100',
+          dropdownOption === 'leaderboard' && 'active text-primary opacity-100'
         )}
         onMouseEnter={() => setDropdownOption?.('leaderboard')}
         onClick={onClick}
@@ -137,9 +133,9 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       <Link
         href='/analytics'
         className={cn(
-          'font-medium transition-all hover-underline',
+          'hover-underline font-medium transition-all',
           pathname === '/analytics' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-          dropdownOption === 'analytics' && 'active text-primary opacity-100',
+          dropdownOption === 'analytics' && 'active text-primary opacity-100'
         )}
         onMouseEnter={() => setDropdownOption?.('analytics')}
         onClick={onClick}
@@ -151,11 +147,11 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
         <Link
           href={`/profile/${userAddress}`}
           className={cn(
-            'font-medium text-nowrap transition-all hover-underline',
+            'hover-underline font-medium text-nowrap transition-all',
             isPortfolioPage ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-            dropdownOption === 'my-profile' && 'active text-primary opacity-100',
+            dropdownOption === 'my-profile' && 'active text-primary opacity-100'
           )}
-          onMouseEnter={() => setDropdownOption?.('my-profile')}
+          onMouseEnter={() => setDropdownOption?.(null)}
           onClick={(e) => {
             if (!userAddress) {
               e.preventDefault()

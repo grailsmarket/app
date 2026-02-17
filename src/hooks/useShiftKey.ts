@@ -8,7 +8,6 @@ export const useShiftKeyListener = (canListen: boolean) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Shift' && canListen) {
-
         dispatch(setBulkSelectIsSelecting(true))
         dispatch(setIsShiftPressed(true))
       }

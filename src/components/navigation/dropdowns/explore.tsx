@@ -8,20 +8,30 @@ import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
+import Arrowdown from 'public/icons/arrow-down.svg'
+import { useWindowSize } from 'ethereum-identity-kit'
+import { cn } from '@/utils/tailwind'
+import { useAppDispatch } from '@/state/hooks'
+import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
+import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 
 interface ExploreProps {
   setDropdownOption: (option: string | null) => void
+  previousDropdownOption: string | null
 }
 
-const Explore: React.FC<ExploreProps> = ({ setDropdownOption }) => {
+const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOption }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const { width } = useWindowSize()
+  const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { data: listings, isLoading } = useQuery({
     queryKey: ['explore', 'listings'],
     queryFn: () =>
       fetchDomains({
-        limit: 4,
+        limit: 7,
         pageParam: 2,
         filters: {
           ...emptyFilterState,
@@ -43,33 +53,139 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption }) => {
       }),
   })
 
+  const cardCount = useMemo(() => {
+    if (width && width < 640) return 2
+    if (width && width < 780) return 2
+    if (width && width < 968) return 3
+    if (width && width < 1100) return 3
+    if (width && width < 1400) return 4
+    if (width && width < 1600) return 5
+    return 6
+  }, [width])
+
+  const defaultAnimationdelay = previousDropdownOption === null ? 0.2 : 0
+
+  useEffect(() => {
+    if (previousDropdownOption === null) {
+      setIsDropdownOpen(false)
+    }
+  }, [previousDropdownOption])
+
   return (
-    <div className='flex flex-row gap-8 justify-center'>
-      <div className='flex flex-col text-2xl pt-xl justify-between font-semibold gap-4 h-[400px] text-neutral w-56'>
-        <div className='flex flex-col gap-4 h-full w-fit'>
-          <div className='w-fit fadeIn' style={{ animationDelay: '0.2s' }}><Link href='/marketplace?tab=listings' className='hover:text-primary hover-underline transition-all duration-200'>Listings</Link></div>
-          <div className='w-fit fadeIn' style={{ animationDelay: '0.35s' }}><Link href='/marketplace?tab=premium' className='hover:text-primary hover-underline transition-all duration-200'>Premium Names</Link></div>
-          <div className='w-fit fadeIn' style={{ animationDelay: '0.5s' }}><Link href='/marketplace?tab=available' className='hover:text-primary hover-underline transition-all duration-200'>Available Names</Link></div>
-          <div className='w-fit fadeIn' style={{ animationDelay: '0.65s' }}><Link href='/marketplace?tab=activity' className='hover:text-primary hover-underline transition-all duration-200'>Activity</Link></div>
+    <div
+      className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center xl:gap-8'
+      style={{ height: width && width < 768 ? (isDropdownOpen ? '260px' : '40px') : 'auto' }}
+    >
+      <div
+        className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+      >
+        <h3 className='text-3xl font-semibold'>Explore</h3>
+        <Image
+          src={Arrowdown}
+          alt='Arrow Down'
+          width={20}
+          height={20}
+          className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
+        />
+      </div>
+      <div className='pl-lg md:pt-xl text-neutral flex h-fit w-56 flex-col justify-between gap-4 text-2xl font-semibold md:h-[400px] md:pl-0'>
+        <div className='flex h-full w-fit flex-col gap-4'>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
+            <Link
+              href='/marketplace?tab=listings'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
+                setDropdownOption(null)
+              }}
+            >
+              Listings
+            </Link>
+          </div>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
+            <Link
+              href='/marketplace?tab=premium'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+                setDropdownOption(null)
+              }}
+            >
+              Premium Names
+            </Link>
+          </div>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
+            <Link
+              href='/marketplace?tab=available'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[3]))
+                setDropdownOption(null)
+              }}
+            >
+              Available Names
+            </Link>
+          </div>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.45}s` }}>
+            <Link
+              href='/marketplace?tab=activity'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[4]))
+                setDropdownOption(null)
+              }}
+            >
+              Activity
+            </Link>
+          </div>
         </div>
-        <div className='py-md border-t border-neutral w-full slideInLeft' style={{ animationDelay: '0.7s' }}>
-          <Link href='/marketplace' onClick={() => setDropdownOption(null)} className='hover:text-primary flex group items-center gap-2'>
+        <div
+          className='md:py-md border-neutral slideInLeft w-full md:border-t'
+          style={{ animationDelay: `${defaultAnimationdelay + 0.6}s` }}
+        >
+          <Link
+            href='/marketplace?tab=names'
+            onClick={() => {
+              dispatch(changeMarketplaceTab(MARKETPLACE_TABS[0]))
+              setDropdownOption(null)
+            }}
+            className='hover:text-primary group flex items-center gap-2'
+          >
             <p className='group-hover:text-primary hover-underline transition-colors duration-300'>View All Names</p>
             <Image
               src={ArrowRight}
               alt='Arrow Right'
               width={20}
               height={20}
-              className='group-hover:rotate-90 transition-transform duration-300 ease-out opacity-50 group-hover:opacity-100'
+              className='hidden opacity-50 transition-transform duration-300 ease-out group-hover:rotate-90 group-hover:opacity-100 md:block'
             />
-          </Link></div>
+          </Link>
+        </div>
       </div>
-      <div className='grid grid-cols-4 gap-4 w-fit overflow-scroll'>
-        {isLoading ? Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className='h-[400px] w-[220px] fadeIn' style={{ animationDelay: `${0.2 + index * 0.15}s` }}><LoadingCard /></div>
-        )) : listings?.domains.map((domain, index) => (
-          <div key={domain.name} className='bg-secondary h-[400px] w-[220px] fadeIn' style={{ animationDelay: `${0.2 + index * 0.15}s` }}><Card domain={domain} /></div>
-        ))}
+      <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
+        {isLoading
+          ? Array.from({ length: cardCount }).map((_, index) => (
+              <div
+                key={index}
+                className='fadeIn h-[400px] w-[220px]'
+                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+              >
+                <LoadingCard />
+              </div>
+            ))
+          : listings?.domains.slice(0, cardCount).map((domain, index) => (
+              <div
+                key={domain.name}
+                className='bg-secondary fadeIn h-[400px] w-[220px]'
+                onClick={() => {
+                  setDropdownOption(null)
+                }}
+                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+              >
+                <Card domain={domain} />
+              </div>
+            ))}
       </div>
     </div>
   )

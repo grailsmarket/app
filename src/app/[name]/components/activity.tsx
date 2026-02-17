@@ -18,9 +18,10 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
         'sm:border-tertiary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4',
         isActivityEmpty && 'pb-6'
       )}
+      style={{ maxHeight: '580px', overflow: 'hidden' }}
     >
       <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
-      <div className='w-full'>
+      <div className='px-md w-full overflow-y-auto sm:px-0'>
         <Activity
           paddingBottom='0px'
           activity={activity}

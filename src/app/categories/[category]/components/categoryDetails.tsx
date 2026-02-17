@@ -138,6 +138,16 @@ import GenAlphaAvatar from 'public/clubs/gen_alpha/avatar.jpg'
 import GenAlphaHeader from 'public/clubs/gen_alpha/header.jpg'
 import HistoricFiguresAvatar from 'public/clubs/historic_figures/avatar.jpg'
 import HistoricFiguresHeader from 'public/clubs/historic_figures/header.jpg'
+import ConspiracyTheoriesAvatar from 'public/clubs/conspiracy_theories/avatar.jpg'
+import ConspiracyTheoriesHeader from 'public/clubs/conspiracy_theories/header.jpg'
+import MemesAvatar from 'public/clubs/memes/avatar.jpg'
+import MemesHeader from 'public/clubs/memes/header.jpg'
+import NaturalWondersAvatar from 'public/clubs/natural_wonders/avatar.jpeg'
+import NaturalWondersHeader from 'public/clubs/natural_wonders/header.jpg'
+import CurrencyNamesAvatar from 'public/clubs/currency_names/avatar.jpg'
+import CurrencyNamesHeader from 'public/clubs/currency_names/header.jpg'
+import CurrencySymbolsAvatar from 'public/clubs/currency_symbols/avatar.jpg'
+import CurrencySymbolsHeader from 'public/clubs/currency_symbols/header.jpg'
 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
@@ -389,6 +399,26 @@ export const CATEGORY_IMAGES = {
   historic_figures: {
     avatar: HistoricFiguresAvatar,
     header: HistoricFiguresHeader,
+  },
+  conspiracy_theories: {
+    avatar: ConspiracyTheoriesAvatar,
+    header: ConspiracyTheoriesHeader,
+  },
+  memes: {
+    avatar: MemesAvatar,
+    header: MemesHeader,
+  },
+  natural_wonders: {
+    avatar: NaturalWondersAvatar,
+    header: NaturalWondersHeader,
+  },
+  currency_names: {
+    avatar: CurrencyNamesAvatar,
+    header: CurrencyNamesHeader,
+  },
+  currency_symbols: {
+    avatar: CurrencySymbolsAvatar,
+    header: CurrencySymbolsHeader,
   },
 }
 

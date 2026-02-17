@@ -86,3 +86,20 @@ export type BadgesResponseType = {
   address: Address
   legends: Record<string, BadgeType>
 }
+
+export type MetadataType = {
+  label: string
+  value: string
+  canCopy: boolean
+}
+
+export type RolesType = {
+  name: string
+  owner: Address
+  manager: Address
+  ethAddress: Address
+  isWrapped: boolean
+  fuses: null | number
+  expiryDate: number
+  resolver: Address
+}

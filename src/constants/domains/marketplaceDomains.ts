@@ -188,4 +188,9 @@ export const CATEGORY_LABELS = {
   finance_terms: 'Finance Terms',
   gen_alpha: 'Gen Alpha',
   historic_figures: 'Historical Figures',
+  conspiracy_theories: 'Conspiracy Theories',
+  memes: 'Memes',
+  natural_wonders: 'Natural Wonders',
+  currency_names: 'Currency Names',
+  currency_symbols: 'Currency Symbols',
 } as const

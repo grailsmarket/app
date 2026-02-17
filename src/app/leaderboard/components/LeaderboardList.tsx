@@ -44,7 +44,7 @@ const LoadingRow = () => (
       <LoadingCell width='24px' height='24px' radius='50%' />
     </div>
     <div className='hidden w-[5%] sm:block'></div> */}
-    <div className='xs:min-w-[36px] w-[5%] min-w-[30px] flex justify-center sm:min-w-[40px]'>
+    <div className='xs:min-w-[36px] flex w-[5%] min-w-[30px] justify-center sm:min-w-[40px]'>
       <LoadingCell width='30px' height='20px' />
     </div>
     <div className='text-neutral text-md w-[40%] font-medium md:w-[25%]'>
@@ -81,7 +81,7 @@ const LoadingRow = () => (
       <LoadingCell width='24px' height='24px' radius='50%' />
       <LoadingCell width='24px' height='24px' radius='50%' />
     </div>
-    <div className='hidden w-[5%] min-w-[120px] sm:flex justify-end'>
+    <div className='hidden w-[5%] min-w-[120px] justify-end sm:flex'>
       <LoadingCell width='110px' height='37px' radius='8px' />
     </div>
   </div>

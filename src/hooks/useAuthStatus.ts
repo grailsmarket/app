@@ -17,6 +17,7 @@ import {
 import { Address } from 'viem'
 
 export const useAuth = () => {
+  const [isSigningIn, setIsSigningIn] = useState(false)
   const [currAddress, setCurrAddress] = useState<Address | null>(null)
   const { address } = useAccount()
   const dispatch = useAppDispatch()
@@ -43,30 +44,46 @@ export const useAuth = () => {
   } = useQuery<AuthenticationStatus>({
     queryKey: ['auth', 'status', address],
     queryFn: async () => {
-      const authenticateRes = await checkAuthentication()
+      try {
+        const token = document.cookie
+          .split(';')
+          .find((cookie) => cookie.trim().startsWith('token='))
+          ?.split('=')[1]
+        if (token && token.length > 0) {
+          console.log('token found')
+          setIsSigningIn(true)
+        }
 
-      if (authenticateRes.success) {
-        dispatch(setUserId(authenticateRes.data.id))
-        dispatch(setUserEmail({ address: authenticateRes.data.email, verified: authenticateRes.data.emailVerified }))
-        dispatch(setUserDiscord(authenticateRes.data.discord))
-        dispatch(setUserTelegram(authenticateRes.data.telegram))
-        return 'authenticated'
+        const authenticateRes = await checkAuthentication()
+
+        if (authenticateRes.success) {
+          dispatch(setUserId(authenticateRes.data.id))
+          dispatch(setUserEmail({ address: authenticateRes.data.email, verified: authenticateRes.data.emailVerified }))
+          dispatch(setUserDiscord(authenticateRes.data.discord))
+          dispatch(setUserTelegram(authenticateRes.data.telegram))
+          return 'authenticated'
+        }
+
+        dispatch(resetUserProfile())
+
+        // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
+        // check if the token exists, since auth verification fialed, the user should be disconnected
+        // const token = document.cookie
+        //   .split(';')
+        //   .find((cookie) => cookie.trim().startsWith('token='))
+        //   ?.split('=')[1]
+        // if ((token && token.length > 0)) {
+        //   disconnect()
+        //   document.cookie = `token=; path=/; max-age=0;`
+        // }
+
+        return 'unauthenticated'
+      } catch (error) {
+        console.error('Error checking authentication:', error)
+        return 'unauthenticated'
+      } finally {
+        setIsSigningIn(false)
       }
-
-      dispatch(resetUserProfile())
-
-      // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
-      // check if the token exists, since auth verification fialed, the user should be disconnected
-      // const token = document.cookie
-      //   .split(';')
-      //   .find((cookie) => cookie.trim().startsWith('token='))
-      //   ?.split('=')[1]
-      // if ((token && token.length > 0)) {
-      //   disconnect()
-      //   document.cookie = `token=; path=/; max-age=0;`
-      // }
-
-      return 'unauthenticated'
     },
     placeholderData: 'loading',
     initialData: 'loading',
@@ -129,8 +146,8 @@ export const useAuth = () => {
     signOut,
     disconnect,
     authStatus,
-    authStatusIsLoading,
-    authStatusIsRefetching,
+    authStatusIsLoading: authStatusIsLoading || isSigningIn,
+    authStatusIsRefetching: authStatusIsRefetching || isSigningIn,
     refetchAuthStatus,
   }
 }

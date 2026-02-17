@@ -252,6 +252,26 @@ export const CATEGORY_IMAGES = {
     avatar: 'https://grails.app/clubs/historic_figures/avatar.jpg',
     header: 'https://grails.app/clubs/historic_figures/header.jpg',
   },
+  conspiracy_theories: {
+    avatar: 'https://grails.app/clubs/conspiracy_theories/avatar.jpg',
+    header: 'https://grails.app/clubs/conspiracy_theories/header.jpg',
+  },
+  memes: {
+    avatar: 'https://grails.app/clubs/memes/avatar.jpg',
+    header: 'https://grails.app/clubs/memes/header.jpg',
+  },
+  natural_wonders: {
+    avatar: 'https://grails.app/clubs/natural_wonders/avatar.jpeg',
+    header: 'https://grails.app/clubs/natural_wonders/header.jpg',
+  },
+  currency_names: {
+    avatar: 'https://grails.app/clubs/currency_names/avatar.jpg',
+    header: 'https://grails.app/clubs/currency_names/header.jpg',
+  },
+  currency_symbols: {
+    avatar: 'https://grails.app/clubs/currency_symbols/avatar.jpg',
+    header: 'https://grails.app/clubs/currency_symbols/header.jpg',
+  },
 }
 
 export async function GET(req: NextRequest) {

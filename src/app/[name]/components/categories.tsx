@@ -49,7 +49,7 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
               <Link
                 key={club}
                 href={`/categories/${club}`}
-                className='px-md bg-tertiary py-md hover:bg-foreground/20 relative flex min-w-fit gap-1 overflow-hidden rounded-lg font-medium transition-colors'
+                className='px-md bg-tertiary py-md hover:bg-foreground/20 relative flex w-full gap-1 overflow-hidden rounded-lg font-medium transition-colors'
               >
                 <Image
                   src={categoryDetails.header}
@@ -58,7 +58,7 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
                   height={1000}
                   className='absolute top-0 left-0 h-full w-full object-cover opacity-20'
                 />
-                <div className='relative z-10 flex flex-row items-center gap-2'>
+                <div className='relative z-10 flex w-full flex-row items-center gap-2'>
                   <Image
                     src={categoryDetails.avatar}
                     alt={club}
@@ -66,10 +66,10 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
                     height={40}
                     className='aspect-square! rounded-full'
                   />
-                  <div>
+                  <div className='max-w-[calc(100%-60px)]'>
                     <p className='text-xl font-semibold text-nowrap'>{categoryDetails.name}</p>
                     {category && (
-                      <p className='text-neutral max-w-[calc(100%-20px)] truncate text-lg font-medium text-nowrap'>
+                      <p className='text-neutral max-w-full truncate text-lg font-medium text-nowrap'>
                         {category.description}
                       </p>
                     )}

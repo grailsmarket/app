@@ -10,6 +10,7 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { ShortArrow } from 'ethereum-identity-kit'
 import { CopyValue } from './primaryDetails'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
+import { RolesType } from '@/types/api'
 
 type Row = {
   label: string
@@ -20,9 +21,10 @@ type Row = {
 interface NameDetailsProps {
   nameDetails?: MarketplaceDomainType | null
   nameDetailsIsLoading: boolean
+  roles?: RolesType | null
 }
 
-const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoading }) => {
+const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoading, roles }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(true)
   const { ethPrice } = useETHPrice()
 
@@ -90,6 +92,12 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
                   </div>
                 )
               })}
+            {roles && (
+              <div key='roles' className='bg-secondary border-neutral pl-md flex w-full flex-col border-l-2'>
+                <CopyValue value={roles.resolver} canCopy={true} truncateValue={true} />
+                <p className='text-neutral text-lg font-medium'>Resolver</p>
+              </div>
+            )}
           </div>
         ))}
     </div>

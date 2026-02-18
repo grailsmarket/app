@@ -14,28 +14,7 @@ interface Props {
 const SIMILAR_NAMES_COLUMNS: MarketplaceHeaderColumn[] = ['domain', 'price', 'owner', 'actions']
 
 const SimilarNames: React.FC<Props> = ({ name }) => {
-  const { domains, isLoading, loadingPhase, status } = useSimilarNames(name)
-  const [showAiThinkingLabel, setShowAiThinkingLabel] = React.useState(false)
-
-  React.useEffect(() => {
-    if (!(isLoading && loadingPhase === 'ai')) {
-      setShowAiThinkingLabel(false)
-      return
-    }
-
-    // Avoid flicker for quick cache hits; only show after a short delay.
-    const timer = window.setTimeout(() => {
-      setShowAiThinkingLabel(true)
-    }, 600)
-
-    return () => {
-      window.clearTimeout(timer)
-    }
-  }, [isLoading, loadingPhase])
-
-  if (status === 'error' || status === 'empty') {
-    return null
-  }
+  const { domains, isLoading, loadingPhase, suggestionsStatus } = useSimilarNames(name)
 
   return (
     <div className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'>
@@ -45,38 +24,36 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
       </div>
 
       <div className='relative w-full'>
-        <div className='border-tertiary px-md md:p-md lg:p-lg flex h-[40px] w-full flex-row items-center justify-between border-b'>
-          {SIMILAR_NAMES_COLUMNS.map((column) => (
-            <div
-              key={column}
-              className={cn(
-                'text-neutral text-sm font-medium',
-                column === 'domain' && 'w-[35%]',
-                column === 'price' && 'w-[25%]',
-                column === 'owner' && 'w-[25%]',
-                column === 'actions' && 'w-[15%] text-right'
-              )}
-            >
-              {column === 'domain' ? 'Name' : column === 'price' ? 'Price' : column === 'owner' ? 'Owner' : ''}
-            </div>
-          ))}
-        </div>
-
-        {status === 'login_required' ? (
-          <div className='text-neutral flex h-[180px] w-full items-center justify-center px-4 text-center text-base sm:text-lg'>
-            Sign in to generate fresh AI recommendations for this name.
+        {suggestionsStatus === 'login_required' ? (
+          <div className='text-neutral py-2xl flex w-full items-center justify-center px-4 text-center text-base sm:text-lg'>
+            Sign in to generate AI recommendations for this name.
           </div>
         ) : isLoading ? (
           <div className='flex h-[300px] w-full animate-pulse flex-col items-center justify-center gap-3'>
             <LoadingCell height='20px' width='140px' radius='4px' />
             <span className='text-neutral text-lg'>
-              {loadingPhase === 'ai' && showAiThinkingLabel ? 'AI Thinking...' : 'Loading name data...'}
+              {loadingPhase === 'suggestions' ? 'AI Thinking...' : 'Loading name data...'}
             </span>
           </div>
-        ) : (
-          domains
-            .slice(0, 10)
-            .map((domain, index) => (
+        ) : domains.length > 0 ? (
+          <>
+            <div className='border-tertiary px-md md:p-md lg:p-lg flex h-[40px] w-full flex-row items-center justify-between border-b'>
+              {SIMILAR_NAMES_COLUMNS.map((column) => (
+                <div
+                  key={column}
+                  className={cn(
+                    'text-neutral text-sm font-medium',
+                    column === 'domain' && 'w-[35%]',
+                    column === 'price' && 'w-[25%]',
+                    column === 'owner' && 'w-[25%]',
+                    column === 'actions' && 'w-[15%] text-right'
+                  )}
+                >
+                  {column === 'domain' ? 'Name' : column === 'price' ? 'Price' : column === 'owner' ? 'Owner' : ''}
+                </div>
+              ))}
+            </div>
+            {domains.slice(0, 10).map((domain, index) => (
               <TableRow
                 key={domain.name}
                 domain={domain}
@@ -84,7 +61,12 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
                 displayedColumns={SIMILAR_NAMES_COLUMNS}
                 hideCartIcon
               />
-            ))
+            ))}
+          </>
+        ) : (
+          <div className='py-2xl flex w-full flex-col items-center justify-center gap-3'>
+            <p className='text-neutral text-lg'>No recommendations found</p>
+          </div>
         )}
       </div>
     </div>

@@ -16,7 +16,7 @@ export const fetchNameDetails = async (name: string) => {
 
     const data = (await response.json()) as APIResponseType<MarketplaceDomainType>
 
-    if (!data.success) throw new Error(data.error)
+    if (!data.success) throw new Error(data.error?.message || 'Failed to fetch name details')
 
     return data.data
   } catch (err) {

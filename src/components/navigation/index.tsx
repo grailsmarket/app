@@ -113,13 +113,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
             />
           </Link>
-          <div
-            className='hidden lg:block'
-            onMouseEnter={() => {
-              setPreviousDropdownOption(dropdownOption)
-              handleDropdownOption(null)
-            }}
-          >
+          <div className='hidden lg:block'>
             <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages

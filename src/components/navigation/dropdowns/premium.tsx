@@ -188,26 +188,26 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
       <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-            <div
-              key={index}
-              className='fadeIn h-[400px] w-[220px]'
-              style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
-            >
-              <LoadingCard />
-            </div>
-          ))
+              <div
+                key={index}
+                className='fadeIn h-[400px] w-[220px]'
+                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+              >
+                <LoadingCard />
+              </div>
+            ))
           : premium?.domains.slice(0, cardCount).map((domain, index) => (
-            <div
-              key={domain.name}
-              className='bg-secondary fadeIn h-[400px] w-[220px]'
-              onClick={() => {
-                setDropdownOption(null)
-              }}
-              style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
-            >
-              <Card domain={domain} />
-            </div>
-          ))}
+              <div
+                key={domain.name}
+                className='bg-secondary fadeIn h-[400px] w-[220px]'
+                onClick={() => {
+                  setDropdownOption(null)
+                }}
+                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+              >
+                <Card domain={domain} />
+              </div>
+            ))}
       </div>
     </div>
   )

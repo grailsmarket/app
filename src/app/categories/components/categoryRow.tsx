@@ -13,11 +13,12 @@ import { cn } from '@/utils/tailwind'
 interface CategoryRowProps {
   category: CategoryType
   reduceColumns?: boolean
+  sort?: string
 }
 
-const CategoryRow = ({ category, reduceColumns = false }: CategoryRowProps) => {
+const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps) => {
   const categoriesFilters = useAppSelector(selectCategoriesPageFilters)
-  const categorySort = categoriesFilters.sort
+  const categorySort = sort || categoriesFilters.sort
 
   const salesTimeWindow = useMemo(() => {
     switch (categorySort) {

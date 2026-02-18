@@ -67,16 +67,16 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
     return (
       <div
         className={cn(
-          'bg-background px-sm sm:px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-lg xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-4',
+          'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 lg:gap-4',
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
         <div className='flex items-center justify-between gap-3 md:gap-4'>
           <button
-            className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+            className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
-            <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+            <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
           </button>
           <div ref={containerRef} className='relative flex h-10 gap-4'>
             <div
@@ -99,7 +99,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
             ))}
           </div>
         </div>
-        <div className='hidden items-center gap-2 md:flex'>
+        <div className='hidden items-center md:flex'>
           {selectedTab.value !== 'activity' && <DownloadButton />}
           {selectedTab.value !== 'activity' && <ViewSelector />}
         </div>
@@ -111,16 +111,16 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
   return (
     <div
       className={cn(
-        'bg-background px-sm sm:px-md md:px-lg border-tertiary xs:text-lg text-md lg:px-lg xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-4',
+        'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 lg:gap-4',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
       <div className='flex items-center justify-between gap-3 md:gap-4'>
         <button
-          className='border-foreground flex h-9 min-h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:min-h-10 md:w-10 md:min-w-10'
+          className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
           onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
         >
-          <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+          <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
         </button>
         <div ref={containerRef} className='relative flex h-10 gap-4'>
           <div
@@ -143,7 +143,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
           ))}
         </div>
       </div>
-      <div className='hidden items-center gap-2 md:flex'>
+      <div className='hidden items-center md:flex'>
         {selectedTab.value !== 'activity' && <DownloadButton />}
         {selectedTab.value !== 'activity' && <ViewSelector />}
       </div>

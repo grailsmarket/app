@@ -132,12 +132,18 @@ const DownloadButton = ({ ownerAddress, category, inAnyCategory = false }: Downl
       <button
         disabled={authStatus !== 'authenticated'}
         onClick={handleDownload}
-        className='border-foreground flex h-9 w-9 items-center justify-center rounded-sm border opacity-40 transition-opacity hover:opacity-80 disabled:opacity-20 disabled:hover:opacity-20 md:h-10 md:w-10'
+        className='border-foreground md:border-tertiary md:hover:bg-secondary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-40 transition-all hover:opacity-80 disabled:opacity-20 disabled:hover:opacity-20 md:h-14 md:w-14 md:rounded-none md:border-0 md:border-l-2 md:opacity-100'
       >
         {isDownloading ? (
-          <div className='border-foreground inline-block h-5 w-5 animate-spin rounded-full border-r-2 border-b-2'></div>
+          <div className='border-foreground md:border-neutral inline-block h-5 w-5 animate-spin rounded-full border-r-2 border-b-2 md:h-6 md:w-6'></div>
         ) : (
-          <Image src={DownloadIcon} alt='Download' width={20} height={20} />
+          <Image
+            src={DownloadIcon}
+            alt='Download'
+            width={24}
+            height={24}
+            className='h-5 w-5 md:h-6 md:w-6 md:opacity-50'
+          />
         )}
       </button>
     </Tooltip>

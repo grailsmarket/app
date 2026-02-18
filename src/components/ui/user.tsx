@@ -86,7 +86,7 @@ const User: React.FC<UserProps> = ({
             fallback={DEFAULT_FALLBACK_AVATAR}
             style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
           />
-          <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
+          <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 5}px)` }}>
             <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
               {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
             </p>

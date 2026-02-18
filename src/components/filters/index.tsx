@@ -67,7 +67,7 @@ const FilterPanel: React.FC = () => {
         'bg-background border-tertiary z-50 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
         isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-[58px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
+        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles

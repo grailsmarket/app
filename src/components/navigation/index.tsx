@@ -22,8 +22,10 @@ import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryD
 import Explore from './dropdowns/explore'
 import Categories from './dropdowns/categories'
 import CrossIcon from 'public/icons/cross.svg'
+// import ArrowrightIcon from 'public/icons/arrow-back.svg'
 import Analytics from './dropdowns/analytics'
 import Premium from './dropdowns/premium'
+import { useUserContext } from '@/context/user'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [dropdownOption, setDropdownOption] = useState<string | null>(null)
@@ -31,7 +33,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const { setNavbarVisible } = useNavbar()
-
+  const { userAddress } = useUserContext()
   // Check if any filter panel is open
   const marketplaceFilters = useAppSelector(selectMarketplaceFilters)
   const profileFilters = useAppSelector(selectProfileListingsFilters)
@@ -177,6 +179,19 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <Image src={CrossIcon} alt='Cross' width={14} height={14} />
           <p>Close</p>
         </div>
+        {userAddress && (
+          <Link
+            href={`/profile/${userAddress}`}
+            onClick={() => {
+              setPreviousDropdownOption(dropdownOption)
+              setDropdownOption(null)
+            }}
+            className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
+          >
+            <h3 className='text-3xl font-semibold'>My Profile</h3>
+            {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
+          </Link>
+        )}
         <div
           className={cn(
             'border-neutral w-full border-b-2 md:border-none',

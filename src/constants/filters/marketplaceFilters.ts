@@ -199,6 +199,8 @@ export const ALL_SORT_FILTERS = [
   'view_count_desc',
   'clubs_count_asc',
   'clubs_count_desc',
+  'creation_date_asc',
+  'creation_date_desc',
 ] as const
 
 // Sort types for the dropdown (without direction)
@@ -211,6 +213,7 @@ export const SORT_TYPES = [
   'offer',
   'view_count',
   'clubs_count',
+  'creation_date',
   'alphabetical',
 ] as const
 
@@ -226,6 +229,7 @@ export const SORT_TYPE_LABELS: Record<SortType, string> = {
   view_count: 'View Count',
   alphabetical: 'Alphabetical',
   clubs_count: 'Categories Count',
+  creation_date: 'Creation Date',
 }
 
 export const SORT_FILTER_LABELS = {
@@ -247,4 +251,6 @@ export const SORT_FILTER_LABELS = {
   alphabetical_desc: 'Alphabetical (Z-A)',
   clubs_count_asc: 'Clubs Count (Low to High)',
   clubs_count_desc: 'Categories Count (High to Low)',
+  creation_date_asc: 'Creation Date (Old to New)',
+  creation_date_desc: 'Creation Date (New to Old)',
 }

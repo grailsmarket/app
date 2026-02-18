@@ -14,6 +14,7 @@ import Categories from './categories'
 import SecondaryDetails from './secondaryDetails'
 import Metadata from './metadata'
 import Roles from './roles'
+import KeywordMetrics from './keywordMetrics'
 // import Metadata from './metadata'
 
 interface Props {
@@ -84,6 +85,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden lg:block'>
+            <KeywordMetrics name={name} expiryDate={nameDetails?.expiry_date} />
+          </div>
+          <div className='hidden lg:block'>
             <Metadata
               name={name}
               nameOwner={nameDetails?.owner}
@@ -119,6 +123,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
           )}
           <div className='lg:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
+          </div>
+          <div className='lg:hidden'>
+            <KeywordMetrics name={name} expiryDate={nameDetails?.expiry_date} />
           </div>
           <div className='lg:hidden'>
             <Metadata

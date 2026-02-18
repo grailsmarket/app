@@ -21,6 +21,7 @@ import {
 } from '@/app/analytics/hooks/useAnalyticsData'
 import TopListCard from '@/app/analytics/components/TopListCard'
 import { setCategory, setPeriod, setSource } from '@/state/reducers/analytics'
+import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 
 interface AnalyticsProps {
   setDropdownOption: (option: string | null) => void
@@ -39,7 +40,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
   const { data: registrationsData, isLoading: registrationsLoading } = useTopRegistrations()
   const { data: registrationChartData, isLoading: registrationChartLoading } = useRegistrationsChart()
 
-  const defaultAnimationdelay = previousDropdownOption === null ? 0.2 : 0
+  const defaultAnimationdelay = previousDropdownOption === null ? DEFAULT_ANIMATION_DELAY : 0
 
   useEffect(() => {
     if (previousDropdownOption === null) {
@@ -93,7 +94,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                 Leaderboard
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}>
               <Link
                 href='/analytics'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -117,7 +118,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                 No Categories
               </Link>
             </div> */}
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}>
               <Link
                 href='/analytics'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -129,7 +130,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                 Grails
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.45}s` }}>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 3}s` }}>
               <Link
                 href='/analytics'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -141,7 +142,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                 OpenSea
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.6}s` }}>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 4}s` }}>
               <Link
                 href='/analytics'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -153,7 +154,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                 Last Week
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.75}s` }}>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 5}s` }}>
               <Link
                 href='/analytics'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -169,7 +170,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
         </div>
         <div
           className='md:py-md border-neutral slideInLeft hidden w-full md:block md:border-t'
-          style={{ animationDelay: `${defaultAnimationdelay + 0.9}s` }}
+          style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 6}s` }}
         >
           <Link
             href='/analytics'
@@ -203,7 +204,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
             volumeLoading={volumeChartLoading}
           />
         </div>
-        <div className='fadeIn hidden 2xl:flex' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
+        <div className='fadeIn hidden 2xl:flex' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}>
           <TopListCard
             title='Top Offers'
             type='offers'
@@ -213,7 +214,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
             chartLoading={offerChartLoading}
           />
         </div>
-        <div className='fadeIn hidden lg:flex' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
+        <div className='fadeIn hidden lg:flex' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}>
           <TopListCard
             title='Top Registrations'
             type='registrations'

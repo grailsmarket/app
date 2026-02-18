@@ -77,6 +77,18 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
     }
   }, [dropdownOption])
 
+  // Lock body scroll when dropdown is open on mobile
+  useEffect(() => {
+    if (dropdownOption) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [dropdownOption])
+
   return (
     <header
       onMouseLeave={() => {
@@ -114,7 +126,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
             className='hidden md:flex'

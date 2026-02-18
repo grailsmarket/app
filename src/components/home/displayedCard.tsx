@@ -105,7 +105,7 @@ const DisplayedCards: React.FC = () => {
             >
               <Card
                 domain={domain}
-                className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100! fadeIn'
+                className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
               />
             </div>
           )

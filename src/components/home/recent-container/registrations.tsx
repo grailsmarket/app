@@ -40,7 +40,7 @@ const Registrations = () => {
                 <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
               </div>
             ))
-          : registrationsData?.data?.results?.map((registration, index) => (
+          : registrationsData?.data?.results?.slice(0, 7).map((registration, index) => (
               <div key={registration.id}>
                 <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
               </div>

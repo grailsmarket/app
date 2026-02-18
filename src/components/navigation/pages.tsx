@@ -1,13 +1,15 @@
 'use client'
 
+import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { useUserContext } from '@/context/user'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { changeMarketplaceTab, selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useEffect } from 'react'
 
 interface PagesProps {
   className?: string
@@ -18,52 +20,39 @@ interface PagesProps {
 
 const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesProps) => {
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { ensProfile } = useAppSelector(selectUserProfile)
   const { openConnectModal } = useConnectModal()
 
+  const { selectedTab } = useAppSelector(selectMarketplace)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const isPortfolioPage = pathname === `/profile/${userAddress}` || pathname === `/profile/${ensProfile?.name}`
+  const handleMouseEnter = (option: string | null) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    hoverTimeoutRef.current = setTimeout(
+      () => {
+        setDropdownOption?.(option)
+      },
+      dropdownOption ? 0 : 75
+    )
+  }
 
-  // Determine which link is active
-  const getActiveIndex = () => {
-    // if (pathname === '/') return 0
-    if (pathname === '/marketplace') return 0
-    if (pathname === '/categories') return 1
-    if (pathname === '/leaderboard') return 2
-    if (pathname === '/analytics') return 3
-    if (isPortfolioPage && userAddress) return 4
-    return -1
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
   }
 
   useEffect(() => {
-    const updateIndicator = () => {
-      const container = containerRef.current
-      if (!container) return
-
-      const activeIndex = getActiveIndex()
-      if (activeIndex === -1) {
-        setIndicatorStyle({ left: 0, width: 0 })
-        return
-      }
-
-      const links = container.querySelectorAll('a')
-      const activeLink = links[activeIndex] as HTMLElement
-      if (activeLink) {
-        setIndicatorStyle({
-          left: activeLink.offsetLeft,
-          width: activeLink.offsetWidth,
-        })
-      }
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
     }
+  }, [])
 
-    updateIndicator()
-    window.addEventListener('resize', updateIndicator)
-    return () => window.removeEventListener('resize', updateIndicator)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, userAddress, isPortfolioPage])
+  const isPortfolioPage = pathname === `/profile/${userAddress}` || pathname === `/profile/${ensProfile?.name}`
 
   return (
     <div
@@ -71,10 +60,10 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       className={cn('text-md relative flex flex-col gap-4 text-xl md:flex-row md:items-center', className)}
     >
       {/* Animated underline indicator - desktop only */}
-      <div
+      {/* <div
         className='bg-primary absolute -bottom-0.5 hidden h-0.5 rounded-full transition-all duration-300 ease-out md:block'
         style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-      />
+      /> */}
       {/* <Link
         href='/'
         className={cn(
@@ -89,55 +78,62 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
         href='/marketplace'
         className={cn(
           'hover-underline font-medium transition-all',
-          pathname === '/marketplace' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          pathname === '/marketplace' && selectedTab?.value !== 'premium'
+            ? 'text-primary active font-bold!'
+            : 'text-foreground opacity-80 hover:opacity-100',
           dropdownOption === 'explore' && 'active text-primary opacity-100'
         )}
-        onMouseEnter={() => setDropdownOption?.('explore')}
-        onClick={onClick}
+        onMouseEnter={() => handleMouseEnter('explore')}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => {
+          dispatch(changeMarketplaceTab(MARKETPLACE_TABS[0]))
+          onClick?.()
+        }}
       >
         Explore
       </Link>
-      {/* <p
-        className='text-foreground cursor-pointer font-medium opacity-80 transition-all hover:opacity-100'
+      <Link
+        href='/marketplace?tab=premium'
+        className={cn(
+          'hover-underline font-medium transition-all',
+          pathname === '/marketplace' && selectedTab?.value === 'premium'
+            ? 'text-primary active font-bold!'
+            : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'premium' && 'active text-primary opacity-100'
+        )}
+        onMouseEnter={() => handleMouseEnter('premium')}
+        onMouseLeave={handleMouseLeave}
         onClick={() => {
           dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
-          router.push('/marketplace')
+          onClick?.()
         }}
       >
         Premium
-      </p> */}
+      </Link>
       <Link
         href='/categories'
         className={cn(
           'hover-underline font-medium transition-all',
-          pathname === '/categories' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          pathname === '/categories'
+            ? 'text-primary active font-bold!'
+            : 'text-foreground opacity-80 hover:opacity-100',
           dropdownOption === 'categories' && 'active text-primary opacity-100'
         )}
-        onMouseEnter={() => setDropdownOption?.('categories')}
+        onMouseEnter={() => handleMouseEnter('categories')}
+        onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
         Categories
       </Link>
       <Link
-        href='/leaderboard'
-        className={cn(
-          'hover-underline font-medium transition-all',
-          pathname === '/leaderboard' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-          dropdownOption === 'leaderboard' && 'active text-primary opacity-100'
-        )}
-        onMouseEnter={() => setDropdownOption?.('leaderboard')}
-        onClick={onClick}
-      >
-        Leaderboard
-      </Link>
-      <Link
         href='/analytics'
         className={cn(
           'hover-underline font-medium transition-all',
-          pathname === '/analytics' ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          pathname === '/analytics' ? 'text-primary active font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
           dropdownOption === 'analytics' && 'active text-primary opacity-100'
         )}
-        onMouseEnter={() => setDropdownOption?.('analytics')}
+        onMouseEnter={() => handleMouseEnter('analytics')}
+        onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
         Analytics
@@ -148,10 +144,11 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
           href={`/profile/${userAddress}`}
           className={cn(
             'hover-underline font-medium text-nowrap transition-all',
-            isPortfolioPage ? 'text-primary font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+            isPortfolioPage ? 'text-primary active font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
             dropdownOption === 'my-profile' && 'active text-primary opacity-100'
           )}
-          onMouseEnter={() => setDropdownOption?.(null)}
+          onMouseEnter={() => handleMouseEnter(null)}
+          onMouseLeave={handleMouseLeave}
           onClick={(e) => {
             if (!userAddress) {
               e.preventDefault()

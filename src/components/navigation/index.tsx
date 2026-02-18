@@ -22,8 +22,8 @@ import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryD
 import Explore from './dropdowns/explore'
 import Categories from './dropdowns/categories'
 import CrossIcon from 'public/icons/cross.svg'
-import Leaderboard from './dropdowns/leaderboard'
 import Analytics from './dropdowns/analytics'
+import Premium from './dropdowns/premium'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [dropdownOption, setDropdownOption] = useState<string | null>(null)
@@ -91,7 +91,13 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
     >
       <nav className='px-md md:px-lg lg:px-xl bg-background relative z-20 mx-auto flex h-full max-w-[2340px] items-center justify-between'>
         <div className='flex items-center gap-4'>
-          <Link href='/'>
+          <Link
+            href='/'
+            onMouseEnter={() => {
+              setPreviousDropdownOption(dropdownOption)
+              handleDropdownOption(null)
+            }}
+          >
             <Image
               src={logoMobile}
               alt='Grails Market'
@@ -107,7 +113,13 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
             />
           </Link>
-          <div className='hidden lg:block'>
+          <div
+            className='hidden lg:block'
+            onMouseEnter={() => {
+              setPreviousDropdownOption(dropdownOption)
+              handleDropdownOption(null)
+            }}
+          >
             <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
@@ -120,7 +132,13 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             }}
           />
         </div>
-        <div className='flex items-center justify-end gap-3 md:gap-3.5'>
+        <div
+          className='flex items-center justify-end gap-3 md:gap-3.5'
+          onMouseEnter={() => {
+            setPreviousDropdownOption(dropdownOption)
+            handleDropdownOption(null)
+          }}
+        >
           <div className='flex items-center gap-2.5'>
             <SearchIcon />
             <Cart />
@@ -166,6 +184,16 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         <div
           className={cn(
             'border-neutral w-full border-b-2 md:border-none',
+            dropdownOption === 'premium' || (dropdownOption === null && previousDropdownOption === 'premium')
+              ? 'block'
+              : 'block md:hidden'
+          )}
+        >
+          <Premium setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+        </div>
+        <div
+          className={cn(
+            'border-neutral w-full border-b-2 md:border-none',
             dropdownOption === 'categories' || (dropdownOption === null && previousDropdownOption === 'categories')
               ? 'block'
               : 'block md:hidden'
@@ -173,7 +201,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         >
           <Categories setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
         </div>
-        <div
+        {/* <div
           className={cn(
             'border-neutral w-full border-b-2 md:border-none',
             dropdownOption === 'leaderboard' || (dropdownOption === null && previousDropdownOption === 'leaderboard')
@@ -182,7 +210,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           )}
         >
           <Leaderboard setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
-        </div>
+        </div> */}
         <div
           className={cn(
             'border-neutral w-full border-b-2 md:border-none',

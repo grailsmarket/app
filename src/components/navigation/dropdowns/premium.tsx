@@ -16,29 +16,30 @@ import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
+import { addCategories, clearFilters, setSort } from '@/state/reducers/filters/marketplacePremiumFilters'
+import { useCategories } from '@/components/filters/hooks/useCategories'
 
-interface ExploreProps {
+interface PremiumProps {
   setDropdownOption: (option: string | null) => void
   previousDropdownOption: string | null
 }
 
-const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOption }) => {
+const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const { categories } = useCategories()
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
-  const { data: listings, isLoading } = useQuery({
-    queryKey: ['explore', 'listings'],
+  const { data: premium, isLoading } = useQuery({
+    queryKey: ['navigation', 'premium'],
     queryFn: () =>
       fetchDomains({
         limit: 7,
-        pageParam: 2,
+        pageParam: 1,
         filters: {
           ...emptyFilterState,
-          market: {
-            ...emptyFilterState.market,
-            Listed: 'yes',
-          },
+          status: ['Premium'],
+          sort: 'expiry_date_asc',
           type: {
             Digits: 'exclude',
             Emojis: 'exclude',
@@ -80,7 +81,7 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
-        <h3 className='text-3xl font-semibold'>Explore</h3>
+        <h3 className='text-3xl font-semibold'>Premium</h3>
         <Image
           src={Arrowdown}
           alt='Arrow Down'
@@ -93,62 +94,70 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
         <div className='flex h-full w-fit flex-col gap-4'>
           <div className='fadeIn w-fit md:hidden' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link
-              href='/marketplace'
-              className='hover:text-primary hover-underline transition-all duration-200'
-              onClick={() => {
-                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[0]))
-                setDropdownOption(null)
-              }}
-            >
-              Explore
-            </Link>
-          </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
-            <Link
-              href='/marketplace?tab=listings'
-              className='hover:text-primary hover-underline transition-all duration-200'
-              onClick={() => {
-                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[1]))
-                setDropdownOption(null)
-              }}
-            >
-              Listings
-            </Link>
-          </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
-            <Link
               href='/marketplace?tab=premium'
               className='hover:text-primary hover-underline transition-all duration-200'
               onClick={() => {
                 dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+                dispatch(setSort('expiry_date_asc'))
                 setDropdownOption(null)
               }}
             >
               Premium
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link
-              href='/marketplace?tab=available'
+              href='/marketplace?tab=premium'
               className='hover:text-primary hover-underline transition-all duration-200'
               onClick={() => {
-                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[3]))
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+                dispatch(setSort('expiry_date_asc'))
                 setDropdownOption(null)
               }}
             >
-              Available
+              Ending Soon
+            </Link>
+          </div>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
+            <Link
+              href='/marketplace?tab=premium&sort=expiry_date_desc'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+                dispatch(setSort('expiry_date_desc'))
+                setDropdownOption(null)
+              }}
+            >
+              Recently Expired
+            </Link>
+          </div>
+          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
+            <Link
+              href='/marketplace?tab=available&sort=last_sale_desc'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+                dispatch(setSort('last_sale_price_desc'))
+                setDropdownOption(null)
+              }}
+            >
+              Highest Last Sale
             </Link>
           </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.45}s` }}>
             <Link
-              href='/marketplace?tab=activity'
+              href='/marketplace?tab=activity&sort=last_sale_desc'
               className='hover:text-primary hover-underline transition-all duration-200'
               onClick={() => {
-                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[4]))
+                dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+                if (categories?.length) {
+                  dispatch(clearFilters())
+                  dispatch(addCategories(categories?.map((category) => category.name) || []))
+                }
                 setDropdownOption(null)
               }}
             >
-              Activity
+              In Category
             </Link>
           </div>
         </div>
@@ -159,7 +168,8 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
           <Link
             href='/marketplace?tab=names'
             onClick={() => {
-              dispatch(changeMarketplaceTab(MARKETPLACE_TABS[0]))
+              dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+              dispatch(setSort(null))
               setDropdownOption(null)
             }}
             className='hover:text-primary group flex items-center gap-2'
@@ -178,29 +188,29 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
       <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-              <div
-                key={index}
-                className='fadeIn h-[400px] w-[220px]'
-                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
-              >
-                <LoadingCard />
-              </div>
-            ))
-          : listings?.domains.slice(0, cardCount).map((domain, index) => (
-              <div
-                key={domain.name}
-                className='bg-secondary fadeIn h-[400px] w-[220px]'
-                onClick={() => {
-                  setDropdownOption(null)
-                }}
-                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
-              >
-                <Card domain={domain} />
-              </div>
-            ))}
+            <div
+              key={index}
+              className='fadeIn h-[400px] w-[220px]'
+              style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+            >
+              <LoadingCard />
+            </div>
+          ))
+          : premium?.domains.slice(0, cardCount).map((domain, index) => (
+            <div
+              key={domain.name}
+              className='bg-secondary fadeIn h-[400px] w-[220px]'
+              onClick={() => {
+                setDropdownOption(null)
+              }}
+              style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+            >
+              <Card domain={domain} />
+            </div>
+          ))}
       </div>
     </div>
   )
 }
 
-export default Explore
+export default Premium

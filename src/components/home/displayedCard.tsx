@@ -61,7 +61,7 @@ const DisplayedCards: React.FC = () => {
   return (
     <div
       className={cn(
-        'shadow-primary background-radial-primary relative mt-56 mb-32 h-[60px] rounded-full sm:mt-40',
+        'shadow-primary background-radial-primary fadeIn relative mt-56 mb-32 h-[60px] rounded-full sm:mt-40',
         containerWidth
       )}
     >

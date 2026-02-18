@@ -50,7 +50,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center xl:gap-8'
-      style={{ height: width && width < 768 ? (isDropdownOpen ? '380px' : '40px') : 'auto' }}
+      style={{ height: width && width < 768 ? (isDropdownOpen ? '350px' : '40px') : 'auto' }}
     >
       <div
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
@@ -67,8 +67,32 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
       </div>
       <div className='pl-lg md:pt-xl text-neutral flex h-fit w-60 flex-col justify-between gap-4 text-2xl font-semibold md:h-[400px] md:pl-0'>
         <div className='flex h-full w-fit flex-col gap-2'>
-          <p className='text-lg font-medium text-[#808080]'>View for:</p>
+          {/* <p className='text-lg font-medium text-[#808080]'>View for:</p> */}
           <div className='flex h-full w-fit flex-col gap-4'>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
+              <Link
+                href='/leaderboard'
+                className='hover:text-primary hover-underline transition-all duration-200'
+                onClick={() => {
+                  dispatch(setCategory('any'))
+                  setDropdownOption(null)
+                }}
+              >
+                Analytics
+              </Link>
+            </div>
+            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
+              <Link
+                href='/leaderboard'
+                className='hover:text-primary hover-underline transition-all duration-200'
+                onClick={() => {
+                  dispatch(setCategory('any'))
+                  setDropdownOption(null)
+                }}
+              >
+                Leaderboard
+              </Link>
+            </div>
             <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
               <Link
                 href='/analytics'
@@ -78,10 +102,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                   setDropdownOption(null)
                 }}
               >
-                Names in Categories
+                All Categories
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
+            {/* <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
               <Link
                 href='/analytics'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -92,7 +116,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
               >
                 No Categories
               </Link>
-            </div>
+            </div> */}
             <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
               <Link
                 href='/analytics'
@@ -102,7 +126,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                   setDropdownOption(null)
                 }}
               >
-                Grails Market
+                Grails
               </Link>
             </div>
             <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.45}s` }}>
@@ -114,7 +138,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
                   setDropdownOption(null)
                 }}
               >
-                Opensea Market
+                OpenSea
               </Link>
             </div>
             <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.6}s` }}>
@@ -144,7 +168,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
           </div>
         </div>
         <div
-          className='md:py-md border-neutral slideInLeft w-full md:border-t'
+          className='md:py-md border-neutral slideInLeft hidden w-full md:block md:border-t'
           style={{ animationDelay: `${defaultAnimationdelay + 0.9}s` }}
         >
           <Link
@@ -155,7 +179,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
             }}
             className='hover:text-primary group flex items-center gap-2'
           >
-            <p className='group-hover:text-primary hover-underline transition-colors duration-300'>View All Data</p>
+            <p className='group-hover:text-primary hover-underline transition-colors duration-300'>All Data</p>
             <Image
               src={ArrowRight}
               alt='Arrow Right'

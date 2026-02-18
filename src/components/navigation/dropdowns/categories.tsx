@@ -9,11 +9,11 @@ import Arrowdown from 'public/icons/arrow-down.svg'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { fetchFilteredCategories } from '@/api/categories/fetchFilteredCategories'
-import CategoryRow from '@/app/categories/components/categoryRow'
 import LoadingCell from '@/components/ui/loadingCell'
 import { useAppDispatch } from '@/state/hooks'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import { CATEGORIES_PAGE_TABS } from '@/constants/categories/categoriesPageTabs'
+import { getCategoryDetails } from '@/utils/getCategoryDetails'
 
 interface CategoriesProps {
   setDropdownOption: (option: string | null) => void
@@ -62,12 +62,10 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
   })
 
   const cardCount = useMemo(() => {
-    if (width && width < 640) return 0
-    if (width && width < 780) return 0
-    if (width && width < 968) return 1
-    if (width && width < 1400) return 2
-    if (width && width < 1850) return 3
-    return 4
+    if (width && width < 1024) return 8
+    if (width && width < 1280) return 10
+    if (width && width < 1536) return 12
+    return 16
   }, [width])
 
   const defaultAnimationdelay = previousDropdownOption === null ? 0.2 : 0
@@ -102,6 +100,18 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
       </div>
       <div className='pl-lg md:pt-lg text-neutral flex h-fit w-56 flex-col gap-4 text-2xl font-semibold md:h-[400px] md:justify-between md:pl-0'>
         <div className='flex h-full w-fit flex-col gap-4'>
+          <div className='fadeIn w-fit md:hidden' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
+            <Link
+              href='/categories'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeCategoriesPageTab(CATEGORIES_PAGE_TABS[0]))
+                clickHandler()
+              }}
+            >
+              Categories
+            </Link>
+          </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link
               href='/cazegories?tab=names'
@@ -111,7 +121,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
                 clickHandler()
               }}
             >
-              Category names
+              Names
             </Link>
           </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
@@ -123,7 +133,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
                 clickHandler()
               }}
             >
-              Listed names
+              Listings
             </Link>
           </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
@@ -135,7 +145,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
                 clickHandler()
               }}
             >
-              Premium Names
+              Premium
             </Link>
           </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.45}s` }}>
@@ -147,7 +157,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
                 clickHandler()
               }}
             >
-              Available Names
+              Available
             </Link>
           </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.6}s` }}>
@@ -176,7 +186,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
           </div>
         </div>
         <div
-          className='md:py-md border-neutral slideInLeft w-full md:border-t'
+          className='md:py-md border-neutral slideInLeft hidden w-full md:block md:border-t'
           style={{ animationDelay: `${defaultAnimationdelay + 0.9}s` }}
         >
           <Link
@@ -184,7 +194,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
             onClick={clickHandler}
             className='hover:text-primary group flex items-center gap-2'
           >
-            <p className='group-hover:text-primary hover-underline transition-colors duration-300'>View Categories</p>
+            <p className='group-hover:text-primary hover-underline transition-colors duration-300'>View All</p>
             <Image
               src={ArrowRight}
               alt='Arrow Right'
@@ -195,29 +205,53 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
           </Link>
         </div>
       </div>
-      <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
+      <div className='hidden w-fit flex-row flex-wrap gap-2 overflow-x-scroll md:grid md:grid-cols-2 xl:grid-cols-3 xl:gap-4 2xl:grid-cols-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
               <div
                 key={index}
-                className='fadeIn h-[400px] w-[440px]'
+                className='fadeIn h-[86px] w-full'
                 style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
               >
                 <LoadingCell radius='8px' height={'400px'} width={'460px'} />
               </div>
             ))
-          : categories?.slice(0, cardCount).map((category, index) => (
-              <div
-                key={category.name}
-                className='bg-secondary fadeIn h-[400px] w-[440px]'
-                onClick={() => {
-                  setDropdownOption(null)
-                }}
-                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
-              >
-                <CategoryRow category={category} reduceColumns={(width || 0) > 1600 ? true : false} />
-              </div>
-            ))}
+          : categories?.slice(0, cardCount).map((category, index) => {
+              const {
+                name: categoryName,
+                avatar: categoryAvatar,
+                header: categoryHeader,
+              } = getCategoryDetails(category.name)
+
+              return (
+                <Link
+                  href={`/categories/${category.name}`}
+                  key={category.name}
+                  className='bg-secondary fadeIn hover:bg-foreground/15 h-[86px] w-full cursor-pointer overflow-hidden rounded-md transition-colors duration-300'
+                  onClick={() => {
+                    setDropdownOption(null)
+                  }}
+                  style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+                >
+                  <div className='p-lg relative flex max-h-[86px] min-h-[86px] flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
+                    <Image
+                      src={categoryHeader}
+                      alt={`${categoryName} header`}
+                      width={1000}
+                      height={1000}
+                      className='absolute top-0 left-0 h-full w-full object-cover opacity-20'
+                    />
+                    <div className='z-10 flex items-center gap-3'>
+                      <Image src={categoryAvatar} alt={categoryName} width={54} height={54} className='rounded-full' />
+                      <div className='flex flex-col'>
+                        <h3 className='text-2xl font-bold md:text-2xl'>{categoryName}</h3>
+                        <p className='text-neutral text-lg font-medium'>{category.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
       </div>
     </div>
   )

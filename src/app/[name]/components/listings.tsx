@@ -74,7 +74,7 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
   }
 
   return (
-    <div className='p-lg lg:p-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='p-lg lg:px-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Listings</h3>
         {isMyDomain && (
@@ -91,7 +91,7 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
         ))
       )}
       {!listingsLoading && listings.length === 0 && (
-        <div className='p-2xl flex w-full flex-row items-center justify-center gap-2'>
+        <div className='flex w-full flex-row items-center justify-center gap-2'>
           <p className='text-neutral text-lg'>No listings found</p>
         </div>
       )}

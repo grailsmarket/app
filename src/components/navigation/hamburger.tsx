@@ -1,27 +1,36 @@
-import React, { useState } from 'react'
-import Pages from './pages'
-import { useClickAway } from '@/hooks/useClickAway'
+import { cn } from '@/utils/tailwind'
+import React from 'react'
 
-const Hamburger = () => {
-  const [open, setOpen] = useState(false)
-  const clickAwayRef = useClickAway<HTMLDivElement>(() => setOpen(false))
+interface HamburgerProps {
+  onClick: () => void
+  isOpen: boolean
+}
 
+const Hamburger: React.FC<HamburgerProps> = ({ onClick, isOpen }) => {
   return (
-    <div className='group/hamburger relative z-0 sm:z-50 md:hidden' ref={clickAwayRef}>
-      <button
-        onClick={() => setOpen(!open)}
-        className='flex cursor-pointer flex-col items-center justify-center gap-[6px] py-1.5 hover:opacity-80 md:gap-[7px]'
-      >
-        {new Array(3).fill(0).map((_, index) => (
-          <div key={index} className='bg-foreground h-[2px] w-5 rounded-full transition-all duration-300 md:w-6'></div>
-        ))}
-      </button>
-      {open && (
-        <div className='bg-secondary p-lg absolute top-10 -right-16 w-40 rounded-md shadow-md'>
-          <Pages onClick={() => setOpen(false)} />
-        </div>
-      )}
-    </div>
+    <button
+      onClick={onClick}
+      className='flex cursor-pointer flex-col items-center justify-center gap-[6px] py-1.5 hover:opacity-80 md:hidden md:gap-[7px]'
+    >
+      <div
+        className={cn(
+          'bg-foreground h-[2px] w-5 rounded-full transition-all duration-300 md:w-6',
+          isOpen ? 'translate-y-2 rotate-45' : ''
+        )}
+      ></div>
+      <div
+        className={cn(
+          'bg-foreground h-[2px] w-5 rounded-full transition-all duration-300 md:w-6',
+          isOpen ? 'opacity-0' : ''
+        )}
+      ></div>
+      <div
+        className={cn(
+          'bg-foreground h-[2px] w-5 rounded-full transition-all duration-300 md:w-6',
+          isOpen ? '-translate-y-2 rotate-[-45deg]' : ''
+        )}
+      ></div>
+    </button>
   )
 }
 

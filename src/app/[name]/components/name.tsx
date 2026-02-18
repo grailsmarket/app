@@ -15,6 +15,7 @@ import SecondaryDetails from './secondaryDetails'
 import Metadata from './metadata'
 import Roles from './roles'
 import KeywordMetrics from './keywordMetrics'
+import SimilarNames from './similarNames'
 // import Metadata from './metadata'
 
 interface Props {
@@ -148,6 +149,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />
+          <SimilarNames name={name} />
         </div>
       </div>
     </div>

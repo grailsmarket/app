@@ -77,12 +77,12 @@ const ViewSelector = () => {
         <Tooltip label={viewType === 'grid' ? 'Grid view' : 'List view'}>
           <button
             onClick={() => onChangeViewType(viewType === 'grid' ? 'list' : 'grid')}
-            className='border-foreground flex h-9 w-9 items-center justify-center rounded-sm border opacity-40 transition-opacity hover:opacity-80 md:h-10 md:w-10'
+            className='border-foreground md:border-tertiary md:hover:bg-secondary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-40 transition-opacity hover:opacity-80 md:h-14 md:w-14 md:rounded-none md:border-0 md:border-l-2 md:opacity-100'
           >
             {viewType === 'grid' ? (
-              <Image src={grid} alt='Grid layout' width={18} height={18} />
+              <Image src={grid} alt='Grid layout' width={20} height={20} className='md:opacity-60' />
             ) : (
-              <Image src={list} alt='List layout' width={24} height={24} />
+              <Image src={list} alt='List layout' width={26} height={26} className='md:opacity-60' />
             )}
           </button>
         </Tooltip>

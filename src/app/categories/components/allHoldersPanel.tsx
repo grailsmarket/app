@@ -56,7 +56,7 @@ const AllHoldersPanel: React.FC = () => {
     <div className='w-full'>
       <div
         className={cn(
-          'py-md px-sm sm:px-md lg:px-lg transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300',
+          'py-md px-sm sm:px-md lg:px-lg transition-top bg-background border-tertiary sticky z-40 flex w-full items-center justify-start border-b duration-300',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >

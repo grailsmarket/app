@@ -15,12 +15,13 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
   return (
     <div
       className={cn(
-        'sm:border-tertiary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4',
+        'sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2',
         isActivityEmpty && 'pb-6'
       )}
+      style={{ maxHeight: '500px', overflow: 'hidden' }}
     >
       <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
-      <div className='w-full'>
+      <div className='px-md w-full overflow-y-auto sm:px-0'>
         <Activity
           paddingBottom='0px'
           activity={activity}
@@ -33,7 +34,10 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
           showHeaders={true}
           columns={['event', 'price', 'from', 'to']}
           useLocalScrollTop={true}
-          stickyHeaders={false}
+          stickyHeaders={true}
+          hideNoResultsIcon={true}
+          noResultsHeight='28px'
+          className='bg-secondary sticky top-0!'
         />
       </div>
     </div>

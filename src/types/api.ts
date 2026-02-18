@@ -14,7 +14,10 @@ export type APIResponseType<T> = {
   data: T
   meta: string
   success: boolean
-  error?: string
+  error?: {
+    code: string
+    message: string
+  }
 }
 
 export type AuthUserType = {

@@ -8,6 +8,7 @@ export type MarketplaceDomainType = {
   owner: Address | null
   expiry_date: string | null
   registration_date: string | null
+  creation_date: string | null
   metadata: Record<string, string>
   has_numbers: boolean
   has_emoji: boolean

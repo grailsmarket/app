@@ -17,6 +17,7 @@ import { checkWatchlist } from '@/api/watchlist/checkWatchlist'
 import { useUserContext } from '@/context/user'
 import { updateWatchlistSettings, WatchlistSettingsType } from '@/api/watchlist/update'
 import { labelhash } from 'viem'
+import { generateEmptyName } from '@/utils/generateEmptyName'
 
 const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, watchlistId?: number | null) => {
   const dispatch = useAppDispatch()
@@ -88,33 +89,10 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
       if (result.isWatching) {
         if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(true)
 
-        const domain: MarketplaceDomainType = {
-          id: result.watchlistEntry.ensNameId,
-          watchlist_record_id: result.watchlistEntry.id,
-          name: result.watchlistEntry.ensName,
-          token_id: labelhash(result.watchlistEntry.ensName.replace('.eth', '')),
-          expiry_date: null,
-          registration_date: null,
-          owner: null,
-          metadata: {},
-          has_numbers: false,
-          has_emoji: false,
-          listings: [],
-          clubs: [],
-          highest_offer_currency: null,
-          highest_offer_id: null,
-          highest_offer_wei: null,
-          offer: null,
-          last_sale_price: null,
-          last_sale_currency: null,
-          last_sale_date: null,
-          last_sale_price_usd: null,
-          view_count: 0,
-          downvotes: 0,
-          upvotes: 0,
-          watchers_count: 0,
-        }
-
+        const domain: MarketplaceDomainType = generateEmptyName(
+          result.watchlistEntry.ensName,
+          labelhash(result.watchlistEntry.ensName.replace('.eth', ''))
+        )
         dispatch(addUserWatchlistDomain(domain))
       } else {
         if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(false)

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { ReactNode, useState } from 'react'
-import { Address, numberToHex } from 'viem'
+import { Address, isAddress, numberToHex } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
 import Price from '@/components/ui/price'
 import { cn } from '@/utils/tailwind'
@@ -11,6 +11,7 @@ import { ShortArrow } from 'ethereum-identity-kit'
 import { CopyValue } from './primaryDetails'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import { RolesType } from '@/types/api'
+import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 
 type Row = {
   label: string
@@ -58,6 +59,11 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
       value: nameDetails?.token_id ? numberToHex(BigInt(nameDetails.token_id)).toString() : null,
       canCopy: true,
     },
+    {
+      label: 'Creation Date',
+      value: nameDetails?.creation_date ? formatExpiryDate(nameDetails.creation_date) : null,
+      canCopy: false,
+    },
   ]
 
   return (
@@ -94,10 +100,15 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
               })}
             {roles && (
               <div key='roles' className='bg-secondary border-neutral pl-md flex w-full flex-col border-l-2'>
-                <CopyValue value={roles.resolver} canCopy={true} truncateValue={true} />
+                <CopyValue
+                  value={roles.resolver || '-'}
+                  canCopy={isAddress(roles.resolver)}
+                  truncateValue={isAddress(roles.resolver)}
+                />
                 <p className='text-neutral text-lg font-medium'>Resolver</p>
               </div>
             )}
+            {}
           </div>
         ))}
     </div>

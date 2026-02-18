@@ -33,7 +33,7 @@ export const modifyCart = async ({ domain, inCart, cartType }: ModifyCartsVariab
   const data = (await response.json()) as APIResponseType<ModifyCartResponseType>
 
   if (!data.success) {
-    throw new Error(data.error)
+    throw new Error(data.error?.message || 'Failed to modify cart')
   }
 
   const cartItem = inCart

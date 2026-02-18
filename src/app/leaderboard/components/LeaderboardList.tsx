@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useWindowSize, ShortArrow } from 'ethereum-identity-kit'
 import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
@@ -8,9 +8,15 @@ import LoadingCell from '@/components/ui/loadingCell'
 import LeaderboardRow from './LeaderboardRow'
 import LeaderboardFilters from './LeaderboardFilters'
 import { useLeaderboard, flattenLeaderboardUsers } from '../hooks/useLeaderboard'
-import type { LeaderboardUser, LeaderboardSortBy, LeaderboardSortOrder } from '@/types/leaderboard'
+import type { LeaderboardUser, LeaderboardSortBy } from '@/types/leaderboard'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import {
+  changeLeaderboardSortBy,
+  changeLeaderboardSortOrder,
+  selectLeaderboardState,
+} from '@/state/reducers/leaderboard/leaderboard'
 
 // Mapping of header names to their sort values
 const HEADER_SORT_MAP: Record<string, LeaderboardSortBy> = {
@@ -21,7 +27,7 @@ const HEADER_SORT_MAP: Record<string, LeaderboardSortBy> = {
   names_sold: 'names_sold',
 }
 
-const LoadingRow = () => (
+export const LoadingRow = () => (
   <div className='border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'>
     {/* <div className='flex w-[5%] min-w-[30px] justify-center sm:min-w-[40px]'>
       <LoadingCell width='30px' height='20px' />
@@ -90,11 +96,11 @@ const LoadingRow = () => (
 const LeaderboardList: React.FC = () => {
   const { height } = useWindowSize()
   const { isNavbarVisible } = useNavbar()
+  const dispatch = useAppDispatch()
 
-  // Filter state
-  const [sortBy, setSortBy] = useState<LeaderboardSortBy>('names_owned')
-  const [sortOrder, setSortOrder] = useState<LeaderboardSortOrder>('desc')
-  const [selectedClubs, setSelectedClubs] = useState<string[]>([])
+  const {
+    leaderboard: { sortBy, sortOrder, selectedClubs },
+  } = useAppSelector(selectLeaderboardState)
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useLeaderboard({
     sortBy,
@@ -119,14 +125,14 @@ const LeaderboardList: React.FC = () => {
 
       if (sortBy === sortValue) {
         // Toggle direction if already sorting by this column
-        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+        dispatch(changeLeaderboardSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'))
       } else {
         // Set new sort column with desc as default
-        setSortBy(sortValue)
-        setSortOrder('desc')
+        dispatch(changeLeaderboardSortBy(sortValue))
+        dispatch(changeLeaderboardSortOrder('desc'))
       }
     },
-    [sortBy, sortOrder]
+    [sortBy, sortOrder, dispatch]
   )
 
   // Check if a header is the current sort column
@@ -156,14 +162,7 @@ const LeaderboardList: React.FC = () => {
 
   return (
     <div className='w-full'>
-      <LeaderboardFilters
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        selectedClubs={selectedClubs}
-        onSortByChange={setSortBy}
-        onSortOrderChange={setSortOrder}
-        onClubsChange={setSelectedClubs}
-      />
+      <LeaderboardFilters sortBy={sortBy} sortOrder={sortOrder} selectedClubs={selectedClubs} />
 
       {/* Headers */}
       <div

@@ -12,6 +12,12 @@ import { LeaderboardSortBy, LeaderboardSortOrder } from '@/types/leaderboard'
 import ArrowUpIcon from 'public/icons/ascending.svg'
 import ArrowDownIcon from 'public/icons/descending.svg'
 import CheckIcon from 'public/icons/check.svg'
+import {
+  changeLeaderboardSelectedClubs,
+  changeLeaderboardSortBy,
+  changeLeaderboardSortOrder,
+} from '@/state/reducers/leaderboard/leaderboard'
+import { useAppDispatch } from '@/state/hooks'
 
 const SORT_OPTIONS: { value: LeaderboardSortBy; label: string }[] = [
   { value: 'names_owned', label: 'Names Owned' },
@@ -25,50 +31,41 @@ interface LeaderboardFiltersProps {
   sortBy: LeaderboardSortBy
   sortOrder: LeaderboardSortOrder
   selectedClubs: string[]
-  onSortByChange: (sortBy: LeaderboardSortBy) => void
-  onSortOrderChange: (sortOrder: LeaderboardSortOrder) => void
-  onClubsChange: (clubs: string[]) => void
 }
 
-const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({
-  sortBy,
-  sortOrder,
-  selectedClubs,
-  onSortByChange,
-  onSortOrderChange,
-  onClubsChange,
-}) => {
+const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrder, selectedClubs }) => {
   const [isSortOpen, setIsSortOpen] = useState(false)
   const [isCategoryOpen, setIsCategoryOpen] = useState(false)
 
   const sortDropdownRef = useClickAway(() => setIsSortOpen(false))
   const categoryDropdownRef = useClickAway(() => setIsCategoryOpen(false))
 
+  const dispatch = useAppDispatch()
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: fetchCategories,
   })
 
   const handleSortSelect = (value: LeaderboardSortBy) => {
-    onSortByChange(value)
+    dispatch(changeLeaderboardSortBy(value))
     setIsSortOpen(false)
   }
 
   const handleDirectionToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')
+    dispatch(changeLeaderboardSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'))
   }
 
   const handleCategoryToggle = (categoryName: string) => {
     if (selectedClubs.includes(categoryName)) {
-      onClubsChange(selectedClubs.filter((c) => c !== categoryName))
+      dispatch(changeLeaderboardSelectedClubs(selectedClubs.filter((c) => c !== categoryName)))
     } else {
-      onClubsChange([...selectedClubs, categoryName])
+      dispatch(changeLeaderboardSelectedClubs([...selectedClubs, categoryName]))
     }
   }
 
   const handleClearCategories = () => {
-    onClubsChange([])
+    dispatch(changeLeaderboardSelectedClubs([]))
   }
 
   const selectedSortLabel = SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label || 'Names Owned'

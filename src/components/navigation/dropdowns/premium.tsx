@@ -65,7 +65,7 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
     return 6
   }, [width])
 
-  const defaultAnimationdelay = previousDropdownOption === null ? DEFAULT_ANIMATION_DELAY : 0
+  const defaultAnimationdelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
 
   useEffect(() => {
     if (previousDropdownOption === null) {
@@ -120,7 +120,10 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
               Ending Soon
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}
+          >
             <Link
               href='/marketplace?tab=premium&sort=expiry_date_desc'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -133,7 +136,10 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
               Recently Expired
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}
+          >
             <Link
               href='/marketplace?tab=premium&sort=view_count_desc'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -146,7 +152,10 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
               Most Viewed
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 3}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 3}s` }}
+          >
             <Link
               href='/marketplace?tab=premium&sort=watchers_count_desc'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -159,7 +168,10 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
               Most Watchlisted
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 4}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 4}s` }}
+          >
             <Link
               href='/marketplace?tab=available&sort=last_sale_desc'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -172,7 +184,10 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
               Highest Last Sale
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 5}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 5}s` }}
+          >
             <Link
               href='/marketplace?tab=activity&sort=last_sale_desc'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -216,26 +231,26 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
       <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-            <div
-              key={index}
-              className='fadeIn h-[400px] w-[220px]'
-              style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
-            >
-              <LoadingCard />
-            </div>
-          ))
+              <div
+                key={index}
+                className='fadeIn h-[400px] w-[220px]'
+                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+              >
+                <LoadingCard />
+              </div>
+            ))
           : premium?.domains.slice(0, cardCount).map((domain, index) => (
-            <div
-              key={domain.name}
-              className='bg-secondary fadeIn h-[400px] w-[220px]'
-              onClick={() => {
-                setDropdownOption(null)
-              }}
-              style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
-            >
-              <Card domain={domain} />
-            </div>
-          ))}
+              <div
+                key={domain.name}
+                className='bg-secondary fadeIn h-[400px] w-[220px]'
+                onClick={() => {
+                  setDropdownOption(null)
+                }}
+                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+              >
+                <Card domain={domain} />
+              </div>
+            ))}
       </div>
     </div>
   )

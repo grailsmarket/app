@@ -2,6 +2,7 @@
 
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { useUserContext } from '@/context/user'
+import { useIsTouchDevice } from '@/hooks/useDevice'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeMarketplaceTab, selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -9,7 +10,7 @@ import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useCallback } from 'react'
 
 interface PagesProps {
   className?: string
@@ -21,6 +22,7 @@ interface PagesProps {
 const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesProps) => {
   const pathname = usePathname()
   const dispatch = useAppDispatch()
+  const isTouchDevice = useIsTouchDevice()
   const { userAddress } = useUserContext()
   const { ensProfile } = useAppSelector(selectUserProfile)
   const { openConnectModal } = useConnectModal()
@@ -29,17 +31,22 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
   const containerRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleMouseEnter = (option: string | null) => {
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-    hoverTimeoutRef.current = setTimeout(
-      () => {
-        setDropdownOption?.(option)
-      },
-      dropdownOption ? 0 : 75
-    )
-  }
+  const handleMouseEnter = useCallback(
+    (option: string | null) => {
+      if (isTouchDevice) return
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = setTimeout(
+        () => {
+          setDropdownOption?.(option)
+        },
+        dropdownOption ? 0 : 75
+      )
+    },
+    [isTouchDevice, setDropdownOption, dropdownOption]
+  )
 
   const handleMouseLeave = () => {
+    if (isTouchDevice) return
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current)
       hoverTimeoutRef.current = null

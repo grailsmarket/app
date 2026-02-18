@@ -116,7 +116,10 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
               Listings
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}
+          >
             <Link
               href='/marketplace?tab=premium'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -128,7 +131,10 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
               Premium
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}
+          >
             <Link
               href='/marketplace?tab=available'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -140,7 +146,10 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
               Available
             </Link>
           </div>
-          <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 3}s` }}>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 3}s` }}
+          >
             <Link
               href='/marketplace?tab=activity'
               className='hover:text-primary hover-underline transition-all duration-200'
@@ -179,26 +188,26 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
       <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-            <div
-              key={index}
-              className='fadeIn h-[400px] w-[220px]'
-              style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
-            >
-              <LoadingCard />
-            </div>
-          ))
+              <div
+                key={index}
+                className='fadeIn h-[400px] w-[220px]'
+                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+              >
+                <LoadingCard />
+              </div>
+            ))
           : listings?.domains.slice(0, cardCount).map((domain, index) => (
-            <div
-              key={domain.name}
-              className='bg-secondary fadeIn h-[400px] w-[220px]'
-              onClick={() => {
-                setDropdownOption(null)
-              }}
-              style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
-            >
-              <Card domain={domain} />
-            </div>
-          ))}
+              <div
+                key={domain.name}
+                className='bg-secondary fadeIn h-[400px] w-[220px]'
+                onClick={() => {
+                  setDropdownOption(null)
+                }}
+                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+              >
+                <Card domain={domain} />
+              </div>
+            ))}
       </div>
     </div>
   )

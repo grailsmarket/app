@@ -1,10 +1,10 @@
 'use client'
 
 import React, { ReactNode } from 'react'
-
 import { useTooltip } from '@/hooks/useTooltip'
 import { TooltipAlignType, TooltipPositionType } from '@/types/ui'
 import { useClickAway } from '@/hooks/useClickAway'
+import { useIsTouchDevice } from '@/hooks/useDevice'
 
 export interface TooltipProps {
   padding?: string | number
@@ -29,6 +29,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   showTooltip = true,
   showOnMobile = true,
 }) => {
+  const isTouchDevice = useIsTouchDevice()
   const { setTooltipHovered, tooltipHovered, tooltipStyle, pointStyle } = useTooltip({
     padding,
     position,
@@ -49,8 +50,11 @@ const Tooltip: React.FC<TooltipProps> = ({
       onMouseLeave={() => setTooltipHovered(false)}
     >
       <div
-        onMouseEnter={() => setTooltipHovered(true)}
+        onMouseEnter={() => {
+          if (!isTouchDevice) setTooltipHovered(true)
+        }}
         onClick={(e) => {
+          if (isTouchDevice) return
           e.stopPropagation()
           e.preventDefault()
           setTooltipHovered(true)

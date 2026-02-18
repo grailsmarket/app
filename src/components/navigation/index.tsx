@@ -126,7 +126,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
             className='hidden md:flex'
@@ -168,7 +168,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         )}
       >
         <div
-          className='px-md py-md flex items-center gap-1.5 opacity-70 md:hidden'
+          className='px-lg py-md border-neutral flex items-center gap-1.5 border-b-2 opacity-70 md:hidden'
           onClick={() => {
             setPreviousDropdownOption(dropdownOption)
             setDropdownOption(null)

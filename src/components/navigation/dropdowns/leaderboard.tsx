@@ -15,6 +15,7 @@ import { fetchLeaderboard } from '@/api/leaderboard'
 import LeaderboardRow from '@/app/leaderboard/components/LeaderboardRow'
 import { LoadingRow } from '@/app/leaderboard/components/LeaderboardList'
 import { changeLeaderboardSortBy } from '@/state/reducers/leaderboard/leaderboard'
+import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 
 interface LeaderboardProps {
   setDropdownOption: (option: string | null) => void
@@ -44,7 +45,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
     },
   })
 
-  const defaultAnimationdelay = previousDropdownOption === null ? 0.2 : 0
+  const defaultAnimationdelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
 
   useEffect(() => {
     if (previousDropdownOption === null) {
@@ -86,7 +87,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                 Names Owned
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.15}s` }}>
+            <div
+              className='fadeIn w-fit'
+              style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT}s` }}
+            >
               <Link
                 href='/leaderboard'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -98,7 +102,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                 Names in Categories
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.3}s` }}>
+            <div
+              className='fadeIn w-fit'
+              style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 2}s` }}
+            >
               <Link
                 href='/leaderboard'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -110,7 +117,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                 Names Listed
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.45}s` }}>
+            <div
+              className='fadeIn w-fit'
+              style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 3}s` }}
+            >
               <Link
                 href='/leaderboard'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -122,7 +132,10 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                 Names Sold
               </Link>
             </div>
-            <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay + 0.6}s` }}>
+            <div
+              className='fadeIn w-fit'
+              style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 4}s` }}
+            >
               <Link
                 href='/leaderboard'
                 className='hover:text-primary hover-underline transition-all duration-200'
@@ -138,7 +151,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
         </div>
         <div
           className='md:py-md border-neutral slideInLeft w-full md:border-t'
-          style={{ animationDelay: `${defaultAnimationdelay + 0.75}s` }}
+          style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 5}s` }}
         >
           <Link
             href='/leaderboard'
@@ -182,7 +195,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
               <div
                 key={index}
                 className='fadeIn w-full'
-                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
               >
                 <LoadingRow />
               </div>
@@ -194,7 +207,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                 onClick={() => {
                   setDropdownOption(null)
                 }}
-                style={{ animationDelay: `${defaultAnimationdelay + index * 0.15}s` }}
+                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
               >
                 <LeaderboardRow
                   user={user}

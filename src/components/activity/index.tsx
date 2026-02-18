@@ -27,6 +27,9 @@ interface ActivityProps {
   containerScroll?: boolean
   containerHeight?: string
   stickyHeaders?: boolean
+  hideNoResultsIcon?: boolean
+  noResultsHeight?: string
+  className?: string
 }
 
 const Activity: React.FC<ActivityProps> = ({
@@ -46,6 +49,9 @@ const Activity: React.FC<ActivityProps> = ({
   containerScroll = false,
   containerHeight,
   stickyHeaders = true,
+  hideNoResultsIcon = false,
+  noResultsHeight = '400px',
+  className,
 }) => {
   const { width, height } = useWindowSize()
   const { isNavbarVisible } = useNavbar()
@@ -96,7 +102,8 @@ const Activity: React.FC<ActivityProps> = ({
           className={cn(
             'pt-sm transition-top border-tertiary px-md lg:px-lg sm:py-md sticky flex w-full items-center justify-start border-b duration-300 sm:flex',
             stickyHeaders ? 'sitcky bg-background z-50' : '',
-            stickyHeaders && (isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14')
+            stickyHeaders && (isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'),
+            className
           )}
         >
           {displayedColumns.map((header, index) => {
@@ -162,7 +169,12 @@ const Activity: React.FC<ActivityProps> = ({
             }}
           />
         ) : (
-          <NoResults label={noResultsLabel} requiresAuth={false} height='400px' />
+          <NoResults
+            label={noResultsLabel}
+            requiresAuth={false}
+            height={noResultsHeight}
+            hideIcon={hideNoResultsIcon}
+          />
         )}
       </div>
     </div>

@@ -56,7 +56,9 @@ export const getRecommendations = async (name: string): Promise<AIRecommendation
       return { status: 'error', suggestions: [] }
     }
 
-    const suggestions = (data.data?.suggestions || []).map(normalizeSuggestion).filter((suggestion) => suggestion.length > 0)
+    const suggestions = (data.data?.suggestions || [])
+      .map(normalizeSuggestion)
+      .filter((suggestion) => suggestion.length > 0)
     if (suggestions.length === 0) {
       return { status: 'empty', suggestions: [] }
     }

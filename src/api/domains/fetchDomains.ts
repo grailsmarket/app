@@ -5,11 +5,10 @@ import { APIResponseType, PaginationType } from '@/types/api'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { PortfolioFiltersState } from '@/types/filters'
 import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
-import { nameHasEmoji } from '@/utils/nameCharacters'
-import { nameHasNumbers } from '@/utils/nameCharacters'
 import { normalizeName } from '@/lib/ens'
 import { BigNumber } from '@ethersproject/bignumber'
 import { authFetch } from '../authFetch'
+import { generateEmptyName } from '@/utils/generateEmptyName'
 
 interface FetchDomainsOptions {
   limit: number
@@ -292,32 +291,8 @@ export const fetchDomains = async ({
             const domainName = name + '.eth'
             if (!domains.map((domain) => domain.name).includes(domainName)) {
               const tokenId = hexToBigInt(namehash(name))
-              domains.unshift({
-                id: 1, // random valid ID for now
-                name: domainName,
-                token_id: tokenId.toString(),
-                expiry_date: null,
-                registration_date: null,
-                owner: null,
-                metadata: {},
-                has_numbers: nameHasNumbers(name),
-                has_emoji: nameHasEmoji(name),
-                listings: [],
-                clubs: [],
-                highest_offer_wei: null,
-                highest_offer_id: null,
-                highest_offer_currency: null,
-                last_sale_price_usd: null,
-                offer: null,
-                last_sale_price: null,
-                last_sale_currency: null,
-                last_sale_date: null,
-                view_count: 0,
-                watchers_count: 0,
-                downvotes: 0,
-                upvotes: 0,
-                watchlist_record_id: null,
-              })
+              const domain = generateEmptyName(domainName, tokenId.toString())
+              domains.unshift(domain)
             }
           }
         }
@@ -326,32 +301,8 @@ export const fetchDomains = async ({
           const name = search + '.eth'
           if (!domains.map((domain) => domain.name).includes(name)) {
             const tokenId = hexToBigInt(namehash(name))
-            domains.unshift({
-              id: 1, // random valid ID for now
-              name,
-              token_id: tokenId.toString(),
-              expiry_date: null,
-              registration_date: null,
-              owner: null,
-              metadata: {},
-              has_numbers: nameHasNumbers(name),
-              has_emoji: nameHasEmoji(name),
-              listings: [],
-              clubs: [],
-              highest_offer_wei: null,
-              highest_offer_id: null,
-              highest_offer_currency: null,
-              last_sale_price_usd: null,
-              offer: null,
-              last_sale_price: null,
-              last_sale_currency: null,
-              last_sale_date: null,
-              view_count: 0,
-              watchers_count: 0,
-              downvotes: 0,
-              upvotes: 0,
-              watchlist_record_id: null,
-            })
+            const domain = generateEmptyName(name, tokenId.toString())
+            domains.unshift(domain)
           }
         }
       }

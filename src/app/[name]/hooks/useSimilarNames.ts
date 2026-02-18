@@ -3,6 +3,7 @@ import { API_URL } from '@/constants/api'
 import { normalizeName } from '@/lib/ens'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { MarketplaceDomainType } from '@/types/domains'
+import { generateEmptyName } from '@/utils/generateEmptyName'
 import { useQuery } from '@tanstack/react-query'
 import { hexToBigInt, labelhash } from 'viem'
 
@@ -35,41 +36,26 @@ const fetchDomainsForNames = async (names: string[]): Promise<MarketplaceDomainT
 
     const domains = [...(json.data.names || json.data.results || [])]
     const domainNameSet = new Set(
-      domains.map((domain) => normalizeName(domain.name).replace(/\.eth$/i, '').toLowerCase())
+      domains.map((domain) =>
+        normalizeName(domain.name)
+          .replace(/\.eth$/i, '')
+          .toLowerCase()
+      )
     )
 
     for (const name of names) {
-      const normalizedSuggestion = normalizeName(name).replace(/\.eth$/i, '').toLowerCase()
+      const normalizedSuggestion = normalizeName(name)
+        .replace(/\.eth$/i, '')
+        .toLowerCase()
       if (domainNameSet.has(normalizedSuggestion)) {
         continue
       }
 
-      domains.push({
-        id: 0,
-        name: `${normalizedSuggestion}.eth`,
-        token_id: hexToBigInt(labelhash(normalizedSuggestion)).toString(),
-        expiry_date: null,
-        registration_date: null,
-        owner: null,
-        metadata: {},
-        has_numbers: false,
-        has_emoji: false,
-        listings: [],
-        clubs: [],
-        highest_offer_wei: null,
-        highest_offer_id: null,
-        highest_offer_currency: null,
-        last_sale_price_usd: null,
-        offer: null,
-        last_sale_price: null,
-        last_sale_currency: null,
-        last_sale_date: null,
-        view_count: 0,
-        watchers_count: 0,
-        downvotes: 0,
-        upvotes: 0,
-        watchlist_record_id: null,
-      })
+      const domain = generateEmptyName(
+        `${normalizedSuggestion}.eth`,
+        hexToBigInt(labelhash(normalizedSuggestion)).toString()
+      )
+      domains.push(domain)
     }
 
     return domains
@@ -84,18 +70,20 @@ export const useSimilarNames = (name: string) => {
     queryKey: ['similar-names', 'suggestions', name],
     queryFn: () => getRecommendations(name),
     enabled: !!name && name.length > 0,
-    staleTime: 1000 * 60 * 60,
     refetchOnWindowFocus: false,
   })
 
   const suggestions = recommendations?.suggestions || []
   const canLoadDomains = recommendations?.status === 'ready' && suggestions.length > 0
 
-  const { data: domains, isLoading: domainsLoading, error: domainsError } = useQuery({
+  const {
+    data: domains,
+    isLoading: domainsLoading,
+    error: domainsError,
+  } = useQuery({
     queryKey: ['similar-names', 'domains', suggestions],
     queryFn: () => fetchDomainsForNames(suggestions),
     enabled: canLoadDomains,
-    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   })
 
@@ -124,4 +112,3 @@ export const useSimilarNames = (name: string) => {
     isEmpty: status === 'empty',
   }
 }
-

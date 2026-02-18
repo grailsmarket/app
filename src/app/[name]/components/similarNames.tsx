@@ -38,14 +38,14 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
   }
 
   return (
-    <div className='sm:border-tertiary bg-secondary pt-lg lg:pt-xl flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-4'>
+    <div className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'>
       <div className='px-lg xl:px-xl flex items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Recommended</h2>
-        <span className='text-neutral text-lg'>GrailsAI (beta)</span>
+        <span className='text-neutral text-lg'>✨ GrailsAI</span>
       </div>
 
       <div className='relative w-full'>
-        <div className='border-tertiary px-md md:p-md lg:p-lg hidden h-[40px] w-full flex-row items-center justify-between border-b sm:flex'>
+        <div className='border-tertiary px-md md:p-md lg:p-lg flex h-[40px] w-full flex-row items-center justify-between border-b'>
           {SIMILAR_NAMES_COLUMNS.map((column) => (
             <div
               key={column}
@@ -77,7 +77,13 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
           domains
             .slice(0, 10)
             .map((domain, index) => (
-              <TableRow key={domain.name} domain={domain} index={index} displayedColumns={SIMILAR_NAMES_COLUMNS} />
+              <TableRow
+                key={domain.name}
+                domain={domain}
+                index={index}
+                displayedColumns={SIMILAR_NAMES_COLUMNS}
+                hideCartIcon
+              />
             ))
         )}
       </div>

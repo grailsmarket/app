@@ -68,7 +68,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   }
 
   return (
-    <div className='p-lg lg:p-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='p-lg lg:px-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Offers</h3>
         {!isMyDomain && <PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton>}
@@ -105,7 +105,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
         ))
       )}
       {!offersLoading && offers.length === 0 && (
-        <div className='p-2xl flex w-full flex-row items-center justify-center gap-2'>
+        <div className='flex w-full flex-row items-center justify-center gap-2'>
           <p className='text-neutral text-lg'>No offers found</p>
         </div>
       )}

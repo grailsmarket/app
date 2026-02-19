@@ -25,32 +25,6 @@ function toSteppedPercent(value: number, maxValue: number, steps = BAR_STEPS): n
   return stepped * 100
 }
 
-const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: number }> = ({
-  value,
-  label,
-  fillPercent,
-}) => {
-  const safeFill = Math.max(fillPercent, 0)
-  const normalized = Math.min(safeFill / 100, 1)
-  const fillOpacity = 0.72 + normalized * 0.28
-
-  return (
-    <div className='bg-secondary border-neutral sm:pl-md flex h-fit w-full flex-col sm:border-l-2'>
-      <p className='text-xl font-semibold'>{value}</p>
-      <p className='text-neutral text-sm font-medium'>{label}</p>
-      <div className='bg-neutral/25 relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full'>
-        <div
-          className='from-neutral/90 via-primary/80 to-primary absolute inset-0 rounded-full bg-linear-to-r transition-all duration-300'
-          style={{
-            clipPath: `inset(0 ${100 - safeFill}% 0 0)`,
-            opacity: fillOpacity,
-          }}
-        />
-      </div>
-    </div>
-  )
-}
-
 const MONTH_TO_INDEX: Record<string, number> = {
   JANUARY: 0,
   FEBRUARY: 1,
@@ -331,6 +305,33 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
   )
 }
 
+
+const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: number }> = ({
+  value,
+  label,
+  fillPercent,
+}) => {
+  const safeFill = Math.max(fillPercent, 0)
+  const normalized = Math.min(safeFill / 100, 1)
+  const fillOpacity = 0.72 + normalized * 0.28
+
+  return (
+    <div className='bg-secondary border-neutral sm:pl-md flex h-fit w-full flex-col sm:border-l-2'>
+      <p className='text-xl font-semibold'>{value}</p>
+      <p className='text-neutral text-lg font-medium'>{label}</p>
+      <div className='bg-neutral/25 relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full'>
+        <div
+          className='from-neutral/90 via-primary/80 to-primary absolute inset-0 rounded-full bg-linear-to-r transition-all duration-300'
+          style={{
+            clipPath: `inset(0 ${100 - safeFill}% 0 0)`,
+            opacity: fillOpacity,
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
 const MetricsStats: React.FC<{ metrics: KeywordMetrics }> = ({ metrics }) => {
   const avgSearches = metrics.avgMonthlySearches ? formatNumber(metrics.avgMonthlySearches) : 'N/A'
   const monthCount = metrics.monthlyTrend.length
@@ -344,7 +345,7 @@ const MetricsStats: React.FC<{ metrics: KeywordMetrics }> = ({ metrics }) => {
 
   return (
     <>
-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-2'>
         <MetricStatCard value={avgSearches} label='Monthly Searches' fillPercent={monthlyFillPercent} />
         <MetricStatCard value={formatNumber(yearlyTotal)} label='Yearly Average' fillPercent={yearlyFillPercent} />
         <MetricStatCard

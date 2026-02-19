@@ -109,6 +109,7 @@ export type RolesType = {
 
 export interface KeywordMetrics {
   avgMonthlySearches: number | null
+  avgCpc: number | null
   monthlyTrend: { month: string; year: number; searches: number }[]
   relatedKeywordCount: number
   competition: string | null

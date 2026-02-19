@@ -145,8 +145,8 @@ body {
 
 .background-radial-primary {
   /* background: radial-gradient(circle at center, #ffdfc0 0%, transparent 100%); */
-  background: #ffdfc05a;
-  box-shadow: 0 0 600px 30px #ffdfc0;
+  background: #ffdfc01a;
+  box-shadow: 0 0 640px 120px #ffdfc0;
 }
 
 /* Name Gradients */
@@ -362,7 +362,6 @@ body {
 
 .fadeIn {
   animation: fadeIn 0.4s ease-in-out both;
-  animation-delay: 0.2s;
 }
 
 @keyframes fadeIn {

@@ -3,21 +3,38 @@
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useQuery } from '@tanstack/react-query'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import Card from '../domains/grid/components/card'
 import LoadingCard from '../domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
-import { cn } from '@/utils/tailwind'
-import { useWindowSize } from 'ethereum-identity-kit'
+import Image from 'next/image'
+import ArrowIcon from 'public/icons/arrow-back.svg'
+
+const CARD_WIDTH_MOBILE = 190
+const CARD_HEIGHT_MOBILE = 360
+const CARD_WIDTH_DESKTOP = 240
+const CARD_HEIGHT_DESKTOP = 410
+const CARD_GAP = 16
+const AUTO_FLIP_MS = 3000
+const MANUAL_PAUSE_MS = 10000
+const TRANSITION_MS = 500
 
 const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
-  const { width } = useWindowSize()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const [trackPos, setTrackPos] = useState(0)
+  const [enableTransition, setEnableTransition] = useState(true)
+  const [isPausedByUser, setIsPausedByUser] = useState(false)
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isMobileRef = useRef(false)
+
   const { data: domains, isLoading } = useQuery({
-    queryKey: ['domains'],
+    queryKey: ['domains-carousel'],
     queryFn: async () => {
       const domains = await fetchDomains({
-        limit: 10,
+        limit: 50,
         pageParam: 1,
         filters: {
           ...emptyFilterState,
@@ -29,109 +46,206 @@ const DisplayedCards: React.FC = () => {
           },
           categories: ['any'],
         },
-        // inAnyCategory: true,
         searchTerm: '',
         excludeCategories: ['prepunks'],
         isAuthenticated: authStatus === 'authenticated',
         showUniqueSeller: true,
       })
-
       return domains.domains
     },
   })
 
-  const cardCount = useMemo(() => {
-    if (width && width < 640) return 5
-    if (width && width < 780) return 3
-    if (width && width < 968) return 4
-    if (width && width < 1100) return 5
-    if (width && width < 1280) return 6
-    return 7
-  }, [width])
+  // Measure container width
+  useEffect(() => {
+    if (!containerRef.current) return
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width)
+      }
+    })
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
 
-  const containerWidth = useMemo(() => {
-    if (width && width < 640) return 'w-[670px]'
-    if (width && width < 780) return 'w-[580px]'
-    if (width && width < 968) return 'w-[750px]'
-    if (width && width < 1100) return 'w-[920px]'
-    if (width && width < 1280) return 'w-[1090px]'
-    return 'w-[1260px]'
-  }, [width])
+  const isMobile = containerWidth > 0 && containerWidth < 640
+  isMobileRef.current = isMobile
+  const cardWidth = isMobile ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP
+  const cardHeight = isMobile ? CARD_HEIGHT_MOBILE : CARD_HEIGHT_DESKTOP
+  const step = cardWidth + CARD_GAP
+
+  const visibleCount = useMemo(() => {
+    if (!containerWidth) return 5
+    return Math.max(1, Math.floor((containerWidth + CARD_GAP) / step))
+  }, [containerWidth, step])
+
+  const totalCards = domains?.length ?? 0
+  const cloneCount = Math.max(visibleCount + 2, 5)
+
+  // Build track: [trailing clones] [real] [leading clones]
+  const trackItems = useMemo(() => {
+    if (!domains || domains.length === 0) return []
+    const c = Math.min(cloneCount, domains.length)
+    return [...domains.slice(-c), ...domains, ...domains.slice(0, c)]
+  }, [domains, cloneCount])
+
+  // Initialize trackPos to cloneCount (first real card) once domains load
+  const initializedRef = useRef(false)
+  useEffect(() => {
+    if (domains && domains.length > 0 && !initializedRef.current) {
+      initializedRef.current = true
+      setEnableTransition(false)
+      setTrackPos(Math.min(cloneCount, domains.length))
+    }
+  }, [domains, cloneCount])
+
+  // Re-enable transition after initialization snap
+  useEffect(() => {
+    if (!enableTransition) {
+      const frame = requestAnimationFrame(() => {
+        setEnableTransition(true)
+      })
+      return () => cancelAnimationFrame(frame)
+    }
+  }, [enableTransition])
+
+  const advance = useCallback(
+    (direction: 1 | -1) => {
+      if (totalCards === 0) return
+      setTrackPos((prev) => prev + direction)
+    },
+    [totalCards]
+  )
+
+  // Handle seamless loop on transition end
+  const handleTransitionEnd = useCallback(() => {
+    if (totalCards === 0) return
+    const c = Math.min(cloneCount, totalCards)
+    setTrackPos((prev) => {
+      // Past last real card → snap to first real
+      if (prev >= c + totalCards) {
+        setEnableTransition(false)
+        return c
+      }
+      // Before first real card → snap to last real
+      if (prev < c) {
+        setEnableTransition(false)
+        return c + totalCards - 1
+      }
+      return prev
+    })
+  }, [totalCards, cloneCount])
+
+  // Auto-flip timer
+  useEffect(() => {
+    if (isLoading || totalCards === 0 || isPausedByUser) return
+
+    autoTimerRef.current = setInterval(() => {
+      advance(1)
+    }, AUTO_FLIP_MS)
+
+    return () => {
+      if (autoTimerRef.current) clearInterval(autoTimerRef.current)
+    }
+  }, [isLoading, totalCards, isPausedByUser, advance])
+
+  const handleManualNav = useCallback(
+    (direction: 1 | -1) => {
+      advance(direction)
+
+      // Pause auto-flip
+      setIsPausedByUser(true)
+      if (autoTimerRef.current) {
+        clearInterval(autoTimerRef.current)
+        autoTimerRef.current = null
+      }
+      if (pauseTimerRef.current) {
+        clearTimeout(pauseTimerRef.current)
+      }
+      pauseTimerRef.current = setTimeout(() => {
+        setIsPausedByUser(false)
+      }, MANUAL_PAUSE_MS)
+    },
+    [advance]
+  )
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (autoTimerRef.current) clearInterval(autoTimerRef.current)
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+    }
+  }, [])
+
+  const translateX = -trackPos * step
 
   return (
-    <div
-      className={cn(
-        'shadow-primary background-radial-primary fadeIn relative mt-56 mb-32 h-[60px] rounded-full sm:mt-40',
-        containerWidth
-      )}
-    >
-      {isLoading &&
-        Array.from({ length: cardCount }).map((_, index) => {
-          const leftMobile = index * 120
-          const leftDesktop = index * 170
-
-          return (
-            <div
-              key={index}
-              className={cn(
-                'shadow-homeCard bg-secondary absolute -top-40 left-0 z-20 h-[360px] w-[190px] rounded-xl sm:h-[410px] sm:w-[240px]',
-                index % 2 === 0 ? 'sm:-top-40' : '-top-56'
-              )}
-              style={{
-                left: width && width < 640 ? leftMobile : leftDesktop,
-                zIndex: index,
-              }}
-            >
-              <LoadingCard key={index} />
-            </div>
-          )
-        })}
-      {!isLoading && domains ? (
-        domains.slice(0, cardCount).map((domain, index) => {
-          const leftMobile = index * 120
-          const leftDesktop = index * 170
-
-          return (
-            <div
-              key={index}
-              className={cn(
-                'shadow-homeCard absolute -top-40 left-0 z-20 h-[360px] w-[190px] rounded-xl sm:h-[410px] sm:w-[240px]',
-                index % 2 === 0 ? 'sm:-top-40' : '-top-56'
-              )}
-              style={{
-                left: width && width < 640 ? leftMobile : leftDesktop,
-                zIndex: index,
-              }}
-            >
-              <Card
-                domain={domain}
-                className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
-              />
-            </div>
-          )
-        })
-      ) : (
-        <div>No domains found</div>
+    <div ref={containerRef} className='relative w-full mt-6'>
+      {/* Left arrow */}
+      {!isLoading && totalCards > visibleCount && (
+        <>
+          <button
+            onClick={() => handleManualNav(-1)}
+            className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 lg:-left-10 sm:h-12 sm:w-12'
+            aria-label='Previous card'
+          >
+            <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
+          </button>
+          <button
+            onClick={() => handleManualNav(1)}
+            className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 lg:-right-10 sm:h-12 sm:w-12'
+            aria-label='Next card'
+          >
+            <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />
+          </button>
+        </>
       )}
 
-      {/* <div className='shadow-homeCard absolute top-0 left-28 z-30 h-[360px] w-[190px] rounded-lg sm:h-[410px] sm:w-[240px]'>
-        {isLoading || !domains ? (
-          <LoadingCard />
-        ) : (
-          domains[1] && (
-            <Card domain={domains[1]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
-          )
+      <div className='absolute top-24 left-1/2 background-radial-primary h-20 w-20 rounded-full' />
+
+      {/* Carousel viewport */}
+      <div className='overflow-hidden' style={{ height: cardHeight + 20 }}>
+        {isLoading && (
+          <div className='flex gap-4'>
+            {Array.from({ length: visibleCount }).map((_, index) => (
+              <div
+                key={index}
+                className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                style={{ width: cardWidth, height: cardHeight }}
+              >
+                <LoadingCard />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && trackItems.length > 0 && (
+          <div
+            className='flex gap-4'
+            style={{
+              transform: `translateX(${translateX}px)`,
+              transition: enableTransition ? `transform ${TRANSITION_MS}ms ease` : 'none',
+            }}
+            onTransitionEnd={handleTransitionEnd}
+          >
+            {trackItems.map((domain, index) => (
+              <div
+                key={`${domain.name}-${index}`}
+                className='shadow-homeCard shrink-0 rounded-xl'
+                style={{ width: cardWidth, height: cardHeight }}
+              >
+                <Card
+                  domain={domain}
+                  className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && (!domains || domains.length === 0) && (
+          <div className='flex h-full items-center justify-center'>No domains found</div>
         )}
       </div>
-      <div className='shadow-homeCard absolute top-8 left-56 z-10 h-[360px] w-[190px] rounded-lg sm:h-[410px] sm:w-[240px]'>
-        {isLoading || !domains ? (
-          <LoadingCard />
-        ) : (
-          domains[2] && (
-            <Card domain={domains[2]} className='bg-secondary! hover:bg-tertiary! opacity-100! hover:opacity-100!' />
-          )
-        )}
-      </div> */}
     </div>
   )
 }

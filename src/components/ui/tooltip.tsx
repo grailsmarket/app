@@ -54,7 +54,6 @@ const Tooltip: React.FC<TooltipProps> = ({
           if (!isTouchDevice) setTooltipHovered(true)
         }}
         onClick={(e) => {
-          if (isTouchDevice) return
           e.stopPropagation()
           e.preventDefault()
           setTooltipHovered(true)

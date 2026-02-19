@@ -20,7 +20,13 @@ interface NameDetailsProps {
   openEditMetadataModal: () => void
 }
 
-const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], isMetadataLoading, openEditMetadataModal }) => {
+const Metadata: React.FC<NameDetailsProps> = ({
+  name,
+  nameOwner,
+  metadata = [],
+  isMetadataLoading,
+  openEditMetadataModal,
+}) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()

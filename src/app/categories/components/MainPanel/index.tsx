@@ -50,7 +50,7 @@ const MainPanel: React.FC = () => {
       <div className='flex w-full flex-row gap-0'>
         {showCategoriesPanel && <CategoriesFilterPanel />}
         {(showDomainsPanel || showActivityPanel) && <FilterPanel />}
-        <div className='flex w-full flex-col transition-all duration-300 z-0' style={{ width: getContentWidth() }}>
+        <div className='z-0 flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
           {showCategoriesPanel && <CategoriesPanel />}
           {showDomainsPanel && <CategoriesPageDomainsPanel />}
           {showHoldersPanel && <AllHoldersPanel />}

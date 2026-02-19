@@ -228,7 +228,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
           </Link>
         </div>
       </div>
-      <div className='hidden w-fit flex-row flex-wrap gap-2 overflow-x-scroll md:grid md:grid-cols-2 xl:grid-cols-3 xl:gap-4 2xl:grid-cols-4'>
+      <div className='hidden max-h-[400px] w-fit flex-row flex-wrap gap-2 overflow-x-scroll overflow-y-auto md:grid md:grid-cols-2 xl:grid-cols-3 xl:gap-4 2xl:grid-cols-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
               <div
@@ -241,7 +241,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
                 <LoadingCell radius='8px' height={'86px'} width={'100%'} />
               </div>
             ))
-          : categories?.slice(0, cardCount).map((category, index) => {
+          : categories?.map((category, index) => {
               const {
                 name: categoryName,
                 avatar: categoryAvatar,

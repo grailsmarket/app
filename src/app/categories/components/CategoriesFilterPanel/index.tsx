@@ -60,9 +60,9 @@ const CategoriesFilterPanel: React.FC = () => {
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
-        (isNavbarVisible
-          ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
-          : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
+          (isNavbarVisible
+            ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
+            : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? 'md:border-r-2' : 'w-0'
       )}

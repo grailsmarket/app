@@ -192,8 +192,14 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 )}
               </div>
               {nameDetails?.owner && (
-                <div className='sm:hidden pt-1'>
-                  <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral text-lg' /></div>
+                <div className='pt-1 sm:hidden'>
+                  <CopyValue
+                    value={nameDetails.owner}
+                    canCopy={true}
+                    truncateValue={true}
+                    className='text-neutral text-lg'
+                  />
+                </div>
               )}
               <p className='text-neutral text-lg font-medium'>
                 {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
@@ -205,7 +211,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           ) : (
             nameDetails?.owner && (
               <div className='hidden sm:block'>
-                <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' /></div>
+                <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' />
+              </div>
             )
           )}
         </div>
@@ -259,7 +266,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         </div>
         <div className='flex w-full flex-row gap-2'>
           <button
-            className='bg-[#0080BC] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 sm:h-10'
             onClick={() => {
               window.open(`https://app.ens.domains/${name}`, '_blank')
             }}
@@ -267,7 +274,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5' />
           </button>
           <button
-            className='bg-[#0086FF] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 sm:h-10'
             onClick={() => {
               window.open(
                 `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
@@ -275,18 +282,30 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               )
             }}
           >
-            <Image src={OPENSEA_LOGO} alt='Opensea Logo' width={28} height={28} className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5' />
+            <Image
+              src={OPENSEA_LOGO}
+              alt='Opensea Logo'
+              width={28}
+              height={28}
+              className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5'
+            />
           </button>
           <button
-            className='bg-[#895a01] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#895a01] hover:opacity-80 sm:h-10'
             onClick={() => {
               window.open(`https://ensvision.com/name/${name}`, '_blank')
             }}
           >
-            <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6 w-6 sm:h-7 sm:w-7' />
+            <Image
+              src={ENSVISION_LOGO}
+              alt='ENS Vision Logo'
+              width={28}
+              height={28}
+              className='h-6 w-6 sm:h-7 sm:w-7'
+            />
           </button>
           <button
-            className='bg-[#293e70] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 sm:h-10'
             onClick={() => {
               window.open(
                 `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,

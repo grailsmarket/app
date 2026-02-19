@@ -78,8 +78,18 @@ async function getAccessToken(): Promise<string> {
 }
 
 const GOOGLE_MONTH_NAMES = [
-  'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
-  'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER',
+  'JANUARY',
+  'FEBRUARY',
+  'MARCH',
+  'APRIL',
+  'MAY',
+  'JUNE',
+  'JULY',
+  'AUGUST',
+  'SEPTEMBER',
+  'OCTOBER',
+  'NOVEMBER',
+  'DECEMBER',
 ]
 
 function getTrailing12MonthRange() {
@@ -135,7 +145,8 @@ async function getKeywordHistoricalMetrics(
   const monthlyTrend: MonthlyVolume[] = Array.isArray(rawVolumes)
     ? rawVolumes.filter(
         (m: unknown): m is MonthlyVolume =>
-          typeof m === 'object' && m !== null &&
+          typeof m === 'object' &&
+          m !== null &&
           typeof (m as MonthlyVolume).month === 'string' &&
           typeof (m as MonthlyVolume).year === 'string' &&
           typeof (m as MonthlyVolume).monthlySearches === 'string'
@@ -235,7 +246,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }))
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[keywords] monthlyTrend for', decodedKeyword, monthlyTrend.map((m) => `${m.month} ${m.year}`))
+      console.log(
+        '[keywords] monthlyTrend for',
+        decodedKeyword,
+        monthlyTrend.map((m) => `${m.month} ${m.year}`)
+      )
     }
 
     const responseData: KeywordMetricsResponse = {

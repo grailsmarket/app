@@ -2,11 +2,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
-import { useKeywordMetrics, KeywordMetrics } from '@/app/[name]/hooks/useKeywordMetrics'
+import { useKeywordMetrics } from '@/app/[name]/hooks/useKeywordMetrics'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import { useUserContext } from '@/context/user'
-import { ShortArrow } from 'ethereum-identity-kit'
+import { formatNumber, ShortArrow } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
+import { KeywordMetrics } from '@/types/api'
 
 interface KeywordMetricsProps {
   name: string
@@ -14,30 +15,6 @@ interface KeywordMetricsProps {
 }
 
 const BAR_STEPS = 12
-
-
-function formatNumber(value: number): string {
-  const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US'
-  return value.toLocaleString(locale, { maximumFractionDigits: 0 })
-}
-
-function getShortMonth(month: string): string {
-  const monthMap: Record<string, string> = {
-    JANUARY: 'Jan',
-    FEBRUARY: 'Feb',
-    MARCH: 'Mar',
-    APRIL: 'Apr',
-    MAY: 'May',
-    JUNE: 'Jun',
-    JULY: 'Jul',
-    AUGUST: 'Aug',
-    SEPTEMBER: 'Sep',
-    OCTOBER: 'Oct',
-    NOVEMBER: 'Nov',
-    DECEMBER: 'Dec',
-  }
-  return monthMap[month] || month.slice(0, 3)
-}
 
 function toSteppedPercent(value: number, maxValue: number, steps = BAR_STEPS): number {
   if (value <= 0 || maxValue <= 0) return 0
@@ -48,18 +25,22 @@ function toSteppedPercent(value: number, maxValue: number, steps = BAR_STEPS): n
   return stepped * 100
 }
 
-const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: number }> = ({ value, label, fillPercent }) => {
+const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: number }> = ({
+  value,
+  label,
+  fillPercent,
+}) => {
   const safeFill = Math.max(fillPercent, 0)
   const normalized = Math.min(safeFill / 100, 1)
   const fillOpacity = 0.72 + normalized * 0.28
 
   return (
-    <div className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
+    <div className='bg-secondary border-neutral sm:pl-md flex h-fit w-full flex-col sm:border-l-2'>
       <p className='text-xl font-semibold'>{value}</p>
       <p className='text-neutral text-lg font-medium'>{label}</p>
-      <div className='bg-neutral/25 mt-1.5 relative h-1.5 w-full overflow-hidden rounded-full'>
+      <div className='bg-neutral/25 relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full'>
         <div
-          className='from-neutral/90 via-primary/80 to-primary bg-linear-to-r absolute inset-0 rounded-full transition-all duration-300'
+          className='from-neutral/90 via-primary/80 to-primary absolute inset-0 rounded-full bg-linear-to-r transition-all duration-300'
           style={{
             clipPath: `inset(0 ${100 - safeFill}% 0 0)`,
             opacity: fillOpacity,
@@ -71,11 +52,24 @@ const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: numb
 }
 
 const MONTH_TO_INDEX: Record<string, number> = {
-  JANUARY: 0, FEBRUARY: 1, MARCH: 2, APRIL: 3, MAY: 4, JUNE: 5,
-  JULY: 6, AUGUST: 7, SEPTEMBER: 8, OCTOBER: 9, NOVEMBER: 10, DECEMBER: 11,
+  JANUARY: 0,
+  FEBRUARY: 1,
+  MARCH: 2,
+  APRIL: 3,
+  MAY: 4,
+  JUNE: 5,
+  JULY: 6,
+  AUGUST: 7,
+  SEPTEMBER: 8,
+  OCTOBER: 9,
+  NOVEMBER: 10,
+  DECEMBER: 11,
 }
 
-const TrendChart: React.FC<{ data: { month: string; year: number; searches: number }[]; avgMonthlySearches: number | null }> = ({ data, avgMonthlySearches }) => {
+const TrendChart: React.FC<{
+  data: { month: string; year: number; searches: number }[]
+  avgMonthlySearches: number | null
+}> = ({ data, avgMonthlySearches }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -114,7 +108,7 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
     const svg = d3.select(svgRef.current)
     svg.selectAll('*').remove()
 
-    const margin = { top: 0, right: 0, bottom: 18, left: 0 }
+    const margin = { top: 0, right: 6, bottom: 18, left: 6 }
     const width = dimensions.width - margin.left - margin.right
     const height = dimensions.height - margin.top - margin.bottom
 
@@ -125,10 +119,13 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
 
     // Stroke opacity still scales with tier
     const tierPercent = toSteppedPercent(avgMonthlySearches ?? 0, 1_000_000) / 100
-    const strokeOpacity = 0.25 + tierPercent * 0.55  // 0.25 → 0.80
+    const strokeOpacity = 0.25 + tierPercent * 0.55 // 0.25 → 0.80
 
     // Index-based scale — avoids scaleTime's requirement for chronological ordering
-    const xScale = d3.scaleLinear().domain([0, n - 1]).range([0, width])
+    const xScale = d3
+      .scaleLinear()
+      .domain([0, n - 1])
+      .range([0, width])
 
     const yScale = d3
       .scaleLinear()
@@ -162,8 +159,10 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
       .append('linearGradient')
       .attr('id', gradId)
       .attr('gradientUnits', 'userSpaceOnUse')
-      .attr('x1', 0).attr('y1', height)   // bottom: 0 searches → transparent
-      .attr('x2', 0).attr('y2', gradientBrightY) // "1M" position → bright
+      .attr('x1', 0)
+      .attr('y1', height) // bottom: 0 searches → transparent
+      .attr('x2', 0)
+      .attr('y2', gradientBrightY) // "1M" position → bright
     grad.append('stop').attr('offset', '0%').attr('stop-color', primaryColor).attr('stop-opacity', 0.02)
     grad.append('stop').attr('offset', '100%').attr('stop-color', primaryColor).attr('stop-opacity', 0.65)
 
@@ -181,7 +180,13 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
       .curve(d3.curveCatmullRom.alpha(0.5))
 
     g.append('path').datum(smoothed).attr('fill', `url(#${gradId})`).attr('d', area)
-    g.append('path').datum(smoothed).attr('fill', 'none').attr('stroke', primaryColor).attr('stroke-opacity', strokeOpacity).attr('stroke-width', 1.5).attr('d', line)
+    g.append('path')
+      .datum(smoothed)
+      .attr('fill', 'none')
+      .attr('stroke', primaryColor)
+      .attr('stroke-opacity', strokeOpacity)
+      .attr('stroke-width', 1.5)
+      .attr('d', line)
 
     // Subtle vertical line where the year changes + 3 axis labels
     const labelY = height + 12
@@ -189,29 +194,35 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
       el.attr('fill', 'var(--color-neutral)').attr('y', labelY).style('font-size', '10px')
 
     // First label
-    labelStyle(g.append('text').attr('x', xScale(0)).attr('text-anchor', 'start'))
-      .text(`${chartData[0].label} ${chartData[0].year}`)
+    labelStyle(g.append('text').attr('x', xScale(0)).attr('text-anchor', 'start')).text(
+      `${chartData[0].label} ${chartData[0].year}`
+    )
 
     // Year-change divider + label
     chartData.forEach((d, i) => {
       if (i > 0 && d.year !== chartData[i - 1].year) {
         const xMid = (xScale(i - 1) + xScale(i)) / 2
         g.append('line')
-          .attr('x1', xMid).attr('x2', xMid)
-          .attr('y1', 0).attr('y2', height)
+          .attr('x1', xMid)
+          .attr('x2', xMid)
+          .attr('y1', 0)
+          .attr('y2', height)
           .attr('stroke', 'var(--color-neutral)')
           .attr('stroke-opacity', 0.25)
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,3')
-        labelStyle(g.append('text').attr('x', xMid).attr('text-anchor', 'middle'))
-          .text(String(d.year))
+        labelStyle(g.append('text').attr('x', xMid).attr('text-anchor', 'middle')).text(String(d.year))
       }
     })
 
     // Last label
     const last = chartData[n - 1]
-    labelStyle(g.append('text').attr('x', xScale(n - 1)).attr('text-anchor', 'end'))
-      .text(`${last.label} ${last.year}`)
+    labelStyle(
+      g
+        .append('text')
+        .attr('x', xScale(n - 1))
+        .attr('text-anchor', 'end')
+    ).text(`${last.label} ${last.year}`)
 
     // Hover — focus circle + dashed vertical line + tooltip
     const tooltip = d3.select(tooltipRef.current)
@@ -231,8 +242,14 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
       .attr('height', height)
       .style('fill', 'none')
       .style('pointer-events', 'all')
-      .on('mouseover', () => { focus.style('display', null); tooltip.style('opacity', 1) })
-      .on('mouseout', () => { focus.style('display', 'none'); tooltip.style('opacity', 0) })
+      .on('mouseover', () => {
+        focus.style('display', null)
+        tooltip.style('opacity', 1)
+      })
+      .on('mouseout', () => {
+        focus.style('display', 'none')
+        tooltip.style('opacity', 0)
+      })
       .on('mousemove', (event) => {
         const [mx] = d3.pointer(event)
         const index = Math.max(0, Math.min(n - 1, Math.round(xScale.invert(mx))))
@@ -241,7 +258,10 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
         const xPos = xScale(index)
 
         focus.attr('transform', `translate(${xPos},${yScale(d.value)})`)
-        focus.select('.x-hover-line').attr('y1', 0).attr('y2', height - yScale(d.value))
+        focus
+          .select('.x-hover-line')
+          .attr('y1', 0)
+          .attr('y2', height - yScale(d.value))
 
         const translateX = xPos > width - 60 ? '-100%' : xPos < 60 ? '0%' : '-50%'
         // Use .text() to avoid XSS — no .html() on API-derived content
@@ -254,6 +274,8 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
           .style('transform', `translateX(${translateX})`)
           .style('box-shadow', '0 4px 4px rgba(0,0,0,0.2)')
       })
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartData, dimensions])
 
   if (!data || data.length === 0) return null
@@ -269,129 +291,23 @@ const TrendChart: React.FC<{ data: { month: string; year: number; searches: numb
   )
 }
 
-const ExpandedContent: React.FC<{ metrics: KeywordMetrics }> = ({ metrics }) => {
-  return (
-    <div className='w-full'>
-      <TrendChart data={metrics.monthlyTrend} avgMonthlySearches={metrics.avgMonthlySearches} />
-    </div>
-  )
-}
-
 const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDate }) => {
   const { authStatus } = useUserContext()
-  const { keywordMetrics, keywordMetricsIsLoading, keywordMetricsError, isSubdomain, isTooLong } = useKeywordMetrics(name, expiryDate)
+  const { keywordMetrics, keywordMetricsIsLoading, keywordMetricsError, isSubdomain, isTooLong } = useKeywordMetrics(
+    name,
+    expiryDate
+  )
   const [isOpen, setIsOpen] = useState(true)
 
-  const renderMessage = (message: string) => (
-    <div className='text-neutral pb-2 text-center text-xl font-medium'>
-      {message}
-    </div>
-  )
-
-  const renderLoading = () => (
-    <div className='flex w-full items-center justify-center py-2'>
-      <LoadingSpinner size='h-10 w-10' />
-    </div>
-  )
-
-  if (isSubdomain) {
-    return (
-      <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-        <div
-          className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
-        </div>
-        {isOpen && renderMessage('Not available for subnames')}
-      </div>
-    )
-  }
-
-  if (authStatus !== 'authenticated') {
-    return (
-      <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-        <div
-          className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
-        </div>
-        {isOpen && renderMessage('Sign in to view')}
-      </div>
-    )
-  }
-
-  if (isTooLong) {
-    return (
-      <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-        <div
-          className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
-        </div>
-        {isOpen && renderMessage('Name too long')}
-      </div>
-    )
-  }
-
-  if (keywordMetricsIsLoading) {
-    return (
-      <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-        <div
-          className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
-        </div>
-        {isOpen && renderLoading()}
-      </div>
-    )
-  }
-
-  if (keywordMetricsError || !keywordMetrics) {
-    return (
-      <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-        <div
-          className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
-        </div>
-        {isOpen && renderMessage('No search data available')}
-      </div>
-    )
-  }
-
-  if (keywordMetrics.avgMonthlySearches === null && keywordMetrics.relatedKeywordCount === 0) {
-    return (
-      <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-        <div
-          className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
-        </div>
-        {isOpen && renderMessage('No search data available')}
-      </div>
-    )
-  }
-
-  const avgSearches = keywordMetrics.avgMonthlySearches ? formatNumber(keywordMetrics.avgMonthlySearches) : 'N/A'
-  const monthCount = keywordMetrics.monthlyTrend.length
-  const yearlyTotal = monthCount > 0
-    ? Math.round(keywordMetrics.monthlyTrend.reduce((sum, p) => sum + p.searches, 0) / monthCount * 12)
-    : 0
-  const monthlyFillPercent = toSteppedPercent(keywordMetrics.avgMonthlySearches ?? 0, 1_000_000)
-  const yearlyFillPercent = toSteppedPercent(yearlyTotal, 12_000_000)
-  const relatedFillPercent = toSteppedPercent(Math.min(keywordMetrics.relatedKeywordCount, 2_000), 2_000)
+  const message = useMemo(() => {
+    if (isSubdomain) return 'Not available for subnames'
+    if (authStatus !== 'authenticated') return 'Sign in to view'
+    if (isTooLong) return 'Name too long'
+    if (keywordMetricsError || !keywordMetrics) return 'No search data available'
+    if (keywordMetrics.avgMonthlySearches === null && keywordMetrics.relatedKeywordCount === 0)
+      return 'No search data available'
+    return null
+  }, [isSubdomain, authStatus, isTooLong, keywordMetricsError, keywordMetrics])
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
@@ -402,21 +318,41 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
         <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
         <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
       </div>
-      {isOpen && (
-        <>
-          <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
-            <MetricStatCard value={avgSearches} label='Monthly Searches' fillPercent={monthlyFillPercent} />
-            <MetricStatCard value={formatNumber(yearlyTotal)} label='Year Total' fillPercent={yearlyFillPercent} />
-            <MetricStatCard
-              value={formatNumber(keywordMetrics.relatedKeywordCount)}
-              label='Related Keywords'
-              fillPercent={relatedFillPercent}
-            />
-          </div>
-          <ExpandedContent metrics={keywordMetrics} />
-        </>
-      )}
+      <div className={cn('flex-col gap-4', isOpen ? 'flex' : 'hidden')}>
+        {keywordMetricsIsLoading ? (
+          <LoadingSpinner size='h-10 w-10' />
+        ) : message ? (
+          <p className='text-neutral py-2 text-center text-xl font-medium'>{message}</p>
+        ) : (
+          <MetricsStats metrics={keywordMetrics as KeywordMetrics} />
+        )}
+      </div>
     </div>
+  )
+}
+
+const MetricsStats: React.FC<{ metrics: KeywordMetrics }> = ({ metrics }) => {
+  const avgSearches = metrics.avgMonthlySearches ? formatNumber(metrics.avgMonthlySearches) : 'N/A'
+  const monthCount = metrics.monthlyTrend.length
+  const yearlyTotal =
+    monthCount > 0 ? Math.round((metrics.monthlyTrend.reduce((sum, p) => sum + p.searches, 0) / monthCount) * 12) : 0
+  const monthlyFillPercent = toSteppedPercent(metrics.avgMonthlySearches ?? 0, 1_000_000)
+  const yearlyFillPercent = toSteppedPercent(yearlyTotal, 12_000_000)
+  const relatedFillPercent = toSteppedPercent(Math.min(metrics.relatedKeywordCount, 2_000), 2_000)
+
+  return (
+    <>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
+        <MetricStatCard value={avgSearches} label='Monthly Searches' fillPercent={monthlyFillPercent} />
+        <MetricStatCard value={formatNumber(yearlyTotal)} label='Year Total' fillPercent={yearlyFillPercent} />
+        <MetricStatCard
+          value={formatNumber(metrics.relatedKeywordCount)}
+          label='Related Keywords'
+          fillPercent={relatedFillPercent}
+        />
+      </div>
+      <TrendChart data={metrics.monthlyTrend} avgMonthlySearches={metrics.avgMonthlySearches} />
+    </>
   )
 }
 

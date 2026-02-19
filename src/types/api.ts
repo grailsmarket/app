@@ -106,3 +106,10 @@ export type RolesType = {
   expiryDate: number
   resolver: Address
 }
+
+export interface KeywordMetrics {
+  avgMonthlySearches: number | null
+  monthlyTrend: { month: string; year: number; searches: number }[]
+  relatedKeywordCount: number
+  competition: string | null
+}

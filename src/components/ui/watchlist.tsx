@@ -83,7 +83,6 @@ const Watchlist: React.FC<WatchlistProps> = ({
         label={isWatching ? 'Remove from watchlist' : 'Add to watchlist'}
         position={tooltipPosition || 'top'}
         align={tooltipAlign || 'right'}
-        showOnMobile
       >
         <div className='flex min-w-[22px] flex-row items-center gap-2'>
           <button

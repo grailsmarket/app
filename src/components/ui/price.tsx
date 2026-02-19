@@ -49,6 +49,7 @@ const Price: React.FC<PriceProps> = ({
       position={tooltipPosition}
       align={alignTooltip}
       showTooltip={diffCurrencyPrice !== null}
+      showOnMobile={true}
     >
       <div className='flex flex-row items-center gap-1'>
         <Asset currencyAddress={currencyAddress} iconSize={iconSize} />

@@ -5,6 +5,7 @@ import { useTooltip } from '@/hooks/useTooltip'
 import { TooltipAlignType, TooltipPositionType } from '@/types/ui'
 import { useClickAway } from '@/hooks/useClickAway'
 import { useIsTouchDevice } from '@/hooks/useDevice'
+import { cn } from '@/utils/tailwind'
 
 export interface TooltipProps {
   padding?: string | number
@@ -27,7 +28,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   label,
   align,
   showTooltip = true,
-  showOnMobile = true,
+  showOnMobile = false,
 }) => {
   const isTouchDevice = useIsTouchDevice()
   const { setTooltipHovered, tooltipHovered, tooltipStyle, pointStyle } = useTooltip({
@@ -65,7 +66,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       {showTooltip && tooltipHovered && (
         <div
           style={tooltipStyle}
-          className={`animate-fadeIn absolute whitespace-nowrap text-white ${!showOnMobile && 'hidden lg:block'}`}
+          className={cn('animate-fadeIn absolute whitespace-nowrap text-white', !showOnMobile && 'hidden lg:block')}
         >
           <div style={pointStyle} className='absolute'></div>
           <p className='text-lg'>{label}</p>

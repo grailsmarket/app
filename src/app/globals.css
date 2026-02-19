@@ -144,9 +144,8 @@ body {
 }
 
 .background-radial-primary {
-  /* background: radial-gradient(circle at center, #ffdfc0 0%, transparent 100%); */
-  background: #ffdfc01a;
-  box-shadow: 0 0 640px 150px #ffdfc0;
+  background: radial-gradient(circle at center, #ffdfc029 0%, transparent 90%);
+  pointer-events: none;
 }
 
 /* Name Gradients */

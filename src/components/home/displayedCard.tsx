@@ -243,7 +243,7 @@ const DisplayedCards: React.FC = () => {
             </>
           )}
 
-          <div className='absolute top-24 left-1/2 background-radial-primary h-px w-px rounded-full' />
+          <div className='background-radial-primary absolute top-1/2 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 sm:h-[800px] sm:w-[800px]' />
 
           {/* Carousel viewport */}
           <div

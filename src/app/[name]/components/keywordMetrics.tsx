@@ -318,9 +318,9 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
         <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
         <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
       </div>
-      <div className={cn('flex-col gap-4 items-center justify-center', isOpen ? 'flex' : 'hidden')}>
+      <div className={cn('flex-col gap-4', isOpen ? 'flex' : 'hidden')}>
         {keywordMetricsIsLoading ? (
-          <LoadingSpinner size='h-10 w-10' />
+          <LoadingSpinner size='h-10 w-10 my-4 mx-auto' />
         ) : message ? (
           <p className='text-neutral py-2 text-center text-xl font-medium'>{message}</p>
         ) : (

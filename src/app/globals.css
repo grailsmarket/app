@@ -362,6 +362,7 @@ body {
 
 .fadeIn {
   animation: fadeIn 0.4s ease-in-out both;
+  animation-delay: 0.1s;
 }
 
 @keyframes fadeIn {

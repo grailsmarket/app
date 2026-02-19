@@ -122,7 +122,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
           </div>
           <div className='fadeIn w-fit' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link
-              href='/cazegories?tab=names'
+              href='/categories?tab=names'
               className='hover:text-primary hover-underline transition-all duration-200'
               onClick={() => {
                 dispatch(changeCategoriesPageTab(CATEGORIES_PAGE_TABS[0]))

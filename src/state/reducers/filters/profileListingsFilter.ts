@@ -65,7 +65,7 @@ export const emptyFilterState: PortfolioFiltersState = {
 export const initialState: PortfolioFiltersOpenedState = {
   open: false,
   search: '',
-  status: [],
+  status: ['Registered'],
   market: { ...DEFAULT_MARKET_FILTERS_STATE, Listed: 'yes' },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },

@@ -45,7 +45,7 @@ export const MY_DOMAINS_SORT_FILTERS = [
   'clubs_count_desc',
 ]
 
-export const MY_DOMAINS_FILTER_LABELS = ['Grace'] as const
+export const MY_DOMAINS_FILTER_LABELS = ['Grace', 'Registered'] as const
 
 export const ALL_SORT_FILTERS = [
   'alphabetical_asc',

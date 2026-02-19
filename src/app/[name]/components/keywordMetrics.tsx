@@ -316,7 +316,7 @@ const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: numb
   const fillOpacity = 0.72 + normalized * 0.28
 
   return (
-    <div className='bg-secondary border-neutral sm:pl-md flex h-fit w-full flex-col sm:border-l-2'>
+    <div className='bg-secondary border-neutral sm:pl-md pb-sm flex h-fit w-full flex-col sm:border-l-2'>
       <p className='text-xl font-semibold'>{value}</p>
       <p className='text-neutral text-lg font-medium'>{label}</p>
       <div className='bg-neutral/25 relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full'>

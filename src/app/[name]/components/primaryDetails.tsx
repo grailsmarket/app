@@ -192,7 +192,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 )}
               </div>
               {nameDetails?.owner && (
-                <div className='sm:hidde pt-1'>
+                <div className='sm:hidden pt-1'>
                   <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral text-lg' /></div>
               )}
               <p className='text-neutral text-lg font-medium'>

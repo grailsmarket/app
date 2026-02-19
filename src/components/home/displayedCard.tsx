@@ -86,7 +86,7 @@ const DisplayedCards: React.FC = () => {
   }, [containerWidth, step])
 
   const totalCards = domains?.length ?? 0
-  const cloneCount = Math.max(visibleCount + 2, 5)
+  const cloneCount = Math.max(visibleCount + 6, 5)
 
   // Build track: [trailing clones] [real] [leading clones]
   const trackItems = useMemo(() => {
@@ -133,6 +133,7 @@ const DisplayedCards: React.FC = () => {
         setEnableTransition(false)
         return c
       }
+
       // Before first real card → snap to last real
       if (prev < c) {
         setEnableTransition(false)

@@ -144,7 +144,7 @@ body {
 }
 
 .background-radial-primary {
-  background: radial-gradient(circle at center, #ffdfc029 0%, transparent 90%);
+  background: radial-gradient(circle at center, #ffdfc029 0%, transparent 75%);
   pointer-events: none;
 }
 

@@ -221,21 +221,24 @@ const DisplayedCards: React.FC = () => {
   const viewportWidth = Math.min(containerWidth, visibleCount * cardWidth + (visibleCount - 1) * CARD_GAP)
 
   return (
-    <AnimateIn className='relative w-full mt-6 sm:px-8 xl:px-4'>
+    <AnimateIn className='relative mt-6 w-full sm:px-8 xl:px-4'>
       <div ref={containerRef} className='w-full'>
-        <div className='relative mx-auto' style={{ width: containerWidth && containerWidth > 440 ? viewportWidth : '100%' }}>
+        <div
+          className='relative mx-auto'
+          style={{ width: containerWidth && containerWidth > 440 ? viewportWidth : '100%' }}
+        >
           {!isLoading && totalCards > visibleCount && (
             <>
               <button
                 onClick={() => handleManualNav(-1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 sm:h-12 sm:w-12'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors sm:h-12 sm:w-12 md:-left-6'
                 aria-label='Previous card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
               </button>
               <button
                 onClick={() => handleManualNav(1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 sm:h-12 sm:w-12'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors sm:h-12 sm:w-12 md:-right-6'
                 aria-label='Next card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />
@@ -245,51 +248,44 @@ const DisplayedCards: React.FC = () => {
 
           <div className='background-radial-primary absolute top-1/2 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 sm:h-[800px] sm:w-[800px]' />
 
-          {/* Carousel viewport */}
           <div
-            className='overflow-hidden touch-pan-y'
+            className='touch-pan-y overflow-hidden'
             style={{ height: cardHeight + 20 }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            {isLoading && (
-              <div className='flex gap-4'>
-                {Array.from({ length: visibleCount }).map((_, index) => (
-                  <div
-                    key={index}
-                    className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
-                    style={{ width: cardWidth, height: cardHeight }}
-                  >
-                    <LoadingCard />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!isLoading && trackItems.length > 0 && (
-              <div
-                className='flex gap-4'
-                style={{
-                  transform: `translateX(${translateX}px)`,
-                  transition: enableTransition ? `transform ${TRANSITION_MS}ms ease` : 'none',
-                }}
-                onTransitionEnd={handleTransitionEnd}
-              >
-                {trackItems.map((domain, index) => (
-                  <div
-                    key={`${domain.name}-${index}`}
-                    className='shadow-homeCard shrink-0 rounded-xl'
-                    style={{ width: cardWidth, height: cardHeight }}
-                  >
-                    <Card
-                      domain={domain}
-                      className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <div
+              className='flex gap-4'
+              style={{
+                transform: `translateX(${translateX}px)`,
+                transition: enableTransition ? `transform ${TRANSITION_MS}ms ease` : 'none',
+              }}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {isLoading
+                ? Array.from({ length: visibleCount }).map((_, index) => (
+                    <div
+                      key={index}
+                      className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                      style={{ width: cardWidth, height: cardHeight }}
+                    >
+                      <LoadingCard />
+                    </div>
+                  ))
+                : trackItems.map((domain, index) => (
+                    <div
+                      key={`${domain.name}-${index}`}
+                      className='shadow-homeCard shrink-0 rounded-xl'
+                      style={{ width: cardWidth, height: cardHeight }}
+                    >
+                      <Card
+                        domain={domain}
+                        className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+                      />
+                    </div>
+                  ))}
+            </div>
 
             {!isLoading && (!domains || domains.length === 0) && (
               <div className='flex h-full items-center justify-center'>No domains found</div>

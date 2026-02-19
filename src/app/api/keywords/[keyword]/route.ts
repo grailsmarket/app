@@ -43,6 +43,7 @@ interface MonthlyVolume {
 
 interface KeywordMetricsResponse {
   avgMonthlySearches: number | null
+  avgCpc: number | null
   monthlyTrend: { month: string; year: number; searches: number }[]
   relatedKeywordCount: number
   competition: string | null
@@ -107,7 +108,7 @@ function getTrailing12MonthRange() {
 async function getKeywordHistoricalMetrics(
   keyword: string,
   accessToken: string
-): Promise<{ avgMonthlySearches: number | null; monthlyTrend: MonthlyVolume[]; competition: string | null }> {
+): Promise<{ avgMonthlySearches: number | null; avgCpc: number | null; monthlyTrend: MonthlyVolume[]; competition: string | null }> {
   const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID!
   const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN!
 
@@ -125,6 +126,7 @@ async function getKeywordHistoricalMetrics(
         keywordPlanNetwork: 'GOOGLE_SEARCH',
         historicalMetricsOptions: {
           yearMonthRange: getTrailing12MonthRange(),
+          includeAverageCpc: true,
         },
       }),
     }
@@ -134,7 +136,7 @@ async function getKeywordHistoricalMetrics(
 
   if (data.error) {
     console.error('Google Ads API error (metrics):', data.error?.message ?? data.error)
-    return { avgMonthlySearches: null, monthlyTrend: [], competition: null }
+    return { avgMonthlySearches: null, avgCpc: null, monthlyTrend: [], competition: null }
   }
 
   const result = data.results?.[0]
@@ -153,8 +155,12 @@ async function getKeywordHistoricalMetrics(
       )
     : []
 
+  // averageCpcMicros is in micros (1/1,000,000 of a dollar)
+  const avgCpc = metrics.averageCpcMicros ? Math.round(parseInt(metrics.averageCpcMicros) / 10_000) / 100 : null
+
   return {
     avgMonthlySearches: metrics.avgMonthlySearches ? parseInt(metrics.avgMonthlySearches) : null,
+    avgCpc,
     monthlyTrend,
     competition: metrics.competition || null,
   }
@@ -255,6 +261,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const responseData: KeywordMetricsResponse = {
       avgMonthlySearches: metricsResult.avgMonthlySearches,
+      avgCpc: metricsResult.avgCpc,
       monthlyTrend,
       relatedKeywordCount: relatedCount,
       competition: metricsResult.competition,

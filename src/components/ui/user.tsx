@@ -7,6 +7,7 @@ import {
   Avatar,
   DEFAULT_FALLBACK_AVATAR,
   fetchAccount,
+  isLinkValid,
   ProfileTooltip,
   truncateAddress,
 } from 'ethereum-identity-kit'
@@ -46,6 +47,8 @@ const User: React.FC<UserProps> = ({
   })
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
+  const headerImage = profile?.ens?.records?.header
+  const headerImageSrc = headerImage && isLinkValid(headerImage) ? headerImage : `https://metadata.ens.domains/mainnet/header/${profile?.ens?.name}`
 
   return (
     <ProfileTooltip
@@ -69,9 +72,9 @@ const User: React.FC<UserProps> = ({
             className
           )}
         >
-          {profile?.ens?.records?.header && (
+          {headerImageSrc && (
             <Image
-              src={profile?.ens?.records?.header}
+              src={headerImageSrc}
               alt='Header'
               width={400}
               height={80}

@@ -27,7 +27,7 @@ import { MarketplaceWatchersCountType, MarketplaceViewCountType, MarketplaceClub
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
-  status: [],
+  status: ['Registered'],
   market: { ...DEFAULT_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },

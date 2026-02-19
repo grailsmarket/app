@@ -34,7 +34,7 @@ const LISTINGS_MARKET_FILTERS_STATE: MarketFiltersState = {
 
 export const emptyFilterState: PortfolioFiltersState = {
   search: '',
-  status: [],
+  status: ['Registered'],
   market: { ...LISTINGS_MARKET_FILTERS_STATE },
   type: { ...DEFAULT_TYPE_FILTERS_STATE },
   textMatch: { ...DEFAULT_TEXT_MATCH_FILTERS_STATE },

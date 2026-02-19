@@ -110,7 +110,7 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
     }
   }, [categorySort, category])
 
-  const { name: categoryName, avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
+  const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
 
   return (
     <Link
@@ -120,15 +120,15 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
       <div className='p-lg relative flex max-h-[102px] min-h-[102px] flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
         <Image
           src={categoryHeader}
-          alt={`${categoryName} header`}
+          alt={`${category.display_name} header`}
           width={1000}
           height={1000}
           className='absolute top-0 left-0 h-full w-full object-cover opacity-20'
         />
         <div className='z-10 flex items-center gap-3'>
-          <Image src={categoryAvatar} alt={categoryName} width={60} height={60} className='rounded-full' />
+          <Image src={categoryAvatar} alt={category.display_name} width={60} height={60} className='rounded-full' />
           <div className='flex flex-col'>
-            <h3 className='text-2xl font-bold md:text-2xl'>{categoryName}</h3>
+            <h3 className='text-2xl font-bold md:text-2xl'>{category.display_name}</h3>
             <p className='text-neutral text-xl font-medium'>{category.description}</p>
           </div>
         </div>

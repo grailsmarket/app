@@ -67,7 +67,7 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
                     className='aspect-square! rounded-full'
                   />
                   <div className='max-w-[calc(100%-60px)]'>
-                    <p className='text-xl font-semibold text-nowrap'>{categoryDetails.name}</p>
+                    <p className='text-xl font-semibold text-nowrap'>{category?.display_name}</p>
                     {category && (
                       <p className='text-neutral max-w-full truncate text-lg font-medium text-nowrap'>
                         {category.description}

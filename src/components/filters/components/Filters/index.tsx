@@ -263,7 +263,14 @@ const CategoryExpandableTab: React.FC<CategoryExpandableTabProps> = ({ classific
       }
     >
       {sortedValue.map((category) => {
-        return <CategoryFilter key={category.name} category={category.name} owner_count={category.member_count} />
+        return (
+          <CategoryFilter
+            key={category.name}
+            category={category.name}
+            categoryName={category.display_name}
+            owner_count={category.member_count}
+          />
+        )
       })}
     </ExpandableTab>
   )

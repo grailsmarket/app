@@ -15,6 +15,7 @@ import EthGray from 'public/icons/eth-gray.svg'
 import { AnalyticsListing, AnalyticsOffer, AnalyticsRegistration, AnalyticsSale } from '@/types/analytics'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { ETH_ADDRESS } from '@/constants/web3/tokens'
+import { useCategories } from '@/components/filters/hooks/useCategories'
 
 interface SourceIconProps {
   source: string
@@ -38,6 +39,11 @@ interface ListingRowProps {
 }
 
 export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
+  const { categories } = useCategories()
+  const category =
+    listing.clubs && listing.clubs.length > 0 ? categories?.find((c) => c.name === listing.clubs?.[0]) : null
+  const categoryDetails = category ? getCategoryDetails(category.name) : null
+
   return (
     <Link
       href={`/${normalizeName(listing.name)}`}
@@ -51,17 +57,17 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
         <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(listing.name)}</p>
-          {listing.clubs && listing.clubs.length > 0 && (
+          {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
-                src={getCategoryDetails(listing.clubs[0]).avatar}
-                alt={listing.clubs[0]}
+                src={categoryDetails.avatar}
+                alt={category.display_name}
                 width={16}
                 height={16}
                 className='rounded-full'
               />
-              <p>{getCategoryDetails(listing.clubs[0]).name}</p>
-              <p className='ml-0.5'>{listing.clubs.length > 1 && `+${listing.clubs.length - 1}`}</p>
+              <p>{category.display_name}</p>
+              <p className='ml-0.5'>{listing.clubs && listing.clubs.length > 1 && `+${listing.clubs.length - 1}`}</p>
             </div>
           )}
         </div>
@@ -87,6 +93,10 @@ interface OfferRowProps {
 }
 
 export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
+  const { categories } = useCategories()
+  const category = offer.clubs && offer.clubs.length > 0 ? categories?.find((c) => c.name === offer.clubs?.[0]) : null
+  const categoryDetails = category ? getCategoryDetails(category.name) : null
+
   return (
     <Link
       href={`/${normalizeName(offer.name)}`}
@@ -100,17 +110,17 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
         <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(offer.name)}</p>
-          {offer.clubs && offer.clubs.length > 0 && (
+          {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
-                src={getCategoryDetails(offer.clubs[0]).avatar}
-                alt={offer.clubs[0]}
+                src={categoryDetails.avatar}
+                alt={category.display_name}
                 width={16}
                 height={16}
                 className='rounded-full'
               />
-              <p>{getCategoryDetails(offer.clubs[0]).name}</p>
-              <p className='ml-0.5'>{offer.clubs.length > 1 && `+${offer.clubs.length - 1}`}</p>
+              <p>{category.display_name}</p>
+              <p className='ml-0.5'>{offer.clubs && offer.clubs.length > 1 && `+${offer.clubs.length - 1}`}</p>
             </div>
           )}
         </div>{' '}
@@ -138,6 +148,10 @@ interface SaleRowProps {
 }
 
 export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = false, className }) => {
+  const { categories } = useCategories()
+  const category = sale.clubs && sale.clubs.length > 0 ? categories?.find((c) => c.name === sale.clubs?.[0]) : null
+  const categoryDetails = category ? getCategoryDetails(category.name) : null
+
   return (
     <Link
       href={`/${normalizeName(sale.name)}`}
@@ -152,17 +166,17 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
         <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(sale.name)}</p>
-          {sale.clubs && sale.clubs.length > 0 && (
+          {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
-                src={getCategoryDetails(sale.clubs[0]).avatar}
-                alt={sale.clubs[0]}
+                src={categoryDetails.avatar}
+                alt={category.display_name}
                 width={16}
                 height={16}
                 className='rounded-full'
               />
-              <p>{getCategoryDetails(sale.clubs[0]).name}</p>
-              <p className='ml-0.5'>{sale.clubs.length > 1 && `+${sale.clubs.length - 1}`}</p>
+              <p>{category.display_name}</p>
+              <p className='ml-0.5'>{sale.clubs && sale.clubs.length > 1 && `+${sale.clubs.length - 1}`}</p>
             </div>
           )}
         </div>
@@ -194,6 +208,13 @@ interface RegistrationRowProps {
 }
 
 export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, index, className }) => {
+  const { categories } = useCategories()
+  const category =
+    registration.clubs && registration.clubs.length > 0
+      ? categories?.find((c) => c.name === registration.clubs?.[0])
+      : null
+  const categoryDetails = category ? getCategoryDetails(category.name) : null
+
   return (
     <Link
       href={`/${normalizeName(registration.name)}`}
@@ -207,17 +228,19 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
         <NameImage name={registration.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-34px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(registration.name)}</p>
-          {registration.clubs && registration.clubs.length > 0 && (
+          {category && categoryDetails && (
             <div className='text-md text-foreground/60 flex items-center gap-1 font-semibold text-nowrap'>
               <Image
-                src={getCategoryDetails(registration.clubs[0]).avatar}
-                alt={registration.clubs[0]}
+                src={categoryDetails.avatar}
+                alt={category.display_name}
                 width={16}
                 height={16}
                 className='rounded-full'
               />
-              <p>{getCategoryDetails(registration.clubs[0]).name}</p>
-              <p className='ml-0.5'>{registration.clubs.length > 1 && `+${registration.clubs.length - 1}`}</p>
+              <p>{category.display_name}</p>
+              <p className='ml-0.5'>
+                {registration.clubs && registration.clubs.length > 1 && `+${registration.clubs.length - 1}`}
+              </p>
             </div>
           )}
         </div>{' '}

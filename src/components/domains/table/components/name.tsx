@@ -1,5 +1,5 @@
 import Tooltip from '@/components/ui/tooltip'
-import { ALL_MARKETPLACE_COLUMNS, CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
+import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { GRACE_PERIOD } from '@/constants/domains/registrationStatuses'
 import { MarketplaceDomainType } from '@/types/domains'
 import { RegistrationStatus } from '@/types/domains'
@@ -10,6 +10,7 @@ import NameImage from '@/components/ui/nameImage'
 import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { useWindowSize } from 'ethereum-identity-kit'
+import { useCategories } from '@/components/filters/hooks/useCategories'
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -20,6 +21,7 @@ interface NameProps {
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
   const { width } = useWindowSize()
+  const { categories } = useCategories()
   const maxShownCategories = width && width < 640 ? 1 : 2
   const displayedCategories = domain.clubs?.slice(0, maxShownCategories)
   const remainingCategories =
@@ -57,7 +59,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
                     height={16}
                     className='rounded-full'
                   />
-                  <p>{CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS]}</p>
+                  <p>{categories?.find((c) => c.name === club)?.display_name}</p>
                 </div>
               ))}
               {remainingCategories?.length > 0 && <p>+{remainingCategories.length}</p>}

@@ -16,7 +16,6 @@ import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'
 import Price from '@/components/ui/price'
-import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { useFilterContext } from '@/context/filters'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -45,6 +44,7 @@ import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
+import { useCategories } from '@/components/filters/hooks/useCategories'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -59,6 +59,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { ethPrice } = useETHPrice()
+  const { categories } = useCategories()
   const { filterType } = useFilterContext()
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
@@ -339,7 +340,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                   className='rounded-full'
                 />
                 <p className='text-md text-neutral truncate font-semibold'>
-                  {CATEGORY_LABELS[domain.clubs[0] as keyof typeof CATEGORY_LABELS]}
+                  {categories?.find((c) => c.name === domain.clubs[0])?.display_name}
                 </p>
               </div>
               {domain.clubs.length > 1 && (

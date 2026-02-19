@@ -108,7 +108,12 @@ function getTrailing12MonthRange() {
 async function getKeywordHistoricalMetrics(
   keyword: string,
   accessToken: string
-): Promise<{ avgMonthlySearches: number | null; avgCpc: number | null; monthlyTrend: MonthlyVolume[]; competition: string | null }> {
+): Promise<{
+  avgMonthlySearches: number | null
+  avgCpc: number | null
+  monthlyTrend: MonthlyVolume[]
+  competition: string | null
+}> {
   const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID!
   const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN!
 

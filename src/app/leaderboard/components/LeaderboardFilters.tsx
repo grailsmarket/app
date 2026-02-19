@@ -74,8 +74,8 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
   const getCategoriesDisplayText = () => {
     if (selectedClubs.length === 0) return 'All Categories'
     if (selectedClubs.length === 1) {
-      const details = getCategoryDetails(selectedClubs[0])
-      return details.name
+      const category = categories?.find((c) => c.name === selectedClubs[0])
+      return category?.display_name
     }
     return `${selectedClubs.length} Categories`
   }
@@ -104,12 +104,13 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
             {selectedClubs.length > 0 && selectedClubs.length <= 3 && (
               <div className='flex items-center -space-x-1'>
                 {selectedClubs.slice(0, 3).map((club) => {
-                  const details = getCategoryDetails(club)
+                  const categoryDetails = getCategoryDetails(club)
+
                   return (
                     <Image
                       key={club}
-                      src={details.avatar}
-                      alt={details.name}
+                      src={categoryDetails.avatar}
+                      alt={club}
                       width={20}
                       height={20}
                       className='border-background h-5 w-5 rounded-full border'
@@ -162,13 +163,13 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
                     {categoryDetails.avatar && (
                       <Image
                         src={categoryDetails.avatar}
-                        alt={categoryDetails.name}
+                        alt={category.display_name}
                         width={20}
                         height={20}
                         className='h-5 w-5 rounded-full'
                       />
                     )}
-                    <span className='truncate'>{categoryDetails.name}</span>
+                    <span className='truncate'>{category.display_name}</span>
                   </div>
                   {isSelected && <Image src={CheckIcon} alt='Selected' width={16} height={16} />}
                 </button>

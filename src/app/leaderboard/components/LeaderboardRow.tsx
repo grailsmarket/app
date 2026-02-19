@@ -109,11 +109,11 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
               <div
                 key={club}
                 className='border-background relative h-7 w-7 overflow-hidden rounded-full border-2'
-                title={categoryDetails.name}
+                title={club}
               >
                 <Image
                   src={categoryDetails.avatar}
-                  alt={categoryDetails.name}
+                  alt={club}
                   width={28}
                   height={28}
                   className='h-full w-full object-cover'

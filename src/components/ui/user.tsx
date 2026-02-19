@@ -48,7 +48,11 @@ const User: React.FC<UserProps> = ({
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
   const headerImage = profile?.ens?.records?.header
-  const headerImageSrc = headerImage ? isLinkValid(headerImage) ? headerImage : `https://metadata.ens.domains/mainnet/header/${profile?.ens?.name}` : null
+  const headerImageSrc = headerImage
+    ? isLinkValid(headerImage)
+      ? headerImage
+      : `https://metadata.ens.domains/mainnet/header/${profile?.ens?.name}`
+    : null
 
   return (
     <ProfileTooltip

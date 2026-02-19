@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectAnalytics, setCategory, setPeriod, setSource } from '@/state/reducers/analytics'
@@ -21,7 +21,16 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
   const dispatch = useAppDispatch()
   const { categories } = useCategories()
   const { period, source, category: selectedCategory } = useAppSelector(selectAnalytics)
-  const selectedCategoryDetails = selectedCategory ? getCategoryDetails(selectedCategory) : null
+  const selectedCategoryDetails = useMemo(() => {
+    if (!selectedCategory) return null
+    const category = categories?.find((c) => c.name === selectedCategory)
+    if (!category) return null
+    const categoryDetails = getCategoryDetails(category.name)
+    return {
+      ...categoryDetails,
+      display_name: category.display_name,
+    }
+  }, [selectedCategory, categories])
 
   const [isPeriodOpen, setIsPeriodOpen] = useState(false)
   const [isSourceOpen, setIsSourceOpen] = useState(false)
@@ -134,7 +143,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
               {selectedCategoryDetails?.avatar && selectedCategory !== 'none' && selectedCategory !== 'any' ? (
                 <Image
                   src={selectedCategoryDetails.avatar}
-                  alt={selectedCategoryDetails.name}
+                  alt={selectedCategoryDetails.display_name}
                   width={20}
                   height={20}
                   className='h-auto w-5 rounded-full'
@@ -145,7 +154,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   ? 'No Categories'
                   : selectedCategory === 'any'
                     ? 'All Categories'
-                    : selectedCategoryDetails?.name || 'Pick a Category'}
+                    : selectedCategoryDetails?.display_name || 'Pick a Category'}
               </p>
             </div>
             <ShortArrow className={cn('h-3 w-3 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')} />
@@ -209,13 +218,13 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                     {categoryDetails.avatar && (
                       <Image
                         src={categoryDetails.avatar}
-                        alt={categoryDetails.name}
+                        alt={category.display_name}
                         width={20}
                         height={20}
                         className='h-auto w-5 rounded-full'
                       />
                     )}
-                    {categoryDetails.name}
+                    {category.display_name}
                   </button>
                 )
               })}

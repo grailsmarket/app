@@ -12,7 +12,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const category = params.category
 
-  const categoryLabel = CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS]
+  const categoryLabel = CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category
 
   return {
     title: `${categoryLabel} Category`,

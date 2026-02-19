@@ -9,7 +9,6 @@ import { useAppDispatch } from '@/state/hooks'
 import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
 import NoResults from '@/components/ui/noResults'
-import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import NameLoadingRow from './components/loading-rows/nameLoadingRow'
 import CategoryLoadingRow from './components/loading-rows/categoryLoadingRow'
@@ -217,7 +216,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                 {domain.clubs && domain.clubs.length > 0 && (
                                   <div className='text-md text-foreground/60 font-semibold'>
                                     {domain.clubs
-                                      .map((club) => CATEGORY_LABELS[club as keyof typeof CATEGORY_LABELS])
+                                      .map((club) => categories?.find((c) => c.name === club)?.display_name)
                                       .join(', ')}
                                   </div>
                                 )}
@@ -260,9 +259,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                                 className='h-9 w-9 rounded-full object-cover'
                               />
                               <div className='flex flex-col gap-px'>
-                                <div className='text-foreground font-semibold'>
-                                  {CATEGORY_LABELS[category.name as keyof typeof CATEGORY_LABELS]}
-                                </div>
+                                <div className='text-foreground font-semibold'>{category.display_name}</div>
                                 <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
                                   {category.description}
                                 </div>

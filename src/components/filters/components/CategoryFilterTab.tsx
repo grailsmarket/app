@@ -1,6 +1,5 @@
 'use client'
 
-import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import Image from 'next/image'
 import arrowDown from 'public/icons/arrow-down.svg'
@@ -31,7 +30,7 @@ const CategoryFilterTab: React.FC<CategoryFilterTabProps> = ({ setPanelCategorie
             {selectedCategories.length > 0
               ? selectedCategories.length === categories?.length
                 ? 'All'
-                : `${CATEGORY_LABELS[selectedCategories[0] as keyof typeof CATEGORY_LABELS]} ${selectedCategories.length > 1 ? `+${selectedCategories.length - 1}` : ''}`
+                : `${categories?.find((c) => c.name === selectedCategories[0])?.display_name} ${selectedCategories.length > 1 ? `+${selectedCategories.length - 1}` : ''}`
               : null}
           </p>
           <Image src={arrowDown} alt='chevron up' className={`-rotate-90 transition-all`} />

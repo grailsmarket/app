@@ -416,6 +416,7 @@ export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]
 
 export type CategoryType = {
   name: string
+  display_name: string
   description: string
   member_count: number
   floor_price_wei: string

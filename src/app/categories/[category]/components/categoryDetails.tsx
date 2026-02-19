@@ -523,11 +523,7 @@ interface Props {
 }
 
 const CategoryDetails = ({ categoryDetails }: Props) => {
-  const {
-    name: categoryName,
-    avatar: categoryAvatar,
-    header: categoryHeader,
-  } = getCategoryDetails(categoryDetails.name)
+  const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(categoryDetails.name)
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.twitter || null
   const githubLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.github || null
 
@@ -535,7 +531,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
     <div className='relative w-full items-center justify-center md:px-4'>
       <Image
         src={categoryHeader}
-        alt={`${categoryName} header`}
+        alt={`${categoryDetails.display_name} header`}
         width={1000}
         height={1000}
         className='bg-foreground absolute top-0 left-0 hidden h-full w-full object-cover opacity-20 md:block'
@@ -544,7 +540,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
         <div className='relative z-10 flex w-full items-center py-6 md:w-fit md:py-0'>
           <Image
             src={categoryHeader}
-            alt={`${categoryName} header`}
+            alt={`${categoryDetails.display_name} header`}
             width={1000}
             height={1000}
             className='bg-foreground absolute top-0 left-0 block h-full w-full object-cover opacity-20 md:hidden'
@@ -552,14 +548,14 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
           <div className='relative z-20 flex items-start gap-4 px-4 md:px-0'>
             <Image
               src={categoryAvatar}
-              alt={`${categoryName} avatar`}
+              alt={`${categoryDetails.display_name} avatar`}
               width={100}
               height={100}
               className='h-16 w-16 rounded-full object-cover md:h-24 md:w-24'
             />
             <div className='flex flex-col gap-2'>
               <div className='flex flex-row items-center gap-2'>
-                <p className='text-3xl font-bold md:text-4xl lg:text-5xl'>{categoryName}</p>
+                <p className='text-3xl font-bold md:text-4xl lg:text-5xl'>{categoryDetails.display_name}</p>
                 {twitterLink && (
                   <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
                     <Image

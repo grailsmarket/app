@@ -305,7 +305,6 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
   )
 }
 
-
 const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: number }> = ({
   value,
   label,

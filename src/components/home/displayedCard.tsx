@@ -9,6 +9,7 @@ import LoadingCard from '../domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
 import Image from 'next/image'
 import ArrowIcon from 'public/icons/arrow-back.svg'
+import AnimateIn from '../ui/animateIn'
 
 const CARD_WIDTH_MOBILE = 190
 const CARD_HEIGHT_MOBILE = 360
@@ -18,6 +19,7 @@ const CARD_GAP = 16
 const AUTO_FLIP_MS = 3000
 const MANUAL_PAUSE_MS = 10000
 const TRANSITION_MS = 500
+const SWIPE_THRESHOLD = 0.2 // fraction of card width needed to trigger a swipe
 
 const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
@@ -29,6 +31,9 @@ const DisplayedCards: React.FC = () => {
   const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobileRef = useRef(false)
+  const touchStartXRef = useRef(0)
+  const [swipeOffset, setSwipeOffset] = useState(0)
+  const isSwipingRef = useRef(false)
 
   const { data: domains, isLoading } = useQuery({
     queryKey: ['domains-carousel'],
@@ -75,7 +80,7 @@ const DisplayedCards: React.FC = () => {
 
   const visibleCount = useMemo(() => {
     if (!containerWidth) return 5
-    return Math.max(1, Math.floor((containerWidth + CARD_GAP) / step))
+    return Math.max(2, Math.floor((containerWidth + CARD_GAP) / step))
   }, [containerWidth, step])
 
   const totalCards = domains?.length ?? 0
@@ -168,6 +173,36 @@ const DisplayedCards: React.FC = () => {
     [advance]
   )
 
+  // Touch swipe handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX
+    isSwipingRef.current = true
+    setSwipeOffset(0)
+    setEnableTransition(false)
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isSwipingRef.current) return
+    const diff = e.touches[0].clientX - touchStartXRef.current
+    // e.currentTarget.style.transform = `translateX(${-trackPos * step + diff}px)`
+    setSwipeOffset(diff)
+  }, [])
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isSwipingRef.current) return
+    isSwipingRef.current = false
+    setEnableTransition(true)
+
+    const threshold = cardWidth * SWIPE_THRESHOLD
+    if (swipeOffset < -threshold) {
+      handleManualNav(1)
+    } else if (swipeOffset > threshold) {
+      handleManualNav(-1)
+    }
+
+    setSwipeOffset(0)
+  }, [swipeOffset, cardWidth, handleManualNav])
+
   // Cleanup
   useEffect(() => {
     return () => {
@@ -176,77 +211,90 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const translateX = -trackPos * step
+  const translateX = -trackPos * step + swipeOffset
+
+  // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
+  // which will help show more than 1 card on mobile
+  const viewportWidth = Math.min(containerWidth, visibleCount * cardWidth + (visibleCount - 1) * CARD_GAP)
 
   return (
-    <div ref={containerRef} className='relative w-full mt-6'>
-      {/* Left arrow */}
-      {!isLoading && totalCards > visibleCount && (
-        <>
-          <button
-            onClick={() => handleManualNav(-1)}
-            className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 lg:-left-10 sm:h-12 sm:w-12'
-            aria-label='Previous card'
-          >
-            <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
-          </button>
-          <button
-            onClick={() => handleManualNav(1)}
-            className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 lg:-right-10 sm:h-12 sm:w-12'
-            aria-label='Next card'
-          >
-            <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />
-          </button>
-        </>
-      )}
-
-      <div className='absolute top-24 left-1/2 background-radial-primary h-20 w-20 rounded-full' />
-
-      {/* Carousel viewport */}
-      <div className='overflow-hidden' style={{ height: cardHeight + 20 }}>
-        {isLoading && (
-          <div className='flex gap-4'>
-            {Array.from({ length: visibleCount }).map((_, index) => (
-              <div
-                key={index}
-                className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
-                style={{ width: cardWidth, height: cardHeight }}
+    <AnimateIn className='relative w-full mt-6'>
+      <div ref={containerRef} className='w-full'>
+        <div className='relative mx-auto' style={{ width: containerWidth ? viewportWidth : '100%' }}>
+          {!isLoading && totalCards > visibleCount && (
+            <>
+              <button
+                onClick={() => handleManualNav(-1)}
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 lg:-left-10 sm:h-12 sm:w-12'
+                aria-label='Previous card'
               >
-                <LoadingCard />
-              </div>
-            ))}
-          </div>
-        )}
+                <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
+              </button>
+              <button
+                onClick={() => handleManualNav(1)}
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 lg:-right-10 sm:h-12 sm:w-12'
+                aria-label='Next card'
+              >
+                <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />
+              </button>
+            </>
+          )}
 
-        {!isLoading && trackItems.length > 0 && (
+          <div className='absolute top-24 left-1/2 background-radial-primary h-20 w-20 rounded-full' />
+
+          {/* Carousel viewport */}
           <div
-            className='flex gap-4'
-            style={{
-              transform: `translateX(${translateX}px)`,
-              transition: enableTransition ? `transform ${TRANSITION_MS}ms ease` : 'none',
-            }}
-            onTransitionEnd={handleTransitionEnd}
+            className='overflow-hidden touch-pan-y'
+            style={{ height: cardHeight + 20 }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {trackItems.map((domain, index) => (
-              <div
-                key={`${domain.name}-${index}`}
-                className='shadow-homeCard shrink-0 rounded-xl'
-                style={{ width: cardWidth, height: cardHeight }}
-              >
-                <Card
-                  domain={domain}
-                  className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
-                />
+            {isLoading && (
+              <div className='flex gap-4'>
+                {Array.from({ length: visibleCount }).map((_, index) => (
+                  <div
+                    key={index}
+                    className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                    style={{ width: cardWidth, height: cardHeight }}
+                  >
+                    <LoadingCard />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {!isLoading && (!domains || domains.length === 0) && (
-          <div className='flex h-full items-center justify-center'>No domains found</div>
-        )}
+            {!isLoading && trackItems.length > 0 && (
+              <div
+                className='flex gap-4'
+                style={{
+                  transform: `translateX(${translateX}px)`,
+                  transition: enableTransition ? `transform ${TRANSITION_MS}ms ease` : 'none',
+                }}
+                onTransitionEnd={handleTransitionEnd}
+              >
+                {trackItems.map((domain, index) => (
+                  <div
+                    key={`${domain.name}-${index}`}
+                    className='shadow-homeCard shrink-0 rounded-xl'
+                    style={{ width: cardWidth, height: cardHeight }}
+                  >
+                    <Card
+                      domain={domain}
+                      className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!isLoading && (!domains || domains.length === 0) && (
+              <div className='flex h-full items-center justify-center'>No domains found</div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </AnimateIn>
   )
 }
 

@@ -213,7 +213,7 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const smallMobileOffset = width && width < 440 ? width / 3.66 : 0
+  const smallMobileOffset = width && width < 440 ? ((width - cardWidth) / 2) - step : 0
   const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
@@ -264,27 +264,27 @@ const DisplayedCards: React.FC = () => {
               onTransitionEnd={handleTransitionEnd}
             >
               {isLoading
-                ? Array.from({ length: visibleCount }).map((_, index) => (
-                    <div
-                      key={index}
-                      className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
-                      style={{ width: cardWidth, height: cardHeight }}
-                    >
-                      <LoadingCard />
-                    </div>
-                  ))
+                ? Array.from({ length: width && width < 440 ? 3 : visibleCount }).map((_, index) => (
+                  <div
+                    key={index}
+                    className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                    style={{ width: cardWidth, height: cardHeight }}
+                  >
+                    <LoadingCard />
+                  </div>
+                ))
                 : trackItems.map((domain, index) => (
-                    <div
-                      key={`${domain.name}-${index}`}
-                      className='shadow-homeCard shrink-0 rounded-xl'
-                      style={{ width: cardWidth, height: cardHeight }}
-                    >
-                      <Card
-                        domain={domain}
-                        className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
-                      />
-                    </div>
-                  ))}
+                  <div
+                    key={`${domain.name}-${index}`}
+                    className='shadow-homeCard shrink-0 rounded-xl'
+                    style={{ width: cardWidth, height: cardHeight }}
+                  >
+                    <Card
+                      domain={domain}
+                      className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+                    />
+                  </div>
+                ))}
             </div>
 
             {!isLoading && (!domains || domains.length === 0) && (

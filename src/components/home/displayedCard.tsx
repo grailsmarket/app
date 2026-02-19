@@ -213,7 +213,7 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const smallMobileOffset = width && width < 400 ? 100 : 0
+  const smallMobileOffset = width && width < 400 ? 104 : 0
   const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
@@ -228,14 +228,14 @@ const DisplayedCards: React.FC = () => {
             <>
               <button
                 onClick={() => handleManualNav(-1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 sm:h-12 sm:w-12'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 sm:h-12 sm:w-12'
                 aria-label='Previous card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
               </button>
               <button
                 onClick={() => handleManualNav(1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 sm:h-12 sm:w-12'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-1 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 sm:h-12 sm:w-12'
                 aria-label='Next card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />

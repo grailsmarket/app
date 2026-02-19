@@ -44,6 +44,7 @@ interface NameDetailsProps {
   nameDetailsIsLoading: boolean
   registrationStatus: RegistrationStatus
   isSubname: boolean
+  openEditMetadataModal: () => void
 }
 
 const PrimaryDetails: React.FC<NameDetailsProps> = ({
@@ -52,6 +53,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   nameDetailsIsLoading,
   registrationStatus,
   isSubname,
+  openEditMetadataModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
 
@@ -115,7 +117,35 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         )}
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
+
       <div className='p-lg flex flex-col items-center gap-3 lg:pt-5'>
+        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
+          <div className='flex w-full flex-row items-center justify-between gap-2'>
+            {!isSubname && (
+              <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg'>
+                Extend
+              </PrimaryButton>
+            )}
+            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+              <>
+                <SecondaryButton
+                  onClick={openTransferModal}
+                  className='w-full text-lg'
+                  disabled={authStatus !== 'authenticated'}
+                >
+                  Transfer
+                </SecondaryButton>
+                <SecondaryButton
+                  onClick={openEditMetadataModal}
+                  className='w-full text-lg'
+                  disabled={authStatus !== 'authenticated'}
+                >
+                  Edit
+                </SecondaryButton>
+              </>
+            )}
+          </div>
+        )}
         <div className='flex w-full flex-row items-start justify-between gap-2'>
           <CopyValue
             value={nameDetails?.name ? beautifyName(nameDetails.name) : name}
@@ -161,6 +191,10 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                   />
                 )}
               </div>
+              {nameDetails?.owner && (
+                <div className='sm:hidde pt-1'>
+                  <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral text-lg' /></div>
+              )}
               <p className='text-neutral text-lg font-medium'>
                 {REGISTERABLE_STATUSES.includes(registrationStatus) ? 'Previous Owner' : 'Owner'}
               </p>
@@ -170,7 +204,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             <LoadingCell height='20px' width='110px' />
           ) : (
             nameDetails?.owner && (
-              <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' />
+              <div className='hidden sm:block'>
+                <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' /></div>
             )
           )}
         </div>
@@ -223,74 +258,45 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           )}
         </div>
         <div className='flex w-full flex-row gap-2'>
-          {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
-            <>
-              {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
-                <SecondaryButton
-                  onClick={openTransferModal}
-                  className='w-full text-lg'
-                  disabled={authStatus !== 'authenticated'}
-                >
-                  Transfer
-                </SecondaryButton>
-              )}
-              {!isSubname && (
-                <PrimaryButton onClick={openExtendNameModal} className='hidden w-full text-lg sm:block'>
-                  Extend
-                </PrimaryButton>
-              )}
-            </>
-          )}
-          <div className='flex w-fit justify-center gap-2'>
-            <button
-              className='bg-tertiary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10 sm:w-10'
-              onClick={() => {
-                window.open(`https://app.ens.domains/${name}`, '_blank')
-              }}
-            >
-              <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-6.5 w-6.5' />
-            </button>
-            <button
-              className='bg-tertiary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10 sm:w-10'
-              onClick={() => {
-                window.open(
-                  `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
-                  '_blank'
-                )
-              }}
-            >
-              <Image src={OPENSEA_LOGO} alt='Opensea Logo' width={28} height={28} className='h-6.5 w-6.5' />
-            </button>
-            <button
-              className='bg-tertiary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10 sm:w-10'
-              onClick={() => {
-                window.open(`https://ensvision.com/name/${name}`, '_blank')
-              }}
-            >
-              <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />
-            </button>
-            <button
-              className='bg-tertiary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10 sm:w-10'
-              onClick={() => {
-                window.open(
-                  `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
-                  '_blank'
-                )
-              }}
-            >
-              <Image src={ETHERSCAN_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />
-            </button>
-          </div>
+          <button
+            className='bg-[#0080BC] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            onClick={() => {
+              window.open(`https://app.ens.domains/${name}`, '_blank')
+            }}
+          >
+            <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5' />
+          </button>
+          <button
+            className='bg-[#0086FF] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            onClick={() => {
+              window.open(
+                `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
+                '_blank'
+              )
+            }}
+          >
+            <Image src={OPENSEA_LOGO} alt='Opensea Logo' width={28} height={28} className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5' />
+          </button>
+          <button
+            className='bg-[#895a01] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            onClick={() => {
+              window.open(`https://ensvision.com/name/${name}`, '_blank')
+            }}
+          >
+            <Image src={ENSVISION_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6 w-6 sm:h-7 sm:w-7' />
+          </button>
+          <button
+            className='bg-[#293e70] flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm hover:opacity-80 sm:h-10'
+            onClick={() => {
+              window.open(
+                `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                '_blank'
+              )
+            }}
+          >
+            <Image src={ETHERSCAN_LOGO} alt='ENS Vision Logo' width={28} height={28} className='h-6.5 w-6.5' />
+          </button>
         </div>
-        {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
-          <>
-            {!isSubname && (
-              <PrimaryButton onClick={openExtendNameModal} className='w-full text-lg sm:hidden'>
-                Extend
-              </PrimaryButton>
-            )}
-          </>
-        )}
       </div>
     </div>
   )
@@ -326,7 +332,7 @@ export const CopyValue = ({
       <p className={cn('max-w-[calc(100%-16px)] truncate', className)}>
         {truncateValue && value ? truncateAddress(value as `0x${string}`) : value}
       </p>
-      {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='h-4 w-4' />}
+      {canCopy && <Image src={isCopied ? CheckIcon : CopyIcon} alt='Copy' className='h-3.5 w-3.5' />}
     </div>
   )
 }

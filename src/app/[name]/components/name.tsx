@@ -32,6 +32,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
     isMetadataLoading,
     roles,
     isRolesLoading,
+    openEditMetadataModal,
   } = useName(name)
 
   // // Pre-warm the OG image cache in the background
@@ -81,6 +82,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             nameDetailsIsLoading={nameDetailsIsLoading}
             registrationStatus={registrationStatus}
             isSubname={isSubname}
+            openEditMetadataModal={openEditMetadataModal}
           />
           <div className='hidden lg:block'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
@@ -94,6 +96,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               nameOwner={nameDetails?.owner}
               metadata={metadata}
               isMetadataLoading={isMetadataLoading}
+              openEditMetadataModal={openEditMetadataModal}
             />
           </div>
           <div className='hidden lg:block'>
@@ -134,6 +137,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               nameOwner={nameDetails?.owner}
               metadata={metadata}
               isMetadataLoading={isMetadataLoading}
+              openEditMetadataModal={openEditMetadataModal}
             />
           </div>
           <div className='lg:hidden'>

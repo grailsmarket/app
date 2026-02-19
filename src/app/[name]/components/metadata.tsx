@@ -7,12 +7,6 @@ import { CopyValue } from './primaryDetails'
 import Image from 'next/image'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import LoadingCell from '@/components/ui/loadingCell'
-import { useAppDispatch } from '@/state/hooks'
-import {
-  setEditRecordsModalOpen,
-  setEditRecordsModalName,
-  setEditRecordsModalMetadata,
-} from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil.svg'
 import { useUserContext } from '@/context/user'
 import { isAddress } from 'viem'
@@ -23,13 +17,13 @@ interface NameDetailsProps {
   nameOwner?: string | null
   metadata?: MetadataType[]
   isMetadataLoading: boolean
+  openEditMetadataModal: () => void
 }
 
-const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], isMetadataLoading }) => {
+const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], isMetadataLoading, openEditMetadataModal }) => {
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
-  const dispatch = useAppDispatch()
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -44,16 +38,7 @@ const Metadata: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], 
               className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
               onClick={(e) => {
                 e.stopPropagation()
-                const metadataRecord = metadata.reduce(
-                  (acc, row) => {
-                    acc[row.label] = row.value
-                    return acc
-                  },
-                  {} as Record<string, string>
-                )
-                dispatch(setEditRecordsModalName(name))
-                dispatch(setEditRecordsModalMetadata(metadataRecord))
-                dispatch(setEditRecordsModalOpen(true))
+                openEditMetadataModal()
               }}
             >
               <Image src={PencilIcon} alt='Edit records' width={16} height={16} className='invert' />

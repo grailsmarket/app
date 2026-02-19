@@ -2,6 +2,8 @@ import { fetchNameDetails } from '@/api/name/details'
 import { fetchNameMetadata } from '@/api/name/metadata'
 import { fetchNameOffers } from '@/api/name/offers'
 import { fetchNameRoles } from '@/api/name/roles'
+import { useAppDispatch } from '@/state/hooks'
+import { setEditRecordsModalMetadata, setEditRecordsModalName, setEditRecordsModalOpen } from '@/state/reducers/modals/editRecordsModal'
 import { MetadataType } from '@/types/api'
 import { useQuery } from '@tanstack/react-query'
 
@@ -71,6 +73,21 @@ export const useName = (name: string) => {
     enabled: !!name,
   })
 
+  const dispatch = useAppDispatch()
+  const openEditMetadataModal = () => {
+    if(!metadata) return
+    const metadataRecord = metadata.reduce(
+      (acc, row) => {
+        acc[row.label] = row.value
+        return acc
+      },
+      {} as Record<string, string>
+    )
+    dispatch(setEditRecordsModalName(name))
+    dispatch(setEditRecordsModalMetadata(metadataRecord))
+    dispatch(setEditRecordsModalOpen(true))
+  }
+
   return {
     nameDetails,
     nameDetailsIsLoading,
@@ -80,5 +97,6 @@ export const useName = (name: string) => {
     isMetadataLoading,
     roles,
     isRolesLoading,
+    openEditMetadataModal,
   }
 }

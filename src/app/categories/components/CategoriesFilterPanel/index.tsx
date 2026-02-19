@@ -54,15 +54,15 @@ const CategoriesFilterPanel: React.FC = () => {
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
         isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-14 h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
+        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
-          (isNavbarVisible
-            ? 'top-26 h-[calc(100dvh-104px)] md:top-32 md:h-[calc(100dvh-128px)]'
-            : 'top-12 h-[calc(100dvh-56px)] md:top-14'),
+        (isNavbarVisible
+          ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
+          : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? 'md:border-r-2' : 'w-0'
       )}

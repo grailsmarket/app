@@ -9,10 +9,10 @@ const RecentContainer = () => {
       <div className='fadeIn w-full lg:w-[calc(50%-8px)] xl:w-1/3'>
         <Sales />
       </div>
-      <div className='fadeIn w-full lg:w-[calc(50%-8px)] xl:w-1/3' style={{ animationDelay: '100ms' }}>
+      <div className='fadeIn w-full lg:w-[calc(50%-8px)] xl:w-1/3' style={{ animationDelay: '300ms' }}>
         <Premium />
       </div>
-      <div className='fadeIn w-full xl:w-1/3' style={{ animationDelay: '200ms' }}>
+      <div className='fadeIn w-full xl:w-1/3' style={{ animationDelay: '400ms' }}>
         <Registrations />
       </div>
     </div>

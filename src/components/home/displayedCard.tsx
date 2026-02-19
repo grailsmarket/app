@@ -213,7 +213,7 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const smallMobileOffset = width && width < 400 ? 104 : 0
+  const smallMobileOffset = width && width < 440 ? width / 3.66 : 0
   const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
@@ -223,7 +223,7 @@ const DisplayedCards: React.FC = () => {
   return (
     <AnimateIn className='relative w-full mt-6 sm:px-8 xl:px-4'>
       <div ref={containerRef} className='w-full'>
-        <div className='relative mx-auto' style={{ width: containerWidth && containerWidth > 400 ? viewportWidth : '100%' }}>
+        <div className='relative mx-auto' style={{ width: containerWidth && containerWidth > 440 ? viewportWidth : '100%' }}>
           {!isLoading && totalCards > visibleCount && (
             <>
               <button

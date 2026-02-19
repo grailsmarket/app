@@ -146,7 +146,7 @@ body {
 .background-radial-primary {
   /* background: radial-gradient(circle at center, #ffdfc0 0%, transparent 100%); */
   background: #ffdfc01a;
-  box-shadow: 0 0 640px 120px #ffdfc0;
+  box-shadow: 0 0 640px 150px #ffdfc0;
 }
 
 /* Name Gradients */

@@ -10,11 +10,12 @@ import { useUserContext } from '@/context/user'
 import Image from 'next/image'
 import ArrowIcon from 'public/icons/arrow-back.svg'
 import AnimateIn from '../ui/animateIn'
+import { useWindowSize } from 'ethereum-identity-kit'
 
-const CARD_WIDTH_MOBILE = 190
+const CARD_WIDTH_MOBILE = 180
 const CARD_HEIGHT_MOBILE = 360
-const CARD_WIDTH_DESKTOP = 240
-const CARD_HEIGHT_DESKTOP = 410
+const CARD_WIDTH_DESKTOP = 197
+const CARD_HEIGHT_DESKTOP = 380
 const CARD_GAP = 16
 const AUTO_FLIP_MS = 3000
 const MANUAL_PAUSE_MS = 10000
@@ -25,6 +26,7 @@ const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const { width } = useWindowSize()
   const [trackPos, setTrackPos] = useState(0)
   const [enableTransition, setEnableTransition] = useState(true)
   const [isPausedByUser, setIsPausedByUser] = useState(false)
@@ -211,28 +213,29 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const translateX = -trackPos * step + swipeOffset
+  const smallMobileOffset = width && width < 400 ? 100 : 0
+  const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
   // which will help show more than 1 card on mobile
   const viewportWidth = Math.min(containerWidth, visibleCount * cardWidth + (visibleCount - 1) * CARD_GAP)
 
   return (
-    <AnimateIn className='relative w-full mt-6'>
+    <AnimateIn className='relative w-full mt-6 sm:px-8 xl:px-4'>
       <div ref={containerRef} className='w-full'>
-        <div className='relative mx-auto' style={{ width: containerWidth ? viewportWidth : '100%' }}>
+        <div className='relative mx-auto' style={{ width: containerWidth && containerWidth > 400 ? viewportWidth : '100%' }}>
           {!isLoading && totalCards > visibleCount && (
             <>
               <button
                 onClick={() => handleManualNav(-1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 lg:-left-10 sm:h-12 sm:w-12'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -left-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-left-6 sm:h-12 sm:w-12'
                 aria-label='Previous card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='rotate-180 invert dark:invert-0' />
               </button>
               <button
                 onClick={() => handleManualNav(1)}
-                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 lg:-right-10 sm:h-12 sm:w-12'
+                className='bg-secondary/80 hover:bg-secondary border-tertiary absolute top-1/2 -right-3 z-30 flex h-10 w-10 -translate-y-2/3 cursor-pointer items-center justify-center rounded-full border-2 backdrop-blur-sm transition-colors md:-right-6 sm:h-12 sm:w-12'
                 aria-label='Next card'
               >
                 <Image src={ArrowIcon} alt='' width={16} height={14} className='invert dark:invert-0' />
@@ -240,7 +243,7 @@ const DisplayedCards: React.FC = () => {
             </>
           )}
 
-          <div className='absolute top-24 left-1/2 background-radial-primary h-20 w-20 rounded-full' />
+          <div className='absolute top-24 left-1/2 background-radial-primary h-px w-px rounded-full' />
 
           {/* Carousel viewport */}
           <div

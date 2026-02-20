@@ -9,7 +9,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import Input from '@/components/ui/input'
 import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
-import { Trash } from 'ethereum-identity-kit'
+import { isLinkValid, Trash } from 'ethereum-identity-kit'
 
 interface ImageUploadModalProps {
   name: string
@@ -27,8 +27,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
   const { signTypedDataAsync } = useSignTypedData()
 
   const hasExistingUrl = currentValue && currentValue.startsWith('http')
-  const [mode] = useState<UploadMode>('url')
-  // const [mode, setMode] = useState<UploadMode>(hasExistingUrl ? 'url' : 'file')
+  const [mode, setMode] = useState<UploadMode>(hasExistingUrl ? 'url' : 'file')
   const [dataURL, setDataURL] = useState<string | null>(null)
   const [manualUrl, setManualUrl] = useState(hasExistingUrl ? currentValue : '')
   const [previewUrl, setPreviewUrl] = useState<string | null>(hasExistingUrl ? currentValue : null)
@@ -130,7 +129,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
         },
       })
 
-      const response = await fetch(`https://euc.li/${name}`, {
+      const response = await fetch(`https://euc.li/${name}${imageType === 'header' ? '/h' : ''}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,11 +141,14 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
       })
 
       if (!response.ok) {
+        if (response.status === 413) {
+          setErrorMessage('File size is too large (max 500KB)')
+        }
         throw new Error(`Upload failed: ${response.statusText}`)
       }
 
       const result = await response.json()
-      const url = result.url || `https://euc.li/${name}/${imageType}`
+      const url = result.url || `https://euc.li/${name}${imageType === 'header' ? '/h' : ''}`
 
       setUploadStatus('success')
       onSave(url)
@@ -155,6 +157,8 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
       setErrorMessage(err instanceof Error ? err.message : 'Upload failed')
     }
   }, [address, mode, manualUrl, dataURL, signTypedDataAsync, imageType, name, onSave, dataURLToBytes])
+
+  console.log(previewUrl)
 
   return (
     <div
@@ -170,8 +174,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
       >
         <h2 className='font-sedan-sc text-foreground text-2xl capitalize'>{imageType} Image</h2>
 
-        {/* Mode tabs */}
-        {/* <div className='flex gap-2'>
+        <div className='flex gap-2'>
           <button
             className={cn(
               'flex-1 rounded-md px-3 py-2 text-lg font-semibold transition-colors',
@@ -190,7 +193,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
           >
             Enter URL
           </button>
-        </div> */}
+        </div>
 
         {mode === 'file' ? (
           <>
@@ -245,7 +248,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
                 </button>
               )}
             </div>
-            {previewUrl && URL.canParse(previewUrl) && (
+            {previewUrl && isLinkValid(previewUrl) && URL.canParse(previewUrl) && (
               <div className='flex justify-center'>
                 <Image
                   src={previewUrl}

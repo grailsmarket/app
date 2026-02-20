@@ -478,6 +478,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       // Invalidate caches
       queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
       queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
+      queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       queryClient.invalidateQueries({ queryKey: ['profileMetadata', name] })
 

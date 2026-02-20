@@ -39,7 +39,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
       >
         <div className='flex items-center gap-2'>
           <h3 className='font-sedan-sc text-3xl'>Records</h3>
-          {isNameOwner && (
+          {!isNameOwner && (
             <button
               className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
               onClick={(e) => {

@@ -168,6 +168,8 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           }) as Promise<`0x${string}`>,
         ])
 
+        console.log(resolverAddr, managerAddr, nftOwnerAddr)
+
         setResolverAddress(
           resolverAddr !== '0x0000000000000000000000000000000000000000'
             ? resolverAddr
@@ -185,6 +187,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         setResolverAddress(ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS as `0x${string}`)
       }
     }
+
     resolve()
   }, [name, publicClient])
 

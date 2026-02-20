@@ -10,7 +10,7 @@ interface FetchKeywordMetricsOptions {
 export const fetchKeywordMetrics = async ({
   keyword,
   isAuthenticated = false,
-}: FetchKeywordMetricsOptions): Promise<KeywordMetrics | null> => {
+}: FetchKeywordMetricsOptions): Promise<KeywordMetrics | null | string> => {
   try {
     const fetchFunction = isAuthenticated ? authFetch : fetch
     const response = await fetchFunction(`${API_URL}/google-metrics/${encodeURIComponent(keyword)}`, {
@@ -22,11 +22,11 @@ export const fetchKeywordMetrics = async ({
     })
 
     if (response.status === 401) {
-      return null
+      return 'login_required'
     }
 
     if (!response.ok) {
-      return null
+      throw new Error(`Failed to fetch keyword metrics: ${response.statusText}`)
     }
 
     const data = (await response.json()) as APIResponseType<KeywordMetrics>

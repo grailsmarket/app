@@ -15,7 +15,7 @@
   "dependencies": {
     "@ethersproject/bignumber": "^5.8.0",
     "@opensea/seaport-js": "^4.0.5",
-    "@rainbow-me/rainbowkit": "^2.2.8",
+    "@rainbow-me/rainbowkit": "^2.2.10",
     "@reduxjs/toolkit": "^2.9.0",
     "@safe-global/safe-apps-provider": "~0.18.6",
     "@safe-global/safe-apps-sdk": "^9.1.0",
@@ -40,8 +40,8 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.1",
-    "viem": "2.x",
-    "wagmi": "^2.17.5"
+    "viem": "2.46.2",
+    "wagmi": "^2.19.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

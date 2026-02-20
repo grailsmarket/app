@@ -1,11 +1,38 @@
-import { KeywordMetrics } from '@/types/api'
+import { authFetch } from '@/api/authFetch'
+import { API_URL } from '@/constants/api'
+import { APIResponseType, KeywordMetrics } from '@/types/api'
 
-export const fetchKeywordMetrics = async (keyword: string): Promise<KeywordMetrics> => {
-  const response = await fetch(`/api/keywords/${encodeURIComponent(keyword)}`)
+interface FetchKeywordMetricsOptions {
+  keyword: string
+  isAuthenticated?: boolean
+}
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch keyword metrics: ${response.statusText}`)
+export const fetchKeywordMetrics = async ({
+  keyword,
+  isAuthenticated = false,
+}: FetchKeywordMetricsOptions): Promise<KeywordMetrics | null> => {
+  try {
+    const fetchFunction = isAuthenticated ? authFetch : fetch
+    const response = await fetchFunction(`${API_URL}/google-metrics/${encodeURIComponent(keyword)}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.status === 401) {
+      return null
+    }
+
+    if (!response.ok) {
+      return null
+    }
+
+    const data = (await response.json()) as APIResponseType<KeywordMetrics>
+    return data.data ?? null
+  } catch (error) {
+    console.error('Failed to fetch keyword metrics:', error)
+    return null
   }
-
-  return response.json()
 }

@@ -10,13 +10,13 @@ function isSubdomain(ensName: string): boolean {
 
 export const useKeywordMetrics = (ensName: string, expiryDate?: string | null) => {
   const { authStatus } = useUserContext()
+  const isAuthenticated = authStatus === 'authenticated'
   const isSubdomainName = isSubdomain(ensName)
   const keyword = isSubdomainName ? '' : ensName.replaceAll('.eth', '').toLowerCase()
   const isTooLong = keyword.length > 20
 
   const isInDatabase = !!expiryDate
-  const queryEnabled =
-    !!keyword && keyword.length > 0 && !isSubdomainName && !isTooLong && authStatus === 'authenticated' && isInDatabase
+  const queryEnabled = !!keyword && keyword.length > 0 && !isSubdomainName && !isTooLong && isInDatabase
 
   const {
     data: keywordMetrics,
@@ -24,7 +24,7 @@ export const useKeywordMetrics = (ensName: string, expiryDate?: string | null) =
     error: keywordMetricsError,
   } = useQuery({
     queryKey: ['keyword', 'metrics', keyword],
-    queryFn: () => fetchKeywordMetrics(keyword),
+    queryFn: () => fetchKeywordMetrics({ keyword, isAuthenticated }),
     enabled: queryEnabled,
     refetchOnWindowFocus: false,
   })

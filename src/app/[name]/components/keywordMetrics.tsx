@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import { useKeywordMetrics } from '@/app/[name]/hooks/useKeywordMetrics'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
-import { useUserContext } from '@/context/user'
 import { formatNumber, ShortArrow } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { KeywordMetrics } from '@/types/api'
@@ -266,7 +265,6 @@ const TrendChart: React.FC<{
 }
 
 const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDate }) => {
-  const { authStatus } = useUserContext()
   const { keywordMetrics, keywordMetricsIsLoading, keywordMetricsError, isSubdomain, isTooLong } = useKeywordMetrics(
     name,
     expiryDate
@@ -275,13 +273,12 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
 
   const message = useMemo(() => {
     if (isSubdomain) return 'Not available for subnames'
-    if (authStatus !== 'authenticated') return 'Sign in to view'
     if (isTooLong) return 'Name too long'
     if (keywordMetricsError || !keywordMetrics) return 'No search data available'
     if (keywordMetrics.avgMonthlySearches === null && keywordMetrics.relatedKeywordCount === 0)
       return 'No search data available'
     return null
-  }, [isSubdomain, authStatus, isTooLong, keywordMetricsError, keywordMetrics])
+  }, [isSubdomain, isTooLong, keywordMetricsError, keywordMetrics])
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>

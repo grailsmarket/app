@@ -582,7 +582,6 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                         }}
                         placeholder='0x... or name.eth'
                         disabled={!isManager}
-                        labelClassName='w-[140px]! text-nowrap'
                       />
                       <RoleInputResolution
                         value={roleEthRecord}

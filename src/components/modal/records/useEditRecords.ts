@@ -2,16 +2,13 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
 import { mainnet } from 'viem/chains'
 import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { RegistryAbi } from '@/constants/abi/RegistryAbi'
 import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import {
-  ENS_REGISTRY_CONTRACT_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-  ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
-} from '@/constants/web3/contracts'
+import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { resolveEnsAddress } from '@/utils/web3/ens'
+import { fetchNameRoles } from '@/api/name/roles'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
@@ -43,6 +40,32 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const { data: walletClient } = useWalletClient()
   const queryClient = useQueryClient()
 
+  const { data: roles } = useQuery({
+    queryKey: ['name', 'roles', name],
+    queryFn: async () => {
+      if (!name) return null
+      const roles = await fetchNameRoles(name)
+      return roles
+    },
+    enabled: !!name,
+  })
+  const ownerAddress = roles?.owner || ''
+  const managerAddress = roles?.manager || ''
+  const resolverAddress = roles?.resolver || ''
+  const ethAddress = roles?.ethAddress || ''
+
+  // Roles state
+  const [roleOwner, setRoleOwnerState] = useState('')
+  const [roleManager, setRoleManagerState] = useState('')
+  const [roleEthRecord, setRoleEthRecordState] = useState('')
+
+  useEffect(() => {
+    if (!roles) return
+    setRoleOwnerState(roles.owner)
+    setRoleManagerState(roles.manager)
+    setRoleEthRecordState(roles.ethAddress)
+  }, [roles])
+
   // Text records state
   const [records, setRecords] = useState<Record<string, string>>({})
   const [initialRecords, setInitialRecords] = useState<Record<string, string>>({})
@@ -61,18 +84,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [initialCustomRecords, setInitialCustomRecords] = useState<Record<string, string>>({})
   const [visibleCustomRecords, setVisibleCustomRecords] = useState<Set<string>>(new Set())
 
-  // Roles state
-  const [roleOwner, setRoleOwnerState] = useState('')
-  const [initialRoleOwner, setInitialRoleOwner] = useState('')
-  const [roleManager, setRoleManagerState] = useState('')
-  const [initialRoleManager, setInitialRoleManager] = useState('')
-  const [roleEthRecord, setRoleEthRecordState] = useState('')
-  const [initialRoleEthRecord, setInitialRoleEthRecord] = useState('')
-
-  // Contract-fetched addresses (for permission checks)
-  const [ownerAddress, setOwnerAddress] = useState<`0x${string}` | null>(null)
-  const [managerAddress, setManagerAddress] = useState<`0x${string}` | null>(null)
-
   // Resolved ENS addresses for role fields
   const [resolvedRoleOwner, setResolvedRoleOwner] = useState<string | null>(null)
   const [resolvedRoleManager, setResolvedRoleManager] = useState<string | null>(null)
@@ -86,7 +97,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [imageUploadTarget, setImageUploadTarget] = useState<'avatar' | 'header' | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
-  const [resolverAddress, setResolverAddress] = useState<`0x${string}` | null>(null)
 
   // Initialize state from metadata
   useEffect(() => {
@@ -113,8 +123,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     // ETH record for Roles tab (metadata key is 'Ethereum' from chains, or 'eth')
     const ethValue = metadata['Ethereum'] || metadata['ethereum'] || metadata['eth'] || ''
     setRoleEthRecordState(ethValue)
-    setInitialRoleEthRecord(ethValue)
-
     // Custom records: any key not in predefined sets
     const knownKeys = new Set<string>([
       ...TEXT_RECORD_KEYS,
@@ -136,60 +144,6 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setInitialCustomRecords(customRecs)
     setVisibleCustomRecords(visibleCustom)
   }, [metadata])
-
-  // Resolve the resolver, manager, and owner addresses
-  useEffect(() => {
-    if (!name || !publicClient) return
-
-    const resolve = async () => {
-      try {
-        const node = namehash(name)
-        const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
-        const tokenId = hexToBigInt(labelhash(label))
-
-        const [resolverAddr, managerAddr, nftOwnerAddr] = await Promise.all([
-          publicClient.readContract({
-            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
-            abi: RegistryAbi,
-            functionName: 'resolver',
-            args: [node],
-          }) as Promise<`0x${string}`>,
-          publicClient.readContract({
-            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
-            abi: RegistryAbi,
-            functionName: 'owner',
-            args: [node],
-          }) as Promise<`0x${string}`>,
-          publicClient.readContract({
-            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-            abi: BaseRegistrarAbi,
-            functionName: 'ownerOf',
-            args: [tokenId],
-          }) as Promise<`0x${string}`>,
-        ])
-
-        console.log(resolverAddr, managerAddr, nftOwnerAddr)
-
-        setResolverAddress(
-          resolverAddr !== '0x0000000000000000000000000000000000000000'
-            ? resolverAddr
-            : (ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS as `0x${string}`)
-        )
-        setManagerAddress(managerAddr)
-        setOwnerAddress(nftOwnerAddr)
-
-        // Initialize editable role state from fetched values
-        setRoleManagerState(managerAddr)
-        setInitialRoleManager(managerAddr)
-        setRoleOwnerState(nftOwnerAddr)
-        setInitialRoleOwner(nftOwnerAddr)
-      } catch {
-        setResolverAddress(ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS as `0x${string}`)
-      }
-    }
-
-    resolve()
-  }, [name, publicClient])
 
   // Resolve ENS names for role fields (debounced)
   useEffect(() => {
@@ -290,9 +244,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       if ((customRecords[key] ?? '') !== (initialCustomRecords[key] ?? '')) return true
     }
     // Check role changes
-    if (roleEthRecord !== initialRoleEthRecord) return true
-    if (roleManager.toLowerCase() !== initialRoleManager.toLowerCase()) return true
-    if (roleOwner.toLowerCase() !== initialRoleOwner.toLowerCase()) return true
+    if (roleEthRecord !== ethAddress) return true
+    if (roleManager.toLowerCase() !== managerAddress.toLowerCase()) return true
+    if (roleOwner.toLowerCase() !== ownerAddress.toLowerCase()) return true
     return false
   }, [
     records,
@@ -302,11 +256,11 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     customRecords,
     initialCustomRecords,
     roleEthRecord,
-    initialRoleEthRecord,
+    ethAddress,
     roleManager,
-    initialRoleManager,
+    managerAddress,
     roleOwner,
-    initialRoleOwner,
+    ownerAddress,
   ])
 
   // Update text record
@@ -430,7 +384,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       }
 
       // Encode ETH record change from Roles tab
-      if (roleEthRecord !== initialRoleEthRecord) {
+      if (roleEthRecord !== ethAddress) {
         const effectiveEthAddr =
           resolveRole(roleEthRecord, resolvedRoleEthRecord) ||
           ('0x0000000000000000000000000000000000000000' as `0x${string}`)
@@ -459,7 +413,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       }
 
       // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
-      const managerChanged = roleManager.toLowerCase() !== initialRoleManager.toLowerCase()
+      const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
       if (managerChanged && roleManager) {
         const effectiveManager = resolveRole(roleManager, resolvedRoleManager)
         if (!effectiveManager) {
@@ -497,7 +451,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       }
 
       // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
-      const ownerChanged = roleOwner.toLowerCase() !== initialRoleOwner.toLowerCase()
+      const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
       if (ownerChanged && roleOwner && ownerAddress) {
         const effectiveOwner = resolveRole(roleOwner, resolvedRoleOwner)
         if (!effectiveOwner) {
@@ -544,11 +498,10 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     customRecords,
     initialCustomRecords,
     roleEthRecord,
-    initialRoleEthRecord,
+    ethAddress,
     roleManager,
-    initialRoleManager,
+    managerAddress,
     roleOwner,
-    initialRoleOwner,
     ownerAddress,
     isManager,
     resolvedRoleOwner,

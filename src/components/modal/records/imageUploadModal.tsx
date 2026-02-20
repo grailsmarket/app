@@ -9,6 +9,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import Input from '@/components/ui/input'
 import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
+import { Trash } from 'ethereum-identity-kit'
 
 interface ImageUploadModalProps {
   name: string
@@ -223,13 +224,28 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
           </>
         ) : (
           <>
-            <Input
-              label='URL'
-              value={manualUrl}
-              onChange={(e) => handleManualUrlChange(e.target.value)}
-              placeholder='https://example.com/image.png'
-            />
-            {previewUrl && (
+            <div className='flex flex-row gap-2'>
+              <Input
+                label='URL'
+                value={manualUrl}
+                onChange={(e) => handleManualUrlChange(e.target.value)}
+                placeholder='https://example.com/image.png'
+                labelClassName='w-[60px] max-w-[60px] min-w-[60px]'
+              />
+              {manualUrl && (
+                <button
+                  className='group flex h-[50px] w-[50px] flex-shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-500 transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50'
+                  onClick={() => {
+                    setManualUrl('')
+                    setPreviewUrl(null)
+                    onSave('')
+                  }}
+                >
+                  <Trash className='h-5 w-5 text-red-500 transition-colors group-hover:text-white' />
+                </button>
+              )}
+            </div>
+            {previewUrl && URL.canParse(previewUrl) && (
               <div className='flex justify-center'>
                 <Image
                   src={previewUrl}
@@ -237,6 +253,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
                   className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
                   width={512}
                   height={512}
+                  unoptimized
                 />
               </div>
             )}

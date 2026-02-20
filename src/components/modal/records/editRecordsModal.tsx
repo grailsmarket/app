@@ -270,7 +270,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                       height={200}
                     />
                     <button
-                      className='absolute top-2 right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-black/50 transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40'
+                      className='bg-secondary/90 hover:bg-tertiary/90 absolute top-2 right-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-40'
                       onClick={() => setImageUploadTarget('header')}
                       disabled={!isManager}
                     >
@@ -285,8 +285,8 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                   </div>
 
                   {/* Avatar overlapping header */}
-                  <div className='absolute -bottom-9 left-4'>
-                    <div className='relative h-20 w-20 overflow-hidden rounded-full border-4 border-[var(--background)] sm:h-26 sm:w-26'>
+                  <div className='absolute -bottom-[35px] left-4'>
+                    <div className='bg-background relative h-20 w-20 overflow-hidden rounded-full sm:h-26 sm:w-26'>
                       <Image
                         src={avatarUrl}
                         alt='Avatar'

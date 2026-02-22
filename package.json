@@ -28,7 +28,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
-    "ethereum-identity-kit": "^0.2.69",
+    "ethereum-identity-kit": "^0.2.70",
     "next": "15.5.9",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",

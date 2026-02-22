@@ -9,6 +9,7 @@ import { useCategories } from '@/components/filters/hooks/useCategories'
 import { ShortArrow } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import LoadingCell from '@/components/ui/loadingCell'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface NameDetailsProps {
   nameDetails?: MarketplaceDomainType | null
@@ -69,7 +70,7 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
                   />
                   <div className='max-w-[calc(100%-60px)]'>
                     <p className='text-xl font-semibold text-nowrap'>
-                      {category?.display_name} {clubRank ? `#${clubRank}` : ''}
+                      {category?.display_name} {clubRank ? `#${localizeNumber(clubRank)}` : ''}
                     </p>
                     {category && (
                       <p className='text-neutral max-w-full truncate text-lg font-medium text-nowrap'>

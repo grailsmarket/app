@@ -56,6 +56,7 @@ const Profile: React.FC<Props> = ({ user }) => {
     queryKey: ['profile', user, undefined, false, undefined],
     queryFn: () => (user ? fetchProfileDetails(user) : null),
   })
+
   const isSubname = userProfile?.ens?.name ? userProfile?.ens?.name.split('.').length > 2 : false
 
   const { data: profileMetadata } = useQuery({

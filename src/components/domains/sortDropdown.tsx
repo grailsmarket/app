@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
@@ -19,9 +19,10 @@ interface SortDropdownProps {
 }
 
 const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
+  const [isOpen, setIsOpen] = useState(false)
+
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
-  const [isOpen, setIsOpen] = useState(false)
 
   const dropdownRef = useClickAway(() => {
     setIsOpen(false)
@@ -63,6 +64,17 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
     dispatch(actions.setSort(newSort))
   }
 
+  const categories = selectors.filters.categories
+  const hasOnlyOneCategory = categories.length === 1
+
+  useEffect(() => {
+    if (sortType === 'ranking') {
+      if (!hasOnlyOneCategory) {
+        dispatch(actions.setSort(null))
+      }
+    }
+  }, [sortType, hasOnlyOneCategory, dispatch, actions])
+
   const displayLabel = sortType ? SORT_TYPE_LABELS[sortType] : '---'
 
   return (
@@ -99,7 +111,8 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
                 onClick={() => handleTypeSelect(type)}
                 className={cn(
                   'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors sm:text-lg',
-                  sortType === type && 'bg-secondary'
+                  sortType === type && 'bg-secondary',
+                  type === 'ranking' && !hasOnlyOneCategory && 'pointer-events-none opacity-50'
                 )}
               >
                 {SORT_TYPE_LABELS[type]}

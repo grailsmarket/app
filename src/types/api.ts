@@ -114,3 +114,19 @@ export interface KeywordMetrics {
   relatedKeywordCount: number
   competition: string | null
 }
+
+export type DetailsResponseType = {
+  address: Address
+  primaryName: string | null
+  lastSeenAt: string
+  lastSeenOnchain: string
+  ensRecords: {
+    address: Address
+    records: Record<string, string>
+  }
+  persona: {
+    slug: string
+    name: string
+    icon: 'chart'
+  }
+}

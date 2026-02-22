@@ -334,20 +334,20 @@ const MetricsStats: React.FC<{ metrics: KeywordMetrics }> = ({ metrics }) => {
     monthCount > 0 ? Math.round((metrics.monthlyTrend.reduce((sum, p) => sum + p.searches, 0) / monthCount) * 12) : 0
   const monthlyFillPercent = toSteppedPercent(metrics.avgMonthlySearches ?? 0, 1_000_000)
   const yearlyFillPercent = toSteppedPercent(yearlyTotal, 12_000_000)
-  const relatedFillPercent = toSteppedPercent(Math.min(metrics.relatedKeywordCount, 2_000), 2_000)
+  // const relatedFillPercent = toSteppedPercent(Math.min(metrics.relatedKeywordCount, 2_000), 2_000)
   const cpcValue = metrics.avgCpc != null ? `$${metrics.avgCpc.toFixed(2)}` : 'N/A'
   const cpcFillPercent = toSteppedPercent(Math.max((metrics.avgCpc ?? 0) - 0.1, 0), 4.9)
 
   return (
     <>
-      <div className='grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-2'>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
         <MetricStatCard value={avgSearches} label='Monthly Searches' fillPercent={monthlyFillPercent} />
         <MetricStatCard value={formatNumber(yearlyTotal)} label='Yearly Average' fillPercent={yearlyFillPercent} />
-        <MetricStatCard
+        {/* <MetricStatCard
           value={formatNumber(metrics.relatedKeywordCount)}
           label='Related Keywords'
           fillPercent={relatedFillPercent}
-        />
+        /> */}
         <MetricStatCard value={cpcValue} label='Avg CPC' fillPercent={cpcFillPercent} />
       </div>
       <TrendChart data={metrics.monthlyTrend} avgMonthlySearches={metrics.avgMonthlySearches} />

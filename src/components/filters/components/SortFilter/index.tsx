@@ -10,10 +10,11 @@ import UnexpandedFilter from '../UnexpandedFilter'
 import { MARKETPLACE_SORT_FILTERS, SORT_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
 import { useFilterContext } from '@/context/filters'
 import { useMemo } from 'react'
+import { cn } from '@/utils/tailwind'
 
 const SortFilter: React.FC = () => {
   const { open, toggleOpen } = useFilterOpen('Sort')
-  const { isActive, toggleActive, sortFilter } = useSortFilters()
+  const { isActive, toggleActive, sortFilter, hasOnlyOneCategory } = useSortFilters()
   const { filterType, profileTab } = useFilterContext()
   const activeProfileTab = profileTab?.value || 'domains'
 
@@ -60,7 +61,10 @@ const SortFilter: React.FC = () => {
           {filterLabels.map((label, index) => (
             <div
               key={index}
-              className='px-lg py-md hover:bg-secondary flex cursor-pointer justify-between rounded-sm'
+              className={cn(
+                'px-lg py-md hover:bg-secondary flex cursor-pointer justify-between rounded-sm',
+                label === 'Categories Ranking' && !hasOnlyOneCategory && 'pointer-events-none opacity-50'
+              )}
               onClick={toggleActive(label as any)}
             >
               <p className='text-md text-light-200 font-medium'>

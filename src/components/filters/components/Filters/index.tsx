@@ -238,7 +238,7 @@ const CategoryExpandableTab: React.FC<CategoryExpandableTabProps> = ({ classific
   const expandedHeight = 64 + value.length * 52
   const sortedValue = value.sort((a, b) => a.name.localeCompare(b.name))
   const totalCount = value.reduce((sum, category) => sum + category.member_count, 0)
-  const areCategoriesSelected = value.every((category) => selectors.filters.categories?.includes(category.name))
+  const areAllCategoriesSelected = value.every((category) => selectors.filters.categories?.includes(category.name))
 
   return (
     <ExpandableTab
@@ -253,11 +253,11 @@ const CategoryExpandableTab: React.FC<CategoryExpandableTabProps> = ({ classific
           <p className='text-md font-medium'>{localizeNumber(totalCount)}</p>
           <FilterSelector
             onClick={() =>
-              areCategoriesSelected
+              areAllCategoriesSelected
                 ? dispatch(actions.removeCategories(value.map((category) => category.name)))
                 : dispatch(actions.addCategories(value.map((category) => category.name)))
             }
-            isActive={areCategoriesSelected}
+            isActive={areAllCategoriesSelected}
           />
         </div>
       }

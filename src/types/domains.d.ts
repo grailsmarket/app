@@ -13,6 +13,7 @@ export type MarketplaceDomainType = {
   has_numbers: boolean
   has_emoji: boolean
   clubs: string[]
+  club_ranks: { club: string; rank: number }[] | null
   listings: DomainListingType[]
   highest_offer_wei: string | null
   highest_offer_id: number | null

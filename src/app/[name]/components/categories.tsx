@@ -44,6 +44,7 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
           nameDetails?.clubs?.map((club) => {
             const category = categories?.find((c) => c.name === club)
             const categoryDetails = getCategoryDetails(club)
+            const clubRank = nameDetails?.club_ranks?.find((rank) => rank.club === club)?.rank
 
             return (
               <Link
@@ -67,7 +68,9 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
                     className='aspect-square! rounded-full'
                   />
                   <div className='max-w-[calc(100%-60px)]'>
-                    <p className='text-xl font-semibold text-nowrap'>{category?.display_name}</p>
+                    <p className='text-xl font-semibold text-nowrap'>
+                      {category?.display_name} {clubRank ? `#${clubRank}` : ''}
+                    </p>
                     {category && (
                       <p className='text-neutral max-w-full truncate text-lg font-medium text-nowrap'>
                         {category.description}

@@ -13,6 +13,7 @@ export const generateEmptyName = (name: string, tokenId: string) => ({
   has_emoji: nameHasEmoji(name),
   listings: [],
   clubs: [],
+  club_ranks: null,
   highest_offer_wei: null,
   highest_offer_id: null,
   highest_offer_currency: null,

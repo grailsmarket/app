@@ -72,9 +72,9 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
-  const category = categories?.find((c) => c.name === domain.clubs[0])
+  const category = categories?.find((c) => c.name === domain.clubs?.[0])
   const clubRank = category?.name.includes('prepunk')
-    ? domain.club_ranks?.find((rank) => rank.club === domain.clubs[0])?.rank
+    ? domain.club_ranks?.find((rank) => rank.club === domain.clubs?.[0])?.rank
     : null
 
   // Calculate if this item is in the preview range (between anchor and hovered, shift pressed, not already selected)

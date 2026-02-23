@@ -45,6 +45,7 @@ import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { useCategories } from '@/components/filters/hooks/useCategories'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -71,6 +72,10 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
+  const category = categories?.find((c) => c.name === domain.clubs[0])
+  const clubRank = category?.name.includes('prepunk')
+    ? domain.club_ranks?.find((rank) => rank.club === domain.clubs[0])?.rank
+    : null
 
   // Calculate if this item is in the preview range (between anchor and hovered, shift pressed, not already selected)
   const isInPreviewRange = (() => {
@@ -331,7 +336,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
           )}
           {domain.clubs && domain.clubs.length > 0 && (
             <div className='flex max-w-full flex-row items-center gap-1 truncate'>
-              <div className='flex max-w-fit min-w-fit items-center gap-1'>
+              <div className='text-md text-neutral flex max-w-fit min-w-fit items-center gap-1 font-semibold'>
                 <Image
                   src={getCategoryDetails(domain.clubs[0]).avatar}
                   alt={domain.clubs[0] as string}
@@ -339,13 +344,12 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                   height={16}
                   className='rounded-full'
                 />
-                <p className='text-md text-neutral truncate font-semibold'>
-                  {categories?.find((c) => c.name === domain.clubs[0])?.display_name}
-                </p>
+                <p className='truncate'>{category?.display_name}</p>
+                {clubRank ? <p className='truncate'>#{localizeNumber(clubRank)}</p> : null}
+                {domain.clubs.length > 1 && (
+                  <p className='text-md text-neutral truncate font-bold'>+{domain.clubs.length - 1}</p>
+                )}
               </div>
-              {domain.clubs.length > 1 && (
-                <p className='text-md text-neutral truncate pt-0.5 font-bold'>+{domain.clubs.length - 1}</p>
-              )}
             </div>
           )}
           {filterType !== 'category' &&

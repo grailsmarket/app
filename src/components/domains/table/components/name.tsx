@@ -11,6 +11,7 @@ import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { useCategories } from '@/components/filters/hooks/useCategories'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -50,18 +51,27 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
               {beautifyName(domain.name)}
             </p>
             <div className='text-md text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate font-semibold sm:gap-1.5'>
-              {displayedCategories?.map((club) => (
-                <div key={club} className='flex min-w-fit flex-row items-center gap-0.5 sm:gap-1'>
-                  <Image
-                    src={getCategoryDetails(club).avatar}
-                    alt={club}
-                    width={16}
-                    height={16}
-                    className='rounded-full'
-                  />
-                  <p>{categories?.find((c) => c.name === club)?.display_name}</p>
-                </div>
-              ))}
+              {displayedCategories?.map((club, index) => {
+                const category = categories?.find((c) => c.name === club)
+                const clubRank =
+                  category?.name.includes('prepunk') && index === 0
+                    ? domain.club_ranks?.find((rank) => rank.club === club)?.rank
+                    : null
+
+                return (
+                  <div key={club} className='flex min-w-fit flex-row items-center gap-0.5 sm:gap-1'>
+                    <Image
+                      src={getCategoryDetails(club).avatar}
+                      alt={club}
+                      width={16}
+                      height={16}
+                      className='rounded-full'
+                    />
+                    <p>{categories?.find((c) => c.name === club)?.display_name}</p>
+                    {clubRank ? <p>#{localizeNumber(clubRank)}</p> : null}
+                  </div>
+                )
+              })}
               {remainingCategories?.length > 0 && <p>+{remainingCategories.length}</p>}
             </div>
           </div>

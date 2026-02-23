@@ -22,7 +22,6 @@ import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryD
 import Explore from './dropdowns/explore'
 import Categories from './dropdowns/categories'
 import CrossIcon from 'public/icons/cross.svg'
-// import ArrowrightIcon from 'public/icons/arrow-back.svg'
 import Analytics from './dropdowns/analytics'
 import Premium from './dropdowns/premium'
 import { useUserContext } from '@/context/user'
@@ -128,7 +127,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
             className='hidden md:flex'
@@ -165,12 +164,85 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       </nav>
       <div
         className={cn(
-          'p-lg md:p-xl pt-md border-tertiary bg-background/80 absolute top-14 left-0 z-0 flex h-[calc(100dvh-56px)] w-full flex-col gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350 starting:-translate-y-full',
+          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 justify-between absolute top-14 left-0 z-0 flex h-[calc(100dvh-56px)] w-full flex-col gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350 starting:-translate-y-full',
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
+        <div className='flex w-full flex-col gap-4'>
+          {userAddress && (
+            <Link
+              href={`/profile/${userAddress}`}
+              onClick={() => {
+                setPreviousDropdownOption(dropdownOption)
+                setDropdownOption(null)
+              }}
+              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
+            >
+              <h3 className='text-3xl font-semibold'>My Profile</h3>
+              {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
+            </Link>
+          )}
+          <div
+            className={cn(
+              'border-neutral w-full border-b-2 md:border-none',
+              dropdownOption === 'explore' || (dropdownOption === null && previousDropdownOption === 'explore')
+                ? 'block'
+                : 'block md:hidden'
+            )}
+          >
+            <Explore
+              dropdownOption={dropdownOption}
+              setDropdownOption={handleDropdownOption}
+              previousDropdownOption={previousDropdownOption}
+            />
+          </div>
+          <div
+            className={cn(
+              'border-neutral w-full border-b-2 md:border-none',
+              dropdownOption === 'premium' || (dropdownOption === null && previousDropdownOption === 'premium')
+                ? 'block'
+                : 'block md:hidden'
+            )}
+          >
+            <Premium
+              dropdownOption={dropdownOption}
+              setDropdownOption={handleDropdownOption}
+              previousDropdownOption={previousDropdownOption}
+            />
+          </div>
+          <div
+            className={cn(
+              'border-neutral w-full border-b-2 md:border-none',
+              dropdownOption === 'categories' || (dropdownOption === null && previousDropdownOption === 'categories')
+                ? 'block'
+                : 'block md:hidden'
+            )}
+          >
+            <Categories setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+          </div>
+          {/* <div
+            className={cn(
+              'border-neutral w-full border-b-2 md:border-none',
+              dropdownOption === 'leaderboard' || (dropdownOption === null && previousDropdownOption === 'leaderboard')
+                ? 'block'
+                : 'block md:hidden'
+            )}
+          >
+            <Leaderboard setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+          </div> */}
+          <div
+            className={cn(
+              'border-neutral w-full border-b-2 md:border-none',
+              dropdownOption === 'analytics' || (dropdownOption === null && previousDropdownOption === 'analytics')
+                ? 'block'
+                : 'block md:hidden'
+            )}
+          >
+            <Analytics setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+          </div>
+        </div>
         <div
-          className='px-lg py-md border-neutral flex items-center gap-1.5 border-b-2 opacity-70 md:hidden'
+          className='pt-lg py-md border-neutral flex items-center justify-center w-full gap-1.5 border-t-2 opacity-70 md:hidden'
           onClick={() => {
             setPreviousDropdownOption(dropdownOption)
             setDropdownOption(null)
@@ -178,77 +250,6 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         >
           <Image src={CrossIcon} alt='Cross' width={14} height={14} />
           <p>Close</p>
-        </div>
-        {userAddress && (
-          <Link
-            href={`/profile/${userAddress}`}
-            onClick={() => {
-              setPreviousDropdownOption(dropdownOption)
-              setDropdownOption(null)
-            }}
-            className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
-          >
-            <h3 className='text-3xl font-semibold'>My Profile</h3>
-            {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
-          </Link>
-        )}
-        <div
-          className={cn(
-            'border-neutral w-full border-b-2 md:border-none',
-            dropdownOption === 'explore' || (dropdownOption === null && previousDropdownOption === 'explore')
-              ? 'block'
-              : 'block md:hidden'
-          )}
-        >
-          <Explore
-            dropdownOption={dropdownOption}
-            setDropdownOption={handleDropdownOption}
-            previousDropdownOption={previousDropdownOption}
-          />
-        </div>
-        <div
-          className={cn(
-            'border-neutral w-full border-b-2 md:border-none',
-            dropdownOption === 'premium' || (dropdownOption === null && previousDropdownOption === 'premium')
-              ? 'block'
-              : 'block md:hidden'
-          )}
-        >
-          <Premium
-            dropdownOption={dropdownOption}
-            setDropdownOption={handleDropdownOption}
-            previousDropdownOption={previousDropdownOption}
-          />
-        </div>
-        <div
-          className={cn(
-            'border-neutral w-full border-b-2 md:border-none',
-            dropdownOption === 'categories' || (dropdownOption === null && previousDropdownOption === 'categories')
-              ? 'block'
-              : 'block md:hidden'
-          )}
-        >
-          <Categories setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
-        </div>
-        {/* <div
-          className={cn(
-            'border-neutral w-full border-b-2 md:border-none',
-            dropdownOption === 'leaderboard' || (dropdownOption === null && previousDropdownOption === 'leaderboard')
-              ? 'block'
-              : 'block md:hidden'
-          )}
-        >
-          <Leaderboard setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
-        </div> */}
-        <div
-          className={cn(
-            'border-neutral w-full border-b-2 md:border-none',
-            dropdownOption === 'analytics' || (dropdownOption === null && previousDropdownOption === 'analytics')
-              ? 'block'
-              : 'block md:hidden'
-          )}
-        >
-          <Analytics setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
         </div>
       </div>
     </header>

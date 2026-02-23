@@ -84,6 +84,7 @@ export type MarketplaceFiltersState = {
   watchersCount: MarketplaceWatchersCountType
   viewCount: MarketplaceViewCountType
   clubsCount: MarketplaceClubsCountType
+  creationDate: { min: string | null; max: string | null }
   categories: string[]
   sort: SortFilterType | null
 }
@@ -126,6 +127,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -162,6 +167,10 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },
@@ -265,6 +274,9 @@ export const marketplaceFiltersSlice = createSlice({
     setMarketplaceClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
       state.clubsCount = payload
     },
+    setMarketplaceCreationDate(state, { payload }: PayloadAction<{ min: string | null; max: string | null }>) {
+      state.creationDate = payload
+    },
     toggleMarketplaceCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -336,6 +348,10 @@ export const marketplaceFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.creationDate = {
+        min: null,
+        max: null,
+      }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -374,6 +390,7 @@ export const {
   setMarketplaceWatchersCount,
   setMarketplaceViewCount,
   setMarketplaceClubsCount,
+  setMarketplaceCreationDate,
   toggleMarketplaceCategory,
   setMarketplaceFiltersCategory,
   addMarketplaceCategories,

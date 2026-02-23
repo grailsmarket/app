@@ -52,6 +52,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -87,6 +91,10 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },
@@ -140,6 +148,9 @@ export const categoryPremiumFiltersSlice = createSlice({
     setPriceRange(state, { payload }: PayloadAction<PriceType>) {
       state.priceRange = payload
     },
+    setCreationDate(state, { payload }: PayloadAction<{ min: string | null; max: string | null }>) {
+      state.creationDate = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -187,6 +198,7 @@ export const categoryPremiumFiltersSlice = createSlice({
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
       state.offerRange = { min: null, max: null }
+      state.creationDate = { min: null, max: null }
       state.categories = []
       state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
       state.sort = null
@@ -207,6 +219,7 @@ export const {
   setFiltersLength,
   setPriceDenomination,
   setPriceRange,
+  setCreationDate,
   toggleCategory,
   setFiltersCategory,
   addCategories,

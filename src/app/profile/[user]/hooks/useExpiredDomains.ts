@@ -36,6 +36,10 @@ export const useExpiredDomains = (user: Address | undefined) => {
       filters.textNonMatch,
       // @ts-expect-error the offer range filter state will not be used for domains
       filters.offerRange,
+      filters.watchersCount,
+      filters.viewCount,
+      filters.clubsCount,
+      filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

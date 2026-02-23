@@ -64,6 +64,10 @@ export const emptyFilterState: PortfolioFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -99,6 +103,10 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },
@@ -189,6 +197,9 @@ export const categoryListingsFiltersSlice = createSlice({
     setClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
       state.clubsCount = payload
     },
+    setCreationDate(state, { payload }: PayloadAction<{ min: string | null; max: string | null }>) {
+      state.creationDate = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
       if (isFilterIncludesPayload) {
@@ -238,6 +249,7 @@ export const categoryListingsFiltersSlice = createSlice({
       state.watchersCount = { min: null, max: null }
       state.viewCount = { min: null, max: null }
       state.clubsCount = { min: null, max: null }
+      state.creationDate = { min: null, max: null }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -277,6 +289,7 @@ export const {
   setWatchersCount,
   setViewCount,
   setClubsCount,
+  setCreationDate,
   toggleCategory,
   setFiltersCategory,
   addCategories,

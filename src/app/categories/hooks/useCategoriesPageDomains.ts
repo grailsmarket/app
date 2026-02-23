@@ -32,19 +32,28 @@ export const useCategoriesPageDomains = () => {
       'domains',
       categoriesPageTab?.value,
       debouncedSearch,
-      (filters as any).length,
-      (filters as any).priceRange,
-      (filters as any).categories,
-      (filters as any).type,
-      (filters as any).status,
-      (filters as any).sort,
-      (filters as any).market,
-      (filters as any).textMatch,
-      (filters as any).textNonMatch,
-      (filters as any).offerRange,
-      (filters as any).watchersCount,
-      (filters as any).viewCount,
-      (filters as any).clubsCount,
+      filters.length,
+      filters.priceRange,
+      filters.categories,
+      filters.type,
+      filters.status,
+      filters.sort,
+      // @ts-expect-error the market filter state will not be used for categories page domains
+      filters.market,
+      // @ts-expect-error the text match filter state will not be used for categories page domains
+      filters.textMatch,
+      // @ts-expect-error the text non-match filter state will not be used for categories page domains
+      filters.textNonMatch,
+      // @ts-expect-error the offer range filter state will not be used for categories page domains
+      filters.offerRange,
+      // @ts-expect-error the watchers count filter state will not be used for categories page domains
+      filters.watchersCount,
+      // @ts-expect-error the view count filter state will not be used for categories page domains
+      filters.viewCount,
+      // @ts-expect-error the clubs count filter state will not be used for categories page domains
+      filters.clubsCount,
+      // @ts-expect-error the creation date filter state will not be used for categories page domains
+      filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

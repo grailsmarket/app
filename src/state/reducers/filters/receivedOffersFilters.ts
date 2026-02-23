@@ -56,6 +56,10 @@ export const emptyFilterState: PortfolioFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -92,6 +96,10 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },

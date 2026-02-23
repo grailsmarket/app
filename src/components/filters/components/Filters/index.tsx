@@ -8,6 +8,7 @@ import OfferFilter from '../OfferFilter'
 import WatchersFilter from '../WatchersFilter'
 import ViewsFilter from '../ViewsFilter'
 import CategoriesCountFilter from '../CategoriesCountFilter'
+import CreationDateFilter from '../CreationDateFilter'
 import CategoryFilterTab from '../CategoryFilterTab'
 import { useFilterContext } from '@/context/filters'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -128,6 +129,16 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     (filterType === 'profile' && activeProfileTab === 'grace')
   )
 
+  // Hide creation date filter on activity tabs (all pages) and offer tabs (profile page)
+  const showCreationDateFilter = !(
+    (filterType === 'marketplace' && activeMarketplaceTab === 'activity') ||
+    (filterType === 'category' && activeCategoryTab === 'activity') ||
+    (filterType === 'categoriesPage' &&
+      (activeCategoriesPageTab === 'activity' || activeCategoriesPageTab === 'categories')) ||
+    (filterType === 'profile' &&
+      (activeProfileTab === 'activity' || activeProfileTab === 'sent_offers' || activeProfileTab === 'received_offers'))
+  )
+
   // Show offer filter for marketplace/categoriesPage/category "Names" tabs and profile domains/grace/watchlist/listings tabs
   const showOfferFilter =
     (filterType === 'marketplace' && (activeMarketplaceTab === 'names' || activeMarketplaceTab === 'listings')) ||
@@ -189,6 +200,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
           <WatchersFilter />
           <ViewsFilter />
           <CategoriesCountFilter />
+          {showCreationDateFilter && <CreationDateFilter />}
           <TypeFilter />
         </div>
       </div>

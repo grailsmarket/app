@@ -8,7 +8,7 @@ import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -19,11 +19,12 @@ import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 
 interface ExploreProps {
+  dropdownOption: string | null
   setDropdownOption: (option: string | null) => void
   previousDropdownOption: string | null
 }
 
-const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOption }) => {
+const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
@@ -32,7 +33,7 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
     queryKey: ['explore', 'listings'],
     queryFn: () =>
       fetchDomains({
-        limit: 7,
+        limit: 36,
         pageParam: 2,
         filters: {
           ...emptyFilterState,
@@ -71,6 +72,14 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
       setIsDropdownOpen(false)
     }
   }, [previousDropdownOption])
+
+  const cardContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (cardContainerRef.current && dropdownOption === 'explore') {
+      cardContainerRef.current.scrollTo({ top: 0, behavior: 'instant' })
+    }
+  }, [cardContainerRef, dropdownOption])
 
   return (
     <div
@@ -185,25 +194,32 @@ const Explore: React.FC<ExploreProps> = ({ setDropdownOption, previousDropdownOp
           </Link>
         </div>
       </div>
-      <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
+      <div
+        ref={cardContainerRef}
+        className='hidden max-h-[400px] w-fit max-w-[1480px] flex-row flex-wrap gap-2 overflow-y-auto md:flex xl:gap-4'
+      >
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
               <div
                 key={index}
                 className='fadeIn h-[400px] w-[220px]'
-                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+                style={{
+                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+                }}
               >
                 <LoadingCard />
               </div>
             ))
-          : listings?.domains.slice(0, cardCount).map((domain, index) => (
+          : listings?.domains.map((domain, index) => (
               <div
                 key={domain.name}
                 className='bg-secondary fadeIn h-[400px] w-[220px]'
                 onClick={() => {
                   setDropdownOption(null)
                 }}
-                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+                style={{
+                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+                }}
               >
                 <Card domain={domain} />
               </div>

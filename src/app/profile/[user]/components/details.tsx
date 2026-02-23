@@ -15,6 +15,8 @@ import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import Link from 'next/link'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { getDetails } from '@/api/user/getDetails'
+import EthereumLogo from 'public/icons/eth-gray.svg'
+import GrailsIcon from 'public/logo.png'
 
 interface Props {
   user: Address | string
@@ -130,7 +132,10 @@ const Details: React.FC<Props> = ({ user }) => {
             ) : (
               <p className='text-lg font-medium'>{details?.lastSeenAt ? formatTimeAgo(details?.lastSeenAt) : '-'}</p>
             )}
-            <p className='text-neutral text-md font-medium'>Last seen</p>
+            <div className='flex items-center gap-1'>
+              <Image src={GrailsIcon} alt='Arrow right' width={12} height={12} />
+              <p className='text-neutral text-md font-medium'>Last seen</p>
+            </div>
           </div>
           <div className='border-neutral flex h-fit flex-col items-start border-l-2 pl-2'>
             {detailsLoading ? (
@@ -140,7 +145,10 @@ const Details: React.FC<Props> = ({ user }) => {
                 {details?.lastSeenOnchain ? formatTimeAgo(details?.lastSeenOnchain) : '-'}
               </p>
             )}
-            <p className='text-neutral text-md font-medium'>Last seen onchain</p>
+            <div className='flex items-center gap-1'>
+              <Image src={EthereumLogo} alt='Arrow right' width={10} height={10} />
+              <p className='text-neutral text-md font-medium'>Last txn</p>
+            </div>
           </div>
         </div>
         {badgesLoading ? (

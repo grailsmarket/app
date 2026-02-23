@@ -61,6 +61,10 @@ export const emptyFilterState: MarketplaceFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -97,6 +101,10 @@ export const initialState: MarketplaceFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },
@@ -190,6 +198,9 @@ export const watchlistFiltersSlice = createSlice({
     setWatchlistClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
       state.clubsCount = payload
     },
+    setWatchlistCreationDate(state, { payload }: PayloadAction<{ min: string | null; max: string | null }>) {
+      state.creationDate = payload
+    },
     toggleWatchlistCategory(state, { payload }: PayloadAction<MarketplaceCategoryType>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -273,6 +284,10 @@ export const watchlistFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.creationDate = {
+        min: null,
+        max: null,
+      }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -311,6 +326,7 @@ export const {
   setWatchlistWatchersCount,
   setWatchlistViewCount,
   setWatchlistClubsCount,
+  setWatchlistCreationDate,
   toggleWatchlistCategory,
   toggleWatchlistSubcategory,
   setWatchlistFiltersCategory,

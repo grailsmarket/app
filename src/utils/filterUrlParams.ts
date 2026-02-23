@@ -69,6 +69,9 @@ export const URL_PARAMS = {
   categoriesCountMax: 'categories_count_max',
   // Activity type filters
   activityType: 'activity_type',
+  // Creation date filters
+  creationDateMin: 'creation_date_min',
+  creationDateMax: 'creation_date_max',
   // Categories page filters
   catType: 'cat_type',
   catSort: 'cat_sort',
@@ -100,6 +103,7 @@ export interface BaseFilterState {
   watchersCount: { min: number | null; max: number | null }
   viewCount: { min: number | null; max: number | null }
   clubsCount: { min: number | null; max: number | null }
+  creationDate: { min: string | null; max: string | null }
   categories: string[]
   sort: string | null
 }
@@ -116,6 +120,7 @@ export interface ParsedUrlFilters {
   watchersCount?: { min: number | null; max: number | null }
   viewCount?: { min: number | null; max: number | null }
   clubsCount?: { min: number | null; max: number | null }
+  creationDate?: { min: string | null; max: string | null }
   denomination?: string
   categories?: string[]
   type?: Partial<TypeFiltersState>
@@ -144,6 +149,7 @@ const DEFAULT_EMPTY_FILTER_STATE: BaseFilterState = {
   watchersCount: { min: null, max: null },
   viewCount: { min: null, max: null },
   clubsCount: { min: null, max: null },
+  creationDate: { min: null, max: null },
   categories: [],
   sort: null,
 }
@@ -249,6 +255,14 @@ export function serializeFiltersToUrl(
   }
   if (filters.clubsCount?.max !== null && filters.clubsCount?.max !== emptyFilterState.clubsCount?.max) {
     params.set(URL_PARAMS.categoriesCountMax, String(filters.clubsCount.max))
+  }
+
+  // Creation Date
+  if (filters.creationDate?.min && filters.creationDate.min !== emptyFilterState.creationDate?.min) {
+    params.set(URL_PARAMS.creationDateMin, filters.creationDate.min)
+  }
+  if (filters.creationDate?.max && filters.creationDate.max !== emptyFilterState.creationDate?.max) {
+    params.set(URL_PARAMS.creationDateMax, filters.creationDate.max)
   }
 
   // Denomination (only if not default)
@@ -500,6 +514,16 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     result.clubsCount = {
       min: categoriesCountMin ? Number(categoriesCountMin) : null,
       max: categoriesCountMax ? Number(categoriesCountMax) : null,
+    }
+  }
+
+  // Creation Date
+  const creationDateMin = searchParams.get(URL_PARAMS.creationDateMin)
+  const creationDateMax = searchParams.get(URL_PARAMS.creationDateMax)
+  if (creationDateMin !== null || creationDateMax !== null) {
+    result.creationDate = {
+      min: creationDateMin || null,
+      max: creationDateMax || null,
     }
   }
 

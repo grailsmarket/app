@@ -10,6 +10,7 @@ export const MARKETPLACE_OPENABLE_FILTERS = [
   'Watchers',
   'Views',
   'Categories Count',
+  'Creation Date',
   'Activity',
   'Sort',
 ] as const

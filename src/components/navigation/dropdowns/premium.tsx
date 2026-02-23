@@ -8,7 +8,7 @@ import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -21,11 +21,12 @@ import { useCategories } from '@/components/filters/hooks/useCategories'
 import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 
 interface PremiumProps {
+  dropdownOption: string | null
   setDropdownOption: (option: string | null) => void
   previousDropdownOption: string | null
 }
 
-const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOption }) => {
+const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { categories } = useCategories()
   const { width } = useWindowSize()
@@ -35,7 +36,7 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
     queryKey: ['navigation', 'premium'],
     queryFn: () =>
       fetchDomains({
-        limit: 7,
+        limit: 36,
         pageParam: 1,
         filters: {
           ...emptyFilterState,
@@ -72,6 +73,14 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
       setIsDropdownOpen(false)
     }
   }, [previousDropdownOption])
+
+  const cardContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (cardContainerRef.current && dropdownOption === 'premium') {
+      cardContainerRef.current.scrollTo({ top: 0, behavior: 'instant' })
+    }
+  }, [cardContainerRef, dropdownOption])
 
   return (
     <div
@@ -228,25 +237,32 @@ const Premium: React.FC<PremiumProps> = ({ setDropdownOption, previousDropdownOp
           </Link>
         </div>
       </div>
-      <div className='hidden w-fit flex-row flex-nowrap gap-2 overflow-x-scroll md:flex xl:gap-4'>
+      <div
+        ref={cardContainerRef}
+        className='hidden max-h-[400px] w-fit max-w-[1480px] flex-row flex-wrap gap-2 overflow-y-auto md:flex xl:gap-4'
+      >
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
               <div
                 key={index}
                 className='fadeIn h-[400px] w-[220px]'
-                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+                style={{
+                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+                }}
               >
                 <LoadingCard />
               </div>
             ))
-          : premium?.domains.slice(0, cardCount).map((domain, index) => (
+          : premium?.domains.map((domain, index) => (
               <div
                 key={domain.name}
                 className='bg-secondary fadeIn h-[400px] w-[220px]'
                 onClick={() => {
                   setDropdownOption(null)
                 }}
-                style={{ animationDelay: `${defaultAnimationdelay + index * ANIMATION_DELAY_INCREMENT}s` }}
+                style={{
+                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+                }}
               >
                 <Card domain={domain} />
               </div>

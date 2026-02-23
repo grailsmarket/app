@@ -68,7 +68,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isMyDomain = address?.toLowerCase() === domain.owner?.toLowerCase()
   const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || isMyDomain)
-  const domainListing = domain.listings[0]
+  const domainListing = domain.listings?.[0]
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)

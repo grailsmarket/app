@@ -42,6 +42,7 @@ export type ExpiredFiltersState = {
   watchersCount: MarketplaceWatchersCountType
   viewCount: MarketplaceViewCountType
   clubsCount: MarketplaceClubsCountType
+  creationDate: { min: string | null; max: string | null }
 }
 
 export type ExpiredFiltersOpenedState = ExpiredFiltersState & {
@@ -79,6 +80,10 @@ export const emptyFilterState: ExpiredFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -111,6 +116,10 @@ export const initialState: ExpiredFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },
@@ -172,6 +181,9 @@ export const profileExpiredFiltersSlice = createSlice({
     setClubsCount(state, { payload }: PayloadAction<MarketplaceClubsCountType>) {
       state.clubsCount = payload
     },
+    setCreationDate(state, { payload }: PayloadAction<{ min: string | null; max: string | null }>) {
+      state.creationDate = payload
+    },
     toggleCategory(state, { payload }: PayloadAction<string>) {
       const isFilterIncludesPayload = state.categories.includes(payload)
 
@@ -218,6 +230,7 @@ export const profileExpiredFiltersSlice = createSlice({
       state.length = { min: null, max: null }
       state.denomination = PRICE_DENOMINATIONS[0]
       state.priceRange = { min: null, max: null }
+      state.creationDate = { min: null, max: null }
       state.categories = []
       state.openFilters = ['Sort', 'Market', 'Type', 'Text Match', 'Text Non-Match', 'Length', 'Price Range']
       state.sort = 'expiry_date_asc'
@@ -249,6 +262,7 @@ export const {
   setWatchersCount,
   setViewCount,
   setClubsCount,
+  setCreationDate,
 } = profileExpiredFiltersSlice.actions
 
 // Selectors

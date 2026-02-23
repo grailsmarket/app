@@ -95,6 +95,7 @@ export interface FilterRouterActions {
   setWatchersCount: (payload: WatchersCountType) => PayloadAction<any>
   setViewCount: (payload: ViewCountType) => PayloadAction<any>
   setClubsCount: (payload: ClubsCountType) => PayloadAction<any>
+  setCreationDate?: (payload: { min: string | null; max: string | null }) => PayloadAction<any>
   toggleCategory: (payload: any) => PayloadAction<any>
   setFiltersCategory: (payload: any) => PayloadAction<any>
   setSort: (payload: any) => PayloadAction<any>
@@ -144,6 +145,7 @@ export type PortfolioFiltersState = {
   watchersCount: WatchersCountType
   viewCount: ViewCountType
   clubsCount: ClubsCountType
+  creationDate: { min: string | null; max: string | null }
   categories: string[]
   sort: SortFilterType | null
 }

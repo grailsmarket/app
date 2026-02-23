@@ -200,7 +200,11 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               : 'block md:hidden'
           )}
         >
-          <Explore setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+          <Explore
+            dropdownOption={dropdownOption}
+            setDropdownOption={handleDropdownOption}
+            previousDropdownOption={previousDropdownOption}
+          />
         </div>
         <div
           className={cn(
@@ -210,7 +214,11 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               : 'block md:hidden'
           )}
         >
-          <Premium setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+          <Premium
+            dropdownOption={dropdownOption}
+            setDropdownOption={handleDropdownOption}
+            previousDropdownOption={previousDropdownOption}
+          />
         </div>
         <div
           className={cn(

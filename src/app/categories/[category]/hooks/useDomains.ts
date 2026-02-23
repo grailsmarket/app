@@ -50,6 +50,8 @@ export const useCategoryDomains = (category: string) => {
       filters.viewCount,
       // @ts-expect-error the clubs count filter state will not be used for domains
       filters.clubsCount,
+      // @ts-expect-error the creation date filter state will not be used for categories page domains
+      filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({

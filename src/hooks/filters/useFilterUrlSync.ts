@@ -280,6 +280,11 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       //   })
       // }
 
+      // Apply creation date
+      if (urlFilters.creationDate !== undefined && actions.setCreationDate) {
+        dispatch(actions.setCreationDate(urlFilters.creationDate))
+      }
+
       // Categories page filters
       if (urlFilters.catType !== undefined && actions.setFiltersType) {
         dispatch(actions.setFiltersType(urlFilters.catType))

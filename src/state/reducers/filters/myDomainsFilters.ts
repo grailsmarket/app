@@ -56,6 +56,10 @@ export const emptyFilterState: PortfolioFiltersState = {
     min: null,
     max: null,
   },
+  creationDate: {
+    min: null,
+    max: null,
+  },
   categories: [],
   sort: null,
 }
@@ -92,6 +96,10 @@ export const initialState: PortfolioFiltersOpenedState = {
     max: null,
   },
   clubsCount: {
+    min: null,
+    max: null,
+  },
+  creationDate: {
     min: null,
     max: null,
   },
@@ -199,6 +207,9 @@ export const myDomainsFiltersSlice = createSlice({
         state.openFilters.push(payload)
       }
     },
+    setMyDomainsCreationDate(state, { payload }: PayloadAction<{ min: string | null; max: string | null }>) {
+      state.creationDate = payload
+    },
     clearMyDomainsFilters(state) {
       state.open = false
       state.search = ''
@@ -220,6 +231,7 @@ export const myDomainsFiltersSlice = createSlice({
         min: null,
         max: null,
       }
+      state.creationDate = { min: null, max: null }
       state.categories = []
       state.openFilters = [
         'Sort',
@@ -259,6 +271,7 @@ export const {
   setMyDomainsSearch,
   setMyDomainsScrollTop,
   toggleMyDomainsFilterOpen,
+  setMyDomainsCreationDate,
   clearMyDomainsFilters,
 } = myDomainsFiltersSlice.actions
 

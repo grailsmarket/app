@@ -9,17 +9,23 @@ interface DatePickerProps {
   className?: string
   minDate?: Date
   maxDate?: Date
+  hideTime?: boolean
+  currentDate?: Date | null
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, minDate, maxDate }) => {
+const DatePicker: React.FC<DatePickerProps> = ({
+  onSelect,
+  onClose,
+  className,
+  minDate,
+  maxDate,
+  hideTime,
+  currentDate,
+}) => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  if (minDate) {
-    today.setTime(minDate.getTime() + 1000)
-  }
-
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(currentDate || null)
   const [viewMonth, setViewMonth] = useState(today.getUTCMonth())
   const [viewYear, setViewYear] = useState(today.getUTCFullYear())
   const [hours, setHours] = useState<number | ''>(new Date().getUTCHours())
@@ -44,8 +50,10 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, m
 
   const weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
-  // Generate array of years from current year to 10 years in the future
-  const years = Array.from({ length: 1000 }, (_, i) => today.getFullYear() + i)
+  // Generate array of years from 2017 to 10 years in the future
+  const startYear = 2017
+  const endYear = today.getFullYear() + 10
+  const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i)
 
   const datePickerRef = useClickAway(() => {
     setShowMonthDropdown(false)
@@ -91,7 +99,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, m
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(viewYear, viewMonth, i)
       date.setHours(0, 0, 0, 0)
-      const isBeforeMin = date < today
+      const isBeforeMin = minDate ? date < minDate : false
       const isAfterMax = maxDate ? date > maxDate : false
       days.push({
         date: i,
@@ -275,32 +283,34 @@ const DatePicker: React.FC<DatePickerProps> = ({ onSelect, onClose, className, m
       </div>
 
       {/* Time inputs */}
-      <div className='mt-4 flex w-full items-center justify-center gap-2'>
-        {/* <label className='text-lg text-gray-400'>Time:</label> */}
-        <input
-          type='number'
-          value={hours.toString()}
-          onChange={(e) => {
-            if (e.target.value === '') setHours('')
-            handleHoursChange(e.target.value)
-          }}
-          min={0}
-          max={23}
-          className='bg-secondary focus:border-primary w-12 rounded border border-gray-700 px-2 py-1 text-center text-white focus:outline-none'
-        />
-        <span className='text-white'>:</span>
-        <input
-          type='number'
-          value={minutes.toString()}
-          onChange={(e) => {
-            if (e.target.value === '') setMinutes('')
-            handleMinutesChange(e.target.value)
-          }}
-          min={0}
-          max={59}
-          className='bg-secondary focus:border-primary w-12 rounded border border-gray-700 px-2 py-1 text-center text-white focus:outline-none'
-        />
-      </div>
+      {!hideTime && (
+        <div className='mt-4 flex w-full items-center justify-center gap-2'>
+          {/* <label className='text-lg text-gray-400'>Time:</label> */}
+          <input
+            type='number'
+            value={hours.toString()}
+            onChange={(e) => {
+              if (e.target.value === '') setHours('')
+              handleHoursChange(e.target.value)
+            }}
+            min={0}
+            max={23}
+            className='bg-secondary focus:border-primary w-12 rounded border border-gray-700 px-2 py-1 text-center text-white focus:outline-none'
+          />
+          <span className='text-white'>:</span>
+          <input
+            type='number'
+            value={minutes.toString()}
+            onChange={(e) => {
+              if (e.target.value === '') setMinutes('')
+              handleMinutesChange(e.target.value)
+            }}
+            min={0}
+            max={59}
+            className='bg-secondary focus:border-primary w-12 rounded border border-gray-700 px-2 py-1 text-center text-white focus:outline-none'
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -22,7 +22,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
+  const { selectors, actions, context } = useFilterRouter()
 
   const dropdownRef = useClickAway(() => {
     setIsOpen(false)
@@ -65,7 +65,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
   }
 
   const categories = selectors.filters.categories
-  const hasOnlyOneCategory = categories.length === 1
+  const hasOnlyOneCategory = context === 'category' ? true : categories.length === 1
 
   useEffect(() => {
     if (sortType === 'ranking') {

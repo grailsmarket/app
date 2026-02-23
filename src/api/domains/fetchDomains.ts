@@ -99,6 +99,8 @@ export const fetchDomains = async ({
             maxViewCount: filters.viewCount?.max || undefined,
             minClubsCount: filters.clubsCount?.min || undefined,
             maxClubsCount: filters.clubsCount?.max || undefined,
+            minCreationDate: (filters as any).creationDate?.min || undefined,
+            maxCreationDate: (filters as any).creationDate?.max || undefined,
             letters: filters.type.Letters !== 'none' ? filters.type.Letters : undefined,
             digits: filters.type.Digits !== 'none' ? filters.type.Digits : undefined,
             emoji: filters.type.Emojis !== 'none' ? filters.type.Emojis : undefined,
@@ -201,6 +203,8 @@ export const fetchDomains = async ({
       'filters[maxViewCount]': filters.viewCount?.max || null,
       'filters[minClubsCount]': filters.clubsCount?.min || null,
       'filters[maxClubsCount]': filters.clubsCount?.max || null,
+      'filters[minCreationDate]': (filters as any).creationDate?.min || null,
+      'filters[maxCreationDate]': (filters as any).creationDate?.max || null,
       'filters[letters]': typeFilters.Letters !== 'none' ? typeFilters.Letters : undefined,
       'filters[digits]': typeFilters.Digits !== 'none' ? typeFilters.Digits : undefined,
       'filters[emoji]': typeFilters.Emojis !== 'none' ? typeFilters.Emojis : undefined,
@@ -263,6 +267,8 @@ export const fetchDomains = async ({
       filters.viewCount?.max ||
       filters.clubsCount?.min ||
       filters.clubsCount?.max ||
+      (filters as any).creationDate?.min ||
+      (filters as any).creationDate?.max ||
       filters.type.Letters === 'exclude' ||
       filters.type.Digits === 'exclude' ||
       filters.type.Emojis === 'exclude' ||

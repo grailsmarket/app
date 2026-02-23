@@ -94,6 +94,10 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     [categoryDetails, holdersCount, listingsCount]
   )
 
+  const disableFilterButton = useMemo(() => {
+    return selectedTab.value === 'analytics' || selectedTab.value === 'holders'
+  }, [selectedTab])
+
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
     return (
@@ -105,7 +109,10 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
       >
         <div className='flex items-center justify-between gap-3 md:gap-4'>
           <button
-            className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
+            className={cn(
+              'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14',
+              disableFilterButton && 'pointer-events-none cursor-not-allowed opacity-50'
+            )}
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
@@ -162,7 +169,10 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     >
       <div className='flex items-center justify-between gap-3 md:gap-4'>
         <button
-          className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
+          className={cn(
+            'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14',
+            disableFilterButton && 'pointer-events-none cursor-not-allowed opacity-50'
+          )}
           onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
         >
           <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />

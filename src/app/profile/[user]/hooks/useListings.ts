@@ -37,6 +37,7 @@ export const useListings = (user: Address | undefined) => {
       filters.watchersCount,
       filters.viewCount,
       filters.clubsCount,
+      filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)

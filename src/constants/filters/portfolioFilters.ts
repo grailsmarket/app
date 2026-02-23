@@ -11,6 +11,7 @@ export const MY_DOMAINS_OPENABLE_FILTERS = [
   'Watchers',
   'Views',
   'Categories Count',
+  'Creation Date',
 ] as const
 
 // Re-export from marketplace for consistency

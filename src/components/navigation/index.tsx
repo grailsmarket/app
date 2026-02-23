@@ -127,7 +127,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
             className='hidden md:flex'
@@ -164,7 +164,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       </nav>
       <div
         className={cn(
-          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 justify-between absolute top-14 left-0 z-0 flex h-[calc(100dvh-56px)] w-full flex-col gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350 starting:-translate-y-full',
+          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 absolute top-14 left-0 z-0 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350 starting:-translate-y-full',
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
@@ -242,7 +242,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div>
         </div>
         <div
-          className='pt-lg py-md border-neutral flex items-center justify-center w-full gap-1.5 border-t-2 opacity-70 md:hidden'
+          className='pt-lg py-md border-neutral flex w-full items-center justify-center gap-1.5 border-t-2 opacity-70 md:hidden'
           onClick={() => {
             setPreviousDropdownOption(dropdownOption)
             setDropdownOption(null)

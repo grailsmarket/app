@@ -19,7 +19,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ category, categoryName,
         <div className='flex cursor-pointer items-center justify-between'>
           <p className='text-light-100 text-lg leading-[18px] font-medium capitalize'>{categoryName}</p>
           <div className='flex items-center gap-x-2'>
-            <p className='text-light-200 text-xs leading-[18px] font-medium'>{localizeNumber(owner_count)}</p>
+            <p className='text-light-200 text-xs leading-[18px] font-medium'>{localizeNumber(owner_count ?? 0)}</p>
             <FilterSelector onClick={() => toggleCategory()} isActive={isCategoryActive} />
           </div>
         </div>

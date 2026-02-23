@@ -72,7 +72,7 @@ const CreationDateFilter = () => {
               </button>
               {currMinVal && (
                 <div
-                  className='absolute top-4 right-3 cursor-pointer transition-opacity hover:opacity-80'
+                  className='absolute top-[15px] right-3 cursor-pointer transition-opacity hover:opacity-80'
                   onClick={() => setMinDate(null)}
                 >
                   <Cross width={12} height={12} />
@@ -91,7 +91,7 @@ const CreationDateFilter = () => {
               </button>
               {currMaxVal && (
                 <div
-                  className='absolute top-4 right-3 cursor-pointer transition-opacity hover:opacity-80'
+                  className='absolute top-[15px] right-3 cursor-pointer transition-opacity hover:opacity-80'
                   onClick={() => setMaxDate(null)}
                 >
                   <Cross width={12} height={12} />

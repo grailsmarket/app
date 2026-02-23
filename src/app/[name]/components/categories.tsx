@@ -21,9 +21,9 @@ const Categories: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoad
   const { categories } = useCategories()
 
   return (
-    <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='bg-secondary border-tertiary p-lg flex flex-col gap-2 sm:rounded-lg sm:border-2'>
       <div
-        className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
+        className='mb-2 flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
         onClick={() => setIsCategoryOpen(!isCategoryOpen)}
       >
         <h3 className='font-sedan-sc text-3xl'>Categories</h3>

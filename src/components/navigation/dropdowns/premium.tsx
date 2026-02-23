@@ -36,7 +36,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
     queryKey: ['navigation', 'premium'],
     queryFn: () =>
       fetchDomains({
-        limit: 36,
+        limit: 42,
         pageParam: 1,
         filters: {
           ...emptyFilterState,
@@ -58,12 +58,12 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
 
   const cardCount = useMemo(() => {
     if (width && width < 640) return 2
-    if (width && width < 780) return 2
-    if (width && width < 968) return 3
-    if (width && width < 1100) return 3
-    if (width && width < 1400) return 4
-    if (width && width < 1600) return 5
-    return 6
+    if (width && width < 780) return 3
+    if (width && width < 1024) return 3
+    if (width && width < 1210) return 4
+    if (width && width < 1460) return 5
+    if (width && width < 1658) return 6
+    return 7
   }, [width])
 
   const defaultAnimationdelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
@@ -239,34 +239,38 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
       </div>
       <div
         ref={cardContainerRef}
-        className='hidden max-h-[400px] w-fit max-w-[1480px] flex-row flex-wrap gap-2 overflow-y-auto md:flex xl:gap-4'
+        className='hidden max-h-[370px] max-w-[1480px] flex-row flex-wrap gap-2 overflow-y-auto md:flex xl:gap-4'
+        style={{
+          width: `${width && width < 768 ? '100%' : cardCount * (180 + 16)}px`,
+          maxWidth: '1560px',
+        }}
       >
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-              <div
-                key={index}
-                className='fadeIn h-[400px] w-[220px]'
-                style={{
-                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
-                }}
-              >
-                <LoadingCard />
-              </div>
-            ))
+            <div
+              key={index}
+              className='fadeIn h-[370px] w-[180px]'
+              style={{
+                animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+              }}
+            >
+              <LoadingCard />
+            </div>
+          ))
           : premium?.domains.map((domain, index) => (
-              <div
-                key={domain.name}
-                className='bg-secondary fadeIn h-[400px] w-[220px]'
-                onClick={() => {
-                  setDropdownOption(null)
-                }}
-                style={{
-                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
-                }}
-              >
-                <Card domain={domain} />
-              </div>
-            ))}
+            <div
+              key={domain.name}
+              className='bg-secondary fadeIn h-[370px] w-[180px]'
+              onClick={() => {
+                setDropdownOption(null)
+              }}
+              style={{
+                animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+              }}
+            >
+              <Card domain={domain} />
+            </div>
+          ))}
       </div>
     </div>
   )

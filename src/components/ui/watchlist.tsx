@@ -120,7 +120,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
             className='bg-secondary hover:bg-tertiary flex cursor-pointer flex-row items-center gap-1 rounded-md p-1.5'
             onClick={() => setSettingsOpen(!settingsOpen)}
           >
-            <Image src={BellIcon} alt='Settings' width={22} height={22} className='h-5 w-5 opacity-100' />
+            <Image src={BellIcon} alt='Settings' width={22} height={22} className='min-h-5 min-w-5 opacity-100' />
             {showSettingsArrow && (
               <ShortArrow
                 className={cn(

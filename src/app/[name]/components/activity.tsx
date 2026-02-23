@@ -18,7 +18,7 @@ const ActivityPanel: React.FC<Props> = ({ name }) => {
         'sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2',
         isActivityEmpty && 'pb-6'
       )}
-      style={{ maxHeight: '500px', overflow: 'hidden' }}
+      style={{ maxHeight: '390px', overflow: 'hidden' }}
     >
       <h2 className='px-lg xl:px-xl font-sedan-sc text-3xl'>Activity</h2>
       <div className='px-md z-0 w-full overflow-y-auto sm:px-0'>

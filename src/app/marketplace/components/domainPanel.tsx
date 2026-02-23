@@ -65,7 +65,7 @@ const DomainPanel = () => {
       searchTerm={selectors.filters.search}
       isAuthenticated={authStatus === 'authenticated'}
     >
-      <div className='z-0 flex w-full flex-col'>
+      <div className='relative z-0 flex w-full flex-col'>
         <Domains
           domains={domains}
           loadingRowCount={20}

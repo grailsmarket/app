@@ -304,7 +304,7 @@ export async function GET(req: NextRequest) {
           <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            svg text, svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; }
+            .ens-image svg text, .ens-image svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; }
             body {
               width: ${size.width}px;
               height: ${size.height}px;
@@ -453,7 +453,7 @@ export async function GET(req: NextRequest) {
               color: #f4f4f4;
             }
             .stat-label {
-              font-size: 32px;
+              font-size: 30px;
               font-weight: 600;
               color: #999;
             }
@@ -484,7 +484,7 @@ export async function GET(req: NextRequest) {
               gap: 24px;
               margin-top: 8px;
               padding: 8px 0px;
-              width: 520px;
+              width: 530px;
             }
             .owner-avatar {
               width: 80px;
@@ -494,7 +494,7 @@ export async function GET(req: NextRequest) {
             }
             .owner-name {
               font-size: 48px;
-              width: 420px;
+              width: 430px;
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
@@ -502,7 +502,7 @@ export async function GET(req: NextRequest) {
             .domain-link {
               font-size: 44px;
               color: #ffdfc0;
-              width: 520px;
+              width: 530px;
               overflow: hidden;
               text-align: right;
               text-overflow: ellipsis;
@@ -511,7 +511,7 @@ export async function GET(req: NextRequest) {
             }
             .grails-logo {
               margin-top: 16px;
-              width: 340px;
+              width: 320px;
               height: auto;
             }
             .no-data {
@@ -529,14 +529,11 @@ export async function GET(req: NextRequest) {
               <div class="ens-image">
                 ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
               </div>
-              ${categories.length > 0
-        ? `<div class="categories">
-                        ${categoryAvatarDataUri ? `<img class="category-logo" src="${categoryAvatarDataUri}" alt="category" />` : ''}
-                        <p class="category-label">${CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}</p>
-                        ${categories.length > 1 ? `<p class="category-count">+${categories.length - 1}</p>` : ''}
-                      </div>`
-        : ''
-      }
+              <div class="categories">
+                ${categoryAvatarDataUri ? `<img class="category-logo" src="${categoryAvatarDataUri}" alt="category" />` : ''}
+                ${categories.length > 0 ? `<p class="category-label">${CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}</p>` : ''}
+                ${categories.length > 1 ? `<p class="category-count">+${categories.length - 1}</p>` : ''}
+              </div>
             </div>
             <div class="analytics-container">
               ${hasData
@@ -579,7 +576,7 @@ export async function GET(req: NextRequest) {
                   </div>`
         : ''
       }
-      <img class="grails-logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails" />
+      <img class="grails-logo" src="https://grails.app/logo-w-text.png" alt="Grails" />
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
           </div>
         </body>

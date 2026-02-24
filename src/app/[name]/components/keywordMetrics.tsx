@@ -15,7 +15,7 @@ import {
   setShareModalDomainInfo,
   setShareModalOpen,
 } from '@/state/reducers/modals/shareModal'
-import ShareIconWhite from 'public/icons/share-white.svg'
+import ShareIconWhite from 'public/icons/image.svg'
 
 interface KeywordMetricsProps {
   name: string

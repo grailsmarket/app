@@ -208,7 +208,6 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
           {user.clubs.length === 0 && <span className='text-neutral text-sm'>-</span>}
         </div>
 
-        {/* Expand chevron */}
         <div className='flex w-[5%] items-center justify-end pr-0.5'>
           <ShortArrow
             className={cn('text-neutral h-4 w-4 transition-transform', isExpanded ? 'rotate-0' : 'rotate-180')}
@@ -216,97 +215,100 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
         </div>
       </div>
 
-      {/* Expanded panel */}
-      {isExpanded && (
-        <div
-          className='bg-background border-tertiary absolute top-[60px] right-0 left-0 z-40 rounded-b-lg border-b p-4 pt-3 shadow-md'
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Stats grid - 3x2 */}
-          <div className='grid grid-cols-3 gap-x-4 gap-y-3'>
-            <div className="border-l-2 border-tertiary pl-1.5">
-              <p className='text-lg font-semibold'>{user.names_owned.toLocaleString()}</p>
-              <p className='text-neutral text-md'>Names</p>
+      <div
+        className={cn(
+          'absolute top-[60px] right-0 left-0 z-40 grid transition-[grid-template-rows] duration-300 ease-in-out',
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className='min-h-0 overflow-hidden'>
+          <div className='bg-background border-tertiary rounded-b-lg border-b p-4 pt-3 shadow-md'>
+            <div className='grid grid-cols-3 gap-x-4 gap-y-3'>
+              <div className='border-tertiary border-l-2 pl-1.5'>
+                <p className='text-lg font-semibold'>{user.names_owned.toLocaleString()}</p>
+                <p className='text-neutral text-md'>Names</p>
+              </div>
+              <div className='border-tertiary border-l-2 pl-1.5'>
+                <p className='text-lg font-semibold'>{user.names_in_clubs.toLocaleString()}</p>
+                <p className='text-neutral text-md'>Cat Names</p>
+              </div>
+              <div className='border-tertiary border-l-2 pl-1.5'>
+                <p className='text-lg font-semibold'>{user.names_listed.toLocaleString()}</p>
+                <p className='text-neutral text-md'>Listed</p>
+              </div>
+              <div className='border-tertiary border-l-2 pl-1.5'>
+                <p className='text-lg font-semibold'>{user.names_sold.toLocaleString()}</p>
+                <p className='text-neutral text-md'>Sold</p>
+              </div>
+              <div className='border-tertiary border-l-2 pl-1.5'>
+                <p className='text-lg font-semibold'>{user.expired_names.toLocaleString()}</p>
+                <p className='text-neutral text-md'>Expired</p>
+              </div>
+              <div className='border-tertiary border-l-2 pl-1.5'>
+                <div className='text-lg font-semibold'>
+                  <Price
+                    price={user.sales_volume}
+                    currencyAddress={WETH_ADDRESS as `0x${string}`}
+                    iconSize='18px'
+                    fontSize='text-lg'
+                  />
+                </div>
+                <p className='text-neutral text-md'>Sales Vol</p>
+              </div>
             </div>
-            <div className="border-l-2 border-tertiary pl-1.5">
-              <p className='text-lg font-semibold'>{user.names_in_clubs.toLocaleString()}</p>
-              <p className='text-neutral text-md'>Cat Names</p>
-            </div>
-            <div className="border-l-2 border-tertiary pl-1.5">
-              <p className='text-lg font-semibold'>{user.names_listed.toLocaleString()}</p>
-              <p className='text-neutral text-md'>Listed</p>
-            </div>
-            <div className="border-l-2 border-tertiary pl-1.5">
-              <p className='text-lg font-semibold'>{user.names_sold.toLocaleString()}</p>
-              <p className='text-neutral text-md'>Sold</p>
-            </div>
-            <div className="border-l-2 border-tertiary pl-1.5">
-              <p className='text-lg font-semibold'>{user.expired_names.toLocaleString()}</p>
-              <p className='text-neutral text-md'>Expired</p>
-            </div>
-            <div className="border-l-2 border-tertiary pl-1.5">
-              <div className='text-lg font-semibold'>
-                <Price
-                  price={user.sales_volume}
-                  currencyAddress={WETH_ADDRESS as `0x${string}`}
-                  iconSize='18px'
-                  fontSize='text-lg'
+
+            {/* Categories */}
+            {user.clubs.length > 0 && (
+              <div className='border-tertiary mt-3 border-t pt-3'>
+                <p className='text-neutral mb-2 text-lg font-medium'>Categories</p>
+                <div className='flex flex-wrap gap-1.5'>
+                  {user.clubs.map((club) => {
+                    const categoryDetails = getCategoryDetails(club)
+                    return (
+                      <Link
+                        href={`/categories/${club}`}
+                        key={club}
+                        className='bg-secondary flex items-center gap-1 rounded-full p-0.5 pr-2'
+                      >
+                        <Image
+                          src={categoryDetails.avatar}
+                          alt={club}
+                          width={20}
+                          height={20}
+                          className='h-5 w-5 rounded-full'
+                        />
+                        <span className='text-md font-medium'>
+                          {categories?.find((c) => c.name === club)?.display_name}
+                        </span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Actions row */}
+            <div className='border-tertiary mt-3 flex items-center justify-between border-t pt-3'>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                }}
+              >
+                <FollowButton
+                  lookupAddress={user.address}
+                  connectedAddress={userAddress}
+                  onDisconnectedClick={() => openConnectModal?.()}
                 />
               </div>
-              <p className='text-neutral text-md'>Sales Vol</p>
+              <Link href={`/profile/${user.address}`} className='text-primary text-xl font-medium hover:underline'>
+                View Profile →
+              </Link>
             </div>
-          </div>
-
-          {/* Categories */}
-          {user.clubs.length > 0 && (
-            <div className='border-tertiary mt-3 border-t pt-3'>
-              <p className='text-neutral mb-2 text-lg font-medium'>Categories</p>
-              <div className='flex flex-wrap gap-1.5'>
-                {user.clubs.map((club) => {
-                  const categoryDetails = getCategoryDetails(club)
-                  return (
-                    <Link
-                      href={`/categories/${club}`}
-                      key={club}
-                      className='bg-secondary flex items-center gap-1 rounded-full p-0.5 pr-2'
-                    >
-                      <Image
-                        src={categoryDetails.avatar}
-                        alt={club}
-                        width={20}
-                        height={20}
-                        className='h-5 w-5 rounded-full'
-                      />
-                      <span className='text-md font-medium'>
-                        {categories?.find((c) => c.name === club)?.display_name}
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Actions row */}
-          <div className='border-tertiary mt-3 flex items-center justify-between border-t pt-3'>
-            <div
-              onClick={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-              }}
-            >
-              <FollowButton
-                lookupAddress={user.address}
-                connectedAddress={userAddress}
-                onDisconnectedClick={() => openConnectModal?.()}
-              />
-            </div>
-            <Link href={`/profile/${user.address}`} className='text-primary text-xl font-medium hover:underline'>
-              View Profile →
-            </Link>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 

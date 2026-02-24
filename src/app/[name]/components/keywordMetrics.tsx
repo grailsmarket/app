@@ -1,27 +1,27 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import * as d3 from 'd3'
 import { useKeywordMetrics } from '@/app/[name]/hooks/useKeywordMetrics'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import { formatNumber, ShortArrow } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { KeywordMetrics } from '@/types/api'
+import { toSteppedPercent } from '@/utils/metrics'
+import { useAppDispatch } from '@/state/hooks'
+import {
+  setShareModalType,
+  setShareModalDomainInfo,
+  setShareModalOpen,
+} from '@/state/reducers/modals/shareModal'
+import ShareIconWhite from 'public/icons/share-white.svg'
 
 interface KeywordMetricsProps {
   name: string
   expiryDate?: string | null
-}
-
-const BAR_STEPS = 12
-
-function toSteppedPercent(value: number, maxValue: number, steps = BAR_STEPS): number {
-  if (value <= 0 || maxValue <= 0) return 0
-  const normalized = Math.min(value / maxValue, 1)
-  // Ease-out curve to avoid a strictly linear visual scale.
-  const eased = 1 - Math.pow(1 - normalized, 1.8)
-  const stepped = Math.ceil(eased * steps) / steps
-  return stepped * 100
+  ownerAddress?: string | null
+  categories?: string[] | null
 }
 
 const MONTH_TO_INDEX: Record<string, number> = {
@@ -264,8 +264,9 @@ const TrendChart: React.FC<{
   )
 }
 
-const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDate }) => {
+const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDate, ownerAddress, categories }) => {
   const [isOpen, setIsOpen] = useState(true)
+  const dispatch = useAppDispatch()
   const { keywordMetrics, keywordMetricsIsLoading, keywordMetricsError, isSubdomain, isTooLong, loginRequired } =
     useKeywordMetrics(name, expiryDate)
 
@@ -279,14 +280,43 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
     return null
   }, [isSubdomain, isTooLong, keywordMetricsError, keywordMetrics, loginRequired])
 
+  const hasMetrics = !message && !keywordMetricsIsLoading && keywordMetrics
+
+  const openShareModal = () => {
+    dispatch(setShareModalType('google-analytics'))
+    dispatch(
+      setShareModalDomainInfo({
+        name,
+        ownerAddress: ownerAddress ?? null,
+        categories: categories ?? null,
+      })
+    )
+    dispatch(setShareModalOpen(true))
+  }
+
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
-      <div
-        className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-        <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
+      <div className='flex flex-row items-center justify-between'>
+        <div
+          className='flex flex-1 cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
+          <div className='flex flex-row gap-1 items-center'>
+            {hasMetrics && (
+              <button
+                className='ml-2 flex cursor-pointer items-center justify-center rounded-md p-1 transition-opacity hover:opacity-80'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  openShareModal()
+                }}
+              >
+                <Image src={ShareIconWhite} width={22} height={22} alt='Share' />
+              </button>
+            )}
+            <ShortArrow className={cn('h-4 w-4 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
+          </div>
+        </div>
       </div>
       <div className={cn('flex-col gap-4', isOpen ? 'flex' : 'hidden')}>
         {keywordMetricsIsLoading ? (

@@ -106,7 +106,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
           className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
         />
       </div>
-      <div className='pl-lg md:pt-lg text-neutral flex h-fit w-56 flex-col gap-4 text-2xl font-semibold md:h-[400px] md:justify-between md:pl-0'>
+      <div className='pl-lg md:pt-lg text-neutral flex h-fit w-56 flex-col gap-4 text-2xl font-semibold md:h-[370px] md:justify-between md:pl-0'>
         <div className='flex h-full w-fit flex-col gap-4'>
           <div className='fadeIn w-fit md:hidden' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link
@@ -228,59 +228,59 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
           </Link>
         </div>
       </div>
-      <div className='hidden max-h-[400px] w-fit flex-row flex-wrap gap-2 overflow-x-scroll overflow-y-auto md:grid md:grid-cols-2 xl:grid-cols-3 xl:gap-4 2xl:grid-cols-4'>
+      <div className='hidden max-h-[370px] w-fit flex-row flex-wrap gap-2 overflow-x-scroll overflow-y-auto md:grid md:grid-cols-2 xl:grid-cols-3 xl:gap-4 2xl:grid-cols-4'>
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-              <div
-                key={index}
-                className='fadeIn h-[86px] w-full'
+            <div
+              key={index}
+              className='fadeIn h-[80px] w-full'
+              style={{
+                animationDelay: `${defaultAnimationdelay + ((index + 1) / gridColCount) * ANIMATION_DELAY_INCREMENT}s`,
+              }}
+            >
+              <LoadingCell radius='8px' height={'80px'} width={'100%'} />
+            </div>
+          ))
+          : categories?.map((category, index) => {
+            const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
+
+            return (
+              <Link
+                href={`/categories/${category.name}`}
+                key={category.name}
+                className='bg-secondary fadeIn hover:bg-foreground/15 h-[80px] w-full cursor-pointer overflow-hidden rounded-md transition-colors duration-300'
+                onClick={() => {
+                  setDropdownOption(null)
+                }}
                 style={{
                   animationDelay: `${defaultAnimationdelay + ((index + 1) / gridColCount) * ANIMATION_DELAY_INCREMENT}s`,
                 }}
               >
-                <LoadingCell radius='8px' height={'86px'} width={'100%'} />
-              </div>
-            ))
-          : categories?.map((category, index) => {
-              const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
-
-              return (
-                <Link
-                  href={`/categories/${category.name}`}
-                  key={category.name}
-                  className='bg-secondary fadeIn hover:bg-foreground/15 h-[86px] w-full cursor-pointer overflow-hidden rounded-md transition-colors duration-300'
-                  onClick={() => {
-                    setDropdownOption(null)
-                  }}
-                  style={{
-                    animationDelay: `${defaultAnimationdelay + ((index + 1) / gridColCount) * ANIMATION_DELAY_INCREMENT}s`,
-                  }}
-                >
-                  <div className='p-lg relative flex max-h-[86px] min-h-[86px] flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
+                <div className='p-lg relative flex max-h-[80px] min-h-[80px] flex-row items-center gap-3 overflow-hidden rounded-t-lg'>
+                  <Image
+                    src={categoryHeader}
+                    alt={`${category.display_name} header`}
+                    width={1000}
+                    height={1000}
+                    className='absolute top-0 left-0 h-full w-full object-cover opacity-20'
+                  />
+                  <div className='z-10 flex items-center gap-3'>
                     <Image
-                      src={categoryHeader}
-                      alt={`${category.display_name} header`}
-                      width={1000}
-                      height={1000}
-                      className='absolute top-0 left-0 h-full w-full object-cover opacity-20'
+                      src={categoryAvatar}
+                      alt={category.display_name}
+                      width={54}
+                      height={54}
+                      className='rounded-full'
                     />
-                    <div className='z-10 flex items-center gap-3'>
-                      <Image
-                        src={categoryAvatar}
-                        alt={category.display_name}
-                        width={54}
-                        height={54}
-                        className='rounded-full'
-                      />
-                      <div className='flex flex-col'>
-                        <h3 className='text-2xl font-bold md:text-2xl'>{category.display_name}</h3>
-                        <p className='text-neutral text-lg font-medium'>{category.description}</p>
-                      </div>
+                    <div className='flex flex-col'>
+                      <h3 className='text-2xl font-bold md:text-2xl'>{category.display_name}</h3>
+                      <p className='text-neutral text-lg font-medium'>{category.description}</p>
                     </div>
                   </div>
-                </Link>
-              )
-            })}
+                </div>
+              </Link>
+            )
+          })}
       </div>
     </div>
   )

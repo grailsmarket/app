@@ -2,9 +2,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { DomainListingType, DomainOfferType } from '@/types/domains'
 
+type ShareModalType = 'listing' | 'offer' | 'google-analytics' | null
+
 type ShareModalState = {
   open: boolean
-  type: 'listing' | 'offer' | null
+  type: ShareModalType
   listing: DomainListingType | null
   offer: DomainOfferType | null
   domainName: string | null
@@ -38,7 +40,7 @@ export const ShareModalSlice = createSlice({
         state.categories = null
       }
     },
-    setShareModalType(state, { payload }: PayloadAction<'listing' | 'offer' | null>) {
+    setShareModalType(state, { payload }: PayloadAction<ShareModalType>) {
       state.type = payload
     },
     setShareModalListing(state, { payload }: PayloadAction<DomainListingType | null>) {

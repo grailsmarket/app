@@ -17,7 +17,7 @@ type ShareModalStatus = 'loading' | 'ready' | 'error'
 
 interface ShareModalProps {
   onClose: () => void
-  type: 'listing' | 'offer' | null
+  type: 'listing' | 'offer' | 'google-analytics' | null
   listing: DomainListingType | null
   offer: DomainOfferType | null
   domainName: string | null
@@ -75,6 +75,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
           ...(categories && { categories: categories.join(',') }),
         })
         endpoint = `/api/og/offer?${params.toString()}`
+      } else if (type === 'google-analytics') {
+        const params = new URLSearchParams({
+          name: domainName,
+          ...(ownerAddress && { owner: ownerAddress }),
+          ...(categories && { categories: categories.join(',') }),
+        })
+        endpoint = `/api/og/google-analytics?${params.toString()}`
       } else {
         throw new Error('Invalid type or missing data')
       }
@@ -195,12 +202,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
       const file = new File([blob], filename, { type: 'image/png' })
       let title = ''
 
-      if (listing) {
+      if (type === 'listing' && listing) {
         const asset = TOKENS[listing.currency_address as keyof typeof TOKENS]
         title = `${domainName} listed for ${formatPrice(listing.price, asset)} ${asset} on ${listing.source[0].toUpperCase() + listing.source.slice(1)}`
-      } else if (offer) {
+      } else if (type === 'offer' && offer) {
         const asset = TOKENS[offer.currency_address as keyof typeof TOKENS]
         title = `Offer on ${domainName} for ${formatPrice(offer.offer_amount_wei, asset)} ${asset} on ${offer.source[0].toUpperCase() + offer.source.slice(1)}`
+      } else if (type === 'google-analytics') {
+        title = `Google Metrics for ${domainName}`
       }
 
       await navigator.share({
@@ -231,7 +240,9 @@ const ShareModal: React.FC<ShareModalProps> = ({
         className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col items-center gap-2 overflow-y-auto border-t sm:gap-2 md:w-fit md:justify-center md:rounded-md md:border-2'
       >
         <div className='flex w-full flex-col items-center gap-2 sm:w-[440px]'>
-          <h2 className='font-sedan-sc mb-2 text-3xl'>Share {type === 'listing' ? 'Listing' : 'Offer'}</h2>
+          <h2 className='font-sedan-sc mb-2 text-3xl'>
+            Share {type === 'listing' ? 'Listing' : type === 'offer' ? 'Offer' : 'Google Metrics'}
+          </h2>
 
           <div className='border-tertiary flex h-fit w-full items-center justify-center overflow-hidden rounded-lg border-2'>
             {status === 'loading' && <LoadingCell height='235px' width='100%' />}

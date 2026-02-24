@@ -66,7 +66,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
           className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
         />
       </div>
-      <div className='pl-lg md:pt-xl text-neutral flex h-fit w-60 flex-col justify-between gap-4 text-2xl font-semibold md:h-[400px] md:pl-0'>
+      <div className='pl-lg md:pt-xl text-neutral flex h-fit w-60 flex-col justify-between gap-4 text-2xl font-semibold md:h-[370px] md:pl-0'>
         <div className='flex h-full w-fit flex-col gap-2'>
           {/* <p className='text-lg font-medium text-[#808080]'>View for:</p> */}
           <div className='flex h-full w-fit flex-col gap-4'>
@@ -212,7 +212,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
             title='Top Sales'
             type='sales'
             isLoading={salesLoading}
-            data={salesData?.data?.results.slice(0, 7)}
+            data={salesData?.data?.results.slice(0, 6)}
             chartData={saleChartData?.data?.points}
             chartLoading={saleChartLoading}
             volumeData={volumeChartData?.data?.points}
@@ -227,7 +227,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
             title='Top Offers'
             type='offers'
             isLoading={offersLoading}
-            data={offersData?.data?.results.slice(0, 7)}
+            data={offersData?.data?.results.slice(0, 6)}
             chartData={offerChartData?.data?.points}
             chartLoading={offerChartLoading}
           />
@@ -240,7 +240,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ setDropdownOption, previousDropdo
             title='Top Registrations'
             type='registrations'
             isLoading={registrationsLoading}
-            data={registrationsData?.data?.results.slice(0, 7)}
+            data={registrationsData?.data?.results.slice(0, 6)}
             chartData={registrationChartData?.data?.points}
             chartLoading={registrationChartLoading}
           />

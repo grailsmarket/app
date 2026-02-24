@@ -101,7 +101,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
           className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
         />
       </div>
-      <div className='pl-lg md:pt-xl text-neutral flex h-fit w-56 flex-col justify-between gap-4 text-2xl font-semibold md:h-[400px] md:pl-0'>
+      <div className='pl-lg md:pt-xl text-neutral flex h-fit w-56 flex-col justify-between gap-4 text-2xl font-semibold md:h-[370px] md:pl-0'>
         <div className='flex h-full w-fit flex-col gap-4'>
           <div className='fadeIn w-fit md:hidden' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link
@@ -247,30 +247,30 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
       >
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-              <div
-                key={index}
-                className='fadeIn h-[370px] w-[180px]'
-                style={{
-                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
-                }}
-              >
-                <LoadingCard />
-              </div>
-            ))
+            <div
+              key={index}
+              className='fadeIn h-[370px] w-[180px]'
+              style={{
+                animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+              }}
+            >
+              <LoadingCard />
+            </div>
+          ))
           : premium?.domains.map((domain, index) => (
-              <div
-                key={domain.name}
-                className='bg-secondary fadeIn h-[370px] w-[180px]'
-                onClick={() => {
-                  setDropdownOption(null)
-                }}
-                style={{
-                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
-                }}
-              >
-                <Card domain={domain} />
-              </div>
-            ))}
+            <div
+              key={domain.name}
+              className='bg-secondary fadeIn h-[370px] w-[180px]'
+              onClick={() => {
+                setDropdownOption(null)
+              }}
+              style={{
+                animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+              }}
+            >
+              <Card domain={domain} />
+            </div>
+          ))}
       </div>
     </div>
   )

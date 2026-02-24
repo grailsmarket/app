@@ -220,11 +220,27 @@ export async function GET(req: NextRequest) {
       return result
     }
 
+    // Pre-fetch category avatar as base64 data URI to avoid redirect/CORS issues in Puppeteer
+    const getCategoryAvatarDataUri = async (): Promise<string | null> => {
+      if (categories.length === 0) return null
+      try {
+        const res = await fetch(`https://api.grails.app/api/v1/clubs/${categories[0]}/avatar`)
+        if (!res.ok) return null
+        const buffer = await res.arrayBuffer()
+        const contentType = res.headers.get('content-type') || 'image/jpeg'
+        const base64 = Buffer.from(buffer).toString('base64')
+        return `data:${contentType};base64,${base64}`
+      } catch {
+        return null
+      }
+    }
+
     // Fetch all data in parallel
-    const [ownerProfile, ensSVG, googleAnalyticsData] = await Promise.all([
+    const [ownerProfile, ensSVG, googleAnalyticsData, categoryAvatarDataUri] = await Promise.all([
       getOwnerProfile(),
       getENSSVG(),
       getGoogleAnalyticsData(),
+      getCategoryAvatarDataUri(),
     ])
 
     // Pre-compute metrics values
@@ -515,7 +531,7 @@ export async function GET(req: NextRequest) {
               </div>
               ${categories.length > 0
         ? `<div class="categories">
-                        <img class="category-logo" src="https://api.grails.app/api/v1/clubs/${categories[0]}/avatar" alt="category" />
+                        ${categoryAvatarDataUri ? `<img class="category-logo" src="${categoryAvatarDataUri}" alt="category" />` : ''}
                         <p class="category-label">${CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}</p>
                         ${categories.length > 1 ? `<p class="category-count">+${categories.length - 1}</p>` : ''}
                       </div>`

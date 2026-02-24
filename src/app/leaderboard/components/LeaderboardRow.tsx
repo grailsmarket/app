@@ -177,12 +177,12 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
         </div>
 
         {/* Names count */}
-        <div className='flex w-[17.5%] items-center justify-center'>
+        <div className='flex w-[15%] items-center justify-center'>
           <span className='text-lg font-semibold'>{user.names_owned.toLocaleString()}</span>
         </div>
 
         {/* Category avatars */}
-        <div className='flex w-[25%] items-center gap-0.5'>
+        <div className='flex w-[27.5%] items-center gap-0.5'>
           <div className='flex items-center -space-x-2'>
             {mobileVisibleCategories.map((club) => {
               const categoryDetails = getCategoryDetails(club)
@@ -224,28 +224,27 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
         >
           {/* Stats grid - 3x2 */}
           <div className='grid grid-cols-3 gap-x-4 gap-y-3'>
-            <div>
-              <p className='text-neutral text-md'>Names</p>
+            <div className="border-l-2 border-tertiary pl-1.5">
               <p className='text-lg font-semibold'>{user.names_owned.toLocaleString()}</p>
+              <p className='text-neutral text-md'>Names</p>
             </div>
-            <div>
-              <p className='text-neutral text-md'>Cat Names</p>
+            <div className="border-l-2 border-tertiary pl-1.5">
               <p className='text-lg font-semibold'>{user.names_in_clubs.toLocaleString()}</p>
+              <p className='text-neutral text-md'>Cat Names</p>
             </div>
-            <div>
-              <p className='text-neutral text-md'>Listed</p>
+            <div className="border-l-2 border-tertiary pl-1.5">
               <p className='text-lg font-semibold'>{user.names_listed.toLocaleString()}</p>
+              <p className='text-neutral text-md'>Listed</p>
             </div>
-            <div>
-              <p className='text-neutral text-md'>Sold</p>
+            <div className="border-l-2 border-tertiary pl-1.5">
               <p className='text-lg font-semibold'>{user.names_sold.toLocaleString()}</p>
+              <p className='text-neutral text-md'>Sold</p>
             </div>
-            <div>
-              <p className='text-neutral text-md'>Expired</p>
+            <div className="border-l-2 border-tertiary pl-1.5">
               <p className='text-lg font-semibold'>{user.expired_names.toLocaleString()}</p>
+              <p className='text-neutral text-md'>Expired</p>
             </div>
-            <div>
-              <p className='text-neutral text-md'>Sales Vol</p>
+            <div className="border-l-2 border-tertiary pl-1.5">
               <div className='text-lg font-semibold'>
                 <Price
                   price={user.sales_volume}
@@ -254,6 +253,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
                   fontSize='text-lg'
                 />
               </div>
+              <p className='text-neutral text-md'>Sales Vol</p>
             </div>
           </div>
 

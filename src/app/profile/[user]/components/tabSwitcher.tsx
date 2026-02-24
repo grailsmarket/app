@@ -41,8 +41,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       selectedTab.value !== 'activity' &&
       selectedTab.value !== 'broker' &&
       selectedTab.value !== 'sent_offers' &&
-      selectedTab.value !== 'received_offers' &&
-      selectedTab.value !== 'watchlist'
+      selectedTab.value !== 'received_offers'
     )
   }, [selectedTab.value])
   const showViewSelector = useMemo(() => {
@@ -226,7 +225,9 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
           </div>
         </div>
         <div className='hidden items-center md:flex'>
-          {showDownloadButton && <DownloadButton ownerAddress={user as Address} />}
+          {showDownloadButton && (
+            <DownloadButton ownerAddress={user as Address} isWatchlist={selectedTab.value === 'watchlist'} />
+          )}
           {showViewSelector && <ViewSelector />}
         </div>
       </div>
@@ -281,7 +282,9 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
         </div>
       </div>
       <div className='hidden items-center md:flex'>
-        {showDownloadButton && <DownloadButton ownerAddress={user as Address} />}
+        {showDownloadButton && (
+          <DownloadButton ownerAddress={user as Address} isWatchlist={selectedTab.value === 'watchlist'} />
+        )}
         {showViewSelector && <ViewSelector />}
       </div>
     </div>

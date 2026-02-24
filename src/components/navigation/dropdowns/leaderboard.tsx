@@ -212,7 +212,6 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                 <LeaderboardRow
                   user={user}
                   rank={index + 1}
-                  hideRows={['names_in_clubs', 'names_listed', 'names_sold', 'expired_names']}
                   className={`${index === leaderboard?.users.length - 1 ? 'border-b-0' : ''} justify-between`}
                 />
               </div>

@@ -17,9 +17,15 @@ interface DownloadButtonProps {
   ownerAddress?: Address
   category?: string
   inAnyCategory?: boolean
+  isWatchlist?: boolean
 }
 
-const DownloadButton = ({ ownerAddress, category, inAnyCategory = false }: DownloadButtonProps) => {
+const DownloadButton = ({
+  ownerAddress,
+  category,
+  inAnyCategory = false,
+  isWatchlist = false,
+}: DownloadButtonProps) => {
   const [isDownloading, setIsDownloading] = useState(false)
 
   const { authStatus } = useUserContext()
@@ -49,11 +55,12 @@ const DownloadButton = ({ ownerAddress, category, inAnyCategory = false }: Downl
 
   const handleDownload = async () => {
     setIsDownloading(true)
+
     const queryParams = buildQueryParamString({
       limit: 10000,
       page: 1,
       q: search?.length > 0 ? search : undefined,
-      'filters[owner]': ownerAddress || null,
+      'filters[owner]': isWatchlist ? undefined : ownerAddress || null,
       'filters[listed]': getMarketFilterValue(filters.market?.Listed),
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
@@ -107,7 +114,7 @@ const DownloadButton = ({ ownerAddress, category, inAnyCategory = false }: Downl
       export: true,
     })
 
-    const response = await authFetch(`${API_URL}/search?${queryParams}`, {
+    const response = await authFetch(`${API_URL}${isWatchlist ? '/watchlist' : ''}/search?${queryParams}`, {
       method: 'GET',
       mode: 'cors',
       headers: {

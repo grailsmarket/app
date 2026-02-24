@@ -10,11 +10,7 @@ import { cn } from '@/utils/tailwind'
 import { KeywordMetrics } from '@/types/api'
 import { toSteppedPercent } from '@/utils/metrics'
 import { useAppDispatch } from '@/state/hooks'
-import {
-  setShareModalType,
-  setShareModalDomainInfo,
-  setShareModalOpen,
-} from '@/state/reducers/modals/shareModal'
+import { setShareModalType, setShareModalDomainInfo, setShareModalOpen } from '@/state/reducers/modals/shareModal'
 import ShareIconWhite from 'public/icons/image.svg'
 
 interface KeywordMetricsProps {
@@ -302,7 +298,7 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
           onClick={() => setIsOpen(!isOpen)}
         >
           <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <div className='flex flex-row gap-1 items-center'>
+          <div className='flex flex-row items-center gap-1'>
             {hasMetrics && (
               <button
                 className='ml-2 flex cursor-pointer items-center justify-center rounded-md p-1 transition-opacity hover:opacity-80'

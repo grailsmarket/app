@@ -251,9 +251,7 @@ export async function GET(req: NextRequest) {
     const monthCount = googleAnalyticsData?.monthlyTrend?.length ?? 0
     const yearlyTotal =
       monthCount > 0
-        ? Math.round(
-          (googleAnalyticsData!.monthlyTrend.reduce((sum, p) => sum + p.searches, 0) / monthCount) * 12
-        )
+        ? Math.round((googleAnalyticsData!.monthlyTrend.reduce((sum, p) => sum + p.searches, 0) / monthCount) * 12)
         : 0
     const yearlyDisplay = yearlyTotal > 0 ? formatNumber(yearlyTotal) : 'N/A'
 
@@ -289,9 +287,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-          headless: 'new',
-          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        }),
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          }),
     }
 
     browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
@@ -536,8 +534,9 @@ export async function GET(req: NextRequest) {
               </div>
             </div>
             <div class="analytics-container">
-              ${hasData
-        ? `
+              ${
+                hasData
+                  ? `
         <h2 class="analytics-title">Google Metrics</h2>
                 <div class="stats-grid">
                   <div class="stat-card">
@@ -564,18 +563,19 @@ export async function GET(req: NextRequest) {
                 </div>
                 ${chartSVG ? `<div class="chart-container">${chartSVG}</div>` : ''}
               `
-        : '<p class="no-data">No search data available</p>'
-      }
+                  : '<p class="no-data">No search data available</p>'
+              }
             </div>
           </div>
           <div class="info">
-            ${ownerProfile.displayName
-        ? `<div class="owner">
+            ${
+              ownerProfile.displayName
+                ? `<div class="owner">
                     <img class="owner-avatar" src="${ownerProfile.avatar}" alt="owner" />
                     <span class="owner-name">${ownerProfile.displayName}</span>
                   </div>`
-        : ''
-      }
+                : ''
+            }
       <img class="grails-logo" src="https://grails.app/logo-w-text.png" alt="Grails" />
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
           </div>

@@ -25,6 +25,7 @@ const SORT_OPTIONS: { value: LeaderboardSortBy; label: string }[] = [
   { value: 'expired_names', label: 'Expired Names' },
   { value: 'names_listed', label: 'Listed Names' },
   { value: 'names_sold', label: 'Sold Names' },
+  { value: 'sales_volume', label: 'Sales Volume' },
 ]
 
 interface LeaderboardFiltersProps {

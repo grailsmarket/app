@@ -88,7 +88,12 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden lg:block'>
-            <KeywordMetrics name={name} expiryDate={nameDetails?.expiry_date} ownerAddress={nameDetails?.owner} categories={nameDetails?.clubs} />
+            <KeywordMetrics
+              name={name}
+              expiryDate={nameDetails?.expiry_date}
+              ownerAddress={nameDetails?.owner}
+              categories={nameDetails?.clubs}
+            />
           </div>
           <div className='hidden lg:block'>
             <Metadata
@@ -129,7 +134,12 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='lg:hidden'>
-            <KeywordMetrics name={name} expiryDate={nameDetails?.expiry_date} ownerAddress={nameDetails?.owner} categories={nameDetails?.clubs} />
+            <KeywordMetrics
+              name={name}
+              expiryDate={nameDetails?.expiry_date}
+              ownerAddress={nameDetails?.owner}
+              categories={nameDetails?.clubs}
+            />
           </div>
           <div className='lg:hidden'>
             <Metadata

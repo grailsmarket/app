@@ -5,6 +5,7 @@ export interface LeaderboardUser {
   expired_names: number
   names_listed: number
   names_sold: number
+  sales_volume: string
   clubs: string[]
 }
 
@@ -27,7 +28,13 @@ export interface LeaderboardResponse {
   }
 }
 
-export type LeaderboardSortBy = 'names_owned' | 'names_in_clubs' | 'expired_names' | 'names_listed' | 'names_sold'
+export type LeaderboardSortBy =
+  | 'names_owned'
+  | 'names_in_clubs'
+  | 'expired_names'
+  | 'names_listed'
+  | 'names_sold'
+  | 'sales_volume'
 export type LeaderboardSortOrder = 'asc' | 'desc'
 
 export interface LeaderboardFilters {

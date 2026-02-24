@@ -127,7 +127,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
             className='hidden md:flex'

@@ -24,6 +24,7 @@ interface UserProps {
   avatarSize?: string
   fontSize?: string
   alignTooltip?: 'left' | 'right'
+  disableTooltip?: boolean
 }
 
 const User: React.FC<UserProps> = ({
@@ -34,6 +35,7 @@ const User: React.FC<UserProps> = ({
   avatarSize = '18px',
   fontSize = '15px',
   alignTooltip = 'right',
+  disableTooltip = false,
 }) => {
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
@@ -55,25 +57,19 @@ const User: React.FC<UserProps> = ({
     : null
 
   return (
-    <ProfileTooltip
-      addressOrName={address}
-      connectedAddress={userAddress}
-      showStatus={true}
-      darkMode={true}
-      horizontalOffset={12}
-      horizontalPlacement={alignTooltip || 'right'}
-      verticalPlacement='auto'
-      boundary='scrollParent'
-      keepTooltipOnHover={true}
-      showFollowButton={true}
-      showDelay={750}
+    <TooltipWrapper
+      address={address}
+      userAddress={userAddress}
+      alignTooltip={alignTooltip}
+      disableTooltip={disableTooltip}
     >
       <div className={cn('flex justify-end', wrapperClassName)}>
         <Link
           href={`/profile/${address}`}
           className={cn(
             'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
-            className
+            className,
+            disableTooltip && 'pointer-events-none'
           )}
         >
           {headerImageSrc && (
@@ -100,6 +96,41 @@ const User: React.FC<UserProps> = ({
           </div>
         </Link>
       </div>
+    </TooltipWrapper>
+  )
+}
+
+interface TooltipWrapperProps {
+  children: React.ReactNode
+  address: Address
+  userAddress?: Address
+  alignTooltip?: 'left' | 'right'
+  disableTooltip?: boolean
+}
+
+const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
+  children,
+  address,
+  userAddress,
+  alignTooltip,
+  disableTooltip,
+}) => {
+  if (disableTooltip) return children
+  return (
+    <ProfileTooltip
+      addressOrName={address}
+      connectedAddress={userAddress}
+      showStatus={true}
+      darkMode={true}
+      horizontalOffset={12}
+      horizontalPlacement={alignTooltip || 'right'}
+      verticalPlacement='auto'
+      boundary='scrollParent'
+      keepTooltipOnHover={true}
+      showFollowButton={true}
+      showDelay={750}
+    >
+      {children as React.ReactElement}
     </ProfileTooltip>
   )
 }

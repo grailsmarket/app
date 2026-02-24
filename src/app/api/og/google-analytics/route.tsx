@@ -453,7 +453,7 @@ export async function GET(req: NextRequest) {
               color: #f4f4f4;
             }
             .stat-label {
-              font-size: 30px;
+              font-size: 28px;
               font-weight: 600;
               color: #999;
             }

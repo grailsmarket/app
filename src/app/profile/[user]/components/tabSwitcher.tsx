@@ -41,7 +41,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       selectedTab.value !== 'activity' &&
       selectedTab.value !== 'broker' &&
       selectedTab.value !== 'sent_offers' &&
-      selectedTab.value !== 'received_offers'
+      selectedTab.value !== 'received_offers' &&
+      selectedTab.value !== 'watchlist'
     )
   }, [selectedTab.value])
   const showViewSelector = useMemo(() => {

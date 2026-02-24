@@ -1,12 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '../state/hooks'
 import {
-  addUserPendingWatchlistDomain,
   addUserWatchlistDomain,
-  removeUserPendingWatchlistDomain,
   removeUserWatchlistDomain,
   selectUserProfile,
 } from '../state/reducers/portfolio/profile'
@@ -22,11 +20,12 @@ import { generateEmptyName } from '@/utils/generateEmptyName'
 const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, watchlistId?: number | null) => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
-  const { watchlist, pendingWatchlistTokenIds } = useAppSelector(selectUserProfile)
+  const { watchlist } = useAppSelector(selectUserProfile)
   const { userAddress, authStatus } = useUserContext()
   const [fetchWatchlistItem, setFetchWatchlistItem] = useState(fetchWatchSettings)
   const [hasWatchlistedBefore, setHasWatchlistedBefore] = useState<boolean | undefined>(undefined)
   const [watchlistCountChange, setWatchlistCountChange] = useState(0)
+  const needsFetchTransition = useRef(false)
   const [watchlistSettings, setWatchlistSettings] = useState<WatchlistSettingsType>({
     notifyOnSale: true,
     notifyOnOffer: true,
@@ -50,9 +49,6 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
       console.error(`Error adding ${domain.name} to watchlist`, error)
       setWatchlistCountChange(watchlistCountChange - 1)
     },
-    onSettled: () => {
-      dispatch(removeUserPendingWatchlistDomain(tokenId))
-    },
   })
 
   const removeFromWatchlistMutation = useMutation({
@@ -60,12 +56,17 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     onSuccess: (response) => {
       if (response.success) {
         dispatch(removeUserWatchlistDomain(response.watchlistId))
-        dispatch(removeUserPendingWatchlistDomain(tokenId))
+        if (needsFetchTransition.current) {
+          setFetchWatchlistItem(true)
+          needsFetchTransition.current = false
+        }
         invalidateWatchlist()
+      } else {
+        needsFetchTransition.current = false
       }
     },
     onError: (error: any, watchlistId) => {
-      dispatch(removeUserPendingWatchlistDomain(tokenId))
+      needsFetchTransition.current = false
       console.error(`Error removing watchlist item ID-${watchlistId}`, error)
       setWatchlistCountChange(watchlistCountChange + 1)
     },
@@ -130,48 +131,29 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     }
   }, [watchlistItem, watchlistId, watchlist])
 
-  const isWatching = useMemo(() => {
-    if (watchlistId && !fetchWatchlistItem) {
-      return true
-    }
+  const serverIsWatching = useMemo(() => {
+    if (watchlistId && !fetchWatchlistItem) return true
+    return watchlist?.some((item) => item.name === name) || false
+  }, [watchlistId, fetchWatchlistItem, watchlist, name])
 
-    if (pendingWatchlistTokenIds?.includes(tokenId) || removeFromWatchlistMutation.isPending) {
-      if (!watchlist.some((item) => item.name === name)) {
-        return true
-      }
+  const [isWatching, setIsWatching] = useState(serverIsWatching)
 
-      return false
-    }
-
-    return watchlistItem?.watchlistEntry?.ensName === name || watchlist?.some((item) => item.name === name)
-  }, [
-    watchlist,
-    name,
-    tokenId,
-    pendingWatchlistTokenIds,
-    removeFromWatchlistMutation.isPending,
-    watchlistId,
-    fetchWatchlistItem,
-    watchlistItem,
-  ])
+  useEffect(() => {
+    if (addToWatchlistMutation.isPending || removeFromWatchlistMutation.isPending) return
+    setIsWatching(serverIsWatching)
+  }, [serverIsWatching, addToWatchlistMutation.isPending, removeFromWatchlistMutation.isPending])
 
   const toggleWatchlist = (domain: MarketplaceDomainType) => {
     if (watchlistId && !fetchWatchlistItem) {
+      setIsWatching(false)
+      needsFetchTransition.current = true
       removeFromWatchlistMutation.mutate(watchlistId)
       dispatch(removeUserWatchlistDomain(watchlistId))
-
-      setFetchWatchlistItem(true)
       return
     }
 
-    dispatch(addUserPendingWatchlistDomain(domain.token_id))
-    if (
-      !(
-        pendingWatchlistTokenIds?.includes(tokenId) ||
-        removeFromWatchlistMutation.isPending ||
-        addToWatchlistMutation.isPending
-      )
-    )
+    setIsWatching(!isWatching)
+    if (!(removeFromWatchlistMutation.isPending || addToWatchlistMutation.isPending))
       setWatchlistCountChange(isWatching ? (hasWatchlistedBefore ? -1 : 0) : hasWatchlistedBefore ? 0 : 1)
 
     const watchlistItemId =

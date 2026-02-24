@@ -204,30 +204,30 @@ const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, pr
       >
         {isLoading
           ? Array.from({ length: cardCount }).map((_, index) => (
-            <div
-              key={index}
-              className='fadeIn h-[370px] w-[180px]'
-              style={{
-                animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
-              }}
-            >
-              <LoadingCard />
-            </div>
-          ))
+              <div
+                key={index}
+                className='fadeIn h-[370px] w-[180px]'
+                style={{
+                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+                }}
+              >
+                <LoadingCard />
+              </div>
+            ))
           : listings?.domains.map((domain, index) => (
-            <div
-              key={domain.name}
-              className='bg-secondary fadeIn h-[370px] w-[180px]'
-              onClick={() => {
-                setDropdownOption(null)
-              }}
-              style={{
-                animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
-              }}
-            >
-              <Card domain={domain} />
-            </div>
-          ))}
+              <div
+                key={domain.name}
+                className='bg-secondary fadeIn h-[370px] w-[180px]'
+                onClick={() => {
+                  setDropdownOption(null)
+                }}
+                style={{
+                  animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
+                }}
+              >
+                <Card domain={domain} />
+              </div>
+            ))}
       </div>
     </div>
   )

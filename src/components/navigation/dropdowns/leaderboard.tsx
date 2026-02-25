@@ -213,6 +213,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
                   user={user}
                   rank={index + 1}
                   className={`${index === leaderboard?.users.length - 1 ? 'border-b-0' : ''} justify-between`}
+                  sortBy={'names_owned'}
                 />
               </div>
             ))}

@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import type { LeaderboardUser } from '@/types/leaderboard'
+import type { LeaderboardSortBy, LeaderboardUser } from '@/types/leaderboard'
 import User from '@/components/ui/user'
 import Price from '@/components/ui/price'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
@@ -11,19 +11,21 @@ import { useWindowSize, useIsClient, FollowButton, ShortArrow } from 'ethereum-i
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { cn } from '@/utils/tailwind'
-import { WETH_ADDRESS } from '@/constants/web3/tokens'
+import { ETH_ADDRESS } from '@/constants/web3/tokens'
 import { useClickAway } from '@/hooks/useClickAway'
 import { useCategories } from '@/components/filters/hooks/useCategories'
+import { localizeNumber } from '@/utils/localizeNumber'
 
 interface LeaderboardRowProps {
   user: LeaderboardUser
   rank: number
   className?: string
+  sortBy: LeaderboardSortBy
 }
 
 const MAX_VISIBLE_CATEGORIES = 10
 
-const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }) => {
+const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, sortBy }) => {
   const isClient = useIsClient()
   const { width } = useWindowSize()
   const { categories } = useCategories()
@@ -99,9 +101,9 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
       <div className='hidden w-[10%] items-center lg:flex'>
         <Price
           price={user.sales_volume}
-          currencyAddress={WETH_ADDRESS as `0x${string}`}
-          iconSize='14px'
-          fontSize='text-base'
+          currencyAddress={ETH_ADDRESS}
+          iconSize='20px'
+          fontSize='text-base font-medium'
         />
       </div>
 
@@ -148,6 +150,25 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
     </Link>
   )
 
+  const mobileMainStat = useMemo(() => {
+    switch (sortBy) {
+      case 'names_owned':
+        return user.names_owned
+      case 'names_in_clubs':
+        return user.names_in_clubs
+      case 'expired_names':
+        return user.expired_names
+      case 'names_listed':
+        return user.names_listed
+      case 'names_sold':
+        return user.names_sold
+      case 'sales_volume':
+        return user.sales_volume
+      default:
+        return user.names_owned
+    }
+  }, [sortBy, user])
+
   // Mobile row (< md)
   const mobileRow = (
     <div ref={clickawayMobileRef} className={cn('relative w-full md:hidden', className)}>
@@ -163,7 +184,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
         <div className='text-neutral w-[5%] min-w-[30px] text-center text-lg font-medium'>{rank}</div>
 
         {/* User */}
-        <div className='flex w-[45%] flex-row items-center gap-2'>
+        <div className='flex w-[42.5%] flex-row items-center gap-2'>
           <User
             address={user.address}
             alignTooltip='left'
@@ -177,8 +198,17 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
         </div>
 
         {/* Names count */}
-        <div className='flex w-[15%] items-center justify-center'>
-          <span className='text-lg font-semibold'>{user.names_owned.toLocaleString()}</span>
+        <div className='flex w-[17.5%] items-center justify-start'>
+          {sortBy === 'sales_volume' ? (
+            <Price
+              price={mobileMainStat}
+              currencyAddress={ETH_ADDRESS}
+              iconSize='18px'
+              fontSize='text-lg font-medium'
+            />
+          ) : (
+            <span className='text-lg font-semibold'>{localizeNumber(mobileMainStat as number)}</span>
+          )}
         </div>
 
         {/* Category avatars */}
@@ -231,15 +261,15 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
               </div>
               <div className='border-tertiary border-l-2 pl-1.5'>
                 <p className='text-lg font-semibold'>{user.names_in_clubs.toLocaleString()}</p>
-                <p className='text-neutral text-md'>Cat Names</p>
+                <p className='text-neutral text-md'>In Categories</p>
               </div>
               <div className='border-tertiary border-l-2 pl-1.5'>
                 <p className='text-lg font-semibold'>{user.names_listed.toLocaleString()}</p>
-                <p className='text-neutral text-md'>Listed</p>
+                <p className='text-neutral text-md'>Listings</p>
               </div>
               <div className='border-tertiary border-l-2 pl-1.5'>
                 <p className='text-lg font-semibold'>{user.names_sold.toLocaleString()}</p>
-                <p className='text-neutral text-md'>Sold</p>
+                <p className='text-neutral text-md'>Sales</p>
               </div>
               <div className='border-tertiary border-l-2 pl-1.5'>
                 <p className='text-lg font-semibold'>{user.expired_names.toLocaleString()}</p>
@@ -247,14 +277,9 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className }
               </div>
               <div className='border-tertiary border-l-2 pl-1.5'>
                 <div className='text-lg font-semibold'>
-                  <Price
-                    price={user.sales_volume}
-                    currencyAddress={WETH_ADDRESS as `0x${string}`}
-                    iconSize='18px'
-                    fontSize='text-lg'
-                  />
+                  <Price price={user.sales_volume} currencyAddress={ETH_ADDRESS} iconSize='18px' fontSize='text-lg' />
                 </div>
-                <p className='text-neutral text-md'>Sales Vol</p>
+                <p className='text-neutral text-md'>Sales Volume</p>
               </div>
             </div>
 

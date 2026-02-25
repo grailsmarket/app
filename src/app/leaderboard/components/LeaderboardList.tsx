@@ -204,7 +204,7 @@ const LeaderboardList: React.FC = () => {
           className='flex w-[12.5%] cursor-pointer items-center gap-1 select-none hover:opacity-80 lg:w-[8%]'
         >
           <p className={cn('text-md font-medium', isSortedBy('category_names') ? 'text-primary' : 'text-neutral')}>
-            Cat Names
+            In Categories
           </p>
           {isSortedBy('category_names') && (
             <ShortArrow
@@ -222,7 +222,7 @@ const LeaderboardList: React.FC = () => {
           className='flex w-[12.5%] cursor-pointer items-center gap-1 select-none hover:opacity-80 lg:w-[8%]'
         >
           <p className={cn('text-md font-medium', isSortedBy('names_listed') ? 'text-primary' : 'text-neutral')}>
-            Listed
+            Listings
           </p>
           {isSortedBy('names_listed') && (
             <ShortArrow
@@ -239,7 +239,7 @@ const LeaderboardList: React.FC = () => {
           onClick={() => handleHeaderClick('names_sold')}
           className='hidden w-[8%] cursor-pointer items-center gap-1 select-none hover:opacity-80 lg:flex'
         >
-          <p className={cn('text-md font-medium', isSortedBy('names_sold') ? 'text-primary' : 'text-neutral')}>Sold</p>
+          <p className={cn('text-md font-medium', isSortedBy('names_sold') ? 'text-primary' : 'text-neutral')}>Sales</p>
           {isSortedBy('names_sold') && (
             <ShortArrow
               className={cn(
@@ -308,7 +308,7 @@ const LeaderboardList: React.FC = () => {
                   </React.Fragment>
                 )
               }
-              return <LeaderboardRow key={item.address} user={item} rank={index + 1} />
+              return <LeaderboardRow key={item.address} user={item} rank={index + 1} sortBy={sortBy} />
             }}
           />
         ) : (

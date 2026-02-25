@@ -20,11 +20,11 @@ import {
 import { useAppDispatch } from '@/state/hooks'
 
 const SORT_OPTIONS: { value: LeaderboardSortBy; label: string }[] = [
-  { value: 'names_owned', label: 'Names Owned' },
-  { value: 'names_in_clubs', label: 'Category Names' },
-  { value: 'expired_names', label: 'Expired Names' },
-  { value: 'names_listed', label: 'Listed Names' },
-  { value: 'names_sold', label: 'Sold Names' },
+  { value: 'names_owned', label: 'Names' },
+  { value: 'names_in_clubs', label: 'In Categories' },
+  { value: 'expired_names', label: 'Expired' },
+  { value: 'names_listed', label: 'Listings' },
+  { value: 'names_sold', label: 'Sales' },
   { value: 'sales_volume', label: 'Sales Volume' },
 ]
 

@@ -17,7 +17,7 @@ import OneKSurnamesHeader from 'public/clubs/1ksurnames/header.jpg'
 import NineNinetyNineAvatar from 'public/clubs/999/avatar.jpg'
 import NineNinetyNineHeader from 'public/clubs/999/header.jpeg'
 import TwitterIcon from 'public/logos/x.svg'
-import GithubIcon from 'public/logos/github.svg'
+// import GithubIcon from 'public/logos/github.svg'
 import { localizeNumber } from '@/utils/localizeNumber'
 import SingleEthmojiAvatar from 'public/clubs/single_ethmoji/avatar.jpg'
 import SingleEthmojiHeader from 'public/clubs/single_ethmoji/header.jpeg'
@@ -525,7 +525,7 @@ interface Props {
 const CategoryDetails = ({ categoryDetails }: Props) => {
   const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(categoryDetails.name)
   const twitterLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.twitter || null
-  const githubLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.github || null
+  // const githubLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.github || null
 
   return (
     <div className='relative w-full items-center justify-center md:px-4'>
@@ -567,7 +567,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                     />
                   </Link>
                 )}
-                {githubLink && (
+                {/* {githubLink && (
                   <Link href={githubLink} target='_blank' rel='noopener noreferrer'>
                     <Image
                       src={GithubIcon}
@@ -577,7 +577,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                       className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'
                     />
                   </Link>
-                )}
+                )} */}
               </div>
               <p className='text-neutral text-xl font-medium md:text-2xl'>{categoryDetails.description}</p>
             </div>

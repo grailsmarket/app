@@ -204,6 +204,10 @@ export const ALL_SORT_FILTERS = [
   'creation_date_desc',
   'ranking_asc',
   'ranking_desc',
+  'listing_date_asc',
+  'listing_date_desc',
+  'listing_expiry_asc',
+  'listing_expiry_desc',
 ] as const
 
 // Sort types for the dropdown (without direction)
@@ -221,7 +225,10 @@ export const SORT_TYPES = [
   'ranking',
 ] as const
 
+export const SORT_LISTING_FILTERS = ['listing_date', 'listing_expiry'] as const
+
 export type SortType = (typeof SORT_TYPES)[number]
+export type SortListingFilter = (typeof SORT_LISTING_FILTERS)[number]
 
 export const SORT_TYPE_LABELS: Record<SortType, string> = {
   expiry_date: 'Expiration',
@@ -235,6 +242,11 @@ export const SORT_TYPE_LABELS: Record<SortType, string> = {
   clubs_count: 'Categories Count',
   creation_date: 'Creation Date',
   ranking: 'Categories Ranking',
+}
+
+export const SORT_LISTING_FILTER_LABELS = {
+  listing_date: 'Listing Date',
+  listing_expiry: 'Listing Expiry',
 }
 
 export const SORT_FILTER_LABELS = {
@@ -258,4 +270,8 @@ export const SORT_FILTER_LABELS = {
   clubs_count_desc: 'Categories Count (High to Low)',
   creation_date_asc: 'Creation Date (Old to New)',
   creation_date_desc: 'Creation Date (New to Old)',
+  listing_date_asc: 'Listing Date (Old to New)',
+  listing_date_desc: 'Listing Date (New to Old)',
+  listing_expiry_asc: 'Listing Expiry (Soonest First)',
+  listing_expiry_desc: 'Listing Expiry (Latest First)',
 }

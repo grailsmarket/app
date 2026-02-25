@@ -6,7 +6,14 @@ import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { ShortArrow } from 'ethereum-identity-kit'
-import { SORT_TYPES, SORT_TYPE_LABELS, SortType } from '@/constants/filters/marketplaceFilters'
+import {
+  SORT_LISTING_FILTERS,
+  SORT_LISTING_FILTER_LABELS,
+  SORT_TYPES,
+  SORT_TYPE_LABELS,
+  SortListingFilter,
+  SortType,
+} from '@/constants/filters/marketplaceFilters'
 import { SortFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import ArrowUpIcon from 'public/icons/ascending.svg'
 import ArrowDownIcon from 'public/icons/descending.svg'
@@ -22,7 +29,44 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   const dispatch = useAppDispatch()
-  const { selectors, actions, context } = useFilterRouter()
+  const { selectors, actions, context, marketplaceTab, categoryTab, categoriesPageTab, profileTab } = useFilterRouter()
+
+  const activeTab = useMemo(() => {
+    switch (context) {
+      case 'marketplace':
+        return marketplaceTab?.value
+      case 'category':
+        return categoryTab?.value
+      case 'categoriesPage':
+        return categoriesPageTab?.value
+      case 'profile':
+        return profileTab?.value
+      default:
+        return 'names'
+    }
+  }, [context, marketplaceTab, categoryTab, categoriesPageTab, profileTab])
+
+  const sortLabels = useMemo(() => {
+    const isExpiredNamesTab =
+      activeTab === 'expired' || activeTab === 'grace' || activeTab === 'premium' || activeTab === 'available'
+
+    if (isExpiredNamesTab) {
+      return SORT_TYPE_LABELS
+    } else {
+      return { ...SORT_TYPE_LABELS, ...SORT_LISTING_FILTER_LABELS }
+    }
+  }, [activeTab])
+
+  const sortTypes = useMemo(() => {
+    const isExpiredNamesTab =
+      activeTab === 'expired' || activeTab === 'grace' || activeTab === 'premium' || activeTab === 'available'
+
+    if (isExpiredNamesTab) {
+      return SORT_TYPES
+    } else {
+      return [...SORT_TYPES, ...SORT_LISTING_FILTERS]
+    }
+  }, [activeTab])
 
   const dropdownRef = useClickAway(() => {
     setIsOpen(false)
@@ -44,7 +88,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
     return { sortType: type, sortDirection: direction }
   }, [selectors.filters.sort])
 
-  const handleTypeSelect = (type: SortType | null) => {
+  const handleTypeSelect = (type: SortType | SortListingFilter | null) => {
     if (type === null) {
       dispatch(actions.setSort(null))
     } else {
@@ -75,7 +119,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
     }
   }, [sortType, hasOnlyOneCategory, dispatch, actions])
 
-  const displayLabel = sortType ? SORT_TYPE_LABELS[sortType] : '---'
+  const displayLabel = sortType ? sortLabels[sortType] : '---'
 
   return (
     <div className={cn('flex w-full items-center gap-1', className)}>
@@ -105,7 +149,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
               None
             </button>
 
-            {SORT_TYPES.map((type) => (
+            {sortTypes.map((type) => (
               <button
                 key={type}
                 onClick={() => handleTypeSelect(type)}
@@ -115,7 +159,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
                   type === 'ranking' && !hasOnlyOneCategory && 'pointer-events-none opacity-50'
                 )}
               >
-                {SORT_TYPE_LABELS[type]}
+                {sortLabels[type as keyof typeof sortLabels]}
               </button>
             ))}
           </div>

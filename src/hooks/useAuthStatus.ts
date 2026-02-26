@@ -49,6 +49,8 @@ export const useAuth = () => {
           .split(';')
           .find((cookie) => cookie.trim().startsWith('token='))
           ?.split('=')[1]
+
+          console.log('token', token)
         if (token && token.length > 0) {
           console.log('token found')
           setIsSigningIn(true)

@@ -108,6 +108,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
 
   const handleSignInSuccess = async () => {
     signInRetryCount.current = 0
+    console.log('sign in success')
     await refetchAuthStatus()
     setIsSigningIn(false)
   }

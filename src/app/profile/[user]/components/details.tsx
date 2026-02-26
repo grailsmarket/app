@@ -19,7 +19,7 @@ import EthereumLogo from 'public/icons/eth-gray.svg'
 import GrailsIcon from 'public/logo.png'
 
 interface Props {
-  user: Address | string
+  user?: Address | string | null
 }
 
 const Details: React.FC<Props> = ({ user }) => {

@@ -29,7 +29,7 @@ export const useFilteredCategories = () => {
     const searchTerm = filters.search.toLowerCase().trim()
     if (!searchTerm) return categories
 
-    return categories.filter((category: CategoryType) => category.name.toLowerCase().includes(searchTerm))
+    return categories.filter((category: CategoryType) => category.display_name.toLowerCase().includes(searchTerm) || category.name.toLowerCase().includes(searchTerm))
   }, [categories, filters.search])
 
   return {

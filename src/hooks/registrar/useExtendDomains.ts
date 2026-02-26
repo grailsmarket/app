@@ -2,6 +2,7 @@ import { useWalletClient } from 'wagmi'
 import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
 import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
 import { mainnet } from 'viem/chains'
+import { ensureChain } from '@/utils/web3/ensureChain'
 
 const useExtendDomains = () => {
   const { data: walletClient } = useWalletClient()
@@ -14,7 +15,7 @@ const useExtendDomains = () => {
 
     try {
       // Ensure we're on mainnet before executing the transaction
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       const tx = await walletClient?.writeContract({
         address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,

@@ -6,6 +6,7 @@ import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import { Address } from 'viem'
 import { DomainListingType } from '@/types/domains'
+import { ensureChain } from '@/utils/web3/ensureChain'
 
 export function useSeaportOrder() {
   const { address } = useAccount()
@@ -46,7 +47,7 @@ export function useSeaportOrder() {
       const usesETH = orderBuilder.usesNativeToken(order)
 
       // Ensure we're on mainnet before executing the transaction
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       // Execute the transaction using the efficient function
       const tx = await walletClient.writeContract({

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { logout } from '@/api/siwe/logout'
 import { DAY_IN_SECONDS } from '@/constants/time'
@@ -15,6 +15,7 @@ import {
   setUserTelegram,
 } from '@/state/reducers/portfolio/profile'
 import { Address } from 'viem'
+import { AuthUserType } from '@/types/api'
 
 export const useAuth = () => {
   const [isSigningIn, setIsSigningIn] = useState(false)
@@ -22,6 +23,7 @@ export const useAuth = () => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { disconnect } = useDisconnect()
+  const queryClient = useQueryClient()
 
   // Tracks whether the user has interacted with the page.
   // Auto-connect happens on load without interaction; manual connect requires
@@ -36,6 +38,13 @@ export const useAuth = () => {
     return () => window.removeEventListener('pointerdown', handler)
   }, [])
 
+  const setUserDetails = (user: AuthUserType) => {
+    dispatch(setUserId(user.id))
+    dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
+    dispatch(setUserDiscord(user.discord))
+    dispatch(setUserTelegram(user.telegram))
+  }
+
   const {
     data: authStatus,
     isLoading: authStatusIsLoading,
@@ -49,18 +58,17 @@ export const useAuth = () => {
           .split(';')
           .find((cookie) => cookie.trim().startsWith('token='))
           ?.split('=')[1]
-        if (token && token.length > 0) {
-          console.log('token found')
-          setIsSigningIn(true)
-        }
+
+        // escape early if no token is found
+        if (!token || token.length === 0) return 'unauthenticated'
+
+        console.log('token found')
+        setIsSigningIn(true)
 
         const authenticateRes = await checkAuthentication()
 
         if (authenticateRes.success) {
-          dispatch(setUserId(authenticateRes.data.id))
-          dispatch(setUserEmail({ address: authenticateRes.data.email, verified: authenticateRes.data.emailVerified }))
-          dispatch(setUserDiscord(authenticateRes.data.discord))
-          dispatch(setUserTelegram(authenticateRes.data.telegram))
+          setUserDetails(authenticateRes.data)
           return 'authenticated'
         }
 
@@ -99,7 +107,7 @@ export const useAuth = () => {
   useEffect(() => {
     if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
       disconnect()
-      document.cookie = `token=; path=/; max-age=0;`
+      document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus])
@@ -110,7 +118,7 @@ export const useAuth = () => {
     if (currAddress && address.toLowerCase() !== currAddress.toLowerCase()) {
       logout()
       dispatch(resetUserProfile())
-      document.cookie = `token=; path=/; max-age=0;`
+      document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
 
     setCurrAddress(address)
@@ -120,24 +128,30 @@ export const useAuth = () => {
 
   const verify = async (message: string, _: string, signature: string) => {
     const verifyRes = await verifySignature(message, signature)
-    const token = verifyRes.token
+    const { user, token } = verifyRes
 
     if (!token) {
       dispatch(resetUserProfile())
       return
     }
 
-    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS};`
+    setUserDetails(user)
+    queryClient.setQueryData(['auth', 'status', address], 'authenticated')
+    console.log('setting token', token)
+    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS}; SameSite=None; Secure`
+
     return
   }
 
   const signOut = async () => {
     disconnect()
     await logout()
+
+    document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
+    refetchAuthStatus()
+
     setCurrAddress(null)
     dispatch(resetUserProfile())
-    document.cookie = `token=; path=/; max-age=0;`
-    await refetchAuthStatus()
   }
 
   return {

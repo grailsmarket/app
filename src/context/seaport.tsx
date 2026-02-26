@@ -1,10 +1,8 @@
 'use client'
 
-import { useChain } from '@/hooks/useChain'
 import { useSeaportClient } from '@/hooks/useSeaportClient'
 import { OrderStatus, OrderWithCounter } from '@opensea/seaport-js/lib/types'
-import React, { createContext, useContext, ReactNode, useMemo } from 'react'
-import { mainnet } from 'viem/chains'
+import React, { createContext, useContext, ReactNode } from 'react'
 import { ContractTransaction } from 'ethers'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
@@ -43,18 +41,6 @@ type SeaportContextValue = {
   }) => Promise<any>
   fulfillOrder: (order: OrderWithCounter) => Promise<ContractTransaction>
   isLoading: boolean
-  currentChainId: number
-  checkChain: ({
-    chainId,
-    onSuccess,
-    onError,
-  }: {
-    chainId?: number
-    onSuccess?: () => void
-    onError?: () => void
-  }) => Promise<boolean>
-  isCorrectChain: boolean
-  getCurrentChain: () => Promise<void>
 }
 
 const SeaportContext = createContext<SeaportContextValue | undefined>(undefined)
@@ -72,11 +58,6 @@ export const SeaportProvider: React.FC<{ children: ReactNode }> = ({ children })
     fulfillOrder,
     isLoading,
   } = useSeaportClient()
-  const { currentChainId, checkChain, getCurrentChain } = useChain()
-
-  const isCorrectChain = useMemo(() => {
-    return currentChainId === mainnet.id
-  }, [currentChainId])
 
   return (
     <SeaportContext.Provider
@@ -91,10 +72,6 @@ export const SeaportProvider: React.FC<{ children: ReactNode }> = ({ children })
         createOffer,
         fulfillOrder,
         isLoading,
-        currentChainId,
-        checkChain,
-        isCorrectChain,
-        getCurrentChain,
       }}
     >
       {children}
@@ -122,11 +99,6 @@ export const useSeaportContext = (): SeaportContextValue => {
       fulfillOrder: async () => {},
       error: null,
       isLoading: false,
-      currentChainId: 0,
-      // @ts-expect-error - checkChain is not implemented
-      checkChain: async () => {},
-      isCorrectChain: false,
-      getCurrentChain: async () => {},
     }
   }
   return context

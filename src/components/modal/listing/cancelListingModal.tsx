@@ -13,6 +13,7 @@ import { SOURCE_ICONS } from '@/constants/domains/sources'
 import Image from 'next/image'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useAppDispatch } from '@/state/hooks'
+import { cn } from '@/utils/tailwind'
 
 interface CancelListingModalProps {
   onClose: () => void
@@ -95,7 +96,7 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
                 </div>
               )}
               {listings.map((listing, index) => (
-                <div key={listing.id} className='flex flex-col gap-2 border-t border-white/30 py-2'>
+                <div key={listing.id} className={cn('flex flex-col gap-2 py-2', index > 0 && 'border-t border-white/30')}>
                   <div className='flex justify-between'>
                     <p className='font-sedan-sc text-label text-xl'>Name</p>
                     <p className='max-w-2/3 truncate text-xl font-bold'>{beautifyName(listing.name)}</p>

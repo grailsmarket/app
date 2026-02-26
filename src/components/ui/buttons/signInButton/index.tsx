@@ -39,7 +39,7 @@ const SignInButton = () => {
       ref={dropdownWalletRef}
       className={cn(
         'group relative',
-        userAddress && authStatus === 'authenticated' ? 'text-foreground' : 'text-background'
+        !!userAddress && authStatus === 'authenticated' ? 'text-foreground' : 'text-background'
       )}
     >
       <SignInButtonComponent
@@ -61,10 +61,15 @@ const SignInButton = () => {
       />
       <div
         className={cn(
-          'bg-secondary p-lg border-tertiary text-foreground absolute right-0 mt-1 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border text-lg font-semibold shadow-sm sm:w-full sm:items-start md:text-xl',
+          'bg-secondary p-lg border-tertiary text-foreground absolute right-0 mt-1 hidden w-40 cursor-pointer flex-col items-end gap-4 rounded-sm border text-lg font-semibold shadow-sm sm:w-full sm:min-w-44 sm:items-start md:text-xl',
           isDropdownOpen && 'flex'
         )}
       >
+        <Link href={`/profile/${userAddress}`} target='_blank'>
+          <button className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'>
+            <p>My Profile</p>
+          </button>
+        </Link>
         <button
           onClick={() => setIsSettingsOpen(true)}
           className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'

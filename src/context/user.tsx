@@ -64,8 +64,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
 
   const { address } = useAccount()
   const dispatch = useAppDispatch()
-  const { authStatus, verify, refetchAuthStatus, signOut, disconnect, authStatusIsLoading, authStatusIsRefetching } =
-    useAuth()
+  const { authStatus, verify, signOut, disconnect, authStatusIsLoading, authStatusIsRefetching } = useAuth()
   const { profileIsLoading, refetchProfile, watchlist, watchlistIsLoading, refetchWatchlist } = useUserProfile({
     address,
     authStatus,
@@ -94,12 +93,11 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
       return result
     },
     enabled: !!address && authStatus === 'authenticated',
-    initialData: { has_claimed: false },
   })
 
-  const isPoapClaimed = poapClaimData?.has_claimed
-  const claimedPoapLink = poapClaimData?.link
-  const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0]
+  const isPoapClaimed = poapClaimData?.has_claimed || false
+  const claimedPoapLink = poapClaimData?.link || undefined
+  const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0] || undefined
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')
@@ -107,8 +105,8 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   }, [address])
 
   const handleSignInSuccess = async () => {
+    console.log('sign in success')
     signInRetryCount.current = 0
-    await refetchAuthStatus()
     setIsSigningIn(false)
   }
 
@@ -120,6 +118,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
     // Retry after a short delay instead of disconnecting.
     const isConnectorError =
       error.name === 'ConnectorNotConnectedError' || error.message?.includes('Connector not connected')
+
     if (isConnectorError && signInRetryCount.current < 3) {
       signInRetryCount.current += 1
       setTimeout(() => {

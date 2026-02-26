@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { MarketplaceDomainType } from '@/types/domains'
 import DatePicker from '@/components/ui/datepicker'
 import Dropdown, { DropdownOption } from '@/components/ui/dropdown'
@@ -36,7 +36,7 @@ interface CreateOfferModalProps {
 
 const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) => {
   const { modifyCart } = useModifyCart()
-  const { createOffer, isLoading, isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
+  const { createOffer, isLoading } = useSeaportContext()
   const { address } = useAccount()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
@@ -96,11 +96,6 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
     const balance = Number(selectedBalance.value) / Math.pow(10, decimals)
     return balance.toFixed(6)
   }, [currency, wethBalance, usdcBalance])
-
-  useEffect(() => {
-    getCurrentChain()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   if (!domain) return null
 
@@ -331,20 +326,14 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                 <div className='flex flex-col gap-2'>
                   <PrimaryButton
                     disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
-                    onClick={
-                      isCorrectChain
-                        ? handleSubmit
-                        : (e) => checkChain({ chainId: mainnet.id, onSuccess: () => handleSubmit(e) })
-                    }
+                    onClick={handleSubmit}
                     className='h-10 w-full'
                   >
-                    {isCorrectChain
-                      ? !hasSufficientBalance
-                        ? `Insufficient ${currency} Balance`
-                        : isLoading
-                          ? 'Submitting Offer...'
-                          : 'Make Offer'
-                      : 'Switch Chain'}
+                    {!hasSufficientBalance
+                      ? `Insufficient ${currency} Balance`
+                      : isLoading
+                        ? 'Submitting Offer...'
+                        : 'Make Offer'}
                   </PrimaryButton>
                   <SecondaryButton onClick={onClose} className='h-10 w-full'>
                     Close

@@ -8,6 +8,8 @@ type VerifyResponse = {
     emailVerified: boolean
     createdAt: string
     lastSignIn: string
+    discord: string | null
+    telegram: string | null
   }
 }
 
@@ -24,6 +26,7 @@ export const verifySignature = async (message: string, signature: string) => {
     return {
       success: false,
       token: null,
+      user: null,
       error: 'Failed to verify signature',
     }
 

@@ -64,8 +64,7 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
 
   const { address } = useAccount()
   const dispatch = useAppDispatch()
-  const { authStatus, verify, signOut, disconnect, authStatusIsLoading, authStatusIsRefetching } =
-    useAuth()
+  const { authStatus, verify, signOut, disconnect, authStatusIsLoading, authStatusIsRefetching } = useAuth()
   const { profileIsLoading, refetchProfile, watchlist, watchlistIsLoading, refetchWatchlist } = useUserProfile({
     address,
     authStatus,
@@ -107,14 +106,14 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
   }, [address])
 
   const handleSignInSuccess = async () => {
-    setIsSigningIn(false)
     console.log('sign in success')
     signInRetryCount.current = 0
+    setIsSigningIn(false)
   }
 
   const handleSignInError = (error: Error) => {
-    setIsSigningIn(false)
     console.error('Sign in error:', error)
+    setIsSigningIn(false)
 
     // Race condition: autoSignInAfterConnection fires before the connector is fully ready.
     // Retry after a short delay instead of disconnecting.

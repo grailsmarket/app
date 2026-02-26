@@ -59,11 +59,11 @@ export const useAuth = () => {
           .find((cookie) => cookie.trim().startsWith('token='))
           ?.split('=')[1]
 
-          console.log('token', token)
-        if (token && token.length > 0) {
-          console.log('token found')
-          setIsSigningIn(true)
-        }
+        // escape early if no token is found
+        if (!token || token.length === 0) return 'unauthenticated'
+
+        console.log('token found')
+        setIsSigningIn(true)
 
         const authenticateRes = await checkAuthentication()
 
@@ -145,9 +145,11 @@ export const useAuth = () => {
 
   const signOut = async () => {
     disconnect()
-    logout()
+    await logout()
+
     document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     refetchAuthStatus()
+
     setCurrAddress(null)
     dispatch(resetUserProfile())
   }

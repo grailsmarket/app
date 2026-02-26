@@ -93,12 +93,11 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
       return result
     },
     enabled: !!address && authStatus === 'authenticated',
-    initialData: { has_claimed: false },
   })
 
-  const isPoapClaimed = poapClaimData?.has_claimed
-  const claimedPoapLink = poapClaimData?.link
-  const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0]
+  const isPoapClaimed = poapClaimData?.has_claimed || false
+  const claimedPoapLink = poapClaimData?.link || undefined
+  const poapClaimedYear = poapClaimData?.claimed_at?.split('-')[0] || undefined
 
   const handleGetNonce = useCallback(async () => {
     if (!address) throw new Error('No address found')

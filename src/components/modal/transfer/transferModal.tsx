@@ -19,6 +19,7 @@ import { formatAddress } from '@/utils/formatAddress'
 import { isAddress, Address, labelhash, namehash } from 'viem'
 import Input from '@/components/ui/input'
 import { mainnet } from 'viem/chains'
+import { ensureChain } from '@/utils/web3/ensureChain'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
@@ -141,7 +142,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
     setApprovingContract(contractName)
 
     try {
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       const hash = await walletClient.writeContract({
         address: contractAddress,
@@ -206,7 +207,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         },
       ]
 
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       // Simulate first to get detailed error
       try {

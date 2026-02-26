@@ -23,6 +23,7 @@ import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
+import { ensureChain } from '@/utils/web3/ensureChain'
 import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
 import ClaimPoap from '../poap/claimPoap'
 import { useAppSelector } from '@/state/hooks'
@@ -831,7 +832,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       console.log('Args:', [conduitAddress, true])
 
       // Ensure we're on mainnet before approving
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({
@@ -931,7 +932,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setStep('processing')
 
       // Ensure we're on mainnet before executing the transaction
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       // Execute the transaction
       const tx = await walletClient.writeContract({

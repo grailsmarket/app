@@ -21,6 +21,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
 import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
+import { ensureChain } from '@/utils/web3/ensureChain'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
@@ -90,7 +91,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const { data: gasPrice } = useGasPrice()
   const { data: walletClient } = useWalletClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
-  const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
   // const { width: windowWidth } = useWindowSize()
@@ -158,7 +158,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     // Estimate gas and check approval when modal opens
     estimateGas()
     checkApproval()
-    getCurrentChain()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -305,7 +304,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       })
 
       // Ensure we're on mainnet before approving
-      await walletClient.switchChain({ id: mainnet.id })
+      await ensureChain(walletClient, mainnet.id)
 
       // Approve the conduit (or Seaport) to spend USDC
       const approveTx = await walletClient.writeContract({
@@ -410,7 +409,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         setStep('processing')
 
         // Ensure we're on mainnet before executing the transaction
-        await walletClient.switchChain({ id: mainnet.id })
+        await ensureChain(walletClient, mainnet.id)
 
         // Execute with fulfillAdvancedOrder
         tx = await walletClient.writeContract({
@@ -452,7 +451,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         setStep('processing')
 
         // Ensure we're on mainnet before executing the transaction
-        await walletClient.switchChain({ id: mainnet.id })
+        await ensureChain(walletClient, mainnet.id)
 
         tx = await walletClient.writeContract({
           address: SEAPORT_ADDRESS as `0x${string}`,
@@ -554,23 +553,18 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
             <div className='flex w-full flex-col gap-2'>
               <PrimaryButton
-                onClick={
-                  isCorrectChain
-                    ? needsApproval
-                      ? handleApprove
-                      : handlePurchase
-                    : () => checkChain({ chainId: mainnet.id, onSuccess: () => handlePurchase() })
+                onClick={needsApproval
+                  ? handleApprove
+                  : handlePurchase
                 }
                 className='w-full'
-                disabled={isCorrectChain ? !hasSufficientBalance && !needsApproval : false}
+                disabled={!hasSufficientBalance && !needsApproval}
               >
-                {isCorrectChain
-                  ? !hasSufficientBalance && !needsApproval
-                    ? `Insufficient ${isETHListing ? 'ETH' : 'USDC'} Balance`
-                    : needsApproval
-                      ? 'Approve USDC'
-                      : 'Confirm Purchase'
-                  : 'Switch Chain'}
+                {!hasSufficientBalance && !needsApproval
+                  ? `Insufficient ${isETHListing ? 'ETH' : 'USDC'} Balance`
+                  : needsApproval
+                    ? 'Approve USDC'
+                    : 'Confirm Purchase'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='w-full'>
                 Close

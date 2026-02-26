@@ -26,6 +26,7 @@ import {
   setEditRecordsModalName,
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
+import { useRouter } from 'next/navigation'
 
 interface Props {
   user: Address | string
@@ -35,6 +36,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const [isFollowersAndFollowingOpen, setIsFollowersAndFollowingOpen] = useState(false)
   const [defaultTab, setDefaultTab] = useState<ProfileTabType>('following')
 
+  const router = useRouter()
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
@@ -55,6 +57,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const { data: userProfile } = useQuery({
     queryKey: ['profile', user, undefined, false, undefined],
     queryFn: () => (user ? fetchProfileDetails(user) : null),
+    refetchOnWindowFocus: false,
   })
 
   const isSubname = userProfile?.ens?.name ? userProfile?.ens?.name.split('.').length > 2 : false
@@ -151,10 +154,15 @@ const Profile: React.FC<Props> = ({ user }) => {
                         collection: badge,
                       }))
                     : undefined,
+                  onBioLinkClick: (link: string) => {
+                    const sanitizedLink =
+                      link[link.length - 1] === ',' ? link.slice(0, -1).replace('@', '') : link.replace('@', '')
+                    router.push(`/profile/${sanitizedLink}`)
+                  },
                 }}
                 // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
-              <Details user={user} />
+              <Details user={userProfile?.address} />
             </>
           )}
         </div>

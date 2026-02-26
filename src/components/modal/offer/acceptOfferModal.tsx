@@ -21,7 +21,6 @@ import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
 import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
-import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
@@ -671,7 +670,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
-  const { isCorrectChain, checkChain, getCurrentChain } = useSeaportContext()
 
   // const { width: windowWidth } = useWindowSize()
   // const [isClosing, setIsClosing] = useState(false)
@@ -694,11 +692,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const [gasPrice, setGasPrice] = useState<bigint | null>(null)
   const [needsApproval, setNeedsApproval] = useState(false)
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
-
-  useEffect(() => {
-    getCurrentChain()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const orderBuilder = new SeaportOrderBuilder()
 
@@ -1037,17 +1030,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
             <div className='flex w-full flex-col gap-2'>
               <PrimaryButton
-                onClick={
-                  isCorrectChain
-                    ? needsApproval
-                      ? handleApprove
-                      : handleAcceptOffer
-                    : () => checkChain({ chainId: mainnet.id, onSuccess: () => handleAcceptOffer() })
-                }
+                onClick={needsApproval ? handleApprove : handleAcceptOffer}
                 className='w-full'
                 // disabled={isCorrectChain ? needsApproval : false}
               >
-                {isCorrectChain ? (needsApproval ? 'Approve NFT Transfer' : 'Accept Offer') : 'Switch Chain'}
+                {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} className='w-full'>
                 Close

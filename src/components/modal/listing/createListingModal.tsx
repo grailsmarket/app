@@ -16,7 +16,6 @@ import GrailsIcon from 'public/logo.png'
 import Image from 'next/image'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import { useSeaportContext } from '@/context/seaport'
-import { mainnet } from 'viem/chains'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -63,7 +62,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const { userAddress } = useUserContext()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { isSelecting } = useAppSelector(selectBulkSelect)
-  const { isCorrectChain, checkChain, createListing, isLoading, getCurrentChain, cancelListings } = useSeaportContext()
+  const { createListing, isLoading, cancelListings } = useSeaportContext()
 
   const [cancelOldListings, setCancelOldListings] = useState(true)
   const [prices, setPrices] = useState<(number | '')[]>(Array(domains.length).fill(''))
@@ -99,11 +98,6 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
     },
     enabled: !!debouncedBrokerAddress,
   })
-
-  useEffect(() => {
-    getCurrentChain()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Fetch broker fee config on mount
   useEffect(() => {
@@ -833,20 +827,14 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                   (brokerAddress.length > 0 && !(brokerAccount?.address || isAddress(brokerAddress))) ||
                   (brokerAddress.length > 0 && Number(brokerFeePercent) < minBrokerFeePercent)
                 }
-                onClick={
-                  isCorrectChain
-                    ? handleSubmit
-                    : (e) => checkChain({ chainId: mainnet.id, onSuccess: () => handleSubmit(e) })
-                }
+                onClick={handleSubmit}
                 className='h-10 w-full'
               >
-                {isCorrectChain
-                  ? isLoading
-                    ? 'Submitting Listing...'
-                    : selectedMarketplace.length === 0
-                      ? 'Select a marketplace'
-                      : `List ${domains.length > 1 ? domains.length + ' Names' : domains[0].name} on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}`
-                  : 'Switch Chain'}
+                {isLoading
+                  ? 'Submitting Listing...'
+                  : selectedMarketplace.length === 0
+                    ? 'Select a marketplace'
+                    : `List ${domains.length > 1 ? domains.length + ' Names' : domains[0].name} on ${selectedMarketplace.length > 1 ? 'Grails and OpenSea' : selectedMarketplace[0] === 'grails' ? 'Grails' : 'OpenSea'}`}
               </PrimaryButton>
               <SecondaryButton onClick={handleClose} className='h-10 w-full'>
                 Close

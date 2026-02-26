@@ -19,7 +19,6 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
-import { useSeaportContext } from '@/context/seaport'
 import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { useAppSelector } from '@/state/hooks'
@@ -553,10 +552,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
             <div className='flex w-full flex-col gap-2'>
               <PrimaryButton
-                onClick={needsApproval
-                  ? handleApprove
-                  : handlePurchase
-                }
+                onClick={needsApproval ? handleApprove : handlePurchase}
                 className='w-full'
                 disabled={!hasSufficientBalance && !needsApproval}
               >

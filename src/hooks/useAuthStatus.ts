@@ -107,7 +107,7 @@ export const useAuth = () => {
   useEffect(() => {
     if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
       disconnect()
-      document.cookie = `token=; path=/; max-age=0;`
+      document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus])
@@ -118,7 +118,7 @@ export const useAuth = () => {
     if (currAddress && address.toLowerCase() !== currAddress.toLowerCase()) {
       logout()
       dispatch(resetUserProfile())
-      document.cookie = `token=; path=/; max-age=0;`
+      document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
 
     setCurrAddress(address)
@@ -138,7 +138,7 @@ export const useAuth = () => {
     setUserDetails(user)
     queryClient.setQueryData(['auth', 'status', address], 'authenticated')
     console.log('setting token', token)
-    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS};`
+    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS}; SameSite=None; Secure`
 
     return
   }
@@ -146,7 +146,7 @@ export const useAuth = () => {
   const signOut = async () => {
     disconnect()
     logout()
-    document.cookie = `token=; path=/; max-age=0;`
+    document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     refetchAuthStatus()
     setCurrAddress(null)
     dispatch(resetUserProfile())

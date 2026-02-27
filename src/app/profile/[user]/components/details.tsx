@@ -157,7 +157,7 @@ const Details: React.FC<Props> = ({ user }) => {
               <p className='text-lg font-medium'>{details?.lastRenewedAt ? formatTimeAgo(details?.lastRenewedAt) : '-'}</p>
             )}
             <div className='flex items-center gap-1'>
-              <Image src={GrailsIcon} alt='Arrow right' width={12} height={12} />
+              <Image src={EthereumLogo} alt='Arrow right' width={12} height={12} />
               <p className='text-neutral text-md font-medium'>Last renewed</p>
             </div>
           </div>

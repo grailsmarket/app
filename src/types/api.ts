@@ -120,6 +120,9 @@ export type DetailsResponseType = {
   primaryName: string | null
   lastSeenAt: string
   lastSeenOnchain: string
+  lastRenewedAt: string
+  lastTransferInAt: string
+  lastTransferOutAt: string
   ensRecords: {
     address: Address
     records: Record<string, string>

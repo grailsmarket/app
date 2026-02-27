@@ -424,7 +424,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             ) : isLoading ? (
               <div className='flex w-full flex-col gap-4'>
                 <h2 className='mt-4 text-center text-xl font-bold'>
-                  Processing Transaction{totalBatches > 1 ? ` ${currentBatch} of ${totalBatches}` : ''}
+                  Processing Transaction{totalBatches > 1 ? ` ${currentBatch + 1} of ${totalBatches}` : ''}
                 </h2>
                 <div className='flex flex-col items-center justify-center gap-4 pt-4 pb-4 text-center'>
                   <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
@@ -491,11 +491,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                      extensionMode === 'extend_for'
-                                        ? new Date(domain.expiry_date).getTime() +
-                                          quantity * getSecondsPerUnit(timeUnit) * 1000
-                                        : customDate * 1000
-                                    ).toLocaleDateString()
+                                    extensionMode === 'extend_for'
+                                      ? new Date(domain.expiry_date).getTime() +
+                                      quantity * getSecondsPerUnit(timeUnit) * 1000
+                                      : customDate * 1000
+                                  ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -533,9 +533,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       >
                         {customDate
                           ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : 'Select Date'}
                       </PrimaryButton>
                     ) : (

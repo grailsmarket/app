@@ -53,7 +53,7 @@ const Details: React.FC<Props> = ({ user }) => {
     <div className='border-tertiary bg-secondary flex w-full flex-col justify-between gap-2 p-2 sm:gap-4 md:p-4 lg:w-[380px] lg:border-l-2'>
       <div className='flex flex-col gap-3'>
         <h3 className='font-sedan-sc hidden text-3xl lg:block'>Account</h3>
-        <div className='grid grid-cols-4 gap-y-4 lg:grid-cols-2'>
+        <div className='grid grid-cols-4 gap-y-2 lg:grid-cols-2'>
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
             {balancesLoading ? (
               <LoadingCell height='22px' width='64px' />
@@ -125,7 +125,7 @@ const Details: React.FC<Props> = ({ user }) => {
         </div>
       </div>
       <div className='flex flex-col gap-2'>
-        <div className='grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2'>
+        <div className='grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-y-2'>
           <div className='border-neutral flex h-fit flex-col items-start border-l-2 pl-2'>
             {detailsLoading ? (
               <LoadingCell height='18px' width='64px' />
@@ -148,6 +148,30 @@ const Details: React.FC<Props> = ({ user }) => {
             <div className='flex items-center gap-1'>
               <Image src={EthereumLogo} alt='Arrow right' width={10} height={10} />
               <p className='text-neutral text-md font-medium'>Last txn</p>
+            </div>
+          </div>
+          <div className='border-neutral flex h-fit flex-col items-start border-l-2 pl-2'>
+            {detailsLoading ? (
+              <LoadingCell height='18px' width='64px' />
+            ) : (
+              <p className='text-lg font-medium'>{details?.lastRenewedAt ? formatTimeAgo(details?.lastRenewedAt) : '-'}</p>
+            )}
+            <div className='flex items-center gap-1'>
+              <Image src={GrailsIcon} alt='Arrow right' width={12} height={12} />
+              <p className='text-neutral text-md font-medium'>Last renewed</p>
+            </div>
+          </div>
+          <div className='border-neutral flex h-fit flex-col items-start border-l-2 pl-2'>
+            {detailsLoading ? (
+              <LoadingCell height='18px' width='64px' />
+            ) : (
+              <p className='text-lg font-medium'>
+                {details?.lastTransferInAt ? formatTimeAgo(details?.lastTransferInAt) : '-'}
+              </p>
+            )}
+            <div className='flex items-center gap-1'>
+              <Image src={EthereumLogo} alt='Arrow right' width={10} height={10} />
+              <p className='text-neutral text-md font-medium'>Last transfer in</p>
             </div>
           </div>
         </div>

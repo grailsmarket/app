@@ -20,7 +20,7 @@ import { AuthUserType } from '@/types/api'
 export const useAuth = () => {
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [currAddress, setCurrAddress] = useState<Address | null>(null)
-  const { address } = useAccount()
+  const { address, connector } = useAccount()
   const dispatch = useAppDispatch()
   const { disconnect } = useDisconnect()
   const queryClient = useQueryClient()
@@ -28,12 +28,23 @@ export const useAuth = () => {
   // Tracks whether the user has interacted with the page.
   // Auto-connect happens on load without interaction; manual connect requires
   // a click/tap on "Connect Wallet" which fires pointerdown first.
+  // Uses sessionStorage so the flag survives page reloads caused by
+  // mobile wallet redirect flows (like Coinbase Wallet),
+  // but resets on fresh tab opens (clearing stale sessions as intended).
   const hasUserInteracted = useRef(false)
 
   useEffect(() => {
-    const handler = () => {
+    if (typeof window === 'undefined') return
+
+    if(sessionStorage.getItem('hasUserInteracted') === 'true') {
       hasUserInteracted.current = true
     }
+
+    const handler = () => {
+      hasUserInteracted.current = true
+      sessionStorage.setItem('hasUserInteracted', 'true')
+    }
+
     window.addEventListener('pointerdown', handler)
     return () => window.removeEventListener('pointerdown', handler)
   }, [])
@@ -104,8 +115,12 @@ export const useAuth = () => {
   // If the wallet auto connected (no user interaction) but auth fails,
   // disconnect so the user gets a clean state and can reconnect fresh.
   // This fixes mobile where a stale WalletConnect session was preventing users from signing in.
+  // Exception: Coinbase Wallet uses redirect flows on mobile that cause a page reload,
+  // resetting the ref. We use sessionStorage to preserve interaction state for that wallet only.
   useEffect(() => {
-    if (authStatus === 'unauthenticated' && !hasUserInteracted.current) {
+    if (authStatus !== 'unauthenticated' || connector?.id === 'coinbase') return
+
+    if (!hasUserInteracted.current) {
       disconnect()
       document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
@@ -148,6 +163,7 @@ export const useAuth = () => {
     await logout()
 
     document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
+    sessionStorage.removeItem('hasUserInteracted')
     refetchAuthStatus()
 
     setCurrAddress(null)

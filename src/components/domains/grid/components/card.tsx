@@ -33,7 +33,6 @@ import {
 import Link from 'next/link'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
@@ -360,7 +359,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                 {/* <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p> */}
                 <div className='flex items-center gap-1'>
                   <Price
-                    price={convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)}
+                    price={domain.last_sale_price}
                     currencyAddress={domain.last_sale_currency as Address}
                     iconSize='14px'
                     fontSize='text-md font-semibold text-neutral'

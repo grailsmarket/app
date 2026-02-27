@@ -5,8 +5,6 @@ import React from 'react'
 import { Address } from 'viem'
 import Price from '@/components/ui/price'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import useETHPrice from '@/hooks/useETHPrice'
-import { convertWeiPrice } from '@/utils/convertWeiPrice'
 
 interface LastSaleProps {
   domain: MarketplaceDomainType
@@ -16,11 +14,7 @@ interface LastSaleProps {
 
 // Last price of the domain (shows last sale if present, otherwise we fall back on the registration price)
 const LastSale: React.FC<LastSaleProps> = ({ domain, columnCount, index }) => {
-  const { ethPrice } = useETHPrice()
-  const lastSalePrice =
-    domain.last_sale_price && domain.last_sale_currency
-      ? convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)
-      : null
+  const lastSalePrice = domain.last_sale_price && domain.last_sale_currency ? domain.last_sale_price : null
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['last_sale'].getWidth(columnCount))}>

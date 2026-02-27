@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import {
   ENS_REGISTRAR_ADDRESS,
   ENS_NAME_WRAPPER_ADDRESS,
@@ -49,7 +50,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
 
   const { address } = useAccount()
   const publicClient = usePublicClient({ chainId: mainnet.id })
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
   const { isSelecting } = useAppSelector(selectBulkSelect)
 
@@ -136,7 +137,9 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   }, [domains, address])
 
   const handleApprove = async (contractAddress: Address, contractName: string) => {
-    if (!walletClient || !address || !publicClient) return
+    if (!address || !publicClient) return
+
+    const walletClient = await getWalletClient()
 
     setStep('approving')
     setApprovingContract(contractName)
@@ -167,7 +170,9 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   }
 
   const handleTransfer = async () => {
-    if (!walletClient || !address || !account || !publicClient) return
+    if (!address || !account || !publicClient) return
+
+    const walletClient = await getWalletClient()
     if (!domains || domains.length === 0) {
       setError('No domains selected for transfer')
       setStep('error')

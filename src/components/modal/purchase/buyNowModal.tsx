@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
-import { useAccount, usePublicClient, useWalletClient, useBalance, useGasPrice } from 'wagmi'
+import { useAccount, usePublicClient, useBalance, useGasPrice } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import {
   SEAPORT_ADDRESS,
   MARKETPLACE_CONDUIT_ADDRESS,
@@ -88,7 +89,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const { modifyCart } = useModifyCart()
   const publicClient = usePublicClient()
   const { data: gasPrice } = useGasPrice()
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
@@ -169,7 +170,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
   const estimateGas = async () => {
     try {
-      if (!address || !walletClient || !publicClient) return
+      if (!address || !publicClient) return
 
       const order = orderBuilder.parseStoredOrder(listing)
       if (!order) {
@@ -282,9 +283,11 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       setError(null)
       setStep('approving')
 
-      if (!address || !walletClient || !publicClient) {
+      if (!address || !publicClient) {
         throw new Error('Wallet not connected')
       }
+
+      const walletClient = await getWalletClient()
 
       // Parse the order to get the conduitKey
       const order = orderBuilder.parseStoredOrder(listing)
@@ -348,9 +351,11 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       setError(null)
       setStep('confirming')
 
-      if (!address || !walletClient || !publicClient) {
+      if (!address || !publicClient) {
         throw new Error('Wallet not connected')
       }
+
+      const walletClient = await getWalletClient()
 
       // Parse the stored order
       console.log('Listing:', listing)

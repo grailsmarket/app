@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useChainId, useChains, useSwitchChain, useWalletClient } from 'wagmi'
+import { useChainId, useChains, useSwitchChain } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 
 /**
  * useChain hook - keeps track of the current chain id and switching between chains
@@ -7,18 +8,21 @@ import { useChainId, useChains, useSwitchChain, useWalletClient } from 'wagmi'
  * @returns the current chain id and a function to switch chains
  */
 export const useChain = () => {
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const { switchChain } = useSwitchChain()
 
   const defaultChainId = useChainId()
   const [currentChainId, setCurrentChainId] = useState(defaultChainId)
 
   const getCurrentChain = useCallback(async () => {
-    if (!walletClient) return
-
-    const chainId = walletClient.chain.id
-    setCurrentChainId(chainId)
-  }, [walletClient])
+    try {
+      const walletClient = await getWalletClient()
+      const chainId = walletClient.chain.id
+      setCurrentChainId(chainId)
+    } catch {
+      // Wallet client not available yet
+    }
+  }, [getWalletClient])
 
   useEffect(() => {
     getCurrentChain()

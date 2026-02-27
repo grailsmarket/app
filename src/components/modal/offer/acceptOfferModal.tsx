@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import {
   SEAPORT_ADDRESS,
   ENS_REGISTRAR_ADDRESS,
@@ -668,7 +669,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const { address } = useAccount()
   const queryClient = useQueryClient()
   const publicClient = usePublicClient()
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
 
   // const { width: windowWidth } = useWindowSize()
@@ -710,7 +711,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
   const estimateGas = async () => {
     try {
-      if (!address || !walletClient || !publicClient) return
+      if (!address || !publicClient) return
 
       console.log('Offer data:', offer)
       console.log('Order data:', offer.order_data)
@@ -802,9 +803,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setError(null)
       setStep('approving')
 
-      if (!address || !walletClient || !publicClient || !domain) {
+      if (!address || !publicClient || !domain) {
         throw new Error('Wallet not connected')
       }
+
+      const walletClient = await getWalletClient()
 
       // Determine which NFT contract to approve based on if the name is wrapped
       const isWrapped = await checkIfWrapped(ensName)
@@ -871,9 +874,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setError(null)
       setStep('confirming')
 
-      if (!address || !walletClient || !publicClient) {
+      if (!address || !publicClient) {
         throw new Error('Wallet not connected')
       }
+
+      const walletClient = await getWalletClient()
 
       // Parse the stored order from offer data
       console.log('Accepting offer:', offer)

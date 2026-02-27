@@ -1,5 +1,6 @@
 import { Address, Hex, toHex } from 'viem'
-import { useWalletClient, usePublicClient } from 'wagmi'
+import { usePublicClient } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { mainnet } from 'wagmi/chains'
 import {
   ENS_HOLIDAY_REFERRER_ADDRESS,
@@ -21,7 +22,7 @@ type RegistrationParams = {
 }
 
 const useRegisterDomain = () => {
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const publicClient = usePublicClient({ chainId: mainnet.id })
 
   const generateSecret = (): `0x${string}` => {
@@ -104,9 +105,7 @@ const useRegisterDomain = () => {
   }
 
   const submitCommit = async (commitmentHash: Hex) => {
-    if (!walletClient) {
-      throw new Error('Wallet not connected')
-    }
+    const walletClient = await getWalletClient()
 
     try {
       // Ensure we're on mainnet before submitting the commitment
@@ -167,9 +166,7 @@ const useRegisterDomain = () => {
   }
 
   const submitRegister = async (params: RegistrationParams, value: bigint) => {
-    if (!walletClient) {
-      throw new Error('Wallet not connected')
-    }
+    const walletClient = await getWalletClient()
 
     const registrationData = {
       label: params.label,

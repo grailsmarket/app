@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useWalletClient, usePublicClient } from 'wagmi'
+import { usePublicClient } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offers/create'
@@ -13,7 +14,7 @@ import { MarketplaceType } from '@/lib/seaport/seaportClient'
 export function useSeaportClient() {
   const queryClient = useQueryClient()
   const { userAddress: address, authStatus } = useUserContext()
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const publicClient = usePublicClient()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -22,17 +23,13 @@ export function useSeaportClient() {
   // Initialize Seaport client when wallet connects
   useEffect(() => {
     const initializeSeaport = async () => {
-      if (!publicClient) {
-        console.log('Skipping Seaport init - no publicClient')
-        return
-      }
-
-      if (!walletClient || !address) {
-        console.log('Skipping Seaport init - no walletClient')
+      if (!publicClient || !address) {
+        console.log('Skipping Seaport init - no publicClient or address')
         return
       }
 
       try {
+        const walletClient = await getWalletClient()
         console.log('Initializing Seaport...', {
           hasPublicClient: !!publicClient,
           hasWalletClient: !!walletClient,
@@ -43,14 +40,13 @@ export function useSeaportClient() {
         setIsInitialized(true)
         console.log('Seaport initialized successfully')
       } catch (err) {
-        console.error('Failed to initialize Seaport:', err)
-        setError('Failed to initialize Seaport client')
-        setIsInitialized(false)
+        // Don't hard-fail — wallet client may not be available yet (e.g. Safe wallet)
+        console.log('Seaport init deferred - wallet client not yet available')
       }
     }
 
     initializeSeaport()
-  }, [publicClient, walletClient, address, authStatus])
+  }, [publicClient, getWalletClient, address, authStatus])
 
   const refetchListingQueries = useCallback(() => {
     setTimeout(() => {
@@ -89,10 +85,11 @@ export function useSeaportClient() {
         return { success: false, error: 'Wallet not connected' }
       }
 
-      // Ensure wallet client and public client are available
-      if (!walletClient || !publicClient) {
-        return { success: false, error: 'Wallet client not available. Please ensure your wallet is connected.' }
+      if (!publicClient) {
+        return { success: false, error: 'Public client not available.' }
       }
+
+      const walletClient = await getWalletClient()
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -347,7 +344,7 @@ export function useSeaportClient() {
         refetchListingQueries()
       }
     },
-    [isInitialized, address, refetchListingQueries, walletClient, publicClient]
+    [isInitialized, address, refetchListingQueries, getWalletClient, publicClient]
   )
 
   // Create an offer
@@ -366,10 +363,11 @@ export function useSeaportClient() {
         throw new Error('Wallet not connected')
       }
 
-      // Ensure wallet client and public client are available
-      if (!walletClient || !publicClient) {
-        throw new Error('Wallet client not available. Please ensure your wallet is connected.')
+      if (!publicClient) {
+        throw new Error('Public client not available.')
       }
+
+      const walletClient = await getWalletClient()
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -439,7 +437,7 @@ export function useSeaportClient() {
         refetchOfferQueries()
       }
     },
-    [address, walletClient, publicClient, refetchOfferQueries, isInitialized]
+    [address, getWalletClient, publicClient, refetchOfferQueries, isInitialized]
   )
 
   // Fulfill an order
@@ -449,9 +447,11 @@ export function useSeaportClient() {
         throw new Error('Wallet not connected')
       }
 
-      if (!walletClient || !publicClient) {
-        throw new Error('Wallet client not available. Please ensure your wallet is connected.')
+      if (!publicClient) {
+        throw new Error('Public client not available.')
       }
+
+      const walletClient = await getWalletClient()
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -476,7 +476,7 @@ export function useSeaportClient() {
         setIsLoading(false)
       }
     },
-    [isInitialized, address, walletClient, publicClient]
+    [isInitialized, address, getWalletClient, publicClient]
   )
 
   // Cancel orders
@@ -486,10 +486,11 @@ export function useSeaportClient() {
         throw new Error('Wallet not connected')
       }
 
-      // Ensure Seaport is initialized with wallet client for signing
-      if (!walletClient || !publicClient) {
-        throw new Error('Wallet client not available')
+      if (!publicClient) {
+        throw new Error('Public client not available.')
       }
+
+      const walletClient = await getWalletClient()
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -567,7 +568,7 @@ export function useSeaportClient() {
         refetchListingQueries()
       }
     },
-    [address, walletClient, publicClient, refetchListingQueries, isInitialized]
+    [address, getWalletClient, publicClient, refetchListingQueries, isInitialized]
   )
 
   const cancelOffer = useCallback(
@@ -576,10 +577,11 @@ export function useSeaportClient() {
         throw new Error('Wallet not connected')
       }
 
-      // Ensure Seaport is initialized with wallet client for signing
-      if (!walletClient || !publicClient) {
-        throw new Error('Wallet client not available')
+      if (!publicClient) {
+        throw new Error('Public client not available.')
       }
+
+      const walletClient = await getWalletClient()
 
       setIsLoading(true)
       setError(null)
@@ -624,7 +626,7 @@ export function useSeaportClient() {
         refetchOfferQueries()
       }
     },
-    [address, walletClient, publicClient, refetchOfferQueries]
+    [address, getWalletClient, publicClient, refetchOfferQueries]
   )
 
   // Validate order
@@ -672,7 +674,8 @@ export function useSeaportClient() {
 
     try {
       console.log('Reinitializing Seaport after chain switch...')
-      await seaportClient.initialize(publicClient, walletClient || undefined)
+      const walletClient = await getWalletClient().catch(() => undefined)
+      await seaportClient.initialize(publicClient, walletClient)
       setIsInitialized(true)
       console.log('Seaport reinitialized successfully')
     } catch (err) {
@@ -680,7 +683,7 @@ export function useSeaportClient() {
       setError('Failed to reinitialize Seaport client')
       setIsInitialized(false)
     }
-  }, [publicClient, walletClient])
+  }, [publicClient, getWalletClient])
 
   // Get conduit configuration
   const conduitConfig = seaportClient.getConduitConfig()

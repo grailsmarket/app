@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { mainnet } from 'wagmi/chains'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
@@ -11,7 +12,7 @@ import { ensureChain } from '@/utils/web3/ensureChain'
 export function useSeaportOrder() {
   const { address } = useAccount()
   const publicClient = usePublicClient()
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -21,9 +22,11 @@ export function useSeaportOrder() {
     setError(null)
 
     try {
-      if (!address || !walletClient || !publicClient) {
+      if (!address || !publicClient) {
         throw new Error('Wallet not connected')
       }
+
+      const walletClient = await getWalletClient()
 
       const orderBuilder = new SeaportOrderBuilder()
 

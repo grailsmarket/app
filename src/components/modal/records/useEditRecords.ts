@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
 import { mainnet } from 'viem/chains'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, usePublicClient } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { RegistryAbi } from '@/constants/abi/RegistryAbi'
@@ -37,7 +38,7 @@ const COIN_TYPES: Record<string, number> = {
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()
   const publicClient = usePublicClient()
-  const { data: walletClient } = useWalletClient()
+  const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
 
   const { data: roles } = useQuery({
@@ -314,7 +315,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Save all changed records and roles
   const saveRecords = useCallback(async () => {
-    if (!name || !walletClient || !resolverAddress || !publicClient) return
+    if (!name || !resolverAddress || !publicClient) return
+
+    const walletClient = await getWalletClient()
 
     setStep('confirming')
     setErrorMessage(null)
@@ -489,7 +492,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     }
   }, [
     name,
-    walletClient,
+    getWalletClient,
     resolverAddress,
     publicClient,
     records,

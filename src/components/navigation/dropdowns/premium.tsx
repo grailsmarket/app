@@ -41,7 +41,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
         filters: {
           ...emptyFilterState,
           status: ['Premium'],
-          sort: 'expiry_date_asc',
+          sort: 'watchers_count_desc',
           type: {
             Digits: 'exclude',
             Emojis: 'exclude',

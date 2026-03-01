@@ -125,7 +125,7 @@ const Details: React.FC<Props> = ({ user }) => {
         </div>
       </div>
       <div className='flex flex-col gap-2'>
-        <div className='grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-y-2'>
+        <div className='grid grid-cols-2 gap-y-2 sm:grid-cols-4 lg:grid-cols-2'>
           <div className='border-neutral flex h-fit flex-col items-start border-l-2 pl-2'>
             {detailsLoading ? (
               <LoadingCell height='18px' width='64px' />
@@ -154,7 +154,9 @@ const Details: React.FC<Props> = ({ user }) => {
             {detailsLoading ? (
               <LoadingCell height='18px' width='64px' />
             ) : (
-              <p className='text-lg font-medium'>{details?.lastRenewedAt ? formatTimeAgo(details?.lastRenewedAt) : '-'}</p>
+              <p className='text-lg font-medium'>
+                {details?.lastRenewedAt ? formatTimeAgo(details?.lastRenewedAt) : '-'}
+              </p>
             )}
             <div className='flex items-center gap-1'>
               <Image src={EthereumLogo} alt='Arrow right' width={12} height={12} />

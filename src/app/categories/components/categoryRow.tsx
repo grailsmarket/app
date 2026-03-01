@@ -20,92 +20,102 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
   const categoriesFilters = useAppSelector(selectCategoriesPageFilters)
   const categorySort = sort || categoriesFilters.sort
 
+  const getCategorySortTimeWindow = (sort: string) => {
+    return sort.includes('total') ? 'total' : (sort.split('_').slice(-1)[0] as '1y' | '1mo' | '1w')
+  }
+
   const salesTimeWindow = useMemo(() => {
-    switch (categorySort) {
-      case 'total_sales_volume_wei':
+    const timeWindow = getCategorySortTimeWindow(categorySort)
+
+    switch (timeWindow) {
+      case 'total':
         return {
           label: '',
           value: category.total_sales_count,
         }
-      case 'sales_volume_wei_1y':
+      case '1y':
         return {
           label: '1y',
           value: category.sales_count_1y,
         }
-      case 'sales_volume_wei_1mo':
+      case '1mo':
         return {
           label: '1mo',
           value: category.sales_count_1mo,
         }
-      case 'sales_volume_wei_1w':
+      case '1w':
         return {
           label: '1w',
           value: category.sales_count_1w,
         }
-      case 'total_sales_count':
+      default:
         return {
           label: '',
           value: category.total_sales_count,
-        }
-      case 'sales_count_1y':
-        return {
-          label: '1y',
-          value: category.sales_count_1y,
-        }
-      case 'sales_count_1mo':
-        return {
-          label: '1mo',
-          value: category.sales_count_1mo,
-        }
-      case 'sales_count_1w':
-        return {
-          label: '1w',
-          value: category.sales_count_1w,
         }
     }
   }, [categorySort, category])
 
   const volumeTimeWindow = useMemo(() => {
-    switch (categorySort) {
-      case 'total_sales_volume_wei':
+    const timeWindow = getCategorySortTimeWindow(categorySort)
+
+    switch (timeWindow) {
+      case 'total':
         return {
           label: '',
           value: category.total_sales_volume_wei,
         }
-      case 'sales_volume_wei_1y':
+      case '1y':
         return {
           label: '1y',
           value: category.sales_volume_wei_1y,
         }
-      case 'sales_volume_wei_1mo':
+      case '1mo':
         return {
           label: '1mo',
           value: category.sales_volume_wei_1mo,
         }
-      case 'sales_volume_wei_1w':
+      case '1w':
         return {
           label: '1w',
           value: category.sales_volume_wei_1w,
         }
-      case 'total_sales_count':
+      default:
         return {
           label: '',
           value: category.total_sales_volume_wei,
         }
-      case 'sales_count_1y':
+    }
+  }, [categorySort, category])
+
+  const registrationsTimeWindow = useMemo(() => {
+    const timeWindow = getCategorySortTimeWindow(categorySort)
+
+    switch (timeWindow) {
+      case 'total':
+        return {
+          label: '',
+          value: category.total_reg_count,
+        }
+      case '1y':
         return {
           label: '1y',
-          value: category.sales_volume_wei_1y,
+          value: category.reg_count_1y,
         }
-      case 'sales_count_1mo':
+      case '1mo':
         return {
           label: '1mo',
-          value: category.sales_volume_wei_1mo,
+          value: category.reg_count_1mo,
         }
-      case 'sales_count_1w':
+      case '1w':
         return {
           label: '1w',
-          value: category.sales_volume_wei_1w,
+          value: category.reg_count_1w,
+        }
+      default:
+        return {
+          label: '',
+          value: category.total_reg_count,
         }
     }
   }, [categorySort, category])
@@ -167,9 +177,7 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
           <p className='text-neutral text-lg font-medium'>Floor</p>
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
-          <p className='text-lg font-semibold'>
-            {localizeNumber(salesTimeWindow ? salesTimeWindow.value : category.total_sales_count)}
-          </p>
+          <p className='text-lg font-semibold'>{localizeNumber(salesTimeWindow.value)}</p>
           <p className='text-neutral text-lg font-medium'>
             Sales&nbsp;
             <span className='text-lg'>
@@ -209,8 +217,8 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
               (
               {category.member_count && category.member_count > 0
                 ? (((category.premium_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
-                    maximumFractionDigits: 1,
-                  })
+                  maximumFractionDigits: 1,
+                })
                 : 0}
               %)
             </p>
@@ -224,8 +232,8 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
               (
               {category.member_count && category.member_count > 0
                 ? (((category.available_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
-                    maximumFractionDigits: 1,
-                  })
+                  maximumFractionDigits: 1,
+                })
                 : 0}
               %)
             </p>
@@ -241,13 +249,24 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
         </div>
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
           <div className='flex items-center gap-[3px] text-lg font-semibold'>
+            <p>{localizeNumber(registrationsTimeWindow ? registrationsTimeWindow.value : category.total_reg_count)}</p>
+          </div>
+          <p className='text-neutral text-lg font-medium'>
+            {registrationsTimeWindow.label.length > 0 ? 'Regs' : 'Registrations'}&nbsp;
+            <span className='text-lg'>
+              {registrationsTimeWindow?.label && registrationsTimeWindow.label.length > 0 ? `(${registrationsTimeWindow.label})` : ''}
+            </span>
+          </p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <div className='flex items-center gap-[3px] text-lg font-semibold'>
             <p>{localizeNumber(category.holders_count ?? 0)}</p>
             <p className='text-md text-neutral pt-px font-medium'>
               (
               {category.holders_count && category.holders_count > 0
                 ? (category.member_count / category.holders_count).toLocaleString(navigator.language, {
-                    maximumFractionDigits: 1,
-                  })
+                  maximumFractionDigits: 1,
+                })
                 : 0}
               )
             </p>

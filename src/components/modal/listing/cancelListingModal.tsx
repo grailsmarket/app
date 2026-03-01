@@ -96,7 +96,10 @@ const CancelListingModal: React.FC<CancelListingModalProps> = ({ onClose, listin
                 </div>
               )}
               {listings.map((listing, index) => (
-                <div key={listing.id} className={cn('flex flex-col gap-2 py-2', index > 0 && 'border-t border-white/30')}>
+                <div
+                  key={listing.id}
+                  className={cn('flex flex-col gap-2 py-2', index > 0 && 'border-t border-white/30')}
+                >
                   <div className='flex justify-between'>
                     <p className='font-sedan-sc text-label text-xl'>Name</p>
                     <p className='max-w-2/3 truncate text-xl font-bold'>{beautifyName(listing.name)}</p>

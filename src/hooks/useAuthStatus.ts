@@ -36,7 +36,7 @@ export const useAuth = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    if(sessionStorage.getItem('hasUserInteracted') === 'true') {
+    if (sessionStorage.getItem('hasUserInteracted') === 'true') {
       hasUserInteracted.current = true
     }
 

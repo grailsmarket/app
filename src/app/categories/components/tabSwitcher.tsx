@@ -92,11 +92,17 @@ const CategoriesPageTabSwitcher: React.FC = () => {
           <button
             className={cn(
               'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14',
-              disableFilterButton && 'pointer-events-none cursor-not-allowed opacity-50'
+              disableFilterButton && 'pointer-events-none cursor-not-allowed'
             )}
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
-            <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
+            <Image
+              src={FilterIcon}
+              alt='Filter'
+              width={20}
+              height={20}
+              className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
+            />
           </button>
           <div ref={containerRef} className='relative flex h-10 w-full gap-4'>
             <div
@@ -170,11 +176,17 @@ const CategoriesPageTabSwitcher: React.FC = () => {
         <button
           className={cn(
             'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14',
-            disableFilterButton && 'pointer-events-none cursor-not-allowed opacity-50'
+            disableFilterButton && 'pointer-events-none cursor-not-allowed'
           )}
           onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
         >
-          <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
+          <Image
+            src={FilterIcon}
+            alt='Filter'
+            width={20}
+            height={20}
+            className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
+          />
         </button>
         <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
           <div

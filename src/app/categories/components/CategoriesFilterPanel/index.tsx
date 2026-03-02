@@ -56,7 +56,7 @@ const CategoriesFilterPanel: React.FC = () => {
         isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
-        isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
+        isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[100%]'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
@@ -75,7 +75,7 @@ const CategoriesFilterPanel: React.FC = () => {
       >
         {/* Header */}
         <div className='pt-md relative flex items-center justify-between'>
-          <div className='px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
+          <div className='px-md sm:px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
             <button
               onClick={handleClose}
               className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10 lg:hidden'
@@ -94,7 +94,7 @@ const CategoriesFilterPanel: React.FC = () => {
       </div>
 
       <div className='flex-1 overflow-x-hidden overflow-y-auto'>
-        <div className='px-lg py-md flex w-full flex-col gap-2'>
+        <div className='px-md sm:px-lg py-md flex w-full flex-col gap-2'>
           <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
             <input
               type='text'

@@ -71,7 +71,7 @@ const CategoriesPanel: React.FC = () => {
             className={cn(
               'grid gap-2 md:gap-4',
               isOpen
-                ? '3xl:grid-cols-4 grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
+                ? '3xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
                 : '4xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
             )}
           >
@@ -84,7 +84,7 @@ const CategoriesPanel: React.FC = () => {
             className={cn(
               'grid gap-2 md:gap-4',
               isOpen
-                ? '3xl:grid-cols-4 grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
+                ? '3xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
                 : '4xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
             )}
           >

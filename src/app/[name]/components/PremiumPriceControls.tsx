@@ -166,12 +166,13 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
           <Image src={CalendarWhiteIcon} alt='Calendar' width={20} height={20} />
         </button>
         {showDatePicker && (
-          <div className='absolute top-full left-0 z-50 mt-1'>
+          <div className='absolute top-full left-0 z-50 mt-1 w-full'>
             <DatePicker
               onSelect={handleDateSelect}
               onClose={() => setShowDatePicker(false)}
               minDate={premiumStartDate}
               maxDate={premiumEndDate}
+              className='w-full'
             />
           </div>
         )}

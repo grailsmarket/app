@@ -241,13 +241,13 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                       align='right'
                       position='top'
                     >
-                      <p className='text-grace text-xl font-medium'>
+                      <p className='text-grace text-xl font-medium tabular-nums'>
                         Grace {timeLeftString ? `(${timeLeftString})` : ''}
                       </p>
                     </Tooltip>
                   ) : (
                     <p
-                      className={`cursor-pointer text-xl font-semibold hover:opacity-80 ${registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground/70 cursor-text hover:opacity-100'}`}
+                      className={`cursor-pointer text-xl font-semibold tabular-nums hover:opacity-80 ${registrationStatus === PREMIUM ? 'text-premium' : registrationStatus === UNREGISTERED ? 'text-available' : 'text-foreground/70 cursor-text hover:opacity-100'}`}
                       onClick={() => {
                         if (registrationStatus === PREMIUM || registrationStatus === UNREGISTERED) {
                           router.push(`/marketplace?tab=${registrationStatus.toLowerCase()}&sort=expiry_date_asc`)

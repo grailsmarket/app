@@ -850,7 +850,7 @@ const RegistrationModal: React.FC = () => {
                       />
                     </svg>
                     <div className='absolute inset-0 flex items-center justify-center'>
-                      <span className='text-4xl font-bold'>{waitTimeRemaining}s</span>
+                      <span className='text-4xl font-bold tabular-nums'>{waitTimeRemaining}s</span>
                     </div>
                   </div>
                   <p className='text-center text-lg'>This prevents others from front-running your registration.</p>

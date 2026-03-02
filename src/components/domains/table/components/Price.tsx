@@ -84,7 +84,9 @@ const Price: React.FC<PriceProps> = ({
           </p>
         </div>
         {registrationStatus === PREMIUM && timeLeftString && (
-          <p className='text-md text-premium/70 font-medium text-nowrap'>Premium&nbsp;({timeLeftString})</p>
+          <p className='text-md text-premium/70 font-medium text-nowrap tabular-nums'>
+            Premium&nbsp;({timeLeftString})
+          </p>
         )}
         {registrationStatus === UNREGISTERED && <p className='text-md text-available font-medium'>Available</p>}
       </div>
@@ -99,7 +101,9 @@ const Price: React.FC<PriceProps> = ({
           align='left'
           position='top'
         >
-          <p className='text-md text-grace font-medium'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+          <p className='text-md text-grace font-medium tabular-nums'>
+            Grace {timeLeftString ? `(${timeLeftString.padStart(2, '0')})` : ''}
+          </p>
         </Tooltip>
         {expiry_date && (
           <p className='text-md text-neutral font-semibold'>

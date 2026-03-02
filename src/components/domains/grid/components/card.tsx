@@ -267,7 +267,9 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
               align='left'
               position='top'
             >
-              <p className='text-grace truncate font-semibold'>Grace {timeLeftString ? `(${timeLeftString})` : ''}</p>
+              <p className='text-grace truncate font-semibold tabular-nums'>
+                Grace {timeLeftString ? `(${timeLeftString})` : ''}
+              </p>
             </Tooltip>
           ) : registrationStatus === REGISTERED ? (
             domainListing ? (
@@ -325,7 +327,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                 )}
               </div>
               {registrationStatus === PREMIUM && timeLeftString && (
-                <div className='text-md text-premium/70 flex items-center gap-px font-medium'>
+                <div className='text-md text-premium/70 flex items-center gap-px font-medium tabular-nums'>
                   Premium ({timeLeftString})
                 </div>
               )}

@@ -55,7 +55,7 @@ export const useExpiryCountdown = (expiryDate: string | null, type: CountdownTyp
     if (isUnderOneHour) {
       const minutes = Math.floor(remainingSeconds / 60)
       const seconds = remainingSeconds % 60
-      timeLeftString = `${minutes}m ${seconds}s`
+      timeLeftString = `${minutes}m ${seconds.toString().padStart(2, '0')}s`
     } else if (remainingSeconds >= DAY_IN_SECONDS) {
       const days = Math.floor(remainingSeconds / DAY_IN_SECONDS)
       const hours = Math.floor((remainingSeconds % DAY_IN_SECONDS) / ONE_HOUR)

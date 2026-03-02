@@ -67,9 +67,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 
   return (
     <FilterContext.Provider value={{ filterType, profileTab, categoryTab, profileAddress }}>
-      <FilterUrlSyncWrapper filterType={filterType}>
-        {children}
-      </FilterUrlSyncWrapper>
+      <FilterUrlSyncWrapper filterType={filterType}>{children}</FilterUrlSyncWrapper>
     </FilterContext.Provider>
   )
 }

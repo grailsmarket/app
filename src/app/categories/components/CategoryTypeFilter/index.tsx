@@ -57,7 +57,7 @@ const CategoryTypeFilter: React.FC = () => {
                   className='hover:bg-secondary flex w-full cursor-pointer items-center justify-between rounded-sm px-4 py-3'
                   onClick={() => toggleType(type)}
                 >
-                  <p className='text-light-100 text-lg font-medium capitalize'>{type}</p>
+                  <p className='text-light-100 text-lg font-medium capitalize'>{type === 'ai' ? 'AI' : type}</p>
                   <FilterSelector onClick={() => toggleType(type)} isActive={isSelected} isRadio />
                 </div>
               )

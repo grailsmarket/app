@@ -145,17 +145,18 @@ const ShareModal: React.FC<ShareModalProps> = ({
     if (!imageUrl || !apiEndpoint) return
 
     const fullUrl = `https://grails.app${apiEndpoint}`
+    const shareText = `Check out my name on @grailsmarket https://grails.app/${domainName}`
     const isMobileOrTablet = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
     const copyUrl = async () => {
       try {
-        await navigator.clipboard.writeText(fullUrl)
+        await navigator.clipboard.writeText(`${shareText}\n\n${fullUrl}`)
         setIsCopied(true)
         setTimeout(() => setIsCopied(false), 2000)
       } catch {
         // Last resort fallback for older browsers
         const textArea = document.createElement('textarea')
-        textArea.value = fullUrl
+        textArea.value = `${shareText}\n\n${fullUrl}`
         textArea.style.position = 'fixed'
         textArea.style.opacity = '0'
         document.body.appendChild(textArea)
@@ -182,7 +183,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
 
       const response = await fetch(imageUrl)
       const blob = await response.blob()
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+      const textBlob = new Blob([shareText], { type: 'text/plain' })
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/plain': textBlob,
+          'image/png': blob,
+        }),
+      ])
+      console.log('Copied to clipboard')
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 2000)
     } catch (err) {

@@ -266,11 +266,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   (
                   {categoryDetails.member_count && categoryDetails.member_count > 0
                     ? (((categoryDetails.premium_count ?? 0) / categoryDetails.member_count) * 100).toLocaleString(
-                        navigator.language,
-                        {
-                          maximumFractionDigits: 1,
-                        }
-                      )
+                      navigator.language,
+                      {
+                        maximumFractionDigits: 1,
+                      }
+                    )
                     : 0}
                   %)
                 </p>
@@ -284,11 +284,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   (
                   {categoryDetails.member_count && categoryDetails.member_count > 0
                     ? (((categoryDetails.available_count ?? 0) / categoryDetails.member_count) * 100).toLocaleString(
-                        navigator.language,
-                        {
-                          maximumFractionDigits: 1,
-                        }
-                      )
+                      navigator.language,
+                      {
+                        maximumFractionDigits: 1,
+                      }
+                    )
                     : 0}
                   %)
                 </p>
@@ -306,9 +306,9 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
               <div className='flex items-center gap-[3px] text-lg font-semibold'>
-                <p>{localizeNumber(categoryDetails.total_reg_count ?? 0)}</p>
+                <p>{localizeNumber(categoryDetails.reg_count_1mo ?? 0)}</p>
               </div>
-              <p className='text-neutral text-lg font-medium'>Registrations</p>
+              <p className='text-neutral text-lg font-medium'>Registrations (1mo)</p>
             </div>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
               <div className='flex items-center gap-[3px] text-lg font-semibold'>
@@ -317,11 +317,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   (
                   {categoryDetails.holders_count && categoryDetails.holders_count > 0
                     ? (categoryDetails.member_count / categoryDetails.holders_count).toLocaleString(
-                        navigator.language,
-                        {
-                          maximumFractionDigits: 1,
-                        }
-                      )
+                      navigator.language,
+                      {
+                        maximumFractionDigits: 1,
+                      }
+                    )
                     : 0}
                   )
                 </p>

@@ -2,14 +2,10 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { CategoryType } from '@/types/domains'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
-import {
-  CategoriesPageTypeOption,
-  CategoriesPageSortOption,
-  CategoriesPageSortDirection,
-} from '@/constants/filters/categoriesPageFilters'
+import { CategoriesPageSortOption, CategoriesPageSortDirection } from '@/constants/filters/categoriesPageFilters'
 
 interface FetchFilteredCategoriesOptions {
-  type?: CategoriesPageTypeOption | null
+  type?: string | null
   sort?: CategoriesPageSortOption
   sortDirection?: CategoriesPageSortDirection
 }

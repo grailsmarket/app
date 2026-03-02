@@ -217,8 +217,8 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
               (
               {category.member_count && category.member_count > 0
                 ? (((category.premium_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
+                    maximumFractionDigits: 1,
+                  })
                 : 0}
               %)
             </p>
@@ -232,8 +232,8 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
               (
               {category.member_count && category.member_count > 0
                 ? (((category.available_count ?? 0) / category.member_count) * 100).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
+                    maximumFractionDigits: 1,
+                  })
                 : 0}
               %)
             </p>
@@ -254,7 +254,9 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
           <p className='text-neutral text-lg font-medium'>
             {registrationsTimeWindow.label.length > 0 ? 'Regs' : 'Registrations'}&nbsp;
             <span className='text-lg'>
-              {registrationsTimeWindow?.label && registrationsTimeWindow.label.length > 0 ? `(${registrationsTimeWindow.label})` : ''}
+              {registrationsTimeWindow?.label && registrationsTimeWindow.label.length > 0
+                ? `(${registrationsTimeWindow.label})`
+                : ''}
             </span>
           </p>
         </div>
@@ -265,8 +267,8 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
               (
               {category.holders_count && category.holders_count > 0
                 ? (category.member_count / category.holders_count).toLocaleString(navigator.language, {
-                  maximumFractionDigits: 1,
-                })
+                    maximumFractionDigits: 1,
+                  })
                 : 0}
               )
             </p>

@@ -12,7 +12,7 @@ import {
 // Types --------------------------------------------
 export type CategoriesPageFiltersState = {
   search: string
-  type: CategoriesPageTypeOption | null
+  type: string | null
   sort: CategoriesPageSortOption
   sortDirection: CategoriesPageSortDirection
 }
@@ -52,7 +52,7 @@ export const categoriesPageFiltersSlice = createSlice({
     setCategoriesPageSearch(state, { payload }: PayloadAction<string>) {
       state.search = payload
     },
-    toggleCategoriesPageType(state, { payload }: PayloadAction<CategoriesPageTypeOption>) {
+    toggleCategoriesPageType(state, { payload }: PayloadAction<string>) {
       // If clicking the same type, deselect it (set to null)
       // Otherwise, select the new type
       state.type = state.type === payload ? null : payload

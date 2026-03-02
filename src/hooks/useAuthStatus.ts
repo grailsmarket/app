@@ -36,13 +36,13 @@ export const useAuth = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    if (sessionStorage.getItem('hasUserInteracted') === 'true') {
-      hasUserInteracted.current = true
-    }
+    // if (sessionStorage.getItem('hasUserInteracted') === 'true') {
+    //   hasUserInteracted.current = true
+    // }
 
     const handler = () => {
       hasUserInteracted.current = true
-      sessionStorage.setItem('hasUserInteracted', 'true')
+      // sessionStorage.setItem('hasUserInteracted', 'true')
     }
 
     window.addEventListener('pointerdown', handler)

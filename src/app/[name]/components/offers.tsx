@@ -29,6 +29,7 @@ import {
   setShareModalDomainInfo,
 } from '@/state/reducers/modals/shareModal'
 import ShareIconWhite from 'public/icons/image.svg'
+import { cn } from '@/utils/tailwind'
 
 interface OffersProps {
   domain?: MarketplaceDomainType
@@ -76,33 +77,50 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
       {offersLoading ? (
         <LoadingCell height='60px' width='100%' />
       ) : (
-        displayedOffers.map((offer) => (
-          <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
-            <div className='flex flex-row items-center gap-2 sm:gap-4'>
-              <div className='flex flex-row items-center gap-2'>
-                <Image
-                  src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
-                  width={32}
-                  height={32}
-                  alt={offer.source}
-                  className='h-auto min-w-7 sm:w-8'
-                />
-              </div>
-              <div className='flex flex-col gap-1'>
+        displayedOffers.map((offer) => {
+          const getFee = () => {
+            switch (offer.source) {
+              case 'grails':
+                return 0
+              case 'opensea':
+                return 0.01
+              default:
+                return 0
+            }
+          }
+          const fee = getFee()
+
+          return (
+            <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
+              <div className='flex flex-row items-center gap-2 sm:gap-4'>
                 <div className='flex flex-row items-center gap-2'>
-                  <Price
-                    price={offer.offer_amount_wei}
-                    currencyAddress={offer.currency_address}
-                    fontSize='text-2xl font-semibold'
-                    iconSize='24px'
+                  <Image
+                    src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
+                    width={32}
+                    height={32}
+                    alt={offer.source}
+                    className='h-auto min-w-7 sm:w-8'
                   />
                 </div>
-                <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
+                <div className='flex flex-col gap-1'>
+                  <div className='flex flex-row items-center gap-1.5'>
+                    <Price
+                      price={offer.offer_amount_wei}
+                      currencyAddress={offer.currency_address}
+                      fontSize='text-2xl font-semibold'
+                      iconSize='24px'
+                    />
+                    <p className={cn('text-neutral text-md', fee > 0 ? 'text-red-400' : 'text-green-500')}>
+                      ({fee * 100}% fee)
+                    </p>
+                  </div>
+                  <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
+                </div>
               </div>
+              <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
             </div>
-            <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
-          </div>
-        ))
+          )
+        })
       )}
       {!offersLoading && offers.length === 0 && (
         <div className='flex w-full flex-row items-center justify-center gap-2'>

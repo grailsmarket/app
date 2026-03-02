@@ -12,8 +12,6 @@ import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '@/state/hooks'
-import { changeTab } from '@/state/reducers/portfolio/profile'
-import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 const bulkTools = [
@@ -52,7 +50,6 @@ const BulkTools = () => {
     }
 
     if (userAddress) {
-      dispatch(changeTab(PROFILE_TABS[0]))
       dispatch(setBulkSelectIsSelecting(true))
       router.push(`/profile/${userAddress}`)
       return

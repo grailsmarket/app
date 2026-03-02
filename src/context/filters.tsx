@@ -26,7 +26,6 @@ interface FilterProviderProps {
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
   profileAddress?: Address | string
-  isOwner?: boolean // For profile page to check watchlist access
 }
 
 export const FilterProvider: React.FC<FilterProviderProps> = ({
@@ -35,7 +34,6 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
   profileTab,
   categoryTab,
   profileAddress,
-  isOwner = true,
 }) => {
   const dispatch = useAppDispatch()
   const pathname = usePathname()
@@ -69,7 +67,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 
   return (
     <FilterContext.Provider value={{ filterType, profileTab, categoryTab, profileAddress }}>
-      <FilterUrlSyncWrapper filterType={filterType} isOwner={isOwner}>
+      <FilterUrlSyncWrapper filterType={filterType}>
         {children}
       </FilterUrlSyncWrapper>
     </FilterContext.Provider>
@@ -80,12 +78,11 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 interface FilterUrlSyncWrapperProps {
   children: ReactNode
   filterType: FilterContextType
-  isOwner: boolean
 }
 
-const FilterUrlSyncWrapper: React.FC<FilterUrlSyncWrapperProps> = ({ children, filterType, isOwner }) => {
+const FilterUrlSyncWrapper: React.FC<FilterUrlSyncWrapperProps> = ({ children, filterType }) => {
   // This hook handles all URL <-> Redux sync
-  useFilterUrlSync({ filterType, isOwner })
+  useFilterUrlSync({ filterType })
 
   return <>{children}</>
 }

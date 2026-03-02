@@ -17,7 +17,7 @@ import viewReducer from './view'
 import analyticsReducer from './analytics'
 import leaderboardReducer from './leaderboard'
 
-const PERSISTED_KEYS: string[] = ['registration', 'view']
+const PERSISTED_KEYS: string[] = ['registration', 'view', 'profile']
 
 const persistConfig = {
   key: 'root',

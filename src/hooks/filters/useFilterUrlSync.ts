@@ -41,7 +41,6 @@ import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categor
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType
-  isOwner?: boolean // For profile watchlist authorization check
 }
 
 // Get default tab value for each filter type
@@ -109,7 +108,7 @@ function getEmptyFilterState(filterType: FilterContextType): BaseFilterState | C
 }
 
 // Validate tab value is allowed
-function isValidTab(filterType: FilterContextType, tabValue: string, isOwner: boolean = true): boolean {
+function isValidTab(filterType: FilterContextType, tabValue: string): boolean {
   const tabs =
     filterType === 'profile'
       ? PROFILE_TABS
@@ -121,18 +120,11 @@ function isValidTab(filterType: FilterContextType, tabValue: string, isOwner: bo
             ? CATEGORIES_PAGE_TABS
             : MARKETPLACE_TABS
 
-  const isValidTabValue = tabs.some((t) => t.value === tabValue)
-
-  // Special case: watchlist is only valid for profile owner
-  if (filterType === 'profile' && tabValue === 'watchlist' && !isOwner) {
-    return false
-  }
-
-  return isValidTabValue
+  return tabs.some((t) => t.value === tabValue)
 }
 
 export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
-  const { filterType, isOwner = true } = options
+  const { filterType } = options
 
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -313,7 +305,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     isSyncingFromUrl.current = true
 
     // Validate and apply tab first
-    const validTab = isValidTab(filterType, urlTab, isOwner) ? urlTab : defaultTab
+    const validTab = isValidTab(filterType, urlTab) ? urlTab : defaultTab
     if (validTab !== defaultTab || urlFilters.tab) {
       const tabObj = findTabByValue(filterType, validTab)
       dispatch(tabChangeAction(tabObj))

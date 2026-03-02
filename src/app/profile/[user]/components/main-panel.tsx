@@ -81,8 +81,10 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   useEffect(() => {
     // reset filters when visiting a new profile
     if (lastVisitedProfile && lastVisitedProfile !== user) {
-      dispatch(changeTab(PROFILE_TABS[0]))
-      dispatch(setLastVisitedProfile(user))
+      console.log('resetting filters')
+      if (profileTab !== 'watchlist') {
+        dispatch(changeTab(PROFILE_TABS[0]))
+      }
       dispatch(clearDomainsFilters())
       dispatch(clearListingsFilters())
       dispatch(clearMyOffersFilters())
@@ -111,18 +113,25 @@ const MainPanel: React.FC<Props> = ({ user }) => {
 
   // ensure that only the owner of the profile can see the watchlist
   useEffect(() => {
-    if (profileTab === 'watchlist') {
-      if (
-        !(
-          userAddress &&
-          (userAccount?.address || user).toLowerCase() === userAddress?.toLowerCase() &&
-          authStatus === 'authenticated'
-        )
-      ) {
-        dispatch(changeTab(PROFILE_TABS[0]))
-      }
+    if (profileTab !== 'watchlist') return
+
+    // if the auth status is loading, wait for it to resolve
+    if (authStatus === 'loading') return
+
+    // if the user is not authenticated, switch to domains
+    if (authStatus !== 'authenticated') {
+      dispatch(changeTab(PROFILE_TABS[0]))
+      return
     }
-  }, [profileTab, userAccount?.address, userAddress, authStatus, dispatch, user])
+
+    // if the user is authenticated but account data not loaded yet, we can't determine if they are the owner
+    if (!userAccount?.address) return
+
+    // if the user is not the profile owner, switch to domains
+    if (!isMyProfile) {
+      dispatch(changeTab(PROFILE_TABS[0]))
+    }
+  }, [profileTab, isMyProfile, authStatus, userAccount?.address, dispatch])
 
   const showDomainsPanel =
     profileTab === 'domains' ||
@@ -140,7 +149,6 @@ const MainPanel: React.FC<Props> = ({ user }) => {
         filterType='profile'
         profileTab={selectedTab}
         profileAddress={userAccount?.address || user}
-        isOwner={isMyProfile}
       >
         <div className='w-full'>
           <div className='z-10 w-full'>

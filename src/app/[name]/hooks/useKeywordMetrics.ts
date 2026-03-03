@@ -37,6 +37,14 @@ export const useKeywordMetrics = (ensName: string, expiryDate?: string | null) =
         return null
       }
 
+      if (!result) {
+        return null
+      }
+
+      if (Object.keys(result).length === 0) {
+        return null
+      }
+
       return result
     },
     enabled: queryEnabled,

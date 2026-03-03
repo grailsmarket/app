@@ -276,7 +276,7 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
     return null
   }, [isSubdomain, isTooLong, keywordMetricsError, keywordMetrics, loginRequired])
 
-  const hasMetrics = !message && !keywordMetricsIsLoading && keywordMetrics
+  const hasMetrics = !keywordMetricsIsLoading && keywordMetrics
 
   const openShareModal = () => {
     dispatch(setShareModalType('google-analytics'))

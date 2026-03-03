@@ -43,9 +43,13 @@ export const useLeaderboard = ({
     initialPageParam: 1,
   })
 
+  const addresses = useMemo(() => {
+    return leaderboardData?.pages.map((page) => page.users.map((user) => user.address)) || []
+  }, [leaderboardData])
+
   const { followStates, isFollowStatesLoading, isFetchingNextFollowStatesPage, isRefetchingFollowStates } =
     useBatchButtonStateQuery({
-      addresses: leaderboardData?.pages.map((page) => page.users.map((user) => user.address)) || [],
+      addresses: addresses,
       queryKey: ['followStates', 'leaderboard'],
     })
 

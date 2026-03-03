@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useMemo } from 'react'
-import { useWindowSize, ShortArrow } from 'ethereum-identity-kit'
+import { ShortArrow } from 'ethereum-identity-kit'
 import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -100,7 +100,6 @@ export const MobileLoadingRow = () => (
 )
 
 const LeaderboardList: React.FC = () => {
-  const { height } = useWindowSize()
   const { isNavbarVisible } = useNavbar()
   const dispatch = useAppDispatch()
 
@@ -148,11 +147,6 @@ const LeaderboardList: React.FC = () => {
     [sortBy]
   )
 
-  const visibleCount = useMemo(() => {
-    if (!height) return 20
-    return Math.floor(height / 60)
-  }, [height])
-
   // Create items array with loading skeletons appended when loading
   const loadingRowCount = 20
   const items: (LeaderboardUser | null)[] = useMemo(() => {
@@ -160,7 +154,7 @@ const LeaderboardList: React.FC = () => {
       return Array(loadingRowCount).fill(null)
     }
     if (isFetchingNextPage) {
-      return [...users, ...Array(5).fill(null)]
+      return users.concat(Array(5).fill(null))
     }
     return users
   }, [users, isLoading, isFetchingNextPage])
@@ -293,7 +287,7 @@ const LeaderboardList: React.FC = () => {
           <VirtualList<LeaderboardUser | null>
             items={items}
             rowHeight={60}
-            overscanCount={visibleCount}
+            overscanCount={20}
             gap={0}
             paddingBottom='40px'
             onScrollNearBottom={handleScrollNearBottom}

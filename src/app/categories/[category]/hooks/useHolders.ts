@@ -27,9 +27,13 @@ export const useHolders = (category: string) => {
     enabled: !!category,
   })
 
+  const addresses = useMemo(() => {
+    return holdersData?.pages.map((page) => page.holders.map((holder) => holder.address)) || []
+  }, [holdersData])
+
   const { followStates, isFollowStatesLoading, isFetchingNextFollowStatesPage, isRefetchingFollowStates } =
     useBatchButtonStateQuery({
-      addresses: holdersData?.pages.map((page) => page.holders.map((holder) => holder.address)) || [],
+      addresses: addresses,
       queryKey: ['followStates', category, 'holders'],
     })
 

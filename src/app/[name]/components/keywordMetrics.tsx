@@ -12,6 +12,8 @@ import { toSteppedPercent } from '@/utils/metrics'
 import { useAppDispatch } from '@/state/hooks'
 import { setShareModalType, setShareModalDomainInfo, setShareModalOpen } from '@/state/reducers/modals/shareModal'
 import ShareIconWhite from 'public/icons/image.svg'
+import InfoIcon from 'public/icons/info-circle.svg'
+import Tooltip from '@/components/ui/tooltip'
 
 interface KeywordMetricsProps {
   name: string
@@ -169,7 +171,7 @@ const TrendChart: React.FC<{
 
     // Year-change divider + label
     chartData.forEach((d, i) => {
-      if (i > 0 && d.year !== chartData[i - 1].year) {
+      if (i > 0 && d.year !== chartData[i - 1].year && d.year !== 2026) {
         const xMid = (xScale(i - 1) + xScale(i)) / 2
         g.append('line')
           .attr('x1', xMid)
@@ -180,6 +182,7 @@ const TrendChart: React.FC<{
           .attr('stroke-opacity', 0.25)
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '3,3')
+
         labelStyle(g.append('text').attr('x', xMid).attr('text-anchor', 'middle')).text(String(d.year))
       }
     })
@@ -294,11 +297,22 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
       <div className='flex flex-row items-center justify-between'>
         <div
-          className='flex flex-1 cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
+          className='group/metrics flex flex-1 cursor-pointer flex-row items-center justify-between transition-opacity'
           onClick={() => setIsOpen(!isOpen)}
         >
-          <h3 className='font-sedan-sc text-3xl'>Google Metrics</h3>
-          <div className='flex flex-row items-center gap-1'>
+          <div className='flex flex-row items-center gap-2'>
+            <h3 className='font-sedan-sc text-3xl transition-opacity group-hover/metrics:opacity-80'>Google Metrics</h3>
+            <Tooltip
+              showOnMobile={true}
+              label={`For the label without the .eth suffix. Includes similar variants.`}
+              position='top'
+              align='left'
+              labelClassName='w-80 whitespace-normal!'
+            >
+              <Image src={InfoIcon} width={20} height={20} alt='Info' />
+            </Tooltip>
+          </div>
+          <div className='flex flex-row items-center gap-1 transition-opacity group-hover/metrics:opacity-80'>
             {hasMetrics && (
               <button
                 className='ml-2 flex cursor-pointer items-center justify-center rounded-md p-1 transition-opacity hover:opacity-80'

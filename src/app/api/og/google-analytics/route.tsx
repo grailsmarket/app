@@ -125,7 +125,7 @@ function generateTrendChartSVG(
   // Year-change divider
   let yearDivider = ''
   for (let i = 1; i < n; i++) {
-    if (sorted[i].year !== sorted[i - 1].year) {
+    if (sorted[i].year !== sorted[i - 1].year && sorted[i].year !== 2026) {
       const xMid = ((points[i - 1].x + points[i].x) / 2).toFixed(1)
       yearDivider += `<line x1="${xMid}" x2="${xMid}" y1="${margin.top}" y2="${margin.top + h}" stroke="#999" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="4,4" />`
       yearDivider += `<text x="${xMid}" y="${margin.top + h + 28}" fill="#999" font-size="24" text-anchor="middle" font-family="Inter, sans-serif">${sorted[i].year}</text>`
@@ -299,10 +299,9 @@ export async function GET(req: NextRequest) {
       <!DOCTYPE html>
       <html>
         <head>
-          <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            .ens-image svg text, .ens-image svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; }
+            .ens-image svg text, .ens-image svg tspan { font-family: 'Inter', sans-serif }
             body {
               width: ${size.width}px;
               height: ${size.height}px;

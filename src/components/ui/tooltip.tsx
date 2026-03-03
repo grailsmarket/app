@@ -17,6 +17,7 @@ export interface TooltipProps {
   align?: TooltipAlignType
   showTooltip?: boolean
   showOnMobile?: boolean
+  labelClassName?: string
 }
 
 const Tooltip: React.FC<TooltipProps> = ({
@@ -29,6 +30,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   align,
   showTooltip = true,
   showOnMobile = false,
+  labelClassName,
 }) => {
   const isTouchDevice = useIsTouchDevice()
   const { setTooltipHovered, tooltipHovered, tooltipStyle, pointStyle } = useTooltip({
@@ -66,7 +68,11 @@ const Tooltip: React.FC<TooltipProps> = ({
       {showTooltip && tooltipHovered && (
         <div
           style={tooltipStyle}
-          className={cn('animate-fadeIn absolute whitespace-nowrap text-white', !showOnMobile && 'hidden lg:block')}
+          className={cn(
+            'animate-fadeIn absolute whitespace-nowrap text-white',
+            labelClassName,
+            !showOnMobile && 'hidden lg:block'
+          )}
         >
           <div style={pointStyle} className='absolute'></div>
           <p className='text-lg'>{label}</p>

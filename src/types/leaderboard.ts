@@ -1,3 +1,5 @@
+import { ForceFollowingState } from 'ethereum-identity-kit'
+
 export interface LeaderboardUser {
   address: `0x${string}`
   names_owned: number
@@ -7,6 +9,7 @@ export interface LeaderboardUser {
   names_sold: number
   sales_volume: string
   clubs: string[]
+  followState?: ForceFollowingState
 }
 
 export interface LeaderboardResponse {

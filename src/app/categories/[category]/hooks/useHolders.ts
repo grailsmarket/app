@@ -1,9 +1,17 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { fetchHolders, Holder } from '@/api/holders'
+import { fetchHolders } from '@/api/holders'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
+import { useMemo } from 'react'
+import { useBatchButtonStateQuery } from '@/hooks/useBatchButtonStateQuery'
 
 export const useHolders = (category: string) => {
-  return useInfiniteQuery({
+  const {
+    data: holdersData,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
     queryKey: ['holders', category],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await fetchHolders({ category, page: pageParam, limit: DEFAULT_FETCH_LIMIT })
@@ -18,6 +26,39 @@ export const useHolders = (category: string) => {
     initialPageParam: 1,
     enabled: !!category,
   })
+
+  const { followStates, isFollowStatesLoading, isFetchingNextFollowStatesPage, isRefetchingFollowStates } =
+    useBatchButtonStateQuery({
+      addresses: holdersData?.pages.map((page) => page.holders.map((holder) => holder.address)) || [],
+      queryKey: ['followStates', category, 'holders'],
+    })
+
+  const holders = useMemo(() => {
+    return holdersData?.pages.flatMap((page) => page.holders) || []
+  }, [holdersData])
+
+  const holdersWithFollowStates = useMemo(() => {
+    return holders.map((holder, index) => {
+      const followState = followStates?.[index]
+      return {
+        ...holder,
+        followState: {
+          state: followState?.state,
+          isLoading: followState
+            ? isRefetchingFollowStates
+            : isFollowStatesLoading || isFetchingNextFollowStatesPage || isRefetchingFollowStates,
+        },
+      }
+    })
+  }, [holders, followStates, isFollowStatesLoading, isFetchingNextFollowStatesPage, isRefetchingFollowStates])
+
+  return {
+    holders: holdersWithFollowStates,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  }
 }
 
 export const useHoldersCount = (category: string) => {
@@ -29,10 +70,4 @@ export const useHoldersCount = (category: string) => {
     },
     enabled: !!category,
   })
-}
-
-// Flatten holders from infinite query pages
-export const flattenHolders = (data: ReturnType<typeof useHolders>['data']): Holder[] => {
-  if (!data) return []
-  return data.pages.flatMap((page) => page.holders)
 }

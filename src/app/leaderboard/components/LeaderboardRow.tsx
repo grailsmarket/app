@@ -144,6 +144,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
         <FollowButton
           lookupAddress={user.address}
           connectedAddress={userAddress}
+          forceState={user.followState}
           onDisconnectedClick={() => openConnectModal?.()}
         />
       </div>
@@ -324,6 +325,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
                 <FollowButton
                   lookupAddress={user.address}
                   connectedAddress={userAddress}
+                  forceState={user.followState}
                   onDisconnectedClick={() => openConnectModal?.()}
                 />
               </div>

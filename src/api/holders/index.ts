@@ -1,8 +1,10 @@
 import { API_BASE_URL } from '@/constants/analytics'
+import { ForceFollowingState } from 'ethereum-identity-kit'
 
 export interface Holder {
   address: `0x${string}`
   name_count: number
+  followState?: ForceFollowingState
 }
 
 export interface HoldersResponse {

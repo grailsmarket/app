@@ -7,7 +7,7 @@ import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
 import LeaderboardRow from './LeaderboardRow'
 import LeaderboardFilters from './LeaderboardFilters'
-import { useLeaderboard, flattenLeaderboardUsers } from '../hooks/useLeaderboard'
+import { useLeaderboard } from '../hooks/useLeaderboard'
 import type { LeaderboardUser, LeaderboardSortBy } from '@/types/leaderboard'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
@@ -108,13 +108,12 @@ const LeaderboardList: React.FC = () => {
     leaderboard: { sortBy, sortOrder, selectedClubs },
   } = useAppSelector(selectLeaderboardState)
 
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useLeaderboard({
+  const { users, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useLeaderboard({
     sortBy,
     sortOrder,
     clubs: selectedClubs,
   })
 
-  const users = useMemo(() => flattenLeaderboardUsers(data), [data])
   const noResults = !isLoading && users.length === 0
 
   const handleScrollNearBottom = useCallback(() => {

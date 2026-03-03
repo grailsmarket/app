@@ -6,7 +6,7 @@ import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
 import AllHolderRow from './allHolderRow'
-import { useAllHolders, flattenAllHolders } from '../hooks/useAllHolders'
+import { useAllHolders } from '../hooks/useAllHolders'
 import type { Holder } from '@/api/holders'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
@@ -24,9 +24,8 @@ const LoadingRow = () => (
 const AllHoldersPanel: React.FC = () => {
   const { height } = useWindowSize()
   const { isNavbarVisible } = useNavbar()
-  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useAllHolders()
+  const { holders, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useAllHolders()
 
-  const holders = useMemo(() => flattenAllHolders(data), [data])
   const noResults = !isLoading && holders.length === 0
 
   const handleScrollNearBottom = useCallback(() => {

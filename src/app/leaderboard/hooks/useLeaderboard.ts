@@ -49,8 +49,8 @@ export const useLeaderboard = ({
 
   const { followStates, isFollowStatesLoading, isFetchingNextFollowStatesPage, isRefetchingFollowStates } =
     useBatchButtonStateQuery({
-      addresses: addresses,
-      queryKey: ['followStates', 'leaderboard'],
+      addresses,
+      queryKey: ['followStates', 'leaderboard', sortBy, sortOrder, clubs],
     })
 
   const leaderboardUsers = useMemo(() => {
@@ -58,6 +58,7 @@ export const useLeaderboard = ({
   }, [leaderboardData])
 
   const leaderboardUsersWithFollowStates = useMemo(() => {
+    console.log('followStates', followStates)
     return leaderboardUsers.map((user, index) => {
       const followState = followStates?.[index]
 

@@ -345,14 +345,14 @@ export async function GET(req: NextRequest) {
               justify-content: center;
               overflow: hidden;
               flex-shrink: 0;
-              border-radius: ${categories.length > 0 ? '0px' : '0px 0px 20px 20px'} !important;
+              border-radius: ${categories.length > 0 ? '0px' : '20px'} !important;
             }
             .ens-image svg {
               width: 480px !important;
               height: 480px !important;
               width: auto;
               height: auto;
-              border-radius: ${categories.length > 0 ? '0px' : '0px 0px 20px 20px'} !important;
+              border-radius: ${categories.length > 0 ? '0px' : '20px'} !important;
             }
             .fallback {
               width: 480px;
@@ -527,11 +527,15 @@ export async function GET(req: NextRequest) {
               <div class="ens-image">
                 ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
               </div>
-              <div class="categories">
+              ${
+                categories.length > 0
+                  ? `<div class="categories">
                 ${categoryAvatarDataUri ? `<img class="category-logo" src="${categoryAvatarDataUri}" alt="category" />` : ''}
                 ${categories.length > 0 ? `<p class="category-label">${CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}</p>` : ''}
                 ${categories.length > 1 ? `<p class="category-count">+${categories.length - 1}</p>` : ''}
-              </div>
+              </div>`
+                  : ''
+              }
             </div>
             <div class="analytics-container">
               ${

@@ -4,11 +4,14 @@ import { useEffect, useMemo } from 'react'
 
 interface UseBatchButtonStateQueryProps {
   addresses: string[][]
-  queryKey: string[]
+  queryKey: any[]
 }
 
 export const useBatchButtonStateQuery = ({ addresses, queryKey }: UseBatchButtonStateQueryProps) => {
   const { selectedList, isCheckoutFinished } = useTransactions()
+
+  // used to determine the first page and help with finding out if the query needs to be refetched
+  const firstPageKey = addresses[0]?.join(',') ?? ''
 
   const {
     data: followStatesData,
@@ -18,20 +21,23 @@ export const useBatchButtonStateQuery = ({ addresses, queryKey }: UseBatchButton
     refetch: refetchFollowStates,
     isRefetching: isRefetchingFollowStates,
   } = useInfiniteQuery({
-    queryKey: [...queryKey, selectedList],
+    queryKey: [...queryKey, selectedList, firstPageKey],
     queryFn: async ({ pageParam = 1 }) => {
-      const addressesToFetch = addresses[pageParam - 1] || []
-      if (addressesToFetch.length === 0) {
+      const addressesToFetch = addresses[pageParam - 1]
+
+      if (!addressesToFetch || addressesToFetch.length === 0) {
         return {
           followStates: [],
-          nextPageParam: pageParam + 1,
+          nextPageParam: pageParam,
           hasNextPage: true,
         }
       }
+
       const response = await fetchBatchFollowState({
         lookupAddressesOrNames: addressesToFetch,
         list: selectedList,
       })
+
       return {
         followStates: response,
         nextPageParam: pageParam + 1,
@@ -41,11 +47,15 @@ export const useBatchButtonStateQuery = ({ addresses, queryKey }: UseBatchButton
     getNextPageParam: (lastPage) => lastPage.nextPageParam,
     initialPageParam: 1,
     refetchOnWindowFocus: false,
+    enabled: addresses.length > 0 && addresses[0]?.length > 0,
   })
 
   useEffect(() => {
-    fetchNextFollowStatesPage()
-  }, [addresses, fetchNextFollowStatesPage])
+    const pagesLoaded = followStatesData?.pages?.length ?? 0
+    if (pagesLoaded > 0 && addresses.length > pagesLoaded) {
+      fetchNextFollowStatesPage()
+    }
+  }, [addresses.length, followStatesData?.pages?.length, fetchNextFollowStatesPage])
 
   useEffect(() => {
     if (isCheckoutFinished) {

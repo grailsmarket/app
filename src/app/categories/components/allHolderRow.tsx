@@ -99,6 +99,7 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder, rank }) => {
         <FollowButton
           lookupAddress={holder.address}
           connectedAddress={userAddress}
+          forceState={holder.followState}
           onDisconnectedClick={() => openConnectModal?.()}
         />
       </div>

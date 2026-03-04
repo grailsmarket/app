@@ -65,7 +65,7 @@ const SignInButton = () => {
           isDropdownOpen && 'flex'
         )}
       >
-        <Link href={`/profile/${userAddress}`}>
+        <Link href={`/profile/${userAddress}`} onClick={() => setIsDropdownOpen(false)}>
           <button className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'>
             <p>My Profile</p>
           </button>

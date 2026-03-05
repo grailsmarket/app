@@ -40,6 +40,8 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.1",
+    "@ensemble-ens/react": "^0.1.0",
+    "@openai/chatkit-react": "^1.5.0",
     "viem": "2.46.2",
     "wagmi": "^2.19.4"
   },

@@ -34,6 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='dark'>
+      <head>
+        <script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async />
+      </head>
       <body className={`${inter.variable} ${sedanSC.variable} antialiased`}>
         <Providers>{children}</Providers>
         <Production>

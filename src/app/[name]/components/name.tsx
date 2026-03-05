@@ -16,6 +16,8 @@ import Metadata from './metadata'
 import Roles from './roles'
 import KeywordMetrics from './keywordMetrics'
 import SimilarNames from './similarNames'
+import { ENSemble } from '@ensemble-ens/react'
+import '@ensemble-ens/react/styles.css'
 // import Metadata from './metadata'
 
 interface Props {
@@ -164,6 +166,13 @@ const NamePage: React.FC<Props> = ({ name }) => {
           </div>
           <ActivityPanel name={name} />
           <SimilarNames name={name} />
+          <ENSemble
+            name={name}
+            apiUrl={process.env.NEXT_PUBLIC_ENSEMBLE_API_URL!}
+            apiKey={process.env.NEXT_PUBLIC_ENSEMBLE_API_KEY}
+            chatApiUrl={process.env.NEXT_PUBLIC_CHATKIT_API_URL}
+            chatDomainKey={process.env.NEXT_PUBLIC_CHATKIT_DOMAIN_KEY}
+          />
         </div>
       </div>
     </div>

@@ -117,7 +117,6 @@ const ShareModal: React.FC<ShareModalProps> = ({
         URL.revokeObjectURL(imageUrl)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleDownload = async () => {

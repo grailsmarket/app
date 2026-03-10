@@ -71,8 +71,6 @@ export const useMarketplaceActivity = (setIsLiveActivityConnected: (isConnected:
       }
       ws.close()
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const { selectors } = useFilterRouter()

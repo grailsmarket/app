@@ -44,7 +44,6 @@ export const useOfferFilter = () => {
       isInitialSync.current = false
     }
     // Only re-run when Redux values change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minVal, maxVal])
 
   const setMaxOffer = (value: number) => {
@@ -63,7 +62,6 @@ export const useOfferFilter = () => {
     // Skip initial null state (waiting for URL sync, not user input)
     if (currMinVal === null && debouncedMinVal === '') return
     setMinOffer(Number(debouncedMinVal))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMinVal, currMinVal])
 
   useEffect(() => {
@@ -72,7 +70,6 @@ export const useOfferFilter = () => {
     // Skip initial null state (waiting for URL sync, not user input)
     if (currMaxVal === null && debouncedMaxVal === '') return
     setMaxOffer(Number(debouncedMaxVal))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMaxVal, currMaxVal])
 
   return {

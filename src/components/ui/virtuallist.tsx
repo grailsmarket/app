@@ -69,17 +69,13 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     [useLocalScrollTop, containerScroll, selectors.filters.scrollTop]
   )
 
-  const setStoredScrollTop = useMemo(
-    () => {
-      if (useLocalScrollTop || containerScroll) {
-        return () => {} // No-op for local scroll or container scroll
-      } else {
-        return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [useLocalScrollTop, containerScroll, actions]
-  )
+  const setStoredScrollTop = useMemo(() => {
+    if (useLocalScrollTop || containerScroll) {
+      return () => {} // No-op for local scroll or container scroll
+    } else {
+      return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+    }
+  }, [useLocalScrollTop, containerScroll, actions])
 
   // Total height of the list content
   const totalHeight = items.length * (rowHeight + gap)

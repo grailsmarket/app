@@ -172,8 +172,6 @@ const Actions: React.FC<ActionsProps> = ({
     }
 
     return null
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [domainListing, registrationStatus, isMyDomain])
 
   if (isBulkSelecting) {

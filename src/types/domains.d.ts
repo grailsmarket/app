@@ -436,6 +436,10 @@ export type CategoryType = {
   reg_count_1w: number
   reg_count_1y: number
   total_reg_count: number
+  total_reg_volume_wei: string
+  reg_volume_wei_1mo: string
+  reg_volume_wei_1w: string
+  reg_volume_wei_1y: string
   created_at: string
   updated_at: string
   premium_count: number

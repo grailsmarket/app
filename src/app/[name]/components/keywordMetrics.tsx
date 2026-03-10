@@ -246,8 +246,6 @@ const TrendChart: React.FC<{
           .style('transform', `translateX(${translateX})`)
           .style('box-shadow', '0 4px 4px rgba(0,0,0,0.2)')
       })
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartData, dimensions])
 
   if (!data || data.length === 0) return null

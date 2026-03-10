@@ -40,7 +40,6 @@ export const useLengthFilter = () => {
       isInitialSync.current = false
     }
     // Only re-run when Redux values change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minVal, maxVal])
 
   const setMinLength = (min: number) => {
@@ -59,7 +58,6 @@ export const useLengthFilter = () => {
     // Skip initial null state (waiting for URL sync, not user input)
     if (currMinVal === null && debouncedMinVal === '') return
     setMinLength(Number(debouncedMinVal))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMinVal, currMinVal])
 
   useEffect(() => {
@@ -68,7 +66,6 @@ export const useLengthFilter = () => {
     // Skip initial null state (waiting for URL sync, not user input)
     if (currMaxVal === null && debouncedMaxVal === '') return
     setMaxLength(Number(debouncedMaxVal))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMaxVal, currMaxVal])
 
   return {

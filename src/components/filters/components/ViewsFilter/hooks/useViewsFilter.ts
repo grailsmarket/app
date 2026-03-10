@@ -41,7 +41,6 @@ export const useViewsFilter = () => {
       isInitialSync.current = false
     }
     // Only re-run when Redux values change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minVal, maxVal])
 
   const setMinViews = (min: number) => {
@@ -60,7 +59,6 @@ export const useViewsFilter = () => {
     // Skip initial null state (waiting for URL sync, not user input)
     if (currMinVal === null && debouncedMinVal === '') return
     setMinViews(Number(debouncedMinVal))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMinVal, currMinVal])
 
   useEffect(() => {
@@ -69,7 +67,6 @@ export const useViewsFilter = () => {
     // Skip initial null state (waiting for URL sync, not user input)
     if (currMaxVal === null && debouncedMaxVal === '') return
     setMaxViews(Number(debouncedMaxVal))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedMaxVal, currMaxVal])
 
   return {

@@ -39,6 +39,7 @@ const InfoBar: React.FC<InfoBarProps> = ({ onVisibilityChange }) => {
         <a
           href='https://x.com/BrantlyMillegan/status/1997016013242556767'
           target='_blank'
+          rel='noreferrer'
           className='text-background underline hover:opacity-70'
         >
           Learn how

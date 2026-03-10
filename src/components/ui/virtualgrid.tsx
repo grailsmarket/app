@@ -74,17 +74,13 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     [useLocalScrollTop, selectors.filters.scrollTop]
   )
 
-  const setStoredScrollTop = useMemo(
-    () => {
-      if (useLocalScrollTop) {
-        return () => {} // No-op for local scroll
-      } else {
-        return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [useLocalScrollTop, actions]
-  )
+  const setStoredScrollTop = useMemo(() => {
+    if (useLocalScrollTop) {
+      return () => {} // No-op for local scroll
+    } else {
+      return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+    }
+  }, [useLocalScrollTop, actions])
 
   // Calculate columns based on container width
   const columnsCount = useMemo(() => {

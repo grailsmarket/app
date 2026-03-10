@@ -34,7 +34,6 @@ export const useCreationDateFilter = () => {
     if (isInitialSync.current) {
       isInitialSync.current = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minVal, maxVal])
 
   const setMinDate = (date: string | null) => {

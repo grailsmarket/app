@@ -158,7 +158,7 @@ const RegistrationModal: React.FC = () => {
 
     checkNameAvailability()
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- we only want to check availability when the modal is open and the name is changed, while the flow state is just a precaution to prevent accidental state changes and re-checking availability
+    // we only want to check availability when the modal is open and the name is changed, while the flow state is just a precaution to prevent accidental state changes and re-checking availability
   }, [registrationState.name, registrationState.isOpen, checkAvailable, isClient])
 
   // Handle wait timer and auto-advance when ready
@@ -316,7 +316,6 @@ const RegistrationModal: React.FC = () => {
 
   useEffect(() => {
     getGasEstimate()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registrationState.name, address, calculationResults, secret, rentPriceData])
 
   const hasSufficientBalance = useMemo(() => {
@@ -482,7 +481,7 @@ const RegistrationModal: React.FC = () => {
   // Check for existing valid commitment when reloaded or when critical parameters change (address, name)
   useEffect(() => {
     checkForExistingCommitment()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- we want to check when relevant registration parameters change
+    // we want to check when relevant registration parameters change
   }, [address, registrationState.name])
 
   const handleCommit = async () => {

@@ -158,7 +158,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     // Estimate gas and check approval when modal opens
     estimateGas()
     checkApproval()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const formattedGasEstimate = useMemo(() => {

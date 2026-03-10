@@ -70,7 +70,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       estimateGas()
       checkApproval()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offer, domain])
 
   if (!offer || !domain) return null

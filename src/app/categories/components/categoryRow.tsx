@@ -120,6 +120,38 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
     }
   }, [categorySort, category])
 
+  const registrationsVolumeTimeWindow = useMemo(() => {
+    const timeWindow = getCategorySortTimeWindow(categorySort)
+
+    switch (timeWindow) {
+      case 'total':
+        return {
+          label: '',
+          value: category.total_reg_volume_wei,
+        }
+      case '1y':
+        return {
+          label: '1y',
+          value: category.reg_volume_wei_1y,
+        }
+      case '1mo':
+        return {
+          label: '1mo',
+          value: category.reg_volume_wei_1mo,
+        }
+      case '1w':
+        return {
+          label: '1w',
+          value: category.reg_volume_wei_1w,
+        }
+      default:
+        return {
+          label: '',
+          value: category.total_reg_volume_wei,
+        }
+    }
+  }, [categorySort, category])
+
   const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
 
   return (
@@ -256,6 +288,22 @@ const CategoryRow = ({ category, reduceColumns = false, sort }: CategoryRowProps
             <span className='text-lg'>
               {registrationsTimeWindow?.label && registrationsTimeWindow.label.length > 0
                 ? `(${registrationsTimeWindow.label})`
+                : ''}
+            </span>
+          </p>
+        </div>
+        <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
+          <Price
+            price={registrationsVolumeTimeWindow ? registrationsVolumeTimeWindow.value : category.total_reg_volume_wei}
+            currencyAddress={category.floor_price_currency as Address}
+            iconSize='18px'
+            fontSize='text-lg font-semibold'
+          />
+          <p className='text-neutral text-lg font-medium'>
+            Reg Vol&nbsp;
+            <span className='text-lg'>
+              {registrationsVolumeTimeWindow?.label && registrationsVolumeTimeWindow.label.length > 0
+                ? `(${registrationsVolumeTimeWindow.label})`
                 : ''}
             </span>
           </p>

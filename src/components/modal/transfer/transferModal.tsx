@@ -133,7 +133,6 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   // Check approvals when domains change
   useEffect(() => {
     checkApprovals()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [domains, address])
 
   const handleApprove = async (contractAddress: Address, contractName: string) => {

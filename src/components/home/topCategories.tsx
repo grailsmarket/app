@@ -37,8 +37,6 @@ const TopCategories = () => {
   useEffect(() => {
     dispatch(setCategoriesPageSort(DEFAULT_CATEGORIES_PAGE_SORT))
     dispatch(setCategoriesPageSortDirection('desc'))
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const categoryCount = useMemo(() => {

@@ -180,7 +180,6 @@ export const SelectAllProvider: React.FC<SelectAllProviderProps> = ({
       console.error('Error in select all:', error)
       dispatch(setSelectAllError('An error occurred while selecting domains.'))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     canSelectAll,
     selectAll?.isLoading,

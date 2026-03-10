@@ -77,7 +77,6 @@ export const useSettings = () => {
     if (!emailAddress) return true
 
     return emailRegex.test(emailAddress)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailAddress])
 
   const haveChanges = useMemo(() => {
@@ -91,7 +90,6 @@ export const useSettings = () => {
     }
 
     return hasFieldChanges
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailAddress, discordUsername, telegramUsername, email.address, discord, telegram])
 
   return {

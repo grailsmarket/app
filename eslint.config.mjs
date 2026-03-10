@@ -1,22 +1,44 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+import pluginReact from 'eslint-plugin-react'
+import eslintConfigPrettier from 'eslint-config-prettier'
+import pluginNextConfig from '@next/eslint-plugin-next'
+import pluginReactHooks from 'eslint-plugin-react-hooks'
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
+  { ignores: ['public/*', 'node_modules/*', '.next/*', '.next-env.d.ts'] },
+  { languageOptions: { globals: globals.browser } },
+  ...tseslint.configs.recommended,
+  pluginReact.configs.flat.recommended,
   {
-    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
   },
+  {
+    rules: {
+      'react/prop-types': 'off',
+      'react/jsx-uses-react': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'react/no-array-index-key': 'off',
+      'react/no-unknown-property': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/triple-slash-reference': 'off',
+    },
+  },
+  {
+    plugins: {
+      '@next/next': pluginNextConfig,
+      'react-hooks': pluginReactHooks,
+    },
+  },
+  eslintConfigPrettier,
 ]
 
 export default eslintConfig

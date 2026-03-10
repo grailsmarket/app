@@ -26,8 +26,6 @@ const TextMatchFilterItem: React.FC<TextMatchFilterItemProps> = ({ label, placeh
     if (value !== localValue && value !== debouncedValue) {
       setLocalValue(value)
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   return (

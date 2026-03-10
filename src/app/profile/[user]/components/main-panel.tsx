@@ -108,7 +108,6 @@ const MainPanel: React.FC<Props> = ({ user }) => {
     }
 
     dispatch(setLastVisitedProfile(user))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   // ensure that only the owner of the profile can see the watchlist

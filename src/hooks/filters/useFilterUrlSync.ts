@@ -345,8 +345,6 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         isSyncingFromUrl.current = false
       })
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run on mount
 
   // Apply pending URL filters when actions are ready

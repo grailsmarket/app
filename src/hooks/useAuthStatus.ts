@@ -124,7 +124,6 @@ export const useAuth = () => {
       disconnect()
       document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authStatus])
 
   useEffect(() => {
@@ -138,7 +137,6 @@ export const useAuth = () => {
 
     setCurrAddress(address)
     refetchAuthStatus()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refetchAuthStatus])
 
   const verify = async (message: string, _: string, signature: string) => {

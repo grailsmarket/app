@@ -213,7 +213,7 @@ export async function GET(req: NextRequest) {
           <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            svg text, svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; }
+            svg text, svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; font-variant-emoji: unicode; }
             body {
               width: ${size.width}px;
               height: ${size.height}px;
@@ -417,6 +417,7 @@ export async function GET(req: NextRequest) {
               text-overflow: ellipsis;
               white-space: nowrap;
               font-family: 'Inter', system-ui, -apple-system, sans-serif, 'Noto Color Emoji';
+              font-variant-emoji: unicode;
             }
           </style>
         </head>

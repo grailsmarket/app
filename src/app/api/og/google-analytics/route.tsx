@@ -299,9 +299,10 @@ export async function GET(req: NextRequest) {
       <!DOCTYPE html>
       <html>
         <head>
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            .ens-image svg text, .ens-image svg tspan { font-family: 'Inter', sans-serif }
+            .ens-image svg text, .ens-image svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; font-variant-emoji: unicode; }
             body {
               width: ${size.width}px;
               height: ${size.height}px;
@@ -505,6 +506,7 @@ export async function GET(req: NextRequest) {
               text-overflow: ellipsis;
               white-space: nowrap;
               font-family: 'Inter', system-ui, -apple-system, sans-serif, 'Noto Color Emoji';
+              font-variant-emoji: unicode;
             }
             .grails-logo {
               margin-top: 16px;

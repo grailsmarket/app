@@ -33,8 +33,9 @@ import { useShiftKeyListener } from '@/hooks/useShiftKey'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
-import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
+import { openBulkRegistrationModal } from '@/state/reducers/registration'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -125,6 +126,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           )
       )
     : []
+  const namesRegister = selectedDomains.filter((domain) =>
+    REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))
+  )
 
   const handleBulkSelect = () => {
     dispatch(setBulkSelectIsSelecting(true))
@@ -277,6 +281,14 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     dispatch(setCancelListingModalOpen(true))
   }
 
+  const handleRegisterAction = () => {
+    dispatch(
+      openBulkRegistrationModal({
+        entries: namesRegister.map((d) => ({ name: d.name, domain: d })),
+      })
+    )
+  }
+
   const handleSelectAll = () => {
     if (selectAllContext?.canSelectAll) {
       selectAllContext.startSelectAll()
@@ -343,18 +355,24 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'grace' ||
     selectedTab?.value === 'names'
   const canCancelListings = selectedTab?.value === 'domains' || selectedTab?.value === 'listings'
+  const canRegisterDomains = selectedTab?.value === 'names' || selectedTab?.value === 'watchlist'
 
   const isSelectAllLoading = selectAll?.isLoading ?? false
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
+  const hasRegisterButton = (showOwnedActionButtons || canRegisterDomains) && namesRegister.length > 0
   const bulkSelectWidth = showOwnedActionButtons
-    ? 'min(820px,95vw)'
+    ? hasRegisterButton
+      ? 'min(920px,95vw)'
+      : 'min(820px,95vw)'
     : showWatchlistButton
       ? 'min(650px,95vw)'
-      : windowWidth && windowWidth < 640
-        ? 'min(130px,95vw)'
-        : 'min(420px,95vw)'
+      : hasRegisterButton
+        ? 'min(520px,95vw)'
+        : windowWidth && windowWidth < 640
+          ? 'min(130px,95vw)'
+          : 'min(420px,95vw)'
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -461,6 +479,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 <p>Extend</p>
                 <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
               </PrimaryButton>
+              {canRegisterDomains && namesRegister.length > 0 && (
+                <PrimaryButton
+                  onClick={handleRegisterAction}
+                  disabled={selectedDomains.length === 0 || namesRegister.length === 0}
+                  className='flex items-center gap-1.5'
+                >
+                  <p>Register</p>
+                  <Label label={namesRegister.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
               {showOwnedActionButtons && (
                 <>
                   <PrimaryButton

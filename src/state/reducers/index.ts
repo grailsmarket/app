@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { persistReducer } from 'redux-persist'
+import { createMigrate, persistReducer } from 'redux-persist'
 
 import storage from '../storage'
 import modalReducer from './modals'
@@ -19,11 +19,65 @@ import leaderboardReducer from './leaderboard'
 
 const PERSISTED_KEYS: string[] = ['registration', 'view', 'profile']
 
+const migrations: Record<string, (state: any) => any> = {
+  2: (state: any) => {
+    const reg = state?.registration
+    if (!reg) return state
+
+    if (Array.isArray(reg.entries)) return state
+
+    const entry = reg.name
+      ? {
+          name: reg.name,
+          domain: reg.domain ?? null,
+          registrationMode: null,
+          quantity: null,
+          timeUnit: null,
+          customDuration: null,
+          calculatedDuration: reg.calculatedDuration ?? null,
+          isAvailable: reg.isNameAvailable ?? null,
+        }
+      : null
+
+    const batch =
+      reg.commitTxHash || reg.registerTxHash || reg.commitmentHash
+        ? {
+            batchIndex: 0,
+            nameIndices: [0],
+            commitmentHashes: reg.commitmentHash ? [reg.commitmentHash] : null,
+            commitTxHash: reg.commitTxHash ?? null,
+            commitmentTimestamp: reg.commitmentTimestamp ?? null,
+            registerTxHash: reg.registerTxHash ?? null,
+            committed: !!reg.commitmentTimestamp,
+            registered: reg.flowState === 'success',
+          }
+        : null
+
+    return {
+      ...state,
+      registration: {
+        isOpen: reg.isOpen ?? false,
+        flowState: reg.flowState ?? 'review',
+        secret: reg.secret ?? null,
+        errorMessage: reg.errorMessage ?? null,
+        entries: entry ? [entry] : [],
+        registrationMode: reg.registrationMode ?? 'register_for',
+        quantity: reg.quantity ?? 1,
+        timeUnit: reg.timeUnit ?? 'years',
+        customDuration: reg.customDuration ?? 0,
+        batches: batch ? [batch] : [],
+        currentBatchIndex: 0,
+      },
+    }
+  },
+}
+
 const persistConfig = {
   key: 'root',
   whitelist: PERSISTED_KEYS,
-  version: 1,
+  version: 2,
   storage,
+  migrate: createMigrate(migrations, { debug: false }),
 }
 
 const reducer = combineReducers({

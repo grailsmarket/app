@@ -5,8 +5,6 @@ import { Address, isAddress, numberToHex } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
 import Price from '@/components/ui/price'
 import { cn } from '@/utils/tailwind'
-import { convertWeiPrice } from '@/utils/convertWeiPrice'
-import useETHPrice from '@/hooks/useETHPrice'
 import { ShortArrow } from 'ethereum-identity-kit'
 import { CopyValue } from './primaryDetails'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
@@ -27,8 +25,6 @@ interface NameDetailsProps {
 
 const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetailsIsLoading, roles }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(true)
-  const { ethPrice } = useETHPrice()
-
   const rows: Row[] = [
     // {
     //   label: 'Created',
@@ -40,7 +36,7 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
       value:
         nameDetails?.last_sale_price && nameDetails?.last_sale_currency ? (
           <Price
-            price={convertWeiPrice(nameDetails?.last_sale_price, nameDetails?.last_sale_currency, ethPrice)}
+            price={nameDetails?.last_sale_price}
             currencyAddress={nameDetails?.last_sale_currency as Address}
             iconSize='20px'
             fontSize='text-xl font-semibold'

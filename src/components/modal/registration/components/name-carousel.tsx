@@ -15,9 +15,7 @@ interface NameCarouselProps {
 }
 
 function getExpiryDate(entry: NameRegistrationEntry, fallbackDurationSeconds: bigint): string {
-  const duration = entry.calculatedDuration
-    ? Number(entry.calculatedDuration)
-    : Number(fallbackDurationSeconds)
+  const duration = entry.calculatedDuration ? Number(entry.calculatedDuration) : Number(fallbackDurationSeconds)
   return new Date(duration * 1000 + Date.now()).toISOString()
 }
 
@@ -29,7 +27,7 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
   const items = [...entries, ...entries, ...entries]
 
   return (
-    <div className='-mx-lg sm:-mx-xl w-[calc(100%+var(--padding-lg)*2)] sm:w-[calc(100%+var(--padding-xl)*2)] overflow-hidden py-2'>
+    <div className='-mx-lg sm:-mx-xl w-[calc(100%+var(--padding-lg)*2)] overflow-hidden py-2 sm:w-[calc(100%+var(--padding-xl)*2)]'>
       <div
         className='flex hover:[animation-play-state:paused]'
         style={{
@@ -49,17 +47,12 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
             <NameImage
               name={entry.name}
               tokenId={entry.domain?.token_id}
-              expiryDate={getExpiryDate(
-                entry,
-                calculationResults?.durationSeconds ?? BigInt(YEAR_IN_SECONDS)
-              )}
+              expiryDate={getExpiryDate(entry, calculationResults?.durationSeconds ?? BigInt(YEAR_IN_SECONDS))}
               className='h-36 w-36 rounded-lg'
               height={IMAGE_SIZE}
               width={IMAGE_SIZE}
             />
-            <p className='w-full truncate text-center text-sm font-medium'>
-              {beautifyName(entry.name)}
-            </p>
+            <p className='w-full truncate text-center text-sm font-medium'>{beautifyName(entry.name)}</p>
           </Link>
         ))}
       </div>

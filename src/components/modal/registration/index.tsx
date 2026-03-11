@@ -13,8 +13,11 @@ import CommittingView from './components/committing-view'
 import WaitingView from './components/waiting-view'
 import RegisteringView from './components/registering-view'
 import ReviewForm from './components/review-form'
+import { useAppDispatch } from '@/state/hooks'
+import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 const RegistrationModal: React.FC = () => {
+  const dispatch = useAppDispatch()
   const modal = useRegistrationModal()
 
   const {
@@ -144,6 +147,7 @@ const RegistrationModal: React.FC = () => {
           onClose={() => {
             handleClose()
             onResetModal()
+            dispatch(clearBulkSelect())
           }}
         />
       ) : registrationState.flowState === 'error' ? (

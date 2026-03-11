@@ -2,7 +2,6 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { UnreadCountResponse } from '@/types/notifications'
 import { authFetch } from '../authFetch'
-import { getUnreadCountMock } from './getUnreadCountMock'
 
 export const getUnreadCount = async (): Promise<number> => {
   try {
@@ -21,8 +20,7 @@ export const getUnreadCount = async (): Promise<number> => {
     const data = (await response.json()) as APIResponseType<UnreadCountResponse>
     return data.data.unreadCount
   } catch (error) {
-    console.warn('Failed to fetch unread count from API, using mock data:', error)
-    // Use mock data as fallback
-    return getUnreadCountMock()
+    console.warn('Failed to fetch unread count from API')
+    return 0
   }
 }

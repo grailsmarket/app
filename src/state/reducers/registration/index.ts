@@ -2,36 +2,14 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { Address, Hex } from 'viem'
 import { MarketplaceDomainType } from '@/types/domains'
-
-export type RegistrationFlowState = 'review' | 'committing' | 'waiting' | 'registering' | 'success' | 'error'
-export type RegistrationMode = 'register_for' | 'register_to'
-export type TimeUnit = 'days' | 'weeks' | 'months' | 'years' | 'custom'
-
-const MAX_BATCH_SIZE = 100
-
-// Duration override for each name (null fields = use base duration)
-export interface NameRegistrationEntry {
-  name: string
-  domain: MarketplaceDomainType
-  registrationMode: RegistrationMode | null
-  quantity: number | null
-  timeUnit: TimeUnit | null
-  customDuration: number | null
-  calculatedDuration: string | null
-  isAvailable: boolean | null
-}
-
-// Batch tracking
-export interface BatchState {
-  batchIndex: number
-  nameIndices: number[]
-  commitmentHashes: Hex[] | null
-  commitTxHash: Hex | null
-  commitmentTimestamp: number | null
-  registerTxHash: Hex | null
-  committed: boolean
-  registered: boolean
-}
+import {
+  BatchState,
+  NameRegistrationEntry,
+  RegistrationFlowState,
+  RegistrationMode,
+  TimeUnit,
+} from '@/types/registration'
+import { MAX_BATCH_SIZE } from '@/constants/registration'
 
 export interface RegistrationModalState {
   isOpen: boolean

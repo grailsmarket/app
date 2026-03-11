@@ -5,6 +5,7 @@ import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import { setBulkOfferModalDomains, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
 import {
   clearBulkSelect,
   selectBulkSelect,
@@ -74,6 +75,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   const { width: windowWidth } = useWindowSize()
   const profileState = useAppSelector(selectUserProfile)
+  const isProUser = profileState.subscription?.tier === 'pro'
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
   const categoriesState = useAppSelector(selectCategoriesPage)
@@ -125,6 +127,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           )
       )
     : []
+  const namesOffer = userAddress
+    ? selectedDomains.filter((domain) => domain.owner?.toLowerCase() !== userAddress.toLowerCase())
+    : selectedDomains
 
   const handleBulkSelect = () => {
     dispatch(setBulkSelectIsSelecting(true))
@@ -173,6 +178,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     dispatch(setMakeListingModalDomains(namesToList))
     dispatch(setMakeListingModalPreviousListings(previousListings))
     dispatch(setMakeListingModalOpen(true))
+  }
+
+  const handleBulkOfferAction = () => {
+    dispatch(setBulkOfferModalDomains(namesOffer))
+    dispatch(setBulkOfferModalOpen(true))
   }
 
   const handleExtendAction = () => {
@@ -343,6 +353,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'grace' ||
     selectedTab?.value === 'names'
   const canCancelListings = selectedTab?.value === 'domains' || selectedTab?.value === 'listings'
+  const canOfferDomains =
+    selectedTab?.value === 'names' ||
+    selectedTab?.value === 'listings' ||
+    selectedTab?.value === 'watchlist'
 
   const isSelectAllLoading = selectAll?.isLoading ?? false
   const selectAllProgress = selectAll?.progress
@@ -461,6 +475,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 <p>Extend</p>
                 <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
               </PrimaryButton>
+              {isProUser && canOfferDomains && namesOffer.length > 0 && (
+                <PrimaryButton
+                  onClick={handleBulkOfferAction}
+                  disabled={selectedDomains.length === 0 || namesOffer.length === 0}
+                  className='flex items-center gap-1.5'
+                >
+                  <p>Offer</p>
+                  <Label label={namesOffer.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
               {showOwnedActionButtons && (
                 <>
                   <PrimaryButton

@@ -8,6 +8,7 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
@@ -15,7 +16,7 @@ import { useMemo, useState } from 'react'
 export const useSettings = () => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
-  const { email, discord, telegram, ensProfile } = useAppSelector(selectUserProfile)
+  const { email, discord, telegram, ensProfile, subscription } = useAppSelector(selectUserProfile)
 
   const [verificationEmailStatus, setVerificationEmailStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
   const [emailAddress, setEmailAddress] = useState(email.address)
@@ -36,6 +37,9 @@ export const useSettings = () => {
       dispatch(setUserEmail({ address: result.data.email, verified: result.data.emailVerified }))
       dispatch(setUserDiscord(result.data.discord))
       dispatch(setUserTelegram(result.data.telegram))
+      if (result.data.tier) {
+        dispatch(setUserSubscription({ tier: result.data.tier, tierExpiresAt: result.data.tierExpiresAt ?? null }))
+      }
       queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
     onError: (error) => {
@@ -67,6 +71,13 @@ export const useSettings = () => {
     }
   }
 
+  const isProSubscription = useMemo(() => {
+    return (
+      subscription?.tier === 'pro' &&
+      (!subscription.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+    )
+  }, [subscription])
+
   const isEmailVerified = useMemo(() => {
     if (email.address === null) return true
     return email.verified
@@ -95,6 +106,8 @@ export const useSettings = () => {
   return {
     email,
     ensProfile,
+    subscription,
+    isProSubscription,
     emailAddress,
     setEmailAddress,
     isEmailVerified,

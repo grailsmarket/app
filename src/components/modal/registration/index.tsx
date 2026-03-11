@@ -141,7 +141,10 @@ const RegistrationModal: React.FC = () => {
           batches={modal.batches}
           totalBatches={modal.totalBatches}
           calculationResults={modal.calculationResults}
-          onClose={handleClose}
+          onClose={() => {
+            handleClose()
+            onResetModal()
+          }}
         />
       ) : registrationState.flowState === 'error' ? (
         <ErrorView errorMessage={registrationState.errorMessage} onRetry={modal.onRetry} onClose={handleClose} />

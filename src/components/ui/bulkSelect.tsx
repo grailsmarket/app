@@ -320,10 +320,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           : selectedTab?.value === 'watchlist') && !cartIsEmpty
 
   // Define which tabs support bulk select for each page type
-  const marketplaceBulkSelectTabs = ['names', 'listings']
-  const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'watchlist']
-  const categoryBulkSelectTabs = ['names', 'listings']
-  const categoriesBulkSelectTabs = ['names', 'listings']
+  const marketplaceBulkSelectTabs = ['names', 'listings', 'available', 'premium']
+  const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'expired', 'watchlist']
+  const categoryBulkSelectTabs = ['names', 'listings', 'premium', 'available']
+  const categoriesBulkSelectTabs = ['names', 'listings', 'premium', 'available']
 
   const isBulkSelectSupportedTab = isProfileTab
     ? profileBulkSelectTabs.includes(selectedTab?.value || '')
@@ -355,21 +355,27 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'grace' ||
     selectedTab?.value === 'names'
   const canCancelListings = selectedTab?.value === 'domains' || selectedTab?.value === 'listings'
-  const canRegisterDomains = selectedTab?.value === 'names' || selectedTab?.value === 'watchlist'
+  const canRegisterDomains =
+    (!isProfileTab && (selectedTab?.value === 'names' || selectedTab?.value === 'domains')) ||
+    selectedTab?.value === 'watchlist' ||
+    selectedTab?.value === 'available' ||
+    selectedTab?.value === 'premium' ||
+    selectedTab?.value === 'expired'
 
   const isSelectAllLoading = selectAll?.isLoading ?? false
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
-  const hasRegisterButton = (showOwnedActionButtons || canRegisterDomains) && namesRegister.length > 0
   const bulkSelectWidth = showOwnedActionButtons
-    ? hasRegisterButton
+    ? canRegisterDomains
       ? 'min(920px,95vw)'
       : 'min(820px,95vw)'
     : showWatchlistButton
-      ? 'min(650px,95vw)'
-      : hasRegisterButton
-        ? 'min(520px,95vw)'
+      ? canRegisterDomains
+        ? 'min(780px,95vw)'
+        : 'min(650px,95vw)'
+      : canRegisterDomains
+        ? 'min(550px,95vw)'
         : windowWidth && windowWidth < 640
           ? 'min(130px,95vw)'
           : 'min(420px,95vw)'
@@ -479,7 +485,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 <p>Extend</p>
                 <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
               </PrimaryButton>
-              {canRegisterDomains && namesRegister.length > 0 && (
+              {canRegisterDomains && (
                 <PrimaryButton
                   onClick={handleRegisterAction}
                   disabled={selectedDomains.length === 0 || namesRegister.length === 0}

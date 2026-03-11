@@ -3,6 +3,7 @@ import NameImage from '@/components/ui/nameImage'
 import { YEAR_IN_SECONDS } from '@/constants/time'
 import { BatchState, CalculationResults, NameRegistrationEntry } from '@/types/registration'
 import Link from 'next/link'
+import NameCarousel from './name-carousel'
 
 interface SuccessViewProps {
   isBulk: boolean
@@ -43,7 +44,7 @@ const SuccessView: React.FC<SuccessViewProps> = ({
             />
           </Link>
         ) : (
-          <p className='text-lg font-medium'>{availableEntries.length} names registered</p>
+          <NameCarousel entries={availableEntries} calculationResults={calculationResults} onClose={onClose} />
         )}
         {batches
           .filter((b) => b.registerTxHash)

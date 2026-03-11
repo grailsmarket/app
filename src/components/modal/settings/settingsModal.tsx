@@ -30,6 +30,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     // telegramUsername,
     // setTelegramUsername,
     ensProfile,
+    subscription,
+    isProSubscription,
     haveChanges,
     isEmailVerified,
     isEmailValid,
@@ -90,6 +92,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </Link>
           </div>
         </div>
+        {/* Subscription Indicator */}
+        {isProSubscription ? (
+          <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
+            <Image src={CheckCircle} alt='Pro Active' height={20} width={20} />
+            <div>
+              <p className='text-md font-medium text-[#16A34A]'>PRO Subscription Active</p>
+              {subscription?.tierExpiresAt && (
+                <p className='text-sm text-[#16A34A]/70'>
+                  Expires {new Date(subscription.tierExpiresAt).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className='bg-secondary p-md flex items-center gap-2 rounded-md'>
+            <p className='text-md text-neutral font-medium'>Free Plan</p>
+          </div>
+        )}
+
         <div className='flex flex-col gap-2 sm:gap-4'>
           {/* <Input
             label='Discord'

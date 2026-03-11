@@ -13,6 +13,11 @@ type EnsProfileType = {
   header: string | null
 }
 
+type SubscriptionType = {
+  tier: 'free' | 'pro'
+  tierExpiresAt: string | null
+}
+
 type profileState = {
   ensProfile: EnsProfileType
   userId: number | null
@@ -26,6 +31,7 @@ type profileState = {
   discord: string | null
   telegram: string | null
   poapClaimed: boolean
+  subscription: SubscriptionType
   lastVisitedProfile: Address | string | null
 }
 
@@ -50,6 +56,7 @@ const initialState: profileState = {
   discord: null,
   telegram: null,
   poapClaimed: false,
+  subscription: { tier: 'free', tierExpiresAt: null },
   watchlist: [],
   pendingWatchlistTokenIds: [],
   selectedTab: PROFILE_TABS[0],
@@ -109,6 +116,9 @@ export const profileSlice = createSlice({
     setLastVisitedProfile(state, { payload }: PayloadAction<Address | string | null>) {
       state.lastVisitedProfile = payload
     },
+    setUserSubscription(state, { payload }: PayloadAction<SubscriptionType>) {
+      state.subscription = payload
+    },
     resetUserProfile(state) {
       state.ensProfile = nullEnsProfile
       state.userId = null
@@ -116,6 +126,7 @@ export const profileSlice = createSlice({
       state.discord = null
       state.telegram = null
       state.poapClaimed = false
+      state.subscription = { tier: 'free', tierExpiresAt: null }
       state.watchlist = []
       state.pendingWatchlistTokenIds = []
     },
@@ -138,6 +149,7 @@ export const {
   removeUserPendingWatchlistDomain,
   changeTab,
   setLastVisitedProfile,
+  setUserSubscription,
   resetUserProfile,
 } = profileSlice.actions
 

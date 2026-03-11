@@ -6,6 +6,7 @@ import React, { createContext, useContext, ReactNode } from 'react'
 import { ContractTransaction } from 'ethers'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+import type { BulkOfferResponse } from '@/api/offers/createBulk'
 
 type SeaportContextValue = {
   isInitialized: boolean
@@ -39,6 +40,13 @@ type SeaportContextValue = {
     currentOwner?: string
     marketplace: ('opensea' | 'grails')[]
   }) => Promise<any>
+  createBulkOffer: (params: {
+    domains: MarketplaceDomainType[]
+    price: number
+    prices?: Map<string, number>
+    currency: 'WETH' | 'USDC'
+    expiryDate: number
+  }) => Promise<BulkOfferResponse>
   fulfillOrder: (order: OrderWithCounter) => Promise<ContractTransaction>
   isLoading: boolean
 }
@@ -55,6 +63,7 @@ export const SeaportProvider: React.FC<{ children: ReactNode }> = ({ children })
     getOrderStatus,
     createListing,
     createOffer,
+    createBulkOffer,
     fulfillOrder,
     isLoading,
   } = useSeaportClient()
@@ -70,6 +79,7 @@ export const SeaportProvider: React.FC<{ children: ReactNode }> = ({ children })
         getOrderStatus,
         createListing,
         createOffer,
+        createBulkOffer,
         fulfillOrder,
         isLoading,
       }}
@@ -95,6 +105,7 @@ export const useSeaportContext = (): SeaportContextValue => {
         return { success: false, error: 'Not implemented' }
       },
       createOffer: async () => {},
+      createBulkOffer: async () => ({ groupId: '', totalOffers: 0, created: 0, failed: 0, results: [] }),
       // @ts-expect-error - fulfillOrder is not implemented
       fulfillOrder: async () => {},
       error: null,

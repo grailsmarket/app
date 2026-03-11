@@ -13,6 +13,7 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { Address } from 'viem'
 import { AuthUserType } from '@/types/api'
@@ -54,6 +55,7 @@ export const useAuth = () => {
     dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
     dispatch(setUserDiscord(user.discord))
     dispatch(setUserTelegram(user.telegram))
+    dispatch(setUserSubscription({ tier: user.tier ?? 'free', tierExpiresAt: user.tierExpiresAt ?? null }))
   }
 
   const {
@@ -79,6 +81,7 @@ export const useAuth = () => {
         const authenticateRes = await checkAuthentication()
 
         if (authenticateRes.success) {
+          console.log('Auth response data:', JSON.stringify(authenticateRes.data))
           setUserDetails(authenticateRes.data)
           return 'authenticated'
         }

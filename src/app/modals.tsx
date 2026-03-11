@@ -32,6 +32,8 @@ import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducer
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
+import BulkOfferModal from '@/components/modal/offer/bulkOfferModal'
+import { selectBulkOfferModal, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
 
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
@@ -85,6 +87,7 @@ const Modals: React.FC = () => {
     user: listSettingsModalUser,
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
+  const { open: bulkOfferModalOpen, domains: bulkOfferModalDomains } = useAppSelector(selectBulkOfferModal)
 
   return (
     <div>
@@ -166,6 +169,12 @@ const Modals: React.FC = () => {
           onClose={() => dispatch(setListSettingsModalOpen(false))}
           profile={listSettingsModalUser}
           selectedList={listSettingsModalList}
+        />
+      )}
+      {bulkOfferModalOpen && bulkOfferModalDomains.length > 0 && (
+        <BulkOfferModal
+          onClose={() => dispatch(setBulkOfferModalOpen(false))}
+          domains={bulkOfferModalDomains}
         />
       )}
     </div>

@@ -4,10 +4,7 @@ import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
-import {
-  setBulkEditRecordsModalNames,
-  setBulkEditRecordsModalOpen,
-} from '@/state/reducers/modals/bulkEditRecordsModal'
+import { setBulkEditRecordsModalNames, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import {
   clearBulkSelect,

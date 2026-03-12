@@ -144,6 +144,9 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
         if (response.status === 413) {
           setErrorMessage('File size is too large (max 500KB)')
         }
+        if (response.status === 415) {
+          setErrorMessage('Unsupported file type. Use JPG/JPEG.')
+        }
         throw new Error(`Upload failed: ${response.statusText}`)
       }
 

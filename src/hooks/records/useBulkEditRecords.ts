@@ -415,9 +415,7 @@ export function useBulkEditRecords(names: string[]) {
 
       try {
         // Update status to confirming
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === i ? { ...s, status: 'confirming' } : s))
-        )
+        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'confirming' } : s)))
         setStep('confirming')
 
         const hash = await walletClient.writeContract({
@@ -437,9 +435,7 @@ export function useBulkEditRecords(names: string[]) {
         await publicClient.waitForTransactionReceipt({ hash })
 
         // Update status to success
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === i ? { ...s, status: 'success' } : s))
-        )
+        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'success' } : s)))
       } catch (err: unknown) {
         hasError = true
         const message = err instanceof Error ? err.message : 'Transaction failed'
@@ -498,9 +494,7 @@ export function useBulkEditRecords(names: string[]) {
 
         await publicClient.waitForTransactionReceipt({ hash })
 
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === index ? { ...s, status: 'success' } : s))
-        )
+        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, status: 'success' } : s)))
 
         // Invalidate caches
         for (const name of status.names) {
@@ -511,9 +505,7 @@ export function useBulkEditRecords(names: string[]) {
         queryClient.invalidateQueries({ queryKey: ['profile'] })
 
         // Check if all are now success
-        const allSuccess = transactionStatuses.every((s, idx) =>
-          idx === index ? true : s.status === 'success'
-        )
+        const allSuccess = transactionStatuses.every((s, idx) => (idx === index ? true : s.status === 'success'))
         if (allSuccess) {
           setStep('success')
           setErrorMessage(null)

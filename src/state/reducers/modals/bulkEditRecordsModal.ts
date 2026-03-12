@@ -28,8 +28,7 @@ export const BulkEditRecordsModalSlice = createSlice({
 })
 
 // Actions --------------------------------------------
-export const { setBulkEditRecordsModalOpen, setBulkEditRecordsModalNames } =
-  BulkEditRecordsModalSlice.actions
+export const { setBulkEditRecordsModalOpen, setBulkEditRecordsModalNames } = BulkEditRecordsModalSlice.actions
 
 // Selectors ------------------------------------------
 export const selectBulkEditRecordsModal = (state: RootState) => state.modals.bulkEditRecordsReducer

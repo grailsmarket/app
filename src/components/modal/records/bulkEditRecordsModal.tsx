@@ -18,6 +18,7 @@ import { ADDRESS_RECORD_KEYS } from '@/constants/ens/records'
 import ImageUploadModal from './components/imageUploadModal'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TransactionStatusRow from './components/TransactionStatusRow'
+import TabSelector from '@/components/ui/tabSelector'
 
 interface BulkEditRecordsModalProps {
   names: string[]
@@ -270,28 +271,14 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
 
                 {/* Mode toggle */}
                 <div className='flex gap-2 px-4 sm:px-6'>
-                  <button
-                    className={cn(
-                      'flex-1 cursor-pointer rounded-md px-3 py-2 text-lg font-semibold transition-colors',
-                      editMode === 'shared'
-                        ? 'bg-primary text-background'
-                        : 'bg-tertiary text-foreground hover:bg-[#4B4B4B]'
-                    )}
-                    onClick={() => setEditMode('shared')}
-                  >
-                    Apply to All
-                  </button>
-                  <button
-                    className={cn(
-                      'flex-1 cursor-pointer rounded-md px-3 py-2 text-lg font-semibold transition-colors',
-                      editMode === 'per-name'
-                        ? 'bg-primary text-background'
-                        : 'bg-tertiary text-foreground hover:bg-[#4B4B4B]'
-                    )}
-                    onClick={() => setEditMode('per-name')}
-                  >
-                    Per Name
-                  </button>
+                  <TabSelector
+                    tabs={[
+                      { label: 'Apply to All', value: 'shared' },
+                      { label: 'Per Name', value: 'per-name' },
+                    ]}
+                    selectedTab={editMode}
+                    setSelectedTab={(tab) => setEditMode(tab as 'shared' | 'per-name')}
+                  />
                 </div>
 
                 {/* Shared mode */}

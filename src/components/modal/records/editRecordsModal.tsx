@@ -16,6 +16,7 @@ import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import InputWithResolution from './components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
+import TabSelector from '@/components/ui/tabSelector'
 
 interface EditRecordsModalProps {
   name: string
@@ -233,7 +234,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
 
                 {/* Tabs */}
                 <div className='mt-8 flex gap-2 px-4 sm:px-6'>
-                  <button
+                  {/* <button
                     className={cn(
                       'flex-1 cursor-pointer rounded-md px-3 py-2 text-lg font-semibold transition-colors',
                       activeTab === 'records'
@@ -254,7 +255,15 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                     onClick={() => setActiveTab('roles')}
                   >
                     Roles
-                  </button>
+                  </button> */}
+                  <TabSelector
+                    tabs={[
+                      { label: 'Records', value: 'records' },
+                      { label: 'Roles', value: 'roles' },
+                    ]}
+                    selectedTab={activeTab}
+                    setSelectedTab={(tab) => setActiveTab(tab as 'records' | 'roles')}
+                  />
                 </div>
 
                 {/* Records tab */}

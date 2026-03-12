@@ -4,6 +4,10 @@ import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
+import {
+  setBulkEditRecordsModalNames,
+  setBulkEditRecordsModalOpen,
+} from '@/state/reducers/modals/bulkEditRecordsModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import {
   clearBulkSelect,
@@ -258,6 +262,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     dispatch(setTransferModalOpen(true))
   }
 
+  const handleEditRecordsAction = () => {
+    dispatch(setBulkEditRecordsModalNames(namesTransfer.map((d) => d.name)))
+    dispatch(setBulkEditRecordsModalOpen(true))
+  }
+
   const handleCancelListingsAction = () => {
     // Transform previousListings (DomainListingType) to CancelListingListing format
     // We need to match each listing with its domain name
@@ -338,6 +347,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'names' ||
     selectedTab?.value === 'watchlist'
   const canTransferDomains =
+    selectedTab?.value === 'domains' ||
+    selectedTab?.value === 'listings' ||
+    selectedTab?.value === 'grace' ||
+    selectedTab?.value === 'names'
+  const canEditRecords =
     selectedTab?.value === 'domains' ||
     selectedTab?.value === 'listings' ||
     selectedTab?.value === 'grace' ||
@@ -469,6 +483,14 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     className='flex items-center gap-1.5'
                   >
                     <p>Transfer</p>
+                    <Label label={namesTransfer.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={handleEditRecordsAction}
+                    disabled={selectedDomains.length === 0 || !canEditRecords || namesTransfer.length === 0}
+                    className='flex items-center gap-1.5'
+                  >
+                    <p>Edit&nbsp;Records</p>
                     <Label label={namesTransfer.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
                   <PrimaryButton

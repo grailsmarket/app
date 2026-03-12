@@ -76,7 +76,8 @@ const useBulkRegisterDomains = () => {
     labels: string[],
     owner: Address,
     durations: bigint[],
-    secret: Hex
+    secret: Hex,
+    reverseRecord: boolean = false
   ): Promise<Hex[]> => {
     if (!publicClient) throw new Error('Public client not available')
 
@@ -92,7 +93,7 @@ const useBulkRegisterDomains = () => {
           secret,
           ENS_PUBLIC_RESOLVER_ADDRESS,
           labels.map(() => []) as `0x${string}`[][],
-          false,
+          reverseRecord,
           0,
         ],
       })
@@ -128,7 +129,8 @@ const useBulkRegisterDomains = () => {
     owner: Address,
     durations: bigint[],
     secret: Hex,
-    value: bigint
+    value: bigint,
+    reverseRecord: boolean = false
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()
 
@@ -149,7 +151,7 @@ const useBulkRegisterDomains = () => {
             secret,
             ENS_PUBLIC_RESOLVER_ADDRESS,
             labels.map(() => []) as `0x${string}`[][],
-            false,
+            reverseRecord,
             0,
           ],
           value,
@@ -176,7 +178,7 @@ const useBulkRegisterDomains = () => {
           secret,
           ENS_PUBLIC_RESOLVER_ADDRESS,
           labels.map(() => []) as `0x${string}`[][],
-          false,
+          reverseRecord,
           0,
         ],
         value,

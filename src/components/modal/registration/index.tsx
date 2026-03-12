@@ -158,6 +158,7 @@ const RegistrationModal: React.FC = () => {
           currentBatchIndex={registrationState.currentBatchIndex}
           currentBatch={modal.currentBatch}
           availableEntries={availableEntries}
+          isBulk={isBulk}
           onCancel={() => setShowCancelWarning(true)}
         />
       ) : registrationState.flowState === 'waiting' ? (
@@ -177,6 +178,7 @@ const RegistrationModal: React.FC = () => {
           currentBatchIndex={registrationState.currentBatchIndex}
           currentBatch={modal.currentBatch}
           availableEntries={availableEntries}
+          isBulk={isBulk}
           onCancel={() => setShowCancelWarning(true)}
         />
       ) : (
@@ -205,6 +207,8 @@ const RegistrationModal: React.FC = () => {
           debouncedCustomOwner={modal.debouncedCustomOwner}
           account={modal.account}
           isResolving={modal.isResolving}
+          reverseRecord={modal.reverseRecord}
+          setReverseRecord={modal.setReverseRecord}
           calculationResults={modal.calculationResults}
           hasSufficientBalance={modal.hasSufficientBalance}
           allNamesValid={modal.allNamesValid}

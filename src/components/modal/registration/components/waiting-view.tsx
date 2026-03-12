@@ -2,6 +2,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import type { NameRegistrationEntry } from '@/types/registration'
+import CollapsibleNameList from './collapsible-name-list'
 
 interface WaitingViewProps {
   waitTimeRemaining: number
@@ -58,6 +59,7 @@ const WaitingView: React.FC<WaitingViewProps> = ({
               </div>
             </div>
             <p className='text-center text-lg'>This prevents others from front-running your registration.</p>
+            {isBulk && <CollapsibleNameList names={availableEntries.map((e) => beautifyName(e.name))} />}
             {batches
               .filter((b) => b.commitTxHash)
               .map((b, i) => (
@@ -75,9 +77,12 @@ const WaitingView: React.FC<WaitingViewProps> = ({
         </>
       ) : (
         <div className='flex flex-col items-center justify-center gap-4 pb-4'>
-          <p className='font-medium'>
+          <p className='flex items-center gap-1.5 font-medium'>
             {isBulk ? (
-              <>{availableEntries.length} names are ready for registration.</>
+              <>
+                <CollapsibleNameList names={availableEntries.map((e) => beautifyName(e.name))} />
+                <span>are ready for registration.</span>
+              </>
             ) : (
               <>
                 <span className='font-bold'>{beautifyName(firstName!)}</span> is ready for registration.

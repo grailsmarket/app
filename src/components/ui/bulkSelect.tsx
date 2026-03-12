@@ -375,7 +375,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         ? 'min(780px,95vw)'
         : 'min(650px,95vw)'
       : canRegisterDomains
-        ? 'min(550px,95vw)'
+        ? canExtendDomains
+          ? 'min(550px,95vw)'
+          : 'min(430px,95vw)'
         : windowWidth && windowWidth < 640
           ? 'min(130px,95vw)'
           : 'min(420px,95vw)'
@@ -477,14 +479,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                   <Label label={selectedWatchlistIds.length} className='bg-tertiary w-7 min-w-fit text-white' />
                 </PrimaryButton>
               )}
-              <PrimaryButton
-                onClick={handleExtendAction}
-                disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
-                className='flex items-center gap-1.5'
-              >
-                <p>Extend</p>
-                <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
-              </PrimaryButton>
+              {canExtendDomains && (
+                <PrimaryButton
+                  onClick={handleExtendAction}
+                  disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
+                  className='flex items-center gap-1.5'
+                >
+                  <p>Extend</p>
+                  <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
               {canRegisterDomains && (
                 <PrimaryButton
                   onClick={handleRegisterAction}

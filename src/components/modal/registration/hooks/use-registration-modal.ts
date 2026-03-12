@@ -76,6 +76,7 @@ const useRegistrationModal = () => {
   const [customOwner, setCustomOwner] = useState<string>('')
   const [showPerNameDurations, setShowPerNameDurations] = useState(false)
   const [perNameDatePickerIndex, setPerNameDatePickerIndex] = useState<number | null>(null)
+  const [reverseRecord, setReverseRecord] = useState(true)
   const debouncedCustomOwner = useDebounce(customOwner, 500)
 
   const { data: account, isLoading: isResolving } = useQuery({
@@ -374,6 +375,9 @@ const useRegistrationModal = () => {
       queryClient.invalidateQueries({
         predicate: (query) => query.queryKey.some((k) => typeof k === 'string' && k.includes('domain')),
       })
+      queryClient.refetchQueries({
+        predicate: (query) => query.queryKey.some((k) => typeof k === 'string' && k.includes('domain')),
+      })
       queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
       queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
       entries.forEach((entry) => {
@@ -448,7 +452,7 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const hashes = await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret)
+        const hashes = await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret, reverseRecord)
         dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
 
         const tx = await submitMultiCommit(hashes)
@@ -527,7 +531,7 @@ const useRegistrationModal = () => {
         }
         const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
 
-        const tx = await submitMultiRegister(batchLabels, owner, batchDurations, secret, valueWithBuffer)
+        const tx = await submitMultiRegister(batchLabels, owner, batchDurations, secret, valueWithBuffer, reverseRecord)
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
         const receipt = await publicClient?.waitForTransactionReceipt({
@@ -715,6 +719,8 @@ const useRegistrationModal = () => {
     debouncedCustomOwner,
     account,
     isResolving,
+    reverseRecord,
+    setReverseRecord,
     showDatePicker,
     setShowDatePicker,
     showCancelWarning,

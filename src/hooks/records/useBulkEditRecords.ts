@@ -120,8 +120,11 @@ export function useBulkEditRecords(names: string[]) {
   // Fields that have been explicitly cleared (set to empty string to remove existing value)
   const [clearedFields, setClearedFields] = useState<Set<string>>(new Set())
 
-  // Custom record keys
+  // Custom record keys (shared)
   const [customRecordKeys, setCustomRecordKeys] = useState<string[]>([])
+
+  // Per-name custom record keys (independent of shared)
+  const [perNameCustomKeys, setPerNameCustomKeys] = useState<Map<string, string[]>>(new Map())
 
   // UI state
   const [step, setStep] = useState<BulkEditStep>('loading_roles')
@@ -255,6 +258,75 @@ export function useBulkEditRecords(names: string[]) {
     })
   }, [])
 
+  const setPerNameCustomRecord = useCallback((name: string, key: string, value: string) => {
+    setPerNameOverrides((prev) => {
+      const next = new Map(prev)
+      const existing = next.get(name) || {}
+      next.set(name, {
+        ...existing,
+        customRecords: { ...existing.customRecords, [key]: value },
+      })
+      return next
+    })
+  }, [])
+
+  const addPerNameCustomKey = useCallback((name: string, key: string) => {
+    setPerNameCustomKeys((prev) => {
+      const next = new Map(prev)
+      const existing = next.get(name) || []
+      if (!existing.includes(key)) {
+        next.set(name, [...existing, key])
+      }
+      return next
+    })
+    // Initialize value in per-name overrides
+    setPerNameOverrides((prev) => {
+      const next = new Map(prev)
+      const existing = next.get(name) || {}
+      next.set(name, {
+        ...existing,
+        customRecords: { ...existing.customRecords, [key]: '' },
+      })
+      return next
+    })
+  }, [])
+
+  const removePerNameCustomKey = useCallback((name: string, key: string) => {
+    setPerNameCustomKeys((prev) => {
+      const next = new Map(prev)
+      const existing = next.get(name) || []
+      next.set(
+        name,
+        existing.filter((k) => k !== key)
+      )
+      return next
+    })
+    // Remove value from per-name overrides
+    setPerNameOverrides((prev) => {
+      const next = new Map(prev)
+      const existing = next.get(name) || {}
+      if (existing.customRecords) {
+        const records = { ...existing.customRecords }
+        delete records[key]
+        next.set(name, { ...existing, customRecords: records })
+      }
+      return next
+    })
+  }, [])
+
+  const resetPerNameOverrides = useCallback((name: string) => {
+    setPerNameOverrides((prev) => {
+      const next = new Map(prev)
+      next.delete(name)
+      return next
+    })
+    setPerNameCustomKeys((prev) => {
+      const next = new Map(prev)
+      next.delete(name)
+      return next
+    })
+  }, [])
+
   // Check if there are any changes to submit
   const hasChanges = useMemo(() => {
     const r = sharedRecords
@@ -276,6 +348,7 @@ export function useBulkEditRecords(names: string[]) {
         if (override.addressRecords && Object.values(override.addressRecords).some((v) => v !== undefined)) return true
         if (override.ethAddress) return true
         if (override.contenthash) return true
+        if (override.customRecords && Object.values(override.customRecords).some((v) => v !== undefined)) return true
       }
     }
     return false
@@ -304,8 +377,10 @@ export function useBulkEditRecords(names: string[]) {
           }
         }
 
-        // Custom records
-        for (const key of customRecordKeys) {
+        // Custom records (shared + per-name)
+        const nameCustomKeys = perNameCustomKeys.get(name) || []
+        const allCustomKeys = new Set([...customRecordKeys, ...nameCustomKeys])
+        for (const key of allCustomKeys) {
           const value = records.customRecords[key]
           if (value || clearedFields.has(`custom:${key}`)) {
             calls.push(
@@ -364,7 +439,7 @@ export function useBulkEditRecords(names: string[]) {
 
       return calls
     },
-    [getEffectiveRecords, clearedFields, customRecordKeys]
+    [getEffectiveRecords, clearedFields, customRecordKeys, perNameCustomKeys]
   )
 
   // Execute all transactions
@@ -551,6 +626,11 @@ export function useBulkEditRecords(names: string[]) {
     setPerNameAddressRecord,
     setPerNameEthAddress,
     setPerNameContenthash,
+    setPerNameCustomRecord,
+    perNameCustomKeys,
+    addPerNameCustomKey,
+    removePerNameCustomKey,
+    resetPerNameOverrides,
     getEffectiveRecords,
     // UI state
     editMode,

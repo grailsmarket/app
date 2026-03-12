@@ -42,6 +42,11 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
     setPerNameTextRecord,
     setPerNameEthAddress,
     setPerNameContenthash,
+    setPerNameCustomRecord,
+    perNameCustomKeys,
+    addPerNameCustomKey,
+    removePerNameCustomKey,
+    resetPerNameOverrides,
     setPerNameAddressRecord,
     getEffectiveRecords,
     editMode,
@@ -58,6 +63,8 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
   const [addRecordOpen, setAddRecordOpen] = useState(false)
   const [customKeyInput, setCustomKeyInput] = useState('')
   const [isAddingCustomKey, setIsAddingCustomKey] = useState(false)
+  const [addingCustomKeyForName, setAddingCustomKeyForName] = useState<string | null>(null)
+  const [perNameCustomKeyInput, setPerNameCustomKeyInput] = useState('')
   const [expandedNames, setExpandedNames] = useState<Set<string>>(new Set())
   const [showSkippedNames, setShowSkippedNames] = useState(false)
 
@@ -429,18 +436,20 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                     </div>
 
                     {/* Address records */}
-                    {Object.keys(sharedRecords.addressRecords).length > 0 && <div className='flex flex-col gap-3 px-4 sm:px-6'>
-                      <h3 className='text-neutral text-lg font-semibold'>Address Records</h3>
-                      {ADDRESS_RECORD_KEYS.map((key) => (
-                        <Input
-                          key={key}
-                          label={ADDRESS_LABELS[key] || key.toUpperCase()}
-                          value={sharedRecords.addressRecords[key] || ''}
-                          onChange={(e) => setSharedAddressRecord(key, e.target.value)}
-                          placeholder={`${ADDRESS_LABELS[key] || key.toUpperCase()} address`}
-                        />
-                      ))}
-                    </div>}
+                    {Object.keys(sharedRecords.addressRecords).length > 0 && (
+                      <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                        <h3 className='text-neutral text-lg font-semibold'>Address Records</h3>
+                        {ADDRESS_RECORD_KEYS.map((key) => (
+                          <Input
+                            key={key}
+                            label={ADDRESS_LABELS[key] || key.toUpperCase()}
+                            value={sharedRecords.addressRecords[key] || ''}
+                            onChange={(e) => setSharedAddressRecord(key, e.target.value)}
+                            placeholder={`${ADDRESS_LABELS[key] || key.toUpperCase()} address`}
+                          />
+                        ))}
+                      </div>
+                    )}
 
                     {/* Custom records */}
                     {customRecordKeys.length > 0 && (
@@ -478,18 +487,20 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
 
                       {addRecordOpen && (
                         <div className='bg-secondary border-tertiary absolute bottom-12 z-10 mb-1 flex w-[calc(100%-48px)] flex-col rounded-md border shadow-lg'>
-                          {ADDRESS_RECORD_KEYS.filter((key) => sharedRecords.addressRecords[key] === undefined).map((key) => (
-                            <button
-                              key={key}
-                              className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors'
-                              onClick={() => {
-                                setSharedAddressRecord(key, '')
-                                setAddRecordOpen(false)
-                              }}
-                            >
-                              {ADDRESS_LABELS[key] || key.toUpperCase()}
-                            </button>
-                          ))}
+                          {ADDRESS_RECORD_KEYS.filter((key) => sharedRecords.addressRecords[key] === undefined).map(
+                            (key) => (
+                              <button
+                                key={key}
+                                className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors'
+                                onClick={() => {
+                                  setSharedAddressRecord(key, '')
+                                  setAddRecordOpen(false)
+                                }}
+                              >
+                                {ADDRESS_LABELS[key] || key.toUpperCase()}
+                              </button>
+                            )
+                          )}
                           {isAddingCustomKey ? (
                             <div className='flex items-center gap-1 px-3 py-2'>
                               <input
@@ -553,7 +564,8 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                           const sharedValue = sharedRecords[k as keyof typeof sharedRecords]
                           const val = override[k as keyof typeof override]
                           if (typeof val === 'string') return val !== sharedValue
-                          if (typeof val === 'object' && val) return Object.values(val).some((v) => !!v && v !== sharedValue)
+                          if (typeof val === 'object' && val)
+                            return Object.values(val).some((v) => !!v && v !== sharedValue)
                           return false
                         })
                       const avatarRecord = effective.textRecords['avatar']
@@ -568,8 +580,8 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                             <div className='flex items-center gap-2'>
                               <p className='text-lg font-semibold'>{beautifyName(name)}</p>
                               {hasOverride && (
-                                <span className='bg-primary/20 text-primary rounded px-1.5 py-0.5 text-xs'>
-                                  customized
+                                <span className='bg-primary/20 text-primary rounded px-1.5 py-0.5 text-sm font-medium'>
+                                  Changed
                                 </span>
                               )}
                             </div>
@@ -584,6 +596,14 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
 
                           {isExpanded && (
                             <div className='border-tertiary flex flex-col gap-3 border-t p-3'>
+                              {hasOverride && (
+                                <button
+                                  className='text-neutral hover:text-foreground hover:border-foreground border-tertiary text-md w-full cursor-pointer rounded-md border p-2 font-medium transition-colors'
+                                  onClick={() => resetPerNameOverrides(name)}
+                                >
+                                  Reset changes
+                                </button>
+                              )}
                               <div className='flex h-fit gap-2'>
                                 <div
                                   className='border-tertiary relative aspect-square w-1/3 cursor-pointer rounded-md border'
@@ -663,7 +683,9 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                               />
                               <Input
                                 label='Short Bio'
-                                value={override?.textRecords?.description ?? sharedRecords.textRecords.description ?? ''}
+                                value={
+                                  override?.textRecords?.description ?? sharedRecords.textRecords.description ?? ''
+                                }
                                 onChange={(e) => setPerNameTextRecord(name, 'description', e.target.value)}
                                 placeholder={'Description'}
                               />
@@ -689,7 +711,11 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                                     </div>
                                     <input
                                       type='text'
-                                      value={override?.textRecords?.[social.key] ?? sharedRecords.textRecords[social.key] ?? ''}
+                                      value={
+                                        override?.textRecords?.[social.key] ??
+                                        sharedRecords.textRecords[social.key] ??
+                                        ''
+                                      }
                                       onChange={(e) => setPerNameTextRecord(name, social.key, e.target.value)}
                                       className='bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center rounded-r-md border px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
                                       placeholder={social.placeholder}
@@ -711,6 +737,158 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                                   />
                                 ))}
                               </div>
+
+                              {/* Custom records (shared + per-name) */}
+                              {(() => {
+                                const nameOnlyKeys = (perNameCustomKeys.get(name) || []).filter(
+                                  (k) => !customRecordKeys.includes(k)
+                                )
+                                const visibleSharedKeys = customRecordKeys.filter((key) => {
+                                  const perNameValue = override?.customRecords?.[key]
+                                  const sharedValue = sharedRecords.customRecords[key] ?? ''
+                                  return !(perNameValue === '' && sharedValue !== '')
+                                })
+                                const hasAnyCustom = visibleSharedKeys.length > 0 || nameOnlyKeys.length > 0
+
+                                return (
+                                  <div className='flex flex-col gap-3'>
+                                    {hasAnyCustom && (
+                                      <h3 className='text-neutral text-lg font-semibold'>Custom Records</h3>
+                                    )}
+
+                                    {/* Shared custom records (hidden when removed for this name) */}
+                                    {customRecordKeys.map((key) => {
+                                      const perNameValue = override?.customRecords?.[key]
+                                      const sharedValue = sharedRecords.customRecords[key] ?? ''
+                                      const isRemoved = perNameValue === '' && sharedValue !== ''
+
+                                      if (isRemoved) return null
+
+                                      return (
+                                        <div key={key} className='flex items-center gap-1'>
+                                          <Input
+                                            label={key}
+                                            value={perNameValue ?? sharedValue}
+                                            onChange={(e) => setPerNameCustomRecord(name, key, e.target.value)}
+                                            placeholder={`Value for ${key}`}
+                                            className='flex-1'
+                                            labelClassName='w-[128px] max-w-[128px] break-all block py-3'
+                                          />
+                                          {(perNameValue ?? sharedValue) ? (
+                                            <button
+                                              className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
+                                              onClick={() => setPerNameCustomRecord(name, key, '')}
+                                              title='Remove for this name'
+                                            >
+                                              <Image src={CrossIcon} alt='Remove' width={14} height={14} />
+                                            </button>
+                                          ) : (
+                                            <div className='w-8 flex-shrink-0' />
+                                          )}
+                                        </div>
+                                      )
+                                    })}
+
+                                    {/* Per-name-only custom records */}
+                                    {nameOnlyKeys.map((key) => (
+                                      <div key={key} className='flex items-center gap-1'>
+                                        <Input
+                                          label={key}
+                                          value={override?.customRecords?.[key] ?? ''}
+                                          onChange={(e) => setPerNameCustomRecord(name, key, e.target.value)}
+                                          placeholder={`Value for ${key}`}
+                                          className='flex-1'
+                                          labelClassName='w-[128px] max-w-[128px] break-all block py-3'
+                                        />
+                                        <button
+                                          className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
+                                          onClick={() => removePerNameCustomKey(name, key)}
+                                          title='Remove custom record'
+                                        >
+                                          <Image src={CrossIcon} alt='Remove' width={14} height={14} />
+                                        </button>
+                                      </div>
+                                    ))}
+
+                                    {/* Add custom record */}
+                                    {addingCustomKeyForName === name ? (
+                                      <div className='flex items-center gap-1'>
+                                        <input
+                                          type='text'
+                                          value={perNameCustomKeyInput}
+                                          onChange={(e) => setPerNameCustomKeyInput(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && perNameCustomKeyInput.trim()) {
+                                              const trimmed = perNameCustomKeyInput.trim()
+                                              // If it's a removed shared key, restore it
+                                              if (customRecordKeys.includes(trimmed)) {
+                                                setPerNameCustomRecord(
+                                                  name,
+                                                  trimmed,
+                                                  sharedRecords.customRecords[trimmed] ?? ''
+                                                )
+                                              } else {
+                                                addPerNameCustomKey(name, trimmed)
+                                              }
+                                              setPerNameCustomKeyInput('')
+                                              setAddingCustomKeyForName(null)
+                                            }
+                                            if (e.key === 'Escape') {
+                                              setPerNameCustomKeyInput('')
+                                              setAddingCustomKeyForName(null)
+                                            }
+                                          }}
+                                          className='bg-tertiary flex-1 rounded-md px-3 py-2 text-lg font-semibold focus:outline-none'
+                                          placeholder='Record key...'
+                                          autoFocus
+                                        />
+                                        <button
+                                          className='bg-primary text-background rounded-md px-3 py-2 text-lg font-semibold disabled:opacity-50'
+                                          disabled={!perNameCustomKeyInput.trim()}
+                                          onClick={() => {
+                                            const trimmed = perNameCustomKeyInput.trim()
+                                            if (trimmed) {
+                                              if (customRecordKeys.includes(trimmed)) {
+                                                setPerNameCustomRecord(
+                                                  name,
+                                                  trimmed,
+                                                  sharedRecords.customRecords[trimmed] ?? ''
+                                                )
+                                              } else {
+                                                addPerNameCustomKey(name, trimmed)
+                                              }
+                                              setPerNameCustomKeyInput('')
+                                              setAddingCustomKeyForName(null)
+                                            }
+                                          }}
+                                        >
+                                          Add
+                                        </button>
+                                        <button
+                                          className='hover:bg-tertiary rounded-md px-2 py-2 transition-colors'
+                                          onClick={() => {
+                                            setPerNameCustomKeyInput('')
+                                            setAddingCustomKeyForName(null)
+                                          }}
+                                        >
+                                          <Image src={CrossIcon} alt='Cancel' width={14} height={14} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        className='border-tertiary hover:bg-tertiary focus:bg-tertiary flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border-2 px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
+                                        onClick={() => {
+                                          setAddingCustomKeyForName(name)
+                                          setPerNameCustomKeyInput('')
+                                        }}
+                                      >
+                                        <Image src={PlusIcon} alt='Add' width={16} height={16} className='invert' />
+                                        Add Custom Record
+                                      </button>
+                                    )}
+                                  </div>
+                                )
+                              })()}
                             </div>
                           )}
                         </div>

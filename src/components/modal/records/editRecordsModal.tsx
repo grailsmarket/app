@@ -2,11 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import {
-  DEFAULT_FALLBACK_AVATAR,
-  DEFAULT_FALLBACK_HEADER,
-  Check,
-} from 'ethereum-identity-kit'
+import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER, Check } from 'ethereum-identity-kit'
 import { useEditRecords } from '@/hooks/records/useEditRecords'
 import ImageUploadModal from './components/imageUploadModal'
 import Input from '@/components/ui/input'

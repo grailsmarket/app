@@ -6,9 +6,6 @@ import {
   DEFAULT_FALLBACK_AVATAR,
   DEFAULT_FALLBACK_HEADER,
   Check,
-  Avatar,
-  fetchAccount,
-  LoadingCell,
 } from 'ethereum-identity-kit'
 import { useEditRecords } from '@/hooks/records/useEditRecords'
 import ImageUploadModal from './components/imageUploadModal'
@@ -16,18 +13,11 @@ import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { useQuery } from '@tanstack/react-query'
-import { isAddress, type Address } from 'viem'
 import PencilIcon from 'public/icons/pencil.svg'
 import PlusIcon from 'public/icons/plus.svg'
 import CrossIcon from 'public/icons/cross.svg'
-import XLogo from 'public/logos/x.svg'
-import GithubLogo from 'public/logos/github.svg'
-import TelegramLogo from 'public/logos/telegram.svg'
-import DiscordLogo from 'public/logos/discord.svg'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
-import { beautifyName } from '@/lib/ens'
 import InputWithResolution from './components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 

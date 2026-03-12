@@ -13,7 +13,7 @@ import ArrowDownIcon from 'public/icons/arrow-down.svg'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
-import { useBulkEditRecords, type TransactionStatus } from '@/hooks/records/useBulkEditRecords'
+import { useBulkEditRecords } from '@/hooks/records/useBulkEditRecords'
 import { ADDRESS_RECORD_KEYS } from '@/constants/ens/records'
 import ImageUploadModal from './components/imageUploadModal'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
@@ -42,6 +42,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
     setPerNameTextRecord,
     setPerNameEthAddress,
     setPerNameContenthash,
+    setPerNameAddressRecord,
     getEffectiveRecords,
     editMode,
     setEditMode,
@@ -400,6 +401,13 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                         onChange={(e) => setSharedTextRecord('email', e.target.value)}
                         placeholder='you@example.com'
                       />
+                      <Input
+                        label='Contenthash'
+                        value={sharedRecords.contenthash}
+                        onChange={(e) => setSharedContenthash(e.target.value)}
+                        placeholder='ipfs://... or ar://...'
+                        labelClassName='w-[140px]! text-nowrap'
+                      />
                     </div>
 
                     {/* Socials */}
@@ -421,7 +429,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                     </div>
 
                     {/* Address records */}
-                    <div className='flex flex-col gap-3 px-4 sm:px-6'>
+                    {Object.keys(sharedRecords.addressRecords).length > 0 && <div className='flex flex-col gap-3 px-4 sm:px-6'>
                       <h3 className='text-neutral text-lg font-semibold'>Address Records</h3>
                       {ADDRESS_RECORD_KEYS.map((key) => (
                         <Input
@@ -432,18 +440,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                           placeholder={`${ADDRESS_LABELS[key] || key.toUpperCase()} address`}
                         />
                       ))}
-                    </div>
-
-                    {/* Contenthash */}
-                    <div className='flex flex-col gap-3 px-4 sm:px-6'>
-                      <Input
-                        label='Contenthash'
-                        value={sharedRecords.contenthash}
-                        onChange={(e) => setSharedContenthash(e.target.value)}
-                        placeholder='ipfs://... or ar://...'
-                        labelClassName='w-[140px]! text-nowrap'
-                      />
-                    </div>
+                    </div>}
 
                     {/* Custom records */}
                     {customRecordKeys.length > 0 && (
@@ -481,6 +478,18 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
 
                       {addRecordOpen && (
                         <div className='bg-secondary border-tertiary absolute bottom-12 z-10 mb-1 flex w-[calc(100%-48px)] flex-col rounded-md border shadow-lg'>
+                          {ADDRESS_RECORD_KEYS.filter((key) => sharedRecords.addressRecords[key] === undefined).map((key) => (
+                            <button
+                              key={key}
+                              className='hover:bg-tertiary px-4 py-2 text-left text-lg font-medium transition-colors'
+                              onClick={() => {
+                                setSharedAddressRecord(key, '')
+                                setAddRecordOpen(false)
+                              }}
+                            >
+                              {ADDRESS_LABELS[key] || key.toUpperCase()}
+                            </button>
+                          ))}
                           {isAddingCustomKey ? (
                             <div className='flex items-center gap-1 px-3 py-2'>
                               <input
@@ -541,9 +550,10 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                       const hasOverride =
                         override &&
                         Object.keys(override).some((k) => {
+                          const sharedValue = sharedRecords[k as keyof typeof sharedRecords]
                           const val = override[k as keyof typeof override]
-                          if (typeof val === 'string') return !!val
-                          if (typeof val === 'object' && val) return Object.values(val).some((v) => !!v)
+                          if (typeof val === 'string') return val !== sharedValue
+                          if (typeof val === 'object' && val) return Object.values(val).some((v) => !!v && v !== sharedValue)
                           return false
                         })
                       const avatarRecord = effective.textRecords['avatar']
@@ -644,32 +654,63 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                               </div>
                               <Input
                                 label='Ethereum'
-                                value={override?.ethAddress ?? ''}
+                                value={override?.ethAddress ?? sharedRecords.ethAddress ?? ''}
                                 onChange={(e) => {
                                   if (e.target.value.includes(' ')) return
                                   setPerNameEthAddress(name, e.target.value)
                                 }}
-                                placeholder={sharedRecords.ethAddress || '0x... (override)'}
+                                placeholder={'Address or ENS name'}
                               />
                               <Input
                                 label='Short Bio'
-                                value={override?.textRecords?.description ?? ''}
+                                value={override?.textRecords?.description ?? sharedRecords.textRecords.description ?? ''}
                                 onChange={(e) => setPerNameTextRecord(name, 'description', e.target.value)}
-                                placeholder={sharedRecords.textRecords.description || 'Override description...'}
+                                placeholder={'Description'}
                               />
                               <Input
                                 label='Website'
-                                value={override?.textRecords?.url ?? ''}
+                                value={override?.textRecords?.url ?? sharedRecords.textRecords.url ?? ''}
                                 onChange={(e) => setPerNameTextRecord(name, 'url', e.target.value)}
-                                placeholder={sharedRecords.textRecords.url || 'Override website...'}
+                                placeholder={'Website URL'}
                               />
                               <Input
                                 label='Contenthash'
-                                value={override?.contenthash ?? ''}
+                                value={override?.contenthash ?? sharedRecords.contenthash ?? ''}
                                 onChange={(e) => setPerNameContenthash(name, e.target.value)}
-                                placeholder={sharedRecords.contenthash || 'ipfs://... (override)'}
+                                placeholder={'ipfs://... or ar://...'}
                                 labelClassName='w-[140px]! text-nowrap'
                               />
+                              {/* Socials */}
+                              <div className='grid grid-cols-2 gap-3'>
+                                {SOCIAL_RECORDS.map((social) => (
+                                  <div key={social.key} className='flex'>
+                                    <div className='bg-background border-tertiary flex h-12 min-w-[48px] items-center justify-center rounded-l-md border border-r-0'>
+                                      <Image src={social.icon} alt={social.label} width={20} height={20} />
+                                    </div>
+                                    <input
+                                      type='text'
+                                      value={override?.textRecords?.[social.key] ?? sharedRecords.textRecords[social.key] ?? ''}
+                                      onChange={(e) => setPerNameTextRecord(name, social.key, e.target.value)}
+                                      className='bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full items-center rounded-r-md border px-3 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
+                                      placeholder={social.placeholder}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Address records */}
+                              <div className='flex flex-col gap-3'>
+                                <h3 className='text-neutral text-lg font-semibold'>Address Records</h3>
+                                {ADDRESS_RECORD_KEYS.map((key) => (
+                                  <Input
+                                    key={key}
+                                    label={ADDRESS_LABELS[key] || key.toUpperCase()}
+                                    value={override?.addressRecords?.[key] ?? sharedRecords.addressRecords[key] ?? ''}
+                                    onChange={(e) => setPerNameAddressRecord(name, key, e.target.value)}
+                                    placeholder={`${ADDRESS_LABELS[key] || key.toUpperCase()} address`}
+                                  />
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>

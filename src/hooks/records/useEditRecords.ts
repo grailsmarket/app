@@ -10,30 +10,9 @@ import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
 import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { resolveEnsAddress } from '@/utils/web3/ens'
 import { fetchNameRoles } from '@/api/name/roles'
+import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
-
-const TEXT_RECORD_KEYS = [
-  'description',
-  'status',
-  'location',
-  'url',
-  'email',
-  'com.twitter',
-  'com.github',
-  'org.telegram',
-  'com.discord',
-  'avatar',
-  'header',
-] as const
-
-const ADDRESS_RECORD_KEYS = ['btc'] as const
-
-const COIN_TYPES: Record<string, number> = {
-  btc: 0,
-  sol: 501,
-  doge: 3,
-}
 
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()

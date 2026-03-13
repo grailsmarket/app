@@ -19,7 +19,7 @@ const TabSelector: React.FC<TabSelectorProps> = ({ tabs, selectedTab, setSelecte
           key={tab.value}
           onClick={() => setSelectedTab(tab.value)}
           className={cn(
-            'border-tertiary border-b-2 py-2 text-lg font-semibold',
+            'border-tertiary cursor-pointer border-b-2 py-2 text-lg font-semibold',
             tabClassName,
             `w-[${100 / tabs.length}%]`,
             selectedTab === tab.value

@@ -29,6 +29,8 @@ import ShareModal from '@/components/modal/share/shareModal'
 import { selectShareModal, setShareModalOpen } from '@/state/reducers/modals/shareModal'
 import EditRecordsModal from '@/components/modal/records/editRecordsModal'
 import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducers/modals/editRecordsModal'
+import BulkEditRecordsModal from '@/components/modal/records/bulkEditRecordsModal'
+import { selectBulkEditRecordsModal, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
@@ -81,6 +83,8 @@ const Modals: React.FC = () => {
     defaultTab: editRecordsModalDefaultTab,
   } = useAppSelector(selectEditRecordsModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
+  const { open: bulkEditRecordsModalOpen, names: bulkEditRecordsModalNames } =
+    useAppSelector(selectBulkEditRecordsModal)
   const {
     open: listSettingsModalOpen,
     user: listSettingsModalUser,
@@ -188,6 +192,12 @@ const Modals: React.FC = () => {
           metadata={editRecordsModalMetadata}
           defaultTab={editRecordsModalDefaultTab}
           onClose={() => dispatch(setEditRecordsModalOpen(false))}
+        />
+      )}
+      {bulkEditRecordsModalOpen && bulkEditRecordsModalNames.length > 0 && (
+        <BulkEditRecordsModal
+          names={bulkEditRecordsModalNames}
+          onClose={() => dispatch(setBulkEditRecordsModalOpen(false))}
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}

@@ -10,6 +10,7 @@ import Input from '@/components/ui/input'
 import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
 import { isLinkValid, Trash } from 'ethereum-identity-kit'
+import TabSelector from '@/components/ui/tabSelector'
 
 interface ImageUploadModalProps {
   name: string
@@ -144,6 +145,9 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
         if (response.status === 413) {
           setErrorMessage('File size is too large (max 500KB)')
         }
+        if (response.status === 415) {
+          setErrorMessage('Unsupported file type. Use JPG/JPEG.')
+        }
         throw new Error(`Upload failed: ${response.statusText}`)
       }
 
@@ -174,26 +178,14 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
       >
         <h2 className='font-sedan-sc text-foreground text-2xl capitalize'>{imageType} Image</h2>
 
-        <div className='flex gap-2'>
-          <button
-            className={cn(
-              'flex-1 rounded-md px-3 py-2 text-lg font-semibold transition-colors',
-              mode === 'file' ? 'bg-primary text-background' : 'bg-tertiary text-foreground hover:bg-[#4B4B4B]'
-            )}
-            onClick={() => setMode('file')}
-          >
-            Upload File
-          </button>
-          <button
-            className={cn(
-              'flex-1 rounded-md px-3 py-2 text-lg font-semibold transition-colors',
-              mode === 'url' ? 'bg-primary text-background' : 'bg-tertiary text-foreground hover:bg-[#4B4B4B]'
-            )}
-            onClick={() => setMode('url')}
-          >
-            Enter URL
-          </button>
-        </div>
+        <TabSelector
+          tabs={[
+            { label: 'Upload File', value: 'file' },
+            { label: 'Enter URL', value: 'url' },
+          ]}
+          selectedTab={mode}
+          setSelectedTab={(tab) => setMode(tab as 'file' | 'url')}
+        />
 
         {mode === 'file' ? (
           <>

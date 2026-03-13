@@ -130,9 +130,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
               {customDuration
                 ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
                 : 'Select Date'}
             </PrimaryButton>
             {showDatePicker && (

@@ -452,7 +452,13 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const hashes = await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret, reverseRecord ? 1 : 0)
+        const hashes = await makeBulkCommitments(
+          batchLabels,
+          owner,
+          batchDurations,
+          commitSecret,
+          reverseRecord ? 1 : 0
+        )
         dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
 
         const tx = await submitMultiCommit(hashes)
@@ -531,7 +537,14 @@ const useRegistrationModal = () => {
         }
         const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
 
-        const tx = await submitMultiRegister(batchLabels, owner, batchDurations, secret, valueWithBuffer, reverseRecord ? 1 : 0)
+        const tx = await submitMultiRegister(
+          batchLabels,
+          owner,
+          batchDurations,
+          secret,
+          valueWithBuffer,
+          reverseRecord ? 1 : 0
+        )
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
         const receipt = await publicClient?.waitForTransactionReceipt({

@@ -379,8 +379,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   const bulkSelectWidth = showOwnedActionButtons
     ? canRegisterDomains
-      ? 'min(920px,95vw)'
-      : 'min(820px,95vw)'
+      ? 'min(1080px,95vw)'
+      : 'min(980px,95vw)'
     : showWatchlistButton
       ? canRegisterDomains
         ? 'min(780px,95vw)'

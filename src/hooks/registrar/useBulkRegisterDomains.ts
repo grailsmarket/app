@@ -5,7 +5,7 @@ import { mainnet } from 'wagmi/chains'
 import {
   ENS_BULK_REGISTRAR_ADDRESS,
   ENS_HOLIDAY_REGISTRAR_ADDRESS,
-  ENS_PUBLIC_RESOLVER_ADDRESS,
+  ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
 } from '@/constants/web3/contracts'
 import { BULK_REGISTRAR_ABI } from '@/constants/abi/BulkRegistrar'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
@@ -77,7 +77,7 @@ const useBulkRegisterDomains = () => {
     owner: Address,
     durations: bigint[],
     secret: Hex,
-    reverseRecord: boolean = false
+    reverseRecord: number = 0
   ): Promise<Hex[]> => {
     if (!publicClient) throw new Error('Public client not available')
 
@@ -91,10 +91,9 @@ const useBulkRegisterDomains = () => {
           owner,
           durations,
           secret,
-          ENS_PUBLIC_RESOLVER_ADDRESS,
+          ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
           labels.map(() => []) as `0x${string}`[][],
           reverseRecord,
-          0,
         ],
       })
       return result as Hex[]
@@ -130,7 +129,7 @@ const useBulkRegisterDomains = () => {
     durations: bigint[],
     secret: Hex,
     value: bigint,
-    reverseRecord: boolean = false
+    reverseRecord: number = 0
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()
 
@@ -149,10 +148,9 @@ const useBulkRegisterDomains = () => {
             owner,
             durations,
             secret,
-            ENS_PUBLIC_RESOLVER_ADDRESS,
+            ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
             labels.map(() => []) as `0x${string}`[][],
             reverseRecord,
-            0,
           ],
           value,
           account: walletClient.account,
@@ -176,10 +174,9 @@ const useBulkRegisterDomains = () => {
           owner,
           durations,
           secret,
-          ENS_PUBLIC_RESOLVER_ADDRESS,
+          ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
           labels.map(() => []) as `0x${string}`[][],
           reverseRecord,
-          0,
         ],
         value,
         gas: gasLimit,

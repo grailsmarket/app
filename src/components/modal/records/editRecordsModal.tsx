@@ -2,106 +2,27 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import {
-  DEFAULT_FALLBACK_AVATAR,
-  DEFAULT_FALLBACK_HEADER,
-  Check,
-  Avatar,
-  fetchAccount,
-  LoadingCell,
-} from 'ethereum-identity-kit'
-import { useEditRecords } from './useEditRecords'
-import ImageUploadModal from './imageUploadModal'
+import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER, Check } from 'ethereum-identity-kit'
+import { useEditRecords } from '@/hooks/records/useEditRecords'
+import ImageUploadModal from './components/imageUploadModal'
 import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { useQuery } from '@tanstack/react-query'
-import { isAddress, type Address } from 'viem'
 import PencilIcon from 'public/icons/pencil.svg'
 import PlusIcon from 'public/icons/plus.svg'
 import CrossIcon from 'public/icons/cross.svg'
-import XLogo from 'public/logos/x.svg'
-import GithubLogo from 'public/logos/github.svg'
-import TelegramLogo from 'public/logos/telegram.svg'
-import DiscordLogo from 'public/logos/discord.svg'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
-import { beautifyName } from '@/lib/ens'
+import InputWithResolution from './components/inputWithResolution'
+import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
+import TabSelector from '@/components/ui/tabSelector'
 
 interface EditRecordsModalProps {
   name: string
   metadata: Record<string, string> | null
   defaultTab: 'records' | 'roles'
   onClose: () => void
-}
-
-const SOCIAL_RECORDS = [
-  { key: 'com.twitter', label: 'Twitter / X', icon: XLogo, placeholder: 'username' },
-  { key: 'com.github', label: 'GitHub', icon: GithubLogo, placeholder: 'username' },
-  { key: 'org.telegram', label: 'Telegram', icon: TelegramLogo, placeholder: 'username' },
-  { key: 'com.discord', label: 'Discord', icon: DiscordLogo, placeholder: 'username' },
-] as const
-
-const ADDRESS_LABELS: Record<string, string> = {
-  btc: 'BTC',
-  // sol: 'SOL',
-  // doge: 'DOGE',
-}
-
-const RoleInputResolution: React.FC<{
-  value: string
-  resolvedAddress: string | null
-  isResolving: boolean
-}> = ({ value, resolvedAddress, isResolving }) => {
-  const { data: resolvedProfile, isLoading: isProfileLoading } = useQuery({
-    queryKey: ['ens metadata', isAddress(value) ? value : resolvedAddress],
-    queryFn: async () => {
-      const addr = (isAddress(value) ? value : resolvedAddress) as Address
-      const account = await fetchAccount(addr)
-      return account?.ens || { name: null, avatar: null }
-    },
-    enabled: !!(isAddress(value) || (resolvedAddress && isAddress(resolvedAddress))),
-  })
-
-  const showResolution = value.includes('.') || (isAddress(value) && resolvedProfile?.name)
-
-  if (!showResolution && !isResolving) return null
-
-  return (
-    <div
-      className={cn(
-        'flex h-10 items-center gap-2 pl-3 text-sm font-medium',
-        (value.includes('.') && resolvedAddress && resolvedAddress.length > 0) || resolvedProfile?.name
-          ? 'opacity-80'
-          : 'text-red-400'
-      )}
-    >
-      {isResolving || isProfileLoading ? (
-        <>
-          <LoadingCell height='24px' width='24px' radius='4px' />
-          <LoadingCell height='20px' width='100%' radius='4px' />
-        </>
-      ) : (
-        <>
-          <Avatar
-            name={resolvedProfile?.name || value}
-            style={{ height: '26px', width: '26px' }}
-            src={resolvedProfile?.avatar}
-          />
-          <p className='truncate text-lg font-semibold'>
-            {value.includes('.')
-              ? resolvedAddress && resolvedAddress.length > 0
-                ? resolvedAddress
-                : 'No resolution'
-              : resolvedProfile?.name
-                ? beautifyName(resolvedProfile?.name)
-                : 'No resolution'}
-          </p>
-        </>
-      )}
-    </div>
-  )
 }
 
 const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, defaultTab, onClose }) => {
@@ -313,7 +234,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
 
                 {/* Tabs */}
                 <div className='mt-8 flex gap-2 px-4 sm:px-6'>
-                  <button
+                  {/* <button
                     className={cn(
                       'flex-1 cursor-pointer rounded-md px-3 py-2 text-lg font-semibold transition-colors',
                       activeTab === 'records'
@@ -334,7 +255,15 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                     onClick={() => setActiveTab('roles')}
                   >
                     Roles
-                  </button>
+                  </button> */}
+                  <TabSelector
+                    tabs={[
+                      { label: 'Records', value: 'records' },
+                      { label: 'Roles', value: 'roles' },
+                    ]}
+                    selectedTab={activeTab}
+                    setSelectedTab={(tab) => setActiveTab(tab as 'records' | 'roles')}
+                  />
                 </div>
 
                 {/* Records tab */}
@@ -355,7 +284,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                           disabled={!isManager}
                           labelClassName='w-[140px]! text-nowrap'
                         />
-                        <RoleInputResolution
+                        <InputWithResolution
                           value={roleEthRecord}
                           resolvedAddress={resolvedRoleEthRecord}
                           isResolving={roleEthRecordResolving}
@@ -547,7 +476,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                         placeholder='0x... or name.eth'
                         disabled={!isOwner}
                       />
-                      <RoleInputResolution
+                      <InputWithResolution
                         value={roleOwner}
                         resolvedAddress={resolvedRoleOwner}
                         isResolving={roleOwnerResolving}
@@ -565,7 +494,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                         placeholder='0x... or name.eth'
                         disabled={!isManager && !isOwner}
                       />
-                      <RoleInputResolution
+                      <InputWithResolution
                         value={roleManager}
                         resolvedAddress={resolvedRoleManager}
                         isResolving={roleManagerResolving}
@@ -583,7 +512,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                         placeholder='0x... or name.eth'
                         disabled={!isManager}
                       />
-                      <RoleInputResolution
+                      <InputWithResolution
                         value={roleEthRecord}
                         resolvedAddress={resolvedRoleEthRecord}
                         isResolving={roleEthRecordResolving}

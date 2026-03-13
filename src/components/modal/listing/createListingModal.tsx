@@ -349,6 +349,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
                     <Input
                       type='number'
                       label='Bulk Price'
+                      labelClassName='w-[140px]! text-nowrap'
                       value={basePricePrice}
                       onChange={(e) => {
                         const value = e.target.value

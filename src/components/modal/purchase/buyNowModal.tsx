@@ -18,15 +18,23 @@ import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { Check } from 'ethereum-identity-kit'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
 import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import { CAN_CLAIM_POAP } from '@/constants'
+import { fetchNameMetadata } from '@/api/name/metadata'
+import Image from 'next/image'
+import {
+  setEditRecordsModalMetadata,
+  setEditRecordsModalName,
+  setEditRecordsModalOpen,
+} from '@/state/reducers/modals/editRecordsModal'
+import PencilIcon from 'public/icons/pencil-primary.svg'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -85,27 +93,15 @@ function getApprovalTarget(conduitKey: string | undefined): string {
 
 const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) => {
   const { address } = useAccount()
+  const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const { modifyCart } = useModifyCart()
   const publicClient = usePublicClient()
   const { data: gasPrice } = useGasPrice()
   const getWalletClient = useGetWalletClient()
+  const orderBuilder = new SeaportOrderBuilder()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
-
-  // const { width: windowWidth } = useWindowSize()
-  // const [isClosing, setIsClosing] = useState(false)
-  // const handleClose = () => {
-  //   if (windowWidth && windowWidth < 768) {
-  //     setIsClosing(true)
-  //     setTimeout(() => {
-  //       onClose()
-  //       setIsClosing(false)
-  //     }, 250)
-  //   } else {
-  //     onClose()
-  //   }
-  // }
 
   const [step, setStep] = useState<TransactionStep>('review')
   const [error, setError] = useState<string | null>(null)
@@ -114,7 +110,46 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   const [needsApproval, setNeedsApproval] = useState(false)
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
 
-  const orderBuilder = new SeaportOrderBuilder()
+  const {
+    data: nameMetadata,
+    isLoading: isNameMetadataLoading,
+    refetch: refetchNameMetadata,
+    isRefetching: isNameMetadataRefetching,
+    isError: isNameMetadataError,
+  } = useQuery({
+    queryKey: ['metadata', domain?.name],
+    queryFn: async () => {
+      if (!domain?.name) return null
+      const result = await fetchNameMetadata(domain?.name || '')
+      const metadata = Object.entries(result || {})
+        .flatMap(([key, value]) => {
+          if (key === 'chains') {
+            return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
+              label: chainName,
+              value: address,
+              canCopy: true,
+            }))
+          }
+
+          return {
+            label: key,
+            value: value,
+            canCopy: true,
+          }
+        })
+        .filter((row) => row.label !== 'resolverAddress')
+        .reduce(
+          (acc, row) => {
+            acc[row.label] = row.value
+            return acc
+          },
+          {} as Record<string, string>
+        )
+
+      return metadata
+    },
+    enabled: !!domain?.name,
+  })
 
   // Get balances
   const { data: ethBalance } = useBalance({
@@ -477,6 +512,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
       if (receipt.status === 'success') {
         setStep('success')
+        refetchNameMetadata()
         refetchDomainQueries()
         const cartDomain =
           cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
@@ -635,6 +671,23 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
               </div>
               <div className='mb-2 text-xl font-bold'>Purchase Successful!</div>
             </div>
+            {!isNameMetadataLoading &&
+              !isNameMetadataRefetching &&
+              !isNameMetadataError &&
+              (nameMetadata || nameMetadata?.length > 0) && (
+                <div
+                  onClick={() => {
+                    if (!nameMetadata || !domain?.name) return
+                    dispatch(setEditRecordsModalName(domain.name))
+                    dispatch(setEditRecordsModalMetadata(nameMetadata))
+                    dispatch(setEditRecordsModalOpen(true))
+                  }}
+                  className='mx-auto flex cursor-pointer flex-row items-center gap-2 pb-4 transition-opacity hover:opacity-80'
+                >
+                  <p className='text-primary text-lg font-bold'>Edit roles records</p>
+                  <Image src={PencilIcon} alt='Pencil' width={22} height={22} />
+                </div>
+              )}
             <SecondaryButton onClick={onClose} className='w-full'>
               <p className='text-label text-lg font-bold'>Close</p>
             </SecondaryButton>

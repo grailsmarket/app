@@ -34,6 +34,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     totalListings,
     totalGraceDomains,
     totalWatchlistDomains,
+    totalExpiredDomains,
   } = useDomains(user)
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { authStatus } = useUserContext()
@@ -63,6 +64,8 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
         return totalGraceDomains
       case 'watchlist':
         return totalWatchlistDomains
+      case 'expired':
+        return totalExpiredDomains
       default:
         return 0
     }

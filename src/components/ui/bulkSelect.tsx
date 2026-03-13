@@ -4,6 +4,7 @@ import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
+import { setBulkEditRecordsModalNames, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import {
   clearBulkSelect,
@@ -33,8 +34,9 @@ import { useShiftKeyListener } from '@/hooks/useShiftKey'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
-import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
+import { openBulkRegistrationModal } from '@/state/reducers/registration'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -125,6 +127,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           )
       )
     : []
+  const namesRegister = selectedDomains.filter((domain) =>
+    REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))
+  )
 
   const handleBulkSelect = () => {
     dispatch(setBulkSelectIsSelecting(true))
@@ -258,6 +263,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     dispatch(setTransferModalOpen(true))
   }
 
+  const handleEditRecordsAction = () => {
+    dispatch(setBulkEditRecordsModalNames(namesTransfer.map((d) => d.name)))
+    dispatch(setBulkEditRecordsModalOpen(true))
+  }
+
   const handleCancelListingsAction = () => {
     // Transform previousListings (DomainListingType) to CancelListingListing format
     // We need to match each listing with its domain name
@@ -275,6 +285,14 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     })
     dispatch(setCancelListingModalListings(cancelListings))
     dispatch(setCancelListingModalOpen(true))
+  }
+
+  const handleRegisterAction = () => {
+    dispatch(
+      openBulkRegistrationModal({
+        entries: namesRegister.map((d) => ({ name: d.name, domain: d })),
+      })
+    )
   }
 
   const handleSelectAll = () => {
@@ -308,10 +326,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           : selectedTab?.value === 'watchlist') && !cartIsEmpty
 
   // Define which tabs support bulk select for each page type
-  const marketplaceBulkSelectTabs = ['names', 'listings']
-  const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'watchlist']
-  const categoryBulkSelectTabs = ['names', 'listings']
-  const categoriesBulkSelectTabs = ['names', 'listings']
+  const marketplaceBulkSelectTabs = ['names', 'listings', 'available', 'premium']
+  const profileBulkSelectTabs = ['domains', 'listings', 'grace', 'expired', 'watchlist']
+  const categoryBulkSelectTabs = ['names', 'listings', 'premium', 'available']
+  const categoriesBulkSelectTabs = ['names', 'listings', 'premium', 'available']
 
   const isBulkSelectSupportedTab = isProfileTab
     ? profileBulkSelectTabs.includes(selectedTab?.value || '')
@@ -342,19 +360,38 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'listings' ||
     selectedTab?.value === 'grace' ||
     selectedTab?.value === 'names'
+  const canEditRecords =
+    selectedTab?.value === 'domains' ||
+    selectedTab?.value === 'listings' ||
+    selectedTab?.value === 'grace' ||
+    selectedTab?.value === 'names'
   const canCancelListings = selectedTab?.value === 'domains' || selectedTab?.value === 'listings'
+  const canRegisterDomains =
+    (!isProfileTab && (selectedTab?.value === 'names' || selectedTab?.value === 'domains')) ||
+    selectedTab?.value === 'watchlist' ||
+    selectedTab?.value === 'available' ||
+    selectedTab?.value === 'premium' ||
+    selectedTab?.value === 'expired'
 
   const isSelectAllLoading = selectAll?.isLoading ?? false
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
   const bulkSelectWidth = showOwnedActionButtons
-    ? 'min(820px,95vw)'
+    ? canRegisterDomains
+      ? 'min(1080px,95vw)'
+      : 'min(980px,95vw)'
     : showWatchlistButton
-      ? 'min(650px,95vw)'
-      : windowWidth && windowWidth < 640
-        ? 'min(130px,95vw)'
-        : 'min(420px,95vw)'
+      ? canRegisterDomains
+        ? 'min(780px,95vw)'
+        : 'min(650px,95vw)'
+      : canRegisterDomains
+        ? canExtendDomains
+          ? 'min(550px,95vw)'
+          : 'min(430px,95vw)'
+        : windowWidth && windowWidth < 640
+          ? 'min(130px,95vw)'
+          : 'min(420px,95vw)'
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -453,14 +490,26 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                   <Label label={selectedWatchlistIds.length} className='bg-tertiary w-7 min-w-fit text-white' />
                 </PrimaryButton>
               )}
-              <PrimaryButton
-                onClick={handleExtendAction}
-                disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
-                className='flex items-center gap-1.5'
-              >
-                <p>Extend</p>
-                <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
-              </PrimaryButton>
+              {canExtendDomains && (
+                <PrimaryButton
+                  onClick={handleExtendAction}
+                  disabled={selectedDomains.length === 0 || !canExtendDomains || namesExtend.length === 0}
+                  className='flex items-center gap-1.5'
+                >
+                  <p>Extend</p>
+                  <Label label={namesExtend.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
+              {canRegisterDomains && (
+                <PrimaryButton
+                  onClick={handleRegisterAction}
+                  disabled={selectedDomains.length === 0 || namesRegister.length === 0}
+                  className='flex items-center gap-1.5'
+                >
+                  <p>Register</p>
+                  <Label label={namesRegister.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
               {showOwnedActionButtons && (
                 <>
                   <PrimaryButton
@@ -469,6 +518,14 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     className='flex items-center gap-1.5'
                   >
                     <p>Transfer</p>
+                    <Label label={namesTransfer.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={handleEditRecordsAction}
+                    disabled={selectedDomains.length === 0 || !canEditRecords || namesTransfer.length === 0}
+                    className='flex items-center gap-1.5'
+                  >
+                    <p>Edit&nbsp;Records</p>
                     <Label label={namesTransfer.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
                   <PrimaryButton

@@ -36,7 +36,8 @@ const ActionButtons = () => {
     selectedTab.value === 'listings' ||
     selectedTab.value === 'domains' ||
     selectedTab.value === 'grace' ||
-    selectedTab.value === 'watchlist'
+    selectedTab.value === 'watchlist' ||
+    selectedTab.value === 'expired'
   const isBulkSelecting = useAppSelector(selectBulkSelect).isSelecting
 
   // const handleSelectAll = () => {

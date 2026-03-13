@@ -677,10 +677,22 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                                 placeholder={'Description'}
                               />
                               <Input
+                                label='Location'
+                                value={override?.textRecords?.location ?? sharedRecords.textRecords.location ?? ''}
+                                onChange={(e) => setPerNameTextRecord(name, 'location', e.target.value)}
+                                placeholder='Where are you based?'
+                              />
+                              <Input
                                 label='Website'
                                 value={override?.textRecords?.url ?? sharedRecords.textRecords.url ?? ''}
                                 onChange={(e) => setPerNameTextRecord(name, 'url', e.target.value)}
                                 placeholder={'Website URL'}
+                              />
+                              <Input
+                                label='Email'
+                                value={override?.textRecords?.email ?? sharedRecords.textRecords.email ?? ''}
+                                onChange={(e) => setPerNameTextRecord(name, 'email', e.target.value)}
+                                placeholder='you@example.com'
                               />
                               <Input
                                 label='Contenthash'

@@ -76,7 +76,7 @@ const useRegistrationModal = () => {
   const [customOwner, setCustomOwner] = useState<string>('')
   const [showPerNameDurations, setShowPerNameDurations] = useState(false)
   const [perNameDatePickerIndex, setPerNameDatePickerIndex] = useState<number | null>(null)
-  const [reverseRecord, setReverseRecord] = useState(true)
+  const [reverseRecord, setReverseRecord] = useState(false)
   const debouncedCustomOwner = useDebounce(customOwner, 500)
 
   const { data: account, isLoading: isResolving } = useQuery({

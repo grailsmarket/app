@@ -52,11 +52,11 @@ const Dropdown: React.FC<DropdownProps> = ({
   }
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('min-h-12 w-full', className)}>
       <div className='flex'>
         {/* Label section */}
         {!hideLabel && (
-          <div className='bg-background border-tertiary flex h-12 min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
+          <div className='bg-background border-tertiary flex min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
             <span className='text-lg font-semibold'>{label}</span>
           </div>
         )}
@@ -67,7 +67,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             type='button'
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 w-full cursor-pointer items-center justify-between gap-4 rounded-r-md border px-4 py-3 pr-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+              'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex w-full cursor-pointer items-center justify-between gap-4 rounded-r-md border px-4 py-3 pr-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
               hideLabel && 'rounded-md'
             )}
           >

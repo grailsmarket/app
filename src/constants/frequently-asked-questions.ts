@@ -40,7 +40,7 @@ const FREQUENTLY_ASKED_QUESTIONS = [
     answer: `Ethereum is a decentralized blockchain network that allows people to send digital money, run applications, and own digital assets without relying on a central authority.
     ETH is the native cryptocurrency of Ethereum. It is used to pay transaction fees, also called gas.
     When you register an ENS name or update records, the transaction is processed on the Ethereum blockchain and the network fee is paid in ETH.`,
-},
+  },
   {
     question: 'How do I get an Ethereum wallet and ETH?',
     answer: `To use ENS or Grails, you first need an Ethereum wallet and some ETH.
@@ -48,6 +48,6 @@ const FREQUENTLY_ASKED_QUESTIONS = [
     You can obtain ETH in several ways: Buy it on a cryptocurrency exchange such as <a href="https://www.coinbase.com/" target="_blank" rel="noopener noreferrer">Coinbase</a>, <a href="https://www.kraken.com/" target="_blank" rel="noopener noreferrer">Kraken</a>, or <a href="https://www.gemini.com/" target="_blank" rel="noopener noreferrer">Gemini</a>; purchase directly inside some wallets; or receive ETH from another person.
     Once you have ETH in your Ethereum wallet, you can use your wallet to sign in to Grails and begin registering or managing ENS names.`,
   },
-];
+]
 
-export default FREQUENTLY_ASKED_QUESTIONS;
+export default FREQUENTLY_ASKED_QUESTIONS

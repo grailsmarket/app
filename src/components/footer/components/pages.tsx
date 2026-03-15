@@ -23,7 +23,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
   const isPortfolioPage = pathname === `/profile/${userAddress}` || pathname === `/profile/${ensProfile?.name}`
 
   return (
-    <div className={cn('flex flex-col gap-4 text-lg', className)}>
+    <section className={cn('flex flex-col gap-4 text-lg', className)}>
       <Link
         href='/'
         className={cn(
@@ -74,7 +74,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
           My Profile
         </Link>
       )}
-    </div>
+    </section>
   )
 }
 

@@ -48,7 +48,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
     mint: 'Minted',
     sent: 'Sent',
     received: 'Received',
-    renewal: 'Renewed',
+    renewal: 'Extended',
   }[event]
 
   const platformIcon = {

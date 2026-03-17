@@ -109,7 +109,7 @@ export const PROFILE_ACTIVITY_FILTERS = [
   { label: 'Offer Cancelled', value: 'offer_cancelled' },
   { label: 'Listing Cancelled', value: 'listing_cancelled' },
   { label: 'Minted', value: 'mint' },
-  { label: 'Renewed', value: 'renewal' },
+  { label: 'Extended', value: 'renewal' },
   { label: 'Sent', value: 'sent' },
   { label: 'Received', value: 'received' },
 ] as const

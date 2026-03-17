@@ -10,6 +10,7 @@ import Listed from 'public/icons/listed.svg'
 import Renewal from 'public/icons/renewal.svg'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
+import Vision from 'public/logos/vision.png'
 import ETHGray from 'public/icons/eth-gray.svg'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 
@@ -54,7 +55,8 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
   const platformIcon = {
     opensea: OpenSea,
     grails: Grails,
-  }[platform as 'opensea' | 'grails']
+    vision: Vision
+  }[platform as 'opensea' | 'grails' | 'vision']
 
   return (
     <div className='flex w-full flex-row items-center gap-1.5 sm:gap-2'>

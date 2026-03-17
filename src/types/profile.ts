@@ -11,6 +11,7 @@ export type ProfileActivityEventType =
   | 'mint'
   | 'sent'
   | 'received'
+  | 'renewal'
 
 export type ActivityType = {
   id: number

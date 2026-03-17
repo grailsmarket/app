@@ -7,6 +7,7 @@ import Cancelled from 'public/icons/cancelled.svg'
 import OfferMade from 'public/icons/bid.svg'
 import Sold from 'public/icons/sold.svg'
 import Listed from 'public/icons/listed.svg'
+import Renewal from 'public/icons/renewal.svg'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
 import ETHGray from 'public/icons/eth-gray.svg'
@@ -30,6 +31,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
     mint: Mint,
     sent: Transfer,
     received: Transfer,
+    renewal: Renewal,
     registration: Mint,
     sale: Sold,
     transfer: Transfer,
@@ -46,6 +48,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
     mint: 'Minted',
     sent: 'Sent',
     received: 'Received',
+    renewal: 'Renewed',
   }[event]
 
   const platformIcon = {

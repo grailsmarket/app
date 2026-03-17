@@ -10,7 +10,7 @@ import Listed from 'public/icons/listed.svg'
 import Renewal from 'public/icons/renewal.svg'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
-import Vision from 'public/logos/vision.png'
+import Vision from 'public/logos/vision.svg'
 import ETHGray from 'public/icons/eth-gray.svg'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 

@@ -1,5 +1,3 @@
-import { API_URL } from '@/constants/api'
-import { authFetch } from '@/api/authFetch'
 import type { SeaportOrder } from '@/lib/seaport/bulkTypes'
 
 interface BulkOfferItem {
@@ -28,7 +26,7 @@ export interface BulkOfferResponse {
 }
 
 export const createBulkOffer = async (params: CreateBulkOfferParams): Promise<BulkOfferResponse> => {
-  const response = await authFetch(`${API_URL}/offers/bulk`, {
+  const response = await fetch(`/api/offers/bulk`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

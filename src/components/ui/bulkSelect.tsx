@@ -75,7 +75,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   const { width: windowWidth } = useWindowSize()
   const profileState = useAppSelector(selectUserProfile)
-  const isProUser = profileState.subscription?.tier === 'pro'
+  const isProUser = profileState.subscription?.tier != null
+    && profileState.subscription.tier !== 'free'
+    && (!profileState.subscription.tierExpiresAt || new Date(profileState.subscription.tierExpiresAt) > new Date())
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
   const categoriesState = useAppSelector(selectCategoriesPage)

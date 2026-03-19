@@ -12,6 +12,7 @@ import {
 } from '@/state/reducers/portfolio/profile'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { getTierIdFromString } from '@/constants/subscriptions'
 
 export const useSettings = () => {
   const dispatch = useAppDispatch()
@@ -38,7 +39,9 @@ export const useSettings = () => {
       dispatch(setUserDiscord(result.data.discord))
       dispatch(setUserTelegram(result.data.telegram))
       if (result.data.tier) {
-        dispatch(setUserSubscription({ tier: result.data.tier, tierId: result.data.tierId ?? 0, tierExpiresAt: result.data.tierExpiresAt ?? null }))
+        const tier = result.data.tier
+        const tierId = result.data.tierId ?? getTierIdFromString(tier)
+        dispatch(setUserSubscription({ tier, tierId, tierExpiresAt: result.data.tierExpiresAt ?? null }))
       }
       queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
@@ -72,17 +75,13 @@ export const useSettings = () => {
   }
 
   const isProSubscription = useMemo(() => {
-    return (
-      subscription?.tier === 'pro' &&
-      (!subscription.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
-    )
+    const hasPaidTier = (subscription?.tierId ?? 0) > 0 || (subscription?.tier != null && subscription.tier !== 'free')
+    return hasPaidTier && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
   }, [subscription])
 
   const hasActiveSubscription = useMemo(() => {
-    return (
-      (subscription?.tierId ?? 0) > 0 &&
-      (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
-    )
+    const hasPaidTier = (subscription?.tierId ?? 0) > 0 || (subscription?.tier != null && subscription.tier !== 'free')
+    return hasPaidTier && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
   }, [subscription])
 
   const isEmailVerified = useMemo(() => {

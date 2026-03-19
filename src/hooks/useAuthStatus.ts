@@ -17,6 +17,7 @@ import {
 } from '@/state/reducers/portfolio/profile'
 import { Address } from 'viem'
 import { AuthUserType } from '@/types/api'
+import { getTierIdFromString } from '@/constants/subscriptions'
 
 export const useAuth = () => {
   const [isSigningIn, setIsSigningIn] = useState(false)
@@ -55,7 +56,9 @@ export const useAuth = () => {
     dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
     dispatch(setUserDiscord(user.discord))
     dispatch(setUserTelegram(user.telegram))
-    dispatch(setUserSubscription({ tier: user.tier ?? 'free', tierId: user.tierId ?? 0, tierExpiresAt: user.tierExpiresAt ?? null }))
+    const tier = user.tier ?? 'free'
+    const tierId = user.tierId ?? getTierIdFromString(tier)
+    dispatch(setUserSubscription({ tier, tierId, tierExpiresAt: user.tierExpiresAt ?? null }))
   }
 
   const {

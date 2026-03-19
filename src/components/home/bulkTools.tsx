@@ -15,6 +15,7 @@ import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch } from '@/state/hooks'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
+import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 
 const bulkTools = [
   {
@@ -57,14 +58,21 @@ const BulkTools = () => {
   const { openConnectModal } = useConnectModal()
 
   const handleToolClick = (tool: (typeof bulkTools)[number]) => {
-    if (tool.title === 'Bulk Search') {
+    if (tool.title === 'Search') {
       dispatch(setSearchModalOpen(true))
+      return
+    }
+
+    if (tool.title === 'Register') {
+      router.push('/categories?tab=available')
+      dispatch(changeCategoriesPageTab({ label: 'Available', value: 'available' }))
       return
     }
 
     if (userAddress) {
       dispatch(setBulkSelectIsSelecting(true))
       router.push(`/profile/${userAddress}`)
+      window.scrollTo({ top: 0, behavior: 'instant' })
       return
     }
 

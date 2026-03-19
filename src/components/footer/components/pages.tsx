@@ -54,6 +54,26 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Categories
       </Link>
+      <Link
+        href='/analytics'
+        className={cn(
+          'font-semibold transition-all',
+          pathname === '/analytics' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Analytics
+      </Link>
+      <Link
+        href='/leaderboard'
+        className={cn(
+          'font-semibold transition-all',
+          pathname === '/leaderboard' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Leaderboard
+      </Link>
       {userAddress && (
         <Link
           href={`/profile/${userAddress}`}

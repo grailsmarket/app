@@ -7,8 +7,8 @@ export const EXTRAS_ITEMS = [
     label: 'Privacy Policy',
     href: '/privacy-policy',
   },
-  {
-    label: 'Frequently Asked Questions',
-    href: '/frequently-asked-questions',
-  },
+  // {
+  //   label: 'Frequently Asked Questions',
+  //   href: '/frequently-asked-questions',
+  // },
 ]

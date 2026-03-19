@@ -18,14 +18,14 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
   return (
     <div
       className={cn(
-        'border-tertiary hover:bg-secondary w-full border-b-2 px-4 py-4 transition-all duration-300 sm:py-6',
+        'border-tertiary hover:bg-secondary w-full border-b-2 px-4 transition-all duration-300',
         isLast && 'border-b-0'
       )}
     >
       <button
         type='button'
         onClick={() => setIsExpanded((prev) => !prev)}
-        className='flex w-full cursor-pointer items-center justify-between gap-4 text-left'
+        className='flex w-full cursor-pointer items-center justify-between gap-4 text-left py-4 sm:py-6'
       >
         <h3 className='text-xl font-bold sm:text-2xl'>{question}</h3>
         <svg
@@ -44,12 +44,12 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
         </svg>
       </button>
       <div
-        className='overflow-hidden transition-[max-height] duration-300 ease-in-out'
+        className={cn('overflow-hidden transition-all duration-300 ease-in-out', isExpanded && 'pb-4 sm:pb-6')}
         style={{
-          maxHeight: isExpanded ? contentRef.current?.scrollHeight : 0,
+          maxHeight: isExpanded ? (contentRef.current?.scrollHeight ?? 0) + 20 : 0,
         }}
       >
-        <div ref={contentRef} className='custom-links pt-3'>
+        <div ref={contentRef} className='custom-links'>
           <p
             dangerouslySetInnerHTML={{
               __html: answer.replaceAll('\n', '<div style="margin-top: 0.6rem;" />'),

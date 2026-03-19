@@ -14,7 +14,7 @@ import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
-import { getTierDisplayName } from '@/constants/subscriptions'
+import { getTierDisplayName, SUBSCRIBABLE_TIERS } from '@/constants/subscriptions'
 import { useAppDispatch } from '@/state/hooks'
 import { setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 
@@ -120,7 +120,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
               }}
               className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
             >
-              Upgrade Plan
+              {(subscription?.tierId ?? 0) >= Math.max(...SUBSCRIBABLE_TIERS) ? 'Extend Plan' : 'Upgrade Plan'}
             </button>
           </div>
         ) : (

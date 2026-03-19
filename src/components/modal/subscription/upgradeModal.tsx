@@ -45,7 +45,10 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
     [currentTierId]
   )
 
-  const [selectedTierId, setSelectedTierId] = useState<number>(availableTiers[0] ?? 1)
+  const isMaxTier = availableTiers.length === 0 && currentTierId > 0
+  const isExtend = isMaxTier && !!isUpgrade
+
+  const [selectedTierId, setSelectedTierId] = useState<number>(availableTiers[0] ?? (currentTierId || 1))
   const [durationDays, setDurationDays] = useState<number>(30)
   const [step, setStep] = useState<Step>('review')
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -77,8 +80,10 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
       const allDurations = [...DURATION_PRESETS.map((p) => p.value)]
       const results: Record<string, bigint> = {}
 
+      const tiersToPrice = isExtend ? [currentTierId] : availableTiers
+
       await Promise.all(
-        availableTiers.flatMap((tierId) =>
+        tiersToPrice.flatMap((tierId) =>
           allDurations.map(async (days) => {
             try {
               const p = await getPrice(tierId, days)
@@ -169,7 +174,9 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
     try {
       let tx: string | null
 
-      if (isUpgrade) {
+      if (isExtend) {
+        tx = await subscribe(selectedTierId, durationDays, price)
+      } else if (isUpgrade) {
         tx = await upgrade(selectedTierId, durationDays, price)
       } else {
         tx = await subscribe(selectedTierId, durationDays, price)
@@ -231,7 +238,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
         {/* Header */}
         <div className='flex min-h-6 items-center justify-center pb-2'>
           <h2 className='font-sedan-sc text-center text-3xl'>
-            {isUpgrade ? 'Upgrade Subscription' : 'Subscribe'}
+            {isExtend ? 'Extend Subscription' : isUpgrade ? 'Upgrade Subscription' : 'Subscribe'}
           </h2>
         </div>
 
@@ -242,7 +249,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
             </div>
             <div className='flex flex-col items-center gap-2 text-center'>
               <h3 className='mb-2 text-xl font-bold'>
-                {isUpgrade ? 'Subscription Upgraded!' : 'Subscription Active!'}
+                {isExtend ? 'Subscription Extended!' : isUpgrade ? 'Subscription Upgraded!' : 'Subscription Active!'}
               </h3>
               <p className='text-neutral text-md'>
                 You now have {getTierDisplayName(selectedTierId)} access.
@@ -286,38 +293,45 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
         ) : (
           <div className='flex w-full flex-col gap-2 sm:gap-3'>
             {/* Tier Selector */}
-            <div className='flex flex-col gap-2'>
-              <p className='text-md text-neutral font-medium'>Select Plan</p>
-              <div className='flex flex-row gap-2'>
-                {availableTiers.map((tierId) => {
-                  const tierPrice = priceCache[priceCacheKey(tierId, durationDays)]
-                  const tierPriceETH = tierPrice !== undefined ? Number(tierPrice) / 10 ** TOKEN_DECIMALS.ETH : null
-                  const tierPriceUSD = tierPriceETH !== null ? tierPriceETH * ethPrice : null
-                  return (
-                    <button
-                      key={tierId}
-                      onClick={() => setSelectedTierId(tierId)}
-                      className={cn(
-                        'border-tertiary flex-1 rounded-md border p-3 text-center transition-colors',
-                        selectedTierId === tierId
-                          ? 'border-primary bg-primary/10'
-                          : 'hover:bg-secondary'
-                      )}
-                    >
-                      <p className='text-md font-semibold'>{TIER_MAP[tierId]?.name}</p>
-                      {tierPriceETH !== null ? (
-                        <>
-                          <p className='text-neutral text-sm'>{tierPriceETH.toFixed(4)} ETH</p>
-                          <p className='text-neutral text-xs'>(${tierPriceUSD!.toFixed(2)})</p>
-                        </>
-                      ) : (
-                        <p className='text-neutral text-sm'>{TIER_MAP[tierId]?.label}</p>
-                      )}
-                    </button>
-                  )
-                })}
+            {isExtend ? (
+              <div className='border-primary bg-primary/10 rounded-md border p-3 text-center'>
+                <p className='text-md font-semibold'>{getTierDisplayName(currentTierId)}</p>
+                <p className='text-neutral text-sm'>{TIER_MAP[currentTierId]?.label}</p>
               </div>
-            </div>
+            ) : (
+              <div className='flex flex-col gap-2'>
+                <p className='text-md text-neutral font-medium'>Select Plan</p>
+                <div className='flex flex-row gap-2'>
+                  {availableTiers.map((tierId) => {
+                    const tierPrice = priceCache[priceCacheKey(tierId, durationDays)]
+                    const tierPriceETH = tierPrice !== undefined ? Number(tierPrice) / 10 ** TOKEN_DECIMALS.ETH : null
+                    const tierPriceUSD = tierPriceETH !== null ? tierPriceETH * ethPrice : null
+                    return (
+                      <button
+                        key={tierId}
+                        onClick={() => setSelectedTierId(tierId)}
+                        className={cn(
+                          'border-tertiary flex-1 rounded-md border p-3 text-center transition-colors',
+                          selectedTierId === tierId
+                            ? 'border-primary bg-primary/10'
+                            : 'hover:bg-secondary'
+                        )}
+                      >
+                        <p className='text-md font-semibold'>{TIER_MAP[tierId]?.name}</p>
+                        {tierPriceETH !== null ? (
+                          <>
+                            <p className='text-neutral text-sm'>{tierPriceETH.toFixed(4)} ETH</p>
+                            <p className='text-neutral text-xs'>(${tierPriceUSD!.toFixed(2)})</p>
+                          </>
+                        ) : (
+                          <p className='text-neutral text-sm'>{TIER_MAP[tierId]?.label}</p>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Duration Input */}
             <div className='flex flex-col gap-2'>
@@ -381,7 +395,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
             </div>
 
             {/* Upgrade Preview */}
-            {isUpgrade && upgradePreview && (
+            {isUpgrade && !isExtend && upgradePreview && (
               <div className='bg-secondary border-tertiary rounded-lg border p-3'>
                 <p className='text-md mb-1 font-medium'>Upgrade Preview</p>
                 <div className='text-md space-y-1'>
@@ -429,9 +443,11 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
             >
               {!hasSufficientBalance && price !== null
                 ? 'Insufficient ETH Balance'
-                : isUpgrade
-                  ? `Upgrade to ${getTierDisplayName(selectedTierId)}`
-                  : `Subscribe to ${getTierDisplayName(selectedTierId)}`}
+                : isExtend
+                  ? `Extend ${getTierDisplayName(selectedTierId)} Subscription`
+                  : isUpgrade
+                    ? `Upgrade to ${getTierDisplayName(selectedTierId)}`
+                    : `Subscribe to ${getTierDisplayName(selectedTierId)}`}
             </PrimaryButton>
           )}
           {step === 'error' && (

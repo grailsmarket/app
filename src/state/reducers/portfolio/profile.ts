@@ -14,7 +14,7 @@ type EnsProfileType = {
 }
 
 type SubscriptionType = {
-  tier: 'free' | 'pro' | 'premium'
+  tier: 'free' | 'pro' | 'plus' | 'gold'
   tierId: number
   tierExpiresAt: string | null
 }

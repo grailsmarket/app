@@ -8,7 +8,7 @@ export type ProfileResponseType = {
   emailVerified: boolean
   telegram: string | null
   discord: string | null
-  tier: 'free' | 'pro' | 'premium'
+  tier: 'free' | 'pro' | 'plus' | 'gold'
   tierId: number
   tierExpiresAt: string | null
   isAdmin: boolean

@@ -10,7 +10,8 @@ type VerifyResponse = {
     lastSignIn: string
     discord: string | null
     telegram: string | null
-    tier: 'free' | 'pro'
+    tier: 'free' | 'pro' | 'premium'
+    tierId: number
     tierExpiresAt: string | null
     isAdmin: boolean
   }

@@ -14,6 +14,9 @@ import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
+import { getTierDisplayName } from '@/constants/subscriptions'
+import { useAppDispatch } from '@/state/hooks'
+import { setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -32,6 +35,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     ensProfile,
     subscription,
     isProSubscription,
+    hasActiveSubscription,
     haveChanges,
     isEmailVerified,
     isEmailValid,
@@ -42,6 +46,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     verificationEmailStatus,
   } = useSettings()
   const { userAddress } = useUserContext()
+  const dispatch = useAppDispatch()
 
   if (!userAddress) return null
 
@@ -93,21 +98,43 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
         {/* Subscription Indicator */}
-        {isProSubscription ? (
-          <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
-            <Image src={CheckCircle} alt='Pro Active' height={20} width={20} />
-            <div>
-              <p className='text-md font-medium text-[#16A34A]'>PRO Subscription Active</p>
-              {subscription?.tierExpiresAt && (
-                <p className='text-sm text-[#16A34A]/70'>
-                  Expires {new Date(subscription.tierExpiresAt).toLocaleDateString()}
+        {hasActiveSubscription ? (
+          <div className='p-md flex items-center justify-between gap-2 rounded-md bg-green-400/10'>
+            <div className='flex items-center gap-2'>
+              <Image src={CheckCircle} alt='Subscription Active' height={20} width={20} />
+              <div>
+                <p className='text-md font-medium text-[#16A34A]'>
+                  {getTierDisplayName(subscription?.tierId ?? 0)} Subscription Active
                 </p>
-              )}
+                {subscription?.tierExpiresAt && (
+                  <p className='text-sm text-[#16A34A]/70'>
+                    Expires {new Date(subscription.tierExpiresAt).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
             </div>
+            <button
+              onClick={() => {
+                onClose()
+                dispatch(setUpgradeModalOpen(true))
+              }}
+              className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+            >
+              Upgrade Plan
+            </button>
           </div>
         ) : (
-          <div className='bg-secondary p-md flex items-center gap-2 rounded-md'>
+          <div className='bg-secondary p-md flex items-center justify-between gap-2 rounded-md'>
             <p className='text-md text-neutral font-medium'>Free Plan</p>
+            <button
+              onClick={() => {
+                onClose()
+                dispatch(setUpgradeModalOpen(true))
+              }}
+              className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+            >
+              Subscribe
+            </button>
           </div>
         )}
 

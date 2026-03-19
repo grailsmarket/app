@@ -55,7 +55,7 @@ export const useAuth = () => {
     dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
     dispatch(setUserDiscord(user.discord))
     dispatch(setUserTelegram(user.telegram))
-    dispatch(setUserSubscription({ tier: user.tier ?? 'free', tierExpiresAt: user.tierExpiresAt ?? null }))
+    dispatch(setUserSubscription({ tier: user.tier ?? 'free', tierId: user.tierId ?? 0, tierExpiresAt: user.tierExpiresAt ?? null }))
   }
 
   const {

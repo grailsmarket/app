@@ -34,6 +34,8 @@ import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reduc
 import ListSettings from '@/components/modal/list-settings'
 import BulkOfferModal from '@/components/modal/offer/bulkOfferModal'
 import { selectBulkOfferModal, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
+import UpgradeModal from '@/components/modal/subscription/upgradeModal'
+import { selectUpgradeModal, setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
@@ -88,6 +90,7 @@ const Modals: React.FC = () => {
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
   const { open: bulkOfferModalOpen, domains: bulkOfferModalDomains } = useAppSelector(selectBulkOfferModal)
+  const { open: upgradeModalOpen } = useAppSelector(selectUpgradeModal)
 
   return (
     <div>
@@ -177,6 +180,7 @@ const Modals: React.FC = () => {
           domains={bulkOfferModalDomains}
         />
       )}
+      {upgradeModalOpen && <UpgradeModal onClose={() => dispatch(setUpgradeModalOpen(false))} />}
     </div>
   )
 }

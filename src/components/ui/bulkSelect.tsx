@@ -355,6 +355,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const canCancelListings = selectedTab?.value === 'domains' || selectedTab?.value === 'listings'
   const canOfferDomains =
     selectedTab?.value === 'names' ||
+    selectedTab?.value === 'domains' ||
     selectedTab?.value === 'listings' ||
     selectedTab?.value === 'watchlist'
 

@@ -38,7 +38,7 @@ export const useSettings = () => {
       dispatch(setUserDiscord(result.data.discord))
       dispatch(setUserTelegram(result.data.telegram))
       if (result.data.tier) {
-        dispatch(setUserSubscription({ tier: result.data.tier, tierExpiresAt: result.data.tierExpiresAt ?? null }))
+        dispatch(setUserSubscription({ tier: result.data.tier, tierId: result.data.tierId ?? 0, tierExpiresAt: result.data.tierExpiresAt ?? null }))
       }
       queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
@@ -78,6 +78,13 @@ export const useSettings = () => {
     )
   }, [subscription])
 
+  const hasActiveSubscription = useMemo(() => {
+    return (
+      (subscription?.tierId ?? 0) > 0 &&
+      (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+    )
+  }, [subscription])
+
   const isEmailVerified = useMemo(() => {
     if (email.address === null) return true
     return email.verified
@@ -108,6 +115,7 @@ export const useSettings = () => {
     ensProfile,
     subscription,
     isProSubscription,
+    hasActiveSubscription,
     emailAddress,
     setEmailAddress,
     isEmailVerified,

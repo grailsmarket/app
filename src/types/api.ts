@@ -27,7 +27,8 @@ export type AuthUserType = {
   emailVerified: boolean
   telegram: string | null
   discord: string | null
-  tier: 'free' | 'pro'
+  tier: 'free' | 'pro' | 'premium'
+  tierId: number
   tierExpiresAt: string | null
   isAdmin: boolean
   createdAt: string

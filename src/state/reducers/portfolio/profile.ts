@@ -14,7 +14,8 @@ type EnsProfileType = {
 }
 
 type SubscriptionType = {
-  tier: 'free' | 'pro'
+  tier: 'free' | 'pro' | 'premium'
+  tierId: number
   tierExpiresAt: string | null
 }
 
@@ -56,7 +57,7 @@ const initialState: profileState = {
   discord: null,
   telegram: null,
   poapClaimed: false,
-  subscription: { tier: 'free', tierExpiresAt: null },
+  subscription: { tier: 'free', tierId: 0, tierExpiresAt: null },
   watchlist: [],
   pendingWatchlistTokenIds: [],
   selectedTab: PROFILE_TABS[0],
@@ -126,7 +127,7 @@ export const profileSlice = createSlice({
       state.discord = null
       state.telegram = null
       state.poapClaimed = false
-      state.subscription = { tier: 'free', tierExpiresAt: null }
+      state.subscription = { tier: 'free', tierId: 0, tierExpiresAt: null }
       state.watchlist = []
       state.pendingWatchlistTokenIds = []
     },

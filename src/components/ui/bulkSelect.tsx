@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Cross, useWindowSize } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
@@ -365,13 +365,17 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
-  const bulkSelectWidth = showOwnedActionButtons
-    ? 'min(820px,95vw)'
-    : showWatchlistButton
-      ? 'min(650px,95vw)'
-      : windowWidth && windowWidth < 640
-        ? 'min(130px,95vw)'
-        : 'min(420px,95vw)'
+  const expandedContentRef = useRef<HTMLDivElement>(null)
+  const [expandedWidth, setExpandedWidth] = useState(420)
+
+  useLayoutEffect(() => {
+    if (showExpandedContent && expandedContentRef.current) {
+      const width = expandedContentRef.current.scrollWidth
+      if (width > 0) setExpandedWidth(width)
+    }
+  })
+
+  const bulkSelectWidth = `min(${expandedWidth}px, 95vw)`
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -451,8 +455,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       >
         {showExpandedContent ? (
           <div
+            ref={expandedContentRef}
             className={cn(
-              'flex max-w-full flex-row overflow-x-scroll transition-opacity duration-300',
+              'flex w-max flex-row transition-opacity duration-300',
               isSelecting ? 'opacity-100' : 'opacity-0'
             )}
           >

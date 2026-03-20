@@ -64,9 +64,7 @@ const TableRow: React.FC<TableRowProps> = ({
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const domainIsValid = checkNameValidity(domain.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const canAddToCart =
-    !hideCartIcon &&
-    !(EXPIRED_STATUSES.includes(registrationStatus) || address?.toLowerCase() === domain.owner?.toLowerCase())
+  const canAddToCart = !hideCartIcon && address?.toLowerCase() !== domain.owner?.toLowerCase()
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
 

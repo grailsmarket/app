@@ -25,7 +25,7 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
       <button
         type='button'
         onClick={() => setIsExpanded((prev) => !prev)}
-        className='flex w-full cursor-pointer items-center justify-between gap-4 text-left py-4 sm:py-6'
+        className='flex w-full cursor-pointer items-center justify-between gap-4 py-4 text-left sm:py-6'
       >
         <h3 className='text-xl font-bold sm:text-2xl'>{question}</h3>
         <svg

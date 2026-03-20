@@ -18,7 +18,6 @@ import RegistrationToast from './components/registration-toast'
 import SuccessToast, { type SuccessSummary } from './components/success-toast'
 import { useAppDispatch } from '@/state/hooks'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
-import { Cross } from 'ethereum-identity-kit'
 
 const RegistrationModal: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -63,7 +62,6 @@ const RegistrationModal: React.FC = () => {
         priceETH: modal.calculationResults?.priceETH ?? 0,
         priceUSD: modal.calculationResults?.priceUSD ?? 0,
       })
-      onResetModal()
       dispatch(clearBulkSelect())
     }
   }, [
@@ -73,14 +71,21 @@ const RegistrationModal: React.FC = () => {
     availableEntries,
     modal.entryDurations,
     modal.calculationResults,
-    onResetModal,
     dispatch,
   ])
 
   if (!isClient) return null
 
   if (successSummary && !registrationState.isOpen) {
-    return <SuccessToast summary={successSummary} onClose={() => setSuccessSummary(null)} />
+    return (
+      <SuccessToast
+        summary={successSummary}
+        onClose={() => {
+          setSuccessSummary(null)
+          onResetModal()
+        }}
+      />
+    )
   }
 
   if (entries.length === 0 || !firstDomain) return null
@@ -90,8 +95,9 @@ const RegistrationModal: React.FC = () => {
     registrationState.flowState === 'waiting' ||
     registrationState.flowState === 'registering'
 
-  // Show toast when minimized during active flow
-  if (!registrationState.isOpen && isActiveFlow) {
+  // Show toast when minimized during active flow or error
+  const showMinimizedToast = isActiveFlow || registrationState.flowState === 'error'
+  if (!registrationState.isOpen && showMinimizedToast) {
     const currentBatch = modal.currentBatch
     const hasTxHash = !!(
       (registrationState.flowState === 'committing' && currentBatch?.commitTxHash) ||
@@ -181,10 +187,22 @@ const RegistrationModal: React.FC = () => {
         {isActiveFlow && (
           <button
             onClick={handleClose}
-            className='text-neutral hover:text-foreground absolute top-4 right-4 cursor-pointer transition-colors'
+            className='text-neutral hover:text-foreground absolute top-2 right-4 cursor-pointer transition-colors'
             aria-label='Minimize'
           >
-            <Cross height={14} width={14} />
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='20'
+              height='20'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
+              <line x1='6' y1='18' x2='19' y2='18' />
+            </svg>
           </button>
         )}
       </div>

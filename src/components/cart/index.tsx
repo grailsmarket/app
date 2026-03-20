@@ -9,12 +9,13 @@ import NoResults from '../ui/noResults'
 import SecondaryButton from '../ui/buttons/secondary'
 import Label from '../ui/label'
 import PrimaryButton from '../ui/buttons/primary'
-import { useAppDispatch } from '@/state/hooks'
-import { openBulkRegistrationModal } from '@/state/reducers/registration'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 
 const Cart = () => {
   const pathname = usePathname()
   const dispatch = useAppDispatch()
+  const registrationState = useAppSelector(selectRegistration)
   const { isCartOpen, setIsCartOpen } = useUserContext()
   const { purchaseDomains, registerDomains, offerDomains, cartIsEmpty, clearCart } = useCartDomains()
   const [isVisible, setIsVisible] = useState(false)
@@ -40,6 +41,8 @@ const Cart = () => {
   }
 
   const registerDomainsHandler = () => {
+    if (registrationState.flowState !== 'review') return
+
     dispatch(
       openBulkRegistrationModal({
         entries: registerDomains.map((domain) => ({ name: domain.name, domain: domain })),
@@ -101,7 +104,10 @@ const Cart = () => {
               </div>
               {registerDomains.length > 1 && (
                 <button
-                  className='border-primary text-primary hover:bg-primary hover:text-background h-10 w-full cursor-pointer rounded-sm border-2 font-bold transition-all duration-300'
+                  className={cn(
+                    'border-primary text-primary hover:bg-primary hover:text-background h-10 w-full cursor-pointer rounded-sm border-2 font-bold transition-all duration-300',
+                    registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
+                  )}
                   onClick={() => registerDomainsHandler()}
                 >
                   Bulk Register

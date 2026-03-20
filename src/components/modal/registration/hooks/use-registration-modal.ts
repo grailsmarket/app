@@ -210,7 +210,7 @@ const useRegistrationModal = () => {
 
   useEffect(() => {
     if (!isClient || !registrationState.isOpen || entries.length === 0) return
-    if (registrationState.flowState === 'success') return
+    if (registrationState.flowState === 'success' || registrationState.flowState === 'registering') return
 
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))

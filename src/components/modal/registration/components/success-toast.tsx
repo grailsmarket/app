@@ -58,7 +58,7 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
           className='text-neutral hover:text-foreground -mr-1 shrink-0 cursor-pointer p-1 transition-colors'
           aria-label='Close'
         >
-          <Cross height={16} width={16} />
+          <Cross height={14} width={14} />
         </button>
       </div>
 

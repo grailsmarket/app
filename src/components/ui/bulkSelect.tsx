@@ -36,7 +36,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
 import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
-import { openBulkRegistrationModal } from '@/state/reducers/registration'
+import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -59,6 +59,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectAll,
     watchlistIds: selectedWatchlistIds,
   } = useAppSelector(selectBulkSelect)
+  const registrationState = useAppSelector(selectRegistration)
 
   // Handle delayed content switch for smooth close animation
   useEffect(() => {
@@ -288,6 +289,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }
 
   const handleRegisterAction = () => {
+    if (registrationState.flowState !== 'review') return
+
     dispatch(
       openBulkRegistrationModal({
         entries: namesRegister.map((d) => ({ name: d.name, domain: d })),
@@ -503,7 +506,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
               {canRegisterDomains && (
                 <PrimaryButton
                   onClick={handleRegisterAction}
-                  disabled={selectedDomains.length === 0 || namesRegister.length === 0}
+                  disabled={
+                    selectedDomains.length === 0 ||
+                    namesRegister.length === 0 ||
+                    registrationState.flowState !== 'review'
+                  }
                   className='flex items-center gap-1.5'
                 >
                   <p>Register</p>

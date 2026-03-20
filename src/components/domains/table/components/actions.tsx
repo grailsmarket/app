@@ -26,7 +26,7 @@ import { Check } from 'ethereum-identity-kit'
 import { useRouter } from 'next/navigation'
 import { useUserContext } from '@/context/user'
 import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
-import { openRegistrationModal } from '@/state/reducers/registration'
+import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import ActionsDropdown from '@/components/domains/actionsDropdown'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
@@ -59,6 +59,7 @@ const Actions: React.FC<ActionsProps> = ({
   const { userAddress, authStatus } = useUserContext()
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
+  const registrationState = useAppSelector(selectRegistration)
   const width = ALL_MARKETPLACE_COLUMNS['actions'].getWidth(columnCount)
   const domainListing = domain.listings[0]
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
@@ -93,6 +94,7 @@ const Actions: React.FC<ActionsProps> = ({
   const openRegistrationModalHandler = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault()
     e.stopPropagation()
+    if (registrationState.flowState !== 'review') return
     dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
   }
 
@@ -132,6 +134,7 @@ const Actions: React.FC<ActionsProps> = ({
     if (isUnregistered) {
       return {
         label: 'Reg',
+        disabled: registrationState.flowState !== 'review',
         onClick: (e: React.MouseEvent<Element, MouseEvent>) => openRegistrationModalHandler(e),
       }
     }
@@ -304,6 +307,7 @@ const Actions: React.FC<ActionsProps> = ({
         )}
         {availableAction && (
           <PrimaryButton
+            disabled={availableAction.disabled}
             className={cn(
               'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
               availableAction.label !== 'Reg' ? 'hidden md:block' : '',

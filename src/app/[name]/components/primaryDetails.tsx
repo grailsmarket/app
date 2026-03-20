@@ -37,6 +37,8 @@ import { useQuery } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
 import { DAY_IN_SECONDS } from '@/constants/time'
+import CartIcon from '@/components/domains/table/components/CartIcon'
+import useCartDomains from '@/hooks/useCartDomains'
 
 interface NameDetailsProps {
   name: string
@@ -68,6 +70,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
 
   const router = useRouter()
   const dispatch = useAppDispatch()
+  const { onSelect: toggleCart } = useCartDomains()
   const { userAddress, authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
 
@@ -143,6 +146,21 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                   Edit
                 </SecondaryButton>
               </>
+            )}
+            {nameDetails && !isOwner && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  toggleCart(e, nameDetails)
+                }}
+              >
+                <CartIcon
+                  domain={nameDetails}
+                  hasBorder={true}
+                  className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+                />
+              </button>
             )}
           </div>
         )}

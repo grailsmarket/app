@@ -23,6 +23,8 @@ import {
   setBatchRegisterTxHash,
   setBatchRegistered,
   setCurrentBatchIndex,
+  closeRegistrationModal,
+  reopenRegistrationModal,
   resetRegistrationModal,
 } from '@/state/reducers/registration'
 import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
@@ -208,7 +210,7 @@ const useRegistrationModal = () => {
 
   useEffect(() => {
     if (!isClient || !registrationState.isOpen || entries.length === 0) return
-    if (registrationState.flowState === 'success') return
+    if (registrationState.flowState === 'success' || registrationState.flowState === 'registering') return
 
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
@@ -255,19 +257,8 @@ const useRegistrationModal = () => {
     return () => clearInterval(interval)
   }, [registrationState.flowState, batches, getCommitmentAges])
 
-  useEffect(() => {
-    if (
-      !registrationState.isOpen &&
-      entries.length > 0 &&
-      entries[0]?.domain &&
-      registrationState.flowState !== 'review' &&
-      registrationState.flowState !== 'success' &&
-      registrationState.flowState !== 'error'
-    ) {
-      console.log('Restoring in-progress registration for:', entries.map((e) => e.name).join(', '))
-      dispatch(openRegistrationModal({ name: entries[0].name, domain: entries[0].domain }))
-    }
-  }, [registrationState.isOpen, entries, registrationState.flowState, dispatch])
+  // Auto-reopen removed: when the user minimizes an active registration,
+  // we show a toast instead of forcing the modal back open.
 
   useEffect(() => {
     const checkResume = async () => {
@@ -364,11 +355,18 @@ const useRegistrationModal = () => {
       registrationState.flowState === 'committing' ||
       registrationState.flowState === 'registering' ||
       registrationState.flowState === 'waiting'
-    )
+    ) {
+      // Minimize to toast — preserves all state
+      dispatch(closeRegistrationModal())
       return
+    }
 
     dispatch(resetRegistrationModal())
   }, [registrationState.flowState, dispatch])
+
+  const handleReopen = useCallback(() => {
+    dispatch(reopenRegistrationModal())
+  }, [dispatch])
 
   const refetchQueries = useCallback(() => {
     setTimeout(() => {
@@ -744,6 +742,7 @@ const useRegistrationModal = () => {
     perNameDatePickerIndex,
     setPerNameDatePickerIndex,
     handleClose,
+    handleReopen,
     handleCommit,
     handleRegister,
     onTimeUnitChange,

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
@@ -13,12 +14,15 @@ import CommittingView from './components/committing-view'
 import WaitingView from './components/waiting-view'
 import RegisteringView from './components/registering-view'
 import ReviewForm from './components/review-form'
+import RegistrationToast from './components/registration-toast'
+import SuccessToast, { type SuccessSummary } from './components/success-toast'
 import { useAppDispatch } from '@/state/hooks'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 
 const RegistrationModal: React.FC = () => {
   const dispatch = useAppDispatch()
   const modal = useRegistrationModal()
+  const [successSummary, setSuccessSummary] = useState<SuccessSummary | null>(null)
 
   const {
     isClient,
@@ -36,10 +40,82 @@ const RegistrationModal: React.FC = () => {
     showCancelWarning,
     setShowCancelWarning,
     handleClose,
+    handleReopen,
     onResetModal,
   } = modal
 
-  if (!registrationState.isOpen || entries.length === 0 || !firstDomain || !isClient) return null
+  // Clear stale success summary when a new registration opens
+  useEffect(() => {
+    if (registrationState.isOpen) {
+      setSuccessSummary(null)
+    }
+  }, [registrationState.isOpen])
+
+  // Detect success while minimized → snapshot data into toast, then reset
+  useEffect(() => {
+    if (registrationState.flowState === 'success' && !registrationState.isOpen && entries.length > 0) {
+      setSuccessSummary({
+        entries: availableEntries.map((entry) => ({
+          name: beautifyName(entry.name),
+          durationSeconds: modal.entryDurations[entries.indexOf(entry)] ?? 0,
+        })),
+        priceETH: modal.calculationResults?.priceETH ?? 0,
+        priceUSD: modal.calculationResults?.priceUSD ?? 0,
+      })
+      dispatch(clearBulkSelect())
+    }
+  }, [
+    registrationState.flowState,
+    registrationState.isOpen,
+    entries,
+    availableEntries,
+    modal.entryDurations,
+    modal.calculationResults,
+    dispatch,
+  ])
+
+  if (!isClient) return null
+
+  if (successSummary && !registrationState.isOpen) {
+    return (
+      <SuccessToast
+        summary={successSummary}
+        onClose={() => {
+          setSuccessSummary(null)
+          onResetModal()
+        }}
+      />
+    )
+  }
+
+  if (entries.length === 0 || !firstDomain) return null
+
+  const isActiveFlow =
+    registrationState.flowState === 'committing' ||
+    registrationState.flowState === 'waiting' ||
+    registrationState.flowState === 'registering'
+
+  // Show toast when minimized during active flow or error
+  const showMinimizedToast = isActiveFlow || registrationState.flowState === 'error'
+  if (!registrationState.isOpen && showMinimizedToast) {
+    const currentBatch = modal.currentBatch
+    const hasTxHash = !!(
+      (registrationState.flowState === 'committing' && currentBatch?.commitTxHash) ||
+      (registrationState.flowState === 'registering' && currentBatch?.registerTxHash)
+    )
+    return (
+      <RegistrationToast
+        flowState={registrationState.flowState}
+        waitTimeRemaining={modal.waitTimeRemaining}
+        currentBatchIndex={registrationState.currentBatchIndex}
+        totalBatches={modal.totalBatches}
+        hasTxHash={hasTxHash}
+        onClick={handleReopen}
+      />
+    )
+  }
+
+  if (!registrationState.isOpen) return null
 
   if (allAvailabilityChecked && availableEntries.length === 0) {
     return (
@@ -70,7 +146,7 @@ const RegistrationModal: React.FC = () => {
 
   if (showCancelWarning) {
     return (
-      <ModalBackdrop onClose={handleClose}>
+      <ModalBackdrop onClose={() => setShowCancelWarning(false)}>
         <h2 className='font-sedan-sc text-center text-3xl'>Cancel Registration</h2>
         <p className='text-center font-medium'>
           Are you sure you want to cancel this registration? You will lose your commitment and have to start over.
@@ -101,19 +177,34 @@ const RegistrationModal: React.FC = () => {
     )
   }
 
-  const preventClose =
-    registrationState.flowState === 'waiting' ||
-    registrationState.flowState === 'committing' ||
-    registrationState.flowState === 'registering'
-
   return (
     <ModalBackdrop
       onClose={handleClose}
-      preventClose={preventClose}
       className={cn((showDatePicker || perNameDatePickerIndex !== null) && 'min-h-[480px]')}
     >
       <div className='z-10 flex min-h-6 items-center justify-center pb-2'>
         <h2 className='font-sedan-sc text-center text-3xl'>{isBulk ? 'Register Names' : 'Register Name'}</h2>
+        {isActiveFlow && (
+          <button
+            onClick={handleClose}
+            className='text-neutral hover:text-foreground absolute top-2 right-4 cursor-pointer transition-colors'
+            aria-label='Minimize'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='20'
+              height='20'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
+              <line x1='6' y1='18' x2='19' y2='18' />
+            </svg>
+          </button>
+        )}
       </div>
 
       {registrationState.flowState === 'review' && (
@@ -145,7 +236,6 @@ const RegistrationModal: React.FC = () => {
           totalBatches={modal.totalBatches}
           calculationResults={modal.calculationResults}
           onClose={() => {
-            handleClose()
             onResetModal()
             dispatch(clearBulkSelect())
           }}

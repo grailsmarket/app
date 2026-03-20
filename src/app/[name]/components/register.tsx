@@ -9,8 +9,8 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { GRACE_PERIOD, PREMIUM } from '@/constants/domains/registrationStatuses'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
-import { useAppDispatch } from '@/state/hooks'
-import { openRegistrationModal } from '@/state/reducers/registration'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { usePublicClient } from 'wagmi'
@@ -22,6 +22,8 @@ import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
 import PremiumPriceControls from './PremiumPriceControls'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
+import CartIcon from '@/components/domains/table/components/CartIcon'
+import useCartDomains from '@/hooks/useCartDomains'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -36,6 +38,8 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const publicClient = usePublicClient({ chainId: mainnet.id })
+  const { onSelect: toggleCart } = useCartDomains()
+  const registrationState = useAppSelector(selectRegistration)
 
   // Lifted state for premium price controls
   const [priceInput, setPriceInput] = useState<string>('')
@@ -172,21 +176,37 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
               </p>
             </div>
           </div>
-          <PrimaryButton
-            onClick={() => {
-              if (userAddress) {
-                if (nameDetails?.name && nameDetails?.name.length > 0) {
-                  dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
+          <div className='flex flex-row items-center gap-2'>
+            <PrimaryButton
+              disabled={registrationState.flowState !== 'review'}
+              onClick={() => {
+                if (userAddress) {
+                  if (nameDetails?.name && nameDetails?.name.length > 0) {
+                    dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
+                  } else {
+                    window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+                  }
                 } else {
-                  window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+                  openConnectModal?.()
                 }
-              } else {
-                openConnectModal?.()
-              }
-            }}
-          >
-            Register
-          </PrimaryButton>
+              }}
+            >
+              Register
+            </PrimaryButton>
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (nameDetails) toggleCart(e, nameDetails)
+              }}
+            >
+              <CartIcon
+                domain={nameDetails}
+                hasBorder={true}
+                className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+              />
+            </button>
+          </div>
         </div>
         {nameDetails?.expiry_date && ethPrice && oracle && (
           <>
@@ -225,21 +245,37 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             </div>
           )}
         </div>
-        <PrimaryButton
-          onClick={() => {
-            if (userAddress) {
-              if (name && name.length > 0) {
-                dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
+        <div className='flex flex-row items-center gap-2'>
+          <PrimaryButton
+            disabled={registrationState.flowState !== 'review'}
+            onClick={() => {
+              if (userAddress) {
+                if (name && name.length > 0) {
+                  dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
+                } else {
+                  window.open(`https://app.ens.domains/${name}/register`, '_blank')
+                }
               } else {
-                window.open(`https://app.ens.domains/${name}/register`, '_blank')
+                openConnectModal?.()
               }
-            } else {
-              openConnectModal?.()
-            }
-          }}
-        >
-          Register
-        </PrimaryButton>
+            }}
+          >
+            Register
+          </PrimaryButton>
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (nameDetails) toggleCart(e, nameDetails)
+            }}
+          >
+            <CartIcon
+              domain={nameDetails}
+              hasBorder={true}
+              className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+            />
+          </button>
+        </div>
       </div>
     </div>
   )

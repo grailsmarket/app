@@ -20,7 +20,13 @@ const TypeFilter = () => {
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Type' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={expandedHeight} label='Type'>
+      <ExpandableTab
+        open={open}
+        toggleOpen={toggleOpen}
+        expandedHeight={expandedHeight}
+        label='Type'
+        className='border-b-0'
+      >
         <div className='flex flex-col'>
           {filterLabels.map((label, index) => (
             <div key={label} className={`z-${filterLabels.length - index}`}>

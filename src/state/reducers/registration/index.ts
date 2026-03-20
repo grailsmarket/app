@@ -230,6 +230,9 @@ const registrationSlice = createSlice({
     setCurrentBatchIndex: (state, action: PayloadAction<number>) => {
       state.currentBatchIndex = action.payload
     },
+    reopenRegistrationModal: (state) => {
+      state.isOpen = true
+    },
     resetRegistrationModal: () => {
       return initialState
     },
@@ -259,6 +262,7 @@ export const {
   setBatchRegisterTxHash,
   setBatchRegistered,
   setCurrentBatchIndex,
+  reopenRegistrationModal,
   resetRegistrationModal,
 } = registrationSlice.actions
 

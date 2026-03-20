@@ -67,7 +67,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             type='button'
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex w-full cursor-pointer items-center justify-between gap-4 rounded-r-md border px-4 py-3 pr-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+              'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-full w-full cursor-pointer items-center justify-between gap-4 rounded-r-md border px-4 py-3 pr-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
               hideLabel && 'rounded-md'
             )}
           >

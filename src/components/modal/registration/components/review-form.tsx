@@ -112,7 +112,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           options={timeUnitOptions}
           value={timeUnit}
           onSelect={(value) => onTimeUnitChange(String(value))}
-          className='w-2/5'
+          className='h-12! w-2/5'
         />
         {registrationMode === 'register_for' ? (
           <Input

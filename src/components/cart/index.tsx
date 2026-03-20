@@ -99,12 +99,14 @@ const Cart = () => {
                   <DomainItem key={domain.name + index} domain={domain} />
                 ))}
               </div>
-              <button
-                className='border-primary text-primary hover:bg-primary hover:text-background h-10 w-full cursor-pointer rounded-sm border-2 font-bold transition-all duration-300'
-                onClick={() => registerDomainsHandler()}
-              >
-                Bulk Register
-              </button>
+              {registerDomains.length > 1 && (
+                <button
+                  className='border-primary text-primary hover:bg-primary hover:text-background h-10 w-full cursor-pointer rounded-sm border-2 font-bold transition-all duration-300'
+                  onClick={() => registerDomainsHandler()}
+                >
+                  Bulk Register
+                </button>
+              )}
             </div>
           )}
           {!offerDomainsEmpty && (

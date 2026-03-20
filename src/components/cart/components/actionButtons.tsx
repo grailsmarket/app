@@ -41,27 +41,33 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   if (registrationStatus === UNREGISTERED) {
     return (
-      <PrimaryButton onClick={(e) => clickHandler(e, openRegistrationModalHandler)} className='w-24'>
+      <button
+        onClick={(e) => clickHandler(e, openRegistrationModalHandler)}
+        className='border-primary text-primary hover:bg-primary hover:text-background h-10 w-24 cursor-pointer rounded-md border-2 font-bold transition-all duration-300'
+      >
         Register
-      </PrimaryButton>
+      </button>
     )
   }
 
   if (domainListing?.price) {
     return (
-      <PrimaryButton onClick={(e) => clickHandler(e, openBuyNowModal)} className='w-[94px] sm:w-24'>
+      <button
+        onClick={(e) => clickHandler(e, openBuyNowModal)}
+        className='border-primary text-primary hover:bg-primary hover:text-background font-bol h-10 w-[94px] cursor-pointer rounded-md border-2 transition-all duration-300 sm:w-24'
+      >
         Buy Now
-      </PrimaryButton>
+      </button>
     )
   }
 
   return (
-    <PrimaryButton
-      className={`w-20 cursor-pointer rounded-sm sm:w-24`}
+    <button
+      className={`border-primary text-primary hover:bg-primary hover:text-background h-10 w-20 cursor-pointer rounded-md border-2 font-bold transition-all duration-300 sm:w-24`}
       onClick={(e) => clickHandler(e, openMakeOfferModal)}
     >
       Offer
-    </PrimaryButton>
+    </button>
   )
 }
 

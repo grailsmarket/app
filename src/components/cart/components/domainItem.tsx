@@ -32,7 +32,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
         href={`/${domain.name}`}
         className={cn(
           'flex flex-row items-center gap-2 transition-all duration-300 hover:opacity-70',
-          hasListing ? 'w-[40%]' : 'w-[70%] md:w-[40%]'
+          hasListing ? 'w-[40%]' : 'w-[70%]'
         )}
       >
         <NameImage

@@ -158,7 +158,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
           {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
             <DownloadButton inAnyCategory={true} />
           )}
-          {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <ViewSelector />}
+          {selectedTab.value !== 'holders' && <ViewSelector />}
         </div>
       </div>
     )
@@ -240,7 +240,7 @@ const CategoriesPageTabSwitcher: React.FC = () => {
         {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
           <DownloadButton inAnyCategory={true} />
         )}
-        {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && <ViewSelector />}
+        {selectedTab.value !== 'holders' && <ViewSelector />}
       </div>
     </div>
   )

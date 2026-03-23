@@ -3,21 +3,26 @@ const YEAR = DAY * 365
 const MONTH = DAY * 30
 const WEEK = DAY * 7
 
+const UNITS: [number, string][] = [
+  [YEAR, 'yr'],
+  [MONTH, 'mo'],
+  [WEEK, 'wk'],
+  [DAY, 'd'],
+]
+
 export const formatDuration = (seconds: number): string => {
   if (seconds <= 0) return '\u2014'
 
-  if (seconds >= YEAR && seconds % YEAR === 0) {
-    const n = seconds / YEAR
-    return `${n} year${n !== 1 ? 's' : ''}`
+  const parts: string[] = []
+  let remaining = seconds
+
+  for (const [size, label] of UNITS) {
+    const n = Math.floor(remaining / size)
+    if (n > 0) {
+      parts.push(`${n}${label}`)
+      remaining -= n * size
+    }
   }
-  if (seconds >= MONTH && seconds % MONTH === 0) {
-    const n = seconds / MONTH
-    return `${n} month${n !== 1 ? 's' : ''}`
-  }
-  if (seconds >= WEEK && seconds % WEEK === 0) {
-    const n = seconds / WEEK
-    return `${n} week${n !== 1 ? 's' : ''}`
-  }
-  const n = Math.max(1, Math.round(seconds / DAY))
-  return `${n} day${n !== 1 ? 's' : ''}`
+
+  return parts.length > 0 ? parts.join(', ') : '1d'
 }

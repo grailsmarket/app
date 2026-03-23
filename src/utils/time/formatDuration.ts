@@ -1,6 +1,6 @@
 const DAY = 86400
+const MONTH = DAY * 30
 const YEAR = DAY * 365
-const MONTH = YEAR / 12
 
 const UNITS: [number, string][] = [
   [YEAR, 'yr'],

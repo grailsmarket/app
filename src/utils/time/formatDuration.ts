@@ -1,12 +1,10 @@
 const DAY = 86400
 const YEAR = DAY * 365
 const MONTH = YEAR / 12
-const WEEK = DAY * 7
 
 const UNITS: [number, string][] = [
   [YEAR, 'yr'],
   [MONTH, 'mo'],
-  [WEEK, 'wk'],
   [DAY, 'd'],
 ]
 

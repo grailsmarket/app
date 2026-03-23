@@ -2,7 +2,7 @@
 
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import React from 'react'
-import CategoryRow from './categoryRow'
+import CategoryCard from './categoryCard'
 
 const Categories = () => {
   const { categories } = useCategories()
@@ -10,7 +10,7 @@ const Categories = () => {
   return (
     <div className='mx-auto grid max-w-7xl grid-cols-1 items-center justify-center gap-2 md:grid-cols-2 md:gap-4 2xl:grid-cols-3'>
       {categories?.map((category) => (
-        <CategoryRow key={category.name} category={category} />
+        <CategoryCard key={category.name} category={category} />
       ))}
     </div>
   )

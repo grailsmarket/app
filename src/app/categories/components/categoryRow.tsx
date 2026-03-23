@@ -255,17 +255,24 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
           height={200}
           className='absolute top-0 left-0 h-full w-full object-cover opacity-10'
         />
-        <Image
-          src={categoryAvatar}
-          alt={category.display_name}
-          width={36}
-          height={36}
-          className='z-10 h-9 w-9 shrink-0 rounded-full'
-        />
-        <div className='z-10 flex min-w-0 shrink flex-col' style={{ flex: '0 1 200px' }}>
-          <h3 className='truncate text-lg font-bold'>{category.display_name}</h3>
-          <p className='text-neutral text-md truncate font-medium'>{category.description}</p>
-        </div>
+        <Link
+          href={`/categories/${category.name}`}
+          className='z-10 flex min-w-0 shrink items-center gap-3'
+          style={{ flex: '0 1 200px' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Image
+            src={categoryAvatar}
+            alt={category.display_name}
+            width={36}
+            height={36}
+            className='h-9 w-9 shrink-0 rounded-full'
+          />
+          <div className='flex min-w-0 flex-col'>
+            <h3 className='truncate text-lg font-bold'>{category.display_name}</h3>
+            <p className='text-neutral text-md truncate font-medium'>{category.description}</p>
+          </div>
+        </Link>
         <div className='z-10 flex flex-1 items-center justify-center'>
           {visibleStats.map((stat) => (
             <div

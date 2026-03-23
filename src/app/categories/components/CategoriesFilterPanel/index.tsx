@@ -17,6 +17,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
+import ViewSelector from '@/components/domains/viewSelector'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
@@ -86,9 +87,14 @@ const CategoriesFilterPanel: React.FC = () => {
               <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
               <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
             </div>
-            <SecondaryButton onClick={handleClearFilters} disabled={isFiltersClear}>
-              Clear
-            </SecondaryButton>
+            <div className='flex items-center gap-2'>
+              <SecondaryButton onClick={handleClearFilters} disabled={isFiltersClear}>
+                Clear
+              </SecondaryButton>
+              <span className='flex items-center gap-2 md:hidden'>
+                <ViewSelector />
+              </span>
+            </div>
           </div>
         </div>
       </div>

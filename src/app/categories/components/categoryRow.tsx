@@ -129,7 +129,6 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
     </div>
   )
 
-  // Ordered list of all stats for the compact row
   const allQuickStats = useMemo(
     () => [
       {
@@ -227,9 +226,6 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
     [category, salesTimeWindow, volumeTimeWindow]
   )
 
-  // Dynamically compute how many stats fit:
-  // avatar(36+12gap) + name(180min) + arrow(28+12gap) + padding(24) ≈ 292px fixed
-  // Each stat needs ~120px
   const visibleStatsCount = useMemo(() => {
     if (!isClient || !width) return 1
     const available = width - 292
@@ -240,7 +236,6 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
 
   return (
     <div ref={clickawayRef} className='relative w-full'>
-      {/* Compact row */}
       <div
         className={cn(
           'border-tertiary active:bg-foreground/5 hover:bg-foreground/5 relative flex h-[72px] w-full cursor-pointer flex-row items-center gap-3 overflow-hidden border-b px-3 transition',
@@ -266,11 +261,13 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
             alt={category.display_name}
             width={36}
             height={36}
-            className='h-9 w-9 shrink-0 rounded-full'
+            className='h-9 w-9 shrink-0 rounded-full transition-opacity hover:opacity-70'
           />
           <div className='flex min-w-0 flex-col'>
-            <h3 className='truncate text-lg font-bold'>{category.display_name}</h3>
-            <p className='text-neutral text-md truncate font-medium'>{category.description}</p>
+            <h3 className='truncate text-lg font-bold transition-opacity hover:opacity-70'>{category.display_name}</h3>
+            <p className='text-neutral text-md truncate font-medium transition-opacity hover:opacity-70'>
+              {category.description}
+            </p>
           </div>
         </Link>
         <div className='z-10 flex flex-1 items-center justify-center'>
@@ -291,8 +288,6 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
           )}
         />
       </div>
-
-      {/* Expandable detail panel */}
       <div
         className={cn(
           'absolute top-[72px] right-0 left-0 z-40 grid shadow-md transition-[grid-template-rows] duration-300 ease-in-out',
@@ -407,7 +402,6 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
                 </div>
               </StatItem>
             </div>
-            {/* View category link */}
             <div className='border-tertiary mt-3 flex items-center justify-end border-t pt-3'>
               <Link href={`/categories/${category.name}`} className='text-primary text-xl font-medium hover:underline'>
                 View Category →

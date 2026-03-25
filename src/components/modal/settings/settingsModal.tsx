@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { Avatar, ENS, HeaderImage, truncateAddress } from 'ethereum-identity-kit'
 import { useSettings } from './useSettings'
+import { useSubscription } from './useSubscription'
 import Input from '@/components/ui/input'
 import Link from 'next/link'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -14,6 +15,22 @@ import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
+
+const TIER_COLORS: Record<string, string> = {
+  free: 'bg-neutral-600 text-neutral-200',
+  plus: 'bg-blue-600 text-blue-100',
+  pro: 'bg-purple-600 text-purple-100',
+  gold: 'bg-amber-500 text-amber-950',
+}
+
+const TIER_LABELS: Record<string, string> = {
+  free: 'Free',
+  plus: 'Plus',
+  pro: 'Pro',
+  gold: 'Gold',
+}
+
+const PAID_TIERS = ['plus', 'pro', 'gold'] as const
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -40,6 +57,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     verificationEmailStatus,
   } = useSettings()
   const { userAddress } = useUserContext()
+  const {
+    tier,
+    status,
+    currentPeriodEnd,
+    cancelAtPeriodEnd,
+    isPaidTier,
+    isActive,
+    checkout,
+    isCheckoutLoading,
+    openPortal,
+    isPortalLoading,
+    checkoutError,
+  } = useSubscription()
+
+  const [showTierPicker, setShowTierPicker] = useState(false)
+  const [selectedInterval, setSelectedInterval] = useState<'monthly' | 'yearly'>('monthly')
 
   if (!userAddress) return null
 
@@ -55,15 +88,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
       }}
     >
       <div
-        className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col gap-2 rounded-md border-t shadow-lg sm:gap-4 md:max-w-xl md:border-2'
+        className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col gap-2 overflow-y-auto rounded-md border-t shadow-lg sm:gap-4 md:max-w-xl md:border-2'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className='flex min-h-6 items-center justify-center'>
           <h2 className='font-sedan-sc text-foreground text-3xl'>Settings</h2>
-          {/* <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
-            <Cross className='text-foreground h-4 w-4 cursor-pointer' />
-          </button> */}
         </div>
         <div>
           <div className='p-md md:p-lg border-tertiary relative flex items-center justify-between gap-1 overflow-hidden rounded-md border md:gap-2'>
@@ -90,19 +120,144 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </Link>
           </div>
         </div>
+
+        {/* Subscription Section */}
+        <div className='flex flex-col gap-2'>
+          <div className='border-tertiary rounded-md border p-3 sm:p-4'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center gap-2'>
+                <p className='text-foreground text-lg font-semibold'>Subscription</p>
+                <span className={cn('rounded-sm px-2 py-0.5 text-sm font-bold', TIER_COLORS[tier] || TIER_COLORS.free)}>
+                  {TIER_LABELS[tier] || 'Free'}
+                </span>
+              </div>
+              {isPaidTier && isActive && (
+                <button
+                  onClick={() => openPortal()}
+                  disabled={isPortalLoading}
+                  className='text-md cursor-pointer text-blue-400 transition-opacity hover:opacity-80 disabled:opacity-50'
+                >
+                  {isPortalLoading ? 'Loading...' : 'Manage'}
+                </button>
+              )}
+            </div>
+
+            {/* Status messages */}
+            {status === 'past_due' && (
+              <div className='mt-2 flex items-center gap-2 rounded-md bg-yellow-400/10 p-2'>
+                <Image src={AlertCircle} alt='Warning' height={20} width={20} />
+                <p className='text-md font-medium text-[#E79339]'>
+                  Payment failed. Please update your payment method.
+                </p>
+              </div>
+            )}
+            {cancelAtPeriodEnd && currentPeriodEnd && (
+              <div className='mt-2 flex items-center gap-2 rounded-md bg-yellow-400/10 p-2'>
+                <Image src={AlertCircle} alt='Info' height={20} width={20} />
+                <p className='text-md font-medium text-[#E79339]'>
+                  Your subscription will end on {new Date(currentPeriodEnd).toLocaleDateString()}.
+                </p>
+              </div>
+            )}
+            {isPaidTier && isActive && currentPeriodEnd && !cancelAtPeriodEnd && (
+              <p className='text-md text-neutral mt-1'>
+                Renews {new Date(currentPeriodEnd).toLocaleDateString()}
+              </p>
+            )}
+
+            {/* Upgrade / Change Plan button */}
+            {!showTierPicker && (
+              <div className='mt-3'>
+                <SecondaryButton
+                  className='w-full'
+                  onClick={() => setShowTierPicker(true)}
+                >
+                  {isPaidTier ? 'Change Plan' : 'Upgrade'}
+                </SecondaryButton>
+              </div>
+            )}
+
+            {/* Tier Picker */}
+            {showTierPicker && (
+              <div className='mt-3 flex flex-col gap-3'>
+                {/* Interval Toggle */}
+                <div className='bg-secondary flex items-center justify-center gap-1 rounded-md p-1'>
+                  <button
+                    onClick={() => setSelectedInterval('monthly')}
+                    className={cn(
+                      'flex-1 cursor-pointer rounded-sm px-3 py-1.5 text-sm font-semibold transition-colors',
+                      selectedInterval === 'monthly' ? 'bg-primary text-background' : 'text-neutral hover:text-foreground'
+                    )}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setSelectedInterval('yearly')}
+                    className={cn(
+                      'flex-1 cursor-pointer rounded-sm px-3 py-1.5 text-sm font-semibold transition-colors',
+                      selectedInterval === 'yearly' ? 'bg-primary text-background' : 'text-neutral hover:text-foreground'
+                    )}
+                  >
+                    Yearly
+                  </button>
+                </div>
+
+                {/* Tier Cards */}
+                <div className='flex flex-col gap-2 sm:flex-row'>
+                  {PAID_TIERS.map((tierOption) => {
+                    const isCurrentTier = tier === tierOption && isActive
+                    return (
+                      <div
+                        key={tierOption}
+                        className={cn(
+                          'border-tertiary flex flex-1 flex-col items-center gap-2 rounded-md border p-3 transition-colors',
+                          isCurrentTier && 'border-primary/50 bg-primary/5'
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'rounded-sm px-2.5 py-0.5 text-sm font-bold',
+                            TIER_COLORS[tierOption]
+                          )}
+                        >
+                          {TIER_LABELS[tierOption]}
+                        </span>
+                        {isCurrentTier ? (
+                          <p className='text-neutral text-sm'>Current plan</p>
+                        ) : (
+                          <PrimaryButton
+                            className='w-full text-sm'
+                            onClick={() => checkout({ tier: tierOption, interval: selectedInterval })}
+                            disabled={isCheckoutLoading}
+                          >
+                            {isCheckoutLoading ? 'Loading...' : 'Subscribe'}
+                          </PrimaryButton>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setShowTierPicker(false)}
+                  className='text-md text-neutral cursor-pointer transition-opacity hover:opacity-80'
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {checkoutError && (
+              <div className='mt-2 flex items-center gap-2 rounded-md bg-red-400/10 p-2'>
+                <Image src={ErrorIcon} alt='Error' height={20} width={20} />
+                <p className='text-md font-medium text-red-400'>{checkoutError}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Email Section */}
         <div className='flex flex-col gap-2 sm:gap-4'>
-          {/* <Input
-            label='Discord'
-            value={discordUsername || ''}
-            onChange={(e) => setDiscordUsername(e.target.value)}
-            placeholder='Username'
-            />
-            <Input
-            label='Telegram'
-            value={telegramUsername || ''}
-            onChange={(e) => setTelegramUsername(e.target.value)}
-            placeholder='@telegramusername'
-            /> */}
           <div className='flex flex-col gap-2'>
             <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
               <p className='text-md text-neutral font-medium'>

@@ -20,6 +20,9 @@ export type APIResponseType<T> = {
   }
 }
 
+export type SubscriptionTier = 'free' | 'plus' | 'pro' | 'gold'
+export type SubscriptionStatus = 'free' | 'trialing' | 'active' | 'past_due' | 'cancelled' | 'expired'
+
 export type AuthUserType = {
   id: number
   address: string
@@ -29,6 +32,10 @@ export type AuthUserType = {
   discord: string | null
   createdAt: string
   lastSignIn: string
+  subscriptionTier: SubscriptionTier
+  subscriptionStatus: SubscriptionStatus
+  subscriptionCurrentPeriodEnd: string | null
+  subscriptionCancelAtPeriodEnd: boolean
 }
 
 export type VerifyResponseType = {

@@ -1,3 +1,5 @@
+import type { SubscriptionTier, SubscriptionStatus } from '@/types/api'
+
 type VerifyResponse = {
   success: true
   token: string
@@ -10,6 +12,10 @@ type VerifyResponse = {
     lastSignIn: string
     discord: string | null
     telegram: string | null
+    subscriptionTier: SubscriptionTier
+    subscriptionStatus: SubscriptionStatus
+    subscriptionCurrentPeriodEnd: string | null
+    subscriptionCancelAtPeriodEnd: boolean
   }
 }
 

@@ -13,6 +13,7 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { Address } from 'viem'
 import { AuthUserType } from '@/types/api'
@@ -54,6 +55,12 @@ export const useAuth = () => {
     dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
     dispatch(setUserDiscord(user.discord))
     dispatch(setUserTelegram(user.telegram))
+    dispatch(setUserSubscription({
+      tier: user.subscriptionTier || 'free',
+      status: user.subscriptionStatus || 'free',
+      currentPeriodEnd: user.subscriptionCurrentPeriodEnd || null,
+      cancelAtPeriodEnd: user.subscriptionCancelAtPeriodEnd || false,
+    }))
   }
 
   const {

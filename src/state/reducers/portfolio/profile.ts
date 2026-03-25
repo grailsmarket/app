@@ -3,6 +3,7 @@ import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import { RootState } from '../../index'
 import { MarketplaceDomainType } from '@/types/domains'
 import { Address } from 'ethereum-identity-kit'
+import { SubscriptionTier, SubscriptionStatus } from '@/types/api'
 
 // Types --------------------------------------------
 export type ProfileTabType = (typeof PROFILE_TABS)[number]
@@ -11,6 +12,13 @@ type EnsProfileType = {
   name: string | null
   avatar: string | null
   header: string | null
+}
+
+type SubscriptionState = {
+  tier: SubscriptionTier
+  status: SubscriptionStatus
+  currentPeriodEnd: string | null
+  cancelAtPeriodEnd: boolean
 }
 
 type profileState = {
@@ -27,6 +35,7 @@ type profileState = {
   telegram: string | null
   poapClaimed: boolean
   lastVisitedProfile: Address | string | null
+  subscription: SubscriptionState
 }
 
 export const nullEnsProfile = {
@@ -54,6 +63,12 @@ const initialState: profileState = {
   pendingWatchlistTokenIds: [],
   selectedTab: PROFILE_TABS[0],
   lastVisitedProfile: null,
+  subscription: {
+    tier: 'free',
+    status: 'free',
+    currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
+  },
 }
 
 // Slice -------------------------------------------
@@ -109,6 +124,9 @@ export const profileSlice = createSlice({
     setLastVisitedProfile(state, { payload }: PayloadAction<Address | string | null>) {
       state.lastVisitedProfile = payload
     },
+    setUserSubscription(state, { payload }: PayloadAction<SubscriptionState>) {
+      state.subscription = payload
+    },
     resetUserProfile(state) {
       state.ensProfile = nullEnsProfile
       state.userId = null
@@ -118,6 +136,7 @@ export const profileSlice = createSlice({
       state.poapClaimed = false
       state.watchlist = []
       state.pendingWatchlistTokenIds = []
+      state.subscription = { tier: 'free', status: 'free', currentPeriodEnd: null, cancelAtPeriodEnd: false }
     },
   },
 })
@@ -138,11 +157,13 @@ export const {
   removeUserPendingWatchlistDomain,
   changeTab,
   setLastVisitedProfile,
+  setUserSubscription,
   resetUserProfile,
 } = profileSlice.actions
 
 // Selectors ------------------------------------------
 export const selectUserProfile = (state: RootState) => state.profile.profile
+export const selectUserSubscription = (state: RootState) => state.profile.profile.subscription
 
 // Reducer --------------------------------------------
 export default profileSlice.reducer

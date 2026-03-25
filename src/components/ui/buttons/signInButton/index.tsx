@@ -12,12 +12,27 @@ import ExternalLink from 'public/icons/external-link.svg'
 import GrailsPoap2025 from 'public/art/grails-poap-2025.webp'
 import GrailsPoap2026 from 'public/art/grails-poap-2026.webp'
 import Link from 'next/link'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserSubscription } from '@/state/reducers/portfolio/profile'
+
+const TIER_BADGE_COLORS: Record<string, string> = {
+  plus: 'bg-blue-600 text-blue-100',
+  pro: 'bg-purple-600 text-purple-100',
+  gold: 'bg-amber-500 text-amber-950',
+}
+
+const TIER_BADGE_LABELS: Record<string, string> = {
+  plus: 'Plus',
+  pro: 'Pro',
+  gold: 'Gold',
+}
 
 const SignInButton = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownWalletRef = useClickAway<HTMLDivElement>(() => {
     setIsDropdownOpen(false)
   })
+  const subscription = useAppSelector(selectUserSubscription)
 
   const { openConnectModal } = useConnectModal()
   const {
@@ -68,6 +83,11 @@ const SignInButton = () => {
         <Link href={`/profile/${userAddress}`} onClick={() => setIsDropdownOpen(false)}>
           <button className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'>
             <p>My Profile</p>
+            {subscription?.tier && subscription.tier !== 'free' && (
+              <span className={cn('rounded-sm px-1.5 py-0.5 text-xs font-bold', TIER_BADGE_COLORS[subscription.tier])}>
+                {TIER_BADGE_LABELS[subscription.tier]}
+              </span>
+            )}
           </button>
         </Link>
         <button

@@ -1,4 +1,4 @@
-import { APIResponseType } from '@/types/api'
+import { APIResponseType, SubscriptionTier, SubscriptionStatus } from '@/types/api'
 import { Address } from 'viem'
 
 export type ProfileResponseType = {
@@ -11,6 +11,10 @@ export type ProfileResponseType = {
   createdAt: string
   lastSignIn: string
   updatedAt: string
+  subscriptionTier: SubscriptionTier
+  subscriptionStatus: SubscriptionStatus
+  subscriptionCurrentPeriodEnd: string | null
+  subscriptionCancelAtPeriodEnd: boolean
 }
 
 export const checkAuthentication = async () => {

@@ -54,7 +54,7 @@ const Price: React.FC<PriceProps> = ({
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
         <div>
-          <p
+          <span
             className={cn(
               'flex items-center gap-px font-semibold',
               registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
@@ -62,26 +62,26 @@ const Price: React.FC<PriceProps> = ({
           >
             {registrationStatus === PREMIUM ? (
               <>
-                <p>$</p>
-                <p>
+                <span>$</span>
+                <span>
                   {premiumPrice.toLocaleString(navigator.language, {
                     maximumFractionDigits: 2,
                     minimumFractionDigits: 2,
                   })}
-                </p>
-                <p>+</p>
-                <p className='text-md text-neutral font-medium'>
+                </span>
+                <span>+</span>
+                <span className='text-md text-neutral font-medium'>
                   ${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/yr
-                </p>
+                </span>
               </>
             ) : (
               <>
-                <p>$</p>
-                <p>{regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}</p>
-                <p className='text-neutral font-medium'>&nbsp;/&nbsp;yr</p>
+                <span>$</span>
+                <span>{regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}</span>
+                <span className='text-neutral font-medium'>&nbsp;/&nbsp;yr</span>
               </>
             )}
-          </p>
+          </span>
         </div>
         {registrationStatus === PREMIUM && timeLeftString && (
           <p className='text-md text-premium/70 font-medium text-nowrap tabular-nums'>

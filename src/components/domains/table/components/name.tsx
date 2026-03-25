@@ -52,11 +52,9 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             </p>
             <div className='text-md text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate font-semibold sm:gap-1.5'>
               {displayedCategories?.map((club, index) => {
-                const category = categories?.find((c) => c.name === club)
+                const isRankClub = club.includes('prepunk') || club.includes('short_name_auction')
                 const clubRank =
-                  category?.name.includes('prepunk') && index === 0
-                    ? domain.club_ranks?.find((rank) => rank.club === club)?.rank
-                    : null
+                  isRankClub && index === 0 ? domain.club_ranks?.find((rank) => rank.club === club)?.rank : null
 
                 return (
                   <div key={club} className='flex min-w-fit flex-row items-center gap-0.5 sm:gap-1'>

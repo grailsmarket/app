@@ -81,7 +81,12 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
         />
       </div>
       <div className='w-[30%]'>
-        <User address={listing.seller_address as Address} className='max-w-[95%]' wrapperClassName='justify-end' />
+        <User
+          address={listing.seller_address as Address}
+          className='max-w-[95%]'
+          wrapperClassName='justify-end'
+          disableLink
+        />
       </div>
     </Link>
   )
@@ -134,7 +139,12 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
         />
       </div>
       <div className='w-[30%]'>
-        <User address={offer.buyer_address as Address} className='max-w-[95%]' wrapperClassName='justify-end' />
+        <User
+          address={offer.buyer_address as Address}
+          className='max-w-[95%]'
+          wrapperClassName='justify-end'
+          disableLink
+        />
       </div>
     </Link>
   )
@@ -191,11 +201,21 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
       </div>
       {!hideSeller && (
         <div className='w-[20%]'>
-          <User address={sale.seller_address as Address} className='max-w-[99%]' wrapperClassName='justify-end' />
+          <User
+            address={sale.seller_address as Address}
+            className='max-w-[99%]'
+            wrapperClassName='justify-end'
+            disableLink
+          />
         </div>
       )}
       <div className={cn(hideSeller ? 'w-[30%]' : 'w-[20%]')}>
-        <User address={sale.buyer_address as Address} className='max-w-[99%]' wrapperClassName='justify-end' />
+        <User
+          address={sale.buyer_address as Address}
+          className='max-w-[99%]'
+          wrapperClassName='justify-end'
+          disableLink
+        />
       </div>
     </Link>
   )
@@ -254,7 +274,12 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
         />
       </div>
       <div className='w-[30%]'>
-        <User address={registration.owner_address as Address} className='max-w-[95%]' wrapperClassName='justify-end' />
+        <User
+          address={registration.owner_address as Address}
+          className='max-w-[95%]'
+          wrapperClassName='justify-end'
+          disableLink
+        />
       </div>
     </Link>
   )

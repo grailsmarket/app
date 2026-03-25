@@ -129,6 +129,23 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
     </div>
   )
 
+  // Map sort option to a stat key
+  const sortToStatKey = (sort: string): string => {
+    if (sort.includes('sales_volume') || sort === 'total_sales_volume_wei') return 'volume'
+    if (sort.includes('sales_count') || sort === 'total_sales_count') return 'sales'
+    if (sort.includes('reg_volume') || sort === 'total_reg_volume_wei') return 'reg_volume'
+    if (sort.includes('reg_count') || sort === 'total_reg_count') return 'registrations'
+    if (sort === 'member_count') return 'names'
+    if (sort === 'floor_price_wei') return 'floor'
+    if (sort.startsWith('registered')) return 'registered'
+    if (sort.startsWith('listings')) return 'listings'
+    if (sort.startsWith('grace')) return 'grace'
+    if (sort.startsWith('premium')) return 'premium'
+    if (sort.startsWith('available')) return 'available'
+    if (sort.startsWith('holders')) return 'holders'
+    return 'names'
+  }
+
   const allQuickStats = useMemo(
     () => [
       {
@@ -176,6 +193,36 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
         ),
       },
       {
+        key: 'grace',
+        label: 'Grace',
+        colorClass: 'text-grace',
+        render: () => (
+          <div className='flex items-center gap-[3px]'>
+            <p>{localizeNumber(category.grace_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>({(category.grace_percent ?? 0).toFixed(1)}%)</p>
+          </div>
+        ),
+      },
+      {
+        key: 'premium',
+        label: 'Premium',
+        colorClass: 'text-premium',
+        render: () => (
+          <div className='flex items-center gap-[3px]'>
+            <p>{localizeNumber(category.premium_count ?? 0)}</p>
+            <p className='text-md text-neutral pt-px font-medium'>
+              (
+              {category.member_count && category.member_count > 0
+                ? (((category.premium_count ?? 0) / category.member_count) * 100).toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })
+                : 0}
+              %)
+            </p>
+          </div>
+        ),
+      },
+      {
         key: 'available',
         label: 'Available',
         colorClass: 'text-available',
@@ -205,6 +252,23 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
         ),
       },
       {
+        key: 'registrations',
+        label: `${registrationsTimeWindow.label.length > 0 ? 'Regs' : 'Registrations'}${registrationsTimeWindow.label ? ` (${registrationsTimeWindow.label})` : ''}`,
+        render: () => <p>{localizeNumber(registrationsTimeWindow.value)}</p>,
+      },
+      {
+        key: 'reg_volume',
+        label: `Reg Vol${registrationsVolumeTimeWindow.label ? ` (${registrationsVolumeTimeWindow.label})` : ''}`,
+        render: () => (
+          <Price
+            price={registrationsVolumeTimeWindow.value}
+            currencyAddress={category.floor_price_currency as Address}
+            iconSize='16px'
+            fontSize='text-lg font-semibold'
+          />
+        ),
+      },
+      {
         key: 'holders',
         label: 'Holders',
         render: () => (
@@ -223,16 +287,27 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
         ),
       },
     ],
-    [category, salesTimeWindow, volumeTimeWindow]
+    [category, salesTimeWindow, volumeTimeWindow, registrationsTimeWindow, registrationsVolumeTimeWindow]
   )
+
+  // Reorder stats so the one matching the current sort is first
+  const sortedQuickStats = useMemo(() => {
+    const activeKey = sortToStatKey(categorySort)
+    const activeIndex = allQuickStats.findIndex((s) => s.key === activeKey)
+    if (activeIndex <= 0) return allQuickStats
+    const sorted = [...allQuickStats]
+    const [active] = sorted.splice(activeIndex, 1)
+    sorted.unshift(active)
+    return sorted
+  }, [allQuickStats, categorySort])
 
   const visibleStatsCount = useMemo(() => {
     if (!isClient || !width) return 1
     const available = width - 292
-    return Math.max(1, Math.min(allQuickStats.length, Math.floor(available / 160)))
-  }, [isClient, width, allQuickStats.length])
+    return Math.max(1, Math.min(sortedQuickStats.length, Math.floor(available / 160)))
+  }, [isClient, width, sortedQuickStats.length])
 
-  const visibleStats = allQuickStats.slice(0, visibleStatsCount)
+  const visibleStats = sortedQuickStats.slice(0, visibleStatsCount)
 
   return (
     <div ref={clickawayRef} className='relative w-full'>

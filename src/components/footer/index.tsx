@@ -19,6 +19,7 @@ const Footer = () => {
             height={180}
             alt='Ethereum Follow Protocol'
             className='w-[120px] sm:w-[180px]'
+            priority
           />
           <div className='flex items-center gap-3'>
             <Link href='https://ethid.org/' target='_blank' className='transition-opacity hover:opacity-80'>

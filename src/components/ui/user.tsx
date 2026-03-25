@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -25,6 +26,7 @@ interface UserProps {
   fontSize?: string
   alignTooltip?: 'left' | 'right'
   disableTooltip?: boolean
+  disableLink?: boolean
 }
 
 const User: React.FC<UserProps> = ({
@@ -36,7 +38,9 @@ const User: React.FC<UserProps> = ({
   fontSize = '15px',
   alignTooltip = 'right',
   disableTooltip = false,
+  disableLink = false,
 }) => {
+  const router = useRouter()
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: ['profile', address],
@@ -64,37 +68,74 @@ const User: React.FC<UserProps> = ({
       disableTooltip={disableTooltip}
     >
       <div className={cn('flex justify-end', wrapperClassName)}>
-        <Link
-          href={`/profile/${address}`}
-          className={cn(
-            'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
-            className,
-            disableTooltip && 'pointer-events-none'
-          )}
-        >
-          {headerImageSrc && (
-            <Image
-              src={headerImageSrc}
-              alt='Header'
-              width={400}
-              height={80}
-              unoptimized={true}
-              className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+        {disableLink ? (
+          <div
+            className={cn(
+              'bg-tertiary relative flex w-fit cursor-pointer flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
+              className
+            )}
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              router.push(`/profile/${address}`)
+            }}
+          >
+            {headerImageSrc && (
+              <Image
+                src={headerImageSrc}
+                alt='Header'
+                width={400}
+                height={80}
+                unoptimized={true}
+                className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+              />
+            )}
+            <Avatar
+              address={address}
+              name={profile?.ens?.name}
+              src={profile?.ens?.avatar}
+              fallback={DEFAULT_FALLBACK_AVATAR}
+              style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
             />
-          )}
-          <Avatar
-            address={address}
-            name={profile?.ens?.name}
-            src={profile?.ens?.avatar}
-            fallback={DEFAULT_FALLBACK_AVATAR}
-            style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
-          />
-          <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 5}px)` }}>
-            <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
-              {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
-            </p>
+            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 5}px)` }}>
+              <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
+                {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+              </p>
+            </div>
           </div>
-        </Link>
+        ) : (
+          <Link
+            href={`/profile/${address}`}
+            className={cn(
+              'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
+              className,
+              disableTooltip && 'pointer-events-none'
+            )}
+          >
+            {headerImageSrc && (
+              <Image
+                src={headerImageSrc}
+                alt='Header'
+                width={400}
+                height={80}
+                unoptimized={true}
+                className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+              />
+            )}
+            <Avatar
+              address={address}
+              name={profile?.ens?.name}
+              src={profile?.ens?.avatar}
+              fallback={DEFAULT_FALLBACK_AVATAR}
+              style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
+            />
+            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 5}px)` }}>
+              <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
+                {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+              </p>
+            </div>
+          </Link>
+        )}
       </div>
     </TooltipWrapper>
   )

@@ -50,9 +50,9 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
         }}
       >
         <div ref={contentRef} className='custom-links'>
-          <p
+          <div
             dangerouslySetInnerHTML={{
-              __html: answer.replaceAll('\n', '<div style="margin-top: 0.6rem;" />'),
+              __html: answer.replaceAll('\n', '<div style="margin-top: 0.6rem;"></div>'),
             }}
           />
         </div>

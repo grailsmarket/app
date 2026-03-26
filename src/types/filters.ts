@@ -113,6 +113,7 @@ export interface FilterRouter<T extends FilterContextType> {
   marketplaceTab?: MarketplaceTabType
   categoryTab?: CategoryTabType
   categoriesPageTab?: CategoriesPageTabType
+  activeTab?: string
   isFiltersClear: boolean
 }
 

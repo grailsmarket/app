@@ -73,7 +73,7 @@ const Domains: React.FC<DomainsProps> = ({
   showPreviousOwner = false,
 }) => {
   const dispatch = useAppDispatch()
-  const { selectors, actions } = useFilterRouter()
+  const { selectors, actions, activeTab } = useFilterRouter()
   const currentSort = selectors.filters.sort
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
@@ -88,7 +88,8 @@ const Domains: React.FC<DomainsProps> = ({
   // Handle header click for sorting
   const handleHeaderClick = useCallback(
     (column: MarketplaceHeaderColumn, event: React.MouseEvent) => {
-      const sortConfig = COLUMN_SORT_MAP[column]
+      const columnToSort = column === 'price' && activeTab === 'premium' ? 'expires' : column
+      const sortConfig = COLUMN_SORT_MAP[columnToSort]
       if (!sortConfig) return // Column is not sortable
 
       const isShiftClick = event.shiftKey

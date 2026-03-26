@@ -45,7 +45,7 @@ const Input: React.FC<InputProps> = ({
           value={value}
           onChange={onChange}
           className={cn(
-            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex h-12 min-h-12 w-full items-center justify-between rounded-r-md border px-4 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full items-center justify-between rounded-r-md border px-4 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
             hideLabel && 'rounded-md',
             disabled && 'cursor-not-allowed opacity-50'
           )}

@@ -11,6 +11,9 @@ export type ProfileResponseType = {
   createdAt: string
   lastSignIn: string
   updatedAt: string
+  minOfferThreshold: number | null
+  notifyOnListingSold: boolean
+  notifyOnOfferReceived: boolean
 }
 
 export const checkAuthentication = async () => {

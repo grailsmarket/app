@@ -13,6 +13,7 @@ import {
   MARKETPLACE_CONDUIT_KEY,
   MARKETPLACE_CONDUIT_ADDRESS,
 } from '@/constants/web3/contracts'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
 import { DomainOfferType } from '@/types/domains'
@@ -209,10 +210,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setApproveTxHash(approveTx)
 
       // Wait for approval confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: approveTx,
-        confirmations: 1,
-      })
+      const receipt = await waitForTransaction(publicClient, approveTx)
 
       if (receipt.status === 'success') {
         setNeedsApproval(false)
@@ -318,10 +316,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setTxHash(tx)
 
       // Wait for confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: tx,
-        confirmations: 1,
-      })
+      const receipt = await waitForTransaction(publicClient, tx)
 
       if (receipt.status === 'success') {
         // Call API to mark offer as accepted

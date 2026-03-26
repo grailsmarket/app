@@ -11,6 +11,7 @@ import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constant
 import { resolveEnsAddress } from '@/utils/web3/ens'
 import { fetchNameRoles } from '@/api/name/roles'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
@@ -391,7 +392,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
         setTxHash(hash)
         setStep('processing')
-        await publicClient.waitForTransactionReceipt({ hash })
+        await waitForTransaction(publicClient, hash)
       }
 
       // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
@@ -429,7 +430,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
         setTxHash(hash)
         setStep('processing')
-        await publicClient.waitForTransactionReceipt({ hash })
+        await waitForTransaction(publicClient, hash)
       }
 
       // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
@@ -454,7 +455,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
         setTxHash(hash)
         setStep('processing')
-        await publicClient.waitForTransactionReceipt({ hash })
+        await waitForTransaction(publicClient, hash)
       }
 
       // Invalidate caches

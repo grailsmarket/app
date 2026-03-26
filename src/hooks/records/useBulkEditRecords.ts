@@ -8,6 +8,7 @@ import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { fetchNameRoles } from '@/api/name/roles'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
 const MAX_NAMES_PER_MULTICALL = 50
 
@@ -507,7 +508,7 @@ export function useBulkEditRecords(names: string[]) {
         )
         setStep('processing')
 
-        await publicClient.waitForTransactionReceipt({ hash })
+        await waitForTransaction(publicClient, hash)
 
         // Update status to success
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'success' } : s)))
@@ -567,7 +568,7 @@ export function useBulkEditRecords(names: string[]) {
           prev.map((s, idx) => (idx === index ? { ...s, status: 'processing', txHash: hash } : s))
         )
 
-        await publicClient.waitForTransactionReceipt({ hash })
+        await waitForTransaction(publicClient, hash)
 
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, status: 'success' } : s)))
 

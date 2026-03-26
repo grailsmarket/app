@@ -8,6 +8,7 @@ import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import { Address } from 'viem'
 import { DomainListingType } from '@/types/domains'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
 export function useSeaportOrder() {
   const { address } = useAccount()
@@ -63,10 +64,7 @@ export function useSeaportOrder() {
       })
 
       // Wait for confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: tx,
-        confirmations: 1,
-      })
+      const receipt = await waitForTransaction(publicClient, tx)
 
       if (receipt.status !== 'success') {
         throw new Error('Transaction failed')

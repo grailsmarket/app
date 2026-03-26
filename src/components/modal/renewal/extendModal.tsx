@@ -11,6 +11,7 @@ import {
 } from '@/state/reducers/modals/bulkRenewalModal'
 import { clearBulkSelect, selectBulkSelect, removeBulkSelectDomain } from '@/state/reducers/modals/bulkSelectModal'
 import useExtendDomains from '@/hooks/registrar/useExtendDomains'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import useETHPrice from '@/hooks/useETHPrice'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -309,10 +310,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         }
 
         setTxHash(tx)
-        const receipt = await publicClient?.waitForTransactionReceipt({
-          hash: tx,
-          confirmations: 1,
-        })
+        const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
 
         if (receipt?.status !== 'success') {
           throw new Error(`Transaction ${batchIndex + 1} failed`)

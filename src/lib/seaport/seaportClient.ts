@@ -37,6 +37,7 @@ import {
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { MarketplaceDomainType } from '@/types/domains'
 import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
 import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
@@ -263,7 +264,7 @@ export class SeaportClient {
 
         return {
           hash,
-          wait: async () => await publicClient.waitForTransactionReceipt({ hash }),
+          wait: async () => await waitForTransaction(publicClient, hash),
           from: walletClient.account.address,
           to: toAddress,
         }
@@ -967,8 +968,7 @@ export class SeaportClient {
           params.setApproveTxHash?.(approvalHash)
           // Wait for approval transaction to be confirmed
           // console.log('Waiting for approval transaction for wrapped names...', approvalHash)
-          await this.publicClient.waitForTransactionReceipt({
-            hash: approvalHash,
+          await waitForTransaction(this.publicClient, approvalHash, undefined, {
             confirmations: 1,
           })
           console.log('Approval for wrapped names confirmed')
@@ -987,8 +987,7 @@ export class SeaportClient {
           params.setApproveTxHash?.(approvalHash)
           // Wait for approval transaction to be confirmed
           // console.log('Waiting for approval transaction for unwrapped names...', approvalHash)
-          await this.publicClient.waitForTransactionReceipt({
-            hash: approvalHash,
+          await waitForTransaction(this.publicClient, approvalHash, undefined, {
             confirmations: 1,
           })
           console.log('Approval for unwrapped names confirmed')
@@ -1473,7 +1472,7 @@ export class SeaportClient {
         console.log('Transaction hash:', hash)
 
         // Wait for confirmation
-        const receipt = await this.publicClient?.waitForTransactionReceipt({ hash })
+        const receipt = this.publicClient ? await waitForTransaction(this.publicClient, hash) : undefined
         console.log('Transaction confirmed:', receipt)
         return receipt
       }
@@ -1893,7 +1892,7 @@ export class SeaportClient {
       })
 
       console.log(`${currencyName} approval transaction sent:`, approvalHash)
-      await this.publicClient.waitForTransactionReceipt({ hash: approvalHash })
+      await waitForTransaction(this.publicClient, approvalHash)
       console.log(`${currencyName} approval confirmed`)
     } else {
       console.log(`${currencyName} already approved for Seaport/conduit`)

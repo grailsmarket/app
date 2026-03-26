@@ -646,6 +646,16 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   // Determine which tab is active in categoriesPage
   const activeCategoriesPageTab = categoriesPageState.categoriesPage.selectedTab?.value || 'categories'
 
+  const activeTab = useMemo(() => {
+    if (filterType === 'categoriesPage') {
+      return activeCategoriesPageTab
+    } else if (filterType === 'category') {
+      return activeCategoryTab
+    } else if (filterType === 'marketplace') {
+      return activeMarketplaceTab
+    }
+  }, [filterType, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab])
+
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'categoriesPage') {
@@ -1546,6 +1556,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     marketplaceTab: marketplaceState.selectedTab,
     categoryTab: categoryState.selectedTab,
     categoriesPageTab: categoriesPageState.categoriesPage.selectedTab,
+    activeTab,
     isFiltersClear,
   }
 }

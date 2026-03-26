@@ -29,6 +29,9 @@ export type AuthUserType = {
   discord: string | null
   createdAt: string
   lastSignIn: string
+  minOfferThreshold: number | null
+  notifyOnListingSold: boolean
+  notifyOnOfferReceived: boolean
 }
 
 export type VerifyResponseType = {

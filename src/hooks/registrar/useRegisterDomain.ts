@@ -118,6 +118,8 @@ const useRegisterDomain = () => {
         args: [commitmentHash],
         chain: mainnet,
       })
+
+      console.log('Transaction hash:', tx)
       return tx
     } catch (error) {
       console.error('Error submitting commitment:', error)

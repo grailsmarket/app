@@ -45,6 +45,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -298,10 +299,9 @@ const useRegistrationModal = () => {
         dispatch(setRegistrationFlowState('registering'))
         dispatch(setCurrentBatchIndex(pendingRegisterBatch.batchIndex))
         try {
-          const receipt = await publicClient?.waitForTransactionReceipt({
-            hash: pendingRegisterBatch.registerTxHash!,
-            confirmations: 1,
-          })
+          const receipt = publicClient
+            ? await waitForTransaction(publicClient, pendingRegisterBatch.registerTxHash!)
+            : undefined
           if (receipt?.status === 'success') {
             dispatch(setBatchRegistered(pendingRegisterBatch.batchIndex))
             const allRegistered = batches.every((b) =>
@@ -348,10 +348,9 @@ const useRegistrationModal = () => {
         dispatch(setRegistrationFlowState('committing'))
         dispatch(setCurrentBatchIndex(pendingCommitBatch.batchIndex))
         try {
-          const receipt = await publicClient?.waitForTransactionReceipt({
-            hash: pendingCommitBatch.commitTxHash!,
-            confirmations: 1,
-          })
+          const receipt = publicClient
+            ? await waitForTransaction(publicClient, pendingCommitBatch.commitTxHash!)
+            : undefined
           if (receipt?.status === 'success') {
             const timestamp = Math.floor(Date.now() / 1000)
             dispatch(
@@ -501,10 +500,7 @@ const useRegistrationModal = () => {
 
         dispatch(setBatchCommitTxHash({ batchIndex, txHash: tx }))
 
-        const receipt = await publicClient?.waitForTransactionReceipt({
-          hash: tx,
-          confirmations: 1,
-        })
+        const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
 
         if (receipt?.status === 'reverted') {
           dispatch(setRegistrationError(`Commitment transaction failed for batch ${batchIndex + 1}`))
@@ -612,10 +608,7 @@ const useRegistrationModal = () => {
 
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
-        const receipt = await publicClient?.waitForTransactionReceipt({
-          hash: tx,
-          confirmations: 1,
-        })
+        const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
 
         if (receipt?.status === 'reverted') {
           dispatch(setRegistrationError(`Registration transaction failed for batch ${batchIndex + 1}`))

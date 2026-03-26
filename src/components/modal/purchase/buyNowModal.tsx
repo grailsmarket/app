@@ -13,6 +13,7 @@ import {
 } from '@/constants/web3/contracts'
 import { USDC_ADDRESS, ETH_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import Price from '@/components/ui/price'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -354,10 +355,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       setApproveTxHash(approveTx)
 
       // Wait for approval confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: approveTx,
-        confirmations: 1,
-      })
+      const receipt = await waitForTransaction(publicClient, approveTx)
 
       if (receipt.status === 'success') {
         setNeedsApproval(false)
@@ -505,10 +503,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       }
 
       // Wait for confirmation
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: tx,
-        confirmations: 1,
-      })
+      const receipt = await waitForTransaction(publicClient, tx)
 
       if (receipt.status === 'success') {
         setStep('success')

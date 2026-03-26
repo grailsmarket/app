@@ -30,7 +30,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     // telegramUsername,
     // setTelegramUsername,
     ensProfile,
-    haveChanges,
+    hasChanges,
     isEmailVerified,
     isEmailValid,
     updateUserProfileMutation,
@@ -38,6 +38,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     updateUserProfileMutationError,
     sendVerificationEmail,
     verificationEmailStatus,
+    offerNotificationThresholdValue,
+    setOfferNotificationThresholdValue,
+    notifyOnListingSoldValue,
+    setNotifyOnListingSoldValue,
+    notifyOnOfferReceivedValue,
+    setNotifyOnOfferReceivedValue,
   } = useSettings()
   const { userAddress } = useUserContext()
 
@@ -151,6 +157,64 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   </SecondaryButton>
                 </div>
               ))}
+            <Input
+              label='Min Offer Notification Threshold'
+              value={offerNotificationThresholdValue || ''}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '') {
+                  setOfferNotificationThresholdValue(null)
+                } else if (/^\d*\.?\d*$/.test(val)) {
+                  setOfferNotificationThresholdValue(val)
+                }
+              }}
+              placeholder='0.00'
+              labelClassName='min-w-[252px]'
+            />
+            <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-col'>
+                  <p className='text-lg font-medium'>Notify on Listing Sold</p>
+                  <p className='text-neutral text-sm'>You will receive a notification when your listing is sold</p>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => setNotifyOnListingSoldValue(!notifyOnListingSoldValue)}
+                  className={cn(
+                    'group relative h-6 w-11 cursor-pointer rounded-full transition-colors duration-200',
+                    notifyOnListingSoldValue ? 'bg-primary' : 'bg-tertiary'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
+                      notifyOnListingSoldValue ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+              </div>
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-col'>
+                  <p className='text-lg font-medium'>Notify on Offer Received</p>
+                  <p className='text-neutral text-sm'>You will receive a notification when you receive an offer</p>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => setNotifyOnOfferReceivedValue(!notifyOnOfferReceivedValue)}
+                  className={cn(
+                    'group relative h-6 w-11 cursor-pointer rounded-full transition-colors duration-200',
+                    notifyOnOfferReceivedValue ? 'bg-primary' : 'bg-tertiary'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
+                      notifyOnOfferReceivedValue ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         {updateUserProfileMutationError && (
@@ -165,7 +229,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           <PrimaryButton
             className='w-full'
             onClick={() => updateUserProfileMutation()}
-            disabled={!haveChanges || !isEmailValid || updateUserProfileMutationLoading}
+            disabled={!hasChanges || updateUserProfileMutationLoading}
           >
             {updateUserProfileMutationLoading ? 'Saving...' : 'Save Changes'}
           </PrimaryButton>

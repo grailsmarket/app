@@ -9,6 +9,9 @@ import { checkAuthentication } from '@/api/siwe/checkAuthentication'
 import { useAppDispatch } from '@/state/hooks'
 import {
   resetUserProfile,
+  setNotifyOnListingSold,
+  setNotifyOnOfferReceived,
+  setOfferNotificationThreshold,
   setUserDiscord,
   setUserEmail,
   setUserId,
@@ -54,6 +57,9 @@ export const useAuth = () => {
     dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
     dispatch(setUserDiscord(user.discord))
     dispatch(setUserTelegram(user.telegram))
+    dispatch(setOfferNotificationThreshold(user.minOfferThreshold))
+    dispatch(setNotifyOnListingSold(user.notifyOnListingSold))
+    dispatch(setNotifyOnOfferReceived(user.notifyOnOfferReceived))
   }
 
   const {

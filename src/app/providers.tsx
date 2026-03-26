@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { WagmiProvider, type State } from 'wagmi'
 import { Provider as ReduxProvider } from 'react-redux'
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit'
@@ -33,6 +33,19 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
   // const handleInfoBarVisibilityChange = useCallback((visible: boolean) => {
   //   setShowInfoBar(visible)
   // }, [])
+  useEffect(() => {
+    console.clear()
+    console.log(`%c
+  /$$$$$$                     /$$ /$$          
+ /$$__  $$                   |__/| $$          
+| $$  \\__/  /$$$$$$  /$$$$$$  /$$| $$  /$$$$$$$
+| $$ /$$$$ /$$__  $$|____  $$| $$| $$ /$$_____/
+| $$|_  $$| $$  \\__/ /$$$$$$$| $$| $$|  $$$$$$ 
+| $$  \\ $$| $$      /$$__  $$| $$| $$ \\____  $$
+|  $$$$$$/| $$     |  $$$$$$$| $$| $$ /$$$$$$$/
+ \\______/ |__/      \\_______/|__/|__/|_______/                                               
+`, 'color: #ffdfc0;')
+  }, [])
 
   const providers = useMemo(
     () => (

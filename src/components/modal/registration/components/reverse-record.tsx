@@ -10,8 +10,8 @@ const ReverseRecordSection: React.FC<ReverseRecordSectionProps> = ({ reverseReco
     <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
       <div className='flex items-center justify-between'>
         <div className='flex flex-col'>
-          <p className='text-lg font-medium'>Reverse Record</p>
-          <p className='text-neutral text-sm'>ENS names will point to the registrant&apos;s address</p>
+          <p className='text-lg font-medium'>Set as Primary Name</p>
+          <p className='text-neutral text-sm'>Set this name as the primary ENS name for your address</p>
         </div>
         <button
           type='button'

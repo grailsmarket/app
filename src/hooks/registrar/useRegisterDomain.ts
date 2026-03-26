@@ -41,7 +41,7 @@ const useRegisterDomain = () => {
       secret: params.secret,
       resolver: params.resolver || ENS_PUBLIC_RESOLVER_ADDRESS,
       data: params.data || ([] as `0x${string}`[]),
-      reverseRecord: params.reverseRecord ? 1 : 0,
+      reverseRecord: params.reverseRecord ? 2 : 0,
       referrer: params.referrer || ENS_HOLIDAY_REFERRER_ADDRESS,
     }
 
@@ -177,7 +177,7 @@ const useRegisterDomain = () => {
       secret: params.secret,
       resolver: params.resolver || ENS_PUBLIC_RESOLVER_ADDRESS,
       data: params.data || ([] as `0x${string}`[]),
-      reverseRecord: params.reverseRecord ? 1 : 0,
+      reverseRecord: params.reverseRecord ? 2 : 0,
       referrer: params.referrer || ENS_HOLIDAY_REFERRER_ADDRESS,
     }
 

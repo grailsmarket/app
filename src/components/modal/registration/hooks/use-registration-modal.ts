@@ -28,6 +28,7 @@ import {
   resetRegistrationModal,
 } from '@/state/reducers/registration'
 import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
+import useRegisterDomain from '@/hooks/registrar/useRegisterDomain'
 import useETHPrice from '@/hooks/useETHPrice'
 import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { YEAR_IN_SECONDS } from '@/constants/time'
@@ -70,6 +71,16 @@ const useRegistrationModal = () => {
     getCommitmentAges,
     checkCommitmentAge,
   } = useBulkRegisterDomains()
+  const {
+    makeCommitment,
+    checkAvailable,
+    getRentPrice,
+    submitCommit,
+    submitRegister,
+    generateSecret: generateSingleSecret,
+    checkCommitmentAge: checkSingleCommitmentAge,
+    getCommitmentAges: getSingleCommitmentAges,
+  } = useRegisterDomain()
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
@@ -143,10 +154,15 @@ const useRegistrationModal = () => {
   const allDurationsValid = availableDurations.length === availableEntries.length
 
   const { data: totalPriceData, isLoading: isLoadingPrice } = useQuery({
-    queryKey: ['bulkTotalPrice', availableLabels.join(','), availableDurations.map(String).join(',')],
+    queryKey: ['bulkTotalPrice', isBulk, availableLabels.join(','), availableDurations.map(String).join(',')],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      return getBulkTotalPrice(availableLabels, availableDurations)
+      if (isBulk) {
+        return getBulkTotalPrice(availableLabels, availableDurations)
+      } else {
+        const result = await getRentPrice(availableLabels[0], availableDurations[0])
+        return result?.total ?? null
+      }
     },
     enabled: availableLabels.length > 0 && allDurationsValid,
     refetchInterval: 10000,
@@ -215,12 +231,17 @@ const useRegistrationModal = () => {
 
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
-      const results = await checkBulkAvailable(labels)
-      dispatch(setBulkAvailability(results))
+      if (isBulk) {
+        const results = await checkBulkAvailable(labels)
+        dispatch(setBulkAvailability(results))
+      } else {
+        const result = await checkAvailable(labels[0])
+        dispatch(setBulkAvailability([result]))
+      }
     }
 
     checkAvailability()
-  }, [isClient, registrationState.isOpen, entries.length, registrationState.flowState])
+  }, [isClient, registrationState.isOpen, entries.length, registrationState.flowState, isBulk])
 
   useEffect(() => {
     entryDurations.forEach((d, i) => {
@@ -243,7 +264,7 @@ const useRegistrationModal = () => {
     if (!lastCommittedBatch?.commitmentTimestamp) return
 
     const interval = setInterval(async () => {
-      const ages = await getCommitmentAges()
+      const ages = isBulk ? await getCommitmentAges() : await getSingleCommitmentAges()
       const currentTime = Math.floor(Date.now() / 1000)
       const timePassed = currentTime - (lastCommittedBatch.commitmentTimestamp || 0)
       const timeRemaining = Math.max(0, ages.min - timePassed)
@@ -256,7 +277,7 @@ const useRegistrationModal = () => {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [registrationState.flowState, batches, getCommitmentAges])
+  }, [registrationState.flowState, batches, isBulk, getCommitmentAges, getSingleCommitmentAges])
 
   // Auto-reopen removed: when the user minimizes an active registration,
   // we show a toast instead of forcing the modal back open.
@@ -307,9 +328,11 @@ const useRegistrationModal = () => {
         }
 
         if (lastCommittedBatch.commitmentHashes?.[0]) {
-          const commitTimestamp = await checkCommitmentAge(lastCommittedBatch.commitmentHashes[0])
+          const commitTimestamp = isBulk
+            ? await checkCommitmentAge(lastCommittedBatch.commitmentHashes[0])
+            : await checkSingleCommitmentAge(lastCommittedBatch.commitmentHashes[0])
           if (commitTimestamp && commitTimestamp > 0) {
-            const ages = await getCommitmentAges()
+            const ages = isBulk ? await getCommitmentAges() : await getSingleCommitmentAges()
             const age = Math.floor(Date.now() / 1000) - commitTimestamp
             if (age >= ages.min && age <= ages.max) {
               dispatch(setRegistrationFlowState('waiting'))
@@ -405,7 +428,7 @@ const useRegistrationModal = () => {
     dispatch(setRegistrationFlowState('committing'))
 
     try {
-      const commitSecret = secret || generateSecret()
+      const commitSecret = secret || (isBulk ? generateSecret() : generateSingleSecret())
       if (!secret) dispatch(setSecret(commitSecret))
 
       if (batches.length === 0) {
@@ -449,16 +472,32 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const hashes = await makeBulkCommitments(
-          batchLabels,
-          owner,
-          batchDurations,
-          commitSecret,
-          reverseRecord ? 1 : 0
-        )
-        dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
+        let hashes: Hex[]
+        let tx: Hex
 
-        const tx = await submitMultiCommit(hashes)
+        if (isBulk) {
+          hashes = await makeBulkCommitments(
+            batchLabels,
+            owner,
+            batchDurations,
+            commitSecret,
+            reverseRecord ? 1 : 0
+          )
+          dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
+          tx = await submitMultiCommit(hashes)
+        } else {
+          const hash = await makeCommitment({
+            label: batchLabels[0],
+            owner,
+            duration: batchDurations[0],
+            secret: commitSecret,
+            reverseRecord,
+          })
+          hashes = [hash]
+          dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
+          tx = await submitCommit(hash)
+        }
+
         dispatch(setBatchCommitTxHash({ batchIndex, txHash: tx }))
 
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
@@ -491,9 +530,14 @@ const useRegistrationModal = () => {
     secret,
     batches,
     entryDurations,
+    isBulk,
+    reverseRecord,
     generateSecret,
+    generateSingleSecret,
     makeBulkCommitments,
     submitMultiCommit,
+    makeCommitment,
+    submitCommit,
     publicClient,
     dispatch,
   ])
@@ -524,21 +568,44 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
-        if (!batchPrice) {
-          dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
-          return
-        }
-        const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
+        let tx: Hex
 
-        const tx = await submitMultiRegister(
-          batchLabels,
-          owner,
-          batchDurations,
-          secret,
-          valueWithBuffer,
-          reverseRecord ? 1 : 0
-        )
+        if (isBulk) {
+          const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
+          if (!batchPrice) {
+            dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
+            return
+          }
+          const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
+
+          tx = await submitMultiRegister(
+            batchLabels,
+            owner,
+            batchDurations,
+            secret,
+            valueWithBuffer,
+            reverseRecord ? 1 : 0
+          )
+        } else {
+          const priceResult = await getRentPrice(batchLabels[0], batchDurations[0])
+          if (!priceResult) {
+            dispatch(setRegistrationError('Failed to get price'))
+            return
+          }
+          const valueWithBuffer = (priceResult.total * BigInt(105)) / BigInt(100)
+
+          tx = await submitRegister(
+            {
+              label: batchLabels[0],
+              owner,
+              duration: batchDurations[0],
+              secret,
+              reverseRecord,
+            },
+            valueWithBuffer
+          )
+        }
+
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
@@ -579,8 +646,12 @@ const useRegistrationModal = () => {
     getOwnerAddress,
     batches,
     entryDurations,
+    isBulk,
+    reverseRecord,
     getBulkTotalPrice,
     submitMultiRegister,
+    getRentPrice,
+    submitRegister,
     publicClient,
     cartRegisteredDomains,
     cartUnregisteredDomains,

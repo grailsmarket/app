@@ -79,7 +79,6 @@ export const useAuth = () => {
         // escape early if no token is found
         if (!token || token.length === 0) return 'unauthenticated'
 
-        console.log('token found')
         setIsSigningIn(true)
 
         const authenticateRes = await checkAuthentication()

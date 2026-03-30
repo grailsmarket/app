@@ -16,6 +16,11 @@ const footerSources = [
     href: 'https://twitter.com/grailsmarket',
     target: '_blank',
   },
+  {
+    text: 'Grails CLI',
+    href: 'https://github.com/grailsmarket/cli',
+    target: '_blank',
+  },
 ]
 
 const Sources = () => {

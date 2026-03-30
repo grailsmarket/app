@@ -165,11 +165,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                 if (val === '') {
                   setOfferNotificationThresholdValue(null)
                 } else if (/^\d*\.?\d*$/.test(val)) {
-                  setOfferNotificationThresholdValue(val)
+                  setOfferNotificationThresholdValue(val || null)
                 }
               }}
               placeholder='0.00'
-              labelClassName='min-w-[252px]'
+              labelClassName='min-w-[264px]'
+              suffix='ETH'
             />
             <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
               <div className='flex items-center justify-between'>

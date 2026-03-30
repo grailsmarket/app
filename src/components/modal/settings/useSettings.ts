@@ -33,7 +33,7 @@ export const useSettings = () => {
   const [discordUsername, setDiscordUsername] = useState(discord)
   const [telegramUsername, setTelegramUsername] = useState(telegram)
   const [offerNotificationThresholdValue, setOfferNotificationThresholdValue] = useState(
-    offerNotificationThreshold !== null ? String(offerNotificationThreshold) : null
+    !!offerNotificationThreshold ? String(offerNotificationThreshold) : null
   )
   const [notifyOnListingSoldValue, setNotifyOnListingSoldValue] = useState(notifyOnListingSold)
   const [notifyOnOfferReceivedValue, setNotifyOnOfferReceivedValue] = useState(notifyOnOfferReceived)

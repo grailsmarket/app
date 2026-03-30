@@ -74,7 +74,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Leaderboard
       </Link>
-      {userAddress && (
+      {/* {userAddress && (
         <Link
           href={`/profile/${userAddress}`}
           className={cn(
@@ -92,8 +92,8 @@ const Pages = ({ className, onClick }: PagesProps) => {
           }}
         >
           My Profile
-        </Link>
-      )}
+        </Link> 
+      )} */}
     </section>
   )
 }

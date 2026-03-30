@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify authentication
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { listingIds, canceller, onChainCancellation } = body
 
@@ -21,6 +27,7 @@ export async function POST(request: NextRequest) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
         })
 
@@ -47,7 +54,9 @@ export async function POST(request: NextRequest) {
 
     // Fetch listing details to get order data for on-chain cancellation
     const listingDetailsPromises = listingIds.map(async (listingId: number) => {
-      const response = await fetch(`${API_URL}/listings/${listingId}`)
+      const response = await fetch(`${API_URL}/listings/${listingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       if (response.ok) {
         const data = await response.json()
         return data.data
@@ -110,6 +119,7 @@ export async function POST(request: NextRequest) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
         })
 

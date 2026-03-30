@@ -142,19 +142,19 @@ const Profile: React.FC<Props> = ({ user }) => {
                   onEditProfileClick:
                     userProfile?.ens?.name && !isSubname
                       ? () => {
-                          if (!profileMetadata || !userProfile?.ens?.name) return
-                          dispatch(setEditRecordsModalName(userProfile?.ens?.name))
-                          dispatch(setEditRecordsModalMetadata(profileMetadata))
-                          dispatch(setEditRecordsModalOpen(true))
-                        }
+                        if (!profileMetadata || !userProfile?.ens?.name) return
+                        dispatch(setEditRecordsModalName(userProfile?.ens?.name))
+                        dispatch(setEditRecordsModalMetadata(profileMetadata))
+                        dispatch(setEditRecordsModalOpen(true))
+                      }
                       : undefined,
                   hideSocials: ['grails'],
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
-                        eventId: badge.event.id.toString(),
-                        participated: true,
-                        collection: badge,
-                      }))
+                      eventId: badge.event.id.toString(),
+                      participated: true,
+                      collection: badge,
+                    }))
                     : undefined,
                   onBioLinkClick: (link: string) => {
                     const sanitizedLink =
@@ -162,7 +162,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                     router.push(`/profile/${sanitizedLink}`)
                   },
                 }}
-                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
               <Details user={userProfile?.address} />
             </>

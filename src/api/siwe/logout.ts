@@ -1,12 +1,11 @@
-import { authFetch } from '../authFetch'
-
 export const logout = async () => {
-  const nonceRes = await authFetch(`/api/auth/logout`, {
+  // The httpOnly cookie is sent automatically with same-origin requests.
+  const response = await fetch('/api/auth/logout', {
     method: 'POST',
   })
 
-  if (!nonceRes.ok) return false
+  if (!response.ok) return false
 
-  const data = await nonceRes.json()
+  const data = await response.json()
   return data.success
 }

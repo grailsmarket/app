@@ -10,6 +10,12 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify authentication
+    const token = request.cookies.get('token')?.value
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
 
     // Validate required fields based on order type
@@ -103,6 +109,7 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               listings: formattedOrders,

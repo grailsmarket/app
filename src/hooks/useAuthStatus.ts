@@ -3,7 +3,6 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { logout } from '@/api/siwe/logout'
-import { DAY_IN_SECONDS } from '@/constants/time'
 import { verifySignature } from '@/api/siwe/verifySignature'
 import { checkAuthentication } from '@/api/siwe/checkAuthentication'
 import { useAppDispatch } from '@/state/hooks'
@@ -39,13 +38,8 @@ export const useAuth = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // if (sessionStorage.getItem('hasUserInteracted') === 'true') {
-    //   hasUserInteracted.current = true
-    // }
-
     const handler = () => {
       hasUserInteracted.current = true
-      // sessionStorage.setItem('hasUserInteracted', 'true')
     }
 
     window.addEventListener('pointerdown', handler)
@@ -71,17 +65,10 @@ export const useAuth = () => {
     queryKey: ['auth', 'status', address],
     queryFn: async () => {
       try {
-        const token = document.cookie
-          .split(';')
-          .find((cookie) => cookie.trim().startsWith('token='))
-          ?.split('=')[1]
-
-        // escape early if no token is found
-        if (!token || token.length === 0) return 'unauthenticated'
-
-        console.log('token found')
         setIsSigningIn(true)
 
+        // The httpOnly cookie is sent automatically with this request.
+        // No need to read document.cookie — the server validates the token.
         const authenticateRes = await checkAuthentication()
 
         if (authenticateRes.success) {
@@ -90,18 +77,6 @@ export const useAuth = () => {
         }
 
         dispatch(resetUserProfile())
-
-        // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
-        // check if the token exists, since auth verification fialed, the user should be disconnected
-        // const token = document.cookie
-        //   .split(';')
-        //   .find((cookie) => cookie.trim().startsWith('token='))
-        //   ?.split('=')[1]
-        // if ((token && token.length > 0)) {
-        //   disconnect()
-        //   document.cookie = `token=; path=/; max-age=0;`
-        // }
-
         return 'unauthenticated'
       } catch (error) {
         console.error('Error checking authentication:', error)
@@ -115,7 +90,6 @@ export const useAuth = () => {
     enabled: !!address,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    // refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
 
   // If the wallet auto connected (no user interaction) but auth fails,
@@ -128,7 +102,8 @@ export const useAuth = () => {
 
     if (!hasUserInteracted.current) {
       disconnect()
-      document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
+      // httpOnly cookie is cleared server-side via the logout endpoint
+      logout()
     }
   }, [authStatus])
 
@@ -136,9 +111,9 @@ export const useAuth = () => {
     if (!address) return
 
     if (currAddress && address.toLowerCase() !== currAddress.toLowerCase()) {
+      // logout() clears the httpOnly cookie server-side
       logout()
       dispatch(resetUserProfile())
-      document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     }
 
     setCurrAddress(address)
@@ -147,26 +122,24 @@ export const useAuth = () => {
 
   const verify = async (message: string, _: string, signature: string) => {
     const verifyRes = await verifySignature(message, signature)
-    const { user, token } = verifyRes
+    const { user } = verifyRes
 
-    if (!token) {
+    if (!user) {
       dispatch(resetUserProfile())
       return
     }
 
+    // The httpOnly cookie was already set by the /api/auth/verify server route.
+    // No need to set document.cookie — the token is never exposed to JavaScript.
     setUserDetails(user)
     queryClient.setQueryData(['auth', 'status', address], 'authenticated')
-    console.log('setting token', token)
-    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS}; SameSite=None; Secure`
-
-    return
   }
 
   const signOut = async () => {
     disconnect()
+    // logout() calls the server which clears the httpOnly cookie
     await logout()
 
-    document.cookie = `token=; path=/; max-age=0; SameSite=None; Secure`
     sessionStorage.removeItem('hasUserInteracted')
     refetchAuthStatus()
 

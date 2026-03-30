@@ -19,12 +19,14 @@ export async function POST(request: NextRequest) {
 
     if (response.ok) {
       const res = NextResponse.json(data)
-      // Set the token as an httpOnly cookie if it exists
-      if (data.token) {
-        res.cookies.set('token', data.token, {
+      // The backend returns { data: { token, user } } — extract the nested token
+      const token = data?.data?.token
+      if (token) {
+        res.cookies.set('token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
+          path: '/',
           maxAge: 60 * 60 * 24 * 7, // 1 week
         })
       }

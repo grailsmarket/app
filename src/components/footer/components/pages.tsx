@@ -23,7 +23,7 @@ const Pages = ({ className, onClick }: PagesProps) => {
   const isPortfolioPage = pathname === `/profile/${userAddress}` || pathname === `/profile/${ensProfile?.name}`
 
   return (
-    <div className={cn('flex flex-col gap-4 text-lg', className)}>
+    <section className={cn('flex flex-col gap-4 text-lg', className)}>
       <Link
         href='/'
         className={cn(
@@ -54,7 +54,27 @@ const Pages = ({ className, onClick }: PagesProps) => {
       >
         Categories
       </Link>
-      {userAddress && (
+      <Link
+        href='/analytics'
+        className={cn(
+          'font-semibold transition-all',
+          pathname === '/analytics' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Analytics
+      </Link>
+      <Link
+        href='/leaderboard'
+        className={cn(
+          'font-semibold transition-all',
+          pathname === '/leaderboard' ? 'text-primary' : 'text-foreground opacity-80 hover:opacity-100'
+        )}
+        onClick={onClick}
+      >
+        Leaderboard
+      </Link>
+      {/* {userAddress && (
         <Link
           href={`/profile/${userAddress}`}
           className={cn(
@@ -72,9 +92,9 @@ const Pages = ({ className, onClick }: PagesProps) => {
           }}
         >
           My Profile
-        </Link>
-      )}
-    </div>
+        </Link> 
+      )} */}
+    </section>
   )
 }
 

@@ -10,6 +10,9 @@ type VerifyResponse = {
     lastSignIn: string
     discord: string | null
     telegram: string | null
+    minOfferThreshold: number | null
+    notifyOnListingSold: boolean
+    notifyOnOfferReceived: boolean
     tier: 'free' | 'pro' | 'plus' | 'gold'
     tierId: number
     tierExpiresAt: string | null

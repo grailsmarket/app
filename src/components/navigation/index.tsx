@@ -124,6 +124,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               width={130}
               height={40}
               className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
+              priority
             />
           </Link>
           <div className='hidden lg:block'>

@@ -58,7 +58,6 @@ export const useLeaderboard = ({
   }, [leaderboardData])
 
   const leaderboardUsersWithFollowStates = useMemo(() => {
-    console.log('followStates', followStates)
     return leaderboardUsers.map((user, index) => {
       const followState = followStates?.[index]
 

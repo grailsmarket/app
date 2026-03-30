@@ -69,6 +69,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
           loadingCellWidth='140px'
           avatarSize='28px'
           fontSize='15px'
+          disableLink
         />
       </div>
 

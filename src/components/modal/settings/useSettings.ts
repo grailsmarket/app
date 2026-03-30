@@ -4,6 +4,9 @@ import { API_URL } from '@/constants/api'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectUserProfile,
+  setNotifyOnListingSold,
+  setNotifyOnOfferReceived,
+  setOfferNotificationThreshold,
   setUserDiscord,
   setUserEmail,
   setUserId,
@@ -17,12 +20,25 @@ import { getTierIdFromString } from '@/constants/subscriptions'
 export const useSettings = () => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
-  const { email, discord, telegram, ensProfile, subscription } = useAppSelector(selectUserProfile)
+  const {
+    email,
+    discord,
+    telegram,
+    ensProfile,
+    offerNotificationThreshold,
+    notifyOnListingSold,
+    notifyOnOfferReceived,
+ , subscription } = useAppSelector(selectUserProfile)
 
   const [verificationEmailStatus, setVerificationEmailStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
   const [emailAddress, setEmailAddress] = useState(email.address)
   const [discordUsername, setDiscordUsername] = useState(discord)
   const [telegramUsername, setTelegramUsername] = useState(telegram)
+  const [offerNotificationThresholdValue, setOfferNotificationThresholdValue] = useState(
+    !!offerNotificationThreshold ? String(offerNotificationThreshold) : null
+  )
+  const [notifyOnListingSoldValue, setNotifyOnListingSoldValue] = useState(notifyOnListingSold)
+  const [notifyOnOfferReceivedValue, setNotifyOnOfferReceivedValue] = useState(notifyOnOfferReceived)
 
   const {
     mutate: updateUserProfileMutation,
@@ -30,7 +46,14 @@ export const useSettings = () => {
     error: updateUserProfileMutationError,
   } = useMutation({
     mutationFn: async () => {
-      const result = await updateSettings({ email: emailAddress, discord: discordUsername, telegram: telegramUsername })
+      const result = await updateSettings({
+        email: emailAddress,
+        discord: discordUsername,
+        telegram: telegramUsername,
+        offerNotificationThreshold: offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null,
+        notifyOnListingSold: notifyOnListingSoldValue,
+        notifyOnOfferReceived: notifyOnOfferReceivedValue,
+      })
       return result
     },
     onSuccess: (result) => {
@@ -43,6 +66,9 @@ export const useSettings = () => {
         const tierId = result.data.tierId ?? getTierIdFromString(tier)
         dispatch(setUserSubscription({ tier, tierId, tierExpiresAt: result.data.tierExpiresAt ?? null }))
       }
+      dispatch(setOfferNotificationThreshold(result.data.minOfferThreshold))
+      dispatch(setNotifyOnListingSold(result.data.notifyOnListingSold))
+      dispatch(setNotifyOnOfferReceived(result.data.notifyOnOfferReceived))
       queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
     onError: (error) => {
@@ -96,9 +122,15 @@ export const useSettings = () => {
     return emailRegex.test(emailAddress)
   }, [emailAddress])
 
-  const haveChanges = useMemo(() => {
+  const hasChanges = useMemo(() => {
     const hasFieldChanges =
-      emailAddress !== email.address || discordUsername !== discord || telegramUsername !== telegram
+      emailAddress !== email.address ||
+      discordUsername !== discord ||
+      telegramUsername !== telegram ||
+      (offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null) !==
+        offerNotificationThreshold ||
+      notifyOnListingSoldValue !== notifyOnListingSold ||
+      notifyOnOfferReceivedValue !== notifyOnOfferReceived
 
     if (emailAddress !== email.address) {
       if (emailAddress && !emailRegex.test(emailAddress)) {
@@ -107,7 +139,20 @@ export const useSettings = () => {
     }
 
     return hasFieldChanges
-  }, [emailAddress, discordUsername, telegramUsername, email.address, discord, telegram])
+  }, [
+    emailAddress,
+    discordUsername,
+    telegramUsername,
+    email.address,
+    discord,
+    telegram,
+    offerNotificationThresholdValue,
+    offerNotificationThreshold,
+    notifyOnListingSoldValue,
+    notifyOnListingSold,
+    notifyOnOfferReceivedValue,
+    notifyOnOfferReceived,
+  ])
 
   return {
     email,
@@ -123,11 +168,17 @@ export const useSettings = () => {
     setDiscordUsername,
     telegramUsername,
     setTelegramUsername,
-    haveChanges,
+    hasChanges,
     updateUserProfileMutation,
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,
     sendVerificationEmail,
     verificationEmailStatus,
+    offerNotificationThresholdValue,
+    setOfferNotificationThresholdValue,
+    notifyOnListingSoldValue,
+    setNotifyOnListingSoldValue,
+    notifyOnOfferReceivedValue,
+    setNotifyOnOfferReceivedValue,
   }
 }

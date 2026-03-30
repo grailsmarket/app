@@ -67,15 +67,14 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   const domainIsValid = checkNameValidity(domain?.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isMyDomain = address?.toLowerCase() === domain.owner?.toLowerCase()
-  const canAddToCart = !(EXPIRED_STATUSES.includes(registrationStatus) || isMyDomain)
+  const canAddToCart = !isMyDomain
   const domainListing = domain.listings?.[0]
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
   const category = categories?.find((c) => c.name === domain.clubs?.[0])
-  const clubRank = category?.name.includes('prepunk')
-    ? domain.club_ranks?.find((rank) => rank.club === domain.clubs?.[0])?.rank
-    : null
+  const isRankClub = domain.clubs?.[0]?.includes('prepunk') || domain.clubs?.[0]?.includes('short_name_auction')
+  const clubRank = isRankClub ? domain.club_ranks?.find((rank) => rank.club === domain.clubs?.[0])?.rank : null
 
   // Calculate if this item is in the preview range (between anchor and hovered, shift pressed, not already selected)
   const isInPreviewRange = (() => {
@@ -347,7 +346,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                   className='rounded-full'
                 />
                 <p className='truncate'>{category?.display_name}</p>
-                {clubRank ? <p className='truncate'>#{localizeNumber(clubRank)}</p> : null}
+                {clubRank ? <p>#{localizeNumber(clubRank)}</p> : null}
                 {domain.clubs.length > 1 && (
                   <p className='text-md text-neutral truncate font-bold'>+{domain.clubs.length - 1}</p>
                 )}
@@ -404,6 +403,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                 address={domain.owner as Address}
                 className='max-w-full'
                 wrapperClassName='justify-start! max-w-full'
+                disableLink
               />
             )}
           <div className='flex justify-between'>

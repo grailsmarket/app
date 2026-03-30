@@ -8,6 +8,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hideLabel?: boolean
   labelClassName?: string
   disabled?: boolean
+  suffix?: string
 }
 
 const Input: React.FC<InputProps> = ({
@@ -23,10 +24,11 @@ const Input: React.FC<InputProps> = ({
   hideLabel = false,
   labelClassName,
   disabled = false,
+  suffix,
 }) => {
   return (
     <div className={cn('w-full', className)}>
-      <div className='flex'>
+      <div className='flex relative'>
         {/* Label section */}
         {!hideLabel && (
           <p
@@ -45,7 +47,7 @@ const Input: React.FC<InputProps> = ({
           value={value}
           onChange={onChange}
           className={cn(
-            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full items-center justify-between rounded-r-md border px-4 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
             hideLabel && 'rounded-md',
             disabled && 'cursor-not-allowed opacity-50'
           )}
@@ -55,6 +57,7 @@ const Input: React.FC<InputProps> = ({
           max={max}
           disabled={disabled}
         />
+        {suffix && <p className='text-xl font-semibold absolute right-4 top-3'>{suffix}</p>}
       </div>
     </div>
   )

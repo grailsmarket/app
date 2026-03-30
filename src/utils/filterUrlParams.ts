@@ -210,18 +210,18 @@ export function serializeFiltersToUrl(
   }
 
   // Length
-  if (filters.length.min !== null && filters.length.min !== emptyFilterState.length.min) {
+  if (filters.length?.min != null && filters.length.min !== emptyFilterState.length?.min) {
     params.set(URL_PARAMS.lengthMin, String(filters.length.min))
   }
-  if (filters.length.max !== null && filters.length.max !== emptyFilterState.length.max) {
+  if (filters.length?.max != null && filters.length.max !== emptyFilterState.length?.max) {
     params.set(URL_PARAMS.lengthMax, String(filters.length.max))
   }
 
   // Price Range
-  if (filters.priceRange.min !== null && filters.priceRange.min !== emptyFilterState.priceRange.min) {
+  if (filters.priceRange?.min != null && filters.priceRange.min !== emptyFilterState.priceRange?.min) {
     params.set(URL_PARAMS.priceMin, String(filters.priceRange.min))
   }
-  if (filters.priceRange.max !== null && filters.priceRange.max !== emptyFilterState.priceRange.max) {
+  if (filters.priceRange?.max != null && filters.priceRange.max !== emptyFilterState.priceRange?.max) {
     params.set(URL_PARAMS.priceMax, String(filters.priceRange.max))
   }
 
@@ -272,7 +272,7 @@ export function serializeFiltersToUrl(
 
   // Categories (array)
   if (
-    filters.categories.length > 0 &&
+    (filters.categories?.length ?? 0) > 0 &&
     JSON.stringify(filters.categories) !== JSON.stringify(emptyFilterState.categories)
   ) {
     params.set(URL_PARAMS.categories, filters.categories.join(','))

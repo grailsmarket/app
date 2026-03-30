@@ -22,7 +22,7 @@ import {
 import { Check } from 'ethereum-identity-kit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { openRegistrationModal } from '@/state/reducers/registration'
+import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import ActionsDropdown from '@/components/domains/actionsDropdown'
@@ -48,6 +48,7 @@ const Actions: React.FC<ActionsProps> = ({
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
+  const registrationState = useAppSelector(selectRegistration)
   const domainListing = domain.listings[0]
   const { domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
@@ -98,6 +99,7 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const handleOpenRegistrationModal = () => {
+    if (registrationState.flowState !== 'review') return
     dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
   }
 
@@ -197,7 +199,10 @@ const Actions: React.FC<ActionsProps> = ({
         ) : REGISTERABLE_STATUSES.includes(registrationStatus) ? (
           <button
             onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
+            className={cn(
+              'border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1',
+              registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
+            )}
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Register</p>
           </button>

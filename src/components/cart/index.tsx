@@ -8,9 +8,14 @@ import { usePathname } from 'next/navigation'
 import NoResults from '../ui/noResults'
 import SecondaryButton from '../ui/buttons/secondary'
 import Label from '../ui/label'
+import PrimaryButton from '../ui/buttons/primary'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 
 const Cart = () => {
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
+  const registrationState = useAppSelector(selectRegistration)
   const { isCartOpen, setIsCartOpen } = useUserContext()
   const { purchaseDomains, registerDomains, offerDomains, cartIsEmpty, clearCart } = useCartDomains()
   const [isVisible, setIsVisible] = useState(false)
@@ -33,6 +38,16 @@ const Cart = () => {
   const handleClearCart = () => {
     clearCart()
     setIsCartOpen(false)
+  }
+
+  const registerDomainsHandler = () => {
+    if (registrationState.flowState !== 'review') return
+
+    dispatch(
+      openBulkRegistrationModal({
+        entries: registerDomains.map((domain) => ({ name: domain.name, domain: domain })),
+      })
+    )
   }
 
   const registerDomainsEmpty = registerDomains.length === 0
@@ -77,7 +92,7 @@ const Cart = () => {
             </div>
           )}
           {!registerDomainsEmpty && (
-            <div className='px-lg flex flex-col gap-4'>
+            <div className='px-lg border-tertiary flex flex-col gap-4 border-t-2 pt-4'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Register</h3>
                 <Label label={registerDomains.length} />
@@ -87,10 +102,21 @@ const Cart = () => {
                   <DomainItem key={domain.name + index} domain={domain} />
                 ))}
               </div>
+              {registerDomains.length > 1 && (
+                <button
+                  className={cn(
+                    'border-primary text-primary hover:bg-primary hover:text-background h-10 w-full cursor-pointer rounded-sm border-2 font-bold transition-all duration-300',
+                    registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
+                  )}
+                  onClick={() => registerDomainsHandler()}
+                >
+                  Bulk Register
+                </button>
+              )}
             </div>
           )}
           {!offerDomainsEmpty && (
-            <div className='px-lg flex flex-col gap-4'>
+            <div className='px-lg border-tertiary flex flex-col gap-4 border-t-2 pt-4'>
               <div className='flex items-center gap-2'>
                 <h3 className='font-sedan-sc text-2xl'>Offer</h3>
                 <Label label={offerDomains.length} />

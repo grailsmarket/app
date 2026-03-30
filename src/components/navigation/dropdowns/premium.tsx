@@ -11,7 +11,7 @@ import Link from 'next/link'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -28,6 +28,7 @@ interface PremiumProps {
 
 const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const isClient = useIsClient()
   const { categories } = useCategories()
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
@@ -56,14 +57,15 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
   })
 
   const cardCount = useMemo(() => {
-    if (width && width < 640) return 2
-    if (width && width < 780) return 3
-    if (width && width < 1024) return 3
-    if (width && width < 1210) return 4
-    if (width && width < 1460) return 5
-    if (width && width < 1658) return 6
+    if (!isClient || !width) return 7
+    if (width < 640) return 2
+    if (width < 780) return 3
+    if (width < 1024) return 3
+    if (width < 1210) return 4
+    if (width < 1460) return 5
+    if (width < 1658) return 6
     return 7
-  }, [width])
+  }, [isClient, width])
 
   const defaultAnimationdelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
 
@@ -84,7 +86,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center xl:gap-8'
-      style={{ height: width && width < 768 ? (isDropdownOpen ? '348px' : '40px') : 'auto' }}
+      style={{ height: isClient && width && width < 768 ? (isDropdownOpen ? '348px' : '40px') : 'auto' }}
       onScroll={(e) => e.stopPropagation()}
     >
       <div
@@ -240,7 +242,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
         ref={cardContainerRef}
         className='hidden max-h-[370px] max-w-[1480px] flex-row flex-wrap gap-2 overflow-y-auto md:flex xl:gap-4'
         style={{
-          width: `${width && width < 768 ? '100%' : cardCount * (180 + 16)}px`,
+          width: isClient ? `${width && width < 768 ? '100%' : cardCount * (180 + 16)}px` : undefined,
           maxWidth: '1560px',
         }}
       >

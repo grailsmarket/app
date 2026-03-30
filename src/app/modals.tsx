@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import CreateListingModal from '@/components/modal/listing/createListingModal'
 import BuyNowModal from '@/components/modal/purchase/buyNowModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -24,14 +24,17 @@ import SettingsModal from '@/components/modal/settings/settingsModal'
 import { useUserContext } from '@/context/user'
 import TransferModal from '@/components/modal/transfer/transferModal'
 import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
-import RegistrationModal from '@/components/modal/registration/registrationModal'
+import RegistrationModal from '@/components/modal/registration'
 import ShareModal from '@/components/modal/share/shareModal'
 import { selectShareModal, setShareModalOpen } from '@/state/reducers/modals/shareModal'
 import EditRecordsModal from '@/components/modal/records/editRecordsModal'
 import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducers/modals/editRecordsModal'
+import BulkEditRecordsModal from '@/components/modal/records/bulkEditRecordsModal'
+import { selectBulkEditRecordsModal, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
+import { selectRegistration } from '@/state/reducers/registration'
 import BulkOfferModal from '@/components/modal/offer/bulkOfferModal'
 import { selectBulkOfferModal, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
 import UpgradeModal from '@/components/modal/subscription/upgradeModal'
@@ -84,13 +87,13 @@ const Modals: React.FC = () => {
     defaultTab: editRecordsModalDefaultTab,
   } = useAppSelector(selectEditRecordsModal)
   const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
+  const { open: bulkEditRecordsModalOpen, names: bulkEditRecordsModalNames } =
+    useAppSelector(selectBulkEditRecordsModal)
   const {
     open: listSettingsModalOpen,
     user: listSettingsModalUser,
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
-  const { open: bulkOfferModalOpen, domains: bulkOfferModalDomains } = useAppSelector(selectBulkOfferModal)
-  const { open: upgradeModalOpen } = useAppSelector(selectUpgradeModal)
 
   return (
     <div>
@@ -164,6 +167,12 @@ const Modals: React.FC = () => {
           metadata={editRecordsModalMetadata}
           defaultTab={editRecordsModalDefaultTab}
           onClose={() => dispatch(setEditRecordsModalOpen(false))}
+        />
+      )}
+      {bulkEditRecordsModalOpen && bulkEditRecordsModalNames.length > 0 && (
+        <BulkEditRecordsModal
+          names={bulkEditRecordsModalNames}
+          onClose={() => dispatch(setBulkEditRecordsModalOpen(false))}
         />
       )}
       {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}

@@ -1,9 +1,10 @@
 import React from 'react'
-import Image from 'next/image'
-import logo from 'public/logo-w-text.png'
-import Pages from './components/pages'
-import Sources from './components/sources'
 import Link from 'next/link'
+import Image from 'next/image'
+import Pages from './components/pages'
+import Extras from './components/extras'
+import Sources from './components/sources'
+import logo from 'public/logo-w-text.png'
 import byEthId from 'public/by-ethid.svg'
 import poweredByEIK from 'public/powered-by-eik.svg'
 
@@ -18,6 +19,7 @@ const Footer = () => {
             height={180}
             alt='Ethereum Follow Protocol'
             className='w-[120px] sm:w-[180px]'
+            priority
           />
           <div className='flex items-center gap-3'>
             <Link href='https://ethid.org/' target='_blank' className='transition-opacity hover:opacity-80'>
@@ -41,32 +43,9 @@ const Footer = () => {
             </Link>
           </div>
         </section>
-        <section className='flex align-middle'>
-          <div className='flex flex-col gap-4 sm:gap-6'>
-            <Pages />
-          </div>
-        </section>
-        <section className='flex'>
-          <div className='flex flex-col gap-4 text-lg sm:gap-6'>
-            <Link
-              href='/terms-of-service'
-              className='text-foreground font-semibold opacity-80 transition-all hover:opacity-100'
-            >
-              <span>Terms of Service</span>
-            </Link>
-            <Link
-              href='/privacy-policy'
-              className='text-foreground font-semibold opacity-80 transition-all hover:opacity-100'
-            >
-              <span>Privacy Policy</span>
-            </Link>
-          </div>
-        </section>
-        <section className='flex'>
-          <div className='flex flex-col gap-4 sm:gap-6'>
-            <Sources />
-          </div>
-        </section>
+        <Pages />
+        <Extras />
+        <Sources />
       </div>
     </footer>
   )

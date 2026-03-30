@@ -6,7 +6,7 @@ import Link from 'next/link'
 import React, { useEffect, useMemo, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { fetchFilteredCategories } from '@/api/categories/fetchFilteredCategories'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -23,6 +23,7 @@ interface CategoriesProps {
 
 const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const isClient = useIsClient()
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
   // const { data: listings, isLoading } = useQuery({
@@ -63,18 +64,20 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
   })
 
   const cardCount = useMemo(() => {
-    if (width && width < 1024) return 8
-    if (width && width < 1280) return 10
-    if (width && width < 1536) return 12
+    if (!isClient || !width) return 16
+    if (width < 1024) return 8
+    if (width < 1280) return 10
+    if (width < 1536) return 12
     return 16
-  }, [width])
+  }, [isClient, width])
 
   const gridColCount = useMemo(() => {
-    if (width && width < 1024) return 2
-    if (width && width < 1280) return 2
-    if (width && width < 1536) return 3
+    if (!isClient || !width) return 4
+    if (width < 1024) return 2
+    if (width < 1280) return 2
+    if (width < 1536) return 3
     return 4
-  }, [width])
+  }, [isClient, width])
 
   const defaultAnimationdelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
   const clickHandler = () => {
@@ -91,7 +94,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center xl:gap-8'
-      style={{ height: width && width < 768 ? (isDropdownOpen ? '348px' : '40px') : 'auto' }}
+      style={{ height: isClient && width && width < 768 ? (isDropdownOpen ? '348px' : '40px') : 'auto' }}
     >
       <div
         className='md:hidde px-md flex cursor-pointer flex-row items-center justify-between md:hidden'

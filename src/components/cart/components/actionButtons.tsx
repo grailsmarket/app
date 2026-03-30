@@ -1,11 +1,12 @@
 import React from 'react'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setBuyNowModalDomain, setBuyNowModalOpen, setBuyNowModalListing } from '@/state/reducers/modals/buyNowModal'
 import { UNREGISTERED } from '@/constants/domains/registrationStatuses'
-import { openRegistrationModal } from '@/state/reducers/registration'
+import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
+import { cn } from '@/utils/tailwind'
 
 interface ActionButtonsProps {
   domain: MarketplaceDomainType
@@ -15,6 +16,7 @@ interface ActionButtonsProps {
 const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatus }) => {
   const dispatch = useAppDispatch()
   const domainListing = domain.listings[0]
+  const registrationState = useAppSelector(selectRegistration)
 
   const openBuyNowModal = () => {
     if (!domainListing) return
@@ -30,6 +32,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   const openRegistrationModalHandler = () => {
     if (!domain.name || !domain) return
+    if (registrationState.flowState !== 'review') return
     dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
   }
 
@@ -41,27 +44,36 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   if (registrationStatus === UNREGISTERED) {
     return (
-      <PrimaryButton onClick={(e) => clickHandler(e, openRegistrationModalHandler)} className='w-24'>
+      <button
+        onClick={(e) => clickHandler(e, openRegistrationModalHandler)}
+        className={cn(
+          'border-primary text-primary hover:bg-primary hover:text-background h-10 w-24 cursor-pointer rounded-md border-2 font-bold transition-all duration-300',
+          registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
+        )}
+      >
         Register
-      </PrimaryButton>
+      </button>
     )
   }
 
   if (domainListing?.price) {
     return (
-      <PrimaryButton onClick={(e) => clickHandler(e, openBuyNowModal)} className='w-[94px] sm:w-24'>
+      <button
+        onClick={(e) => clickHandler(e, openBuyNowModal)}
+        className='border-primary text-primary hover:bg-primary hover:text-background font-bol h-10 w-[94px] cursor-pointer rounded-md border-2 transition-all duration-300 sm:w-24'
+      >
         Buy Now
-      </PrimaryButton>
+      </button>
     )
   }
 
   return (
-    <PrimaryButton
-      className={`w-20 cursor-pointer rounded-sm sm:w-24`}
+    <button
+      className={`border-primary text-primary hover:bg-primary hover:text-background h-10 w-20 cursor-pointer rounded-md border-2 font-bold transition-all duration-300 sm:w-24`}
       onClick={(e) => clickHandler(e, openMakeOfferModal)}
     >
       Offer
-    </PrimaryButton>
+    </button>
   )
 }
 

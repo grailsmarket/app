@@ -1,6 +1,7 @@
 import Footer from '@/components/footer'
 import BulkTools from '@/components/home/bulkTools'
 import DisplayedCards from '@/components/home/displayedCard'
+import FrequentlyAskedQuestions from '@/components/home/frequentlyAskedQuestions'
 import HeroSearch from '@/components/home/heroSearch'
 import RecentContainer from '@/components/home/recent-container'
 import TopCategories from '@/components/home/topCategories'
@@ -26,6 +27,7 @@ const Home = () => {
           <BulkTools />
           <TopCategories />
           <TwitterBot />
+          <FrequentlyAskedQuestions />
         </div>
       </div>
       <Footer />

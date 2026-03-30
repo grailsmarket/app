@@ -7,9 +7,19 @@ interface UpdateSettingsPayload {
   email: string | null
   discord: string | null
   telegram: string | null
+  offerNotificationThreshold: number | null
+  notifyOnListingSold: boolean
+  notifyOnOfferReceived: boolean
 }
 
-export const updateSettings = async ({ email, discord, telegram }: UpdateSettingsPayload) => {
+export const updateSettings = async ({
+  email,
+  discord,
+  telegram,
+  offerNotificationThreshold,
+  notifyOnListingSold,
+  notifyOnOfferReceived,
+}: UpdateSettingsPayload) => {
   const response = await authFetch(`${API_URL}/users/me`, {
     method: 'PATCH',
     mode: 'cors',
@@ -20,6 +30,9 @@ export const updateSettings = async ({ email, discord, telegram }: UpdateSetting
       email: email || '',
       discord: discord || '',
       telegram: telegram || '',
+      minOfferThreshold: Number(offerNotificationThreshold) || null,
+      notifyOnListingSold: notifyOnListingSold || false,
+      notifyOnOfferReceived: notifyOnOfferReceived || false,
     }),
   })
 

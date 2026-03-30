@@ -2,7 +2,7 @@
 
 import { fetchFilteredCategories } from '@/api/categories/fetchFilteredCategories'
 import CategoriesSortDropdown from '@/app/categories/components/CategoriesSortDropdown'
-import CategoryRow from '@/app/categories/components/categoryRow'
+import CategoryRow from '@/app/categories/components/categoryCard'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectCategoriesPageFilters,

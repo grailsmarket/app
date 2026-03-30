@@ -34,6 +34,9 @@ type profileState = {
   poapClaimed: boolean
   subscription: SubscriptionType
   lastVisitedProfile: Address | string | null
+  offerNotificationThreshold: number | null
+  notifyOnListingSold: boolean
+  notifyOnOfferReceived: boolean
 }
 
 export const nullEnsProfile = {
@@ -59,9 +62,12 @@ const initialState: profileState = {
   poapClaimed: false,
   subscription: { tier: 'free', tierId: 0, tierExpiresAt: null },
   watchlist: [],
+  offerNotificationThreshold: null,
   pendingWatchlistTokenIds: [],
   selectedTab: PROFILE_TABS[0],
   lastVisitedProfile: null,
+  notifyOnListingSold: true,
+  notifyOnOfferReceived: true,
 }
 
 // Slice -------------------------------------------
@@ -111,6 +117,15 @@ export const profileSlice = createSlice({
       if (state.pendingWatchlistTokenIds === undefined) state.pendingWatchlistTokenIds = []
       state.pendingWatchlistTokenIds = state.pendingWatchlistTokenIds?.filter((item) => item !== payload)
     },
+    setOfferNotificationThreshold(state, { payload }: PayloadAction<number | null>) {
+      state.offerNotificationThreshold = payload
+    },
+    setNotifyOnListingSold(state, { payload }: PayloadAction<boolean>) {
+      state.notifyOnListingSold = payload
+    },
+    setNotifyOnOfferReceived(state, { payload }: PayloadAction<boolean>) {
+      state.notifyOnOfferReceived = payload
+    },
     changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
     },
@@ -152,6 +167,9 @@ export const {
   setLastVisitedProfile,
   setUserSubscription,
   resetUserProfile,
+  setOfferNotificationThreshold,
+  setNotifyOnListingSold,
+  setNotifyOnOfferReceived,
 } = profileSlice.actions
 
 // Selectors ------------------------------------------

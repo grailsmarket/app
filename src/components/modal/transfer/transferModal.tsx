@@ -21,6 +21,7 @@ import { isAddress, Address, labelhash, namehash } from 'viem'
 import Input from '@/components/ui/input'
 import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
@@ -154,7 +155,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         chain: mainnet,
       })
 
-      await publicClient.waitForTransactionReceipt({ hash })
+      await waitForTransaction(publicClient, hash)
 
       // Re-check approvals after successful approval
       await checkApprovals()
@@ -237,9 +238,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       setTxHash(hash) // Store the first transaction hash
       setStep('processing')
 
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash,
-      })
+      const receipt = await waitForTransaction(publicClient, hash)
 
       if (receipt.status !== 'success') {
         throw new Error('Transaction failed')

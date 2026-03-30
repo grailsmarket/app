@@ -16,11 +16,16 @@ const footerSources = [
     href: 'https://twitter.com/grailsmarket',
     target: '_blank',
   },
+  {
+    text: 'Grails CLI',
+    href: 'https://github.com/grailsmarket/cli',
+    target: '_blank',
+  },
 ]
 
 const Sources = () => {
   return (
-    <div className='flex flex-col gap-4'>
+    <section className='flex flex-col gap-4'>
       {footerSources.map((source) => (
         <div
           className='text-foreground/80 hover:text-foreground w-fit text-lg font-medium transition-transform'
@@ -31,7 +36,7 @@ const Sources = () => {
           </Link>
         </div>
       ))}
-    </div>
+    </section>
   )
 }
 

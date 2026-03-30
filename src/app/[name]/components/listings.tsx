@@ -238,7 +238,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
       <PrimaryButton onClick={openBuyNowModal}>
         Buy<span className='hidden sm:inline'> Now</span>
       </PrimaryButton>
-      <button
+      {/* <button
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -251,7 +251,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
           hasBorder={true}
           className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
         />
-      </button>
+      </button> */}
       <SecondaryButton
         onClick={openShareModal}
         className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'

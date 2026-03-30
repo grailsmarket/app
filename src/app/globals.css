@@ -413,10 +413,29 @@ body {
   }
 }
 
+@keyframes carousel-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .sign-in-button {
   max-width: 210px !important;
 }
 
 .signed-in-user-profile-name {
   max-width: 126px !important;
+}
+
+.custom-links a {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.custom-links a:hover {
+  opacity: 0.8;
 }

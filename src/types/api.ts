@@ -33,6 +33,9 @@ export type AuthUserType = {
   isAdmin: boolean
   createdAt: string
   lastSignIn: string
+  minOfferThreshold: number | null
+  notifyOnListingSold: boolean
+  notifyOnOfferReceived: boolean
 }
 
 export type VerifyResponseType = {

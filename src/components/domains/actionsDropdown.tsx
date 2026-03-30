@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { MarketplaceDomainType } from '@/types/domains'
 import {
   setMakeListingModalDomains,
@@ -23,7 +23,7 @@ import CancelIcon from 'public/icons/cancelled.svg'
 import ListIcon from 'public/icons/tag-white.svg'
 import RegisterIcon from 'public/icons/registration-white.svg'
 import BuyNowIcon from 'public/icons/cart.svg'
-import { openRegistrationModal } from '@/state/reducers/registration'
+import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
 
 interface ActionsDropdownProps {
@@ -51,6 +51,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const [isOpen, setIsOpen] = useState(false)
+  const registrationState = useAppSelector(selectRegistration)
 
   const dropdownRef = useClickAway(() => {
     setIsOpen(false)
@@ -121,6 +122,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
   const handleRegisterName = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (registrationState.flowState !== 'review') return
     dispatch(openRegistrationModal({ name: domain.name, domain: domain }))
     setIsOpen(false)
   }
@@ -164,7 +166,10 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
           {isUnregistered ? (
             <button
               onClick={handleRegisterName}
-              className='hover:bg-tertiary flex w-full items-center gap-1.5 px-3 py-2 text-left text-lg transition-colors'
+              className={cn(
+                'hover:bg-tertiary flex w-full items-center gap-1.5 px-3 py-2 text-left text-lg transition-colors',
+                registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
+              )}
             >
               <Image src={RegisterIcon} alt='Register Name' className='h-4 w-4' width={16} height={16} />
               <p>Register Name</p>

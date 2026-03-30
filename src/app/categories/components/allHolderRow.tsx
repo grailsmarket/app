@@ -81,6 +81,7 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder, rank }) => {
           loadingCellWidth='140px'
           avatarSize='28px'
           fontSize='15px'
+          disableLink
         />
       </div>
 

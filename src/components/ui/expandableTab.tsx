@@ -6,6 +6,7 @@ import arrowUp from 'public/icons/arrow-down.svg'
 interface ExpandableTabProps {
   open: boolean
   expandedHeight?: number
+  className?: string
   toggleOpen: () => void
   label: string
   headerHeight?: number
@@ -18,6 +19,7 @@ interface ExpandableTabProps {
 const ExpandableTab: React.FC<ExpandableTabProps> = ({
   open,
   children,
+  className,
   showHeader = false,
   expandedHeight,
   headerHeight,
@@ -27,7 +29,7 @@ const ExpandableTab: React.FC<ExpandableTabProps> = ({
   CustomComponent,
 }) => {
   return (
-    <div className='border-tertiary w-full border-b'>
+    <div className={cn('border-tertiary w-full border-b', className)}>
       <div
         className={`flex w-full flex-col transition-all`}
         style={{

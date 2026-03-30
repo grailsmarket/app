@@ -154,7 +154,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     <div className='flex min-h-0 flex-1 overflow-x-hidden'>
       <div
         className={cn(
-          'flex min-h-0 min-w-full flex-col overflow-y-auto transition-transform lg:min-w-[292px]',
+          'flex min-h-0 min-w-full flex-col overflow-y-auto pb-16 transition-transform lg:min-w-[292px]',
           showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
         )}
       >
@@ -207,7 +207,7 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       {showCategoryTab && (
         <div
           className={cn(
-            'pb-lg flex min-h-0 min-w-full flex-col overflow-y-auto transition-transform lg:min-w-[292px]',
+            'flex min-h-0 min-w-full flex-col overflow-y-auto pb-8 transition-transform lg:min-w-[292px]',
             isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
           )}
         >

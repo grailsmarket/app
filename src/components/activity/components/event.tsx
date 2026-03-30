@@ -7,18 +7,24 @@ import Cancelled from 'public/icons/cancelled.svg'
 import OfferMade from 'public/icons/bid.svg'
 import Sold from 'public/icons/sold.svg'
 import Listed from 'public/icons/listed.svg'
+import Renewal from 'public/icons/renewal.svg'
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.png'
+import Vision from 'public/logos/vision.svg'
+import SnipeZone from 'public/logos/snipezone.png'
+import ENSTools from 'public/logos/enstools.png'
 import ETHGray from 'public/icons/eth-gray.svg'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
+import { formatDuration } from '@/utils/time/formatDuration'
 
 interface EventProps {
   event: ProfileActivityEventType
   platform: string
   timestamp: string
+  duration?: number
 }
 
-const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
+const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) => {
   const icon = {
     listed: Listed,
     offer_made: OfferMade,
@@ -30,6 +36,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
     mint: Mint,
     sent: Transfer,
     received: Transfer,
+    renewal: Renewal,
     registration: Mint,
     sale: Sold,
     transfer: Transfer,
@@ -46,12 +53,16 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
     mint: 'Minted',
     sent: 'Sent',
     received: 'Received',
+    renewal: 'Extended',
   }[event]
 
   const platformIcon = {
     opensea: OpenSea,
     grails: Grails,
-  }[platform as 'opensea' | 'grails']
+    vision: Vision,
+    snipezone: SnipeZone,
+    enstools: ENSTools,
+  }[platform as 'opensea' | 'grails' | 'vision' | 'snipezone' | 'enstools']
 
   return (
     <div className='flex w-full flex-row items-center gap-1.5 sm:gap-2'>
@@ -67,7 +78,12 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp }) => {
       <div className='flex flex-col items-start'>
         <div className='flex items-center gap-1'>
           {icon && <Image src={icon} alt={event} width={15} height={15} className='h-3 w-3 sm:h-4 sm:w-4' />}
-          <p className='text-md font-semibold capitalize sm:text-lg'>{eventName}</p>
+          <p>
+            <span className='text-md font-semibold capitalize sm:text-lg'>{eventName}</span>
+            <span className='sm:text-md text-neutral mt-px text-sm font-medium'>
+              {duration ? ` (${formatDuration(duration)})` : ''}
+            </span>
+          </p>
         </div>
         <p className='sm:text-md text-neutral mt-px text-sm font-medium'>{formatTimeAgo(timestamp)}</p>
       </div>

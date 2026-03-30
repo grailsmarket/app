@@ -28,7 +28,8 @@ export const useSettings = () => {
     offerNotificationThreshold,
     notifyOnListingSold,
     notifyOnOfferReceived,
- , subscription } = useAppSelector(selectUserProfile)
+    subscription,
+  } = useAppSelector(selectUserProfile)
 
   const [verificationEmailStatus, setVerificationEmailStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
   const [emailAddress, setEmailAddress] = useState(email.address)

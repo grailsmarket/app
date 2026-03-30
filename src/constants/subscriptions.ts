@@ -1,15 +1,15 @@
 export const TIER_MAP: Record<number, { name: string; label: string }> = {
   0: { name: 'Free', label: 'Free Plan' },
-  1: { name: 'PRO', label: 'PRO Subscription' },
-  2: { name: 'PLUS', label: 'PLUS Subscription' },
+  1: { name: 'PLUS', label: 'PLUS Subscription' },
+  2: { name: 'PRO', label: 'PRO Subscription' },
   3: { name: 'GOLD', label: 'GOLD Subscription' },
 }
 
 // Reverse lookup: tier string → tierId
 export const TIER_STRING_TO_ID: Record<string, number> = {
   free: 0,
-  pro: 1,
-  plus: 2,
+  plus: 1,
+  pro: 2,
   gold: 3,
 }
 

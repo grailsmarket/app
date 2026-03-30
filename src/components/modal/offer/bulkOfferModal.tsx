@@ -308,11 +308,7 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
 
             {/* Actions */}
             <div className='flex flex-col gap-2'>
-              <PrimaryButton
-                disabled={!canSubmit || isInteracting}
-                onClick={handleSubmit}
-                className='h-10 w-full'
-              >
+              <PrimaryButton disabled={!canSubmit || isInteracting} onClick={handleSubmit} className='h-10 w-full'>
                 {!hasSufficientBalance
                   ? `Insufficient ${currency} Balance`
                   : isInteracting

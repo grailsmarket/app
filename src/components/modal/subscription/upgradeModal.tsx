@@ -5,7 +5,7 @@ import { useAccount, useBalance } from 'wagmi'
 import { Check } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
+import { selectUpgradeModal, setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 import useSubscriptionContract from '@/hooks/useSubscriptionContract'
 import useETHPrice from '@/hooks/useETHPrice'
 import { SUBSCRIBABLE_TIERS, getTierDisplayName, TIER_MAP } from '@/constants/subscriptions'
@@ -36,19 +36,23 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
   const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
 
+  const { preselectedTierId } = useAppSelector(selectUpgradeModal)
+
   const currentTierId = subscription?.tierId ?? 0
-  const isUpgrade = currentTierId > 0 && subscription?.tierExpiresAt && new Date(subscription.tierExpiresAt) > new Date()
+  const isUpgrade =
+    currentTierId > 0 && subscription?.tierExpiresAt && new Date(subscription.tierExpiresAt) > new Date()
 
   // Available tiers (higher than current)
-  const availableTiers = useMemo(
-    () => SUBSCRIBABLE_TIERS.filter((id) => id > currentTierId),
-    [currentTierId]
-  )
+  const availableTiers = useMemo(() => SUBSCRIBABLE_TIERS.filter((id) => id > currentTierId), [currentTierId])
 
   const isMaxTier = availableTiers.length === 0 && currentTierId > 0
   const isExtend = isMaxTier && !!isUpgrade
 
-  const [selectedTierId, setSelectedTierId] = useState<number>(availableTiers[0] ?? (currentTierId || 1))
+  const defaultTier =
+    preselectedTierId && availableTiers.includes(preselectedTierId)
+      ? preselectedTierId
+      : (availableTiers[0] ?? (currentTierId || 1))
+  const [selectedTierId, setSelectedTierId] = useState<number>(defaultTier)
   const [durationDays, setDurationDays] = useState<number>(30)
   const [step, setStep] = useState<Step>('review')
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -251,9 +255,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
               <h3 className='mb-2 text-xl font-bold'>
                 {isExtend ? 'Subscription Extended!' : isUpgrade ? 'Subscription Upgraded!' : 'Subscription Active!'}
               </h3>
-              <p className='text-neutral text-md'>
-                You now have {getTierDisplayName(selectedTierId)} access.
-              </p>
+              <p className='text-neutral text-md'>You now have {getTierDisplayName(selectedTierId)} access.</p>
               {txHash && (
                 <a
                   href={`https://etherscan.io/tx/${txHash}`}
@@ -312,9 +314,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
                         onClick={() => setSelectedTierId(tierId)}
                         className={cn(
                           'border-tertiary flex-1 rounded-md border p-3 text-center transition-colors',
-                          selectedTierId === tierId
-                            ? 'border-primary bg-primary/10'
-                            : 'hover:bg-secondary'
+                          selectedTierId === tierId ? 'border-primary bg-primary/10' : 'hover:bg-secondary'
                         )}
                       >
                         <p className='text-md font-semibold'>{TIER_MAP[tierId]?.name}</p>
@@ -339,7 +339,8 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
               <div className='flex flex-row gap-2'>
                 {DURATION_PRESETS.map((preset) => {
                   const presetPrice = priceCache[priceCacheKey(selectedTierId, preset.value)]
-                  const presetPriceETH = presetPrice !== undefined ? Number(presetPrice) / 10 ** TOKEN_DECIMALS.ETH : null
+                  const presetPriceETH =
+                    presetPrice !== undefined ? Number(presetPrice) / 10 ** TOKEN_DECIMALS.ETH : null
                   const presetPriceUSD = presetPriceETH !== null ? presetPriceETH * ethPrice : null
                   return (
                     <button
@@ -347,9 +348,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
                       onClick={() => setDurationDays(preset.value)}
                       className={cn(
                         'border-tertiary flex-1 rounded-md border px-3 py-2 text-center transition-colors',
-                        durationDays === preset.value
-                          ? 'border-primary bg-primary/10'
-                          : 'hover:bg-secondary'
+                        durationDays === preset.value ? 'border-primary bg-primary/10' : 'hover:bg-secondary'
                       )}
                     >
                       <p className='text-sm font-medium'>{preset.label}</p>
@@ -377,19 +376,17 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
             </div>
 
             {/* Price Display */}
-            <div className={cn(
-              'bg-secondary border-tertiary rounded-lg border p-3 transition-opacity',
-              price === null ? 'opacity-50' : 'opacity-100'
-            )}>
+            <div
+              className={cn(
+                'bg-secondary border-tertiary rounded-lg border p-3 transition-opacity',
+                price === null ? 'opacity-50' : 'opacity-100'
+              )}
+            >
               <div className='text-md flex items-center justify-between'>
                 <p>Total Cost:</p>
                 <div className='flex flex-col items-end'>
-                  <p className='font-medium'>
-                    {priceETH !== null ? `${priceETH.toFixed(6)} ETH` : '--'}
-                  </p>
-                  {priceUSD !== null && (
-                    <p className='text-neutral text-xs'>(${priceUSD.toFixed(2)})</p>
-                  )}
+                  <p className='font-medium'>{priceETH !== null ? `${priceETH.toFixed(6)} ETH` : '--'}</p>
+                  {priceUSD !== null && <p className='text-neutral text-xs'>(${priceUSD.toFixed(2)})</p>}
                 </div>
               </div>
             </div>
@@ -425,9 +422,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
             {/* Insufficient balance warning */}
             {price !== null && !hasSufficientBalance && (
               <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-                <p className='text-md text-red-400'>
-                  Insufficient ETH balance.
-                </p>
+                <p className='text-md text-red-400'>Insufficient ETH balance.</p>
               </div>
             )}
           </div>
@@ -436,11 +431,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
         {/* Action Buttons */}
         <div className='flex flex-col gap-2'>
           {step === 'review' && (
-            <PrimaryButton
-              onClick={handleSubmit}
-              disabled={price === null || !hasSufficientBalance}
-              className='w-full'
-            >
+            <PrimaryButton onClick={handleSubmit} disabled={price === null || !hasSufficientBalance} className='w-full'>
               {!hasSufficientBalance && price !== null
                 ? 'Insufficient ETH Balance'
                 : isExtend

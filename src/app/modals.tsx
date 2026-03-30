@@ -94,6 +94,37 @@ const Modals: React.FC = () => {
     user: listSettingsModalUser,
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
+  const { open: bulkOfferModalOpen, domains: bulkOfferModalDomains } = useAppSelector(selectBulkOfferModal)
+  const { open: upgradeModalOpen } = useAppSelector(selectUpgradeModal)
+  const { isOpen: registrationModalOpen } = useAppSelector(selectRegistration)
+
+  const anyModalOpen =
+    makeOfferModalOpen ||
+    cancelOfferModalOpen ||
+    createListingModalOpen ||
+    cancelListingModalOpen ||
+    buyNowModalOpen ||
+    acceptOfferModalOpen ||
+    searchModalOpen ||
+    notificationModalOpen ||
+    bulkRenewalModalOpen ||
+    transferModalOpen ||
+    shareModalOpen ||
+    editRecordsModalOpen ||
+    isSettingsOpen ||
+    listSettingsModalOpen ||
+    registrationModalOpen
+
+  useEffect(() => {
+    if (anyModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [anyModalOpen])
 
   return (
     <div>
@@ -184,10 +215,7 @@ const Modals: React.FC = () => {
         />
       )}
       {bulkOfferModalOpen && bulkOfferModalDomains.length > 0 && (
-        <BulkOfferModal
-          onClose={() => dispatch(setBulkOfferModalOpen(false))}
-          domains={bulkOfferModalDomains}
-        />
+        <BulkOfferModal onClose={() => dispatch(setBulkOfferModalOpen(false))} domains={bulkOfferModalDomains} />
       )}
       {upgradeModalOpen && <UpgradeModal onClose={() => dispatch(setUpgradeModalOpen(false))} />}
     </div>

@@ -1,8 +1,9 @@
 import { Address } from 'viem'
+import { authFetch } from '../authFetch'
 
 export const cancelListing = async (listingId: string, canceller: Address) => {
   try {
-    const response = await fetch('/api/orders/cancel', {
+    const response = await authFetch('/api/orders/cancel', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

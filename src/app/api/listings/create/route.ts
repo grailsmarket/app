@@ -11,6 +11,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    const authorization = request.headers.get('authorization')
 
     // Validate required fields based on order type
     const { type, orders, domains, prices, currencies } = body
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              ...(authorization ? { Authorization: authorization } : {}),
             },
             body: JSON.stringify({
               listings: formattedOrders,

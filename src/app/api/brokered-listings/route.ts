@@ -4,12 +4,14 @@ import { API_URL } from '@/constants/api'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    const authorization = request.headers.get('authorization')
 
     // Forward to backend API
     const response = await fetch(`${API_URL}/brokered-listings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(authorization ? { Authorization: authorization } : {}),
       },
       body: JSON.stringify(body),
     })

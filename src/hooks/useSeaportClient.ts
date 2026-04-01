@@ -7,6 +7,7 @@ import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offer
 import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
 import { useUserContext } from '@/context/user'
+import { authFetch } from '@/api/authFetch'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
 import { MarketplaceType } from '@/lib/seaport/seaportClient'
@@ -146,7 +147,7 @@ export function useSeaportClient() {
           const isBrokeredListing = params.brokerAddress && params.brokerFeeBps
 
           // Submit OpenSea order (always uses regular endpoint)
-          const openSeaResponsePromise = fetch('/api/listings/create', {
+          const openSeaResponsePromise = authFetch('/api/listings/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -175,7 +176,7 @@ export function useSeaportClient() {
                       ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
                       : '0x0000000000000000000000000000000000000000'
 
-                  return fetch('/api/brokered-listings', {
+                  return authFetch('/api/brokered-listings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -208,7 +209,7 @@ export function useSeaportClient() {
               })
             })()
           } else {
-            grailsResponsePromise = fetch('/api/listings/create', {
+            grailsResponsePromise = authFetch('/api/listings/create', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -273,7 +274,7 @@ export function useSeaportClient() {
                   ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC address
                   : '0x0000000000000000000000000000000000000000' // ETH
 
-              return fetch('/api/brokered-listings', {
+              return authFetch('/api/brokered-listings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -304,7 +305,7 @@ export function useSeaportClient() {
         }
 
         // Regular listing - use existing endpoint
-        const response = await fetch('/api/listings/create', {
+        const response = await authFetch('/api/listings/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -507,7 +508,7 @@ export function useSeaportClient() {
 
       try {
         // Step 1: Fetch order components from API
-        const fetchResponse = await fetch('/api/listings/cancel', {
+        const fetchResponse = await authFetch('/api/listings/cancel', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -543,7 +544,7 @@ export function useSeaportClient() {
         console.log('Cancellation transaction:', transaction)
 
         // Step 3: Update database after successful on-chain cancellation
-        const updateResponse = await fetch('/api/listings/cancel', {
+        const updateResponse = await authFetch('/api/listings/cancel', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

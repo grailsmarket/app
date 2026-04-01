@@ -1,6 +1,7 @@
 import { API_URL } from '@/constants/api'
 import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
+import { authFetch } from '../authFetch'
 
 interface CreateOfferParams {
   marketplace: 'opensea' | 'grails'
@@ -28,7 +29,7 @@ export const createOffer = async ({
   const fullPrice = price * Math.pow(10, TOKEN_DECIMALS[currency])
 
   // Call Next.js API route which handles OpenSea submission and then forwards to backend
-  const response = await fetch(`${API_URL}/offers`, {
+  const response = await authFetch(`${API_URL}/offers`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

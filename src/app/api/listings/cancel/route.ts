@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    const authorization = request.headers.get('authorization')
     const { listingIds, canceller, onChainCancellation } = body
 
     if (!listingIds || !Array.isArray(listingIds) || listingIds.length === 0) {
@@ -21,6 +22,7 @@ export async function POST(request: NextRequest) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            ...(authorization ? { Authorization: authorization } : {}),
           },
         })
 
@@ -110,6 +112,7 @@ export async function POST(request: NextRequest) {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
+            ...(authorization ? { Authorization: authorization } : {}),
           },
         })
 

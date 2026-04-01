@@ -1,8 +1,9 @@
 import { API_URL } from '@/constants/api'
+import { authFetch } from '../authFetch'
 
 export const acceptOffer = async (offerId: number) => {
   try {
-    const response = await fetch(`${API_URL}/offers/${offerId}`, {
+    const response = await authFetch(`${API_URL}/offers/${offerId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

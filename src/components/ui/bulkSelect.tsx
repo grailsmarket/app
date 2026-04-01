@@ -41,6 +41,7 @@ import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
+import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -190,6 +191,12 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }
 
   const handleBulkOfferAction = () => {
+    if (namesOffer.length === 1) {
+      dispatch(setMakeOfferModalDomain(namesOffer[0]))
+      dispatch(setMakeOfferModalOpen(true))
+      return
+    }
+
     dispatch(setBulkOfferModalDomains(namesOffer))
     dispatch(setBulkOfferModalOpen(true))
   }
@@ -389,30 +396,49 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'premium' ||
     selectedTab?.value === 'expired'
   const canOfferDomains =
-    selectedTab?.value === 'names' ||
-    selectedTab?.value === 'domains' ||
-    selectedTab?.value === 'listings' ||
-    selectedTab?.value === 'watchlist'
+    isProUser &&
+    (selectedTab?.value === 'names' ||
+      selectedTab?.value === 'domains' ||
+      selectedTab?.value === 'listings' ||
+      selectedTab?.value === 'watchlist')
 
   const isSelectAllLoading = selectAll?.isLoading ?? false
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
-  const bulkSelectWidth = showOwnedActionButtons
-    ? canRegisterDomains
-      ? 'min(1110px,95vw)'
-      : 'min(980px,95vw)'
-    : showWatchlistButton
-      ? canRegisterDomains
-        ? 'min(780px,95vw)'
-        : 'min(650px,95vw)'
-      : canRegisterDomains
-        ? canExtendDomains
-          ? 'min(550px,95vw)'
-          : 'min(430px,95vw)'
-        : windowWidth && windowWidth < 640
-          ? 'min(130px,95vw)'
-          : 'min(420px,95vw)'
+  // Measure the actual content width for the animated container
+  const expandedContentRef = useRef<HTMLDivElement>(null)
+  const [measuredWidth, setMeasuredWidth] = useState(0)
+
+  useLayoutEffect(() => {
+    if (!showExpandedContent || !expandedContentRef.current) return
+
+    const measure = () => {
+      const w = expandedContentRef.current?.scrollWidth ?? 0
+      setMeasuredWidth(w)
+    }
+
+    measure()
+
+    // Re-measure when the content might change (ResizeObserver catches button show/hide)
+    const observer = new ResizeObserver(measure)
+    observer.observe(expandedContentRef.current)
+    return () => observer.disconnect()
+  }, [
+    showExpandedContent,
+    showOwnedActionButtons,
+    showWatchlistButton,
+    canExtendDomains,
+    canRegisterDomains,
+    canOfferDomains,
+    isProUser,
+    namesOffer.length,
+  ])
+
+  const collapsedWidth = windowWidth && windowWidth < 640 ? 130 : 136
+  const maxVw = typeof window !== 'undefined' ? window.innerWidth * 0.95 : 1200
+  const bulkSelectWidth =
+    isSelecting && measuredWidth > 0 ? `${Math.min(measuredWidth, maxVw)}px` : `${collapsedWidth}px`
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -482,18 +508,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       <div
         className={cn(
-          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200'
+          'shadow-bulk bg-background flex justify-end overflow-hidden rounded-md transition-[width] duration-200'
           // isSelecting ? bulkSelectWidth : 'w-34'
         )}
         style={{
-          width: isSelecting ? bulkSelectWidth : windowWidth && windowWidth < 640 ? '130px' : '136px',
-          // transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)'
+          width: bulkSelectWidth,
         }}
       >
         {showExpandedContent ? (
           <div
+            ref={expandedContentRef}
             className={cn(
-              'flex w-max flex-row transition-opacity duration-300',
+              'flex w-max flex-row justify-end transition-opacity duration-300',
               isSelecting ? 'opacity-100' : 'opacity-0'
             )}
           >
@@ -535,7 +561,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                   <Label label={namesRegister.length} className='bg-tertiary w-7 min-w-fit text-white' />
                 </PrimaryButton>
               )}
-              {isProUser && canOfferDomains && namesOffer.length > 0 && (
+              {canOfferDomains && namesOffer.length > 0 && (
                 <PrimaryButton
                   onClick={handleBulkOfferAction}
                   disabled={selectedDomains.length === 0 || namesOffer.length === 0}

@@ -21,6 +21,7 @@ import { WETH_ADDRESS, USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tok
 import { beautifyName } from '@/lib/ens'
 import Label from '@/components/ui/label'
 import { cn } from '@/utils/tailwind'
+import ArrowDownIcon from 'public/icons/arrow-down.svg'
 
 type BulkOfferStatus = 'review' | 'signing' | 'submitting' | 'success' | 'error'
 
@@ -137,7 +138,6 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
         {/* Header */}
         <div className='flex items-center justify-center gap-2'>
           <h2 className='font-sedan-sc min-h-6 text-center text-3xl'>Bulk Offer</h2>
-          <Label label={domains.length} className='bg-tertiary w-7 min-w-fit text-white' />
         </div>
 
         {status === 'success' ? (
@@ -223,7 +223,7 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
             <div>
               <Input
                 type='number'
-                label='Price per name'
+                label='Base Price'
                 value={defaultPrice}
                 onChange={(e) => {
                   const value = e.target.value
@@ -233,6 +233,8 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
                 placeholder='0.01'
                 min={0}
                 step={0.001}
+                labelClassName='min-w-[110px]!'
+                suffix={currency}
               />
               <div className='py-sm px-md mt-1 flex items-center justify-between'>
                 <p className='text-md text-gray-400'>
@@ -241,54 +243,55 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
               </div>
             </div>
 
-            {/* Individual Prices Toggle */}
-            <button
-              onClick={() => setShowIndividualPrices(!showIndividualPrices)}
-              className='text-primary text-md cursor-pointer font-medium transition-opacity hover:opacity-80'
-            >
-              {showIndividualPrices ? 'Hide' : 'Edit'} individual prices
-            </button>
+            <div className='flex flex-col gap-2'>
+              {/* Individual Prices Toggle */}
+              <button
+                onClick={() => setShowIndividualPrices(!showIndividualPrices)}
+                className='text-md bg-secondary hover:bg-tertiary border-tertiary flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 transition-colors'
+              >
+                <p className='text-xl font-semibold'>Edit offer prices</p>
+                <div className='flex items-center gap-2'>
+                  <p className='text-xl font-bold'>{domains.length}</p>
+                  <Image
+                    src={ArrowDownIcon}
+                    alt='Arrow Down'
+                    width={16}
+                    height={16}
+                    className={cn(showIndividualPrices ? 'rotate-180' : '')}
+                  />
+                </div>
+              </button>
 
-            {/* Individual Price Overrides */}
-            {showIndividualPrices && (
-              <div className='border-tertiary max-h-48 space-y-1 overflow-y-auto rounded-md border p-2'>
-                {domains.map((domain) => (
-                  <div key={domain.token_id} className='flex items-center justify-between gap-2'>
-                    <p className='text-md min-w-0 flex-1 truncate font-medium'>{beautifyName(domain.name)}</p>
-                    <input
-                      type='number'
-                      className='bg-secondary text-md w-24 rounded-md px-2 py-1 text-right'
-                      placeholder={typeof defaultPrice === 'number' ? defaultPrice.toString() : '0'}
-                      value={individualPrices.get(domain.name) ?? ''}
-                      onChange={(e) => {
-                        const newPrices = new Map(individualPrices)
-                        if (e.target.value === '') {
-                          newPrices.delete(domain.name)
-                        } else {
-                          newPrices.set(domain.name, Number(e.target.value))
-                        }
-                        setIndividualPrices(newPrices)
-                      }}
-                      min={0}
-                      step={0.001}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Domain list (collapsed) */}
-            {!showIndividualPrices && (
-              <div className='border-tertiary max-h-32 overflow-y-auto rounded-md border p-2'>
-                <div className='flex flex-wrap gap-1'>
+              {/* Individual Price Overrides */}
+              {showIndividualPrices && (
+                <div className='flex flex-col gap-2'>
                   {domains.map((domain) => (
-                    <span key={domain.token_id} className='bg-secondary text-md rounded-md px-2 py-0.5'>
-                      {beautifyName(domain.name)}
-                    </span>
+                    <div key={domain.token_id} className='flex items-center justify-between gap-2'>
+                      <Input
+                        type='number'
+                        label={beautifyName(domain.name)}
+                        className='w-full rounded-md text-right'
+                        placeholder={typeof defaultPrice === 'number' ? defaultPrice.toString() : '0'}
+                        value={individualPrices.get(domain.name) ?? ''}
+                        onChange={(e) => {
+                          const newPrices = new Map(individualPrices)
+                          if (e.target.value === '') {
+                            newPrices.delete(domain.name)
+                          } else {
+                            newPrices.set(domain.name, Number(e.target.value))
+                          }
+                          setIndividualPrices(newPrices)
+                        }}
+                        min={0}
+                        step={0.001}
+                        suffix={currency}
+                        labelClassName='min-w-[200px]!'
+                      />
+                    </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Total */}
             <div className='bg-secondary flex items-center justify-between rounded-md p-3'>

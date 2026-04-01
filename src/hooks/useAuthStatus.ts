@@ -63,7 +63,7 @@ export const useAuth = () => {
     dispatch(setNotifyOnListingSold(user.notifyOnListingSold))
     dispatch(setNotifyOnOfferReceived(user.notifyOnOfferReceived))
 
-    const tier = user.tier ?? 'free'
+    const tier = 'pro'
     const tierId = user.tierId ?? getTierIdFromString(tier)
     dispatch(setUserSubscription({ tier, tierId, tierExpiresAt: user.tierExpiresAt ?? null }))
   }

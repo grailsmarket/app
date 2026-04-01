@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useAppDispatch } from '@/state/hooks'
 import { openUpgradeModalWithTier } from '@/state/reducers/modals/upgradeModal'
 import { cn } from '@/utils/tailwind'
@@ -28,7 +29,7 @@ const tiers = [
   {
     tierId: 2,
     name: 'PRO',
-    monthlyPrice: 29.99,
+    monthlyPrice: 49.99,
     buttonText: 'Become a PRO user',
     borderColor: 'border-primary',
     nameColor: 'text-primary',
@@ -39,7 +40,7 @@ const tiers = [
   {
     tierId: 3,
     name: 'Gold',
-    monthlyPrice: 49.99,
+    monthlyPrice: 99.99,
     buttonText: 'Get Gold',
     borderColor: 'border-amber-500',
     nameColor: 'text-amber-500',
@@ -57,16 +58,18 @@ const PricingTiers = () => {
 
   const isYearly = billing === 'yearly'
 
+  const ANNUAL_DISCOUNT = 0.15
+
   const getDisplayPrice = (monthlyPrice: number) => {
     if (isYearly) {
-      // 50% off yearly: (monthly * 12) * 0.5 / 12 = monthly * 0.5
-      return (monthlyPrice * 0.5).toFixed(2)
+      // 15% off yearly: (monthly * 12) * 0.85 / 12
+      return ((monthlyPrice * 12 * (1 - ANNUAL_DISCOUNT)) / 12).toFixed(2)
     }
     return monthlyPrice.toFixed(2)
   }
 
   const getYearlyTotal = (monthlyPrice: number) => {
-    return (monthlyPrice * 12 * 0.5).toFixed(2)
+    return (monthlyPrice * 12 * (1 - ANNUAL_DISCOUNT)).toFixed(2)
   }
 
   const getOriginalYearlyTotal = (monthlyPrice: number) => {
@@ -76,7 +79,7 @@ const PricingTiers = () => {
   return (
     <div className='flex w-full flex-col items-center gap-8'>
       <h2 className='font-sedan-sc text-center text-5xl md:text-6xl'>
-        Do more, with grails <span className='text-primary'>Pro</span>
+        Do more, with Grails <span className='text-primary'>Pro</span>
       </h2>
 
       {/* Billing toggle */}
@@ -103,7 +106,7 @@ const PricingTiers = () => {
                 isYearly ? 'bg-green-500/50 text-green-700' : 'bg-green-500/20 text-green-400'
               )}
             >
-              SAVE 50%
+              SAVE 15%
             </span>
           </button>
           <div
@@ -114,10 +117,13 @@ const PricingTiers = () => {
         </div>
       </div>
 
-      <div className='flex w-full flex-col justify-center gap-6 lg:flex-row'>
+      <div className='flex w-full flex-col flex-wrap items-center justify-center gap-6 lg:flex-row lg:items-stretch lg:justify-center'>
         {tiers.map((tier) => (
-          <div key={tier.name} className={`flex max-w-sm flex-1 flex-col rounded-lg border-2 ${tier.borderColor} p-6`}>
-            <h3 className={`font-sedan-sc text-center text-4xl ${tier.nameColor}`}>{tier.name}</h3>
+          <div
+            key={tier.name}
+            className={`flex w-full flex-1 flex-col rounded-lg border-2 lg:max-w-sm ${tier.borderColor} p-6`}
+          >
+            <h3 className={`font-sedan-sc text-center text-5xl ${tier.nameColor}`}>{tier.name}</h3>
 
             <div className='mt-2 text-center'>
               {isYearly && <p className='text-neutral text-md mb-1 line-through'>${tier.monthlyPrice.toFixed(2)}/mo</p>}
@@ -149,6 +155,13 @@ const PricingTiers = () => {
           </div>
         ))}
       </div>
+
+      <Link
+        href='/pro'
+        className='text-primary hover:text-primary/80 text-lg font-semibold underline underline-offset-4 transition-colors'
+      >
+        See all plans &amp; compare features →
+      </Link>
     </div>
   )
 }

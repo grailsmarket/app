@@ -16,10 +16,12 @@ import registrationReducer from './registration'
 import viewReducer from './view'
 import analyticsReducer from './analytics'
 import leaderboardReducer from './leaderboard'
+import dashboardReducer from './dashboard'
 
-const PERSISTED_KEYS: string[] = ['registration', 'view', 'profile']
+const PERSISTED_KEYS: string[] = ['registration', 'view', 'profile', 'dashboard']
 
 const migrations: Record<string, (state: any) => any> = {
+  3: (state: any) => state,
   2: (state: any) => {
     const reg = state?.registration
     if (!reg) return state
@@ -75,7 +77,7 @@ const migrations: Record<string, (state: any) => any> = {
 const persistConfig = {
   key: 'root',
   whitelist: PERSISTED_KEYS,
-  version: 2,
+  version: 3,
   storage,
   migrate: createMigrate(migrations, { debug: false }),
 }
@@ -95,6 +97,7 @@ const reducer = combineReducers({
   view: viewReducer,
   analytics: analyticsReducer,
   leaderboard: leaderboardReducer,
+  dashboard: dashboardReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, reducer)

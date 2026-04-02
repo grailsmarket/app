@@ -28,7 +28,7 @@ const Input: React.FC<InputProps> = ({
 }) => {
   return (
     <div className={cn('w-full', className)}>
-      <div className='flex relative'>
+      <div className='relative flex'>
         {/* Label section */}
         {!hideLabel && (
           <p
@@ -57,7 +57,7 @@ const Input: React.FC<InputProps> = ({
           max={max}
           disabled={disabled}
         />
-        {suffix && <p className='text-xl font-semibold absolute right-4 top-3'>{suffix}</p>}
+        {suffix && <p className='absolute top-3 right-4 text-xl font-semibold'>{suffix}</p>}
       </div>
     </div>
   )

@@ -2,27 +2,113 @@
 
 import { TESTEMONIAL_QUOTES } from '@/constants/ui/testemonials'
 import Image from 'next/image'
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import quotes from 'public/icons/quotes.svg'
 import User from '../ui/user'
 import { Address } from 'viem'
+import { useWindowSize } from 'ethereum-identity-kit'
+import { cn } from '@/utils/tailwind'
+
+const AUTO_ROTATE_MS = 7500
+
+const getVisibleCount = (width: number | null): number => {
+  if (!width || width < 768) return 1
+  if (width < 1024) return 2
+  return 3
+}
 
 export default function Testemonials() {
-  return (
-    <div className='flex flex-col justify-center gap-8 w-full'>
-      <h2 className='text-6xl font-sedan-sc'>What people <span className='text-primary'>say</span> about Grails</h2>
+  const { width } = useWindowSize()
+  const visibleCount = getVisibleCount(width)
+  const total = TESTEMONIAL_QUOTES.length
+  const needsCarousel = total > visibleCount
+  const maxIndex = needsCarousel ? total - visibleCount : 0
 
-      <div className='flex flex-row justify-center items-stretch gap-4'>
-        {TESTEMONIAL_QUOTES.map((testimonial) => (
-          <div key={testimonial.address} className='flex flex-col gap-4 bg-secondary pt-5 rounded-lg justify-between w-1/3'>
-            <div className='flex flex-col px-5 gap-4'>
-              <Image src={quotes} alt='Quotes' width={24} height={24} />
-              <p className='text-[18px]'>{testimonial.quote}</p>
+  const [activeIndex, setActiveIndex] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    setActiveIndex((prev) => Math.min(prev, maxIndex))
+  }, [maxIndex])
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    if (!needsCarousel) return
+
+    timerRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
+    }, AUTO_ROTATE_MS)
+  }, [needsCarousel, maxIndex])
+
+  useEffect(() => {
+    resetTimer()
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [resetTimer])
+
+  const goTo = useCallback(
+    (index: number) => {
+      setActiveIndex(index)
+      resetTimer()
+    },
+    [resetTimer]
+  )
+
+  const translateX = -(activeIndex * (100 / visibleCount))
+
+  return (
+    <div className='flex w-full flex-col items-center justify-center gap-4 sm:gap-6 md:gap-8 lg:items-start'>
+      <h2 className='font-sedan-sc text-center text-4xl sm:text-5xl md:text-6xl lg:text-left'>
+        What people <span className='text-primary'>say</span> about Grails
+      </h2>
+
+      {/* Carousel container */}
+      <div className='w-full overflow-hidden'>
+        <div
+          className='flex min-w-full items-stretch transition-transform duration-500 ease-in-out'
+          style={{ transform: `translateX(${translateX}%)` }}
+        >
+          {TESTEMONIAL_QUOTES.map((testimonial, i) => (
+            <div
+              key={testimonial.address}
+              className='shrink-0 px-2'
+              style={{ width: `${100 / visibleCount}%`, maxWidth: '100%' }}
+            >
+              <div className='bg-secondary flex h-full w-full flex-col justify-between gap-4 rounded-lg pt-5'>
+                <div className='flex flex-col gap-4 px-5'>
+                  <Image src={quotes} alt='Quotes' width={24} height={24} />
+                  <p className='text-[18px] text-wrap'>{testimonial.quote}</p>
+                </div>
+                <User
+                  address={testimonial.address as Address}
+                  className='h-16 w-full max-w-full gap-2 rounded-b-lg px-5'
+                  wrapperClassName='max-w-full'
+                  avatarSize='40px'
+                  fontSize='18px'
+                />
+              </div>
             </div>
-            <User address={testimonial.address as Address} className='w-full h-16 px-5 gap-2 rounded-b-lg' avatarSize='40px' fontSize='18px' />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+
+      {/* Dots */}
+      {needsCarousel && (
+        <div className='flex items-center justify-center gap-2'>
+          {Array.from({ length: maxIndex + 1 }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={cn(
+                'h-2.5 rounded-full transition-all duration-300',
+                activeIndex === i ? 'bg-primary w-6' : 'bg-tertiary hover:bg-primary/50 w-2.5'
+              )}
+              aria-label={`Go to testimonial ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

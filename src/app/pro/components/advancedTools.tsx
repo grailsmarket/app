@@ -1,16 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import Image from 'next/image'
-import listings from 'public/icons/tag.svg'
 import register from 'public/icons/registration-primary.svg'
-import { setSearchModalOpen } from '@/state/reducers/modals/searchModal'
-import { useUserContext } from '@/context/user'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useRouter } from 'next/navigation'
-import { useAppDispatch } from '@/state/hooks'
-import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
-import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import Search from 'public/icons/search-primary.svg'
 import Grid from 'public/icons/grid-primary.svg'
 import Watchlist from 'public/icons/watchlist-primary.svg'
@@ -18,11 +10,17 @@ import Message from 'public/icons/chat.svg'
 import Notification from 'public/icons/bell-primary.svg'
 import View from 'public/icons/view-primary.svg'
 import grailsAI from 'public/icons/grails-ai.svg'
+import { AnimatePresence, motion } from "motion/react";
+import { useClickAway } from '@/hooks/useClickAway'
+import { Cross } from 'ethereum-identity-kit'
+import GrailsPoap2025 from 'public/art/grails-poap-2025.webp'
+import PrimaryButton from '@/components/ui/buttons/primary'
 
 const tools = [
   {
     title: 'Bulk Offers',
     description: 'Create offers for multiple names at the same time.',
+    longDescription: 'This tool allows you to create offers for multiple name at once. You can easily set a base price, and then tweak offer amounts for individual names. ',
     icon: <Image src={register} alt='Register' width={24} height={24} />,
   },
   {
@@ -59,70 +57,174 @@ const tools = [
   {
     title: 'AI Search',
     description: 'Get AI recommended search terms based on your search history and market conditions.',
+    longDescription: 'Individual page on Grails, which uses our internal AI to recommend search terms based on your search history and market conditions. You can provide a list of all the names that you are interested in and the AI will recommend search terms based on your history and market conditions.',
     icon: <Image src={grailsAI} alt='Listings' width={20} height={20} />,
   },
 ]
 
 const AdvancedTools = () => {
-  const router = useRouter()
-  const dispatch = useAppDispatch()
-  const { userAddress } = useUserContext()
-  const { openConnectModal } = useConnectModal()
+  const [active, setActive] = useState<(typeof tools)[number] | boolean | null>(
+    null
+  );
+  const ref = useClickAway<HTMLDivElement>(() => setActive(null));
+  const id = useId();
 
-  const handleToolClick = (tool: (typeof tools)[number]) => {
-    if (tool.title === 'Search') {
-      dispatch(setSearchModalOpen(true))
-      return
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActive(null);
+      }
     }
 
-    if (tool.title === 'Register') {
-      router.push('/categories?tab=available')
-      dispatch(changeCategoriesPageTab({ label: 'Available', value: 'available' }))
-      return
+    if (active && typeof active === "object") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
     }
 
-    if (userAddress) {
-      dispatch(setBulkSelectIsSelecting(true))
-      router.push(`/profile/${userAddress}`)
-      window.scrollTo({ top: 0, behavior: 'instant' })
-      return
-    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [active]);
 
-    openConnectModal?.()
-  }
   return (
-    <div className='flex w-full flex-col justify-between gap-8 xl:flex-row'>
-      <div className='flex w-full flex-col items-center gap-7 lg:items-start'>
-        {/* <div className='flex flex-col gap-4'>
+    <>
+      <AnimatePresence>
+        {active && typeof active === "object" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/20 h-full w-full z-20"
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {active && typeof active === "object" ? (
+          <div className="fixed inset-0 grid place-items-center px-lg z-[100]">
+            <motion.button
+              key={`button-${active.title}-${id}`}
+              layout
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
+              exit={{
+                opacity: 0,
+                transition: {
+                  duration: 0.05,
+                },
+              }}
+              className="flex absolute top-2 right-2 lg:hidden items-center justify-center rounded-full h-6 w-6"
+              onClick={() => setActive(null)}
+            >
+              <Cross className='h-auto w-7' />
+            </motion.button>
+            <motion.div
+              layoutId={`tool-${active.title}-${id}`}
+              ref={ref}
+              className="w-full max-w-[500px] h-fit md:max-h-[90%] flex flex-col bg-white dark:bg-background rounded-md sm:rounded-lg overflow-scroll shadow-lg"
+            >
+              <motion.div layoutId={`image-${active.title}-${id}`}>
+                <Image
+                  width={600}
+                  height={600}
+                  src={GrailsPoap2025}
+                  alt={active.title}
+                  className="w-full h-auto p-4"
+                />
+              </motion.div>
+
+              <div className="flex flex-col w-full">
+                <div className="flex justify-between items-start p-4">
+                  <div className="">
+                    <motion.h3
+                      layoutId={`title-${active.title}-${id}`}
+                      className="font-bold text-neutral-700 dark:text-neutral-200"
+                    >
+                      {active.title}
+                    </motion.h3>
+                    <motion.p
+                      layoutId={`description-${active.description}-${id}`}
+                      className="text-neutral-600 dark:text-neutral-400"
+                    >
+                      {active.description}
+                    </motion.p>
+                  </div>
+                </div>
+                <div className="relative px-4">
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-neutral-600 text-xs md:text-sm lg:text-base md:h-fit pb-6 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
+                  >
+                    {active.longDescription || active.description}
+                  </motion.div>
+                </div>
+                <motion.a
+                  layoutId={`button-${active.title}-${id}`}
+                  href={'/pro'}
+                  target="_blank"
+                  className="px-4 mb-4"
+                >
+                  <PrimaryButton
+                    className="w-full"
+                  >
+                    Upgrade to Pro
+                  </PrimaryButton>
+                </motion.a>
+              </div>
+            </motion.div>
+          </div>
+        ) : null}
+      </AnimatePresence>
+      <div className='flex w-full flex-col justify-between gap-8 xl:flex-row'>
+        <div className='flex w-full flex-col items-center gap-7 lg:items-start'>
+          {/* <div className='flex flex-col gap-4'>
           <h2 className='font-sedan-sc text-center text-5xl md:text-6xl lg:text-left'>Professional Domainer Tools</h2>
           <p className='text-center font-semibold sm:text-2xl lg:text-left'>
             Save gas and time. For serious domainers.
           </p>
         </div> */}
-        <div className='flex w-full flex-row flex-wrap gap-4'>
-          {tools.map((tool) => (
-            <div
-              className='hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border-1 transition-colors sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]'
-              key={tool.title}
-              onClick={() => handleToolClick(tool)}
-            >
-              <div className='flex flex-row gap-2'>
-                {tool.icon}
-                <h3 className='text-primary text-2xl font-bold'>{tool.title}</h3>
-              </div>
-              <p className='text-lg font-medium'>{tool.description}</p>
-            </div>
-          ))}
+          <div className='flex w-full flex-row flex-wrap gap-4'>
+            {tools.map((tool) => (
+              <motion.div
+                layoutId={`tool-${tool.title}-${id}`}
+                className='hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border-1 transition-colors sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)] xl:w-[calc(25%-12px)]'
+                key={`tool-${tool.title}-${id}`}
+                onClick={() => setActive(tool)}
+              >
+                <div className='flex flex-row gap-2 items-center'>
+                  <motion.div layoutId={`icon-${tool.title}-${id}`}>{tool.icon}</motion.div>
+                  <motion.h3
+                    layoutId={`title-${tool.title}-${id}`}
+                    className='text-primary text-2xl font-bold'
+                  >
+                    {tool.title}
+                  </motion.h3>
+                </div>
+                <motion.p
+                  layoutId={`description-${tool.description}-${id}`}
+                  className='text-lg font-medium'
+                >
+                  {tool.description}
+                </motion.p>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
-      {/* <Image
+        {/* <Image
         src={bulkToolsImage}
         alt='Bulk Tools'
         width={1200}
         height={600}
         className='mx-auto h-fit w-full max-w-[800px] lg:mx-0 xl:w-1/2'
       /> */}
-    </div>
+      </div>
+    </>
   )
 }
 

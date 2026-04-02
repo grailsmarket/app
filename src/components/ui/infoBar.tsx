@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Cross } from 'ethereum-identity-kit'
 
-const INFO_BAR_STORAGE_KEY = 'grails-info-bar-dismissed'
+const INFO_BAR_STORAGE_KEY = 'grails-info-bar-april'
 
 type InfoBarProps = {
   onVisibilityChange?: (visible: boolean) => void
@@ -33,16 +33,16 @@ const InfoBar: React.FC<InfoBarProps> = ({ onVisibilityChange }) => {
   }
 
   return (
-    <div className='bg-primary xs:text-md text-background p-sm absolute top-0 left-0 flex w-full items-center justify-center pr-6 text-sm font-bold'>
+    <div className='bg-primary xs:text-md text-background p-sm z-[1000000] flex w-full items-center justify-center pr-6 text-sm font-bold'>
       <p>
-        🎄 Renew your .ETH names, win $3k in prizes! &nbsp;
+        👕 Grails Merch Giveaway 👕: Extend and Register to enter.&nbsp;
         <a
-          href='https://x.com/BrantlyMillegan/status/1997016013242556767'
+          href='https://x.com/BrantlyMillegan/status/2039691200895021380'
           target='_blank'
           rel='noreferrer'
           className='text-background underline hover:opacity-70'
         >
-          Learn how
+          Learn more
         </a>
       </p>
       <button

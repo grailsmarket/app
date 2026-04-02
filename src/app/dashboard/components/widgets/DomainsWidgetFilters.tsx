@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
-import { updateDomainFilters } from '@/state/reducers/dashboard'
+import { clearDomainFilters, setDomainFiltersOpen, updateDomainFilters } from '@/state/reducers/dashboard'
 import type { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import {
   MARKETPLACE_STATUS_FILTER_LABELS,
@@ -12,22 +12,31 @@ import {
   MARKET_FILTER_OPTION_LABELS,
   MARKETPLACE_OPTIONS,
   MARKETPLACE_OPTION_LABELS,
+  MARKETPLACE_TYPE_FILTER_LABELS,
+  TYPE_FILTER_OPTIONS,
+  TYPE_FILTER_OPTION_LABELS,
   TEXT_MATCH_FILTER_LABELS,
   TEXT_NON_MATCH_FILTER_LABELS,
   type MarketFilterLabel,
   type MarketFilterOption,
   type MarketplaceOption,
+  type MarketplaceTypeFilterLabel,
+  type TypeFilterOption,
   type TextMatchFilterLabel,
   type TextNonMatchFilterLabel,
 } from '@/constants/filters/marketplaceFilters'
+import { Cross } from 'ethereum-identity-kit'
 import FilterDropdown from '@/components/filters/components/FilterDropdown'
 import FilterSelector from '@/components/filters/components/FilterSelector'
 import ExpandableTab from '@/components/ui/expandableTab'
+import DatePicker from '@/components/ui/datepicker'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import { localizeNumber } from '@/utils/localizeNumber'
 import { cn } from '@/utils/tailwind'
 import arrowDown from 'public/icons/arrow-down.svg'
 import type { CategoryType } from '@/types/domains'
+import filter from 'public/icons/filter.svg'
+import close from 'public/icons/cross.svg'
 
 const STATUS_OPTIONS = ['none', ...MARKETPLACE_STATUS_FILTER_LABELS] as const
 const STATUS_OPTION_LABELS: Record<string, string> = {
@@ -40,11 +49,10 @@ interface DomainsWidgetFiltersProps {
   filters: MarketplaceFiltersState
 }
 
-const inputClassName = 'border-primary/20 p-md w-full rounded-sm border-2 text-sm outline-none'
+const inputClassName = 'border-primary/20 p-md w-1/2 rounded-sm border-2 text-md outline-none'
 
-// ── Section wrapper ─────────────────────────────────────────────
-const Section: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className='border-tertiary border-b'>{children}</div>
+const Section: React.FC<{ children: React.ReactNode; isLast?: boolean }> = ({ children, isLast = false }) => (
+  <div className={cn('border-tertiary border-b', isLast && 'border-b-0')}>{children}</div>
 )
 
 // ── Category row (self-contained, no useFilterRouter) ───────────
@@ -137,6 +145,78 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
     [filters.textNonMatch, update]
   )
 
+  // Watchers count
+  const setWatchers = useCallback(
+    (field: 'min' | 'max', value: string) => {
+      const num = value === '' ? null : Math.max(0, Math.floor(Number(value)))
+      update({ watchersCount: { ...filters.watchersCount, [field]: isNaN(num as number) ? null : num } })
+    },
+    [filters.watchersCount, update]
+  )
+
+  // View count
+  const setViews = useCallback(
+    (field: 'min' | 'max', value: string) => {
+      const num = value === '' ? null : Math.max(0, Math.floor(Number(value)))
+      update({ viewCount: { ...filters.viewCount, [field]: isNaN(num as number) ? null : num } })
+    },
+    [filters.viewCount, update]
+  )
+
+  // Categories count (clubs)
+  const setClubsCount = useCallback(
+    (field: 'min' | 'max', value: string) => {
+      const num = value === '' ? null : Math.max(0, Math.floor(Number(value)))
+      update({ clubsCount: { ...filters.clubsCount, [field]: isNaN(num as number) ? null : num } })
+    },
+    [filters.clubsCount, update]
+  )
+
+  // Creation date
+  const [showFromPicker, setShowFromPicker] = useState(false)
+  const [showToPicker, setShowToPicker] = useState(false)
+
+  const handleFromDateSelect = useCallback(
+    (timestamp: number) => {
+      const date = new Date(timestamp * 1000)
+      const yyyy = date.getFullYear()
+      const mm = String(date.getMonth() + 1).padStart(2, '0')
+      const dd = String(date.getDate()).padStart(2, '0')
+      update({ creationDate: { ...filters.creationDate, min: `${yyyy}-${mm}-${dd}` } })
+      setShowFromPicker(false)
+    },
+    [filters.creationDate, update]
+  )
+
+  const handleToDateSelect = useCallback(
+    (timestamp: number) => {
+      const date = new Date(timestamp * 1000)
+      const yyyy = date.getFullYear()
+      const mm = String(date.getMonth() + 1).padStart(2, '0')
+      const dd = String(date.getDate()).padStart(2, '0')
+      update({ creationDate: { ...filters.creationDate, max: `${yyyy}-${mm}-${dd}` } })
+      setShowToPicker(false)
+    },
+    [filters.creationDate, update]
+  )
+
+  const formatDateDisplay = (dateStr: string | null) => {
+    if (!dateStr) return null
+    const [y, m, d] = dateStr.split('-')
+    return `${m}/${d}/${y}`
+  }
+
+  const minDateObj = filters.creationDate.min ? new Date(filters.creationDate.min + 'T00:00:00') : undefined
+  const maxDateObj = filters.creationDate.max ? new Date(filters.creationDate.max + 'T00:00:00') : undefined
+
+  // Type filter
+  const setTypeOption = useCallback(
+    (label: MarketplaceTypeFilterLabel, value: TypeFilterOption) => {
+      update({ type: { ...filters.type, [label]: value } })
+    },
+    [filters.type, update]
+  )
+
   // Category helpers
   const selectedCategories = filters.categories
   const allCategoryNames = useMemo(() => categories?.map((c) => c.name) ?? [], [categories])
@@ -193,14 +273,28 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
 
   return (
     <div className='border-tertiary flex h-full overflow-hidden border-r'>
-      {/* ── Panel 1: Main filters ──────────────────────────── */}
       <div
         className={cn(
-          'flex min-w-full flex-col overflow-y-auto pb-8 transition-transform',
+          'flex min-w-full flex-col overflow-y-auto pb-2 transition-transform',
           showCategories && '-translate-x-full'
         )}
       >
-        {/* Categories tab (opens panel 2) */}
+        <div className='p-lg pb-md flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <Image src={filter} alt='filter' width={16} height={16} />
+            <h4 className='text-lg font-medium'>Filters</h4>
+          </div>
+          {/* <button className='hover:opacity-70 flex cursor-pointer items-center justify-center gap-1 text-lg font-medium transition-opacity' onClick={() => {
+            dispatch(setDomainFiltersOpen({ id: instanceId, open: false }))
+          }}>
+            <Image src={close} alt='close' width={16} height={16} />
+          </button> */}
+          <button className='hover:opacity-70 flex cursor-pointer items-center px-lg h-10 justify-center bg-secondary rounded-sm gap-1 text-lg font-medium transition-opacity' onClick={() => {
+            dispatch(clearDomainFilters(instanceId))
+          }}>
+            Clear
+          </button>
+        </div>
         <Section>
           <div
             className='p-lg hover:bg-secondary w-full cursor-pointer rounded-sm'
@@ -215,8 +309,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             </div>
           </div>
         </Section>
-
-        {/* Status */}
         <Section>
           <FilterDropdown<string>
             label='Status'
@@ -227,8 +319,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             noneValue='none'
           />
         </Section>
-
-        {/* Market */}
         <Section>
           <div className='flex flex-col'>
             {MARKET_FILTER_LABELS.map((label) => (
@@ -252,14 +342,11 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             />
           </div>
         </Section>
-
-        {/* Text Match */}
         <Section>
           <div className='p-lg flex flex-col gap-3'>
-            <p className='text-lg font-medium'>Text Match</p>
             {TEXT_MATCH_FILTER_LABELS.map((label) => (
-              <div key={label} className='flex flex-col gap-1'>
-                <span className='text-sm font-medium'>{label}</span>
+              <div key={label} className='flex flex-row items-center justify-between gap-1'>
+                <span className='text-lg font-medium'>{label}</span>
                 <input
                   type='text'
                   placeholder={label}
@@ -271,14 +358,11 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             ))}
           </div>
         </Section>
-
-        {/* Text Non-Match */}
         <Section>
           <div className='p-lg flex flex-col gap-3'>
-            <p className='text-lg font-medium'>Text Exclude</p>
             {TEXT_NON_MATCH_FILTER_LABELS.map((label) => (
-              <div key={label} className='flex flex-col gap-1'>
-                <span className='text-sm font-medium'>{label}</span>
+              <div key={label} className='flex flex-row items-center justify-between gap-1'>
+                <span className='text-[13px] font-medium'>{label}</span>
                 <input
                   type='text'
                   placeholder={label}
@@ -290,12 +374,10 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             ))}
           </div>
         </Section>
-
-        {/* Length */}
         <Section>
-          <div className='p-lg flex flex-col gap-1'>
+          <div className='p-lg flex items-center justify-between gap-2'>
             <p className='text-lg font-medium'>Length</p>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 w-2/3'>
               <input
                 type='number'
                 min={0}
@@ -304,7 +386,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
                 onChange={(e) => setLength('min', e.target.value)}
                 className={inputClassName}
               />
-              <span className='text-neutral text-sm'>–</span>
               <input
                 type='number'
                 min={0}
@@ -316,12 +397,10 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             </div>
           </div>
         </Section>
-
-        {/* Price Range */}
         <Section>
-          <div className='p-lg flex flex-col gap-1'>
-            <p className='text-lg font-medium'>Price (ETH)</p>
-            <div className='flex items-center gap-2'>
+          <div className='p-lg flex items-center justify-between gap-2'>
+            <p className='text-lg font-medium'>Price</p>
+            <div className='flex items-center gap-2 w-2/3'>
               <input
                 type='text'
                 inputMode='decimal'
@@ -333,7 +412,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
                 }}
                 className={inputClassName}
               />
-              <span className='text-neutral text-sm'>–</span>
               <input
                 type='text'
                 inputMode='decimal'
@@ -348,12 +426,10 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             </div>
           </div>
         </Section>
-
-        {/* Offer Range */}
         <Section>
-          <div className='p-lg flex flex-col gap-1'>
-            <p className='text-lg font-medium'>Offer (ETH)</p>
-            <div className='flex items-center gap-2'>
+          <div className='p-lg flex items-center justify-between gap-2'>
+            <p className='text-lg font-medium'>Offer</p>
+            <div className='flex items-center gap-2 w-2/3'>
               <input
                 type='text'
                 inputMode='decimal'
@@ -365,7 +441,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
                 }}
                 className={inputClassName}
               />
-              <span className='text-neutral text-sm'>–</span>
               <input
                 type='text'
                 inputMode='decimal'
@@ -380,16 +455,176 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             </div>
           </div>
         </Section>
+        <Section>
+          <div className='p-lg flex w-full flex-row items-center justify-between'>
+            <p className='text-lg font-medium'>Watchlists</p>
+            <div className='flex w-2/3 flex-row gap-x-2'>
+              <input
+                type='number'
+                inputMode='numeric'
+                placeholder='Min'
+                value={filters.watchersCount.min ?? ''}
+                onChange={(e) => setWatchers('min', e.target.value)}
+                className={inputClassName}
+              />
+              <input
+                type='number'
+                inputMode='numeric'
+                placeholder='Max'
+                value={filters.watchersCount.max ?? ''}
+                onChange={(e) => setWatchers('max', e.target.value)}
+                className={inputClassName}
+              />
+            </div>
+          </div>
+        </Section>
+        <Section>
+          <div className='p-lg flex w-full flex-row items-center justify-between'>
+            <p className='text-lg font-medium'>Views</p>
+            <div className='flex w-2/3 flex-row gap-x-2'>
+              <input
+                type='number'
+                inputMode='numeric'
+                placeholder='Min'
+                value={filters.viewCount.min ?? ''}
+                onChange={(e) => setViews('min', e.target.value)}
+                className={inputClassName}
+              />
+              <input
+                type='number'
+                inputMode='numeric'
+                placeholder='Max'
+                value={filters.viewCount.max ?? ''}
+                onChange={(e) => setViews('max', e.target.value)}
+                className={inputClassName}
+              />
+            </div>
+          </div>
+        </Section>
+        <Section>
+          <div className='p-lg flex w-full flex-row items-center justify-between'>
+            <p className='text-lg font-medium'>Categories</p>
+            <div className='flex w-2/3 flex-row gap-x-2'>
+              <input
+                type='number'
+                inputMode='numeric'
+                placeholder='Min'
+                value={filters.clubsCount.min ?? ''}
+                onChange={(e) => setClubsCount('min', e.target.value)}
+                className={inputClassName}
+              />
+              <input
+                type='number'
+                inputMode='numeric'
+                placeholder='Max'
+                value={filters.clubsCount.max ?? ''}
+                onChange={(e) => setClubsCount('max', e.target.value)}
+                className={inputClassName}
+              />
+            </div>
+          </div>
+        </Section>
+        <Section>
+          <div className='p-lg flex w-full gap-2 md:flex-col'>
+            <p className='text-lg font-medium'>Creation Date</p>
+            <div className='flex gap-2'>
+              <div className='relative w-1/2'>
+                <button
+                  onClick={() => {
+                    setShowFromPicker(!showFromPicker)
+                    setShowToPicker(false)
+                  }}
+                  className='border-primary/20 p-md hover:bg-secondary w-full cursor-pointer rounded-sm border-2 text-left text-lg transition-colors outline-none'
+                >
+                  {filters.creationDate.min ? (
+                    formatDateDisplay(filters.creationDate.min)
+                  ) : (
+                    <span className='text-neutral'>Min date</span>
+                  )}
+                </button>
+                {filters.creationDate.min && (
+                  <div
+                    className='absolute top-[15px] right-3 cursor-pointer transition-opacity hover:opacity-80'
+                    onClick={() => update({ creationDate: { ...filters.creationDate, min: null } })}
+                  >
+                    <Cross width={12} height={12} />
+                  </div>
+                )}
+              </div>
+              <div className='relative w-1/2'>
+                <button
+                  onClick={() => {
+                    setShowToPicker(!showToPicker)
+                    setShowFromPicker(false)
+                  }}
+                  className='border-primary/20 p-md hover:bg-secondary w-full cursor-pointer rounded-sm border-2 text-left text-lg transition-colors outline-none'
+                >
+                  {filters.creationDate.max ? (
+                    formatDateDisplay(filters.creationDate.max)
+                  ) : (
+                    <span className='text-neutral'>Max date</span>
+                  )}
+                </button>
+                {filters.creationDate.max && (
+                  <div
+                    className='absolute top-[15px] right-3 cursor-pointer transition-opacity hover:opacity-80'
+                    onClick={() => update({ creationDate: { ...filters.creationDate, max: null } })}
+                  >
+                    <Cross width={12} height={12} />
+                  </div>
+                )}
+              </div>
+            </div>
+            {(showFromPicker || showToPicker) && (
+              <div className='fixed top-0 left-0 z-[1000] flex h-full w-full items-center justify-center bg-black/40 backdrop-blur-sm'>
+                <DatePicker
+                  onSelect={showFromPicker ? handleFromDateSelect : handleToDateSelect}
+                  onClose={() => {
+                    setShowFromPicker(false)
+                    setShowToPicker(false)
+                  }}
+                  maxDate={maxDateObj}
+                  minDate={minDateObj}
+                  currentDate={
+                    showFromPicker
+                      ? filters.creationDate.min
+                        ? new Date(filters.creationDate.min + 'T00:00:00')
+                        : null
+                      : filters.creationDate.max
+                        ? new Date(filters.creationDate.max + 'T00:00:00')
+                        : null
+                  }
+                  hideTime
+                  className='w-[350px]'
+                />
+              </div>
+            )}
+          </div>
+        </Section>
+        <Section isLast>
+          <div className='flex flex-col'>
+            {MARKETPLACE_TYPE_FILTER_LABELS.map((label) => (
+              <FilterDropdown<TypeFilterOption>
+                key={label}
+                label={label}
+                value={filters.type[label]}
+                options={TYPE_FILTER_OPTIONS}
+                optionLabels={TYPE_FILTER_OPTION_LABELS}
+                onChange={(value) => setTypeOption(label, value)}
+                noneValue='none'
+                dropdownPosition='top'
+              />
+            ))}
+          </div>
+        </Section>
       </div>
 
-      {/* ── Panel 2: Categories (slides in from right) ─────── */}
       <div
         className={cn(
           'flex min-w-full flex-col overflow-y-auto pb-8 transition-transform',
           showCategories && '-translate-x-full'
         )}
       >
-        {/* Back button */}
         <div
           className='p-lg hover:bg-secondary border-tertiary flex w-full cursor-pointer items-center gap-2 border-b'
           onClick={() => setShowCategories(false)}
@@ -397,8 +632,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
           <Image src={arrowDown} alt='back' className='rotate-90 transition-all' />
           <p className='text-lg font-medium'>Categories</p>
         </div>
-
-        {/* All toggle */}
         <div className='p-lg hover:bg-secondary border-tertiary w-full cursor-pointer border-b' onClick={toggleAll}>
           <div className='flex items-center justify-between'>
             <p className='text-lg font-medium'>All</p>
@@ -410,8 +643,6 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             </div>
           </div>
         </div>
-
-        {/* Categories grouped by classification */}
         {categoriesLoading ? (
           <div className='flex items-center justify-center py-8'>
             <div className='border-primary h-5 w-5 animate-spin rounded-full border-b-2' />

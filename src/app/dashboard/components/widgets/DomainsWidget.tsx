@@ -60,12 +60,13 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
   )
 
   const handleSortChange = useCallback(
-    (sort: string) => {
+    (sort: string, direction: CategoriesPageSortDirection) => {
       setSort(sort)
-      dispatch(updateDomainFilters({ id: instanceId, filters: { sort: `${sort}_${sortDirection}` as SortFilterType } }))
+      setSortDirection(direction)
+      dispatch(updateDomainFilters({ id: instanceId, filters: { sort: `${sort}_${direction}` as SortFilterType } }))
       setSortOpen(false)
     },
-    [dispatch, instanceId, sortDirection]
+    [dispatch, instanceId]
   )
 
   const handleViewToggle = useCallback(() => {
@@ -96,6 +97,12 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
     if (f.offerRange.min !== null || f.offerRange.max !== null) count++
     if (Object.values(f.textMatch).some((v) => v !== '')) count++
     if (Object.values(f.textNonMatch).some((v) => v !== '')) count++
+    if (f.watchersCount.min !== null || f.watchersCount.max !== null) count++
+    if (f.viewCount.min !== null || f.viewCount.max !== null) count++
+    if (f.clubsCount.min !== null || f.clubsCount.max !== null) count++
+    if (f.creationDate.min !== null || f.creationDate.max !== null) count++
+    if (JSON.stringify(f.type) !== JSON.stringify(d.type)) count++
+    if (f.categories.length > 0) count++
     return count
   }, [config])
 
@@ -145,7 +152,7 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
               {SORT_TYPES.map((opt) => (
                 <button
                   key={opt}
-                  onClick={() => handleSortChange(opt)}
+                  onClick={() => handleSortChange(opt, sortDirection)}
                   className='px-lg hover:bg-secondary w-full cursor-pointer py-3 text-left transition-colors'
                 >
                   {SORT_TYPE_LABELS[opt as keyof typeof SORT_TYPE_LABELS]}
@@ -154,8 +161,8 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
             </div>
           )}
           <button
-            onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-            className='border-tertiary hover:bg-secondary px-md flex h-10 w-10 cursor-pointer flex-row items-center justify-between border-r transition-colors'
+            onClick={() => handleSortChange(sort, sortDirection === 'asc' ? 'desc' : 'asc')}
+            className='border-tertiary hover:bg-secondary px-md flex h-10 w-10 min-w-10 cursor-pointer flex-row items-center justify-between border-r transition-colors'
           >
             <Image src={sortDirection === 'asc' ? ascending : descending} alt='Sort ascending' width={24} height={24} />
           </button>
@@ -164,7 +171,7 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
         {/* View toggle */}
         <button
           onClick={handleViewToggle}
-          className='border-tertiary hover:bg-secondary flex h-10 w-10 cursor-pointer items-center justify-center rounded border p-1 transition-colors'
+          className='hover:bg-secondary flex h-10 w-10 cursor-pointer items-center justify-center p-1 transition-colors'
           title={config.viewType === 'grid' ? 'Switch to list' : 'Switch to grid'}
         >
           <Image
@@ -178,12 +185,17 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
 
       {/* Main area: filter panel + content */}
       <div className='flex min-h-0 flex-1'>
-        {/* Filter panel (collapsible side panel) */}
-        {config.filtersOpen && (
-          <div className='w-64 shrink-0 overflow-y-auto'>
+        {/* Filter panel (collapsible side panel with animated width) */}
+        <div
+          className={cn(
+            'shrink-0 overflow-hidden transition-[width] duration-200 ease-in-out',
+            config.filtersOpen ? 'w-72' : 'w-0'
+          )}
+        >
+          <div className='h-full w-72'>
             <DomainsWidgetFilters instanceId={instanceId} filters={config.filters} />
           </div>
-        )}
+        </div>
 
         {/* Content */}
         <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-2'>

@@ -17,10 +17,8 @@ const DashboardComponentWrapper: React.FC<DashboardComponentWrapperProps> = ({ i
 
   return (
     <div className='border-tertiary bg-background flex h-full flex-col overflow-hidden rounded-lg border'>
-      {/* Title bar */}
       <div className='border-tertiary flex shrink-0 items-center justify-between border-b px-3 py-2'>
         <div className='flex items-center gap-2'>
-          {/* Drag handle */}
           <div className='dashboard-drag-handle text-neutral flex cursor-grab items-center active:cursor-grabbing'>
             <svg width='14' height='14' viewBox='0 0 16 16' fill='currentColor'>
               <circle cx='4' cy='3' r='1.5' />
@@ -31,7 +29,7 @@ const DashboardComponentWrapper: React.FC<DashboardComponentWrapperProps> = ({ i
               <circle cx='12' cy='13' r='1.5' />
             </svg>
           </div>
-          <span className='text-sm font-semibold'>{WIDGET_LABELS[type]}</span>
+          <span className='text-lg font-semibold'>{WIDGET_LABELS[type]}</span>
         </div>
         <button
           onClick={() => dispatch(removeComponent(id))}

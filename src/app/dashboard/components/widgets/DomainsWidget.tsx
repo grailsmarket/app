@@ -26,6 +26,8 @@ import list from 'public/icons/list.svg'
 import { useClickAway } from '@/hooks/useClickAway'
 import ascending from 'public/icons/ascending.svg'
 import descending from 'public/icons/descending.svg'
+import TableRow from '@/components/domains/table/components/TableRow'
+import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 
 interface DomainsWidgetProps {
   instanceId: string
@@ -221,14 +223,7 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
             <div className='divide-tertiary divide-y text-sm'>
               {displayedDomains.map((domain, index) =>
                 domain ? (
-                  <div key={domain.name} className='flex items-center gap-3 px-2 py-2'>
-                    <span className='min-w-0 flex-1 truncate font-medium'>{domain.name}</span>
-                    {domain.listings?.[0] && (
-                      <span className='text-neutral shrink-0 text-xs'>
-                        {(Number(domain.listings[0].price) / 1e18).toFixed(4)} ETH
-                      </span>
-                    )}
-                  </div>
+                  <TableRow key={domain.name} domain={domain} index={index} allDomains={domains} displayedColumns={['domain', 'price', 'last_sale', 'highest_offer', 'expires', 'actions']} />
                 ) : (
                   <LoadingCard key={index} />
                 )

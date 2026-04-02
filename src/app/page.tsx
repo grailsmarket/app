@@ -4,6 +4,7 @@ import DisplayedCards from '@/components/home/displayedCard'
 import FrequentlyAskedQuestions from '@/components/home/frequentlyAskedQuestions'
 import HeroSearch from '@/components/home/heroSearch'
 import RecentContainer from '@/components/home/recent-container'
+import Testemonials from '@/components/home/testemonials'
 import TopCategories from '@/components/home/topCategories'
 import TwitterBot from '@/components/home/twitterBot'
 import AnimateIn from '@/components/ui/animateIn'
@@ -25,6 +26,7 @@ const Home = () => {
         <div className='flex max-w-full flex-col items-center justify-center gap-12 px-4 sm:gap-20 md:gap-28 md:px-8 xl:px-4'>
           <RecentContainer />
           <BulkTools />
+          <Testemonials />
           <TopCategories />
           <TwitterBot />
           <FrequentlyAskedQuestions />

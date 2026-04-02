@@ -95,9 +95,9 @@ const User: React.FC<UserProps> = ({
               name={profile?.ens?.name}
               src={profile?.ens?.avatar}
               fallback={DEFAULT_FALLBACK_AVATAR}
-              style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
+              style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
             />
-            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 5}px)` }}>
+            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
               <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
                 {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
               </p>
@@ -127,9 +127,9 @@ const User: React.FC<UserProps> = ({
               name={profile?.ens?.name}
               src={profile?.ens?.avatar}
               fallback={DEFAULT_FALLBACK_AVATAR}
-              style={{ width: avatarSize, height: avatarSize, zIndex: 10 }}
+              style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
             />
-            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 5}px)` }}>
+            <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
               <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
                 {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
               </p>

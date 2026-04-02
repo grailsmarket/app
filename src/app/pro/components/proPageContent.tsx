@@ -195,23 +195,34 @@ const ProPageContent = () => {
             {features.map((feature, i) => (
               <tr key={feature.label} className={i % 2 === 0 ? 'bg-white/[0.02]' : ''}>
                 <td className='border-tertiary border-b p-4 text-base font-medium'>{feature.label}</td>
-                {feature.tiers.map((included, j) => (
-                  <td
-                    key={tiers[j].name}
-                    className={cn(
-                      'border-x-2 border-b p-4 text-center',
-                      tiers[j].borderColor,
-                      'border-b-tertiary',
-                      i === features.length - 1 && 'border-b-2 ' + tiers[j].borderColor
-                    )}
-                  >
-                    {included ? (
-                      <span className={cn('text-xl', tiers[j].color)}>&#10003;</span>
-                    ) : (
-                      <span className='text-neutral text-lg'>—</span>
-                    )}
-                  </td>
-                ))}
+                {feature.tiers.map((included, j) => {
+                  const checkBackgroundColor = tiers[j].color.replace('text-', 'bg-')
+
+                  return (
+                    <td
+                      key={tiers[j].name}
+                      className={cn(
+                        'border-x-2 border-b p-4 text-center',
+                        tiers[j].borderColor,
+                        'border-b-tertiary',
+                        i === features.length - 1 && 'border-b-2 ' + tiers[j].borderColor
+                      )}
+                    >
+                      {included ? (
+                        <div
+                          className={cn(
+                            'mx-auto flex h-6 w-6 items-center justify-center rounded-sm',
+                            checkBackgroundColor
+                          )}
+                        >
+                          <span className='text-background font-sans text-xl font-black'>&#10003;</span>
+                        </div>
+                      ) : (
+                        <span className='text-neutral text-lg'>—</span>
+                      )}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
           </tbody>

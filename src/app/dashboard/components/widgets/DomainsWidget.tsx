@@ -223,7 +223,13 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
             <div className='divide-tertiary divide-y text-sm'>
               {displayedDomains.map((domain, index) =>
                 domain ? (
-                  <TableRow key={domain.name} domain={domain} index={index} allDomains={domains} displayedColumns={['domain', 'price', 'last_sale', 'highest_offer', 'expires', 'actions']} />
+                  <TableRow
+                    key={domain.name}
+                    domain={domain}
+                    index={index}
+                    allDomains={domains}
+                    displayedColumns={['domain', 'price', 'last_sale', 'highest_offer', 'expires', 'actions']}
+                  />
                 ) : (
                   <LoadingCard key={index} />
                 )

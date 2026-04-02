@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { Suspense } from 'react'
 import Footer from '@/components/footer'
 import ProPageContent from './components/proPageContent'
-import AdvancedTools from './components/advancedBulkTools'
+import AdvancedTools from './components/advancedTools'
 
 export const metadata: Metadata = {
   title: 'Grails Pro',

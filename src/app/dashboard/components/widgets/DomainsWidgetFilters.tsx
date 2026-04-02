@@ -289,9 +289,12 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
           }}>
             <Image src={close} alt='close' width={16} height={16} />
           </button> */}
-          <button className='hover:opacity-70 flex cursor-pointer items-center px-lg h-10 justify-center bg-secondary rounded-sm gap-1 text-lg font-medium transition-opacity' onClick={() => {
-            dispatch(clearDomainFilters(instanceId))
-          }}>
+          <button
+            className='px-lg bg-secondary flex h-10 cursor-pointer items-center justify-center gap-1 rounded-sm text-lg font-medium transition-opacity hover:opacity-70'
+            onClick={() => {
+              dispatch(clearDomainFilters(instanceId))
+            }}
+          >
             Clear
           </button>
         </div>
@@ -377,7 +380,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
         <Section>
           <div className='p-lg flex items-center justify-between gap-2'>
             <p className='text-lg font-medium'>Length</p>
-            <div className='flex items-center gap-2 w-2/3'>
+            <div className='flex w-2/3 items-center gap-2'>
               <input
                 type='number'
                 min={0}
@@ -400,7 +403,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
         <Section>
           <div className='p-lg flex items-center justify-between gap-2'>
             <p className='text-lg font-medium'>Price</p>
-            <div className='flex items-center gap-2 w-2/3'>
+            <div className='flex w-2/3 items-center gap-2'>
               <input
                 type='text'
                 inputMode='decimal'
@@ -429,7 +432,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
         <Section>
           <div className='p-lg flex items-center justify-between gap-2'>
             <p className='text-lg font-medium'>Offer</p>
-            <div className='flex items-center gap-2 w-2/3'>
+            <div className='flex w-2/3 items-center gap-2'>
               <input
                 type='text'
                 inputMode='decimal'

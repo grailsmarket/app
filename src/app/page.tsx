@@ -25,8 +25,8 @@ const Home = () => {
         <DisplayedCards />
         <div className='flex max-w-full flex-col items-center justify-center gap-12 px-4 sm:gap-20 md:gap-28 md:px-8 xl:px-4'>
           <RecentContainer />
-          <BulkTools />
           <Testemonials />
+          <BulkTools />
           <TopCategories />
           <TwitterBot />
           <FrequentlyAskedQuestions />

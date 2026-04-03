@@ -4,6 +4,7 @@ import DisplayedCards from '@/components/home/displayedCard'
 import FrequentlyAskedQuestions from '@/components/home/frequentlyAskedQuestions'
 import HeroSearch from '@/components/home/heroSearch'
 import RecentContainer from '@/components/home/recent-container'
+import Testemonials from '@/components/home/testemonials'
 import TopCategories from '@/components/home/topCategories'
 import PricingTiers from '@/components/home/pricingTiers'
 import TwitterBot from '@/components/home/twitterBot'
@@ -27,6 +28,7 @@ const Home = () => {
           <RecentContainer />
           <BulkTools />
           <PricingTiers />
+          <Testemonials />
           <TopCategories />
           <TwitterBot />
           <FrequentlyAskedQuestions />

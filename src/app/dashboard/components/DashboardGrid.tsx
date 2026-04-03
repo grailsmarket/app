@@ -12,6 +12,7 @@ import {
   selectDashboardLayouts,
   selectDashboardColOverride,
   selectDashboardSidebarOpen,
+  selectDashboard,
 } from '@/state/reducers/dashboard/selectors'
 import {
   DASHBOARD_BREAKPOINTS,
@@ -31,6 +32,9 @@ import HoldersWidget from './widgets/HoldersWidget'
 import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
 import { cn } from '@/utils/tailwind'
+import LayoutSelector from './LayoutSelector'
+import Image from 'next/image'
+import Plus from 'public/icons/plus.svg'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -65,6 +69,7 @@ const getMaxColsForWidth = (w: number): number => {
 
 const DashboardGrid = () => {
   const dispatch = useAppDispatch()
+  const dashboard = useAppSelector(selectDashboard)
   const reduxLayouts = useAppSelector(selectDashboardLayouts)
   const components = useAppSelector(selectDashboardComponents)
   const colOverride = useAppSelector(selectDashboardColOverride)
@@ -72,7 +77,7 @@ const DashboardGrid = () => {
   const currentBreakpointRef = useRef<DashboardBreakpoint>('lg')
   const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true })
 
-  const componentIds = useMemo(() => Object.keys(components), [components])
+  const componentIds = useMemo(() => Object.keys(components), [components, dashboard.layoutId])
 
   // Calculate the effective max columns for the current width
   const maxColsForCurrentWidth = getMaxColsForWidth(width)
@@ -154,6 +159,7 @@ const DashboardGrid = () => {
       const type = (_e as DragEvent).dataTransfer?.getData('dashboard/widget-type') as
         | DashboardComponentType
         | undefined
+
       if (!type || !layoutItem) return
 
       dispatch(
@@ -170,56 +176,59 @@ const DashboardGrid = () => {
 
   return (
     <div ref={containerRef}>
-      {/* Toolbar */}
-      <div className='mb-3 flex items-center gap-3'>
-        {/* Sidebar toggle */}
-        <button
-          onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
-          className={cn(
-            'border-tertiary hover:bg-secondary flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
-            sidebarOpen && 'bg-primary/10 border-primary/40 text-primary'
-          )}
-        >
-          <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
-            <line x1='12' y1='5' x2='12' y2='19' />
-            <line x1='5' y1='12' x2='19' y2='12' />
-          </svg>
-          Widgets
-        </button>
-
-        {/* Grid size selector */}
-        <span className='text-neutral text-xs font-medium'>Grid</span>
-        <div className='bg-secondary flex rounded-md p-0.5'>
+      <div className='flex items-center justify-between gap-3'>
+        <div className='item-center flex gap-3'>
           <button
-            onClick={() => dispatch(setColOverride(null))}
+            onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
             className={cn(
-              'cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors',
-              colOverride === null ? 'bg-primary text-background' : 'text-neutral hover:text-white'
+              'border-tertiary hover:bg-secondary text-md flex h-10 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 font-medium transition-colors',
+              sidebarOpen && 'bg-primary/10 border-primary/40 text-primary'
             )}
           >
-            Auto
+            <Image
+              src={Plus}
+              alt='plus'
+              height={16}
+              width={16}
+              className={cn('transition-transform', sidebarOpen && 'rotate-45')}
+            />
+            <p>Widgets</p>
           </button>
-          {colOptions.map((n) => (
+          {/* <span className='text-neutral text-xs font-medium'>Grid</span> */}
+          <div className='bg-secondary flex rounded-md p-0.5'>
             <button
-              key={n}
-              onClick={() => dispatch(setColOverride(n))}
+              onClick={() => dispatch(setColOverride(null))}
               className={cn(
-                'cursor-pointer rounded px-2 py-1 text-xs font-medium transition-colors',
-                colOverride === n ? 'bg-primary text-background' : 'text-neutral hover:text-white'
+                'cursor-pointer rounded px-2 py-1 text-lg font-medium transition-colors',
+                colOverride === null ? 'bg-primary text-background' : 'text-neutral hover:text-white'
               )}
             >
-              {n}
+              Auto
             </button>
-          ))}
+            {colOptions.map((n) => (
+              <button
+                key={n}
+                onClick={() => dispatch(setColOverride(n))}
+                className={cn(
+                  'cursor-pointer rounded px-3 py-1 text-lg font-medium transition-colors',
+                  colOverride === n ? 'bg-primary text-background' : 'text-neutral hover:text-white'
+                )}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
         </div>
+        <LayoutSelector />
       </div>
 
-      {componentIds.length === 0 ? (
-        <div className='flex min-h-[calc(100dvh-180px)] flex-col items-center justify-center gap-4'>
+      {componentIds.length === 0 && (
+        <div className='fixed top-full left-full flex w-80 -translate-x-[calc(50vw+160px)] -translate-y-[50vh] flex-col items-center justify-center gap-3 text-center'>
           <p className='text-neutral text-xl font-medium'>Your dashboard is empty</p>
-          <p className='text-neutral text-sm'>Open the sidebar and drag components here to build your dashboard.</p>
+          <p className='text-neutral text-lg'>Open the sidebar and drag components here to build your dashboard.</p>
         </div>
-      ) : mounted ? (
+      )}
+      {mounted ? (
         <ResponsiveGridLayout
           width={width}
           layouts={layouts}
@@ -235,7 +244,10 @@ const DashboardGrid = () => {
           resizeConfig={{ enabled: true, handles: ['se'] }}
           compactor={verticalCompactor}
           margin={[12, 12]}
-          containerPadding={[0, 0]}
+          containerPadding={[0, 12]}
+          style={{
+            minHeight: '50vh',
+          }}
         >
           {componentIds.map((id) => {
             const config = components[id]

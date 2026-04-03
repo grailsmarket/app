@@ -70,11 +70,14 @@ export type DashboardLayouts = Record<DashboardBreakpoint, LayoutItem[]>
 
 // ── State ───────────────────────────────────────────────────────
 export type DashboardState = {
+  layoutId: number | null
+  name: string
   layouts: DashboardLayouts
   components: Record<string, DashboardComponentConfig>
   sidebarOpen: boolean
   nextId: number
   colOverride: number | null // null = auto (responsive breakpoints)
+  isDefault: boolean
 }
 
 // ── Grid constants ──────────────────────────────────────────────

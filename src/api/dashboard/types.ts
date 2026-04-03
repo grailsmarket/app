@@ -1,5 +1,14 @@
 import type { DashboardLayouts, DashboardComponentConfig } from '@/state/reducers/dashboard/types'
 
+export type Layout = {
+  id: number
+  name: string
+  colOverride: number | null
+  layouts: DashboardLayouts
+  components: Record<string, DashboardComponentConfig>
+  nextId: number
+}
+
 export type DashboardLayoutResponse = {
   id: number
   name: string

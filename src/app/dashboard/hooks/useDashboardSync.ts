@@ -1,100 +1,89 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useAccount } from 'wagmi'
+import { useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectDashboard } from '@/state/reducers/dashboard/selectors'
-import { hydrateFromServer } from '@/state/reducers/dashboard'
 import { getDashboardLayouts } from '@/api/dashboard/getDashboardLayouts'
+import { hydrateFromServer, setDashboardLayoutId } from '@/state/reducers/dashboard'
 import { createDashboardLayout, updateDashboardLayout } from '@/api/dashboard/saveDashboardLayout'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { Layout } from '@/api/dashboard/types'
+import { deleteDashboardLayout } from '@/api/dashboard/deleteDashboardLayout'
 
-const SYNC_DEBOUNCE_MS = 2000
-
-/**
- * Syncs dashboard state to/from the backend API.
- * - On mount: loads the user's default dashboard from the API and hydrates Redux.
- * - On state changes (debounced): saves the current state to the API.
- */
 export const useDashboardSync = () => {
   const dispatch = useAppDispatch()
+  const { address: userAddress } = useAccount()
+  const { subscription } = useAppSelector(selectUserProfile)
   const dashboard = useAppSelector(selectDashboard)
+  const queryClient = useQueryClient()
 
-  const layoutIdRef = useRef<number | null>(null)
-  const skipSyncRef = useRef(true) // Skip initial hydration + first render
-  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const loadedRef = useRef(false)
+  const loadLayout = async (layout: Layout) => {
+    dispatch(
+      hydrateFromServer({
+        layoutId: layout.id,
+        name: layout.name,
+        layouts: layout.layouts,
+        components: layout.components,
+        nextId: layout.nextId,
+        colOverride: layout.colOverride,
+      })
+    )
+  }
 
-  // Load from API on mount
-  useEffect(() => {
-    if (loadedRef.current) return
-    loadedRef.current = true
+  const { data: layouts, isLoading: isLoadingLayouts } = useQuery({
+    queryKey: ['dashboard-layouts', userAddress, subscription?.tierId],
+    queryFn: async () => {
+      if (!userAddress) return null
+      const layoutResponse = await getDashboardLayouts()
 
-    const load = async () => {
-      try {
-        const layouts = await getDashboardLayouts()
+      // if (layoutResponse.length > 0) {
+      //   // Use the default layout, or fall back to the first one
+      //   const target = layoutResponse.find((l) => l.isDefault) || layoutResponse[0]
+      //   if (target) loadLayout(target)
+      //   else loadLayout(layoutResponse[0])
+      // }
 
-        if (layouts.length > 0) {
-          // Use the default layout, or fall back to the first one
-          const target = layouts.find((l) => l.isDefault) || layouts[0]
-          layoutIdRef.current = target.id
-
-          // Prevent the upcoming state change from triggering a save
-          skipSyncRef.current = true
-          dispatch(
-            hydrateFromServer({
-              layouts: target.layouts,
-              components: target.components,
-              nextId: target.nextId,
-              colOverride: target.colOverride,
-            })
-          )
-        }
-        // If no layouts exist, keep current Redux state (from localStorage).
-        // A save will be triggered on the next user change, creating the first layout.
-      } catch (err) {
-        // API unavailable — fall back to localStorage state silently
-        console.error('Failed to load dashboard layouts:', err)
-      }
-    }
-
-    load()
-  }, [dispatch])
+      return layoutResponse
+    },
+    enabled: !!userAddress && subscription.tierId >= 2,
+  })
 
   // Save to API on state changes (debounced)
-  const save = useCallback(async () => {
-    const { layouts, components, nextId, colOverride } = dashboard
-    const payload = { layouts, components, nextId, colOverride }
+  const saveLayout = useCallback(async () => {
+    const { layoutId, name, layouts, components, nextId, colOverride, isDefault } = dashboard
+    const payload = { name, layouts, components, nextId, colOverride, isDefault }
 
     try {
-      if (layoutIdRef.current != null) {
-        await updateDashboardLayout(layoutIdRef.current, payload)
+      if (layoutId != null) {
+        await updateDashboardLayout(layoutId, payload)
       } else {
-        const created = await createDashboardLayout({
-          name: 'Default',
-          isDefault: true,
-          ...payload,
-        })
-        layoutIdRef.current = created.id
+        const created = await createDashboardLayout(payload)
+        dispatch(setDashboardLayoutId(created.id))
       }
     } catch (err) {
       console.error('Failed to save dashboard layout:', err)
     }
   }, [dashboard])
 
-  useEffect(() => {
-    // Skip the sync triggered by initial hydration
-    if (skipSyncRef.current) {
-      skipSyncRef.current = false
-      return
-    }
-
-    if (syncTimerRef.current) {
-      clearTimeout(syncTimerRef.current)
-    }
-
-    syncTimerRef.current = setTimeout(save, SYNC_DEBOUNCE_MS)
-
-    return () => {
-      if (syncTimerRef.current) {
-        clearTimeout(syncTimerRef.current)
+  const removeLayout = useCallback(async () => {
+    const { layoutId } = dashboard
+    if (layoutId != null) {
+      await deleteDashboardLayout(layoutId)
+      const newQueryData = layouts?.filter((l) => l.id !== layoutId)
+      if (newQueryData) {
+        queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
+        loadLayout(newQueryData[0])
+      } else {
+        dispatch(setDashboardLayoutId(null))
       }
     }
-  }, [dashboard.layouts, dashboard.components, dashboard.nextId, dashboard.colOverride, save])
+  }, [dashboard, layouts, userAddress, subscription?.tierId, loadLayout])
+
+  return {
+    layouts,
+    isLoadingLayouts,
+    loadLayout,
+    saveLayout,
+    removeLayout,
+  }
 }

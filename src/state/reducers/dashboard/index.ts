@@ -36,29 +36,71 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
 
 // ── Initial state ───────────────────────────────────────────────
 const initialState: DashboardState = {
+  layoutId: null,
+  name: 'Default',
   layouts: { lg: [], md: [], sm: [], xs: [] },
   components: {},
   sidebarOpen: false,
   nextId: 1,
   colOverride: null,
+  isDefault: false,
 }
 
-// ── Helper: find next available position in a layout ────────────
+// ── Collision helpers ────────────────────────────────────────────
+
+/** Check if two rectangles overlap on both axes */
+const collides = (a: LayoutItem, b: LayoutItem): boolean =>
+  a.i !== b.i && a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+
+/**
+ * Make room for `newItem` by shifting colliding items (and everything
+ * below them) downward.
+ *
+ * Algorithm:
+ *  1. Find every existing item that directly overlaps with `newItem`.
+ *  2. Determine the topmost Y among those collisions — everything from
+ *     that Y downward needs to move.
+ *  3. Shift every item whose top edge is at or below that Y down by
+ *     `newItem.h` rows. This keeps the relative order of all items
+ *     intact and guarantees no cascading overlaps.
+ *
+ * Mutates items in the layout array (safe inside Immer).
+ */
+const makeRoom = (layout: LayoutItem[], newItem: LayoutItem): void => {
+  // Step 1: find items that directly collide with the new item
+  const directCollisions = layout.filter((item) => collides(newItem, item))
+  if (directCollisions.length === 0) return
+
+  // Step 2: the shift boundary is the topmost edge of any collision
+  let shiftFromY = Infinity
+  for (const item of directCollisions) {
+    if (item.y < shiftFromY) shiftFromY = item.y
+  }
+
+  // Step 3: push everything at or below that boundary down
+  const shiftAmount = newItem.y + newItem.h - shiftFromY
+  if (shiftAmount <= 0) return
+
+  for (const item of layout) {
+    if (item.y >= shiftFromY) {
+      item.y += shiftAmount
+    }
+  }
+}
+
+/** Find the first gap (top-left to bottom-right) where an item fits */
 const findNextPosition = (layout: LayoutItem[], cols: number, itemW: number): { x: number; y: number } => {
   if (layout.length === 0) return { x: 0, y: 0 }
 
-  // Build an occupancy map: for each row y, track which x columns are occupied
   let maxBottom = 0
   for (const item of layout) {
     const bottom = item.y + item.h
     if (bottom > maxBottom) maxBottom = bottom
   }
 
-  // Scan from top to bottom for the first position that fits
-  // This naturally fills gaps and places next to existing widgets
+  // Probe with the item's full height = 1 row to find the first open slot
   for (let y = 0; y <= maxBottom; y++) {
     for (let x = 0; x <= cols - itemW; x++) {
-      // Check if this position (x, y, itemW, 1 row) collides with any existing item
       const fits = !layout.some(
         (item) => x < item.x + item.w && x + itemW > item.x && y < item.y + item.h && y + 1 > item.y
       )
@@ -66,7 +108,6 @@ const findNextPosition = (layout: LayoutItem[], cols: number, itemW: number): { 
     }
   }
 
-  // No gap found — place on a new row below everything
   return { x: 0, y: maxBottom }
 }
 
@@ -96,17 +137,25 @@ export const dashboardSlice = createSlice({
       for (const bp of breakpoints) {
         const cols = DASHBOARD_COLS[bp]
         const w = Math.min(sizes.w, cols)
-        const pos = position && bp === 'lg' ? position : findNextPosition(state.layouts[bp], cols, w)
+        const pos =
+          position && bp === 'lg'
+            ? { x: Math.min(position.x, cols - w), y: position.y }
+            : findNextPosition(state.layouts[bp], cols, w)
 
-        state.layouts[bp].push({
+        const newItem: LayoutItem = {
           i: id,
-          x: Math.min(pos.x, cols - w),
+          x: pos.x,
           y: pos.y,
           w,
           h: sizes.h,
           minW: sizes.minW,
           minH: sizes.minH,
-        })
+        }
+
+        // Shift colliding items and everything below them down
+        makeRoom(state.layouts[bp], newItem)
+
+        state.layouts[bp].push(newItem)
       }
     },
 
@@ -129,6 +178,10 @@ export const dashboardSlice = createSlice({
       const existing = state.components[id]
       if (!existing) return
       state.components[id] = { ...existing, ...patch } as DashboardComponentConfig
+    },
+
+    setDashboardLayoutId(state, action: PayloadAction<number | null>) {
+      state.layoutId = action.payload
     },
 
     // Specific action for domain filter updates to allow deep merging
@@ -163,13 +216,17 @@ export const dashboardSlice = createSlice({
     hydrateFromServer(
       state,
       action: PayloadAction<{
+        layoutId: number | null
+        name: string
         layouts: DashboardLayouts
         components: Record<string, DashboardComponentConfig>
         nextId: number
         colOverride: number | null
       }>
     ) {
-      const { layouts, components, nextId, colOverride } = action.payload
+      const { layouts, components, nextId, colOverride, layoutId, name } = action.payload
+      state.layoutId = layoutId
+      state.name = name
       state.layouts = layouts
       state.components = components
       state.nextId = nextId
@@ -187,6 +244,7 @@ export const {
   removeComponent,
   updateLayouts,
   updateComponentConfig,
+  setDashboardLayoutId,
   updateDomainFilters,
   setDomainFiltersOpen,
   clearDomainFilters,

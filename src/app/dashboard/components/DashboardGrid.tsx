@@ -6,7 +6,7 @@ import { ResponsiveGridLayout, verticalCompactor, useContainerWidth } from 'reac
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { addComponent, updateLayouts, setColOverride, setSidebarOpen } from '@/state/reducers/dashboard'
+import { addComponent, dropComponent, updateLayouts, setColOverride, setSidebarOpen } from '@/state/reducers/dashboard'
 import {
   selectDashboardComponents,
   selectDashboardLayouts,
@@ -155,17 +155,23 @@ const DashboardGrid = () => {
   }, [])
 
   const handleDrop = useCallback(
-    (_layout: Layout, layoutItem: LayoutItem | undefined, _e: Event) => {
+    (layoutAfterDrop: Layout, _layoutItem: LayoutItem | undefined, _e: Event) => {
       const type = (_e as DragEvent).dataTransfer?.getData('dashboard/widget-type') as
         | DashboardComponentType
         | undefined
 
-      if (!type || !layoutItem) return
+      if (!type) return
 
+      // RGL has already resolved collisions and compacted the layout.
+      // `layoutAfterDrop` contains all existing items repositioned
+      // around the drop, plus the dropped item with id `__dropping-elem__`.
+      // We pass this resolved layout to Redux so the new item ends up
+      // exactly where the user dropped it.
       dispatch(
-        addComponent({
+        dropComponent({
           type,
-          position: { x: layoutItem.x, y: layoutItem.y },
+          resolvedLayout: (layoutAfterDrop as LayoutItem[]).map((item) => ({ ...item })),
+          breakpoint: currentBreakpointRef.current,
         })
       )
     },

@@ -46,69 +46,16 @@ const initialState: DashboardState = {
   isDefault: false,
 }
 
-// ── Collision helpers ────────────────────────────────────────────
+// ── Layout helpers ──────────────────────────────────────────────
 
-/** Check if two rectangles overlap on both axes */
-const collides = (a: LayoutItem, b: LayoutItem): boolean =>
-  a.i !== b.i && a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
-
-/**
- * Make room for `newItem` by shifting colliding items (and everything
- * below them) downward.
- *
- * Algorithm:
- *  1. Find every existing item that directly overlaps with `newItem`.
- *  2. Determine the topmost Y among those collisions — everything from
- *     that Y downward needs to move.
- *  3. Shift every item whose top edge is at or below that Y down by
- *     `newItem.h` rows. This keeps the relative order of all items
- *     intact and guarantees no cascading overlaps.
- *
- * Mutates items in the layout array (safe inside Immer).
- */
-const makeRoom = (layout: LayoutItem[], newItem: LayoutItem): void => {
-  // Step 1: find items that directly collide with the new item
-  const directCollisions = layout.filter((item) => collides(newItem, item))
-  if (directCollisions.length === 0) return
-
-  // Step 2: the shift boundary is the topmost edge of any collision
-  let shiftFromY = Infinity
-  for (const item of directCollisions) {
-    if (item.y < shiftFromY) shiftFromY = item.y
-  }
-
-  // Step 3: push everything at or below that boundary down
-  const shiftAmount = newItem.y + newItem.h - shiftFromY
-  if (shiftAmount <= 0) return
-
+/** Get the Y coordinate at the bottom of all existing items. */
+const getBottomY = (layout: LayoutItem[]): number => {
+  let bottom = 0
   for (const item of layout) {
-    if (item.y >= shiftFromY) {
-      item.y += shiftAmount
-    }
+    const itemBottom = item.y + item.h
+    if (itemBottom > bottom) bottom = itemBottom
   }
-}
-
-/** Find the first gap (top-left to bottom-right) where an item fits */
-const findNextPosition = (layout: LayoutItem[], cols: number, itemW: number): { x: number; y: number } => {
-  if (layout.length === 0) return { x: 0, y: 0 }
-
-  let maxBottom = 0
-  for (const item of layout) {
-    const bottom = item.y + item.h
-    if (bottom > maxBottom) maxBottom = bottom
-  }
-
-  // Probe with the item's full height = 1 row to find the first open slot
-  for (let y = 0; y <= maxBottom; y++) {
-    for (let x = 0; x <= cols - itemW; x++) {
-      const fits = !layout.some(
-        (item) => x < item.x + item.w && x + itemW > item.x && y < item.y + item.h && y + 1 > item.y
-      )
-      if (fits) return { x, y }
-    }
-  }
-
-  return { x: 0, y: maxBottom }
+  return bottom
 }
 
 // ── Slice ───────────────────────────────────────────────────────
@@ -116,46 +63,84 @@ export const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
   reducers: {
-    addComponent(
-      state,
-      action: PayloadAction<{
-        type: DashboardComponentType
-        position?: { x: number; y: number }
-      }>
-    ) {
-      const { type, position } = action.payload
+    /** Add a component via click (appends at bottom, no collision issues) */
+    addComponent(state, action: PayloadAction<{ type: DashboardComponentType }>) {
+      const { type } = action.payload
       const id = `widget-${state.nextId}`
       state.nextId++
 
-      // Create default config
       state.components[id] = createDefaultConfig(type)
 
-      // Create layout entry for each breakpoint
       const sizes = DEFAULT_WIDGET_SIZES[type]
       const breakpoints: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
 
       for (const bp of breakpoints) {
         const cols = DASHBOARD_COLS[bp]
         const w = Math.min(sizes.w, cols)
-        const pos =
-          position && bp === 'lg'
-            ? { x: Math.min(position.x, cols - w), y: position.y }
-            : findNextPosition(state.layouts[bp], cols, w)
 
-        const newItem: LayoutItem = {
+        state.layouts[bp].push({
           i: id,
-          x: pos.x,
-          y: pos.y,
+          x: 0,
+          y: getBottomY(state.layouts[bp]),
           w,
           h: sizes.h,
           minW: sizes.minW,
           minH: sizes.minH,
+        })
+      }
+    },
+
+    /**
+     * Add a component via drag-and-drop.
+     *
+     * RGL's `onDrop` provides the full layout (first callback arg)
+     * with all items already repositioned around the drop — collisions
+     * are resolved by RGL's compactor. We accept that layout for the
+     * active breakpoint as-is, just swapping the placeholder id
+     * (`__dropping-elem__`) with the real widget id.
+     *
+     * For other breakpoints we append at the bottom (same as click-to-add).
+     */
+    dropComponent(
+      state,
+      action: PayloadAction<{
+        type: DashboardComponentType
+        resolvedLayout: LayoutItem[]
+        breakpoint: DashboardBreakpoint
+      }>
+    ) {
+      const { type, resolvedLayout, breakpoint } = action.payload
+      const id = `widget-${state.nextId}`
+      state.nextId++
+
+      state.components[id] = createDefaultConfig(type)
+
+      const sizes = DEFAULT_WIDGET_SIZES[type]
+      const allBreakpoints: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
+
+      for (const bp of allBreakpoints) {
+        if (bp === breakpoint) {
+          // Use RGL's resolved layout, replacing the placeholder id
+          state.layouts[bp] = resolvedLayout.map((item) => ({
+            ...item,
+            i: item.i === '__dropping-elem__' ? id : item.i,
+            // Ensure minW/minH are preserved for existing items
+            minW: item.i === '__dropping-elem__' ? sizes.minW : (state.layouts[bp].find((l) => l.i === item.i)?.minW ?? 1),
+            minH: item.i === '__dropping-elem__' ? sizes.minH : (state.layouts[bp].find((l) => l.i === item.i)?.minH ?? 1),
+          }))
+        } else {
+          const cols = DASHBOARD_COLS[bp]
+          const w = Math.min(sizes.w, cols)
+          state.layouts[bp].push({
+            i: id,
+            x: 0,
+            y: getBottomY(state.layouts[bp]),
+            w,
+            h: sizes.h,
+            minW: sizes.minW,
+            minH: sizes.minH,
+          })
         }
-
-        // Shift colliding items and everything below them down
-        makeRoom(state.layouts[bp], newItem)
-
-        state.layouts[bp].push(newItem)
       }
     },
 
@@ -241,6 +226,7 @@ export const dashboardSlice = createSlice({
 
 export const {
   addComponent,
+  dropComponent,
   removeComponent,
   updateLayouts,
   updateComponentConfig,

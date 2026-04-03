@@ -38,13 +38,13 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
     isDefault: true,
     layouts: {
       lg: [
-        G('widget-1', 0, 0, 1, 3, 1, 2),
+        G('widget-1', 0, 0, 1, 5, 1, 2),
         G('widget-2', 1, 0, 2, 5, 1, 4),
         G('widget-4', 3, 0, 1, 3, 1, 2),
         G('widget-5', 0, 5, 2, 3, 1, 2),
       ],
       md: [
-        G('widget-1', 0, 0, 1, 3, 1, 2),
+        G('widget-1', 0, 0, 1, 5, 1, 2),
         G('widget-2', 1, 0, 2, 5, 1, 4),
         G('widget-4', 0, 3, 1, 3, 1, 2),
         G('widget-5', 1, 5, 2, 3, 1, 2),

@@ -8,6 +8,7 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import DashboardGrid from './DashboardGrid'
 import DashboardSidebar from './DashboardSidebar'
 import { DashboardActivityProvider } from '../context/DashboardActivityProvider'
+import { useDashboardSync } from '../hooks/useDashboardSync'
 import PrimaryButton from '@/components/ui/buttons/primary'
 
 const DashboardPage = () => {
@@ -61,6 +62,12 @@ const DashboardPage = () => {
       </main>
     )
   }
+
+  return <AuthenticatedDashboard />
+}
+
+const AuthenticatedDashboard = () => {
+  useDashboardSync()
 
   return (
     <DashboardActivityProvider>

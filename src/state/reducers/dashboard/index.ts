@@ -160,6 +160,22 @@ export const dashboardSlice = createSlice({
       state.colOverride = action.payload
     },
 
+    hydrateFromServer(
+      state,
+      action: PayloadAction<{
+        layouts: DashboardLayouts
+        components: Record<string, DashboardComponentConfig>
+        nextId: number
+        colOverride: number | null
+      }>
+    ) {
+      const { layouts, components, nextId, colOverride } = action.payload
+      state.layouts = layouts
+      state.components = components
+      state.nextId = nextId
+      state.colOverride = colOverride
+    },
+
     resetDashboard() {
       return initialState
     },
@@ -176,6 +192,7 @@ export const {
   clearDomainFilters,
   setSidebarOpen,
   setColOverride,
+  hydrateFromServer,
   resetDashboard,
 } = dashboardSlice.actions
 

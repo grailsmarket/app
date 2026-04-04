@@ -15,12 +15,12 @@ const FREQUENTLY_ASKED_QUESTIONS = [
     answer: `An ENS name can be used as your crypto identity. You can point it to your Ethereum address and other crypto addresses and use it for payments, set up a profile that follows you across crypto apps, and more. ENS names can also have market value as digital assets.`,
   },
   {
-    question: 'Does Grails charge marketplace fees?',
-    answer: `Grails has 0% market fees. Network gas fees still apply because ENS transactions happen on Ethereum, but Grails itself takes no marketplace fees.`,
+    question: 'Does Grails charge fees?',
+    answer: `Grails has 0% fees for all market actions, registrations, and extensions. Network gas fees still apply because ENS transactions are executed on Ethereum, but Grails itself takes no fees.`,
   },
   {
     question: 'How much does a .eth name cost?',
-    answer: `Registration pricing for .eth names depends on name length: $5/year for 5+ character names, $160/year for 4-character names, and $640/year for 3-character names, paid in ETH. Recently expired names in Premium temporarily cost more, and names listed for sale can be any price.`,
+    answer: `Registration pricing for .eth names is set by the ENS protocol and depends on name length: $5/year for 5+ character names, $160/year for 4-character names, and $640/year for 3-character names, paid in ETH. Recently expired names in Premium temporarily cost more, and names listed for sale can be any price.`,
   },
   {
     question: 'Is Grails open source?',

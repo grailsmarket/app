@@ -32,7 +32,7 @@ import OPENSEA_LOGO from 'public/logos/opensea.svg'
 import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
-import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT, ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { useQuery } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
@@ -286,7 +286,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 sm:h-10'
             onClick={() => {
-              window.open(`https://app.ens.domains/${name}`, '_blank')
+              window.open(`https://app.ens.domains/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
             }}
           >
             <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5' />

@@ -133,7 +133,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <h3 className='font-sedan-sc text-3xl'>Grace Period</h3>
           <PrimaryButton
             onClick={() => {
-              window.open(`https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+              window.open(
+                `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                '_blank'
+              )
             }}
           >
             View on ENS
@@ -184,7 +187,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                   if (nameDetails?.name && nameDetails?.name.length > 0) {
                     dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
                   } else {
-                    window.open(`https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+                    window.open(
+                      `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                      '_blank'
+                    )
                   }
                 } else {
                   openConnectModal?.()
@@ -253,7 +259,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                 if (name && name.length > 0) {
                   dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
                 } else {
-                  window.open(`https://app.ens.domains/${name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+                  window.open(
+                    `https://app.ens.domains/${name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                    '_blank'
+                  )
                 }
               } else {
                 openConnectModal?.()

@@ -9,7 +9,7 @@ import { Address } from 'viem'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 
-const AUTO_ROTATE_MS = 7500
+const AUTO_ROTATE_MS = 8500
 
 const getVisibleCount = (width: number | null): number => {
   if (!width || width < 768) return 1
@@ -73,8 +73,12 @@ export default function Testemonials() {
           {TESTEMONIAL_QUOTES.map((testimonial, i) => (
             <div
               key={testimonial.address}
-              className='shrink-0 px-2 lg:px-2 transition-all duration-400'
-              style={{ width: `${100 / visibleCount}%`, maxWidth: '100%', opacity: i > (activeIndex + 2) || i < (activeIndex) ? 0 : 1 }}
+              className='shrink-0 px-2 transition-all duration-400 lg:px-2'
+              style={{
+                width: `${100 / visibleCount}%`,
+                maxWidth: '100%',
+                opacity: i > activeIndex + 2 || i < activeIndex ? 0 : 1,
+              }}
             >
               <div className='bg-secondary flex h-full w-full flex-col justify-between gap-4 rounded-lg pt-5'>
                 <div className='flex flex-col gap-4 px-5'>
@@ -96,13 +100,13 @@ export default function Testemonials() {
 
       {/* Dots */}
       {needsCarousel && (
-        <div className='flex items-center justify-center gap-2 mx-auto'>
+        <div className='mx-auto flex items-center justify-center gap-2'>
           {Array.from({ length: maxIndex + 1 }, (_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               className={cn(
-                'h-2.5 rounded-full transition-all duration-300 cursor-pointer',
+                'h-2.5 cursor-pointer rounded-full transition-all duration-300',
                 activeIndex === i ? 'bg-primary w-6' : 'bg-tertiary hover:bg-primary/50 w-2.5'
               )}
               aria-label={`Go to testimonial ${i + 1}`}

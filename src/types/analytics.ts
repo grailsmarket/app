@@ -82,6 +82,7 @@ export interface AnalyticsRegistration {
   name_length: number
   registration_date: string
   clubs: string[] | null
+  source: string | null
 }
 
 export interface ChartDataPoint {

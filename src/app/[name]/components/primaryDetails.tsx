@@ -32,7 +32,11 @@ import OPENSEA_LOGO from 'public/logos/opensea.svg'
 import ENSVISION_LOGO from 'public/logos/ensvision.svg'
 import ETHERSCAN_LOGO from 'public/logos/etherscan.svg'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
-import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT, ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import {
+  ENS_HOLIDAY_REFERRER_ADDRESS_SHORT,
+  ENS_NAME_WRAPPER_ADDRESS,
+  ENS_REGISTRAR_ADDRESS,
+} from '@/constants/web3/contracts'
 import { useQuery } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'

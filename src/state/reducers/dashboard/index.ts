@@ -125,8 +125,10 @@ export const dashboardSlice = createSlice({
             ...item,
             i: item.i === '__dropping-elem__' ? id : item.i,
             // Ensure minW/minH are preserved for existing items
-            minW: item.i === '__dropping-elem__' ? sizes.minW : (state.layouts[bp].find((l) => l.i === item.i)?.minW ?? 1),
-            minH: item.i === '__dropping-elem__' ? sizes.minH : (state.layouts[bp].find((l) => l.i === item.i)?.minH ?? 1),
+            minW:
+              item.i === '__dropping-elem__' ? sizes.minW : (state.layouts[bp].find((l) => l.i === item.i)?.minW ?? 1),
+            minH:
+              item.i === '__dropping-elem__' ? sizes.minH : (state.layouts[bp].find((l) => l.i === item.i)?.minH ?? 1),
           }))
         } else {
           const cols = DASHBOARD_COLS[bp]

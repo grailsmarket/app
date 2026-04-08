@@ -101,10 +101,8 @@ const DashboardSidebar = () => {
 
       {/* Mobile (<1024px): fixed overlay */}
       <div className='fixed inset-0 z-30 lg:hidden'>
-        <div className='absolute top-0 left-0 inset-0 bg-black/40' onClick={closeSidebar} />
-        <div className='relative z-40 h-full w-fit pt-14'>
-          {sidebarContent}
-        </div>
+        <div className='absolute inset-0 top-0 left-0 bg-black/40' onClick={closeSidebar} />
+        <div className='relative z-40 h-full w-fit pt-14'>{sidebarContent}</div>
       </div>
     </>
   )

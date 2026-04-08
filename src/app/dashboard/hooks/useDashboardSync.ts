@@ -1,10 +1,10 @@
 import { useAccount } from 'wagmi'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectDashboard } from '@/state/reducers/dashboard/selectors'
 import { getDashboardLayouts } from '@/api/dashboard/getDashboardLayouts'
-import { hydrateFromServer, setDashboardLayoutId } from '@/state/reducers/dashboard'
+import { hydrateFromServer, resetDashboard, setDashboardLayoutId } from '@/state/reducers/dashboard'
 import { createDashboardLayout, updateDashboardLayout } from '@/api/dashboard/saveDashboardLayout'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { Layout } from '@/api/dashboard/types'
@@ -16,6 +16,7 @@ export const useDashboardSync = () => {
   const { subscription } = useAppSelector(selectUserProfile)
   const dashboard = useAppSelector(selectDashboard)
   const queryClient = useQueryClient()
+  const [selectedLayoutId, setSelectedLayoutId] = useState<number | null>(dashboard.layoutId)
 
   const loadLayout = async (layout: Layout) => {
     dispatch(
@@ -28,6 +29,7 @@ export const useDashboardSync = () => {
         colOverride: layout.colOverride,
       })
     )
+    setSelectedLayoutId(layout.id)
   }
 
   const { data: layouts, isLoading: isLoadingLayouts } = useQuery({
@@ -49,32 +51,91 @@ export const useDashboardSync = () => {
   })
 
   // Save to API on state changes (debounced)
-  const saveLayout = useCallback(async () => {
-    const { layoutId, name, layouts, components, nextId, colOverride, isDefault } = dashboard
-    const payload = { name, layouts, components, nextId, colOverride, isDefault }
-
-    try {
-      if (layoutId != null) {
-        await updateDashboardLayout(layoutId, payload)
-      } else {
-        const created = await createDashboardLayout(payload)
-        dispatch(setDashboardLayoutId(created.id))
+  const saveLayout = useCallback(
+    async (newName?: string, isNewDefault?: boolean) => {
+      const { layoutId, name, layouts: dashboardLayouts, components, nextId, colOverride, isDefault } = dashboard
+      const payload = {
+        name: newName || name,
+        layouts: dashboardLayouts,
+        components,
+        nextId,
+        colOverride,
+        isDefault: isNewDefault || isDefault,
       }
-    } catch (err) {
-      console.error('Failed to save dashboard layout:', err)
-    }
-  }, [dashboard])
+
+      try {
+        if (layoutId != null) {
+          await updateDashboardLayout(layoutId, payload)
+
+          return {
+            success: true,
+            message: 'Dashboard layout updated',
+          }
+        } else {
+          const created = await createDashboardLayout(payload)
+          dispatch(setDashboardLayoutId(created.id))
+
+          if (created.isDefault) {
+            const newQueryData = [...(layouts || []).map((l) => ({ ...l, isDefault: false })), created]
+            queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
+          } else {
+            const newQueryData = [...(layouts || []), created]
+            queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
+          }
+
+          loadLayout(created)
+          setSelectedLayoutId(created.id)
+
+          return {
+            success: true,
+            message: 'Dashboard layout created',
+          }
+        }
+      } catch (err) {
+        console.error('Failed to save dashboard layout:', err)
+        return {
+          success: false,
+          error: 'Failed to save dashboard layout',
+          message: err,
+        }
+      }
+    },
+    [dashboard]
+  )
 
   const removeLayout = useCallback(async () => {
     const { layoutId } = dashboard
-    if (layoutId != null) {
-      await deleteDashboardLayout(layoutId)
-      const newQueryData = layouts?.filter((l) => l.id !== layoutId)
-      if (newQueryData) {
-        queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
-        loadLayout(newQueryData[0])
+    try {
+      if (layoutId != null) {
+        const response = await deleteDashboardLayout(layoutId)
+        const newQueryData = layouts?.filter((l) => l.id !== layoutId)
+        if (newQueryData && newQueryData.length > 0) {
+          queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
+          loadLayout(newQueryData[0])
+          setSelectedLayoutId(newQueryData[0].id)
+        } else {
+          dispatch(resetDashboard())
+          dispatch(setDashboardLayoutId(null))
+          setSelectedLayoutId(null)
+        }
+
+        return {
+          success: true,
+          message: 'Dashboard layout deleted',
+        }
       } else {
-        dispatch(setDashboardLayoutId(null))
+        return {
+          success: false,
+          error: 'No layout to delete',
+          message: 'No layout to delete',
+        }
+      }
+    } catch (err) {
+      console.error('Failed to remove dashboard layout:', err)
+      return {
+        success: false,
+        error: 'Failed to remove dashboard layout',
+        message: err,
       }
     }
   }, [dashboard, layouts, userAddress, subscription?.tierId, loadLayout])
@@ -85,5 +146,7 @@ export const useDashboardSync = () => {
     loadLayout,
     saveLayout,
     removeLayout,
+    selectedLayoutId,
+    setSelectedLayoutId,
   }
 }

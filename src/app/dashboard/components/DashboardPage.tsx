@@ -67,8 +67,6 @@ const DashboardPage = () => {
 }
 
 const AuthenticatedDashboard = () => {
-  useDashboardSync()
-
   return (
     <DashboardActivityProvider>
       <main className='relative flex min-h-screen'>

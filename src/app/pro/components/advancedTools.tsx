@@ -10,7 +10,7 @@ import Message from 'public/icons/chat.svg'
 import Notification from 'public/icons/bell-primary.svg'
 import View from 'public/icons/view-primary.svg'
 import grailsAI from 'public/icons/grails-ai.svg'
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion } from 'motion/react'
 import { useClickAway } from '@/hooks/useClickAway'
 import { Cross } from 'ethereum-identity-kit'
 import GrailsPoap2025 from 'public/art/grails-poap-2025.webp'
@@ -20,7 +20,8 @@ const tools = [
   {
     title: 'Bulk Offers',
     description: 'Create offers for multiple names at the same time.',
-    longDescription: 'This tool allows you to create offers for multiple name at once. You can easily set a base price, and then tweak offer amounts for individual names. ',
+    longDescription:
+      'This tool allows you to create offers for multiple name at once. You can easily set a base price, and then tweak offer amounts for individual names. ',
     icon: <Image src={register} alt='Register' width={24} height={24} />,
   },
   {
@@ -57,50 +58,49 @@ const tools = [
   {
     title: 'AI Search',
     description: 'Get AI recommended search terms based on your search history and market conditions.',
-    longDescription: 'Individual page on Grails, which uses our internal AI to recommend search terms based on your search history and market conditions. You can provide a list of all the names that you are interested in and the AI will recommend search terms based on your history and market conditions.',
+    longDescription:
+      'Individual page on Grails, which uses our internal AI to recommend search terms based on your search history and market conditions. You can provide a list of all the names that you are interested in and the AI will recommend search terms based on your history and market conditions.',
     icon: <Image src={grailsAI} alt='Listings' width={20} height={20} />,
   },
 ]
 
 const AdvancedTools = () => {
-  const [active, setActive] = useState<(typeof tools)[number] | boolean | null>(
-    null
-  );
-  const ref = useClickAway<HTMLDivElement>(() => setActive(null));
-  const id = useId();
+  const [active, setActive] = useState<(typeof tools)[number] | boolean | null>(null)
+  const ref = useClickAway<HTMLDivElement>(() => setActive(null))
+  const id = useId()
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setActive(null);
+      if (event.key === 'Escape') {
+        setActive(null)
       }
     }
 
-    if (active && typeof active === "object") {
-      document.body.style.overflow = "hidden";
+    if (active && typeof active === 'object') {
+      document.body.style.overflow = 'hidden'
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto'
     }
 
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [active]);
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [active])
 
   return (
     <>
       <AnimatePresence>
-        {active && typeof active === "object" && (
+        {active && typeof active === 'object' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 h-full w-full z-20"
+            className='fixed inset-0 z-20 h-full w-full bg-black/20'
           />
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {active && typeof active === "object" ? (
-          <div className="fixed inset-0 grid place-items-center px-lg z-[100]">
+        {active && typeof active === 'object' ? (
+          <div className='px-lg fixed inset-0 z-[100] grid place-items-center'>
             <motion.button
               key={`button-${active.title}-${id}`}
               layout
@@ -116,7 +116,7 @@ const AdvancedTools = () => {
                   duration: 0.05,
                 },
               }}
-              className="flex absolute top-2 right-2 lg:hidden items-center justify-center rounded-full h-6 w-6"
+              className='absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full lg:hidden'
               onClick={() => setActive(null)}
             >
               <Cross className='h-auto w-7' />
@@ -124,57 +124,42 @@ const AdvancedTools = () => {
             <motion.div
               layoutId={`tool-${active.title}-${id}`}
               ref={ref}
-              className="w-full max-w-[500px] h-fit md:max-h-[90%] flex flex-col bg-white dark:bg-background rounded-md sm:rounded-lg overflow-scroll shadow-lg"
+              className='dark:bg-background flex h-fit w-full max-w-[500px] flex-col overflow-scroll rounded-md bg-white shadow-lg sm:rounded-lg md:max-h-[90%]'
             >
               <motion.div layoutId={`image-${active.title}-${id}`}>
-                <Image
-                  width={600}
-                  height={600}
-                  src={GrailsPoap2025}
-                  alt={active.title}
-                  className="w-full h-auto p-4"
-                />
+                <Image width={600} height={600} src={GrailsPoap2025} alt={active.title} className='h-auto w-full p-4' />
               </motion.div>
 
-              <div className="flex flex-col w-full">
-                <div className="flex justify-between items-start p-4">
-                  <div className="">
+              <div className='flex w-full flex-col'>
+                <div className='flex items-start justify-between p-4'>
+                  <div className=''>
                     <motion.h3
                       layoutId={`title-${active.title}-${id}`}
-                      className="font-bold text-neutral-700 dark:text-neutral-200"
+                      className='font-bold text-neutral-700 dark:text-neutral-200'
                     >
                       {active.title}
                     </motion.h3>
                     <motion.p
                       layoutId={`description-${active.description}-${id}`}
-                      className="text-neutral-600 dark:text-neutral-400"
+                      className='text-neutral-600 dark:text-neutral-400'
                     >
                       {active.description}
                     </motion.p>
                   </div>
                 </div>
-                <div className="relative px-4">
+                <div className='relative px-4'>
                   <motion.div
                     layout
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-neutral-600 text-xs md:text-sm lg:text-base md:h-fit pb-6 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
+                    className='flex flex-col items-start gap-4 overflow-auto pb-6 text-xs text-neutral-600 [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:h-fit md:text-sm lg:text-base dark:text-neutral-400'
                   >
                     {active.longDescription || active.description}
                   </motion.div>
                 </div>
-                <motion.a
-                  layoutId={`button-${active.title}-${id}`}
-                  href={'/pro'}
-                  target="_blank"
-                  className="px-4 mb-4"
-                >
-                  <PrimaryButton
-                    className="w-full"
-                  >
-                    Upgrade to Pro
-                  </PrimaryButton>
+                <motion.a layoutId={`button-${active.title}-${id}`} href={'/pro'} target='_blank' className='mb-4 px-4'>
+                  <PrimaryButton className='w-full'>Upgrade to Pro</PrimaryButton>
                 </motion.a>
               </div>
             </motion.div>
@@ -197,19 +182,13 @@ const AdvancedTools = () => {
                 key={`tool-${tool.title}-${id}`}
                 onClick={() => setActive(tool)}
               >
-                <div className='flex flex-row gap-2 items-center'>
+                <div className='flex flex-row items-center gap-2'>
                   <motion.div layoutId={`icon-${tool.title}-${id}`}>{tool.icon}</motion.div>
-                  <motion.h3
-                    layoutId={`title-${tool.title}-${id}`}
-                    className='text-primary text-2xl font-bold'
-                  >
+                  <motion.h3 layoutId={`title-${tool.title}-${id}`} className='text-primary text-2xl font-bold'>
                     {tool.title}
                   </motion.h3>
                 </div>
-                <motion.p
-                  layoutId={`description-${tool.description}-${id}`}
-                  className='text-lg font-medium'
-                >
+                <motion.p layoutId={`description-${tool.description}-${id}`} className='text-lg font-medium'>
                   {tool.description}
                 </motion.p>
               </motion.div>

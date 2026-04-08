@@ -59,6 +59,10 @@ const DashboardSidebar = () => {
   const dispatch = useAppDispatch()
   const isOpen = useAppSelector(selectDashboardSidebarOpen)
 
+  const closeSidebar = () => {
+    dispatch(setSidebarOpen(false))
+  }
+
   if (!isOpen) return null
 
   const sidebarContent = (
@@ -96,11 +100,9 @@ const DashboardSidebar = () => {
       <div className='sticky top-[70px] hidden h-[calc(100dvh-70px)] lg:flex'>{sidebarContent}</div>
 
       {/* Mobile (<1024px): fixed overlay */}
-      <div className='fixed inset-0 z-30 lg:hidden' onClick={() => dispatch(setSidebarOpen(false))}>
-        <div className='absolute inset-0 bg-black/40' />
-        <div className='relative z-40 h-full pt-14' onClick={(e) => e.stopPropagation()}>
-          {sidebarContent}
-        </div>
+      <div className='fixed inset-0 z-30 lg:hidden'>
+        <div className='absolute inset-0 top-0 left-0 bg-black/40' onClick={closeSidebar} />
+        <div className='relative z-40 h-full w-fit pt-14'>{sidebarContent}</div>
       </div>
     </>
   )

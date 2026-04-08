@@ -36,38 +36,26 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
 
 // ── Initial state ───────────────────────────────────────────────
 const initialState: DashboardState = {
+  layoutId: null,
+  name: 'Default',
   layouts: { lg: [], md: [], sm: [], xs: [] },
   components: {},
   sidebarOpen: false,
   nextId: 1,
   colOverride: null,
+  isDefault: false,
 }
 
-// ── Helper: find next available position in a layout ────────────
-const findNextPosition = (layout: LayoutItem[], cols: number, itemW: number): { x: number; y: number } => {
-  if (layout.length === 0) return { x: 0, y: 0 }
+// ── Layout helpers ──────────────────────────────────────────────
 
-  // Build an occupancy map: for each row y, track which x columns are occupied
-  let maxBottom = 0
+/** Get the Y coordinate at the bottom of all existing items. */
+const getBottomY = (layout: LayoutItem[]): number => {
+  let bottom = 0
   for (const item of layout) {
-    const bottom = item.y + item.h
-    if (bottom > maxBottom) maxBottom = bottom
+    const itemBottom = item.y + item.h
+    if (itemBottom > bottom) bottom = itemBottom
   }
-
-  // Scan from top to bottom for the first position that fits
-  // This naturally fills gaps and places next to existing widgets
-  for (let y = 0; y <= maxBottom; y++) {
-    for (let x = 0; x <= cols - itemW; x++) {
-      // Check if this position (x, y, itemW, 1 row) collides with any existing item
-      const fits = !layout.some(
-        (item) => x < item.x + item.w && x + itemW > item.x && y < item.y + item.h && y + 1 > item.y
-      )
-      if (fits) return { x, y }
-    }
-  }
-
-  // No gap found — place on a new row below everything
-  return { x: 0, y: maxBottom }
+  return bottom
 }
 
 // ── Slice ───────────────────────────────────────────────────────
@@ -75,38 +63,86 @@ export const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
   reducers: {
-    addComponent(
-      state,
-      action: PayloadAction<{
-        type: DashboardComponentType
-        position?: { x: number; y: number }
-      }>
-    ) {
-      const { type, position } = action.payload
+    /** Add a component via click (appends at bottom, no collision issues) */
+    addComponent(state, action: PayloadAction<{ type: DashboardComponentType }>) {
+      const { type } = action.payload
       const id = `widget-${state.nextId}`
       state.nextId++
 
-      // Create default config
       state.components[id] = createDefaultConfig(type)
 
-      // Create layout entry for each breakpoint
       const sizes = DEFAULT_WIDGET_SIZES[type]
       const breakpoints: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
 
       for (const bp of breakpoints) {
         const cols = DASHBOARD_COLS[bp]
         const w = Math.min(sizes.w, cols)
-        const pos = position && bp === 'lg' ? position : findNextPosition(state.layouts[bp], cols, w)
 
         state.layouts[bp].push({
           i: id,
-          x: Math.min(pos.x, cols - w),
-          y: pos.y,
+          x: 0,
+          y: getBottomY(state.layouts[bp]),
           w,
           h: sizes.h,
           minW: sizes.minW,
           minH: sizes.minH,
         })
+      }
+    },
+
+    /**
+     * Add a component via drag-and-drop.
+     *
+     * RGL's `onDrop` provides the full layout (first callback arg)
+     * with all items already repositioned around the drop — collisions
+     * are resolved by RGL's compactor. We accept that layout for the
+     * active breakpoint as-is, just swapping the placeholder id
+     * (`__dropping-elem__`) with the real widget id.
+     *
+     * For other breakpoints we append at the bottom (same as click-to-add).
+     */
+    dropComponent(
+      state,
+      action: PayloadAction<{
+        type: DashboardComponentType
+        resolvedLayout: LayoutItem[]
+        breakpoint: DashboardBreakpoint
+      }>
+    ) {
+      const { type, resolvedLayout, breakpoint } = action.payload
+      const id = `widget-${state.nextId}`
+      state.nextId++
+
+      state.components[id] = createDefaultConfig(type)
+
+      const sizes = DEFAULT_WIDGET_SIZES[type]
+      const allBreakpoints: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
+
+      for (const bp of allBreakpoints) {
+        if (bp === breakpoint) {
+          // Use RGL's resolved layout, replacing the placeholder id
+          state.layouts[bp] = resolvedLayout.map((item) => ({
+            ...item,
+            i: item.i === '__dropping-elem__' ? id : item.i,
+            // Ensure minW/minH are preserved for existing items
+            minW:
+              item.i === '__dropping-elem__' ? sizes.minW : (state.layouts[bp].find((l) => l.i === item.i)?.minW ?? 1),
+            minH:
+              item.i === '__dropping-elem__' ? sizes.minH : (state.layouts[bp].find((l) => l.i === item.i)?.minH ?? 1),
+          }))
+        } else {
+          const cols = DASHBOARD_COLS[bp]
+          const w = Math.min(sizes.w, cols)
+          state.layouts[bp].push({
+            i: id,
+            x: 0,
+            y: getBottomY(state.layouts[bp]),
+            w,
+            h: sizes.h,
+            minW: sizes.minW,
+            minH: sizes.minH,
+          })
+        }
       }
     },
 
@@ -129,6 +165,10 @@ export const dashboardSlice = createSlice({
       const existing = state.components[id]
       if (!existing) return
       state.components[id] = { ...existing, ...patch } as DashboardComponentConfig
+    },
+
+    setDashboardLayoutId(state, action: PayloadAction<number | null>) {
+      state.layoutId = action.payload
     },
 
     // Specific action for domain filter updates to allow deep merging
@@ -160,6 +200,26 @@ export const dashboardSlice = createSlice({
       state.colOverride = action.payload
     },
 
+    hydrateFromServer(
+      state,
+      action: PayloadAction<{
+        layoutId: number | null
+        name: string
+        layouts: DashboardLayouts
+        components: Record<string, DashboardComponentConfig>
+        nextId: number
+        colOverride: number | null
+      }>
+    ) {
+      const { layouts, components, nextId, colOverride, layoutId, name } = action.payload
+      state.layoutId = layoutId
+      state.name = name
+      state.layouts = layouts
+      state.components = components
+      state.nextId = nextId
+      state.colOverride = colOverride
+    },
+
     resetDashboard() {
       return initialState
     },
@@ -168,14 +228,17 @@ export const dashboardSlice = createSlice({
 
 export const {
   addComponent,
+  dropComponent,
   removeComponent,
   updateLayouts,
   updateComponentConfig,
+  setDashboardLayoutId,
   updateDomainFilters,
   setDomainFiltersOpen,
   clearDomainFilters,
   setSidebarOpen,
   setColOverride,
+  hydrateFromServer,
   resetDashboard,
 } = dashboardSlice.actions
 

@@ -18,7 +18,7 @@ import { ETH_ADDRESS } from '@/constants/web3/tokens'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 
 interface SourceIconProps {
-  source: string
+  source: string | null
 }
 
 const SourceIcon: React.FC<SourceIconProps> = ({ source }) => {
@@ -27,8 +27,8 @@ const SourceIcon: React.FC<SourceIconProps> = ({ source }) => {
   if (!icon) return <div className='h-6 w-6' />
 
   return (
-    <div className='flex h-6 w-6 flex-shrink-0 items-center justify-center'>
-      <Image src={icon} alt={source} width={24} height={24} className='h-full w-auto' />
+    <div className='flex h-6 w-6 shrink-0 items-center justify-center'>
+      <Image src={icon} alt={source || 'Unknown'} width={24} height={24} className='h-full w-auto' />
     </div>
   )
 }
@@ -54,7 +54,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
     >
       <div className='flex w-[45%] max-w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={listing.source} />
-        <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
+        <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
         <div className='max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(listing.name)}</p>
           {category && categoryDetails && (
@@ -112,7 +112,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={offer.source} />
-        <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
+        <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(offer.name)}</p>
           {category && categoryDetails && (
@@ -173,7 +173,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
     >
       <div className={cn('flex flex-row items-center gap-2', hideSeller ? 'w-[50%]' : 'w-[40%]')}>
         <SourceIcon source={sale.source} />
-        <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
+        <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(sale.name)}</p>
           {category && categoryDetails && (
@@ -245,7 +245,8 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
       )}
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
-        <NameImage name={registration.name} tokenId='' expiryDate={null} className='h-8 w-8 flex-shrink-0 rounded-sm' />
+        <SourceIcon source={registration.source} />
+        <NameImage name={registration.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
         <div className='w-full max-w-[calc(100%-34px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(registration.name)}</p>
           {category && categoryDetails && (

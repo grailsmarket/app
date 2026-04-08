@@ -29,6 +29,7 @@ const Home = () => {
           <BulkTools />
           <PricingTiers />
           <Testemonials />
+          <BulkTools />
           <TopCategories />
           <TwitterBot />
           <FrequentlyAskedQuestions />

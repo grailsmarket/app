@@ -17,7 +17,7 @@ import { usePublicClient } from 'wagmi'
 import { mainnet } from 'wagmi/chains'
 import { useQuery } from '@tanstack/react-query'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
-import { ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT, ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
 import PremiumPriceControls from './PremiumPriceControls'
@@ -133,7 +133,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <h3 className='font-sedan-sc text-3xl'>Grace Period</h3>
           <PrimaryButton
             onClick={() => {
-              window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+              window.open(
+                `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                '_blank'
+              )
             }}
           >
             View on ENS
@@ -184,7 +187,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                   if (nameDetails?.name && nameDetails?.name.length > 0) {
                     dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
                   } else {
-                    window.open(`https://app.ens.domains/${nameDetails?.name}/register`, '_blank')
+                    window.open(
+                      `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                      '_blank'
+                    )
                   }
                 } else {
                   openConnectModal?.()
@@ -253,7 +259,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                 if (name && name.length > 0) {
                   dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
                 } else {
-                  window.open(`https://app.ens.domains/${name}/register`, '_blank')
+                  window.open(
+                    `https://app.ens.domains/${name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                    '_blank'
+                  )
                 }
               } else {
                 openConnectModal?.()

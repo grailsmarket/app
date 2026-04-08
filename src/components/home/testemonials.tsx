@@ -9,7 +9,7 @@ import { Address } from 'viem'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 
-const AUTO_ROTATE_MS = 7500
+const AUTO_ROTATE_MS = 8500
 
 const getVisibleCount = (width: number | null): number => {
   if (!width || width < 768) return 1
@@ -56,15 +56,16 @@ export default function Testemonials() {
   )
 
   const translateX = -(activeIndex * (100 / visibleCount))
+  console.log(activeIndex)
 
   return (
     <div className='flex w-full flex-col items-center justify-center gap-4 sm:gap-6 md:gap-8 lg:items-start'>
-      <h2 className='font-sedan-sc text-center text-4xl sm:text-5xl md:text-6xl lg:text-left'>
-        What people <span className='text-primary'>say</span> about Grails
+      <h2 className='font-sedan-sc px-2 text-center text-4xl sm:text-5xl md:text-6xl lg:text-left'>
+        What <span className='text-primary'>users</span> say about Grails
       </h2>
 
       {/* Carousel container */}
-      <div className='w-full overflow-hidden'>
+      <div className='w-full overflow-hidden sm:overflow-visible'>
         <div
           className='flex min-w-full items-stretch transition-transform duration-500 ease-in-out'
           style={{ transform: `translateX(${translateX}%)` }}
@@ -72,8 +73,12 @@ export default function Testemonials() {
           {TESTEMONIAL_QUOTES.map((testimonial, i) => (
             <div
               key={testimonial.address}
-              className='shrink-0 px-2'
-              style={{ width: `${100 / visibleCount}%`, maxWidth: '100%' }}
+              className='shrink-0 px-2 transition-all duration-400 lg:px-2'
+              style={{
+                width: `${100 / visibleCount}%`,
+                maxWidth: '100%',
+                opacity: i > activeIndex + 2 || i < activeIndex ? 0 : 1,
+              }}
             >
               <div className='bg-secondary flex h-full w-full flex-col justify-between gap-4 rounded-lg pt-5'>
                 <div className='flex flex-col gap-4 px-5'>
@@ -95,13 +100,13 @@ export default function Testemonials() {
 
       {/* Dots */}
       {needsCarousel && (
-        <div className='flex items-center justify-center gap-2'>
+        <div className='mx-auto flex items-center justify-center gap-2'>
           {Array.from({ length: maxIndex + 1 }, (_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               className={cn(
-                'h-2.5 rounded-full transition-all duration-300',
+                'h-2.5 cursor-pointer rounded-full transition-all duration-300',
                 activeIndex === i ? 'bg-primary w-6' : 'bg-tertiary hover:bg-primary/50 w-2.5'
               )}
               aria-label={`Go to testimonial ${i + 1}`}

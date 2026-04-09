@@ -266,10 +266,32 @@ export type WatchlistEntryType = {
   ensName: string
   ensNameId: number
   id: number
+  listId?: number
+  listName?: string
   notifyOnListing: boolean
   notifyOnOffer: boolean
   notifyOnPriceChange: boolean
   notifyOnSale: boolean
+}
+
+export type WatchlistListType = {
+  id: number
+  name: string
+  isDefault: boolean
+  itemCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type WatchlistCheckListEntry = {
+  listId: number
+  listName: string
+  listIsDefault: boolean
+  watchlistEntryId: number
+  notifyOnSale: boolean
+  notifyOnOffer: boolean
+  notifyOnListing: boolean
+  notifyOnPriceChange: boolean
 }
 
 export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]

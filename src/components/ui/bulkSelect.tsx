@@ -32,7 +32,7 @@ import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import { cn } from '@/utils/tailwind'
 import { useShiftKeyListener } from '@/hooks/useShiftKey'
-import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
+import { bulkRemoveFromWatchlist } from '@/api/watchlist/bulkRemove'
 import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
 import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
@@ -209,30 +209,13 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const handleRemoveFromWatchlistAction = async () => {
     setIsRemovingFromWatchlist(true)
 
-    console.log('Selected watchlist IDs:', selectedWatchlistIds)
-
-    const results = await Promise.all(
-      selectedWatchlistIds.map(async (id) => {
-        const result = await removeFromWatchlist(id)
-        if (result.success) {
-          dispatch(removeBulkSelectWatchlistId(id))
-        }
-        return result
-      })
-    )
-
-    console.log('Results:', results)
-
-    if (results.some((result) => !result.success)) {
-      console.error(
-        'Failed to remove from watchlist' +
-          results
-            .filter((result) => !result.success)
-            .map((result) => result.watchlistId)
-            .join(', ')
-      )
-    } else {
-      dispatch(clearBulkSelect())
+    try {
+      const result = await bulkRemoveFromWatchlist(selectedWatchlistIds)
+      if (result.removed > 0) {
+        dispatch(clearBulkSelect())
+      }
+    } catch (error) {
+      console.error('Failed to bulk remove from watchlist', error)
     }
 
     queryClient.refetchQueries({
@@ -240,34 +223,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     })
 
     queryClient.refetchQueries({
-      queryKey: [
-        'profile',
-        'watchlist',
-        userAddress,
-        watchlistFilters.search,
-        watchlistFilters.length,
-        watchlistFilters.priceRange,
-        watchlistFilters.categories,
-        watchlistFilters.type,
-        watchlistFilters.status,
-        watchlistFilters.sort,
-        watchlistFilters.textMatch,
-        watchlistFilters.market,
-      ],
-      // (old: any) => {
-      //   const newData = old.pages.map((page: any) => {
-      //     return {
-      //       ...page,
-      //       domains: page.domains.filter((item: any) => !selectedWatchlistIds.includes(item.watchlist_record_id)),
-      //       total: page.total - selectedWatchlistIds.length,
-      //     }
-      //   })
+      predicate: (query) => query.queryKey[0] === 'profile' && query.queryKey[1] === 'watchlist',
+    })
 
-      //   return {
-      //     ...old,
-      //     pages: newData,
-      //   }
-      // }
+    queryClient.invalidateQueries({
+      queryKey: ['watchlistLists', userAddress],
     })
 
     setIsRemovingFromWatchlist(false)

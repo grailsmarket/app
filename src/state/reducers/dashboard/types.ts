@@ -19,6 +19,7 @@ export type DashboardComponentType =
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
   type: 'domains'
+  name: string
   viewType: 'grid' | 'list'
   filters: MarketplaceFiltersState
   filtersOpen: boolean
@@ -26,6 +27,7 @@ export type DomainsInstanceConfig = {
 
 export type AnalyticsListInstanceConfig = {
   type: 'top-sales' | 'top-offers' | 'top-registrations'
+  name: string
   period: AnalyticsPeriod
   source: AnalyticsSource
   category: string | null
@@ -33,17 +35,20 @@ export type AnalyticsListInstanceConfig = {
 
 export type AnalyticsChartInstanceConfig = {
   type: 'sales-chart' | 'offers-chart' | 'registrations-chart'
+  name: string
   period: AnalyticsPeriod
   category: string | null
 }
 
 export type HoldersInstanceConfig = {
   type: 'holders'
+  name: string
   categories: string[] // empty = "all"
 }
 
 export type LeaderboardInstanceConfig = {
   type: 'leaderboard'
+  name: string
   sortBy: LeaderboardSortBy
   sortOrder: LeaderboardSortOrder
   clubs: string[]
@@ -51,6 +56,7 @@ export type LeaderboardInstanceConfig = {
 
 export type ActivityInstanceConfig = {
   type: 'activity'
+  name: string
   eventTypes: string[]
   category: string | null // null = all categories
 }

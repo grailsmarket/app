@@ -66,7 +66,7 @@ const DashboardSidebar = () => {
   if (!isOpen) return null
 
   const sidebarContent = (
-    <div className='border-tertiary bg-background flex h-full w-72 shrink-0 flex-col border-r'>
+    <div className='border-tertiary bg-background absolute top-0 left-0 z-40 flex h-full w-72 flex-col border-r'>
       <div className='flex items-center justify-between px-4 py-3'>
         <h2 className='text-lg font-semibold'>Add Widgets</h2>
         <button
@@ -97,7 +97,7 @@ const DashboardSidebar = () => {
   return (
     <>
       {/* Desktop (>=1024px): in-flow sticky sidebar that pushes content */}
-      <div className='sticky top-[70px] hidden h-[calc(100dvh-70px)] lg:flex'>{sidebarContent}</div>
+      <div className='sticky top-0 z-20 hidden h-dvh lg:flex'>{sidebarContent}</div>
 
       {/* Mobile (<1024px): fixed overlay */}
       <div className='fixed inset-0 z-30 lg:hidden'>

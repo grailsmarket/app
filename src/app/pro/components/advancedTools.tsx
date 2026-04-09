@@ -100,7 +100,7 @@ const AdvancedTools = () => {
       </AnimatePresence>
       <AnimatePresence>
         {active && typeof active === 'object' ? (
-          <div className='px-lg fixed inset-0 z-[100] grid place-items-center'>
+          <div className='px-lg fixed inset-0 z-100 grid place-items-center'>
             <motion.button
               key={`button-${active.title}-${id}`}
               layout
@@ -178,7 +178,7 @@ const AdvancedTools = () => {
             {tools.map((tool) => (
               <motion.div
                 layoutId={`tool-${tool.title}-${id}`}
-                className='hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border-1 transition-colors sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)] xl:w-[calc(25%-12px)]'
+                className='hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)] xl:w-[calc(25%-12px)]'
                 key={`tool-${tool.title}-${id}`}
                 onClick={() => setActive(tool)}
               >

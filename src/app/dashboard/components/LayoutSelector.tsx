@@ -24,8 +24,10 @@ const LayoutSelector = () => {
   const [confirmationDialogIsDefaultLayout, setConfirmationDialogIsDefaultLayout] = useState(false)
   const [confirmationDialogError, setConfirmationDialogError] = useState<string | null>(null)
 
+  const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
+  const menuRef = useClickAway<HTMLDivElement>(() => setMenuOpen(false))
   const dropdownRef = useClickAway<HTMLDivElement>(() => setDropdownOpen(false))
   const selectedLayoutName = useMemo(() => {
     return selectedLayoutId === null ? 'New Layout' : layouts?.find((layout) => layout.id === selectedLayoutId)?.name
@@ -72,7 +74,7 @@ const LayoutSelector = () => {
   return (
     <>
       <div className='flex flex-row gap-2'>
-        <div className='relative z-50' ref={dropdownRef}>
+        <div className='relative z-30' ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className='border-tertiary px-md hover:bg-secondary z-50 flex h-10 w-56 cursor-pointer items-center justify-between rounded-md border transition-colors'
@@ -137,20 +139,34 @@ const LayoutSelector = () => {
             Save
           </PrimaryButton>
         ) : (
-          <>
+          <div className='relative' ref={menuRef}>
             <button
-              onClick={() => handleConfirmationDialogOpen('edit')}
-              className='border-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-2 p-1 opacity-80 transition-opacity hover:opacity-100'
+              onClick={() => setMenuOpen(!menuOpen)}
+              className='border-tertiary hover:border-foreground/50 flex h-10 w-10 cursor-pointer items-center justify-center gap-1 rounded-md border p-1 transition-colors'
             >
-              <Pencil className='text-foreground h-4.5 w-4.5' />
+              <div className='bg-foreground h-1 w-1 rounded-full' />
+              <div className='bg-foreground h-1 w-1 rounded-full' />
+              <div className='bg-foreground h-1 w-1 rounded-full' />
             </button>
-            <button
-              onClick={() => handleConfirmationDialogOpen('delete')}
-              className='flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border-2 border-red-400 p-1 transition-opacity hover:opacity-80'
-            >
-              <Trash className='h-4.5 w-4.5 text-red-400' />
-            </button>
-          </>
+            {menuOpen && (
+              <div className='bg-background border-tertiary absolute top-12 right-0 z-30 w-50 rounded-md border shadow-md'>
+                <button
+                  onClick={() => handleConfirmationDialogOpen('edit')}
+                  className='hover:bg-secondary px-lg flex w-full cursor-pointer items-center gap-2 rounded-md py-3 transition-colors'
+                >
+                  <Pencil className='text-foreground h-4.5 w-4.5' />
+                  <p>Edit Dashboard</p>
+                </button>
+                <button
+                  onClick={() => handleConfirmationDialogOpen('delete')}
+                  className='hover:bg-secondary px-lg flex w-full cursor-pointer items-center gap-2 rounded-md py-3 text-red-400 transition-colors'
+                >
+                  <Trash className='h-4.5 w-4.5' />
+                  <p>Delete Dashboard</p>
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -167,29 +183,29 @@ const LayoutSelector = () => {
               className='absolute top-3 right-3 h-3 w-3 cursor-pointer text-white'
               onClick={handleConfirmationDialogClose}
             />
-            <h2 className='text-center text-2xl font-bold'>
+            <h2 className='mb-2 text-center text-2xl font-bold'>
               {confirmationDialogType === 'delete'
-                ? 'Delete Layout'
+                ? 'Delete Dashboard'
                 : confirmationDialogType === 'edit'
-                  ? 'Edit Layout'
-                  : 'Create Layout'}
+                  ? 'Edit Dashboard'
+                  : 'Create Dashboard'}
             </h2>
             {confirmationDialogType === 'delete' && (
-              <p className='py-2 text-center text-lg font-medium'>Are you sure you want to delete this layout?</p>
+              <p className='py-2 text-center text-lg font-medium'>Are you sure you want to delete this dashboard?</p>
             )}
             {(confirmationDialogType === 'edit' || confirmationDialogType === 'new') && (
               <>
                 <Input
                   label='Name'
                   type='text'
-                  placeholder='My Layout'
+                  placeholder='My Dashboard'
                   value={confirmationDialogName}
                   onChange={(e) => setConfirmationDialogName(e.target.value)}
                   className='w-full'
                 />
                 <div className='p-md border-tertiary flex items-center justify-between rounded-md border'>
                   <div className='flex flex-col'>
-                    <p className='text-lg font-medium'>Set as default layout</p>
+                    <p className='text-lg font-medium'>Set as default dashboard</p>
                     <p className='text-neutral text-sm'>Set this layout as the default layout for the dashboard.</p>
                   </div>
                   <button

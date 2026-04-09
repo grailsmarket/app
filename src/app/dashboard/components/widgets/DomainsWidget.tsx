@@ -1,15 +1,13 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   updateComponentConfig,
   updateDomainFilters,
-  clearDomainFilters,
   setDomainFiltersOpen,
 } from '@/state/reducers/dashboard'
 import { selectDomainsConfig } from '@/state/reducers/dashboard/selectors'
-import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useDashboardDomains } from '../../hooks/useDashboardDomains'
 import Card from '@/components/domains/grid/components/card'
 import LoadingCard from '@/components/domains/grid/components/loadingCard'
@@ -27,10 +25,17 @@ import { useClickAway } from '@/hooks/useClickAway'
 import ascending from 'public/icons/ascending.svg'
 import descending from 'public/icons/descending.svg'
 import TableRow from '@/components/domains/table/components/TableRow'
-import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
+import { MarketplaceHeaderColumn } from '@/types/domains'
 
 interface DomainsWidgetProps {
   instanceId: string
+}
+
+const getListColumns = (width: number): MarketplaceHeaderColumn[] => {
+  if (width < 400) return ['domain', 'actions']
+  if (width < 600) return ['domain', 'price', 'actions']
+  if (width < 800) return ['domain', 'price', 'expires', 'actions']
+  return ['domain', 'price', 'last_sale', 'highest_offer', 'expires', 'actions']
 }
 
 const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
@@ -38,9 +43,23 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
   const config = useAppSelector((state) => selectDomainsConfig(state, instanceId))
   const { domains, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useDashboardDomains(instanceId)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [containerWidth, setContainerWidth] = useState(0)
   const [sortOpen, setSortOpen] = useState(false)
   const [sort, setSort] = useState<string>(config?.filters.sort ?? '')
   const [sortDirection, setSortDirection] = useState<CategoriesPageSortDirection>('desc')
+
+  // Measure list container width so we can pick columns and pass compact mode
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const listColumns = useMemo(() => getListColumns(containerWidth), [containerWidth])
 
   const dropdownRef = useClickAway<HTMLDivElement>(() => {
     setSortOpen(false)
@@ -85,28 +104,6 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
     if (!config) return
     dispatch(setDomainFiltersOpen({ id: instanceId, open: !config.filtersOpen }))
   }, [dispatch, instanceId, config])
-
-  // Count active filters (non-default values)
-  const activeFilterCount = useMemo(() => {
-    if (!config) return 0
-    const f = config.filters
-    const d = emptyFilterState
-    let count = 0
-    if (f.status.length > 0) count++
-    if (JSON.stringify(f.market) !== JSON.stringify(d.market)) count++
-    if (f.length.min !== null || f.length.max !== null) count++
-    if (f.priceRange.min !== null || f.priceRange.max !== null) count++
-    if (f.offerRange.min !== null || f.offerRange.max !== null) count++
-    if (Object.values(f.textMatch).some((v) => v !== '')) count++
-    if (Object.values(f.textNonMatch).some((v) => v !== '')) count++
-    if (f.watchersCount.min !== null || f.watchersCount.max !== null) count++
-    if (f.viewCount.min !== null || f.viewCount.max !== null) count++
-    if (f.clubsCount.min !== null || f.clubsCount.max !== null) count++
-    if (f.creationDate.min !== null || f.creationDate.max !== null) count++
-    if (JSON.stringify(f.type) !== JSON.stringify(d.type)) count++
-    if (f.categories.length > 0) count++
-    return count
-  }, [config])
 
   const displayedDomains = useMemo(() => {
     return [...domains, ...Array(isFetchingNextPage ? 18 : 0).fill(null)]
@@ -200,7 +197,11 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
         </div>
 
         {/* Content */}
-        <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-2'>
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className={cn('flex-1 overflow-y-auto p-2', config.viewType === 'list' && 'p-0')}
+        >
           {isLoading && domains.length === 0 ? (
             <div className='grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-2'>
               {Array.from({ length: 8 }).map((_, i) => (
@@ -228,7 +229,7 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
                     domain={domain}
                     index={index}
                     allDomains={domains}
-                    displayedColumns={['domain', 'price', 'last_sale', 'highest_offer', 'expires', 'actions']}
+                    displayedColumns={listColumns}
                   />
                 ) : (
                   <LoadingCard key={index} />

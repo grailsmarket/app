@@ -25,6 +25,7 @@ const WatchlistListSelector: React.FC = () => {
     createListAsync,
     editListAsync,
     deleteListAsync,
+    setDefaultListAsync,
   } = useWatchlists()
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -80,7 +81,7 @@ const WatchlistListSelector: React.FC = () => {
         }
         const newList = await createListAsync(trimmed)
         if (modalIsDefault) {
-          await editListAsync({ listId: newList.id, isDefault: true })
+          await setDefaultListAsync(newList.id)
         }
         selectList(newList.id)
       } else if (modalType === 'edit' && selectedList) {
@@ -90,11 +91,12 @@ const WatchlistListSelector: React.FC = () => {
           setIsSubmitting(false)
           return
         }
-        await editListAsync({
-          listId: selectedList.id,
-          name: trimmed !== selectedList.name ? trimmed : undefined,
-          isDefault: modalIsDefault !== selectedList.isDefault ? modalIsDefault : undefined,
-        })
+        if (trimmed !== selectedList.name) {
+          await editListAsync({ listId: selectedList.id, name: trimmed })
+        }
+        if (modalIsDefault && !selectedList.isDefault) {
+          await setDefaultListAsync(selectedList.id)
+        }
       }
       closeModal()
     } catch (error: any) {

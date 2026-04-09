@@ -18,6 +18,7 @@ const tiers = [
     monthlyPrice: 19.99,
     lifetime: null,
     color: 'text-white',
+    backgroundColor: 'bg-white',
     borderColor: 'border-white/40',
     headerBg: 'bg-white/5',
     buttonStyle: 'border-white text-white hover:bg-white/10',
@@ -29,6 +30,7 @@ const tiers = [
     monthlyPrice: 49.99,
     lifetime: null,
     color: 'text-primary',
+    backgroundColor: 'bg-primary',
     borderColor: 'border-primary/40',
     headerBg: 'bg-primary/5',
     buttonStyle: 'border-primary text-primary hover:bg-primary/10',
@@ -40,6 +42,7 @@ const tiers = [
     monthlyPrice: 99.99,
     lifetime: null,
     color: 'text-amber-500',
+    backgroundColor: 'bg-amber-500',
     borderColor: 'border-amber-500/40',
     headerBg: 'bg-amber-500/5',
     buttonStyle: 'border-amber-500 text-amber-500 hover:bg-amber-500/10',
@@ -51,6 +54,7 @@ const tiers = [
     monthlyPrice: 10000,
     lifetime: null,
     color: 'text-purple-400',
+    backgroundColor: 'bg-purple-400',
     borderColor: 'border-purple-400/40',
     headerBg: 'bg-purple-400/5',
     buttonStyle: 'border-purple-400 text-purple-400 hover:bg-purple-400/10',
@@ -62,6 +66,7 @@ const tiers = [
   //   monthlyPrice: null,
   //   lifetime: '$1,000,000.00',
   //   color: 'text-red-400',
+  //   backgroundColor: 'bg-red-400',
   //   borderColor: 'border-red-400/40',
   //   headerBg: 'bg-red-400/5',
   //   buttonStyle: 'border-red-400 text-red-400 hover:bg-red-400/10',
@@ -193,11 +198,9 @@ const ProPageContent = () => {
           </thead>
           <tbody>
             {features.map((feature, i) => (
-              <tr key={feature.label} className={i % 2 === 0 ? 'bg-white/[0.02]' : ''}>
+              <tr key={feature.label} className={i % 2 === 0 ? 'bg-white/2' : ''}>
                 <td className='border-tertiary border-b p-4 text-base font-medium'>{feature.label}</td>
                 {feature.tiers.map((included, j) => {
-                  const checkBackgroundColor = tiers[j].color.replace('text-', 'bg-')
-
                   return (
                     <td
                       key={tiers[j].name}
@@ -212,7 +215,7 @@ const ProPageContent = () => {
                         <div
                           className={cn(
                             'mx-auto flex h-6 w-6 items-center justify-center rounded-sm',
-                            checkBackgroundColor
+                            tiers[j].backgroundColor
                           )}
                         >
                           <span className='text-background font-sans text-xl font-black'>&#10003;</span>

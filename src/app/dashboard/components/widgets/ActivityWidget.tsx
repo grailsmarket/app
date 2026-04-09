@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { updateComponentConfig } from '@/state/reducers/dashboard'
@@ -12,8 +12,11 @@ import { useCategories } from '@/components/filters/hooks/useCategories'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { cn } from '@/utils/tailwind'
 import type { ActivityType } from '@/types/profile'
+import { Check, ShortArrow } from 'ethereum-identity-kit'
+import { useClickAway } from '@/hooks/useClickAway'
 
 const EVENT_TYPE_OPTIONS = [
+  { value: 'all', label: 'All' },
   { value: 'listed', label: 'Listed' },
   { value: 'bought', label: 'Bought' },
   { value: 'sold', label: 'Sold' },
@@ -34,7 +37,17 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
   const { categories } = useCategories()
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Fetch historical activity from API
+  const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false)
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
+
+  const eventDropdownRef = useClickAway<HTMLDivElement>(() => {
+    setIsEventDropdownOpen(false)
+  })
+
+  const categoryDropdownRef = useClickAway<HTMLDivElement>(() => {
+    setIsCategoryDropdownOpen(false)
+  })
+
   const {
     data: historicalData,
     isLoading,
@@ -128,49 +141,87 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
   return (
     <div className='flex h-full flex-col'>
       {/* Filters */}
-      <div className='border-tertiary flex flex-wrap items-center gap-1.5 border-b px-3 py-2'>
+      <div className='border-tertiary flex flex-wrap items-center border-b'>
         {/* Connection indicator */}
-        <div className={cn('mr-0.5 h-2 w-2 shrink-0 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')} />
+        {/* <div className={cn('mx-4 h-2 w-2 shrink-0 rounded-full', isConnected ? 'bg-green-500' : 'bg-red-500')} /> */}
 
         {/* Event type filters */}
-        <button
-          onClick={() => dispatch(updateComponentConfig({ id: instanceId, patch: { eventTypes: [] } }))}
-          className={cn(
-            'cursor-pointer rounded px-2 py-0.5 text-xs font-medium transition-colors',
-            isAllEvents ? 'bg-primary text-background' : 'text-neutral hover:bg-white/10 hover:text-white'
-          )}
-        >
-          All
-        </button>
-        {EVENT_TYPE_OPTIONS.map((opt) => (
+        <div ref={eventDropdownRef} className='border-tertiary relative w-1/2'>
           <button
-            key={opt.value}
-            onClick={() => toggleEventType(opt.value)}
-            className={cn(
-              'cursor-pointer rounded px-2 py-0.5 text-xs font-medium transition-colors',
-              config.eventTypes.includes(opt.value)
-                ? 'bg-primary text-background'
-                : 'text-neutral hover:bg-white/10 hover:text-white'
-            )}
+            onClick={() => setIsEventDropdownOpen(!isEventDropdownOpen)}
+            className='hover:bg-secondary flex h-10 w-full cursor-pointer items-center justify-between px-3 transition-colors'
           >
-            {opt.label}
+            <p className='max-w-[90%] truncate text-lg'>
+              {config.eventTypes.length === 0
+                ? 'All'
+                : config.eventTypes
+                    .map((type) => EVENT_TYPE_OPTIONS.find((opt) => opt.value === type)?.label)
+                    .join(', ')}
+            </p>
+            <ShortArrow
+              className={cn('h-3 w-3 transition-transform', isEventDropdownOpen ? 'rotate-0' : 'rotate-180')}
+            />
           </button>
-        ))}
+          {isEventDropdownOpen && (
+            <div className='bg-background border-tertiary absolute top-11 left-0 z-10 flex w-full flex-col rounded-md border-2 shadow-lg'>
+              {EVENT_TYPE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    if (opt.value === 'all') {
+                      dispatch(updateComponentConfig({ id: instanceId, patch: { eventTypes: [] } }))
+                      setIsEventDropdownOpen(false)
+                    } else {
+                      toggleEventType(opt.value)
+                    }
+                  }}
+                  className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
+                >
+                  <p>{opt.label}</p>
+                  {config.eventTypes.includes(opt.value) && <Check className='text-primary h-4 w-4' />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Category selector */}
-        <div className='bg-tertiary mx-0.5 h-4 w-px' />
-        <select
-          value={config.category ?? ''}
-          onChange={(e) => setCategory(e.target.value || null)}
-          className='border-tertiary bg-secondary cursor-pointer rounded border px-1.5 py-0.5 text-xs outline-none'
-        >
-          <option value=''>All Categories</option>
-          {categories?.map((cat: any) => (
-            <option key={cat.name ?? cat} value={cat.name ?? cat}>
-              {cat.name ?? cat}
-            </option>
-          ))}
-        </select>
+        <div ref={categoryDropdownRef} className='border-tertiary relative w-1/2 border-l-2'>
+          <button
+            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+            className='hover:bg-secondary flex h-10 w-full cursor-pointer items-center justify-between px-3 transition-colors'
+          >
+            <p className='max-w-42 truncate text-lg'>{config.category ?? 'All Categories'}</p>
+            <ShortArrow
+              className={cn('h-3 w-3 transition-transform', isCategoryDropdownOpen ? 'rotate-0' : 'rotate-180')}
+            />
+          </button>
+          {isCategoryDropdownOpen && (
+            <div className='bg-background border-tertiary absolute top-11 left-0 z-10 flex w-full flex-col rounded-md border-2 shadow-lg'>
+              <button
+                key='all'
+                onClick={() => {
+                  dispatch(updateComponentConfig({ id: instanceId, patch: { category: null } }))
+                  setIsCategoryDropdownOpen(false)
+                }}
+                className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
+              >
+                <p>All Categories</p>
+              </button>
+              {categories?.map((cat: any) => (
+                <button
+                  key={cat.name ?? cat}
+                  value={cat.name ?? cat}
+                  onChange={(e) => setCategory(e.target.value || null)}
+                  className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
+                >
+                  <p>{cat.name ?? cat}</p>
+                  {config.category === (cat.name ?? cat) && <Check className='text-primary h-4 w-4' />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Events list */}

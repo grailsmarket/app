@@ -5,13 +5,12 @@ import type { Layout, LayoutItem, ResponsiveLayouts } from 'react-grid-layout'
 import { ResponsiveGridLayout, verticalCompactor, useContainerWidth } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
+import { useWindowSize } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { addComponent, dropComponent, updateLayouts, setColOverride, setSidebarOpen } from '@/state/reducers/dashboard'
+import { dropComponent, updateLayouts } from '@/state/reducers/dashboard'
 import {
   selectDashboardComponents,
   selectDashboardLayouts,
-  selectDashboardColOverride,
-  selectDashboardSidebarOpen,
   selectDashboard,
 } from '@/state/reducers/dashboard/selectors'
 import {
@@ -31,10 +30,6 @@ import ChartWidget from './widgets/ChartWidget'
 import HoldersWidget from './widgets/HoldersWidget'
 import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
-import { cn } from '@/utils/tailwind'
-import LayoutSelector from './LayoutSelector'
-import Image from 'next/image'
-import Plus from 'public/icons/plus.svg'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -72,47 +67,15 @@ const DashboardGrid = () => {
   const dashboard = useAppSelector(selectDashboard)
   const reduxLayouts = useAppSelector(selectDashboardLayouts)
   const components = useAppSelector(selectDashboardComponents)
-  const colOverride = useAppSelector(selectDashboardColOverride)
-  const sidebarOpen = useAppSelector(selectDashboardSidebarOpen)
   const currentBreakpointRef = useRef<DashboardBreakpoint>('lg')
   const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true })
+  const { width: windowWidth } = useWindowSize()
 
   const componentIds = useMemo(() => Object.keys(components), [components, dashboard.layoutId])
 
-  // Calculate the effective max columns for the current width
-  const maxColsForCurrentWidth = getMaxColsForWidth(width)
+  const maxCols = getMaxColsForWidth(windowWidth ?? 0)
+  const cols = useMemo(() => ({ lg: maxCols, md: maxCols, sm: maxCols, xs: maxCols }), [maxCols])
 
-  // If user has a column override, clamp it to what the viewport allows
-  const effectiveCols = colOverride !== null ? Math.min(colOverride, maxColsForCurrentWidth) : null
-
-  // Build cols config: either all breakpoints use the override, or use the responsive defaults
-  const cols = useMemo(() => {
-    if (effectiveCols !== null) {
-      // Override: all breakpoints use the same column count
-      return {
-        lg: effectiveCols,
-        md: effectiveCols,
-        sm: effectiveCols,
-        xs: effectiveCols,
-      }
-    }
-    return DASHBOARD_COLS
-  }, [effectiveCols])
-
-  // Available column options the user can pick from (capped by viewport width)
-  const colOptions = useMemo(() => {
-    const options: number[] = []
-    for (let i = 1; i <= maxColsForCurrentWidth; i++) {
-      options.push(i)
-    }
-    return options
-  }, [maxColsForCurrentWidth])
-
-  // Deep-clone layouts on every render so RGL never touches frozen Immer objects.
-  // RGL mutates layout items in-place (setting x, y, etc.) and also holds internal
-  // references across renders. If we dispatch those same objects to Redux, Immer
-  // freezes them, and RGL's next mutation on its cached reference throws.
-  // Solution: always give RGL fresh clones, and always clone before dispatching.
   const layouts = useMemo(() => {
     const cloned: Record<string, LayoutItem[]> = {}
     for (const bp of Object.keys(reduxLayouts) as DashboardBreakpoint[]) {
@@ -121,15 +84,11 @@ const DashboardGrid = () => {
     return cloned as unknown as DashboardLayouts
   }, [reduxLayouts])
 
-  // Debounce + clone before dispatching to Redux.
-  // We clone allLayouts at capture time so Immer freezes our copy,
-  // not the objects RGL continues to mutate internally.
   const layoutChangeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingLayouts = useRef<DashboardLayouts | null>(null)
 
   const handleLayoutChange = useCallback(
     (_currentLayout: Layout, allLayouts: ResponsiveLayouts) => {
-      // Clone immediately so the dispatched object is independent of RGL internals
       const snapshot: Record<string, LayoutItem[]> = {}
       for (const bp of Object.keys(allLayouts)) {
         const items = allLayouts[bp]
@@ -162,11 +121,6 @@ const DashboardGrid = () => {
 
       if (!type) return
 
-      // RGL has already resolved collisions and compacted the layout.
-      // `layoutAfterDrop` contains all existing items repositioned
-      // around the drop, plus the dropped item with id `__dropping-elem__`.
-      // We pass this resolved layout to Redux so the new item ends up
-      // exactly where the user dropped it.
       dispatch(
         dropComponent({
           type,
@@ -182,52 +136,6 @@ const DashboardGrid = () => {
 
   return (
     <div ref={containerRef}>
-      <div className='flex items-center justify-between gap-3'>
-        <div className='item-center flex gap-3'>
-          <button
-            onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
-            className={cn(
-              'border-tertiary hover:bg-secondary text-md flex h-10 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 font-medium transition-colors',
-              sidebarOpen && 'bg-primary/10 border-primary/40 text-primary'
-            )}
-          >
-            <Image
-              src={Plus}
-              alt='plus'
-              height={16}
-              width={16}
-              className={cn('transition-transform', sidebarOpen && 'rotate-45')}
-            />
-            <p>Widgets</p>
-          </button>
-          {/* <span className='text-neutral text-xs font-medium'>Grid</span> */}
-          <div className='bg-secondary flex rounded-md p-0.5'>
-            <button
-              onClick={() => dispatch(setColOverride(null))}
-              className={cn(
-                'cursor-pointer rounded px-2 py-1 text-lg font-medium transition-colors',
-                colOverride === null ? 'bg-primary text-background' : 'text-neutral hover:text-white'
-              )}
-            >
-              Auto
-            </button>
-            {colOptions.map((n) => (
-              <button
-                key={n}
-                onClick={() => dispatch(setColOverride(n))}
-                className={cn(
-                  'cursor-pointer rounded px-3 py-1 text-lg font-medium transition-colors',
-                  colOverride === n ? 'bg-primary text-background' : 'text-neutral hover:text-white'
-                )}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-        <LayoutSelector />
-      </div>
-
       {componentIds.length === 0 && (
         <div className='fixed top-full left-full flex w-80 -translate-x-[calc(50vw+160px)] -translate-y-[50vh] flex-col items-center justify-center gap-3 text-center'>
           <p className='text-neutral text-xl font-medium'>Your dashboard is empty</p>

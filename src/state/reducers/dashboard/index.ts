@@ -10,27 +10,30 @@ import {
   type DashboardComponentConfig,
   DEFAULT_WIDGET_SIZES,
   DASHBOARD_COLS,
+  WIDGET_LABELS,
 } from './types'
 
 // ── Default configs per component type ──────────────────────────
 const createDefaultConfig = (type: DashboardComponentType): DashboardComponentConfig => {
+  const name = WIDGET_LABELS[type]
+
   switch (type) {
     case 'domains':
-      return { type, viewType: 'grid', filters: { ...emptyFilterState }, filtersOpen: false }
+      return { type, name, viewType: 'grid', filters: { ...emptyFilterState }, filtersOpen: false }
     case 'top-sales':
     case 'top-offers':
     case 'top-registrations':
-      return { type, period: '7d', source: 'all', category: null }
+      return { type, name, period: '7d', source: 'all', category: null }
     case 'sales-chart':
     case 'offers-chart':
     case 'registrations-chart':
-      return { type, period: '7d', category: null }
+      return { type, name, period: '7d', category: null }
     case 'holders':
-      return { type, categories: [] }
+      return { type, name, categories: [] }
     case 'leaderboard':
-      return { type, sortBy: 'names_owned', sortOrder: 'desc', clubs: [] }
+      return { type, name, sortBy: 'names_owned', sortOrder: 'desc', clubs: [] }
     case 'activity':
-      return { type, eventTypes: [], category: null }
+      return { type, name, eventTypes: [], category: null }
   }
 }
 
@@ -160,6 +163,12 @@ export const dashboardSlice = createSlice({
       state.layouts = action.payload
     },
 
+    renameComponent(state, action: PayloadAction<{ id: string; name: string }>) {
+      const { id, name } = action.payload
+      const existing = state.components[id]
+      if (existing) existing.name = name
+    },
+
     updateComponentConfig(state, action: PayloadAction<{ id: string; patch: Partial<DashboardComponentConfig> }>) {
       const { id, patch } = action.payload
       const existing = state.components[id]
@@ -230,6 +239,7 @@ export const {
   addComponent,
   dropComponent,
   removeComponent,
+  renameComponent,
   updateLayouts,
   updateComponentConfig,
   setDashboardLayoutId,

@@ -1,6 +1,7 @@
 import type { LayoutItem } from 'react-grid-layout'
 import type { DashboardLayoutResponse, Layout } from '@/api/dashboard/types'
 import type { DashboardComponentConfig } from '@/state/reducers/dashboard/types'
+import { WIDGET_LABELS } from '@/state/reducers/dashboard/types'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 
 /** Negative IDs distinguish mock presets from API-backed layouts. */
@@ -20,6 +21,7 @@ const G = (i: string, x: number, y: number, w: number, h: number, minW: number, 
 
 const domainsWidget = (): DashboardComponentConfig => ({
   type: 'domains',
+  name: WIDGET_LABELS['domains'],
   viewType: 'grid',
   filters: { ...emptyFilterState },
   filtersOpen: false,
@@ -63,10 +65,16 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
       ],
     },
     components: {
-      'widget-1': { type: 'activity', eventTypes: [], category: null },
+      'widget-1': { type: 'activity', name: WIDGET_LABELS['activity'], eventTypes: [], category: null },
       'widget-2': domainsWidget(),
-      'widget-4': { type: 'top-offers', period: '7d', source: 'all', category: null },
-      'widget-5': { type: 'offers-chart', period: '7d', category: null },
+      'widget-4': {
+        type: 'top-offers',
+        name: WIDGET_LABELS['top-offers'],
+        period: '7d',
+        source: 'all',
+        category: null,
+      },
+      'widget-5': { type: 'offers-chart', name: WIDGET_LABELS['offers-chart'], period: '7d', category: null },
     },
     createdAt: '',
     updatedAt: '',
@@ -104,10 +112,10 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
       ],
     },
     components: {
-      'widget-1': { type: 'activity', eventTypes: [], category: null },
+      'widget-1': { type: 'activity', name: WIDGET_LABELS['activity'], eventTypes: [], category: null },
       'widget-2': domainsWidget(),
-      'widget-3': { type: 'top-sales', period: '7d', source: 'all', category: null },
-      'widget-4': { type: 'sales-chart', period: '7d', category: null },
+      'widget-3': { type: 'top-sales', name: WIDGET_LABELS['top-sales'], period: '7d', source: 'all', category: null },
+      'widget-4': { type: 'sales-chart', name: WIDGET_LABELS['sales-chart'], period: '7d', category: null },
     },
     createdAt: '',
     updatedAt: '',
@@ -145,10 +153,21 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
       ],
     },
     components: {
-      'widget-1': { type: 'leaderboard', sortBy: 'names_owned', sortOrder: 'desc', clubs: [] },
-      'widget-2': { type: 'holders', categories: [] },
+      'widget-1': {
+        type: 'leaderboard',
+        name: WIDGET_LABELS['leaderboard'],
+        sortBy: 'names_owned',
+        sortOrder: 'desc',
+        clubs: [],
+      },
+      'widget-2': { type: 'holders', name: WIDGET_LABELS['holders'], categories: [] },
       'widget-3': domainsWidget(),
-      'widget-4': { type: 'registrations-chart', period: '7d', category: null },
+      'widget-4': {
+        type: 'registrations-chart',
+        name: WIDGET_LABELS['registrations-chart'],
+        period: '7d',
+        category: null,
+      },
     },
     createdAt: '',
     updatedAt: '',

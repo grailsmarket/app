@@ -1,16 +1,21 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useUserContext } from '@/context/user'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { setSidebarOpen } from '@/state/reducers/dashboard'
+import { selectDashboardSidebarOpen } from '@/state/reducers/dashboard/selectors'
 import DashboardGrid from './DashboardGrid'
 import DashboardSidebar from './DashboardSidebar'
+import LayoutSelector from './LayoutSelector'
 import { DashboardActivityProvider } from '../context/DashboardActivityProvider'
-import { useDashboardSync } from '../hooks/useDashboardSync'
 import { useDashboardAutoSave } from '../hooks/useDashboardAutoSave'
 import PrimaryButton from '@/components/ui/buttons/primary'
+import Plus from 'public/icons/plus.svg'
+import { cn } from '@/utils/tailwind'
 
 const DashboardPage = () => {
   const { authStatus, authStatusIsLoading } = useUserContext()
@@ -68,14 +73,37 @@ const DashboardPage = () => {
 }
 
 const AuthenticatedDashboard = () => {
+  const dispatch = useAppDispatch()
+  const sidebarOpen = useAppSelector(selectDashboardSidebarOpen)
   useDashboardAutoSave()
 
   return (
     <DashboardActivityProvider>
-      <main className='relative flex min-h-screen'>
-        <DashboardSidebar />
-        <div className='flex-1 overflow-x-hidden px-2 pt-2 pb-8 sm:px-4'>
-          <DashboardGrid />
+      <main className='relative flex min-h-screen flex-col'>
+        <div className='px-md py-md sm:px-lg border-tertiary flex items-center justify-between gap-3 border-b-2'>
+          <button
+            onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
+            className={cn(
+              'border-tertiary hover:bg-secondary text-md flex h-10 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 font-medium transition-colors',
+              sidebarOpen && 'bg-primary/10 border-primary/40 text-primary'
+            )}
+          >
+            <Image
+              src={Plus}
+              alt='plus'
+              height={16}
+              width={16}
+              className={cn('transition-transform', sidebarOpen && 'rotate-45')}
+            />
+            <p>Widgets</p>
+          </button>
+          <LayoutSelector />
+        </div>
+        <div className='relative flex flex-1'>
+          <DashboardSidebar />
+          <div className='w-full overflow-x-hidden px-2 pb-8 sm:px-4'>
+            <DashboardGrid />
+          </div>
         </div>
       </main>
     </DashboardActivityProvider>

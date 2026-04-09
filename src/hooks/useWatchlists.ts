@@ -14,7 +14,7 @@ import {
 import { useUserContext } from '@/context/user'
 import { getWatchlistLists } from '@/api/watchlist/lists/getLists'
 import { createWatchlistList } from '@/api/watchlist/lists/createList'
-import { editWatchlistList } from '@/api/watchlist/lists/editList'
+import { editWatchlistList, setDefaultWatchlistList } from '@/api/watchlist/lists/editList'
 import { deleteWatchlistList } from '@/api/watchlist/lists/deleteList'
 
 const ALLOWED_TIERS = ['plus', 'pro', 'gold'] as const
@@ -78,6 +78,13 @@ const useWatchlists = () => {
     },
   })
 
+  const setDefaultMutation = useMutation({
+    mutationFn: setDefaultWatchlistList,
+    onSuccess: () => {
+      invalidateLists()
+    },
+  })
+
   const deleteMutation = useMutation({
     mutationFn: deleteWatchlistList,
     onSuccess: ({ listId }) => {
@@ -107,6 +114,9 @@ const useWatchlists = () => {
     deleteListAsync: deleteMutation.mutateAsync,
     isDeletingList: deleteMutation.isPending,
     deleteListError: deleteMutation.error as (Error & { code?: string }) | null,
+    setDefaultList: setDefaultMutation.mutate,
+    setDefaultListAsync: setDefaultMutation.mutateAsync,
+    isSettingDefaultList: setDefaultMutation.isPending,
   }
 }
 

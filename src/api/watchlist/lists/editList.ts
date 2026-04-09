@@ -8,16 +8,10 @@ export type EditWatchlistListError = 'CANNOT_RENAME_DEFAULT' | 'DUPLICATE_LIST_N
 export const editWatchlistList = async ({
   listId,
   name,
-  isDefault,
 }: {
   listId: number
   name?: string
-  isDefault?: boolean
 }): Promise<WatchlistListType> => {
-  const body: Record<string, unknown> = {}
-  if (name !== undefined) body.name = name
-  if (isDefault !== undefined) body.isDefault = isDefault
-
   try {
     const response = await authFetch(`${API_URL}/watchlist/lists/${listId}`, {
       method: 'PATCH',
@@ -25,7 +19,7 @@ export const editWatchlistList = async ({
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ name }),
     })
 
     const data = (await response.json()) as APIResponseType<WatchlistListType> & { code?: EditWatchlistListError }
@@ -41,6 +35,26 @@ export const editWatchlistList = async ({
     return data.data
   } catch (error) {
     console.error('Error editing watchlist list', error)
+    throw error
+  }
+}
+
+export const setDefaultWatchlistList = async (listId: number): Promise<WatchlistListType> => {
+  try {
+    const response = await authFetch(`${API_URL}/watchlist/lists/${listId}/default`, {
+      method: 'PUT',
+      mode: 'cors',
+    })
+
+    const data = (await response.json()) as APIResponseType<WatchlistListType>
+
+    if (!response.ok || !data.success) {
+      throw new Error('Failed to set default watchlist list')
+    }
+
+    return data.data
+  } catch (error) {
+    console.error('Error setting default watchlist list', error)
     throw error
   }
 }

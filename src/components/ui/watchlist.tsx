@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Image from 'next/image'
 import Tooltip from './tooltip'
-import _ from 'lodash'
 
 import BinocularsEmpty from 'public/icons/watchlist.svg'
 import BinocularsFilled from 'public/icons/watchlist-fill.svg'
@@ -15,7 +14,6 @@ import { useUserContext } from '@/context/user'
 import BellIcon from 'public/icons/bell.svg'
 import FilterSelector from '../filters/components/FilterSelector'
 import { WatchlistSettingsType } from '@/api/watchlist/update'
-import PrimaryButton from './buttons/primary'
 import { useClickAway } from '@/hooks/useClickAway'
 import { Cross, ShortArrow } from 'ethereum-identity-kit'
 
@@ -53,10 +51,8 @@ const Watchlist: React.FC<WatchlistProps> = ({
   dropdownPosition = 'right',
   watchlistId,
   showSettingsArrow = true,
-  fetchWatchSettings = true,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [pendingMembership, setPendingMembership] = useState<Record<number, boolean>>({})
 
   const dropdownRef = useClickAway(() => setDropdownOpen(false))
   const { openConnectModal } = useConnectModal()
@@ -71,111 +67,38 @@ const Watchlist: React.FC<WatchlistProps> = ({
     watchlistSettings,
     setWatchlistSettings,
     updateWatchlistSettings,
-    watchlistItem,
-    isUpdatingSettings,
     listsContainingName,
     isInList,
-    getEntryForList,
-    addToList,
-    removeFromList,
+    toggleInList,
   } = useWatchlist(domain.name, domain.token_id, true, watchlistId)
 
   const { lists } = useWatchlists()
   const hasMultipleLists = lists.length > 1
+  const isInAnyList = listsContainingName.length > 0
 
-  // Snapshot of server notification settings for dirty check
-  const serverSettings = useMemo<WatchlistSettingsType>(
-    () => ({
-      notifyOnSale: watchlistItem?.notifyOnSale ?? true,
-      notifyOnOffer: watchlistItem?.notifyOnOffer ?? true,
-      notifyOnListing: watchlistItem?.notifyOnListing ?? true,
-      notifyOnPriceChange: watchlistItem?.notifyOnPriceChange ?? true,
-    }),
-    [watchlistItem]
-  )
+  const handleToggleList = useCallback(
+    (listId: number) => {
+      const currentlyIn = isInList(listId)
+      toggleInList(domain, listId)
 
-  // Build the server membership state for dirty check
-  const serverMembership = useMemo(() => {
-    const map: Record<number, boolean> = {}
-    lists.forEach((list) => {
-      map[list.id] = isInList(list.id)
-    })
-    return map
-  }, [lists, isInList])
-
-  const hasMembershipChanges = useMemo(
-    () => lists.some((list) => (pendingMembership[list.id] ?? false) !== (serverMembership[list.id] ?? false)),
-    [lists, pendingMembership, serverMembership]
-  )
-
-  const isInAnyPendingList = useMemo(() => lists.some((list) => pendingMembership[list.id]), [lists, pendingMembership])
-
-  const hasNotificationChanges = useMemo(
-    () => !_.isEqual(watchlistSettings, serverSettings),
-    [watchlistSettings, serverSettings]
-  )
-
-  const hasChanges = hasMembershipChanges || hasNotificationChanges
-
-  const openDropdown = useCallback(() => {
-    const initial: Record<number, boolean> = {}
-    lists.forEach((list) => {
-      initial[list.id] = isInList(list.id)
-    })
-    setPendingMembership(initial)
-    setDropdownOpen(true)
-  }, [lists, isInList])
-
-  const closeDropdown = useCallback(() => {
-    setDropdownOpen(false)
-  }, [])
-
-  const togglePendingList = useCallback((listId: number) => {
-    setPendingMembership((prev) => ({ ...prev, [listId]: !prev[listId] }))
-  }, [])
-
-  const toggleNotificationSetting = useCallback(
-    (key: keyof WatchlistSettingsType) => {
-      setWatchlistSettings({ ...watchlistSettings, [key]: !watchlistSettings[key] })
-    },
-    [watchlistSettings, setWatchlistSettings]
-  )
-
-  const handleSave = useCallback(() => {
-    // Optimistically update the icon before mutations resolve
-    const willBeInAnyList = lists.some((list) => pendingMembership[list.id])
-    setIsWatching(willBeInAnyList)
-
-    lists.forEach((list) => {
-      const wasIn = serverMembership[list.id] ?? false
-      const shouldBeIn = pendingMembership[list.id] ?? false
-
-      if (shouldBeIn && !wasIn) {
-        addToList(domain, list.id)
-      } else if (!shouldBeIn && wasIn) {
-        const entry = getEntryForList(list.id)
-        if (entry) removeFromList(entry.watchlistEntryId, list.id)
+      if (!currentlyIn) {
+        setIsWatching(true)
+      } else {
+        const stillInOther = listsContainingName.some((entry) => entry.listId !== listId)
+        setIsWatching(stillInOther)
       }
-    })
+    },
+    [domain, isInList, toggleInList, setIsWatching, listsContainingName]
+  )
 
-    if (hasNotificationChanges) {
-      updateWatchlistSettings(watchlistSettings)
-    }
-
-    setDropdownOpen(false)
-  }, [
-    lists,
-    serverMembership,
-    pendingMembership,
-    domain,
-    setIsWatching,
-    addToList,
-    getEntryForList,
-    removeFromList,
-    hasNotificationChanges,
-    updateWatchlistSettings,
-    watchlistSettings,
-  ])
+  const handleToggleNotification = useCallback(
+    (key: keyof WatchlistSettingsType) => {
+      const updated = { ...watchlistSettings, [key]: !watchlistSettings[key] }
+      setWatchlistSettings(updated)
+      updateWatchlistSettings(updated)
+    },
+    [watchlistSettings, setWatchlistSettings, updateWatchlistSettings]
+  )
 
   const handleBinocularsClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -188,11 +111,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
     }
 
     if (hasMultipleLists) {
-      if (dropdownOpen) {
-        closeDropdown()
-      } else {
-        openDropdown()
-      }
+      setDropdownOpen(!dropdownOpen)
     } else {
       toggleWatchlist(domain)
     }
@@ -223,24 +142,16 @@ const Watchlist: React.FC<WatchlistProps> = ({
         </div>
       </Tooltip>
 
-      {/* Settings dropdown — shown via bell icon (single list) or binoculars click (multi list) */}
       {(showSettings && isWatching) || (hasMultipleLists && dropdownOpen) ? (
         <div
           ref={dropdownRef as React.RefObject<HTMLDivElement>}
           className='relative ml-1 flex flex-row items-center gap-2'
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Bell trigger — only show when settings are enabled and we're not using binoculars as trigger */}
           {showSettings && isWatching && (
             <button
               className='bg-secondary hover:bg-tertiary flex cursor-pointer flex-row items-center gap-1 rounded-md p-1.5'
-              onClick={() => {
-                if (dropdownOpen) {
-                  setDropdownOpen(false)
-                } else {
-                  openDropdown()
-                }
-              }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               <Image src={BellIcon} alt='Settings' width={22} height={22} className='min-h-5 min-w-5 opacity-100' />
               {showSettingsArrow && (
@@ -255,7 +166,6 @@ const Watchlist: React.FC<WatchlistProps> = ({
             </button>
           )}
 
-          {/* Dropdown panel */}
           <div
             onClick={(e) => {
               e.stopPropagation()
@@ -268,33 +178,28 @@ const Watchlist: React.FC<WatchlistProps> = ({
             )}
           >
             <Cross
-              onClick={closeDropdown}
+              onClick={() => setDropdownOpen(false)}
               className='text-foreground absolute top-3 right-3 h-3 w-3 cursor-pointer transition-opacity hover:opacity-80'
             />
 
-            {/* Lists section */}
             {hasMultipleLists && (
               <>
                 <p className='text-neutral p-md w-full py-1 text-lg font-semibold'>Lists</p>
                 {lists.map((list) => (
                   <div
                     key={list.id}
-                    onClick={() => togglePendingList(list.id)}
+                    onClick={() => handleToggleList(list.id)}
                     className='hover:bg-foreground/10 p-md flex w-full cursor-pointer flex-row items-center justify-between gap-2 rounded-md'
                   >
                     <p className='text-lg font-medium'>{list.name}</p>
-                    <FilterSelector
-                      onClick={() => togglePendingList(list.id)}
-                      isActive={pendingMembership[list.id] ?? false}
-                    />
+                    <FilterSelector onClick={() => handleToggleList(list.id)} isActive={isInList(list.id)} />
                   </div>
                 ))}
-                {isInAnyPendingList && <div className='border-tertiary my-1 w-full border-t' />}
+                {isInAnyList && <div className='border-tertiary my-1 w-full border-t' />}
               </>
             )}
 
-            {/* Notification settings — only when the name will be in at least one list */}
-            {(isInAnyPendingList || (!hasMultipleLists && isWatching)) && (
+            {(isInAnyList || (!hasMultipleLists && isWatching)) && (
               <>
                 {hasMultipleLists && (
                   <p className='text-neutral p-md w-full pb-1 text-lg font-semibold'>Notifications</p>
@@ -302,23 +207,15 @@ const Watchlist: React.FC<WatchlistProps> = ({
                 {(Object.keys(NOTIFICATION_LABELS) as (keyof WatchlistSettingsType)[]).map((key) => (
                   <div
                     key={key}
-                    onClick={() => toggleNotificationSetting(key)}
+                    onClick={() => handleToggleNotification(key)}
                     className='hover:bg-foreground/10 p-md flex w-full cursor-pointer flex-row items-center justify-between gap-2 rounded-md'
                   >
                     <p className='text-lg font-medium'>{NOTIFICATION_LABELS[key]}</p>
-                    <FilterSelector onClick={() => toggleNotificationSetting(key)} isActive={watchlistSettings[key]} />
+                    <FilterSelector onClick={() => handleToggleNotification(key)} isActive={watchlistSettings[key]} />
                   </div>
                 ))}
               </>
             )}
-
-            <PrimaryButton
-              className='mt-1 w-full'
-              onClick={handleSave}
-              disabled={!hasChanges || isUpdatingSettings || isLoading}
-            >
-              Save
-            </PrimaryButton>
           </div>
         </div>
       ) : null}

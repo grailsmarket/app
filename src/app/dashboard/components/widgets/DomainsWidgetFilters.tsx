@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
-import { clearDomainFilters, setDomainFiltersOpen, updateDomainFilters } from '@/state/reducers/dashboard'
+import { clearDomainFilters, updateDomainFilters } from '@/state/reducers/dashboard'
 import type { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import {
   MARKETPLACE_STATUS_FILTER_LABELS,
@@ -36,7 +36,6 @@ import { cn } from '@/utils/tailwind'
 import arrowDown from 'public/icons/arrow-down.svg'
 import type { CategoryType } from '@/types/domains'
 import filter from 'public/icons/filter.svg'
-import close from 'public/icons/cross.svg'
 
 const STATUS_OPTIONS = ['none', ...MARKETPLACE_STATUS_FILTER_LABELS] as const
 const STATUS_OPTION_LABELS: Record<string, string> = {
@@ -579,7 +578,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
               </div>
             </div>
             {(showFromPicker || showToPicker) && (
-              <div className='fixed top-0 left-0 z-[1000] flex h-full w-full items-center justify-center bg-black/40 backdrop-blur-sm'>
+              <div className='fixed top-0 left-0 z-1000 flex h-full w-full items-center justify-center bg-black/40 backdrop-blur-sm'>
                 <DatePicker
                   onSelect={showFromPicker ? handleFromDateSelect : handleToDateSelect}
                   onClose={() => {

@@ -6,6 +6,7 @@
 import { keccak256, encodeAbiParameters, parseAbiParameters } from 'viem'
 import type { SeaportOrder, SeaportOfferItem, SeaportConsiderationItem, BuildBulkOfferOrdersParams } from './bulkTypes'
 import { OrderType, ItemType } from './bulkTypes'
+import { buildCriteriaMerkleTree } from './criteriaOrder'
 
 const ENS_REGISTRAR_ADDRESS = '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
 const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -82,5 +83,90 @@ export class BulkOfferOrderBuilder {
         durationDays,
       })
     )
+  }
+
+  /**
+   * Build n-of-many offer orders.
+   * Creates N criteria-based offers, each valid for any of M candidate names.
+   * All N orders share the same merkle root but have unique salts.
+   */
+  buildNOfManyOfferOrders(params: {
+    tokenIds: string[]
+    offerAmountWei: string
+    offerer: string
+    count: number
+    durationDays?: number
+    currencyAddress?: string
+  }): {
+    orders: SeaportOrder[]
+    merkleRoot: string
+    proofs: Map<string, string[]>
+    sortedTokenIds: string[]
+  } {
+    const { tokenIds, offerAmountWei, offerer, count, durationDays = 7, currencyAddress } = params
+
+    if (tokenIds.length < 2) {
+      throw new Error('At least 2 token IDs required for n-of-many offers')
+    }
+    if (count < 1) {
+      throw new Error('Count must be at least 1')
+    }
+    if (count > tokenIds.length) {
+      throw new Error('Count cannot exceed the number of token IDs')
+    }
+
+    const { merkleRoot, proofs, sortedTokenIds } = buildCriteriaMerkleTree(tokenIds)
+
+    const startTime = Math.floor(Date.now() / 1000)
+    const endTime = startTime + durationDays * 24 * 60 * 60
+    const token = currencyAddress || WETH_ADDRESS
+
+    const orders: SeaportOrder[] = []
+    for (let i = 0; i < count; i++) {
+      const salt = keccak256(
+        encodeAbiParameters(parseAbiParameters('uint256, address, uint256'), [
+          BigInt(Date.now()),
+          offerer as `0x${string}`,
+          BigInt(i),
+        ])
+      )
+
+      const offer: SeaportOfferItem[] = [
+        {
+          itemType: ItemType.ERC20,
+          token,
+          identifierOrCriteria: '0',
+          startAmount: offerAmountWei,
+          endAmount: offerAmountWei,
+        },
+      ]
+
+      const consideration: SeaportConsiderationItem[] = [
+        {
+          itemType: ItemType.ERC721_WITH_CRITERIA,
+          token: ENS_REGISTRAR_ADDRESS,
+          identifierOrCriteria: merkleRoot,
+          startAmount: '1',
+          endAmount: '1',
+          recipient: offerer,
+        },
+      ]
+
+      orders.push({
+        offerer,
+        zone: ZERO_ADDRESS,
+        offer,
+        consideration,
+        orderType: OrderType.FULL_OPEN,
+        startTime,
+        endTime,
+        zoneHash: ZERO_BYTES32,
+        salt,
+        conduitKey: ZERO_BYTES32,
+        totalOriginalConsiderationItems: consideration.length,
+      })
+    }
+
+    return { orders, merkleRoot, proofs, sortedTokenIds }
   }
 }

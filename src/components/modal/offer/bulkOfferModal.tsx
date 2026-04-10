@@ -20,10 +20,12 @@ import { parseUnits } from 'viem'
 import { WETH_ADDRESS, USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { beautifyName } from '@/lib/ens'
 import Label from '@/components/ui/label'
+import TabSelector from '@/components/ui/tabSelector'
 import { cn } from '@/utils/tailwind'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
 
 type BulkOfferStatus = 'review' | 'signing' | 'submitting' | 'success' | 'error'
+type OfferMode = 'individual' | 'n-of-many'
 
 interface BulkOfferModalProps {
   onClose: () => void
@@ -31,7 +33,7 @@ interface BulkOfferModalProps {
 }
 
 const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => {
-  const { createBulkOffer, isLoading } = useSeaportContext()
+  const { createBulkOffer, createNOfManyOffer, isLoading } = useSeaportContext()
   const { address } = useAccount()
 
   const [status, setStatus] = useState<BulkOfferStatus>('review')
@@ -42,6 +44,8 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
   const [defaultPrice, setDefaultPrice] = useState<number | ''>('')
   const [individualPrices, setIndividualPrices] = useState<Map<string, number>>(new Map())
   const [resultData, setResultData] = useState<{ created: number; failed: number } | null>(null)
+  const [offerMode, setOfferMode] = useState<OfferMode>('individual')
+  const [targetCount, setTargetCount] = useState<number | ''>(domains.length)
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 7)
@@ -72,12 +76,16 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
   })
 
   const totalCost = useMemo(() => {
+    if (offerMode === 'n-of-many') {
+      const count = typeof targetCount === 'number' ? targetCount : 0
+      return count * (typeof defaultPrice === 'number' ? defaultPrice : 0)
+    }
     let total = 0
     for (const domain of domains) {
       total += individualPrices.get(domain.name) ?? (typeof defaultPrice === 'number' ? defaultPrice : 0)
     }
     return total
-  }, [domains, defaultPrice, individualPrices])
+  }, [offerMode, domains, defaultPrice, individualPrices, targetCount])
 
   const hasSufficientBalance = useMemo(() => {
     if (!totalCost) return true
@@ -96,7 +104,13 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
     return balance.toFixed(6)
   }, [currency, wethBalance, usdcBalance])
 
-  const canSubmit = typeof defaultPrice === 'number' && defaultPrice > 0 && expiryDate > 0 && hasSufficientBalance
+  const canSubmit = useMemo(() => {
+    const baseValid = typeof defaultPrice === 'number' && defaultPrice > 0 && expiryDate > 0 && hasSufficientBalance
+    if (offerMode === 'n-of-many') {
+      return baseValid && typeof targetCount === 'number' && targetCount >= 1 && targetCount <= domains.length
+    }
+    return baseValid
+  }, [defaultPrice, expiryDate, hasSufficientBalance, offerMode, targetCount, domains.length])
 
   const handleSubmit = async () => {
     if (!canSubmit) return
@@ -105,18 +119,28 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
     setErrorMessage(null)
 
     try {
-      const result = await createBulkOffer({
-        domains,
-        price: defaultPrice as number,
-        prices: individualPrices.size > 0 ? individualPrices : undefined,
-        currency,
-        expiryDate,
-      })
-
-      setResultData({ created: result.created, failed: result.failed })
+      if (offerMode === 'n-of-many') {
+        const result = await createNOfManyOffer({
+          domains,
+          price: defaultPrice as number,
+          targetCount: targetCount as number,
+          currency,
+          expiryDate,
+        })
+        setResultData({ created: result.created, failed: 0 })
+      } else {
+        const result = await createBulkOffer({
+          domains,
+          price: defaultPrice as number,
+          prices: individualPrices.size > 0 ? individualPrices : undefined,
+          currency,
+          expiryDate,
+        })
+        setResultData({ created: result.created, failed: result.failed })
+      }
       setStatus('success')
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to create bulk offers')
+      setErrorMessage(err.message || 'Failed to create offers')
       setStatus('error')
     }
   }
@@ -139,6 +163,16 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
         <div className='flex items-center justify-center gap-2'>
           <h2 className='font-sedan-sc min-h-6 text-center text-3xl'>Bulk Offer</h2>
         </div>
+
+        {/* Mode Toggle */}
+        <TabSelector
+          tabs={[
+            { label: 'Individual', value: 'individual' },
+            { label: 'N-of-Many', value: 'n-of-many' },
+          ]}
+          selectedTab={offerMode}
+          setSelectedTab={(tab) => setOfferMode(tab as OfferMode)}
+        />
 
         {status === 'success' ? (
           <>
@@ -219,11 +253,11 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
               </button>
             </div>
 
-            {/* Default Price */}
+            {/* Price */}
             <div>
               <Input
                 type='number'
-                label='Base Price'
+                label={offerMode === 'n-of-many' ? 'Price per name' : 'Base Price'}
                 value={defaultPrice}
                 onChange={(e) => {
                   const value = e.target.value
@@ -243,55 +277,78 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
               </div>
             </div>
 
-            <div className='flex flex-col gap-2'>
-              {/* Individual Prices Toggle */}
-              <button
-                onClick={() => setShowIndividualPrices(!showIndividualPrices)}
-                className='text-md bg-secondary hover:bg-tertiary border-tertiary flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 transition-colors'
-              >
-                <p className='text-xl font-semibold'>Edit offer prices</p>
-                <div className='flex items-center gap-2'>
-                  <p className='text-xl font-bold'>{domains.length}</p>
-                  <Image
-                    src={ArrowDownIcon}
-                    alt='Arrow Down'
-                    width={16}
-                    height={16}
-                    className={cn(showIndividualPrices ? 'rotate-180' : '')}
-                  />
-                </div>
-              </button>
+            {/* Target Count (n-of-many only) */}
+            {offerMode === 'n-of-many' && (
+              <Input
+                type='number'
+                label='Target'
+                value={targetCount}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === '') setTargetCount('')
+                  else setTargetCount(Math.min(Number(value), domains.length))
+                }}
+                placeholder='1'
+                min={1}
+                max={domains.length}
+                step={1}
+                labelClassName='min-w-[110px]!'
+                suffix={`of ${domains.length} names`}
+              />
+            )}
 
-              {/* Individual Price Overrides */}
-              {showIndividualPrices && (
-                <div className='flex flex-col gap-2'>
-                  {domains.map((domain) => (
-                    <div key={domain.token_id} className='flex items-center justify-between gap-2'>
-                      <Input
-                        type='number'
-                        label={beautifyName(domain.name)}
-                        className='w-full rounded-md text-right'
-                        placeholder={typeof defaultPrice === 'number' ? defaultPrice.toString() : '0'}
-                        value={individualPrices.get(domain.name) ?? ''}
-                        onChange={(e) => {
-                          const newPrices = new Map(individualPrices)
-                          if (e.target.value === '') {
-                            newPrices.delete(domain.name)
-                          } else {
-                            newPrices.set(domain.name, Number(e.target.value))
-                          }
-                          setIndividualPrices(newPrices)
-                        }}
-                        min={0}
-                        step={0.001}
-                        suffix={currency}
-                        labelClassName='min-w-[200px]!'
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Individual Prices (shotgun mode only) */}
+            {offerMode === 'individual' && (
+              <div className='flex flex-col gap-2'>
+                {/* Individual Prices Toggle */}
+                <button
+                  onClick={() => setShowIndividualPrices(!showIndividualPrices)}
+                  className='text-md bg-secondary hover:bg-tertiary border-tertiary flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 transition-colors'
+                >
+                  <p className='text-xl font-semibold'>Edit offer prices</p>
+                  <div className='flex items-center gap-2'>
+                    <p className='text-xl font-bold'>{domains.length}</p>
+                    <Image
+                      src={ArrowDownIcon}
+                      alt='Arrow Down'
+                      width={16}
+                      height={16}
+                      className={cn(showIndividualPrices ? 'rotate-180' : '')}
+                    />
+                  </div>
+                </button>
+
+                {/* Individual Price Overrides */}
+                {showIndividualPrices && (
+                  <div className='flex flex-col gap-2'>
+                    {domains.map((domain) => (
+                      <div key={domain.token_id} className='flex items-center justify-between gap-2'>
+                        <Input
+                          type='number'
+                          label={beautifyName(domain.name)}
+                          className='w-full rounded-md text-right'
+                          placeholder={typeof defaultPrice === 'number' ? defaultPrice.toString() : '0'}
+                          value={individualPrices.get(domain.name) ?? ''}
+                          onChange={(e) => {
+                            const newPrices = new Map(individualPrices)
+                            if (e.target.value === '') {
+                              newPrices.delete(domain.name)
+                            } else {
+                              newPrices.set(domain.name, Number(e.target.value))
+                            }
+                            setIndividualPrices(newPrices)
+                          }}
+                          min={0}
+                          step={0.001}
+                          suffix={currency}
+                          labelClassName='min-w-[200px]!'
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Total */}
             <div className='bg-secondary flex items-center justify-between rounded-md p-3'>
@@ -305,7 +362,11 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
             {status === 'signing' && (
               <div className='bg-secondary flex items-center gap-2 rounded-md p-3'>
                 <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white' />
-                <p className='text-md'>Sign bulk offer for {domains.length} names...</p>
+                <p className='text-md'>
+                  {offerMode === 'n-of-many'
+                    ? `Sign offer for ${targetCount} of ${domains.length} names...`
+                    : `Sign bulk offer for ${domains.length} names...`}
+                </p>
               </div>
             )}
 
@@ -316,7 +377,9 @@ const BulkOfferModal: React.FC<BulkOfferModalProps> = ({ onClose, domains }) => 
                   ? `Insufficient ${currency} Balance`
                   : isInteracting
                     ? 'Processing...'
-                    : `Make ${domains.length} Offer${domains.length !== 1 ? 's' : ''}`}
+                    : offerMode === 'n-of-many'
+                      ? `Offer on ${targetCount} of ${domains.length} Names`
+                      : `Make ${domains.length} Offer${domains.length !== 1 ? 's' : ''}`}
               </PrimaryButton>
               <SecondaryButton onClick={onClose} disabled={isInteracting} className='h-10 w-full'>
                 Close

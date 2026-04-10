@@ -5,6 +5,7 @@ import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offers/create'
 import { createBulkOffer as createBulkOfferApi } from '@/api/offers/createBulk'
+import { createNOfManyOffer as createNOfManyOfferApi } from '@/api/offers/createNOfMany'
 import { BulkOfferOrderBuilder } from '@/lib/seaport/bulkOrderBuilder'
 import { prepareBulkSignature, extractBulkSignatures } from '@/lib/seaport/bulkSignature'
 import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
@@ -532,6 +533,88 @@ export function useSeaportClient() {
     [address, getWalletClient, refetchOfferQueries]
   )
 
+  // Create n-of-many offers (N criteria orders for M candidate names)
+  const createNOfManyOffer = useCallback(
+    async (params: {
+      domains: MarketplaceDomainType[]
+      price: number
+      targetCount: number
+      currency: 'WETH' | 'USDC'
+      expiryDate: number
+    }) => {
+      if (!address) {
+        throw new Error('Wallet not connected')
+      }
+
+      const walletClient = await getWalletClient()
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const decimals = TOKEN_DECIMALS[params.currency]
+        const currencyAddress = TOKEN_ADDRESSES[params.currency]
+        const offerAmountWei = BigInt(Math.floor(params.price * Math.pow(10, decimals))).toString()
+
+        const tokenIds = params.domains.map((d) => d.token_id)
+
+        const currentTimestamp = Math.floor(Date.now() / 1000)
+        const durationDays = Math.max(1, Math.round((params.expiryDate - currentTimestamp) / (24 * 60 * 60)))
+
+        // 1. Build n-of-many criteria orders
+        const builder = new BulkOfferOrderBuilder()
+        const { orders, merkleRoot } = builder.buildNOfManyOfferOrders({
+          tokenIds,
+          offerAmountWei,
+          offerer: address,
+          count: params.targetCount,
+          durationDays,
+          currencyAddress: currencyAddress.toLowerCase(),
+        })
+
+        // 2. Prepare bulk signature
+        // If only 1 order, pad to 2 for bulk signing (requires tree height >= 1)
+        const ordersForSigning = orders.length === 1 ? [...orders, orders[0]] : orders
+        const bulkResult = prepareBulkSignature(ordersForSigning)
+
+        // 3. Sign once via wallet
+        const signature = await walletClient.signTypedData({
+          domain: bulkResult.typedData.domain as any,
+          types: bulkResult.typedData.types as any,
+          primaryType: bulkResult.typedData.primaryType as any,
+          message: bulkResult.typedData.message as any,
+        })
+
+        // 4. Extract per-order signatures (only for the real orders, not padding)
+        const allSigs = extractBulkSignatures(signature, bulkResult, ordersForSigning)
+        const individualSigs = allSigs.slice(0, orders.length)
+
+        // 5. Submit to backend
+        const result = await createNOfManyOfferApi({
+          buyerAddress: address.toLowerCase(),
+          offerAmountWei,
+          tokenIds,
+          targetCount: params.targetCount,
+          merkleRoot,
+          orderData: individualSigs.map((sig) => ({ parameters: sig.order, signature: sig.signature })),
+          signatures: individualSigs.map((sig) => sig.signature),
+          treeHeight: bulkResult.treeHeight,
+          currencyAddress: currencyAddress.toLowerCase(),
+          expiresAt: new Date(params.expiryDate * 1000).toISOString(),
+        })
+
+        return result
+      } catch (err: any) {
+        setError(err.message || 'Failed to create n-of-many offers')
+        throw err
+      } finally {
+        setIsLoading(false)
+        refetchOfferQueries()
+      }
+    },
+    [address, getWalletClient, refetchOfferQueries]
+  )
+
   // Fulfill an order
   const fulfillOrder = useCallback(
     async (order: OrderWithCounter) => {
@@ -787,6 +870,7 @@ export function useSeaportClient() {
     createListing,
     createOffer,
     createBulkOffer,
+    createNOfManyOffer,
     fulfillOrder,
     cancelListings,
     cancelOffer,

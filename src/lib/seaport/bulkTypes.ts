@@ -74,3 +74,11 @@ export interface IndividualBulkSignature {
   order: SeaportOrder
   signature: string
 }
+
+export interface NOfManyOfferResponse {
+  groupId: number
+  targetCount: number
+  totalItems: number
+  created: number
+  results: Array<{ index: number; offerId: number }>
+}

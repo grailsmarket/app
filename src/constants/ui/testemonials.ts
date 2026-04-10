@@ -25,9 +25,14 @@ export const TESTEMONIAL_QUOTES = [
     quote: 'THE BEST! 🏆',
   },
   {
-    name: '0x0.eth',
+    name: 'misk.eth',
     address: '0x22724d12be28128f7be71dd8b0d7e5168ee4ca9d',
     quote: 'its the best and its not even close',
+  },
+  {
+    name: 'epoch.attesting.eth',
+    address: '0x69459758ce7f96da650d055b689e3d8960cd4de0',
+    quote: 'We haven’t seen anything like this at this level before. Massive respect!',
   },
   {
     name: '00039.eth',

@@ -25,6 +25,11 @@ export const TESTEMONIAL_QUOTES = [
     quote: 'THE BEST! 🏆',
   },
   {
+    name: '0x0.eth',
+    address: '0x22724d12be28128f7be71dd8b0d7e5168ee4ca9d',
+    quote: 'its the best and its not even close',
+  },
+  {
     name: '00039.eth',
     address: '0x9d268786f6bebb762e494aef8b0706fd1bd4217b',
     quote: 'Grails Market is bringing the excitement back to ENS💥💥💥',

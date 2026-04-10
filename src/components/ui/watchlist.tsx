@@ -1,22 +1,21 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import Image from 'next/image'
 import Tooltip from './tooltip'
-import _ from 'lodash'
 
 import BinocularsEmpty from 'public/icons/watchlist.svg'
 import BinocularsFilled from 'public/icons/watchlist-fill.svg'
 import { TooltipAlignType, TooltipPositionType } from '@/types/ui'
 import { MarketplaceDomainType } from '@/types/domains'
 import useWatchlist from '@/hooks/useWatchlist'
+import useWatchlists from '@/hooks/useWatchlists'
 import { cn } from '@/utils/tailwind'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useUserContext } from '@/context/user'
 import BellIcon from 'public/icons/bell.svg'
 import FilterSelector from '../filters/components/FilterSelector'
 import { WatchlistSettingsType } from '@/api/watchlist/update'
-import PrimaryButton from './buttons/primary'
 import { useClickAway } from '@/hooks/useClickAway'
-import { ShortArrow } from 'ethereum-identity-kit'
+import { Cross, ShortArrow } from 'ethereum-identity-kit'
 
 interface WatchlistProps {
   domain: MarketplaceDomainType
@@ -33,7 +32,7 @@ interface WatchlistProps {
   fetchWatchSettings?: boolean
 }
 
-const watchlistSettingsLabels: Record<keyof WatchlistSettingsType, string> = {
+const NOTIFICATION_LABELS: Record<keyof WatchlistSettingsType, string> = {
   notifyOnSale: 'Notify on sale',
   notifyOnOffer: 'Notify on offer',
   notifyOnListing: 'Notify on listing',
@@ -52,30 +51,71 @@ const Watchlist: React.FC<WatchlistProps> = ({
   dropdownPosition = 'right',
   watchlistId,
   showSettingsArrow = true,
-  fetchWatchSettings = true,
 }) => {
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const outsideSettingsRef = useClickAway(() => setSettingsOpen(false))
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const dropdownRef = useClickAway(() => setDropdownOpen(false))
   const { openConnectModal } = useConnectModal()
   const { authStatus, handleSignIn, userAddress } = useUserContext()
+
   const {
     toggleWatchlist,
     isLoading,
     isWatching,
+    setIsWatching,
     watchlistCountChange,
     watchlistSettings,
     setWatchlistSettings,
     updateWatchlistSettings,
-    watchlistItem,
-    isUpdatingSettings,
-  } = useWatchlist(domain.name, domain.token_id, fetchWatchSettings, watchlistId)
+    listsContainingName,
+    isInList,
+    toggleInList,
+  } = useWatchlist(domain.name, domain.token_id, true, watchlistId)
 
-  const currentSettings = {
-    notifyOnSale: watchlistItem?.notifyOnSale,
-    notifyOnOffer: watchlistItem?.notifyOnOffer,
-    notifyOnListing: watchlistItem?.notifyOnListing,
-    notifyOnPriceChange: watchlistItem?.notifyOnPriceChange,
-  } as WatchlistSettingsType
+  const { lists } = useWatchlists()
+  const hasMultipleLists = lists.length > 1
+  const isInAnyList = listsContainingName.length > 0
+
+  const handleToggleList = useCallback(
+    (listId: number) => {
+      const currentlyIn = isInList(listId)
+      toggleInList(domain, listId)
+
+      if (!currentlyIn) {
+        setIsWatching(true)
+      } else {
+        const stillInOther = listsContainingName.some((entry) => entry.listId !== listId)
+        setIsWatching(stillInOther)
+      }
+    },
+    [domain, isInList, toggleInList, setIsWatching, listsContainingName]
+  )
+
+  const handleToggleNotification = useCallback(
+    (key: keyof WatchlistSettingsType) => {
+      const updated = { ...watchlistSettings, [key]: !watchlistSettings[key] }
+      setWatchlistSettings(updated)
+      updateWatchlistSettings(updated)
+    },
+    [watchlistSettings, setWatchlistSettings, updateWatchlistSettings]
+  )
+
+  const handleBinocularsClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (authStatus !== 'authenticated') {
+      if (!userAddress) openConnectModal?.()
+      else handleSignIn()
+      return
+    }
+
+    if (hasMultipleLists) {
+      setDropdownOpen(!dropdownOpen)
+    } else {
+      toggleWatchlist(domain)
+    }
+  }
 
   return (
     <>
@@ -85,22 +125,12 @@ const Watchlist: React.FC<WatchlistProps> = ({
         align={tooltipAlign || 'right'}
       >
         <div className='flex min-w-[22px] flex-row items-center gap-2'>
-          <button
-            className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              if (authStatus !== 'authenticated') {
-                if (!userAddress) openConnectModal?.()
-                else handleSignIn()
-              } else toggleWatchlist(domain)
-            }}
-          >
+          <button className={cn('cursor-pointer', showWatchlist ? 'block' : 'hidden')} onClick={handleBinocularsClick}>
             <Image
               src={isWatching ? BinocularsFilled : BinocularsEmpty}
               height={iconSize || 22}
               width={iconSize || 22}
-              alt='Like heart'
+              alt='Watchlist'
               className={cn(
                 isWatching || isLoading ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
                 'transition-opacity',
@@ -111,73 +141,84 @@ const Watchlist: React.FC<WatchlistProps> = ({
           {includeCount && <p className='text-xl'>{domain.watchers_count + watchlistCountChange}</p>}
         </div>
       </Tooltip>
-      {showSettings && isWatching && (
+
+      {(showSettings && isWatching) || (hasMultipleLists && dropdownOpen) ? (
         <div
-          ref={outsideSettingsRef as React.RefObject<HTMLDivElement>}
+          ref={dropdownRef as React.RefObject<HTMLDivElement>}
           className='relative ml-1 flex flex-row items-center gap-2'
+          onClick={(e) => e.stopPropagation()}
         >
-          <button
-            className='bg-secondary hover:bg-tertiary flex cursor-pointer flex-row items-center gap-1 rounded-md p-1.5'
-            onClick={() => setSettingsOpen(!settingsOpen)}
-          >
-            <Image src={BellIcon} alt='Settings' width={22} height={22} className='min-h-5 min-w-5 opacity-100' />
-            {showSettingsArrow && (
-              <ShortArrow
-                className={cn(
-                  'h-4 w-4 transition-transform',
-                  settingsOpen ? 'rotate-0' : 'rotate-180',
-                  watchlistId ? 'hidden' : 'block'
-                )}
-              />
-            )}
-          </button>
+          {showSettings && isWatching && (
+            <button
+              className='bg-secondary hover:bg-tertiary flex cursor-pointer flex-row items-center gap-1 rounded-md p-1.5'
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <Image src={BellIcon} alt='Settings' width={22} height={22} className='min-h-5 min-w-5 opacity-100' />
+              {showSettingsArrow && (
+                <ShortArrow
+                  className={cn(
+                    'h-4 w-4 transition-transform',
+                    dropdownOpen ? 'rotate-0' : 'rotate-180',
+                    watchlistId ? 'hidden' : 'block'
+                  )}
+                />
+              )}
+            </button>
+          )}
+
           <div
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
             }}
             className={cn(
-              'bg-secondary border-tertiary p-md absolute top-10 z-50 flex w-64 flex-col items-center rounded-md border shadow-md',
+              'bg-secondary border-tertiary p-md absolute top-4 z-50 flex w-64 flex-col items-center rounded-md border shadow-md',
               dropdownPosition === 'right' ? 'left-0' : 'right-0',
-              settingsOpen ? 'flex' : 'hidden'
+              dropdownOpen ? 'flex' : 'hidden'
             )}
           >
-            {Object.keys(watchlistSettings).map((key) => (
-              <div
-                onClick={() => {
-                  setWatchlistSettings({
-                    ...watchlistSettings,
-                    [key as keyof WatchlistSettingsType]: !watchlistSettings[key as keyof WatchlistSettingsType],
-                  })
-                }}
-                key={key}
-                className='hover:bg-foreground/10 p-md flex w-full cursor-pointer flex-row items-center justify-between gap-2 rounded-md'
-              >
-                <p className='text-lg font-medium'>{watchlistSettingsLabels[key as keyof WatchlistSettingsType]}</p>
-                <FilterSelector
-                  onClick={() => {
-                    setWatchlistSettings({
-                      ...watchlistSettings,
-                      [key as keyof WatchlistSettingsType]: !watchlistSettings[key as keyof WatchlistSettingsType],
-                    })
-                  }}
-                  isActive={watchlistSettings[key as keyof WatchlistSettingsType]}
-                />
-              </div>
-            ))}
-            <PrimaryButton
-              className='mt-1 w-full'
-              onClick={() => {
-                updateWatchlistSettings(watchlistSettings)
-                setSettingsOpen(false)
-              }}
-              disabled={_.isEqual(watchlistSettings, currentSettings) || isUpdatingSettings}
-            >
-              Save
-            </PrimaryButton>
+            <Cross
+              onClick={() => setDropdownOpen(false)}
+              className='text-foreground absolute top-3 right-3 h-3 w-3 cursor-pointer transition-opacity hover:opacity-80'
+            />
+
+            {hasMultipleLists && (
+              <>
+                <p className='text-neutral p-md w-full py-1 text-lg font-semibold'>Lists</p>
+                {lists.map((list) => (
+                  <div
+                    key={list.id}
+                    onClick={() => handleToggleList(list.id)}
+                    className='hover:bg-foreground/10 p-md flex w-full cursor-pointer flex-row items-center justify-between gap-2 rounded-md'
+                  >
+                    <p className='text-lg font-medium'>{list.name}</p>
+                    <FilterSelector onClick={() => handleToggleList(list.id)} isActive={isInList(list.id)} />
+                  </div>
+                ))}
+                {isInAnyList && <div className='border-tertiary my-1 w-full border-t' />}
+              </>
+            )}
+
+            {(isInAnyList || (!hasMultipleLists && isWatching)) && (
+              <>
+                {hasMultipleLists && (
+                  <p className='text-neutral p-md w-full pb-1 text-lg font-semibold'>Notifications</p>
+                )}
+                {(Object.keys(NOTIFICATION_LABELS) as (keyof WatchlistSettingsType)[]).map((key) => (
+                  <div
+                    key={key}
+                    onClick={() => handleToggleNotification(key)}
+                    className='hover:bg-foreground/10 p-md flex w-full cursor-pointer flex-row items-center justify-between gap-2 rounded-md'
+                  >
+                    <p className='text-lg font-medium'>{NOTIFICATION_LABELS[key]}</p>
+                    <FilterSelector onClick={() => handleToggleNotification(key)} isActive={watchlistSettings[key]} />
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
-      )}
+      ) : null}
     </>
   )
 }

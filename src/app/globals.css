@@ -439,3 +439,11 @@ body {
 .custom-links a:hover {
   opacity: 0.8;
 }
+
+.user-profile-status-container {
+  z-index: 10 !important;
+}
+
+.more-options {
+  z-index: 10 !important;
+}

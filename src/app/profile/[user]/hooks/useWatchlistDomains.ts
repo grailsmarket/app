@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { addUserWatchlistDomains } from '@/state/reducers/portfolio/profile'
+import { addUserWatchlistDomains, selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
@@ -12,6 +12,8 @@ export const useWatchlistDomains = (user: Address | undefined) => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const filters = useAppSelector(selectWatchlistFilters)
+  const { selectedWatchlistListId } = useAppSelector(selectUserProfile)
+  const listId = selectedWatchlistListId ?? null
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {
@@ -25,6 +27,7 @@ export const useWatchlistDomains = (user: Address | undefined) => {
       'profile',
       'watchlist',
       userAddress,
+      listId,
       debouncedSearch,
       filters.length,
       filters.priceRange,
@@ -54,6 +57,7 @@ export const useWatchlistDomains = (user: Address | undefined) => {
         pageParam,
         filters,
         searchTerm: debouncedSearch,
+        listId,
       })
 
       dispatch(addUserWatchlistDomains(response.results))

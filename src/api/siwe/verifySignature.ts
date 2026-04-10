@@ -13,6 +13,10 @@ type VerifyResponse = {
     minOfferThreshold: number | null
     notifyOnListingSold: boolean
     notifyOnOfferReceived: boolean
+    tier: 'free' | 'pro' | 'plus' | 'gold'
+    tierId: number
+    tierExpiresAt: string | null
+    isAdmin: boolean
   }
 }
 

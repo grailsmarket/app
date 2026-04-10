@@ -11,9 +11,11 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { getTierIdFromString } from '@/constants/subscriptions'
 
 export const useSettings = () => {
   const dispatch = useAppDispatch()
@@ -26,6 +28,7 @@ export const useSettings = () => {
     offerNotificationThreshold,
     notifyOnListingSold,
     notifyOnOfferReceived,
+    subscription,
   } = useAppSelector(selectUserProfile)
 
   const [verificationEmailStatus, setVerificationEmailStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
@@ -59,6 +62,11 @@ export const useSettings = () => {
       dispatch(setUserEmail({ address: result.data.email, verified: result.data.emailVerified }))
       dispatch(setUserDiscord(result.data.discord))
       dispatch(setUserTelegram(result.data.telegram))
+      if (result.data.tier) {
+        const tier = result.data.tier
+        const tierId = result.data.tierId ?? getTierIdFromString(tier)
+        dispatch(setUserSubscription({ tier, tierId, tierExpiresAt: result.data.tierExpiresAt ?? null }))
+      }
       dispatch(setOfferNotificationThreshold(result.data.minOfferThreshold))
       dispatch(setNotifyOnListingSold(result.data.notifyOnListingSold))
       dispatch(setNotifyOnOfferReceived(result.data.notifyOnOfferReceived))
@@ -92,6 +100,16 @@ export const useSettings = () => {
       }, 3000)
     }
   }
+
+  const isProSubscription = useMemo(() => {
+    const hasPaidTier = (subscription?.tierId ?? 0) > 0 || (subscription?.tier != null && subscription.tier !== 'free')
+    return hasPaidTier && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+  }, [subscription])
+
+  const hasActiveSubscription = useMemo(() => {
+    const hasPaidTier = (subscription?.tierId ?? 0) > 0 || (subscription?.tier != null && subscription.tier !== 'free')
+    return hasPaidTier && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+  }, [subscription])
 
   const isEmailVerified = useMemo(() => {
     if (email.address === null) return true
@@ -140,6 +158,9 @@ export const useSettings = () => {
   return {
     email,
     ensProfile,
+    subscription,
+    isProSubscription,
+    hasActiveSubscription,
     emailAddress,
     setEmailAddress,
     isEmailVerified,

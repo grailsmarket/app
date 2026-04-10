@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Cross, useWindowSize } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { setBulkEditRecordsModalNames, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import { setBulkOfferModalDomains, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
 import {
   clearBulkSelect,
   selectBulkSelect,
@@ -31,7 +32,7 @@ import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import { cn } from '@/utils/tailwind'
 import { useShiftKeyListener } from '@/hooks/useShiftKey'
-import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
+import { bulkRemoveFromWatchlist } from '@/api/watchlist/bulkRemove'
 import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
 import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
@@ -40,6 +41,7 @@ import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
+import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -77,6 +79,10 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   const { width: windowWidth } = useWindowSize()
   const profileState = useAppSelector(selectUserProfile)
+  const isProUser =
+    profileState.subscription?.tier != null &&
+    profileState.subscription.tier !== 'free' &&
+    (!profileState.subscription.tierExpiresAt || new Date(profileState.subscription.tierExpiresAt) > new Date())
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
   const categoriesState = useAppSelector(selectCategoriesPage)
@@ -131,6 +137,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const namesRegister = selectedDomains.filter((domain) =>
     REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))
   )
+  const namesOffer = userAddress
+    ? selectedDomains.filter((domain) => domain.owner?.toLowerCase() !== userAddress.toLowerCase())
+    : selectedDomains
 
   const handleBulkSelect = () => {
     dispatch(setBulkSelectIsSelecting(true))
@@ -181,6 +190,17 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     dispatch(setMakeListingModalOpen(true))
   }
 
+  const handleBulkOfferAction = () => {
+    if (namesOffer.length === 1) {
+      dispatch(setMakeOfferModalDomain(namesOffer[0]))
+      dispatch(setMakeOfferModalOpen(true))
+      return
+    }
+
+    dispatch(setBulkOfferModalDomains(namesOffer))
+    dispatch(setBulkOfferModalOpen(true))
+  }
+
   const handleExtendAction = () => {
     dispatch(setBulkRenewalModalDomains(namesExtend))
     dispatch(setBulkRenewalModalOpen(true))
@@ -189,30 +209,13 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const handleRemoveFromWatchlistAction = async () => {
     setIsRemovingFromWatchlist(true)
 
-    console.log('Selected watchlist IDs:', selectedWatchlistIds)
-
-    const results = await Promise.all(
-      selectedWatchlistIds.map(async (id) => {
-        const result = await removeFromWatchlist(id)
-        if (result.success) {
-          dispatch(removeBulkSelectWatchlistId(id))
-        }
-        return result
-      })
-    )
-
-    console.log('Results:', results)
-
-    if (results.some((result) => !result.success)) {
-      console.error(
-        'Failed to remove from watchlist' +
-          results
-            .filter((result) => !result.success)
-            .map((result) => result.watchlistId)
-            .join(', ')
-      )
-    } else {
-      dispatch(clearBulkSelect())
+    try {
+      const result = await bulkRemoveFromWatchlist(selectedWatchlistIds)
+      if (result.removed > 0) {
+        dispatch(clearBulkSelect())
+      }
+    } catch (error) {
+      console.error('Failed to bulk remove from watchlist', error)
     }
 
     queryClient.refetchQueries({
@@ -220,34 +223,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     })
 
     queryClient.refetchQueries({
-      queryKey: [
-        'profile',
-        'watchlist',
-        userAddress,
-        watchlistFilters.search,
-        watchlistFilters.length,
-        watchlistFilters.priceRange,
-        watchlistFilters.categories,
-        watchlistFilters.type,
-        watchlistFilters.status,
-        watchlistFilters.sort,
-        watchlistFilters.textMatch,
-        watchlistFilters.market,
-      ],
-      // (old: any) => {
-      //   const newData = old.pages.map((page: any) => {
-      //     return {
-      //       ...page,
-      //       domains: page.domains.filter((item: any) => !selectedWatchlistIds.includes(item.watchlist_record_id)),
-      //       total: page.total - selectedWatchlistIds.length,
-      //     }
-      //   })
+      predicate: (query) => query.queryKey[0] === 'profile' && query.queryKey[1] === 'watchlist',
+    })
 
-      //   return {
-      //     ...old,
-      //     pages: newData,
-      //   }
-      // }
+    queryClient.invalidateQueries({
+      queryKey: ['watchlistLists', userAddress],
     })
 
     setIsRemovingFromWatchlist(false)
@@ -375,26 +355,50 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     selectedTab?.value === 'available' ||
     selectedTab?.value === 'premium' ||
     selectedTab?.value === 'expired'
+  const canOfferDomains =
+    isProUser &&
+    (selectedTab?.value === 'names' ||
+      selectedTab?.value === 'domains' ||
+      selectedTab?.value === 'listings' ||
+      selectedTab?.value === 'watchlist')
 
   const isSelectAllLoading = selectAll?.isLoading ?? false
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
-  const bulkSelectWidth = showOwnedActionButtons
-    ? canRegisterDomains
-      ? 'min(1110px,95vw)'
-      : 'min(980px,95vw)'
-    : showWatchlistButton
-      ? canRegisterDomains
-        ? 'min(780px,95vw)'
-        : 'min(650px,95vw)'
-      : canRegisterDomains
-        ? canExtendDomains
-          ? 'min(550px,95vw)'
-          : 'min(430px,95vw)'
-        : windowWidth && windowWidth < 640
-          ? 'min(130px,95vw)'
-          : 'min(420px,95vw)'
+  // Measure the actual content width for the animated container
+  const expandedContentRef = useRef<HTMLDivElement>(null)
+  const [measuredWidth, setMeasuredWidth] = useState(0)
+
+  useLayoutEffect(() => {
+    if (!showExpandedContent || !expandedContentRef.current) return
+
+    const measure = () => {
+      const w = expandedContentRef.current?.scrollWidth ?? 0
+      setMeasuredWidth(w)
+    }
+
+    measure()
+
+    // Re-measure when the content might change (ResizeObserver catches button show/hide)
+    const observer = new ResizeObserver(measure)
+    observer.observe(expandedContentRef.current)
+    return () => observer.disconnect()
+  }, [
+    showExpandedContent,
+    showOwnedActionButtons,
+    showWatchlistButton,
+    canExtendDomains,
+    canRegisterDomains,
+    canOfferDomains,
+    isProUser,
+    namesOffer.length,
+  ])
+
+  const collapsedWidth = windowWidth && windowWidth < 640 ? 130 : 136
+  const maxVw = typeof window !== 'undefined' ? window.innerWidth * 0.95 : 1200
+  const bulkSelectWidth =
+    isSelecting && measuredWidth > 0 ? `${Math.min(measuredWidth, maxVw)}px` : `${collapsedWidth}px`
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -464,18 +468,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       <div
         className={cn(
-          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200'
+          'shadow-bulk bg-background flex justify-end overflow-hidden rounded-md transition-[width] duration-200'
           // isSelecting ? bulkSelectWidth : 'w-34'
         )}
         style={{
-          width: isSelecting ? bulkSelectWidth : windowWidth && windowWidth < 640 ? '130px' : '136px',
-          // transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)'
+          width: bulkSelectWidth,
         }}
       >
         {showExpandedContent ? (
           <div
+            ref={expandedContentRef}
             className={cn(
-              'flex max-w-full flex-row overflow-x-scroll transition-opacity duration-300',
+              'flex w-max flex-row justify-end transition-opacity duration-300',
               isSelecting ? 'opacity-100' : 'opacity-0'
             )}
           >
@@ -515,6 +519,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 >
                   <p>Register</p>
                   <Label label={namesRegister.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                </PrimaryButton>
+              )}
+              {canOfferDomains && namesOffer.length > 0 && (
+                <PrimaryButton
+                  onClick={handleBulkOfferAction}
+                  disabled={selectedDomains.length === 0 || namesOffer.length === 0}
+                  className='flex items-center gap-1.5'
+                >
+                  <p>Offer</p>
+                  <Label label={namesOffer.length} className='bg-tertiary w-7 min-w-fit text-white' />
                 </PrimaryButton>
               )}
               {showOwnedActionButtons && (

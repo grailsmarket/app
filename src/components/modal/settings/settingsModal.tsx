@@ -14,6 +14,9 @@ import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
+import { getTierDisplayName, SUBSCRIBABLE_TIERS } from '@/constants/subscriptions'
+import { useAppDispatch } from '@/state/hooks'
+import { setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT } from '@/constants/web3/contracts'
 
 interface SettingsModalProps {
@@ -31,6 +34,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     // telegramUsername,
     // setTelegramUsername,
     ensProfile,
+    subscription,
+    isProSubscription,
+    hasActiveSubscription,
     hasChanges,
     isEmailVerified,
     isEmailValid,
@@ -47,13 +53,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setNotifyOnOfferReceivedValue,
   } = useSettings()
   const { userAddress } = useUserContext()
+  const dispatch = useAppDispatch()
 
   if (!userAddress) return null
 
   return (
     <div
       className={cn(
-        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
+        'fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
         isOpen ? 'translate-y-0' : 'translate-y-[100vh]'
       )}
       onClick={(e) => {
@@ -97,6 +104,47 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </Link>
           </div>
         </div>
+        {/* Subscription Indicator */}
+        {hasActiveSubscription ? (
+          <div className='p-md flex items-center justify-between gap-2 rounded-md bg-green-400/10'>
+            <div className='flex items-center gap-2'>
+              <Image src={CheckCircle} alt='Subscription Active' height={20} width={20} />
+              <div>
+                <p className='text-md font-medium text-[#16A34A]'>
+                  {getTierDisplayName(subscription?.tierId ?? 0)} Subscription Active
+                </p>
+                {subscription?.tierExpiresAt && (
+                  <p className='text-sm text-[#16A34A]/70'>
+                    Expires {new Date(subscription.tierExpiresAt).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                onClose()
+                dispatch(setUpgradeModalOpen(true))
+              }}
+              className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+            >
+              {(subscription?.tierId ?? 0) >= Math.max(...SUBSCRIBABLE_TIERS) ? 'Extend Plan' : 'Upgrade Plan'}
+            </button>
+          </div>
+        ) : (
+          <div className='bg-secondary p-md flex items-center justify-between gap-2 rounded-md'>
+            <p className='text-md text-neutral font-medium'>Free Plan</p>
+            <button
+              onClick={() => {
+                onClose()
+                dispatch(setUpgradeModalOpen(true))
+              }}
+              className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+            >
+              Subscribe
+            </button>
+          </div>
+        )}
+
         <div className='flex flex-col gap-2 sm:gap-4'>
           {/* <Input
             label='Discord'

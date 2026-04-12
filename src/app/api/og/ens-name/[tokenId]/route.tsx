@@ -6,6 +6,15 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { beautifyName } from '@/lib/ens'
 
+/**
+ * Strip Zero Width Joiners (U+200D) from a string so that each individual
+ * emoji in a ZWJ sequence renders separately.  Satori's emoji CDN only has
+ * glyphs for standard ZWJ sequences — creative ENS names that chain emoji
+ * via ZWJ (e.g. 🧑🏻‍🐰‍🧑🏼) would otherwise render as nothing.
+ * Removing the ZWJ characters lets each component emoji render individually.
+ */
+const stripZwj = (s: string) => s.replaceAll('\u200D', '')
+
 const size = {
   width: 1024,
   height: 1024,
@@ -102,7 +111,7 @@ export async function GET(req: NextRequest) {
               maxWidth: '92.5%',
               wordBreak: 'break-word',
               textShadow: '0 4px 8px rgba(0,0,0,0.2)',
-              fontFamily: "Satoshi, sans-serif, 'Noto Color Emoji' !important; font-variant-emoji: unicode",
+              fontFamily: 'Satoshi, sans-serif',
               lineClamp: 5,
               WebkitLineClamp: 5,
               WebkitBoxOrient: 'vertical',
@@ -110,12 +119,13 @@ export async function GET(req: NextRequest) {
               textOverflow: 'ellipsis',
             }}
           >
-            {beautifyName(name)}
+            {stripZwj(beautifyName(name))}
           </p>
         </div>
       ),
       {
         ...size,
+        emoji: 'twemoji',
         fonts: [
           {
             name: 'Satoshi',

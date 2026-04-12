@@ -1,4 +1,4 @@
-import { ens_normalize } from '@adraffy/ens-normalize'
+import { ens_beautify, ens_normalize } from '@adraffy/ens-normalize'
 
 // Zero-width characters that are problematic
 const hasZeroWidthChars = /[\u200C\u200D\u2060\uFEFF]/

@@ -4,13 +4,13 @@ import Image from 'next/image'
 import Pages from './components/pages'
 import Extras from './components/extras'
 import Sources from './components/sources'
-import logo from 'public/logo-w-text.png'
+import logo from 'public/logo-w-text.svg'
 import byEthId from 'public/by-ethid.svg'
 import poweredByEIK from 'public/powered-by-eik.svg'
 
 const Footer = () => {
   return (
-    <footer className='glass-card shadow-footer border-t-primary z-20 mt-8 flex w-full items-center justify-center border-t-1 py-8 sm:mt-12 md:mt-20 lg:mt-24'>
+    <footer className='glass-card shadow-footer border-t-primary z-20 mt-8 flex w-full items-center justify-center border-t py-8 sm:mt-12 md:mt-20 lg:mt-24'>
       <div className='xxs:gap-6 flex h-full w-full items-start justify-between gap-6 px-6 sm:justify-center sm:gap-28 md:gap-44'>
         <section className='flex flex-col gap-6'>
           <Image

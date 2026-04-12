@@ -52,7 +52,7 @@ async function getChromiumPath(): Promise<string> {
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
-  grails: 'https://grails.app/logo.png',
+  grails: 'https://grails.app/logo.svg',
   ensvision: 'https://grails.app/logos/ensvision.svg',
 }
 
@@ -507,7 +507,7 @@ export async function GET(req: NextRequest) {
                 : ''
             }
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
-            <img class="grails-logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails" />
+            <img class="grails-logo" src="https://grails.app/your-ens-market-logo.svg" alt="Grails" />
           </div>
         </body>
       </html>

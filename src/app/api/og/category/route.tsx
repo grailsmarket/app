@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
             gap: 10,
           }}
         >
-          <img alt='avatar' width='190' height='60' src='https://grails.app/your-ens-market-logo.png' />
+          <img alt='avatar' width='190' height='60' src='https://grails.app/your-ens-market-logo.svg' />
         </div>
       </div>
     ),

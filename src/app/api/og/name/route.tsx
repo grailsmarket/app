@@ -191,7 +191,7 @@ export async function GET(req: NextRequest) {
           <div
             style="height: 80px; width: 2px; background-color: #ffffff;"
           ></div>
-          <img class="logo" src="https://grails.app/your-ens-market-logo.png" alt="Grails Logo" />
+          <img class="logo" src="https://grails.app/your-ens-market-logo.svg" alt="Grails Logo" />
         </body>
       </html>
     `

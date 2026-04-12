@@ -10,7 +10,7 @@ import Input from '@/components/ui/input'
 import FilterSelector from '@/components/filters/components/FilterSelector'
 import Image from 'next/image'
 import OpenSeaIcon from 'public/logos/opensea.svg'
-import GrailsIcon from 'public/logo.png'
+import GrailsIcon from 'public/logo.svg'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { DAY_IN_SECONDS } from '@/constants/time'
@@ -157,7 +157,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         if (success || isLoading) return
         onClose()
       }}
-      className='fixed inset-0 z-50 flex min-h-[100dvh] w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {

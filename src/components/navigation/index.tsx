@@ -10,8 +10,8 @@ import Watchlist from './watchlist'
 import SearchIcon from './searchIcon'
 import { cn } from '@/utils/tailwind'
 import Searchbar from '../ui/searchbar'
-import logoMobile from 'public/logo.png'
-import logo from 'public/logo-w-text.png'
+import logoMobile from 'public/logo.svg'
+import logo from 'public/logo-w-text.svg'
 import Notifications from './notifications'
 import { useNavbar } from '@/context/navbar'
 import { useAppSelector } from '@/state/hooks'
@@ -97,12 +97,12 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         setDropdownOption(null)
       }}
       className={cn(
-        'bg-background border-tertiary app:border-r-2 app:border-l-2 sticky top-0 left-0 z-50 mx-auto h-14 w-full max-w-[2340px] border-b-2 transition-transform duration-300 md:h-18',
+        'bg-background border-tertiary app:border-r-2 app:border-l-2 max-w-app sticky top-0 left-0 z-50 mx-auto h-14 w-full border-b-2 transition-transform duration-300 md:h-18',
         showInfo ? 'mt-6' : '',
         !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
-      <nav className='px-md md:px-lg lg:px-xl bg-background relative z-20 mx-auto flex h-full max-w-[2340px] items-center justify-between'>
+      <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app relative z-20 mx-auto flex h-full items-center justify-between'>
         <div className='flex items-center gap-4'>
           <Link
             href='/'

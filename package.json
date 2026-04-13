@@ -13,6 +13,7 @@
     "postinstall": "node -e \"process.env.VERCEL_ENV === 'production' ? require('child_process').execSync('node scripts/postinstall.mjs', {stdio: 'inherit'}) : console.log('Skipping postinstall')\""
   },
   "dependencies": {
+    "@adraffy/ens-normalize": "^1.11.1",
     "@ethersproject/bignumber": "^5.8.0",
     "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.10",
@@ -42,7 +43,7 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.1",
-    "viem": "2.46.2",
+    "viem": "2.47.12",
     "wagmi": "^2.19.4"
   },
   "devDependencies": {

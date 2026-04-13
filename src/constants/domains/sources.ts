@@ -1,6 +1,6 @@
 import OpenSea from 'public/logos/opensea.svg'
 import ENSvision from 'public/logos/ensvision.svg'
-import Grails from 'public/logo.png'
+import Grails from 'public/logo.svg'
 
 export const SOURCES = ['opensea', 'ensvision', 'grails']
 

@@ -1,5 +1,5 @@
 import OpenSea from 'public/logos/opensea.svg'
-import Grails from 'public/logo.png'
+import Grails from 'public/logo.svg'
 import { DropdownOption } from '@/components/ui/dropdown'
 
 export const PERIOD_OPTIONS: DropdownOption[] = [

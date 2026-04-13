@@ -12,7 +12,7 @@ import UsdcIcon from 'public/tokens/usdc.svg'
 import Input from '@/components/ui/input'
 import FilterSelector from '@/components/filters/components/FilterSelector'
 import OpenSeaIcon from 'public/logos/opensea.svg'
-import GrailsIcon from 'public/logo.png'
+import GrailsIcon from 'public/logo.svg'
 import Image from 'next/image'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import { useSeaportContext } from '@/context/seaport'
@@ -959,7 +959,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           handleClose()
         }
       }}
-      className='fixed inset-0 z-50 flex min-h-[100dvh] w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => {

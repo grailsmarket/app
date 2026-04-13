@@ -581,7 +581,7 @@ export async function GET(req: NextRequest) {
                   </div>`
                 : ''
             }
-      <img class="grails-logo" src="https://grails.app/logo-w-text.png" alt="Grails" />
+      <img class="grails-logo" src="https://grails.app/logo-w-text.svg" alt="Grails" />
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
           </div>
         </body>

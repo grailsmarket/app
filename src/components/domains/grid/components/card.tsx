@@ -5,13 +5,7 @@ import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 import { MarketplaceDomainType } from '@/types/domains'
-import {
-  REGISTERED,
-  GRACE_PERIOD,
-  EXPIRED_STATUSES,
-  PREMIUM,
-  UNREGISTERED,
-} from '@/constants/domains/registrationStatuses'
+import { REGISTERED, GRACE_PERIOD, PREMIUM, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { cn } from '@/utils/tailwind'
 import Actions from './actions'
 import NameImage from '@/components/ui/nameImage'

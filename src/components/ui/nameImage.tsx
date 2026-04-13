@@ -31,6 +31,8 @@ export default function NameImage({ name, expiryDate, className, height = 1024, 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(labelHash).toString()}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
 
+  console.log(displayFallback ? fallbackSrc : imageSrc)
+
   return (
     <Image
       unoptimized={!displayFallback}

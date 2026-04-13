@@ -16,7 +16,7 @@ import Link from 'next/link'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { getDetails } from '@/api/user/getDetails'
 import EthereumLogo from 'public/icons/eth-gray.svg'
-import GrailsIcon from 'public/logo.png'
+import GrailsIcon from 'public/logo.svg'
 
 interface Props {
   user?: Address | string | null

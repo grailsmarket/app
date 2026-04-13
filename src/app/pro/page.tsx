@@ -25,7 +25,7 @@ const ProPage = () => {
     <Suspense>
       <main className='relative min-h-screen'>
         {/* Hero */}
-        <div className='flex flex-col items-center gap-4 text-center sm:pt-4 lg:pt-8'>
+        <div className='flex flex-col items-center gap-4 text-center sm:pt-4 lg:pt-32'>
           <h1 className='font-sedan-sc text-6xl sm:text-8xl'>
             Do more, with Grails <span className='text-primary'>Pro</span>
           </h1>
@@ -34,7 +34,7 @@ const ProPage = () => {
           </p>
         </div>
 
-        <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-12 px-4 pt-12 pb-8 md:gap-20 md:px-8 lg:pt-8'>
+        <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-12 px-4 pt-12 pb-8 md:gap-36 md:px-8 lg:pt-28'>
           <AdvancedTools />
           <ProPageContent />
         </div>

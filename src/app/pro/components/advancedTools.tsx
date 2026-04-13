@@ -13,7 +13,7 @@ import grailsAI from 'public/icons/grails-ai.svg'
 import { AnimatePresence, motion } from 'motion/react'
 import { useClickAway } from '@/hooks/useClickAway'
 import { Cross } from 'ethereum-identity-kit'
-import GrailsPoap2025 from 'public/art/grails-poap-2025.webp'
+import DashboardImage from 'public/art/pro-features/dashboard.png'
 import PrimaryButton from '@/components/ui/buttons/primary'
 
 const tools = [
@@ -124,10 +124,10 @@ const AdvancedTools = () => {
             <motion.div
               layoutId={`tool-${active.title}-${id}`}
               ref={ref}
-              className='dark:bg-background flex h-fit w-full max-w-[500px] flex-col overflow-scroll rounded-md bg-white shadow-lg sm:rounded-lg md:max-h-[90%]'
+              className='dark:bg-background flex h-fit w-full max-w-[600px] flex-col overflow-scroll rounded-md bg-white shadow-lg sm:rounded-lg md:max-h-[90%]'
             >
               <motion.div layoutId={`image-${active.title}-${id}`}>
-                <Image width={600} height={600} src={GrailsPoap2025} alt={active.title} className='h-auto w-full p-4' />
+                <Image width={600} height={600} src={DashboardImage} alt={active.title} className='h-auto w-full p-4' />
               </motion.div>
 
               <div className='flex w-full flex-col'>

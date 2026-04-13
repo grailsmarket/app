@@ -8,6 +8,7 @@ import { selectDashboardSidebarOpen } from '@/state/reducers/dashboard/selectors
 import { WIDGET_LABELS, type DashboardComponentType } from '@/state/reducers/dashboard/types'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
+import { useClickAway } from '@/hooks/useClickAway'
 
 const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = [
   {
@@ -66,10 +67,12 @@ const DashboardSidebar = () => {
     dispatch(setSidebarOpen(false))
   }
 
-  if (!isOpen) return null
+  const clickAwayRef = useClickAway<HTMLDivElement>(() => {
+    dispatch(setSidebarOpen(false))
+  })
 
   const sidebarContent = (
-    <div className='border-tertiary bg-background absolute top-0 left-0 z-40 flex h-full w-72 flex-col border-r'>
+    <div className={cn('border-tertiary bg-background absolute top-0 left-0 z-40  h-full w-72 flex-col border-r transition-all starting:-translate-x-full', isOpen ? 'flex translate-x-0 ' : '-translate-x-full hidden')}>
       <div className='flex items-center justify-between px-4 py-3'>
         <h2 className='text-lg font-semibold'>Add Widgets</h2>
         <button
@@ -100,10 +103,10 @@ const DashboardSidebar = () => {
   return (
     <>
       {/* Desktop (>=1024px): in-flow sticky sidebar that pushes content */}
-      <div className={cn('fixed z-20 hidden lg:flex h-dvh', isNavbarVisible ? 'top-[130px]' : 'top-14.5')}>{sidebarContent}</div>
+      <div ref={clickAwayRef} className={cn('fixed z-20 hidden lg:flex h-dvh transition-all duration-300', isNavbarVisible ? 'top-[130px]' : 'top-14.5')}>{sidebarContent}</div>
 
       {/* Mobile (<1024px): fixed overlay */}
-      <div className={cn('fixed inset-0 z-30 lg:hidden', isNavbarVisible ? 'top-[116px]' : 'top-14.5')}>
+      <div className={cn('fixed inset-0 z-30 lg:hidden transition-all', isNavbarVisible ? 'top-[116px]' : 'top-14.5')}>
         <div className='absolute inset-0 top-0 left-0 bg-black/40' onClick={closeSidebar} />
         <div className='relative z-40 h-full w-fit pt-14'>{sidebarContent}</div>
       </div>

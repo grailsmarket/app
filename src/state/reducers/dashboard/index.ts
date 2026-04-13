@@ -61,6 +61,48 @@ const getBottomY = (layout: LayoutItem[]): number => {
   return bottom
 }
 
+/**
+ * Find the first available (x, y) position where a widget of size w×h fits
+ * without overlapping existing items. Scans top-to-bottom, left-to-right.
+ * Falls back to (0, bottomY) if no gap is found within the existing bounds.
+ */
+const findFirstAvailablePosition = (
+  layout: LayoutItem[],
+  cols: number,
+  w: number,
+  h: number
+): { x: number; y: number } => {
+  const bottomY = getBottomY(layout)
+  if (layout.length === 0) return { x: 0, y: 0 }
+
+  // Build occupancy grid: occupied[y][x] = true if cell is taken
+  const rows = bottomY + h
+  const occupied: boolean[][] = Array.from({ length: rows }, () => Array(cols).fill(false))
+
+  for (const item of layout) {
+    for (let iy = item.y; iy < item.y + item.h && iy < rows; iy++) {
+      for (let ix = item.x; ix < item.x + item.w && ix < cols; ix++) {
+        occupied[iy][ix] = true
+      }
+    }
+  }
+
+  // Scan for the first position where the w×h rectangle fits entirely
+  for (let y = 0; y <= bottomY; y++) {
+    for (let x = 0; x <= cols - w; x++) {
+      let fits = true
+      for (let dy = 0; dy < h && fits; dy++) {
+        for (let dx = 0; dx < w && fits; dx++) {
+          if (y + dy >= rows || occupied[y + dy][x + dx]) fits = false
+        }
+      }
+      if (fits) return { x, y }
+    }
+  }
+
+  return { x: 0, y: bottomY }
+}
+
 // ── Slice ───────────────────────────────────────────────────────
 export const dashboardSlice = createSlice({
   name: 'dashboard',
@@ -80,11 +122,11 @@ export const dashboardSlice = createSlice({
       for (const bp of breakpoints) {
         const cols = DASHBOARD_COLS[bp]
         const w = Math.min(sizes.w, cols)
+        const pos = findFirstAvailablePosition(state.layouts[bp], cols, w, sizes.h)
 
         state.layouts[bp].push({
           i: id,
-          x: 0,
-          y: getBottomY(state.layouts[bp]),
+          ...pos,
           w,
           h: sizes.h,
           minW: sizes.minW,

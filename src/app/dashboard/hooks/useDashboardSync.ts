@@ -38,12 +38,23 @@ export const useDashboardSync = () => {
       if (!userAddress) return null
       const layoutResponse = await getDashboardLayouts()
 
-      // if (layoutResponse.length > 0) {
-      //   // Use the default layout, or fall back to the first one
-      //   const target = layoutResponse.find((l) => l.isDefault) || layoutResponse[0]
-      //   if (target) loadLayout(target)
-      //   else loadLayout(layoutResponse[0])
-      // }
+      if (!!layoutResponse) {
+        // Only load a layout from the response if the one persisted in the redux store is not in the response array
+        if (layoutResponse.findIndex((layout) => layout.id === dashboard.layoutId) === -1) {
+          // Use the default layout, or fall back to the first one in the response array
+          const target = layoutResponse.find((l) => l.isDefault) || layoutResponse[0]
+          if (target) {
+            loadLayout(target)
+          } else {
+            if (layoutResponse[0]) {
+              loadLayout(layoutResponse[0])
+            } else {
+              setSelectedLayoutId(null)
+              dispatch(resetDashboard())
+            }
+          }
+        }
+      }
 
       return layoutResponse
     },
@@ -73,6 +84,14 @@ export const useDashboardSync = () => {
           }
         } else {
           const created = await createDashboardLayout(payload)
+          if (!created) {
+            return {
+              success: false,
+              error: 'Failed to create dashboard layout',
+              message: 'Failed to create dashboard layout',
+            }
+          }
+
           dispatch(setDashboardLayoutId(created.id))
 
           if (created.isDefault) {

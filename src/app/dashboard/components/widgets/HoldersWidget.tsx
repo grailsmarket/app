@@ -91,19 +91,17 @@ const HoldersWidget: React.FC<HoldersWidgetProps> = ({ instanceId }) => {
                 <p>All Categories</p>
                 {isAll && <Check className='text-primary h-4 w-4' />}
               </button>
-              {categories?.map((cat: any) => {
-                const name = cat.name ?? cat
-                return (
-                  <button
-                    key={name}
-                    onClick={() => toggleCategory(name)}
-                    className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
-                  >
-                    <p>{name}</p>
-                    {config.categories.includes(name) && <Check className='text-primary h-4 w-4' />}
-                  </button>
-                )
-              })}
+              {categories?.map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => toggleCategory(cat.name)}
+                  className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
+                >
+                  <p>{cat.name}</p>
+                  {config.categories.includes(cat.name) && <Check className='text-primary h-4 w-4' />}
+                </button>
+              )
+              )}
             </div>
           )}
         </div>

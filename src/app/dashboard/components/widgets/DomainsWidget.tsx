@@ -2,11 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import {
-  updateComponentConfig,
-  updateDomainFilters,
-  setDomainFiltersOpen,
-} from '@/state/reducers/dashboard'
+import { updateComponentConfig, updateDomainFilters, setDomainFiltersOpen } from '@/state/reducers/dashboard'
 import { selectDomainsConfig } from '@/state/reducers/dashboard/selectors'
 import { useDashboardDomains } from '../../hooks/useDashboardDomains'
 import Card from '@/components/domains/grid/components/card'

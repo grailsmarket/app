@@ -15,7 +15,8 @@ export const getDashboardLayouts = async (): Promise<DashboardLayoutResponse[]> 
   const data = (await response.json()) as APIResponseType<{ layouts: DashboardLayoutResponse[] }>
 
   if (!data.success) {
-    throw new Error(data.error?.message || 'Failed to fetch dashboard layouts')
+    console.error(data.error?.message || 'Failed to fetch dashboard layouts')
+    return []
   }
 
   return data.data.layouts

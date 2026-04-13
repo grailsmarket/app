@@ -155,8 +155,8 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
               {config.eventTypes.length === 0
                 ? 'All'
                 : config.eventTypes
-                    .map((type) => EVENT_TYPE_OPTIONS.find((opt) => opt.value === type)?.label)
-                    .join(', ')}
+                  .map((type) => EVENT_TYPE_OPTIONS.find((opt) => opt.value === type)?.label)
+                  .join(', ')}
             </p>
             <ShortArrow
               className={cn('h-3 w-3 transition-transform', isEventDropdownOpen ? 'rotate-0' : 'rotate-180')}
@@ -208,14 +208,14 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
               >
                 <p>All Categories</p>
               </button>
-              {categories?.map((cat: any) => (
+              {categories?.map((cat) => (
                 <button
-                  key={cat.name ?? cat}
-                  value={cat.name ?? cat}
-                  onChange={(e) => setCategory(e.target.value || null)}
+                  key={cat.name}
+                  value={cat.name}
+                  onChange={(e) => setCategory(cat.name)}
                   className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
                 >
-                  <p>{cat.name ?? cat}</p>
+                  <p>{cat.name}</p>
                   {config.category === (cat.name ?? cat) && <Check className='text-primary h-4 w-4' />}
                 </button>
               ))}

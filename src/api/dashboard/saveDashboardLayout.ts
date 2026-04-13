@@ -5,7 +5,7 @@ import type { DashboardLayoutResponse, CreateDashboardLayoutPayload, UpdateDashb
 
 export const createDashboardLayout = async (
   payload: CreateDashboardLayoutPayload
-): Promise<DashboardLayoutResponse> => {
+): Promise<DashboardLayoutResponse | null> => {
   const response = await authFetch(`${API_URL}/dashboard-layouts`, {
     method: 'POST',
     headers: {
@@ -17,7 +17,8 @@ export const createDashboardLayout = async (
   const data = (await response.json()) as APIResponseType<DashboardLayoutResponse>
 
   if (!data.success) {
-    throw new Error(data.error?.message || 'Failed to create dashboard layout')
+    console.error(data.error?.message || 'Failed to create dashboard layout')
+    return null
   }
 
   return data.data
@@ -38,7 +39,7 @@ export const updateDashboardLayout = async (
   const data = (await response.json()) as APIResponseType<DashboardLayoutResponse>
 
   if (!data.success) {
-    throw new Error(data.error?.message || 'Failed to update dashboard layout')
+    console.error(data.error?.message || 'Failed to update dashboard layout')
   }
 
   return data.data

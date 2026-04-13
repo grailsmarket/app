@@ -13,6 +13,6 @@ export const deleteDashboardLayout = async (id: number): Promise<void> => {
   const data = (await response.json()) as APIResponseType<{ message: string }>
 
   if (!data.success) {
-    throw new Error(data.error?.message || 'Failed to delete dashboard layout')
+    console.error(data.error?.message || 'Failed to delete dashboard layout')
   }
 }

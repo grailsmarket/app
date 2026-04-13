@@ -23,6 +23,7 @@ export default function NameImage({ name, expiryDate, className, height = 1024, 
 
   // Namehash is used for wrapped names
   const nameHash = namehash(name)
+
   // Labelhash is used for unwrapped names
   const labelHash = labelhash(name.replace('.eth', ''))
 
@@ -30,8 +31,6 @@ export default function NameImage({ name, expiryDate, className, height = 1024, 
 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(labelHash).toString()}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
-
-  console.log(displayFallback ? fallbackSrc : imageSrc)
 
   return (
     <Image

@@ -6,6 +6,8 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { addComponent, setSidebarOpen } from '@/state/reducers/dashboard'
 import { selectDashboardSidebarOpen } from '@/state/reducers/dashboard/selectors'
 import { WIDGET_LABELS, type DashboardComponentType } from '@/state/reducers/dashboard/types'
+import { useNavbar } from '@/context/navbar'
+import { cn } from '@/utils/tailwind'
 
 const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = [
   {
@@ -57,6 +59,7 @@ const DraggableWidgetCard: React.FC<DraggableWidgetCardProps> = ({ type }) => {
 
 const DashboardSidebar = () => {
   const dispatch = useAppDispatch()
+  const { isNavbarVisible } = useNavbar()
   const isOpen = useAppSelector(selectDashboardSidebarOpen)
 
   const closeSidebar = () => {
@@ -97,10 +100,10 @@ const DashboardSidebar = () => {
   return (
     <>
       {/* Desktop (>=1024px): in-flow sticky sidebar that pushes content */}
-      <div className='sticky top-0 z-20 hidden h-dvh lg:flex'>{sidebarContent}</div>
+      <div className={cn('fixed z-20 hidden lg:flex h-dvh', isNavbarVisible ? 'top-[130px]' : 'top-14.5')}>{sidebarContent}</div>
 
       {/* Mobile (<1024px): fixed overlay */}
-      <div className='fixed inset-0 z-30 lg:hidden'>
+      <div className={cn('fixed inset-0 z-30 lg:hidden', isNavbarVisible ? 'top-[116px]' : 'top-14.5')}>
         <div className='absolute inset-0 top-0 left-0 bg-black/40' onClick={closeSidebar} />
         <div className='relative z-40 h-full w-fit pt-14'>{sidebarContent}</div>
       </div>

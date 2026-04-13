@@ -76,7 +76,15 @@ export const useDashboardSync = () => {
 
       try {
         if (layoutId != null) {
-          await updateDashboardLayout(layoutId, payload)
+          const updated = await updateDashboardLayout(layoutId, payload)
+
+          const newQueryData = layouts?.map((l) => (l.id === layoutId ? updated : l))
+          if (newQueryData) {
+            queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
+          }
+
+          loadLayout(updated)
+          setSelectedLayoutId(updated.id)
 
           return {
             success: true,

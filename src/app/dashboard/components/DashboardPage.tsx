@@ -16,6 +16,7 @@ import { useDashboardAutoSave } from '../hooks/useDashboardAutoSave'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import Plus from 'public/icons/plus.svg'
 import { cn } from '@/utils/tailwind'
+import { useNavbar } from '@/context/navbar'
 
 const DashboardPage = () => {
   const { authStatus, authStatusIsLoading } = useUserContext()
@@ -74,13 +75,14 @@ const DashboardPage = () => {
 
 const AuthenticatedDashboard = () => {
   const dispatch = useAppDispatch()
+  const { isNavbarVisible } = useNavbar()
   const sidebarOpen = useAppSelector(selectDashboardSidebarOpen)
   useDashboardAutoSave()
 
   return (
     <DashboardActivityProvider>
       <main className='relative flex min-h-screen flex-col'>
-        <div className='px-md py-md sm:px-lg border-tertiary flex items-center justify-between gap-3 border-b-2'>
+        <div className={cn('px-md py-md sm:px-lg border-tertiary flex items-center justify-between gap-3 border-b-2 sticky top-0 bg-background z-10', isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0')}>
           <button
             onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
             className={cn(

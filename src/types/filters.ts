@@ -27,6 +27,7 @@ import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 import { CategoryTabType } from '@/state/reducers/category/category'
 import { CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
+import { BulkSearchTabType } from '@/constants/domains/bulkSearch/tabs'
 
 export type { TypeFiltersState, MarketFiltersState, TextMatchFiltersState, TextNonMatchFiltersState }
 export {
@@ -67,7 +68,7 @@ export type ClubsCountType = {
   max: number | null
 }
 
-export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage'
+export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage' | 'bulkSearch'
 
 export interface FilterRouterSelectors<T extends FilterContextType> {
   filters: T extends 'marketplace'
@@ -113,6 +114,7 @@ export interface FilterRouter<T extends FilterContextType> {
   marketplaceTab?: MarketplaceTabType
   categoryTab?: CategoryTabType
   categoriesPageTab?: CategoriesPageTabType
+  bulkSearchTab?: BulkSearchTabType
   activeTab?: string
   isFiltersClear: boolean
 }

@@ -155,8 +155,8 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
               {config.eventTypes.length === 0
                 ? 'All'
                 : config.eventTypes
-                  .map((type) => EVENT_TYPE_OPTIONS.find((opt) => opt.value === type)?.label)
-                  .join(', ')}
+                    .map((type) => EVENT_TYPE_OPTIONS.find((opt) => opt.value === type)?.label)
+                    .join(', ')}
             </p>
             <ShortArrow
               className={cn('h-3 w-3 transition-transform', isEventDropdownOpen ? 'rotate-0' : 'rotate-180')}

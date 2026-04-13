@@ -82,7 +82,12 @@ const AuthenticatedDashboard = () => {
   return (
     <DashboardActivityProvider>
       <main className='relative flex min-h-screen flex-col'>
-        <div className={cn('px-md py-md sm:px-lg border-tertiary flex items-center justify-between gap-3 border-b-2 sticky top-0 bg-background z-10 transition-all duration-300', isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0')}>
+        <div
+          className={cn(
+            'px-md py-md sm:px-lg border-tertiary bg-background sticky top-0 z-10 flex items-center justify-between gap-3 border-b-2 transition-all duration-300',
+            isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
+          )}
+        >
           <button
             onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
             className={cn(

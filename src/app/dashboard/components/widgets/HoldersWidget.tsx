@@ -100,8 +100,7 @@ const HoldersWidget: React.FC<HoldersWidgetProps> = ({ instanceId }) => {
                   <p>{cat.name}</p>
                   {config.categories.includes(cat.name) && <Check className='text-primary h-4 w-4' />}
                 </button>
-              )
-              )}
+              ))}
             </div>
           )}
         </div>

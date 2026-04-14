@@ -117,7 +117,11 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )
     : []
   const namesTransfer = userAddress
-    ? selectedDomains.filter((domain) => domain.owner?.toLowerCase() === userAddress.toLowerCase())
+    ? selectedDomains.filter(
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          getRegistrationStatus(domain.expiry_date) === REGISTERED
+      )
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(

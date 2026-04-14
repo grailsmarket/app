@@ -98,6 +98,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='hidden lg:block'>
             <Metadata
               name={name}
+              registrationStatus={registrationStatus}
               nameOwner={nameDetails?.owner}
               metadata={metadata}
               isMetadataLoading={isMetadataLoading}
@@ -107,6 +108,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='hidden lg:block'>
             <Roles
               name={name}
+              registrationStatus={registrationStatus}
               nameOwner={nameDetails?.owner}
               metadata={metadata}
               roles={roles}
@@ -144,6 +146,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='lg:hidden'>
             <Metadata
               name={name}
+              registrationStatus={registrationStatus}
               nameOwner={nameDetails?.owner}
               metadata={metadata}
               isMetadataLoading={isMetadataLoading}
@@ -153,6 +156,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='lg:hidden'>
             <Roles
               name={name}
+              registrationStatus={registrationStatus}
               nameOwner={nameDetails?.owner}
               metadata={metadata}
               roles={roles}

@@ -17,19 +17,30 @@ import PencilIcon from 'public/icons/pencil.svg'
 import { useUserContext } from '@/context/user'
 import { isAddress } from 'viem'
 import { MetadataType, RolesType } from '@/types/api'
+import { RegistrationStatus } from '@/types/domains'
+import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface NameDetailsProps {
   name: string
+  registrationStatus: RegistrationStatus
   nameOwner?: string | null
   roles?: RolesType | null
   isRolesLoading: boolean
   metadata?: MetadataType[]
 }
 
-const Roles: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], roles, isRolesLoading }) => {
+const Roles: React.FC<NameDetailsProps> = ({
+  name,
+  registrationStatus,
+  nameOwner,
+  metadata = [],
+  roles,
+  isRolesLoading,
+}) => {
   const [isRolesOpen, setIsRolesOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
+  const canEditRoles = isNameOwner && registrationStatus === REGISTERED
   const dispatch = useAppDispatch()
 
   return (
@@ -40,7 +51,7 @@ const Roles: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], rol
       >
         <div className='flex items-center gap-2'>
           <h3 className='font-sedan-sc text-3xl'>Roles</h3>
-          {isNameOwner && (
+          {canEditRoles && (
             <button
               className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
               onClick={(e) => {
@@ -65,7 +76,7 @@ const Roles: React.FC<NameDetailsProps> = ({ name, nameOwner, metadata = [], rol
         </div>
         <div className='flex flex-row items-center gap-2'>
           <ShortArrow
-            className={cn('h-4 w-4 flex-shrink-0 transition-transform', isRolesOpen ? 'rotate-0' : 'rotate-180')}
+            className={cn('h-4 w-4 shrink-0 transition-transform', isRolesOpen ? 'rotate-0' : 'rotate-180')}
           />
         </div>
       </div>

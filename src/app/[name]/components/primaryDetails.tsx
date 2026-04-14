@@ -14,6 +14,7 @@ import {
   UNREGISTERED,
   REGISTERED_STATUSES,
   REGISTERABLE_STATUSES,
+  REGISTERED,
 } from '@/constants/domains/registrationStatuses'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
@@ -133,7 +134,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 Extend
               </PrimaryButton>
             )}
-            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && (
+            {userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase() && registrationStatus === REGISTERED && (
               <>
                 <SecondaryButton
                   onClick={openTransferModal}

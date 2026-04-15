@@ -484,6 +484,38 @@ import { selectCategory } from '@/state/reducers/category/category'
 // Import categoriesPage state selector
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 
+// Import bulkSearch state selector and filter actions
+import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
+import {
+  emptyFilterState as emptyFilterStateBulkSearchFilters,
+  selectBulkSearchFilters,
+  setBulkSearchFiltersOpen,
+  toggleBulkSearchFiltersStatus,
+  setBulkSearchFiltersStatus,
+  toggleBulkSearchFiltersType,
+  setBulkSearchFiltersType,
+  setBulkSearchMarketFilters,
+  setBulkSearchTextMatchFilters,
+  setBulkSearchTextNonMatchFilters,
+  setBulkSearchFiltersLength,
+  setBulkSearchPriceDenomination,
+  setBulkSearchPriceRange,
+  setBulkSearchOfferRange,
+  setBulkSearchWatchersCount,
+  setBulkSearchViewCount,
+  setBulkSearchClubsCount,
+  setBulkSearchCreationDate,
+  toggleBulkSearchCategory,
+  setBulkSearchFiltersCategory,
+  addBulkSearchCategories,
+  removeBulkSearchCategories,
+  setBulkSearchSort,
+  setBulkSearchSearch,
+  setBulkSearchFiltersScrollTop,
+  toggleBulkSearchFilterOpen,
+  clearBulkSearchFilters,
+} from '@/state/reducers/filters/bulkSearchFilters'
+
 // Import categoriesNamesFilters selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesNamesFilters,
@@ -635,6 +667,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const marketplaceState = useAppSelector(selectMarketplace)
   const categoryState = useAppSelector(selectCategory)
   const categoriesPageState = useAppSelector(selectCategoriesPage)
+  const bulkSearchState = useAppSelector(selectBulkSearch)
   const filterPanelState = useAppSelector(selectFilterPanel)
 
   // Determine which tab is active in profile
@@ -645,19 +678,27 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const activeCategoryTab = categoryState.selectedTab?.value || 'names'
   // Determine which tab is active in categoriesPage
   const activeCategoriesPageTab = categoriesPageState.categoriesPage.selectedTab?.value || 'categories'
+  // Determine which tab is active in bulkSearch
+  const activeBulkSearchTab = bulkSearchState.selectedTab?.value || 'names'
 
   const activeTab = useMemo(() => {
-    if (filterType === 'categoriesPage') {
+    if (filterType === 'bulkSearch') {
+      return activeBulkSearchTab
+    } else if (filterType === 'categoriesPage') {
       return activeCategoriesPageTab
     } else if (filterType === 'category') {
       return activeCategoryTab
     } else if (filterType === 'marketplace') {
       return activeMarketplaceTab
     }
-  }, [filterType, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab])
+  }, [filterType, activeBulkSearchTab, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab])
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
+    if (filterType === 'bulkSearch') {
+      return selectBulkSearchFilters(state)
+    }
+
     if (filterType === 'categoriesPage') {
       if (activeCategoriesPageTab === 'categories') {
         return selectCategoriesPageFilters(state)
@@ -732,6 +773,36 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
+    if (filterType === 'bulkSearch') {
+      return {
+        setFiltersOpen: setBulkSearchFiltersOpen,
+        toggleFiltersStatus: toggleBulkSearchFiltersStatus,
+        setFiltersStatus: setBulkSearchFiltersStatus,
+        toggleFiltersType: toggleBulkSearchFiltersType,
+        setFiltersType: setBulkSearchFiltersType,
+        setMarketFilters: setBulkSearchMarketFilters,
+        setTextMatchFilters: setBulkSearchTextMatchFilters,
+        setTextNonMatchFilters: setBulkSearchTextNonMatchFilters,
+        setFiltersLength: setBulkSearchFiltersLength,
+        setPriceDenomination: setBulkSearchPriceDenomination,
+        setPriceRange: setBulkSearchPriceRange,
+        setOfferRange: setBulkSearchOfferRange,
+        setWatchersCount: setBulkSearchWatchersCount,
+        setViewCount: setBulkSearchViewCount,
+        setClubsCount: setBulkSearchClubsCount,
+        setCreationDate: setBulkSearchCreationDate,
+        toggleCategory: toggleBulkSearchCategory,
+        setFiltersCategory: setBulkSearchFiltersCategory,
+        addCategories: addBulkSearchCategories,
+        removeCategories: removeBulkSearchCategories,
+        setSort: setBulkSearchSort,
+        setSearch: setBulkSearchSearch,
+        setScrollTop: setBulkSearchFiltersScrollTop,
+        toggleFilterOpen: toggleBulkSearchFilterOpen,
+        clearFilters: clearBulkSearchFilters,
+      }
+    }
+
     if (filterType === 'categoriesPage') {
       if (activeCategoriesPageTab === 'categories') {
         return {
@@ -1458,9 +1529,20 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
       toggleFilterOpen: toggleMarketplaceFilterOpen,
       clearFilters: clearMarketplaceFilters,
     }
-  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
+  }, [
+    filterType,
+    activeProfileTab,
+    activeMarketplaceTab,
+    activeCategoryTab,
+    activeCategoriesPageTab,
+    activeBulkSearchTab,
+  ])
 
   const emptyFilterState = useMemo(() => {
+    if (filterType === 'bulkSearch') {
+      return emptyFilterStateBulkSearchFilters
+    }
+
     if (filterType === 'categoriesPage') {
       if (activeCategoriesPageTab === 'categories') {
         return emptyFilterStateCategoriesPageFilters
@@ -1529,7 +1611,14 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     }
 
     return emptyFilterStateMarketplaceFilters
-  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
+  }, [
+    filterType,
+    activeProfileTab,
+    activeMarketplaceTab,
+    activeCategoryTab,
+    activeCategoriesPageTab,
+    activeBulkSearchTab,
+  ])
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
@@ -1556,6 +1645,7 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
     marketplaceTab: marketplaceState.selectedTab,
     categoryTab: categoryState.selectedTab,
     categoriesPageTab: categoriesPageState.categoriesPage.selectedTab,
+    bulkSearchTab: bulkSearchState.selectedTab,
     activeTab,
     isFiltersClear,
   }

@@ -37,8 +37,14 @@ export class BulkOfferOrderBuilder {
     startTime?: number
     endTime?: number
   }): SeaportOrder {
-    const { tokenId, offerAmountWei, offerer, durationDays = 7, startTime: providedStartTime, endTime: providedEndTime } =
-      params
+    const {
+      tokenId,
+      offerAmountWei,
+      offerer,
+      durationDays = 7,
+      startTime: providedStartTime,
+      endTime: providedEndTime,
+    } = params
 
     // Use provided times (for batch consistency) or compute from current time
     const startTime = providedStartTime ?? Math.floor(Date.now() / 1000)
@@ -120,7 +126,16 @@ export class BulkOfferOrderBuilder {
     proofs: Map<string, string[]>
     sortedTokenIds: string[]
   } {
-    const { tokenIds, offerAmountWei, offerer, count, durationDays = 7, currencyAddress, platformFeeRecipient, platformFeeBps = 0 } = params
+    const {
+      tokenIds,
+      offerAmountWei,
+      offerer,
+      count,
+      durationDays = 7,
+      currencyAddress,
+      platformFeeRecipient,
+      platformFeeBps = 0,
+    } = params
 
     if (tokenIds.length < 2) {
       throw new Error('At least 2 token IDs required for n-of-many offers')

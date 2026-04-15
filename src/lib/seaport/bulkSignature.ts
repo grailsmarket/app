@@ -22,10 +22,9 @@ const ORDER_COMPONENTS_TYPEHASH = keccak256(
 )
 
 const OFFER_ITEM_TYPEHASH = keccak256(
-  toHex(
-    'OfferItem(uint8 itemType,address token,uint256 identifierOrCriteria,uint256 startAmount,uint256 endAmount)',
-    { size: undefined }
-  )
+  toHex('OfferItem(uint8 itemType,address token,uint256 identifierOrCriteria,uint256 startAmount,uint256 endAmount)', {
+    size: undefined,
+  })
 )
 
 const CONSIDERATION_ITEM_TYPEHASH = keccak256(

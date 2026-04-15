@@ -493,12 +493,12 @@ export function useSeaportClient() {
         })
 
         // 2. Fetch current Seaport counter for the signer
-        const counter = await publicClient!.readContract({
+        const counter = (await publicClient!.readContract({
           address: SEAPORT_ADDRESS as `0x${string}`,
           abi: SEAPORT_ABI,
           functionName: 'getCounter',
           args: [address as `0x${string}`],
-        }) as bigint
+        })) as bigint
 
         // 3. Prepare bulk signature
         const bulkResult = prepareBulkSignature(orders, counter)
@@ -583,12 +583,12 @@ export function useSeaportClient() {
         })
 
         // 2. Fetch current Seaport counter for the signer
-        const counter = await publicClient!.readContract({
+        const counter = (await publicClient!.readContract({
           address: SEAPORT_ADDRESS as `0x${string}`,
           abi: SEAPORT_ABI,
           functionName: 'getCounter',
           args: [address as `0x${string}`],
-        }) as bigint
+        })) as bigint
 
         // 3. Prepare bulk signature
         // If only 1 order, pad to 2 for bulk signing (requires tree height >= 1)

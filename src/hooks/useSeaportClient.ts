@@ -8,6 +8,8 @@ import { createBulkOffer as createBulkOfferApi } from '@/api/offers/createBulk'
 import { createNOfManyOffer as createNOfManyOfferApi } from '@/api/offers/createNOfMany'
 import { BulkOfferOrderBuilder } from '@/lib/seaport/bulkOrderBuilder'
 import { prepareBulkSignature, extractBulkSignatures } from '@/lib/seaport/bulkSignature'
+import { SEAPORT_ABI } from '@/lib/seaport/abi'
+import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
 import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { useQueryClient } from '@tanstack/react-query'
 import { cancelOffer as cancelOfferApi } from '@/api/offers/cancel'
@@ -490,10 +492,18 @@ export function useSeaportClient() {
           durationDays,
         })
 
-        // 2. Prepare bulk signature
-        const bulkResult = prepareBulkSignature(orders)
+        // 2. Fetch current Seaport counter for the signer
+        const counter = await publicClient!.readContract({
+          address: SEAPORT_ADDRESS as `0x${string}`,
+          abi: SEAPORT_ABI,
+          functionName: 'getCounter',
+          args: [address as `0x${string}`],
+        }) as bigint
 
-        // 3. Sign once via wallet
+        // 3. Prepare bulk signature
+        const bulkResult = prepareBulkSignature(orders, counter)
+
+        // 4. Sign once via wallet
         const signature = await walletClient.signTypedData({
           domain: bulkResult.typedData.domain as any,
           types: bulkResult.typedData.types as any,
@@ -501,10 +511,10 @@ export function useSeaportClient() {
           message: bulkResult.typedData.message as any,
         })
 
-        // 4. Extract per-order signatures
+        // 5. Extract per-order signatures
         const individualSigs = extractBulkSignatures(signature, bulkResult, orders)
 
-        // 5. Submit to backend
+        // 6. Submit to backend
         const apiOffers = individualSigs.map((sig, i) => ({
           ensNameId: params.domains[i].id,
           offerAmountWei: offers[i].offerAmountWei,
@@ -572,12 +582,20 @@ export function useSeaportClient() {
           currencyAddress: currencyAddress.toLowerCase(),
         })
 
-        // 2. Prepare bulk signature
+        // 2. Fetch current Seaport counter for the signer
+        const counter = await publicClient!.readContract({
+          address: SEAPORT_ADDRESS as `0x${string}`,
+          abi: SEAPORT_ABI,
+          functionName: 'getCounter',
+          args: [address as `0x${string}`],
+        }) as bigint
+
+        // 3. Prepare bulk signature
         // If only 1 order, pad to 2 for bulk signing (requires tree height >= 1)
         const ordersForSigning = orders.length === 1 ? [...orders, orders[0]] : orders
-        const bulkResult = prepareBulkSignature(ordersForSigning)
+        const bulkResult = prepareBulkSignature(ordersForSigning, counter)
 
-        // 3. Sign once via wallet
+        // 4. Sign once via wallet
         const signature = await walletClient.signTypedData({
           domain: bulkResult.typedData.domain as any,
           types: bulkResult.typedData.types as any,
@@ -585,11 +603,11 @@ export function useSeaportClient() {
           message: bulkResult.typedData.message as any,
         })
 
-        // 4. Extract per-order signatures (only for the real orders, not padding)
+        // 5. Extract per-order signatures (only for the real orders, not padding)
         const allSigs = extractBulkSignatures(signature, bulkResult, ordersForSigning)
         const individualSigs = allSigs.slice(0, orders.length)
 
-        // 5. Submit to backend
+        // 6. Submit to backend
         const result = await createNOfManyOfferApi({
           buyerAddress: address.toLowerCase(),
           offerAmountWei,

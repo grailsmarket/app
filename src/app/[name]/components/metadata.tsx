@@ -11,9 +11,12 @@ import PencilIcon from 'public/icons/pencil.svg'
 import { useUserContext } from '@/context/user'
 import { isAddress } from 'viem'
 import { MetadataType } from '@/types/api'
+import { RegistrationStatus } from '@/types/domains'
+import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface NameDetailsProps {
   name: string
+  registrationStatus: RegistrationStatus
   nameOwner?: string | null
   metadata?: MetadataType[]
   isMetadataLoading: boolean
@@ -22,6 +25,7 @@ interface NameDetailsProps {
 
 const Metadata: React.FC<NameDetailsProps> = ({
   name,
+  registrationStatus,
   nameOwner,
   metadata = [],
   isMetadataLoading,
@@ -30,6 +34,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
+  const canEditMetadata = isNameOwner && registrationStatus === REGISTERED
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -39,7 +44,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
       >
         <div className='flex items-center gap-2'>
           <h3 className='font-sedan-sc text-3xl'>Records</h3>
-          {isNameOwner && (
+          {canEditMetadata && (
             <button
               className='hover:bg-tertiary flex h-7 w-7 items-center justify-center rounded-md transition-colors'
               onClick={(e) => {
@@ -58,7 +63,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             <p className='text-xl font-bold'>{metadata.length}</p>
           )}
           <ShortArrow
-            className={cn('h-4 w-4 flex-shrink-0 transition-transform', isMetadataOpen ? 'rotate-0' : 'rotate-180')}
+            className={cn('h-4 w-4 shrink-0 transition-transform', isMetadataOpen ? 'rotate-0' : 'rotate-180')}
           />
         </div>
       </div>

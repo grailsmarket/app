@@ -16,6 +16,7 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setTelegramConnected,
   setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { Address } from 'viem'
@@ -59,6 +60,7 @@ export const useAuth = () => {
     dispatch(setUserEmail({ address: user.email, verified: user.emailVerified }))
     dispatch(setUserDiscord(user.discord))
     dispatch(setUserTelegram(user.telegram))
+    dispatch(setTelegramConnected(user.telegramConnected ?? false))
     dispatch(setOfferNotificationThreshold(user.minOfferThreshold))
     dispatch(setNotifyOnListingSold(user.notifyOnListingSold))
     dispatch(setNotifyOnOfferReceived(user.notifyOnOfferReceived))

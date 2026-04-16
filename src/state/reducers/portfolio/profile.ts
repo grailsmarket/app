@@ -33,6 +33,8 @@ type profileState = {
   }
   discord: string | null
   telegram: string | null
+  telegramConnected: boolean
+  telegramVerificationCode: string | null
   poapClaimed: boolean
   subscription: SubscriptionType
   lastVisitedProfile: Address | string | null
@@ -61,6 +63,8 @@ const initialState: profileState = {
   },
   discord: null,
   telegram: null,
+  telegramConnected: false,
+  telegramVerificationCode: null,
   poapClaimed: false,
   subscription: { tier: 'free', tierId: 0, tierExpiresAt: null },
   watchlist: [],
@@ -93,6 +97,12 @@ export const profileSlice = createSlice({
     },
     setUserTelegram(state, { payload }: PayloadAction<string | null>) {
       state.telegram = payload
+    },
+    setTelegramConnected(state, { payload }: PayloadAction<boolean>) {
+      state.telegramConnected = payload
+    },
+    setTelegramVerificationCode(state, { payload }: PayloadAction<string | null>) {
+      state.telegramVerificationCode = payload
     },
     setUserPoapClaimed(state, { payload }: PayloadAction<boolean>) {
       state.poapClaimed = payload
@@ -183,6 +193,8 @@ export const profileSlice = createSlice({
       state.email = { address: null, verified: false }
       state.discord = null
       state.telegram = null
+      state.telegramConnected = false
+      state.telegramVerificationCode = null
       state.poapClaimed = false
       state.subscription = { tier: 'free', tierId: 0, tierExpiresAt: null }
       state.watchlist = []
@@ -200,6 +212,8 @@ export const {
   setUserEmail,
   setUserDiscord,
   setUserTelegram,
+  setTelegramConnected,
+  setTelegramVerificationCode,
   setUserPoapClaimed,
   setWatchlistDomains,
   addUserWatchlistDomain,

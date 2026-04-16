@@ -10,6 +10,7 @@ type VerifyResponse = {
     lastSignIn: string
     discord: string | null
     telegram: string | null
+    telegramConnected: boolean
     minOfferThreshold: number | null
     notifyOnListingSold: boolean
     notifyOnOfferReceived: boolean

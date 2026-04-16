@@ -11,6 +11,8 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setTelegramConnected,
+  setTelegramVerificationCode,
   setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -24,6 +26,8 @@ export const useSettings = () => {
     email,
     discord,
     telegram,
+    telegramConnected,
+    telegramVerificationCode,
     ensProfile,
     offerNotificationThreshold,
     notifyOnListingSold,
@@ -55,6 +59,9 @@ export const useSettings = () => {
         notifyOnListingSold: notifyOnListingSoldValue,
         notifyOnOfferReceived: notifyOnOfferReceivedValue,
       })
+      if (!result.success || !result.data) {
+        throw new Error((result as any).error?.message || 'Failed to update settings')
+      }
       return result
     },
     onSuccess: (result) => {
@@ -62,6 +69,8 @@ export const useSettings = () => {
       dispatch(setUserEmail({ address: result.data.email, verified: result.data.emailVerified }))
       dispatch(setUserDiscord(result.data.discord))
       dispatch(setUserTelegram(result.data.telegram))
+      dispatch(setTelegramConnected(result.data.telegramConnected ?? false))
+      dispatch(setTelegramVerificationCode(result.data.telegramVerificationCode ?? null))
       if (result.data.tier) {
         const tier = result.data.tier
         const tierId = result.data.tierId ?? getTierIdFromString(tier)
@@ -76,6 +85,37 @@ export const useSettings = () => {
       console.error('Error updating user profile', error)
     },
   })
+
+  const [telegramCodeStatus, setTelegramCodeStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
+
+  const resendTelegramCode = async () => {
+    setTelegramCodeStatus('pending')
+
+    try {
+      const response = await authFetch(`${API_URL}/verification/telegram/resend`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate telegram verification code')
+      }
+
+      const json = await response.json()
+      if (json.data?.telegramVerificationCode) {
+        dispatch(setTelegramVerificationCode(json.data.telegramVerificationCode))
+      }
+
+      setTelegramCodeStatus('success')
+    } catch (error) {
+      console.error('Error generating telegram verification code', error)
+      setTelegramCodeStatus('error')
+      return
+    } finally {
+      setTimeout(() => {
+        setTelegramCodeStatus(null)
+      }, 3000)
+    }
+  }
 
   const sendVerificationEmail = async () => {
     setVerificationEmailStatus('pending')
@@ -167,8 +207,13 @@ export const useSettings = () => {
     isEmailValid,
     discordUsername,
     setDiscordUsername,
+    telegram,
     telegramUsername,
     setTelegramUsername,
+    telegramConnected,
+    telegramVerificationCode,
+    resendTelegramCode,
+    telegramCodeStatus,
     hasChanges,
     updateUserProfileMutation,
     updateUserProfileMutationLoading,

@@ -31,8 +31,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setEmailAddress,
     // discordUsername,
     // setDiscordUsername,
-    // telegramUsername,
-    // setTelegramUsername,
+    telegram,
+    telegramUsername,
+    setTelegramUsername,
+    telegramConnected,
+    telegramVerificationCode,
+    resendTelegramCode,
+    telegramCodeStatus,
     ensProfile,
     subscription,
     isProSubscription,
@@ -146,18 +151,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         )}
 
         <div className='flex flex-col gap-2 sm:gap-4'>
-          {/* <Input
-            label='Discord'
-            value={discordUsername || ''}
-            onChange={(e) => setDiscordUsername(e.target.value)}
-            placeholder='Username'
-            />
-            <Input
-            label='Telegram'
-            value={telegramUsername || ''}
-            onChange={(e) => setTelegramUsername(e.target.value)}
-            placeholder='@telegramusername'
-            /> */}
           <div className='flex flex-col gap-2'>
             <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
               <p className='text-md text-neutral font-medium'>
@@ -264,6 +257,83 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   />
                 </button>
               </div>
+            </div>
+            {/* Telegram Notifications */}
+            <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
+              <div className='flex flex-col gap-1'>
+                <p className='text-lg font-medium'>Telegram Notifications</p>
+                <p className='text-neutral text-sm'>
+                  {isProSubscription
+                    ? 'Connect your Telegram to receive notifications via the Grails bot.'
+                    : 'Telegram notifications require a Pro subscription.'}
+                </p>
+              </div>
+              <Input
+                label='Telegram'
+                value={telegramUsername || ''}
+                onChange={(e) => setTelegramUsername(e.target.value)}
+                placeholder='@username'
+                disabled={!isProSubscription}
+              />
+              {isProSubscription && telegramConnected && (
+                <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
+                  <Image src={CheckCircle} alt='Telegram Connected' height={20} width={20} />
+                  <p className='text-md max-w-full font-medium text-[#16A34A]'>
+                    Your Telegram account is connected.
+                  </p>
+                </div>
+              )}
+              {isProSubscription && telegramVerificationCode && !telegramConnected && (
+                <div className='p-md flex flex-col gap-2 rounded-md bg-blue-400/10'>
+                  <p className='text-md font-medium text-blue-400'>
+                    Send this command to the Grails bot on Telegram:
+                  </p>
+                  <div className='flex items-center gap-2'>
+                    <code className='bg-secondary rounded-md px-3 py-1.5 text-sm font-mono select-all'>
+                      /reg {telegramVerificationCode}
+                    </code>
+                    <button
+                      className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+                      onClick={() => {
+                        navigator.clipboard.writeText(`/reg ${telegramVerificationCode}`)
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <p className='text-neutral text-xs'>This code expires in 10 minutes.</p>
+                </div>
+              )}
+              {isProSubscription && telegram && telegramUsername === telegram && !telegramConnected && !telegramVerificationCode && (
+                <div className='flex flex-row gap-2'>
+                  <div className='p-md flex items-center gap-2 rounded-md bg-yellow-400/10'>
+                    <Image src={AlertCircle} alt='Telegram Not Connected' height={32} width={32} />
+                    <p className='text-md max-w-full font-medium text-[#E79339]'>
+                      Your Telegram account is not connected.
+                    </p>
+                  </div>
+                  <SecondaryButton
+                    className={cn(
+                      'h-auto! w-40 px-0!',
+                      telegramCodeStatus === 'error'
+                        ? 'pointer-events-none bg-red-500'
+                        : telegramCodeStatus === 'success'
+                          ? 'pointer-events-none bg-green-700'
+                          : ''
+                    )}
+                    onClick={resendTelegramCode}
+                    disabled={telegramCodeStatus === 'pending'}
+                  >
+                    {telegramCodeStatus === 'pending'
+                      ? 'Generating...'
+                      : telegramCodeStatus === 'success'
+                        ? 'Code Generated!'
+                        : telegramCodeStatus === 'error'
+                          ? 'Error, try again.'
+                          : 'Get Code'}
+                  </SecondaryButton>
+                </div>
+              )}
             </div>
           </div>
         </div>

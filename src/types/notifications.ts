@@ -1,4 +1,12 @@
-export type NotificationType = 'new-listing' | 'price-change' | 'sale' | 'new-offer' | 'offer-received' | 'listing-sold'
+export type NotificationType =
+  | 'new-listing'
+  | 'price-change'
+  | 'sale'
+  | 'new-offer'
+  | 'offer-received'
+  | 'listing-sold'
+  | 'listing-cancelled-ownership-change'
+  | 'admin-broadcast'
 
 export interface NotificationMetadata {
   priceWei?: string
@@ -7,13 +15,18 @@ export interface NotificationMetadata {
   listingId?: number
   offerId?: number
   offerAmountWei?: string
+  // admin-broadcast fields
+  title?: string
+  body?: string
+  linkUrl?: string
+  broadcastId?: number
 }
 
 export interface Notification {
   id: number
   type: NotificationType
-  ensName: string
-  ensTokenId: string
+  ensName: string | null
+  ensTokenId: string | null
   metadata: NotificationMetadata
   sentAt: string
   readAt: string | null

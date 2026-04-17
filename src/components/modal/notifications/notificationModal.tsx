@@ -30,11 +30,15 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
     retry: 1,
   })
 
-  // Get all notifications from pages
+  // Get all notifications from pages. Admin broadcasts have no ensName/ensTokenId;
+  // ENS-scoped notifications still require both (malformed rows are dropped).
   const allNotifications =
     data?.pages
       .flatMap((page) => page.notifications)
-      .filter((notification) => !!notification.ensName && !!notification.ensTokenId) || []
+      .filter(
+        (notification) =>
+          notification.type === 'admin-broadcast' || (!!notification.ensName && !!notification.ensTokenId)
+      ) || []
   const isNotificationsLoading = isLoading || isFetchingNextPage
 
   const handleScroll = useCallback(() => {
@@ -71,7 +75,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
           ) : (
             <div className='flex flex-col'>
               {allNotifications.map((notification, index) => (
-                <div key={notification.id || index} className='h-16'>
+                <div
+                  key={notification.id || index}
+                  className={notification.type === 'admin-broadcast' ? 'min-h-16' : 'h-16'}
+                >
                   <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
                 </div>
               ))}

@@ -1,6 +1,6 @@
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { PriceDenominationType } from '@/state/reducers/filters/marketplaceFilters'
+import { PriceDenominationType } from '@/types/filters/name'
 import { useEffect, useState, useRef } from 'react'
 import { useDebounce } from '@/hooks/useDebounce'
 

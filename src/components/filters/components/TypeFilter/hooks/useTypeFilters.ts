@@ -1,11 +1,7 @@
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import {
-  MarketplaceTypeFilterLabel,
-  TypeFilterOption,
-  EMPTY_TYPE_FILTERS_STATE,
-} from '@/constants/filters/marketplaceFilters'
-import { TypeFiltersState } from '@/types/filters'
+import { EMPTY_TYPE_FILTERS_STATE } from '@/constants/filters/name'
+import { MarketplaceTypeFilterLabel, TypeFilterOption, TypeFiltersState } from '@/types/filters/name'
 
 export const useTypeFilters = () => {
   const dispatch = useAppDispatch()

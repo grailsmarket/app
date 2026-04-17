@@ -2,17 +2,17 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
 import UnexpandedFilter from '../../components/UnexpandedFilter'
 import FilterSelector from '../../components/FilterSelector'
-import { PROFILE_ACTIVITY_FILTERS } from '@/constants/filters/portfolioFilters'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 
 const TypeFilter = () => {
   const { selectors, actions } = useFilterRouter()
   const typeFilter = selectors.filters.type
   const dispatch = useAppDispatch()
 
-  const toggleActivityFiltersTypeFn = (value: ActivityTypeFilterType) => {
+  const toggleFiltersTypeFn = (value: ActivityTypeFilterType) => {
     dispatch(actions.toggleFiltersType(value))
   }
 
@@ -25,17 +25,17 @@ const TypeFilter = () => {
           </div>
         </div>
         <div className='flex flex-col overflow-x-hidden'>
-          {PROFILE_ACTIVITY_FILTERS.map((item, index) => (
+          {ACTIVITY_TYPE_FILTERS.map((item, index) => (
             <div
               key={index}
-              onClick={() => toggleActivityFiltersTypeFn(item.value)}
+              onClick={() => toggleFiltersTypeFn(item.value)}
               className='hover:bg-secondary flex cursor-pointer items-center justify-between rounded-sm p-3'
             >
               <p className='text-md font-medium'>{item.label}</p>
               <FilterSelector
                 // @ts-expect-error type doesn't come through from the filter router
                 isActive={typeFilter.includes(item.value as ActivityTypeFilterType)}
-                onClick={() => toggleActivityFiltersTypeFn(item.value)}
+                onClick={() => toggleFiltersTypeFn(item.value)}
               />
             </div>
           ))}

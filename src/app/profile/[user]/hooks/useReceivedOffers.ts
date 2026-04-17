@@ -2,12 +2,13 @@ import { Address } from 'viem'
 import fetchReceivedOffers from '@/api/offers/received'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useAppSelector } from '@/state/hooks'
-import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 export const useReceivedOffers = (user: Address | undefined) => {
-  const filters = useAppSelector(selectMyDomainsFilters)
+  const {
+    selectors: { filters },
+  } = useFilterRouter()
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {

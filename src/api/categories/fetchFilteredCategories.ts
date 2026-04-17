@@ -1,13 +1,14 @@
 import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { CategoryType } from '@/types/domains'
+import { SortDirection } from '@/types/filters'
+import { CategoriesPageSortOption } from '@/types/filters/categories'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
-import { CategoriesPageSortOption, CategoriesPageSortDirection } from '@/constants/filters/categoriesPageFilters'
 
 interface FetchFilteredCategoriesOptions {
   type?: string | null
   sort?: CategoriesPageSortOption
-  sortDirection?: CategoriesPageSortDirection
+  sortDirection?: SortDirection
 }
 
 export const fetchFilteredCategories = async ({ type, sort, sortDirection }: FetchFilteredCategoriesOptions = {}) => {

@@ -6,6 +6,7 @@ export const useFilterButtons = () => {
   const { actions, isFiltersClear } = useFilterRouter()
 
   const clearFilters = () => {
+    console.log('clearFilters')
     dispatch(actions.clearFilters())
   }
 

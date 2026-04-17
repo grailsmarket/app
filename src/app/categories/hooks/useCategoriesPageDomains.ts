@@ -38,28 +38,19 @@ export const useCategoriesPageDomains = () => {
       filters.type,
       filters.status,
       filters.sort,
-      // @ts-expect-error the market filter state will not be used for categories page domains
       filters.market,
-      // @ts-expect-error the text match filter state will not be used for categories page domains
       filters.textMatch,
-      // @ts-expect-error the text non-match filter state will not be used for categories page domains
       filters.textNonMatch,
-      // @ts-expect-error the offer range filter state will not be used for categories page domains
       filters.offerRange,
-      // @ts-expect-error the watchers count filter state will not be used for categories page domains
       filters.watchersCount,
-      // @ts-expect-error the view count filter state will not be used for categories page domains
       filters.viewCount,
-      // @ts-expect-error the clubs count filter state will not be used for categories page domains
       filters.clubsCount,
-      // @ts-expect-error the creation date filter state will not be used for categories page domains
       filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        // @ts-expect-error the filters state type varies by tab
         filters,
         searchTerm: debouncedSearch,
         enableBulkSearch: true,

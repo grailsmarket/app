@@ -13,12 +13,6 @@ export const useCategoryDomains = (category: string) => {
   const filters = selectors.filters
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
 
-  // const { data: clubdetails } = useQuery({
-  //   queryKey: ['club', club],
-  //   queryFn: () => fetchClubDetails(user),
-  //   enabled: !!club,
-  // })
-
   const {
     data: domains,
     isLoading,
@@ -36,28 +30,19 @@ export const useCategoryDomains = (category: string) => {
       filters.type,
       filters.status,
       filters.sort,
-      // @ts-expect-error the activity filter state will not be used for domains
       filters.market,
-      // @ts-expect-error the text match filter state will not be used for domains
       filters.textMatch,
-      // @ts-expect-error the text non-match filter state will not be used for domains
       filters.textNonMatch,
-      // @ts-expect-error the offer range filter state will not be used for domains
       filters.offerRange,
-      // @ts-expect-error the watchers count filter state will not be used for domains
       filters.watchersCount,
-      // @ts-expect-error the view count filter state will not be used for domains
       filters.viewCount,
-      // @ts-expect-error the clubs count filter state will not be used for domains
       filters.clubsCount,
-      // @ts-expect-error the creation date filter state will not be used for categories page domains
       filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        // @ts-expect-error the activity filter state will not be used for domains
         filters,
         searchTerm: debouncedSearch,
         category: category,

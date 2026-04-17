@@ -10,12 +10,9 @@ import {
   setCategoriesPageSortDirection,
 } from '@/state/reducers/filters/categoriesPageFilters'
 import { ShortArrow } from 'ethereum-identity-kit'
-import {
-  CATEGORIES_PAGE_SORT_OPTIONS,
-  CATEGORIES_PAGE_SORT_LABELS,
-  CategoriesPageSortOption,
-  CategoriesPageSortDirection,
-} from '@/constants/filters/categoriesPageFilters'
+import { CATEGORIES_PAGE_SORT_OPTIONS, CATEGORIES_PAGE_SORT_LABELS } from '@/constants/filters/categories'
+import { CategoriesPageSortOption } from '@/types/filters/categories'
+import { SortDirection } from '@/types/filters'
 import ArrowUpIcon from 'public/icons/ascending.svg'
 import ArrowDownIcon from 'public/icons/descending.svg'
 import Image from 'next/image'
@@ -42,7 +39,7 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
 
   const handleDirectionToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
-    const newDirection: CategoriesPageSortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+    const newDirection: SortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
     dispatch(setCategoriesPageSortDirection(newDirection))
   }
 

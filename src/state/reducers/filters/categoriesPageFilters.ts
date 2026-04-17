@@ -1,93 +1,31 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import {
-  CategoriesPageTypeOption,
-  CategoriesPageSortOption,
-  CategoriesPageSortDirection,
-  CategoriesPageOpenableFilterType,
-  DEFAULT_CATEGORIES_PAGE_SORT,
-  DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
-} from '@/constants/filters/categoriesPageFilters'
-
-// Types --------------------------------------------
-export type CategoriesPageFiltersState = {
-  search: string
-  type: string | null
-  sort: CategoriesPageSortOption
-  sortDirection: CategoriesPageSortDirection
-}
-
-export type CategoriesPageFiltersOpenedState = CategoriesPageFiltersState & {
-  openFilters: CategoriesPageOpenableFilterType[]
-  open: boolean
-  scrollTop: number
-}
+  CATEGORIES_PAGE_FILTERS_ACTIONS,
+  DEFAULT_CATEGORIES_PAGE_FILTERS_OPENED_STATE,
+  DEFAULT_CATEGORIES_PAGE_FILTERS_STATE,
+} from '@/constants/filters/categories'
+import { CategoriesPageFiltersOpenedState, CategoriesPageFiltersState } from '@/types/filters/categories'
 
 export const emptyFilterState: CategoriesPageFiltersState = {
-  search: '',
-  type: null,
-  sort: DEFAULT_CATEGORIES_PAGE_SORT,
-  sortDirection: DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
+  ...DEFAULT_CATEGORIES_PAGE_FILTERS_STATE,
 }
 
 // Initial State ------------------------------------
 export const initialState: CategoriesPageFiltersOpenedState = {
-  open: false,
-  search: '',
-  type: null,
-  sort: DEFAULT_CATEGORIES_PAGE_SORT,
-  sortDirection: DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
-  openFilters: ['Type'],
-  scrollTop: 0,
+  ...DEFAULT_CATEGORIES_PAGE_FILTERS_OPENED_STATE,
 }
 
 // Slice -------------------------------------------
 export const categoriesPageFiltersSlice = createSlice({
   name: 'categoriesPageFilters',
   initialState,
-  reducers: {
-    setCategoriesPageFiltersOpen(state, { payload }: PayloadAction<boolean>) {
-      state.open = payload
-    },
-    setCategoriesPageSearch(state, { payload }: PayloadAction<string>) {
-      state.search = payload
-    },
-    toggleCategoriesPageType(state, { payload }: PayloadAction<string>) {
-      // If clicking the same type, deselect it (set to null)
-      // Otherwise, select the new type
-      state.type = state.type === payload ? null : payload
-    },
-    setCategoriesPageType(state, { payload }: PayloadAction<CategoriesPageTypeOption | null>) {
-      state.type = payload
-    },
-    setCategoriesPageSort(state, { payload }: PayloadAction<CategoriesPageSortOption>) {
-      state.sort = payload
-    },
-    setCategoriesPageSortDirection(state, { payload }: PayloadAction<CategoriesPageSortDirection>) {
-      state.sortDirection = payload
-    },
-    toggleCategoriesPageFilterOpen(state, { payload }: PayloadAction<CategoriesPageOpenableFilterType>) {
-      const index = state.openFilters.findIndex((openFilter) => openFilter === payload)
-      if (index > -1) {
-        state.openFilters.splice(index, 1)
-      } else {
-        state.openFilters.push(payload)
-      }
-    },
-    setCategoriesPageScrollTop(state, { payload }: PayloadAction<number>) {
-      state.scrollTop = payload
-    },
-    clearCategoriesPageFilters(state) {
-      state.search = ''
-      state.type = null
-      state.sort = DEFAULT_CATEGORIES_PAGE_SORT
-      state.sortDirection = DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION
-      state.openFilters = ['Type']
-    },
-  },
+  reducers: CATEGORIES_PAGE_FILTERS_ACTIONS,
 })
 
 // Actions --------------------------------------------
+export const categoriesPageFiltersActions = categoriesPageFiltersSlice.actions
+
 export const {
   setCategoriesPageFiltersOpen,
   setCategoriesPageSearch,
@@ -95,7 +33,6 @@ export const {
   setCategoriesPageType,
   setCategoriesPageSort,
   setCategoriesPageSortDirection,
-  toggleCategoriesPageFilterOpen,
   setCategoriesPageScrollTop,
   clearCategoriesPageFilters,
 } = categoriesPageFiltersSlice.actions

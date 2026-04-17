@@ -5,7 +5,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { fetchCategoryActivity } from '@/api/activity/category'
 import { ActivityType } from '@/types/profile'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 
 export const useCategoryActivity = (category: string) => {
   const { selectors } = useFilterRouter()
@@ -25,7 +25,7 @@ export const useCategoryActivity = (category: string) => {
         club: category,
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        eventTypes: filters.type as ActivityTypeFilterType[],
+        eventTypes: filters.type as unknown as ActivityTypeFilterType[],
       })
 
       return {

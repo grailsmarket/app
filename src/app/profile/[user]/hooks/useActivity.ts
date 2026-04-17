@@ -6,7 +6,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { fetchProfileActivity } from '@/api/activity/profile'
 import { ActivityType } from '@/types/profile'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 
 export const useProfileActivity = (user: Address | undefined) => {
   const { selectors } = useFilterRouter()
@@ -33,7 +33,7 @@ export const useProfileActivity = (user: Address | undefined) => {
         address: user,
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        eventTypes: filters.type as ActivityTypeFilterType[],
+        eventTypes: filters.type as unknown as ActivityTypeFilterType[],
       })
 
       return {

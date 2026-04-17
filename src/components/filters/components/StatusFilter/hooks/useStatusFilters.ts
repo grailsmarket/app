@@ -1,20 +1,19 @@
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
-import { MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
-import { PortfolioStatusFilterType } from '@/types/filters'
+import { StatusType } from '@/types/filters/name'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 
 export const useStatusFilters = () => {
   const dispatch = useAppDispatch()
   const { selectors, actions, context } = useFilterRouter()
   const statusFilter = selectors.filters.status
 
-  const isActive = (status: MarketplaceStatusFilterType | PortfolioStatusFilterType | ActivityTypeFilterType) => {
+  const isActive = (status: StatusType | ActivityTypeFilterType) => {
     if (!statusFilter) return false
     return statusFilter.includes(status as any)
   }
 
-  const toggleActive = (status: MarketplaceStatusFilterType | PortfolioStatusFilterType | ActivityTypeFilterType) => {
+  const toggleActive = (status: StatusType | ActivityTypeFilterType) => {
     return () => {
       if (isActive(status)) {
         dispatch(actions.setFiltersStatus(null))

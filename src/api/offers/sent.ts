@@ -1,13 +1,13 @@
 import { API_URL } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
-import { PortfolioFiltersState } from '@/types/filters'
+import { NameFilters } from '@/types/filters/name'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 
 interface FetchSentOffersOptions {
   limit: number
   pageParam: number
-  filters: PortfolioFiltersState
+  filters: NameFilters
   ownerAddress: string
   searchTerm: string
 }

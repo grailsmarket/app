@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, ReactNode, useEffect, useRef } from 'react'
-import { FilterContextType } from '@/types/filters'
+import { FilterContextType } from '@/types/filters/name'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { CategoryTabType } from '@/state/reducers/category/category'
 import { useAppDispatch } from '@/state/hooks'

@@ -5,9 +5,9 @@ import TableLoadingRow from '@/components/domains/table/components/TableLoadingR
 import Link from 'next/link'
 import { Arrow } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
-import { setMarketplaceActivityFiltersType } from '@/state/reducers/filters/marketplaceActivityFilters'
 import { useTopRegistrations } from '@/app/analytics/hooks/useAnalyticsData'
 import { RegistrationRow } from '@/app/analytics/components/AnalyticsRow'
+import { setActivityFiltersType } from '@/state/reducers/filters/marketplaceActivityFilters'
 
 const Registrations = () => {
   const dispatch = useAppDispatch()
@@ -25,7 +25,7 @@ const Registrations = () => {
         <Link
           href='/analytics'
           onClick={() => {
-            dispatch(setMarketplaceActivityFiltersType('mint'))
+            dispatch(setActivityFiltersType('mint'))
           }}
           className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold sm:text-xl'
         >

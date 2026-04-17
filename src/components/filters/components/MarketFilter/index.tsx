@@ -4,8 +4,6 @@ import { useMemo } from 'react'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
 import { useMarketFilters } from './hooks/useMarketFilters'
-import { useFilterOpen } from '../../hooks/useFilterOpen'
-import ExpandableTab from '@/components/ui/expandableTab'
 import UnexpandedFilter from '../UnexpandedFilter'
 import FilterDropdown from '../FilterDropdown'
 import {
@@ -13,19 +11,16 @@ import {
   MARKET_FILTER_LABELS,
   MARKET_FILTER_OPTIONS,
   MARKET_FILTER_OPTION_LABELS,
-  MarketFilterLabel,
-  MarketFilterOption,
   OFFERS_FILTER_LABELS,
   MARKETPLACE_OPTIONS,
   MARKETPLACE_OPTION_LABELS,
-  MarketplaceOption,
   GRACE_FILTER_LABELS,
-} from '@/constants/filters/marketplaceFilters'
+} from '@/constants/filters/name'
 import { useFilterContext } from '@/context/filters'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { MarketFilterLabel, MarketFilterOption, MarketplaceOption } from '@/types/filters/name'
 
 const MarketFilter = () => {
-  const { open, toggleOpen } = useFilterOpen('Market')
   const { getOption, setOption, getMarketplaceOption, setMarketplaceOption } = useMarketFilters()
   const { filterType, profileTab, categoryTab } = useFilterContext()
   const { marketplaceTab, categoriesPageTab } = useFilterRouter()
@@ -36,54 +31,64 @@ const MarketFilter = () => {
 
   const filterLabels = useMemo(() => {
     if (filterType === 'category') {
-      if (activeCategoryTab === 'names') {
-        return MARKET_FILTER_LABELS
-      } else if (activeCategoryTab === 'listings') {
-        return LISTED_FILTER_LABELS
-      } else if (activeCategoryTab === 'premium') {
-        return GRACE_FILTER_LABELS
-      } else if (activeCategoryTab === 'available') {
-        return GRACE_FILTER_LABELS
+      switch (activeCategoryTab) {
+        case 'names':
+          return MARKET_FILTER_LABELS
+        case 'listings':
+          return LISTED_FILTER_LABELS
+        case 'premium':
+          return GRACE_FILTER_LABELS
+        case 'available':
+          return GRACE_FILTER_LABELS
+        default:
+          return MARKET_FILTER_LABELS
       }
-
-      return MARKET_FILTER_LABELS
     }
 
     if (filterType === 'profile') {
-      if (activeProfileTab === 'listings') {
-        return LISTED_FILTER_LABELS
-      } else if (activeProfileTab === 'received_offers') {
-        return OFFERS_FILTER_LABELS
-      } else if (activeProfileTab === 'sent_offers') {
-        return OFFERS_FILTER_LABELS
-      } else if (activeProfileTab === 'grace') {
-        return GRACE_FILTER_LABELS
-      } else if (activeProfileTab === 'expired') {
-        return ['Has Last Sale'] as const // Only show Has Last Sale for expired tab
+      switch (activeProfileTab) {
+        case 'listings':
+          return LISTED_FILTER_LABELS
+        case 'received_offers':
+          return OFFERS_FILTER_LABELS
+        case 'sent_offers':
+          return OFFERS_FILTER_LABELS
+        case 'grace':
+          return GRACE_FILTER_LABELS
+        case 'expired':
+          return ['Has Last Sale'] as const
+        default:
+          return MARKET_FILTER_LABELS
       }
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'names') {
-        return MARKET_FILTER_LABELS
-      } else if (activeMarketplaceTab === 'listings') {
-        return LISTED_FILTER_LABELS
-      } else if (activeMarketplaceTab === 'premium') {
-        return GRACE_FILTER_LABELS
-      } else if (activeMarketplaceTab === 'available') {
-        return GRACE_FILTER_LABELS
+      switch (activeMarketplaceTab) {
+        case 'names':
+          return MARKET_FILTER_LABELS
+        case 'listings':
+          return LISTED_FILTER_LABELS
+        case 'premium':
+          return GRACE_FILTER_LABELS
+        case 'available':
+          return GRACE_FILTER_LABELS
+        default:
+          return MARKET_FILTER_LABELS
       }
     }
 
     if (filterType === 'categoriesPage') {
-      if (activeCategoriesPageTab === 'names') {
-        return MARKET_FILTER_LABELS
-      } else if (activeCategoriesPageTab === 'listings') {
-        return LISTED_FILTER_LABELS
-      } else if (activeCategoriesPageTab === 'premium') {
-        return GRACE_FILTER_LABELS
-      } else if (activeCategoriesPageTab === 'available') {
-        return GRACE_FILTER_LABELS
+      switch (activeCategoriesPageTab) {
+        case 'names':
+          return MARKET_FILTER_LABELS
+        case 'listings':
+          return LISTED_FILTER_LABELS
+        case 'premium':
+          return GRACE_FILTER_LABELS
+        case 'available':
+          return GRACE_FILTER_LABELS
+        default:
+          return MARKET_FILTER_LABELS
       }
     }
 
@@ -92,104 +97,112 @@ const MarketFilter = () => {
 
   const showMarketplaceDropdown = useMemo(() => {
     if (filterType === 'category') {
-      if (activeCategoryTab === 'names') {
-        return true
-      } else if (activeCategoryTab === 'listings') {
-        return true
-      } else if (activeCategoryTab === 'premium') {
-        return false
-      } else if (activeCategoryTab === 'available') {
-        return false
-      } else if (activeCategoryTab === 'activity') {
-        return false
+      switch (activeCategoryTab) {
+        case 'names':
+          return true
+        case 'listings':
+          return true
+        case 'premium':
+          return false
+        case 'available':
+          return false
+        case 'activity':
+          return false
+        default:
+          return true
       }
-      return true
     }
 
     if (filterType === 'profile') {
-      if (activeProfileTab === 'domains') {
-        return true
+      switch (activeProfileTab) {
+        case 'domains':
+          return true
+        case 'grace':
+          return false
+        case 'expired':
+          return false
+        case 'listings':
+          return true
+        case 'received_offers':
+          return true
+        case 'sent_offers':
+          return true
+        case 'watchlist':
+          return true
+        case 'activity':
+          return false
+        default:
+          return true
       }
-      if (activeProfileTab === 'grace') {
-        return false
-      } else if (activeProfileTab === 'expired') {
-        return false
-      } else if (activeProfileTab === 'listings') {
-        return true
-      } else if (activeProfileTab === 'received_offers') {
-        return true
-      } else if (activeProfileTab === 'sent_offers') {
-        return true
-      } else if (activeProfileTab === 'watchlist') {
-        return true
-      } else if (activeProfileTab === 'activity') {
-        return false
-      }
-      return true
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'names') {
-        return true
-      } else if (activeMarketplaceTab === 'listings') {
-        return true
-      } else if (activeMarketplaceTab === 'premium') {
-        return false
-      } else if (activeMarketplaceTab === 'available') {
-        return false
-      } else if (activeMarketplaceTab === 'activity') {
-        return false
+      switch (activeMarketplaceTab) {
+        case 'names':
+          return true
+        case 'listings':
+          return true
+        case 'premium':
+          return false
+        case 'available':
+          return false
+        case 'activity':
+          return false
+        default:
+          return true
       }
     }
 
     if (filterType === 'categoriesPage') {
-      if (activeCategoriesPageTab === 'names') {
-        return true
-      } else if (activeCategoriesPageTab === 'listings') {
-        return true
-      } else if (activeCategoriesPageTab === 'premium') {
-        return false
-      } else if (activeCategoriesPageTab === 'available') {
-        return false
+      switch (activeCategoriesPageTab) {
+        case 'names':
+          return true
+        case 'listings':
+          return true
+        case 'premium':
+          return false
+        case 'available':
+          return false
+        default:
+          return true
       }
     }
 
     return true
   }, [filterType, activeCategoryTab, activeProfileTab, activeMarketplaceTab, activeCategoriesPageTab])
 
-  // Calculate expanded height based on number of labels + 1 for marketplace dropdown
-  const expandedHeight = 64 + (filterLabels.length + 1) * 42
-
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Market' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={expandedHeight} label='Market'>
-        <div className='flex flex-col'>
-          {filterLabels.map((label) => (
-            <div key={label}>
-              <FilterDropdown<MarketFilterOption>
-                label={label}
-                value={getOption(label as MarketFilterLabel)}
-                options={MARKET_FILTER_OPTIONS}
-                optionLabels={MARKET_FILTER_OPTION_LABELS}
-                onChange={(option) => setOption(label as MarketFilterLabel, option)}
-                noneValue='none'
-              />
-            </div>
-          ))}
-          {showMarketplaceDropdown && (
-            <div>
-              <FilterDropdown<MarketplaceOption>
-                label='Marketplace'
-                value={getMarketplaceOption()}
-                options={MARKETPLACE_OPTIONS}
-                optionLabels={MARKETPLACE_OPTION_LABELS}
-                onChange={(option) => setMarketplaceOption(option)}
-                noneValue='none'
-              />
-            </div>
-          )}
+      <div className='border-tertiary w-full border-b'>
+        <div className='flex h-auto w-full flex-col py-1.5 transition-all'>
+          <div className='flex flex-col'>
+            {filterLabels.map((label) => (
+              <div key={label}>
+                <FilterDropdown<MarketFilterOption>
+                  label={label}
+                  value={getOption(label as MarketFilterLabel)}
+                  options={MARKET_FILTER_OPTIONS}
+                  optionLabels={MARKET_FILTER_OPTION_LABELS}
+                  onChange={(option) => setOption(label as MarketFilterLabel, option)}
+                  noneValue='none'
+                />
+              </div>
+            ))}
+            {showMarketplaceDropdown && (
+              <div>
+                <FilterDropdown<MarketplaceOption>
+                  label='Marketplace'
+                  value={getMarketplaceOption()}
+                  options={MARKETPLACE_OPTIONS}
+                  optionLabels={MARKETPLACE_OPTION_LABELS}
+                  onChange={(option) => setMarketplaceOption(option)}
+                  noneValue='none'
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </ExpandableTab>
+      </div>
     </PersistGate>
   )
 }

@@ -1,11 +1,8 @@
 'use client'
 
 import FilterDropdown from '../FilterDropdown'
-import {
-  TypeFilterOption,
-  TYPE_FILTER_OPTIONS,
-  TYPE_FILTER_OPTION_LABELS,
-} from '@/constants/filters/marketplaceFilters'
+import { TYPE_FILTER_OPTIONS, TYPE_FILTER_OPTION_LABELS } from '@/constants/filters/name'
+import { TypeFilterOption } from '@/types/filters/name'
 
 interface TypeFilterDropdownProps {
   label: string

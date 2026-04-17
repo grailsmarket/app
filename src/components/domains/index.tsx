@@ -14,7 +14,7 @@ import LoadingCard from './grid/components/loadingCard'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { SortFilterType } from '@/types/filters'
+import { SortFilterType } from '@/types/filters/name'
 
 // Mapping of column headers to their sort values
 const COLUMN_SORT_MAP: Partial<

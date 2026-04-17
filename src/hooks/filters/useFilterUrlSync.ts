@@ -4,7 +4,7 @@ import { useEffect, useRef, useMemo, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from './useFilterRouter'
-import { FilterContextType } from '@/types/filters'
+import { FilterContextType } from '@/types/filters/name'
 import {
   serializeFiltersToUrl,
   serializeCategoriesPageFiltersToUrl,

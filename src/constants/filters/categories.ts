@@ -1,4 +1,11 @@
-// Categories Page Filters Constants
+import { SortDirection } from '@/types/filters'
+import {
+  CategoriesPageFiltersOpenedState,
+  CategoriesPageFiltersState,
+  CategoriesPageSortOption,
+  CategoriesPageTypeOption,
+} from '@/types/filters/categories'
+import { PayloadAction } from '@reduxjs/toolkit'
 
 // Category type filter options
 export const CATEGORIES_PAGE_TYPE_OPTIONS = [
@@ -10,9 +17,8 @@ export const CATEGORIES_PAGE_TYPE_OPTIONS = [
   'letters',
   'fantasy',
   'crypto',
+  'ai',
 ] as const
-
-export type CategoriesPageTypeOption = (typeof CATEGORIES_PAGE_TYPE_OPTIONS)[number]
 
 export const CATEGORIES_PAGE_TYPE_LABELS: Record<CategoriesPageTypeOption, string> = {
   ethmojis: 'Ethmojis',
@@ -23,6 +29,7 @@ export const CATEGORIES_PAGE_TYPE_LABELS: Record<CategoriesPageTypeOption, strin
   letters: 'Letters',
   fantasy: 'Fantasy',
   crypto: 'Crypto',
+  ai: 'AI',
 }
 
 // Sort options for categories page
@@ -60,8 +67,6 @@ export const CATEGORIES_PAGE_SORT_OPTIONS = [
   'name',
 ] as const
 
-export type CategoriesPageSortOption = (typeof CATEGORIES_PAGE_SORT_OPTIONS)[number]
-
 export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, string> = {
   total_sales_volume_wei: 'Volume (All Time)',
   sales_volume_wei_1y: 'Volume (1y)',
@@ -96,14 +101,89 @@ export const CATEGORIES_PAGE_SORT_LABELS: Record<CategoriesPageSortOption, strin
   name: 'Alphabetical',
 }
 
-// Sort direction
-export type CategoriesPageSortDirection = 'asc' | 'desc'
-
 // Default values
 export const DEFAULT_CATEGORIES_PAGE_SORT: CategoriesPageSortOption = 'sales_volume_wei_1mo'
-export const DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION: CategoriesPageSortDirection = 'desc'
+export const DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION: SortDirection = 'desc'
 
 // Openable filters (for filter panel sections)
 export const CATEGORIES_PAGE_OPENABLE_FILTERS = ['Type'] as const
 
-export type CategoriesPageOpenableFilterType = (typeof CATEGORIES_PAGE_OPENABLE_FILTERS)[number]
+export const DEFAULT_CATEGORIES_PAGE_FILTERS_STATE: CategoriesPageFiltersState = {
+  search: '',
+  type: null,
+  sort: DEFAULT_CATEGORIES_PAGE_SORT,
+  sortDirection: DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
+}
+
+export const DEFAULT_CATEGORIES_PAGE_FILTERS_OPENED_STATE: CategoriesPageFiltersOpenedState = {
+  ...DEFAULT_CATEGORIES_PAGE_FILTERS_STATE,
+  open: false,
+  scrollTop: 0,
+}
+
+export const setCategoriesPageFiltersOpen = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<boolean>
+) => {
+  state.open = payload
+}
+
+export const setCategoriesPageSearch = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<string>
+) => {
+  state.search = payload
+}
+
+export const toggleCategoriesPageType = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<CategoriesPageTypeOption>
+) => {
+  state.type = state.type === payload ? null : payload
+}
+
+export const setCategoriesPageType = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<CategoriesPageTypeOption | null>
+) => {
+  state.type = payload
+}
+
+export const setCategoriesPageSort = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<CategoriesPageSortOption>
+) => {
+  state.sort = payload
+}
+
+export const setCategoriesPageSortDirection = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<SortDirection>
+) => {
+  state.sortDirection = payload
+}
+
+export const setCategoriesPageScrollTop = (
+  state: CategoriesPageFiltersOpenedState,
+  { payload }: PayloadAction<number>
+) => {
+  state.scrollTop = payload
+}
+
+export const clearCategoriesPageFilters = (state: CategoriesPageFiltersOpenedState) => {
+  state.search = ''
+  state.type = null
+  state.sort = DEFAULT_CATEGORIES_PAGE_SORT
+  state.sortDirection = DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION
+}
+
+export const CATEGORIES_PAGE_FILTERS_ACTIONS = {
+  setCategoriesPageFiltersOpen,
+  setCategoriesPageSearch,
+  toggleCategoriesPageType,
+  setCategoriesPageType,
+  setCategoriesPageSort,
+  setCategoriesPageSortDirection,
+  setCategoriesPageScrollTop,
+  clearCategoriesPageFilters,
+}

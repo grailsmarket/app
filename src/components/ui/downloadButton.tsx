@@ -4,7 +4,6 @@ import { API_URL } from '@/constants/api'
 import { useUserContext } from '@/context/user'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { normalizeName } from '@/lib/ens'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { BigNumber } from '@ethersproject/bignumber'
 import Image from 'next/image'
@@ -30,10 +29,10 @@ const DownloadButton = ({
 
   const { authStatus } = useUserContext()
   const { selectors } = useFilterRouter()
-  const filters = selectors.filters as MarketplaceFiltersState
+  const filters = selectors.filters
 
   const searchTerm = filters.search
-  const search = normalizeName(searchTerm.replace('.eth', '').toLowerCase().trim())
+  const search = normalizeName(searchTerm?.replace('.eth', '').toLowerCase().trim())
   const statusFilter = filters.status?.filter(
     (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
   )
@@ -66,23 +65,23 @@ const DownloadButton = ({
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max
         ? BigNumber.from(Math.floor(filters.priceRange.max * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+          .mul(BigNumber.from(10).pow(12))
+          .toString()
         : filters.priceRange.max || null,
       'filters[minPrice]': filters.priceRange.min
         ? BigNumber.from(Math.floor(filters.priceRange.min * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+          .mul(BigNumber.from(10).pow(12))
+          .toString()
         : filters.priceRange.min || null,
       'filters[maxOffer]': filters.offerRange?.max
         ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+          .mul(BigNumber.from(10).pow(12))
+          .toString()
         : filters.offerRange?.max || null,
       'filters[minOffer]': filters.offerRange?.min
         ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+          .mul(BigNumber.from(10).pow(12))
+          .toString()
         : filters.offerRange?.min || null,
       'filters[minWatchersCount]': filters.watchersCount?.min || null,
       'filters[maxWatchersCount]': filters.watchersCount?.max || null,

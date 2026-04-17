@@ -1,9 +1,8 @@
 import Image from 'next/image'
-import { MarketplaceOpenableFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import arrowDown from 'public/icons/arrow-down.svg'
 
 interface UnexpandedFilterProps {
-  label: MarketplaceOpenableFilterType
+  label: string
 }
 
 const UnexpandedFilter: React.FC<UnexpandedFilterProps> = ({ label }) => {

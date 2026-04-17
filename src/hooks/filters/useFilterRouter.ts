@@ -2,634 +2,161 @@ import _ from 'lodash'
 import { RootState } from '@/state'
 import { useAppSelector } from '@/state/hooks'
 import { useFilterContext } from '@/context/filters'
-import { FilterRouter, FilterContextType } from '@/types/filters'
+import { FilterRouter } from '@/types/filters/name'
 import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
+import { useMemo } from 'react'
+import { selectCategory } from '@/state/reducers/category/category'
+import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 
-// Import marketplace selectors and actions
 import {
   emptyFilterState as emptyFilterStateMarketplaceFilters,
   selectMarketplaceFilters,
-  setMarketplaceFiltersOpen,
-  toggleMarketplaceFiltersStatus,
-  setMarketplaceFiltersStatus,
-  toggleMarketplaceFiltersType,
-  setMarketplaceFiltersType,
-  setMarketplaceMarketFilters,
-  setMarketplaceTextMatchFilters,
-  setMarketplaceTextNonMatchFilters,
-  setMarketplaceFiltersLength,
-  setMarketplacePriceDenomination,
-  setMarketplacePriceRange,
-  setMarketplaceOfferRange,
-  setMarketplaceWatchersCount,
-  setMarketplaceViewCount,
-  setMarketplaceClubsCount,
-  setMarketplaceCreationDate,
-  toggleMarketplaceCategory,
-  setMarketplaceFiltersCategory,
-  addMarketplaceCategories,
-  removeMarketplaceCategories,
-  setMarketplaceSort,
-  setMarketplaceSearch,
-  setMarketplaceScrollTop,
-  toggleMarketplaceFilterOpen,
-  clearMarketplaceFilters,
+  MarketplaceFilterActions,
 } from '@/state/reducers/filters/marketplaceFilters'
 
-// Import marketplace listings selectors and actions
 import {
   emptyFilterState as emptyFilterStateMarketplaceListingsFilters,
   selectMarketplaceListingsFilters,
-  setFiltersOpen as setMarketplaceListingsFiltersOpen,
-  toggleFiltersStatus as toggleMarketplaceListingsFiltersStatus,
-  setFiltersStatus as setMarketplaceListingsFiltersStatus,
-  toggleFiltersType as toggleMarketplaceListingsFiltersType,
-  setFiltersType as setMarketplaceListingsFiltersType,
-  setMarketFilters as setMarketplaceListingsMarketFilters,
-  setTextMatchFilters as setMarketplaceListingsTextMatchFilters,
-  setTextNonMatchFilters as setMarketplaceListingsTextNonMatchFilters,
-  setFiltersLength as setMarketplaceListingsFiltersLength,
-  setPriceDenomination as setMarketplaceListingsPriceDenomination,
-  setPriceRange as setMarketplaceListingsPriceRange,
-  setOfferRange as setMarketplaceListingsOfferRange,
-  setWatchersCount as setMarketplaceListingsWatchersCount,
-  setViewCount as setMarketplaceListingsViewCount,
-  setClubsCount as setMarketplaceListingsClubsCount,
-  setCreationDate as setMarketplaceListingsCreationDate,
-  toggleCategory as toggleMarketplaceListingsCategory,
-  setFiltersCategory as setMarketplaceListingsFiltersCategory,
-  addCategories as addMarketplaceListingsCategories,
-  removeCategories as removeMarketplaceListingsCategories,
-  setSort as setMarketplaceListingsSort,
-  setSearch as setMarketplaceListingsSearch,
-  setFiltersScrollTop as setMarketplaceListingsFiltersScrollTop,
-  toggleFilterOpen as toggleMarketplaceListingsFilterOpen,
-  clearFilters as clearMarketplaceListingsFilters,
+  MarketplaceListingsFilterActions,
 } from '@/state/reducers/filters/marketplaceListingsFilters'
 
-// Import marketplace activity filters selectors and actions
 import {
   emptyFilterState as emptyFilterStateMarketplaceActivityFilters,
   selectMarketplaceActivityFilters,
-  toggleMarketplaceActivityFiltersType,
-  setMarketplaceActivityFiltersType,
-  toggleMarketplaceActivityFilterOpen,
-  setMarketplaceActivityFiltersOpen,
-  setMarketplaceActivitySearch,
-  setMarketplaceActivityFiltersScrollTop,
-  clearMarketplaceActivityFilters,
+  marketplaceActivityFiltersActions,
 } from '@/state/reducers/filters/marketplaceActivityFilters'
 
-// Import marketplace premium filters selectors and actions
 import {
   emptyFilterState as emptyFilterStateMarketplacePremiumFilters,
   selectMarketplacePremiumFilters,
-  setFiltersOpen as setMarketplacePremiumFiltersOpen,
-  toggleFiltersType as toggleMarketplacePremiumFiltersType,
-  setFiltersType as setMarketplacePremiumFiltersType,
-  setMarketFilters as setMarketplacePremiumMarketFilters,
-  setTextMatchFilters as setMarketplacePremiumTextMatchFilters,
-  setTextNonMatchFilters as setMarketplacePremiumTextNonMatchFilters,
-  setFiltersLength as setMarketplacePremiumFiltersLength,
-  setPriceDenomination as setMarketplacePremiumPriceDenomination,
-  setPriceRange as setMarketplacePremiumPriceRange,
-  toggleCategory as toggleMarketplacePremiumCategory,
-  setFiltersCategory as setMarketplacePremiumFiltersCategory,
-  addCategories as addMarketplacePremiumCategories,
-  removeCategories as removeMarketplacePremiumCategories,
-  setSort as setMarketplacePremiumSort,
-  setSearch as setMarketplacePremiumSearch,
-  setFiltersScrollTop as setMarketplacePremiumFiltersScrollTop,
-  toggleFilterOpen as toggleMarketplacePremiumFilterOpen,
-  clearFilters as clearMarketplacePremiumFilters,
-  setWatchersCount as setMarketplacePremiumWatchersCount,
-  setViewCount as setMarketplacePremiumViewCount,
-  setClubsCount as setMarketplacePremiumClubsCount,
-  setCreationDate as setMarketplacePremiumCreationDate,
+  MarketplacePremiumFilterActions,
 } from '@/state/reducers/filters/marketplacePremiumFilters'
 
-// Import marketplace available filters selectors and actions
 import {
   emptyFilterState as emptyFilterStateMarketplaceAvailableFilters,
   selectMarketplaceAvailableFilters,
-  setFiltersOpen as setMarketplaceAvailableFiltersOpen,
-  toggleFiltersType as toggleMarketplaceAvailableFiltersType,
-  setFiltersType as setMarketplaceAvailableFiltersType,
-  setMarketFilters as setMarketplaceAvailableMarketFilters,
-  setTextMatchFilters as setMarketplaceAvailableTextMatchFilters,
-  setTextNonMatchFilters as setMarketplaceAvailableTextNonMatchFilters,
-  setFiltersLength as setMarketplaceAvailableFiltersLength,
-  setPriceDenomination as setMarketplaceAvailablePriceDenomination,
-  setPriceRange as setMarketplaceAvailablePriceRange,
-  toggleCategory as toggleMarketplaceAvailableCategory,
-  setFiltersCategory as setMarketplaceAvailableFiltersCategory,
-  addCategories as addMarketplaceAvailableCategories,
-  removeCategories as removeMarketplaceAvailableCategories,
-  setSort as setMarketplaceAvailableSort,
-  setSearch as setMarketplaceAvailableSearch,
-  setFiltersScrollTop as setMarketplaceAvailableFiltersScrollTop,
-  toggleFilterOpen as toggleMarketplaceAvailableFilterOpen,
-  clearFilters as clearMarketplaceAvailableFilters,
-  setWatchersCount as setMarketplaceAvailableWatchersCount,
-  setViewCount as setMarketplaceAvailableViewCount,
-  setClubsCount as setMarketplaceAvailableClubsCount,
-  setCreationDate as setMarketplaceAvailableCreationDate,
+  MarketplaceAvailableFilterActions,
 } from '@/state/reducers/filters/marketplaceAvailableFilters'
 
-// Import marketplace state selector
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 
-// Import myOffers selectors and actions
 import {
   emptyFilterState as emptyFilterStateMyOffersFilters,
   selectMyOffersFilters,
-  setMyOffersFiltersOpen,
-  toggleMyOffersFiltersStatus,
-  setMyOffersFiltersStatus,
-  toggleMyOffersFiltersType,
-  setMyOffersFiltersType,
-  setMyOffersMarketFilters,
-  setMyOffersTextMatchFilters,
-  setMyOffersTextNonMatchFilters,
-  setMyOffersFiltersLength,
-  setMyOffersPriceDenomination,
-  setMyOffersPriceRange,
-  toggleMyOffersCategory,
-  setMyOffersFiltersCategory,
-  addMyOffersCategories,
-  removeMyOffersCategories,
-  setMyOffersSort,
-  setMyOffersSearch,
-  setMyOffersScrollTop,
-  toggleMyOffersFilterOpen,
-  clearMyOffersFilters,
+  MyOffersFilterActions,
 } from '@/state/reducers/filters/myOffersFilters'
 
-// Import receivedOffers selectors and actions
 import {
   emptyFilterState as emptyFilterStateReceivedOffersFilters,
   selectReceivedOffersFilters,
-  setReceivedOffersFiltersOpen,
-  toggleReceivedOffersFiltersStatus,
-  setReceivedOffersFiltersStatus,
-  toggleReceivedOffersFiltersType,
-  setReceivedOffersFiltersType,
-  setReceivedOffersMarketFilters,
-  setReceivedOffersTextMatchFilters,
-  setReceivedOffersTextNonMatchFilters,
-  setReceivedOffersFiltersLength,
-  setReceivedOffersPriceDenomination,
-  setReceivedOffersPriceRange,
-  toggleReceivedOffersCategory,
-  setReceivedOffersFiltersCategory,
-  addReceivedOffersCategories,
-  removeReceivedOffersCategories,
-  setReceivedOffersSort,
-  setReceivedOffersSearch,
-  setReceivedOffersScrollTop,
-  toggleReceivedOffersFilterOpen,
-  clearReceivedOffersFilters,
+  receivedOffersFiltersActions,
 } from '@/state/reducers/filters/receivedOffersFilters'
 
-// Import watchlist selectors and actions
 import {
   emptyFilterState as emptyFilterStateWatchlistFilters,
   selectWatchlistFilters,
-  setWatchlistFiltersOpen,
-  toggleWatchlistFiltersStatus,
-  setWatchlistFiltersStatus,
-  toggleWatchlistFiltersType,
-  setWatchlistFiltersType,
-  setWatchlistMarketFilters,
-  setWatchlistTextMatchFilters,
-  setWatchlistTextNonMatchFilters,
-  setWatchlistFiltersLength,
-  setWatchlistPriceDenomination,
-  setWatchlistPriceRange,
-  setWatchlistOfferRange,
-  setWatchlistWatchersCount,
-  setWatchlistViewCount,
-  setWatchlistClubsCount,
-  setWatchlistCreationDate,
-  toggleWatchlistCategory,
-  setWatchlistFiltersCategory,
-  addWatchlistCategories,
-  removeWatchlistCategories,
-  setWatchlistSort,
-  setWatchlistSearch,
-  setWatchlistFiltersScrollTop,
-  toggleWatchlistFilterOpen,
-  clearWatchlistFilters,
+  WatchlistFilterActions,
 } from '@/state/reducers/filters/watchlistFilters'
 
-// Import profile selector for portfolio tabs
-import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { useMemo } from 'react'
-
-// Import profile filters selectors and actions
 import {
   emptyFilterState as emptyFilterStateProfileDomainsFilters,
   selectProfileDomainsFilters,
-  setFiltersOpen as setProfileDomainsFiltersOpen,
-  toggleFiltersStatus as toggleProfileDomainsFiltersStatus,
-  setFiltersStatus as setProfileDomainsFiltersStatus,
-  toggleFiltersType as toggleProfileDomainsFiltersType,
-  setFiltersType as setProfileDomainsFiltersType,
-  setMarketFilters as setProfileDomainsMarketFilters,
-  setProfileDomainsTextMatchFilters,
-  setProfileDomainsTextNonMatchFilters,
-  setFiltersLength as setProfileDomainsFiltersLength,
-  setPriceDenomination as setProfileDomainsPriceDenomination,
-  setPriceRange as setProfileDomainsPriceRange,
-  setOfferRange as setProfileDomainsOfferRange,
-  setWatchersCount as setProfileDomainsWatchersCount,
-  setViewCount as setProfileDomainsViewCount,
-  setClubsCount as setProfileDomainsClubsCount,
-  setCreationDate as setProfileDomainsCreationDate,
-  toggleCategory as toggleProfileDomainsCategory,
-  setFiltersCategory as setProfileDomainsFiltersCategory,
-  addCategories as addProfileDomainsCategories,
-  removeCategories as removeProfileDomainsCategories,
-  setSort as setProfileDomainsSort,
-  setSearch as setProfileDomainsSearch,
-  setFiltersScrollTop as setProfileDomainsFiltersScrollTop,
-  toggleFilterOpen as toggleProfileDomainsFilterOpen,
-  clearFilters as clearProfileDomainsFilters,
+  ProfileDomainsFilterActions,
 } from '@/state/reducers/filters/profileDomainsFilters'
 
 import {
   emptyFilterState as emptyFilterStateProfileListingsFilters,
-  setFiltersOpen as setProfileListingsFiltersOpen,
-  toggleFiltersType as toggleProfileListingsFiltersType,
-  setFiltersType as setProfileListingsFiltersType,
-  setMarketFilters as setProfileListingsMarketFilters,
-  setTextMatchFilters as setProfileListingsTextMatchFilters,
-  setTextNonMatchFilters as setProfileListingsTextNonMatchFilters,
-  setFiltersLength as setProfileListingsFiltersLength,
-  setPriceDenomination as setProfileListingsPriceDenomination,
-  setPriceRange as setProfileListingsPriceRange,
-  setOfferRange as setProfileListingsOfferRange,
-  setWatchersCount as setProfileListingsWatchersCount,
-  setViewCount as setProfileListingsViewCount,
-  setClubsCount as setProfileListingsClubsCount,
-  setCreationDate as setProfileListingsCreationDate,
-  toggleCategory as toggleProfileListingsCategory,
-  setFiltersCategory as setProfileListingsFiltersCategory,
-  addCategories as addProfileListingsCategories,
-  removeCategories as removeProfileListingsCategories,
-  setSort as setProfileListingsSort,
-  setSearch as setProfileListingsSearch,
-  setFiltersScrollTop as setProfileListingsFiltersScrollTop,
-  toggleFilterOpen as toggleProfileListingsFilterOpen,
-  clearFilters as clearProfileListingsFilters,
   selectProfileListingsFilters,
+  ProfileListingsFilterActions,
 } from '@/state/reducers/filters/profileListingsFilter'
 
 import {
   emptyFilterState as emptyFilterStateProfileActivityFilters,
   selectProfileActivityFilters,
-  toggleActivityFiltersType,
-  setActivityFiltersType,
-  toggleFilterOpen as toggleProfileActivityFilterOpen,
-  setFiltersOpen as setProfileActivityFilterOpen,
-  setSearch as setProfileActivitySearch,
-  setFiltersScrollTop as setProfileActivityFiltersScrollTop,
-  clearActivityFilters,
+  profileActivityFiltersActions,
 } from '@/state/reducers/filters/profileActivityFilters'
 
-// Import profile grace filters selectors and actions
 import {
   emptyFilterState as emptyFilterStateProfileGraceFilters,
   selectProfileGraceFilters,
-  setFiltersOpen as setProfileGraceFiltersOpen,
-  toggleFiltersType as toggleProfileGraceFiltersType,
-  setFiltersType as setProfileGraceFiltersType,
-  setMarketFilters as setProfileGraceMarketFilters,
-  setProfileGraceTextMatchFilters,
-  setProfileGraceTextNonMatchFilters,
-  setFiltersLength as setProfileGraceFiltersLength,
-  setPriceDenomination as setProfileGracePriceDenomination,
-  setPriceRange as setProfileGracePriceRange,
-  setOfferRange as setProfileGraceOfferRange,
-  setProfileGraceWatchersCount,
-  setProfileGraceViewCount,
-  setProfileGraceClubsCount,
-  setProfileGraceCreationDate,
-  toggleCategory as toggleProfileGraceCategory,
-  setFiltersCategory as setProfileGraceFiltersCategory,
-  addCategories as addProfileGraceCategories,
-  removeCategories as removeProfileGraceCategories,
-  setSort as setProfileGraceSort,
-  setSearch as setProfileGraceSearch,
-  setFiltersScrollTop as setProfileGraceFiltersScrollTop,
-  toggleFilterOpen as toggleProfileGraceFilterOpen,
-  clearFilters as clearProfileGraceFilters,
+  ProfileGraceFilterActions,
 } from '@/state/reducers/filters/profileGraceFilters'
 
-// Import profile expired filters selectors and actions
 import {
+  emptyFilterState as emptyFilterStateProfileExpiredFilters,
   selectProfileExpiredFilters,
-  setFiltersOpen as setProfileExpiredFiltersOpen,
-  toggleFiltersType as toggleProfileExpiredFiltersType,
-  setFiltersType as setProfileExpiredFiltersType,
-  setMarketFilters as setProfileExpiredMarketFilters,
-  setTextMatchFilters as setProfileExpiredTextMatchFilters,
-  setTextNonMatchFilters as setProfileExpiredTextNonMatchFilters,
-  setFiltersLength as setProfileExpiredFiltersLength,
-  setPriceDenomination as setProfileExpiredPriceDenomination,
-  setPriceRange as setProfileExpiredPriceRange,
-  setWatchersCount as setProfileExpiredWatchersCount,
-  setViewCount as setProfileExpiredViewCount,
-  setClubsCount as setProfileExpiredClubsCount,
-  setCreationDate as setProfileExpiredCreationDate,
-  toggleCategory as toggleProfileExpiredCategory,
-  setFiltersCategory as setProfileExpiredFiltersCategory,
-  addCategories as addProfileExpiredCategories,
-  removeCategories as removeProfileExpiredCategories,
-  setSort as setProfileExpiredSort,
-  setSearch as setProfileExpiredSearch,
-  setFiltersScrollTop as setProfileExpiredFiltersScrollTop,
-  toggleFilterOpen as toggleProfileExpiredFilterOpen,
-  clearFilters as clearProfileExpiredFilters,
+  ProfileExpiredFilterActions,
 } from '@/state/reducers/filters/profileExpiredFilters'
 
-// Import categoryDomains selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryDomainsFilters,
   selectCategoryDomainsFilters,
-  setFiltersOpen as setCategoryDomainsFiltersOpen,
-  toggleFiltersStatus as toggleCategoryDomainsFiltersStatus,
-  setFiltersStatus as setCategoryDomainsFiltersStatus,
-  toggleFiltersType as toggleCategoryDomainsFiltersType,
-  setFiltersType as setCategoryDomainsFiltersType,
-  setMarketFilters as setCategoryDomainsMarketFilters,
-  setTextMatchFilters as setCategoryDomainsTextMatchFilters,
-  setTextNonMatchFilters as setCategoryDomainsTextNonMatchFilters,
-  setFiltersLength as setCategoryDomainsFiltersLength,
-  setPriceDenomination as setCategoryDomainsPriceDenomination,
-  setPriceRange as setCategoryDomainsPriceRange,
-  setOfferRange as setCategoryDomainsOfferRange,
-  setWatchersCount as setCategoryDomainsWatchersCount,
-  setViewCount as setCategoryDomainsViewCount,
-  setClubsCount as setCategoryDomainsClubsCount,
-  setCreationDate as setCategoryDomainsCreationDate,
-  toggleCategory as toggleCategoryDomainsCategory,
-  setFiltersCategory as setCategoryDomainsFiltersCategory,
-  addCategories as addCategoryDomainsCategories,
-  removeCategories as removeCategoryDomainsCategories,
-  setSort as setCategoryDomainsSort,
-  setSearch as setCategoryDomainsSearch,
-  setFiltersScrollTop as setCategoryDomainsFiltersScrollTop,
-  toggleFilterOpen as toggleCategoryDomainsFilterOpen,
-  clearFilters as clearCategoryDomainsFilters,
+  CategoryDomainsFilterActions,
 } from '@/state/reducers/filters/categoryDomainsFilters'
 
-// Import categoryListings selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryListingsFilters,
   selectCategoryListingsFilters,
-  setFiltersOpen as setCategoryListingsFiltersOpen,
-  toggleFiltersStatus as toggleCategoryListingsFiltersStatus,
-  setFiltersStatus as setCategoryListingsFiltersStatus,
-  toggleFiltersType as toggleCategoryListingsFiltersType,
-  setFiltersType as setCategoryListingsFiltersType,
-  setMarketFilters as setCategoryListingsMarketFilters,
-  setTextMatchFilters as setCategoryListingsTextMatchFilters,
-  setTextNonMatchFilters as setCategoryListingsTextNonMatchFilters,
-  setFiltersLength as setCategoryListingsFiltersLength,
-  setPriceDenomination as setCategoryListingsPriceDenomination,
-  setPriceRange as setCategoryListingsPriceRange,
-  setOfferRange as setCategoryListingsOfferRange,
-  setWatchersCount as setCategoryListingsWatchersCount,
-  setViewCount as setCategoryListingsViewCount,
-  setClubsCount as setCategoryListingsClubsCount,
-  setCreationDate as setCategoryListingsCreationDate,
-  toggleCategory as toggleCategoryListingsCategory,
-  setFiltersCategory as setCategoryListingsFiltersCategory,
-  addCategories as addCategoryListingsCategories,
-  removeCategories as removeCategoryListingsCategories,
-  setSort as setCategoryListingsSort,
-  setSearch as setCategoryListingsSearch,
-  setFiltersScrollTop as setCategoryListingsFiltersScrollTop,
-  toggleFilterOpen as toggleCategoryListingsFilterOpen,
-  clearFilters as clearCategoryListingsFilters,
+  CategoryListingsFilterActions,
 } from '@/state/reducers/filters/categoryListingsFilters'
 
-// Import categoryPremium selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryPremiumFilters,
   selectCategoryPremiumFilters,
-  setFiltersOpen as setCategoryPremiumFiltersOpen,
-  toggleFiltersType as toggleCategoryPremiumFiltersType,
-  setFiltersType as setCategoryPremiumFiltersType,
-  setMarketFilters as setCategoryPremiumMarketFilters,
-  setTextMatchFilters as setCategoryPremiumTextMatchFilters,
-  setTextNonMatchFilters as setCategoryPremiumTextNonMatchFilters,
-  setFiltersLength as setCategoryPremiumFiltersLength,
-  setPriceDenomination as setCategoryPremiumPriceDenomination,
-  setPriceRange as setCategoryPremiumPriceRange,
-  toggleCategory as toggleCategoryPremiumCategory,
-  setFiltersCategory as setCategoryPremiumFiltersCategory,
-  addCategories as addCategoryPremiumCategories,
-  removeCategories as removeCategoryPremiumCategories,
-  setSort as setCategoryPremiumSort,
-  setSearch as setCategoryPremiumSearch,
-  setFiltersScrollTop as setCategoryPremiumFiltersScrollTop,
-  toggleFilterOpen as toggleCategoryPremiumFilterOpen,
-  clearFilters as clearCategoryPremiumFilters,
-  setCreationDate as setCategoryPremiumCreationDate,
+  CategoryPremiumFilterActions,
 } from '@/state/reducers/filters/categoryPremiumFilters'
 
-// Import categoryAvailable selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryAvailableFilters,
   selectCategoryAvailableFilters,
-  setFiltersOpen as setCategoryAvailableFiltersOpen,
-  toggleFiltersType as toggleCategoryAvailableFiltersType,
-  setFiltersType as setCategoryAvailableFiltersType,
-  setMarketFilters as setCategoryAvailableMarketFilters,
-  setTextMatchFilters as setCategoryAvailableTextMatchFilters,
-  setTextNonMatchFilters as setCategoryAvailableTextNonMatchFilters,
-  setFiltersLength as setCategoryAvailableFiltersLength,
-  setPriceDenomination as setCategoryAvailablePriceDenomination,
-  setPriceRange as setCategoryAvailablePriceRange,
-  toggleCategory as toggleCategoryAvailableCategory,
-  setFiltersCategory as setCategoryAvailableFiltersCategory,
-  addCategories as addCategoryAvailableCategories,
-  removeCategories as removeCategoryAvailableCategories,
-  setSort as setCategoryAvailableSort,
-  setSearch as setCategoryAvailableSearch,
-  setFiltersScrollTop as setCategoryAvailableFiltersScrollTop,
-  toggleFilterOpen as toggleCategoryAvailableFilterOpen,
-  clearFilters as clearCategoryAvailableFilters,
-  setCreationDate as setCategoryAvailableCreationDate,
+  CategoryAvailableFilterActions,
 } from '@/state/reducers/filters/categoryAvailableFilters'
 
-// Import categoryActivity selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoryActivityFilters,
   selectCategoryActivityFilters,
-  toggleActivityFiltersType as toggleCategoryActivityFiltersType,
-  setActivityFiltersType as setCategoryActivityFiltersType,
-  toggleFilterOpen as toggleCategoryActivityFilterOpen,
-  setFiltersOpen as setCategoryActivityFiltersOpen,
-  setSearch as setCategoryActivitySearch,
-  setFiltersScrollTop as setCategoryActivityFiltersScrollTop,
-  clearActivityFilters as clearCategoryActivityFilters,
+  categoryActivityFiltersActions,
 } from '@/state/reducers/filters/categoryActivityFilters'
 
-// Import category state selector
-import { selectCategory } from '@/state/reducers/category/category'
-
-// Import categoriesPage state selector
-import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
-
-// Import categoriesNamesFilters selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesNamesFilters,
   selectCategoriesNamesFilters,
-  setFiltersOpen as setCategoriesNamesFiltersOpen,
-  toggleFiltersStatus as toggleCategoriesNamesFiltersStatus,
-  setFiltersStatus as setCategoriesNamesFiltersStatus,
-  toggleFiltersType as toggleCategoriesNamesFiltersType,
-  setFiltersType as setCategoriesNamesFiltersType,
-  setMarketFilters as setCategoriesNamesMarketFilters,
-  setTextMatchFilters as setCategoriesNamesTextMatchFilters,
-  setTextNonMatchFilters as setCategoriesNamesTextNonMatchFilters,
-  setFiltersLength as setCategoriesNamesFiltersLength,
-  setPriceDenomination as setCategoriesNamesPriceDenomination,
-  setPriceRange as setCategoriesNamesPriceRange,
-  setOfferRange as setCategoriesNamesOfferRange,
-  setWatchersCount as setCategoriesNamesWatchersCount,
-  setViewCount as setCategoriesNamesViewCount,
-  setClubsCount as setCategoriesNamesClubsCount,
-  setCreationDate as setCategoriesNamesCreationDate,
-  toggleCategory as toggleCategoriesNamesCategory,
-  setFiltersCategory as setCategoriesNamesFiltersCategory,
-  addCategories as addCategoriesNamesCategories,
-  removeCategories as removeCategoriesNamesCategories,
-  setSort as setCategoriesNamesSort,
-  setSearch as setCategoriesNamesSearch,
-  setFiltersScrollTop as setCategoriesNamesFiltersScrollTop,
-  toggleFilterOpen as toggleCategoriesNamesFilterOpen,
-  clearFilters as clearCategoriesNamesFilters,
+  CategoriesNamesFilterActions,
 } from '@/state/reducers/filters/categoriesNamesFilters'
 
-// Import categoriesListingsFilters selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesListingsFilters,
   selectCategoriesListingsFilters,
-  setFiltersOpen as setCategoriesListingsFiltersOpen,
-  toggleFiltersStatus as toggleCategoriesListingsFiltersStatus,
-  setFiltersStatus as setCategoriesListingsFiltersStatus,
-  toggleFiltersType as toggleCategoriesListingsFiltersType,
-  setFiltersType as setCategoriesListingsFiltersType,
-  setMarketFilters as setCategoriesListingsMarketFilters,
-  setTextMatchFilters as setCategoriesListingsTextMatchFilters,
-  setTextNonMatchFilters as setCategoriesListingsTextNonMatchFilters,
-  setFiltersLength as setCategoriesListingsFiltersLength,
-  setPriceDenomination as setCategoriesListingsPriceDenomination,
-  setPriceRange as setCategoriesListingsPriceRange,
-  setOfferRange as setCategoriesListingsOfferRange,
-  setWatchersCount as setCategoriesListingsWatchersCount,
-  setViewCount as setCategoriesListingsViewCount,
-  setClubsCount as setCategoriesListingsClubsCount,
-  setCreationDate as setCategoriesListingsCreationDate,
-  toggleCategory as toggleCategoriesListingsCategory,
-  setFiltersCategory as setCategoriesListingsFiltersCategory,
-  addCategories as addCategoriesListingsCategories,
-  removeCategories as removeCategoriesListingsCategories,
-  setSort as setCategoriesListingsSort,
-  setSearch as setCategoriesListingsSearch,
-  setFiltersScrollTop as setCategoriesListingsFiltersScrollTop,
-  toggleFilterOpen as toggleCategoriesListingsFilterOpen,
-  clearFilters as clearCategoriesListingsFilters,
+  CategoriesListingsFilterActions,
 } from '@/state/reducers/filters/categoriesListingsFilters'
 
-// Import categoriesPremiumDomainsFilters selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesPremiumDomainsFilters,
   selectCategoriesPremiumDomainsFilters,
-  setFiltersOpen as setCategoriesPremiumDomainsFiltersOpen,
-  toggleFiltersType as toggleCategoriesPremiumDomainsFiltersType,
-  setFiltersType as setCategoriesPremiumDomainsFiltersType,
-  setMarketFilters as setCategoriesPremiumDomainsMarketFilters,
-  setTextMatchFilters as setCategoriesPremiumDomainsTextMatchFilters,
-  setTextNonMatchFilters as setCategoriesPremiumDomainsTextNonMatchFilters,
-  setFiltersLength as setCategoriesPremiumDomainsFiltersLength,
-  setPriceDenomination as setCategoriesPremiumDomainsPriceDenomination,
-  setPriceRange as setCategoriesPremiumDomainsPriceRange,
-  setWatchersCount as setCategoriesPremiumDomainsWatchersCount,
-  setViewCount as setCategoriesPremiumDomainsViewCount,
-  setClubsCount as setCategoriesPremiumDomainsClubsCount,
-  setCreationDate as setCategoriesPremiumDomainsCreationDate,
-  toggleCategory as toggleCategoriesPremiumDomainsCategory,
-  setFiltersCategory as setCategoriesPremiumDomainsFiltersCategory,
-  addCategories as addCategoriesPremiumDomainsCategories,
-  removeCategories as removeCategoriesPremiumDomainsCategories,
-  setSort as setCategoriesPremiumDomainsSort,
-  setSearch as setCategoriesPremiumDomainsSearch,
-  setFiltersScrollTop as setCategoriesPremiumDomainsFiltersScrollTop,
-  toggleFilterOpen as toggleCategoriesPremiumDomainsFilterOpen,
-  clearFilters as clearCategoriesPremiumDomainsFilters,
+  CategoriesPremiumDomainsFilterActions,
 } from '@/state/reducers/filters/categoriesPremiumDomainsFilters'
 
-// Import categoriesAvailableDomainsFilters selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesAvailableDomainsFilters,
   selectCategoriesAvailableDomainsFilters,
-  setFiltersOpen as setCategoriesAvailableDomainsFiltersOpen,
-  toggleFiltersType as toggleCategoriesAvailableDomainsFiltersType,
-  setFiltersType as setCategoriesAvailableDomainsFiltersType,
-  setMarketFilters as setCategoriesAvailableDomainsMarketFilters,
-  setTextMatchFilters as setCategoriesAvailableDomainsTextMatchFilters,
-  setTextNonMatchFilters as setCategoriesAvailableDomainsTextNonMatchFilters,
-  setFiltersLength as setCategoriesAvailableDomainsFiltersLength,
-  setPriceDenomination as setCategoriesAvailableDomainsPriceDenomination,
-  setPriceRange as setCategoriesAvailableDomainsPriceRange,
-  setWatchersCount as setCategoriesAvailableDomainsWatchersCount,
-  setViewCount as setCategoriesAvailableDomainsViewCount,
-  setClubsCount as setCategoriesAvailableDomainsClubsCount,
-  setCreationDate as setCategoriesAvailableDomainsCreationDate,
-  toggleCategory as toggleCategoriesAvailableDomainsCategory,
-  setFiltersCategory as setCategoriesAvailableDomainsFiltersCategory,
-  addCategories as addCategoriesAvailableDomainsCategories,
-  removeCategories as removeCategoriesAvailableDomainsCategories,
-  setSort as setCategoriesAvailableDomainsSort,
-  setSearch as setCategoriesAvailableDomainsSearch,
-  setFiltersScrollTop as setCategoriesAvailableDomainsFiltersScrollTop,
-  toggleFilterOpen as toggleCategoriesAvailableDomainsFilterOpen,
-  clearFilters as clearCategoriesAvailableDomainsFilters,
+  CategoriesAvailableDomainsFilterActions,
 } from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
 
-// Import categoriesPage selectors and actions
 import {
   emptyFilterState as emptyFilterStateCategoriesPageFilters,
   selectCategoriesPageFilters,
-  setCategoriesPageFiltersOpen,
-  setCategoriesPageSearch,
-  toggleCategoriesPageType,
-  setCategoriesPageType,
-  setCategoriesPageSort,
-  setCategoriesPageSortDirection,
-  toggleCategoriesPageFilterOpen,
-  setCategoriesPageScrollTop,
-  clearCategoriesPageFilters,
+  categoriesPageFiltersActions,
 } from '@/state/reducers/filters/categoriesPageFilters'
 
 import {
   emptyFilterState as emptyFilterStateCategoriesActivityFilters,
   selectCategoriesActivityFilters,
-  toggleActivityFiltersType as toggleCategoriesActivityFiltersType,
-  setActivityFiltersType as setCategoriesActivityFiltersType,
-  toggleFilterOpen as toggleCategoriesActivityFilterOpen,
-  setFiltersOpen as setCategoriesActivityFiltersOpen,
-  setSearch as setCategoriesActivitySearch,
-  setFiltersScrollTop as setCategoriesActivityFiltersScrollTop,
-  clearActivityFilters as clearCategoriesActivityFilters,
+  categoriesActivityFiltersActions,
 } from '@/state/reducers/filters/categoriesActivityFilters'
+import { MyDomainsFilterActions } from '@/state/reducers/filters/myDomainsFilters'
 
-export function useFilterRouter(): FilterRouter<FilterContextType> {
+export function useFilterRouter(): FilterRouter {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
   const marketplaceState = useAppSelector(selectMarketplace)
@@ -637,94 +164,101 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   const categoriesPageState = useAppSelector(selectCategoriesPage)
   const filterPanelState = useAppSelector(selectFilterPanel)
 
-  // Determine which tab is active in profile
+  // Determine which tab is active for each page
   const activeProfileTab = profileState.selectedTab?.value || 'domains'
-  // Determine which tab is active in marketplace
   const activeMarketplaceTab = marketplaceState.selectedTab?.value || 'names'
-  // Determine which tab is active in category
   const activeCategoryTab = categoryState.selectedTab?.value || 'names'
-  // Determine which tab is active in categoriesPage
   const activeCategoriesPageTab = categoriesPageState.categoriesPage.selectedTab?.value || 'categories'
 
   const activeTab = useMemo(() => {
-    if (filterType === 'categoriesPage') {
-      return activeCategoriesPageTab
-    } else if (filterType === 'category') {
-      return activeCategoryTab
-    } else if (filterType === 'marketplace') {
-      return activeMarketplaceTab
+    switch (filterType) {
+      case 'categoriesPage':
+        return activeCategoriesPageTab
+      case 'category':
+        return activeCategoryTab
+      case 'marketplace':
+        return activeMarketplaceTab
+      default:
+        return 'names'
     }
   }, [filterType, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab])
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'categoriesPage') {
-      if (activeCategoriesPageTab === 'categories') {
-        return selectCategoriesPageFilters(state)
-      } else if (activeCategoriesPageTab === 'names') {
-        return selectCategoriesNamesFilters(state)
-      } else if (activeCategoriesPageTab === 'listings') {
-        return selectCategoriesListingsFilters(state)
-      } else if (activeCategoriesPageTab === 'premium') {
-        return selectCategoriesPremiumDomainsFilters(state)
-      } else if (activeCategoriesPageTab === 'available') {
-        return selectCategoriesAvailableDomainsFilters(state)
-      } else if (activeCategoriesPageTab === 'activity') {
-        return selectCategoriesActivityFilters(state)
+      switch (activeCategoriesPageTab) {
+        case 'categories':
+          return selectCategoriesPageFilters(state)
+        case 'names':
+          return selectCategoriesNamesFilters(state)
+        case 'listings':
+          return selectCategoriesListingsFilters(state)
+        case 'premium':
+          return selectCategoriesPremiumDomainsFilters(state)
+        case 'available':
+          return selectCategoriesAvailableDomainsFilters(state)
+        case 'activity':
+          return selectCategoriesActivityFilters(state)
+        default:
+          return selectCategoriesPageFilters(state)
       }
-      return selectCategoriesPageFilters(state)
     }
 
     if (filterType === 'category') {
-      if (activeCategoryTab === 'names') {
-        return selectCategoryDomainsFilters(state)
-      } else if (activeCategoryTab === 'listings') {
-        return selectCategoryListingsFilters(state)
-      } else if (activeCategoryTab === 'premium') {
-        return selectCategoryPremiumFilters(state)
-      } else if (activeCategoryTab === 'available') {
-        return selectCategoryAvailableFilters(state)
-      } else if (activeCategoryTab === 'activity') {
-        return selectCategoryActivityFilters(state)
+      switch (activeCategoryTab) {
+        case 'names':
+          return selectCategoryDomainsFilters(state)
+        case 'listings':
+          return selectCategoryListingsFilters(state)
+        case 'premium':
+          return selectCategoryPremiumFilters(state)
+        case 'available':
+          return selectCategoryAvailableFilters(state)
+        case 'activity':
+          return selectCategoryActivityFilters(state)
+        default:
+          return selectCategoryDomainsFilters(state)
       }
-      return selectCategoryDomainsFilters(state)
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'names') {
-        return selectMarketplaceFilters(state)
-      } else if (activeMarketplaceTab === 'listings') {
-        return selectMarketplaceListingsFilters(state)
-      } else if (activeMarketplaceTab === 'premium') {
-        return selectMarketplacePremiumFilters(state)
-      } else if (activeMarketplaceTab === 'available') {
-        return selectMarketplaceAvailableFilters(state)
-      } else if (activeMarketplaceTab === 'activity') {
-        return selectMarketplaceActivityFilters(state)
+      switch (activeMarketplaceTab) {
+        case 'names':
+          return selectMarketplaceFilters(state)
+        case 'listings':
+          return selectMarketplaceListingsFilters(state)
+        case 'premium':
+          return selectMarketplacePremiumFilters(state)
+        case 'available':
+          return selectMarketplaceAvailableFilters(state)
+        case 'activity':
+          return selectMarketplaceActivityFilters(state)
+        default:
+          return selectMarketplaceFilters(state)
       }
-      return selectMarketplaceFilters(state)
     }
 
     if (filterType === 'profile') {
-      if (activeProfileTab === 'domains') {
-        return selectProfileDomainsFilters(state)
-      } else if (activeProfileTab === 'listings') {
-        return selectProfileListingsFilters(state)
-      } else if (activeProfileTab === 'grace') {
-        return selectProfileGraceFilters(state)
-      } else if (activeProfileTab === 'expired') {
-        return selectProfileExpiredFilters(state)
-      } else if (activeProfileTab === 'received_offers') {
-        return selectReceivedOffersFilters(state)
-      } else if (activeProfileTab === 'sent_offers') {
-        return selectMyOffersFilters(state)
-      } else if (activeProfileTab === 'watchlist') {
-        return selectWatchlistFilters(state)
-      } else if (activeProfileTab === 'activity') {
-        return selectProfileActivityFilters(state)
+      switch (activeProfileTab) {
+        case 'domains':
+          return selectProfileDomainsFilters(state)
+        case 'listings':
+          return selectProfileListingsFilters(state)
+        case 'grace':
+          return selectProfileGraceFilters(state)
+        case 'expired':
+          return selectProfileExpiredFilters(state)
+        case 'sent_offers':
+          return selectMyOffersFilters(state)
+        case 'received_offers':
+          return selectReceivedOffersFilters(state)
+        case 'watchlist':
+          return selectWatchlistFilters(state)
+        case 'activity':
+          return selectProfileActivityFilters(state)
+        default:
+          return selectProfileDomainsFilters(state)
       }
-
-      return selectProfileDomainsFilters(state)
     }
 
     return selectMarketplaceFilters(state)
@@ -733,799 +267,157 @@ export function useFilterRouter(): FilterRouter<FilterContextType> {
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
     if (filterType === 'categoriesPage') {
-      if (activeCategoriesPageTab === 'categories') {
-        return {
-          setFiltersOpen: setCategoriesPageFiltersOpen,
-          setSearch: setCategoriesPageSearch,
-          toggleFiltersType: toggleCategoriesPageType,
-          setFiltersType: setCategoriesPageType,
-          setSort: setCategoriesPageSort,
-          setSortDirection: setCategoriesPageSortDirection,
-          setScrollTop: setCategoriesPageScrollTop,
-          toggleFilterOpen: toggleCategoriesPageFilterOpen,
-          clearFilters: clearCategoriesPageFilters,
-        } as any
-      } else if (activeCategoriesPageTab === 'names') {
-        return {
-          setFiltersOpen: setCategoriesNamesFiltersOpen,
-          toggleFiltersStatus: toggleCategoriesNamesFiltersStatus,
-          setFiltersStatus: setCategoriesNamesFiltersStatus,
-          toggleFiltersType: toggleCategoriesNamesFiltersType,
-          setFiltersType: setCategoriesNamesFiltersType,
-          setMarketFilters: setCategoriesNamesMarketFilters,
-          setTextMatchFilters: setCategoriesNamesTextMatchFilters,
-          setTextNonMatchFilters: setCategoriesNamesTextNonMatchFilters,
-          setFiltersLength: setCategoriesNamesFiltersLength,
-          setPriceDenomination: setCategoriesNamesPriceDenomination,
-          setPriceRange: setCategoriesNamesPriceRange,
-          setOfferRange: setCategoriesNamesOfferRange,
-          setWatchersCount: setCategoriesNamesWatchersCount,
-          setViewCount: setCategoriesNamesViewCount,
-          setClubsCount: setCategoriesNamesClubsCount,
-          setCreationDate: setCategoriesNamesCreationDate,
-          toggleCategory: toggleCategoriesNamesCategory,
-          setFiltersCategory: setCategoriesNamesFiltersCategory,
-          addCategories: addCategoriesNamesCategories,
-          removeCategories: removeCategoriesNamesCategories,
-          setSort: setCategoriesNamesSort,
-          setSearch: setCategoriesNamesSearch,
-          setScrollTop: setCategoriesNamesFiltersScrollTop,
-          toggleFilterOpen: toggleCategoriesNamesFilterOpen,
-          clearFilters: clearCategoriesNamesFilters,
-        }
-      } else if (activeCategoriesPageTab === 'listings') {
-        return {
-          setFiltersOpen: setCategoriesListingsFiltersOpen,
-          toggleFiltersStatus: toggleCategoriesListingsFiltersStatus,
-          setFiltersStatus: setCategoriesListingsFiltersStatus,
-          toggleFiltersType: toggleCategoriesListingsFiltersType,
-          setFiltersType: setCategoriesListingsFiltersType,
-          setMarketFilters: setCategoriesListingsMarketFilters,
-          setTextMatchFilters: setCategoriesListingsTextMatchFilters,
-          setTextNonMatchFilters: setCategoriesListingsTextNonMatchFilters,
-          setFiltersLength: setCategoriesListingsFiltersLength,
-          setPriceDenomination: setCategoriesListingsPriceDenomination,
-          setPriceRange: setCategoriesListingsPriceRange,
-          setOfferRange: setCategoriesListingsOfferRange,
-          setWatchersCount: setCategoriesListingsWatchersCount,
-          setViewCount: setCategoriesListingsViewCount,
-          setClubsCount: setCategoriesListingsClubsCount,
-          setCreationDate: setCategoriesListingsCreationDate,
-          toggleCategory: toggleCategoriesListingsCategory,
-          setFiltersCategory: setCategoriesListingsFiltersCategory,
-          addCategories: addCategoriesListingsCategories,
-          removeCategories: removeCategoriesListingsCategories,
-          setSort: setCategoriesListingsSort,
-          setSearch: setCategoriesListingsSearch,
-          setScrollTop: setCategoriesListingsFiltersScrollTop,
-          toggleFilterOpen: toggleCategoriesListingsFilterOpen,
-          clearFilters: clearCategoriesListingsFilters,
-        }
-      } else if (activeCategoriesPageTab === 'premium') {
-        return {
-          setFiltersOpen: setCategoriesPremiumDomainsFiltersOpen,
-          toggleFiltersType: toggleCategoriesPremiumDomainsFiltersType,
-          setFiltersType: setCategoriesPremiumDomainsFiltersType,
-          setMarketFilters: setCategoriesPremiumDomainsMarketFilters,
-          setTextMatchFilters: setCategoriesPremiumDomainsTextMatchFilters,
-          setTextNonMatchFilters: setCategoriesPremiumDomainsTextNonMatchFilters,
-          setFiltersLength: setCategoriesPremiumDomainsFiltersLength,
-          setPriceDenomination: setCategoriesPremiumDomainsPriceDenomination,
-          setPriceRange: setCategoriesPremiumDomainsPriceRange,
-          setWatchersCount: setCategoriesPremiumDomainsWatchersCount,
-          setViewCount: setCategoriesPremiumDomainsViewCount,
-          setClubsCount: setCategoriesPremiumDomainsClubsCount,
-          setCreationDate: setCategoriesPremiumDomainsCreationDate,
-          toggleCategory: toggleCategoriesPremiumDomainsCategory,
-          setFiltersCategory: setCategoriesPremiumDomainsFiltersCategory,
-          addCategories: addCategoriesPremiumDomainsCategories,
-          removeCategories: removeCategoriesPremiumDomainsCategories,
-          setSort: setCategoriesPremiumDomainsSort,
-          setSearch: setCategoriesPremiumDomainsSearch,
-          setScrollTop: setCategoriesPremiumDomainsFiltersScrollTop,
-          toggleFilterOpen: toggleCategoriesPremiumDomainsFilterOpen,
-          clearFilters: clearCategoriesPremiumDomainsFilters,
-        }
-      } else if (activeCategoriesPageTab === 'available') {
-        return {
-          setFiltersOpen: setCategoriesAvailableDomainsFiltersOpen,
-          toggleFiltersType: toggleCategoriesAvailableDomainsFiltersType,
-          setFiltersType: setCategoriesAvailableDomainsFiltersType,
-          setMarketFilters: setCategoriesAvailableDomainsMarketFilters,
-          setTextMatchFilters: setCategoriesAvailableDomainsTextMatchFilters,
-          setTextNonMatchFilters: setCategoriesAvailableDomainsTextNonMatchFilters,
-          setFiltersLength: setCategoriesAvailableDomainsFiltersLength,
-          setPriceDenomination: setCategoriesAvailableDomainsPriceDenomination,
-          setPriceRange: setCategoriesAvailableDomainsPriceRange,
-          setWatchersCount: setCategoriesAvailableDomainsWatchersCount,
-          setViewCount: setCategoriesAvailableDomainsViewCount,
-          setClubsCount: setCategoriesAvailableDomainsClubsCount,
-          setCreationDate: setCategoriesAvailableDomainsCreationDate,
-          toggleCategory: toggleCategoriesAvailableDomainsCategory,
-          setFiltersCategory: setCategoriesAvailableDomainsFiltersCategory,
-          addCategories: addCategoriesAvailableDomainsCategories,
-          removeCategories: removeCategoriesAvailableDomainsCategories,
-          setSort: setCategoriesAvailableDomainsSort,
-          setSearch: setCategoriesAvailableDomainsSearch,
-          setScrollTop: setCategoriesAvailableDomainsFiltersScrollTop,
-          toggleFilterOpen: toggleCategoriesAvailableDomainsFilterOpen,
-          clearFilters: clearCategoriesAvailableDomainsFilters,
-        }
-      } else if (activeCategoriesPageTab === 'activity') {
-        return {
-          setScrollTop: setCategoriesActivityFiltersScrollTop,
-          setFiltersOpen: setCategoriesActivityFiltersOpen,
-          toggleFilterOpen: toggleCategoriesActivityFilterOpen,
-          toggleFiltersType: toggleCategoriesActivityFiltersType,
-          setFiltersType: setCategoriesActivityFiltersType,
-          setSearch: setCategoriesActivitySearch,
-          setFiltersScrollTop: setCategoriesActivityFiltersScrollTop,
-          clearFilters: clearCategoriesActivityFilters,
-        }
+      switch (activeCategoriesPageTab) {
+        case 'categories':
+          return categoriesPageFiltersActions
+        case 'names':
+          return CategoriesNamesFilterActions
+        case 'listings':
+          return CategoriesListingsFilterActions
+        case 'premium':
+          return CategoriesPremiumDomainsFilterActions
+        case 'available':
+          return CategoriesAvailableDomainsFilterActions
+        case 'activity':
+          return categoriesActivityFiltersActions
+        default:
+          return categoriesPageFiltersActions
       }
-
-      return {
-        setFiltersOpen: setCategoriesPageFiltersOpen,
-        setSearch: setCategoriesPageSearch,
-        toggleFiltersType: toggleCategoriesPageType,
-        setFiltersType: setCategoriesPageType,
-        setSort: setCategoriesPageSort,
-        setSortDirection: setCategoriesPageSortDirection,
-        setScrollTop: setCategoriesPageScrollTop,
-        toggleFilterOpen: toggleCategoriesPageFilterOpen,
-        clearFilters: clearCategoriesPageFilters,
-      } as any
     }
 
     if (filterType === 'category') {
-      if (activeCategoryTab === 'names') {
-        return {
-          setFiltersOpen: setCategoryDomainsFiltersOpen,
-          toggleFiltersStatus: toggleCategoryDomainsFiltersStatus,
-          setFiltersStatus: setCategoryDomainsFiltersStatus,
-          toggleFiltersType: toggleCategoryDomainsFiltersType,
-          setFiltersType: setCategoryDomainsFiltersType,
-          setMarketFilters: setCategoryDomainsMarketFilters,
-          setTextMatchFilters: setCategoryDomainsTextMatchFilters,
-          setTextNonMatchFilters: setCategoryDomainsTextNonMatchFilters,
-          setFiltersLength: setCategoryDomainsFiltersLength,
-          setPriceDenomination: setCategoryDomainsPriceDenomination,
-          setPriceRange: setCategoryDomainsPriceRange,
-          setOfferRange: setCategoryDomainsOfferRange,
-          setWatchersCount: setCategoryDomainsWatchersCount,
-          setViewCount: setCategoryDomainsViewCount,
-          setClubsCount: setCategoryDomainsClubsCount,
-          setCreationDate: setCategoryDomainsCreationDate,
-          toggleCategory: toggleCategoryDomainsCategory,
-          setFiltersCategory: setCategoryDomainsFiltersCategory,
-          addCategories: addCategoryDomainsCategories,
-          removeCategories: removeCategoryDomainsCategories,
-          setSort: setCategoryDomainsSort,
-          setSearch: setCategoryDomainsSearch,
-          setScrollTop: setCategoryDomainsFiltersScrollTop,
-          toggleFilterOpen: toggleCategoryDomainsFilterOpen,
-          clearFilters: clearCategoryDomainsFilters,
-        }
-      } else if (activeCategoryTab === 'listings') {
-        return {
-          setFiltersOpen: setCategoryListingsFiltersOpen,
-          toggleFiltersStatus: toggleCategoryListingsFiltersStatus,
-          setFiltersStatus: setCategoryListingsFiltersStatus,
-          toggleFiltersType: toggleCategoryListingsFiltersType,
-          setFiltersType: setCategoryListingsFiltersType,
-          setMarketFilters: setCategoryListingsMarketFilters,
-          setTextMatchFilters: setCategoryListingsTextMatchFilters,
-          setTextNonMatchFilters: setCategoryListingsTextNonMatchFilters,
-          setFiltersLength: setCategoryListingsFiltersLength,
-          setPriceDenomination: setCategoryListingsPriceDenomination,
-          setPriceRange: setCategoryListingsPriceRange,
-          setOfferRange: setCategoryListingsOfferRange,
-          setWatchersCount: setCategoryListingsWatchersCount,
-          setViewCount: setCategoryListingsViewCount,
-          setClubsCount: setCategoryListingsClubsCount,
-          setCreationDate: setCategoryListingsCreationDate,
-          toggleCategory: toggleCategoryListingsCategory,
-          setFiltersCategory: setCategoryListingsFiltersCategory,
-          addCategories: addCategoryListingsCategories,
-          removeCategories: removeCategoryListingsCategories,
-          setSort: setCategoryListingsSort,
-          setSearch: setCategoryListingsSearch,
-          setScrollTop: setCategoryListingsFiltersScrollTop,
-          toggleFilterOpen: toggleCategoryListingsFilterOpen,
-          clearFilters: clearCategoryListingsFilters,
-        }
-      } else if (activeCategoryTab === 'premium') {
-        return {
-          setFiltersOpen: setCategoryPremiumFiltersOpen,
-          toggleFiltersType: toggleCategoryPremiumFiltersType,
-          setFiltersType: setCategoryPremiumFiltersType,
-          setMarketFilters: setCategoryPremiumMarketFilters,
-          setTextMatchFilters: setCategoryPremiumTextMatchFilters,
-          setTextNonMatchFilters: setCategoryPremiumTextNonMatchFilters,
-          setFiltersLength: setCategoryPremiumFiltersLength,
-          setPriceDenomination: setCategoryPremiumPriceDenomination,
-          setPriceRange: setCategoryPremiumPriceRange,
-          setCreationDate: setCategoryPremiumCreationDate,
-          toggleCategory: toggleCategoryPremiumCategory,
-          setFiltersCategory: setCategoryPremiumFiltersCategory,
-          addCategories: addCategoryPremiumCategories,
-          removeCategories: removeCategoryPremiumCategories,
-          setSort: setCategoryPremiumSort,
-          setSearch: setCategoryPremiumSearch,
-          setScrollTop: setCategoryPremiumFiltersScrollTop,
-          toggleFilterOpen: toggleCategoryPremiumFilterOpen,
-          clearFilters: clearCategoryPremiumFilters,
-        }
-      } else if (activeCategoryTab === 'available') {
-        return {
-          setFiltersOpen: setCategoryAvailableFiltersOpen,
-          toggleFiltersType: toggleCategoryAvailableFiltersType,
-          setFiltersType: setCategoryAvailableFiltersType,
-          setMarketFilters: setCategoryAvailableMarketFilters,
-          setTextMatchFilters: setCategoryAvailableTextMatchFilters,
-          setTextNonMatchFilters: setCategoryAvailableTextNonMatchFilters,
-          setFiltersLength: setCategoryAvailableFiltersLength,
-          setPriceDenomination: setCategoryAvailablePriceDenomination,
-          setPriceRange: setCategoryAvailablePriceRange,
-          setCreationDate: setCategoryAvailableCreationDate,
-          toggleCategory: toggleCategoryAvailableCategory,
-          setFiltersCategory: setCategoryAvailableFiltersCategory,
-          addCategories: addCategoryAvailableCategories,
-          removeCategories: removeCategoryAvailableCategories,
-          setSort: setCategoryAvailableSort,
-          setSearch: setCategoryAvailableSearch,
-          setScrollTop: setCategoryAvailableFiltersScrollTop,
-          toggleFilterOpen: toggleCategoryAvailableFilterOpen,
-          clearFilters: clearCategoryAvailableFilters,
-        }
-      } else if (activeCategoryTab === 'activity') {
-        return {
-          setScrollTop: setCategoryActivityFiltersScrollTop,
-          toggleFilterOpen: toggleCategoryActivityFilterOpen,
-          toggleFiltersType: toggleCategoryActivityFiltersType,
-          setFiltersOpen: setCategoryActivityFiltersOpen,
-          setFiltersType: setCategoryActivityFiltersType,
-          setSearch: setCategoryActivitySearch,
-          clearFilters: clearCategoryActivityFilters,
-        } as any
-      }
-
-      return {
-        setFiltersOpen: setCategoryDomainsFiltersOpen,
-        toggleFiltersStatus: toggleCategoryDomainsFiltersStatus,
-        setFiltersStatus: setCategoryDomainsFiltersStatus,
-        toggleFiltersType: toggleCategoryDomainsFiltersType,
-        setFiltersType: setCategoryDomainsFiltersType,
-        setMarketFilters: setCategoryDomainsMarketFilters,
-        setTextMatchFilters: setCategoryDomainsTextMatchFilters,
-        setTextNonMatchFilters: setCategoryDomainsTextNonMatchFilters,
-        setFiltersLength: setCategoryDomainsFiltersLength,
-        setPriceDenomination: setCategoryDomainsPriceDenomination,
-        setPriceRange: setCategoryDomainsPriceRange,
-        setCreationDate: setCategoryDomainsCreationDate,
-        toggleCategory: toggleCategoryDomainsCategory,
-        setFiltersCategory: setCategoryDomainsFiltersCategory,
-        addCategories: addCategoryDomainsCategories,
-        removeCategories: removeCategoryDomainsCategories,
-        setSort: setCategoryDomainsSort,
-        setSearch: setCategoryDomainsSearch,
-        setScrollTop: setCategoryDomainsFiltersScrollTop,
-        toggleFilterOpen: toggleCategoryDomainsFilterOpen,
-        clearFilters: clearCategoryDomainsFilters,
+      switch (activeCategoryTab) {
+        case 'names':
+          return CategoryDomainsFilterActions
+        case 'listings':
+          return CategoryListingsFilterActions
+        case 'premium':
+          return CategoryPremiumFilterActions
+        case 'available':
+          return CategoryAvailableFilterActions
+        case 'activity':
+          return categoryActivityFiltersActions
+        default:
+          return CategoryDomainsFilterActions
       }
     }
 
-    // if (filterType === 'profile') {
-    //   if (profileTab === 'domains') {
-    //     return {
-    //       setFiltersOpen: setProfileDomainsFiltersOpen,
-    //       toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
-    //       setFiltersStatus: setProfileDomainsFiltersStatus,
-    //       toggleFiltersType: toggleProfileDomainsFiltersType,
-    //       setFiltersType: setProfileDomainsFiltersType,
-    //       setFiltersLength: setProfileDomainsFiltersLength,
-    //       setPriceDenomination: setProfileDomainsPriceDenomination,
-    //       setPriceRange: setProfileDomainsPriceRange,
-    //       toggleCategory: toggleProfileDomainsCategory,
-    //       setFiltersCategory: setProfileDomainsFiltersCategory,
-    //       setSort: setProfileDomainsSort,
-    //       setSearch: setProfileDomainsSearch,
-    //       setScrollTop: setProfileDomainsFiltersScrollTop,
-    //       toggleFilterOpen: toggleProfileDomainsFilterOpen,
-    //       clearFilters: clearProfileDomainsFilters,
-    //     }
-    //   } else if (profileTab === 'activity') {
-    //     return {
-    //       setScrollTop: setProfileActivityFiltersScrollTop,
-    //       toggleFilterOpen: toggleProfileActivityFilterOpen,
-    //       toggleFiltersType: toggleActivityFiltersType,
-    //       setFiltersOpen: setProfileActivityFilterOpen,
-    //       setFiltersType: setActivityFiltersType,
-    //       setSearch: setProfileActivitySearch,
-    //       clearFilters: clearActivityFilters,
-    //     } as any
-    //   }
-
-    //   return {
-    //     setFiltersOpen: setProfileDomainsFiltersOpen,
-    //     toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
-    //     setFiltersStatus: setProfileDomainsFiltersStatus,
-    //     toggleFiltersType: toggleProfileDomainsFiltersType,
-    //     setFiltersType: setProfileDomainsFiltersType,
-    //     setFiltersLength: setProfileDomainsFiltersLength,
-    //     setPriceDenomination: setProfileDomainsPriceDenomination,
-    //     setPriceRange: setProfileDomainsPriceRange,
-    //     toggleCategory: toggleProfileDomainsCategory,
-    //     setFiltersCategory: setProfileDomainsFiltersCategory,
-    //     setSort: setProfileDomainsSort,
-    //     setSearch: setProfileDomainsSearch,
-    //     setScrollTop: setProfileDomainsFiltersScrollTop,
-    //     toggleFilterOpen: toggleProfileDomainsFilterOpen,
-    //     clearFilters: clearProfileDomainsFilters,
-    //   }
-    // }
-
     if (filterType === 'profile') {
-      if (activeProfileTab === 'domains') {
-        return {
-          setFiltersOpen: setProfileDomainsFiltersOpen,
-          toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
-          setFiltersStatus: setProfileDomainsFiltersStatus,
-          toggleFiltersType: toggleProfileDomainsFiltersType,
-          setFiltersType: setProfileDomainsFiltersType,
-          setMarketFilters: setProfileDomainsMarketFilters,
-          setTextMatchFilters: setProfileDomainsTextMatchFilters,
-          setTextNonMatchFilters: setProfileDomainsTextNonMatchFilters,
-          setFiltersLength: setProfileDomainsFiltersLength,
-          setPriceDenomination: setProfileDomainsPriceDenomination,
-          setPriceRange: setProfileDomainsPriceRange,
-          setOfferRange: setProfileDomainsOfferRange,
-          setWatchersCount: setProfileDomainsWatchersCount,
-          setViewCount: setProfileDomainsViewCount,
-          setClubsCount: setProfileDomainsClubsCount,
-          setCreationDate: setProfileDomainsCreationDate,
-          toggleCategory: toggleProfileDomainsCategory,
-          setFiltersCategory: setProfileDomainsFiltersCategory,
-          addCategories: addProfileDomainsCategories,
-          removeCategories: removeProfileDomainsCategories,
-          setSort: setProfileDomainsSort,
-          setSearch: setProfileDomainsSearch,
-          setScrollTop: setProfileDomainsFiltersScrollTop,
-          toggleFilterOpen: toggleProfileDomainsFilterOpen,
-          clearFilters: clearProfileDomainsFilters,
-        }
-      } else if (activeProfileTab === 'listings') {
-        return {
-          setFiltersOpen: setProfileListingsFiltersOpen,
-          toggleFiltersType: toggleProfileListingsFiltersType,
-          setFiltersType: setProfileListingsFiltersType,
-          setMarketFilters: setProfileListingsMarketFilters,
-          setTextMatchFilters: setProfileListingsTextMatchFilters,
-          setTextNonMatchFilters: setProfileListingsTextNonMatchFilters,
-          setFiltersLength: setProfileListingsFiltersLength,
-          setPriceDenomination: setProfileListingsPriceDenomination,
-          setPriceRange: setProfileListingsPriceRange,
-          setOfferRange: setProfileListingsOfferRange,
-          setWatchersCount: setProfileListingsWatchersCount,
-          setViewCount: setProfileListingsViewCount,
-          setClubsCount: setProfileListingsClubsCount,
-          setCreationDate: setProfileListingsCreationDate,
-          toggleCategory: toggleProfileListingsCategory,
-          setFiltersCategory: setProfileListingsFiltersCategory,
-          addCategories: addProfileListingsCategories,
-          removeCategories: removeProfileListingsCategories,
-          setSort: setProfileListingsSort,
-          setSearch: setProfileListingsSearch,
-          setScrollTop: setProfileListingsFiltersScrollTop,
-          toggleFilterOpen: toggleProfileListingsFilterOpen,
-          clearFilters: clearProfileListingsFilters,
-        }
-      } else if (activeProfileTab === 'grace') {
-        return {
-          setFiltersOpen: setProfileGraceFiltersOpen,
-          toggleFiltersType: toggleProfileGraceFiltersType,
-          setFiltersType: setProfileGraceFiltersType,
-          setMarketFilters: setProfileGraceMarketFilters,
-          setTextMatchFilters: setProfileGraceTextMatchFilters,
-          setTextNonMatchFilters: setProfileGraceTextNonMatchFilters,
-          setFiltersLength: setProfileGraceFiltersLength,
-          setPriceDenomination: setProfileGracePriceDenomination,
-          setPriceRange: setProfileGracePriceRange,
-          setOfferRange: setProfileGraceOfferRange,
-          setWatchersCount: setProfileGraceWatchersCount,
-          setViewCount: setProfileGraceViewCount,
-          setClubsCount: setProfileGraceClubsCount,
-          setCreationDate: setProfileGraceCreationDate,
-          toggleCategory: toggleProfileGraceCategory,
-          setFiltersCategory: setProfileGraceFiltersCategory,
-          addCategories: addProfileGraceCategories,
-          removeCategories: removeProfileGraceCategories,
-          setSort: setProfileGraceSort,
-          setSearch: setProfileGraceSearch,
-          setScrollTop: setProfileGraceFiltersScrollTop,
-          toggleFilterOpen: toggleProfileGraceFilterOpen,
-          clearFilters: clearProfileGraceFilters,
-        }
-      } else if (activeProfileTab === 'expired') {
-        return {
-          setFiltersOpen: setProfileExpiredFiltersOpen,
-          toggleFiltersType: toggleProfileExpiredFiltersType,
-          setFiltersType: setProfileExpiredFiltersType,
-          setMarketFilters: setProfileExpiredMarketFilters,
-          setTextMatchFilters: setProfileExpiredTextMatchFilters,
-          setTextNonMatchFilters: setProfileExpiredTextNonMatchFilters,
-          setFiltersLength: setProfileExpiredFiltersLength,
-          setPriceDenomination: setProfileExpiredPriceDenomination,
-          setPriceRange: setProfileExpiredPriceRange,
-          toggleCategory: toggleProfileExpiredCategory,
-          setFiltersCategory: setProfileExpiredFiltersCategory,
-          addCategories: addProfileExpiredCategories,
-          removeCategories: removeProfileExpiredCategories,
-          setSort: setProfileExpiredSort,
-          setSearch: setProfileExpiredSearch,
-          setScrollTop: setProfileExpiredFiltersScrollTop,
-          toggleFilterOpen: toggleProfileExpiredFilterOpen,
-          clearFilters: clearProfileExpiredFilters,
-          setWatchersCount: setProfileExpiredWatchersCount,
-          setViewCount: setProfileExpiredViewCount,
-          setClubsCount: setProfileExpiredClubsCount,
-          setCreationDate: setProfileExpiredCreationDate,
-        }
-      } else if (activeProfileTab === 'sent_offers') {
-        return {
-          setFiltersOpen: setMyOffersFiltersOpen,
-          toggleFiltersStatus: toggleMyOffersFiltersStatus,
-          setFiltersStatus: setMyOffersFiltersStatus,
-          toggleFiltersType: toggleMyOffersFiltersType,
-          setFiltersType: setMyOffersFiltersType,
-          setMarketFilters: setMyOffersMarketFilters,
-          setTextMatchFilters: setMyOffersTextMatchFilters,
-          setTextNonMatchFilters: setMyOffersTextNonMatchFilters,
-          setFiltersLength: setMyOffersFiltersLength,
-          setPriceDenomination: setMyOffersPriceDenomination,
-          setPriceRange: setMyOffersPriceRange,
-          toggleCategory: toggleMyOffersCategory,
-          setFiltersCategory: setMyOffersFiltersCategory,
-          addCategories: addMyOffersCategories,
-          removeCategories: removeMyOffersCategories,
-          setSort: setMyOffersSort,
-          setSearch: setMyOffersSearch,
-          setScrollTop: setMyOffersScrollTop,
-          toggleFilterOpen: toggleMyOffersFilterOpen,
-          clearFilters: clearMyOffersFilters,
-        }
-      } else if (activeProfileTab === 'received_offers') {
-        return {
-          setFiltersOpen: setReceivedOffersFiltersOpen,
-          toggleFiltersStatus: toggleReceivedOffersFiltersStatus,
-          setFiltersStatus: setReceivedOffersFiltersStatus,
-          toggleFiltersType: toggleReceivedOffersFiltersType,
-          setFiltersType: setReceivedOffersFiltersType,
-          setMarketFilters: setReceivedOffersMarketFilters,
-          setTextMatchFilters: setReceivedOffersTextMatchFilters,
-          setTextNonMatchFilters: setReceivedOffersTextNonMatchFilters,
-          setFiltersLength: setReceivedOffersFiltersLength,
-          setPriceDenomination: setReceivedOffersPriceDenomination,
-          setPriceRange: setReceivedOffersPriceRange,
-          toggleCategory: toggleReceivedOffersCategory,
-          setFiltersCategory: setReceivedOffersFiltersCategory,
-          addCategories: addReceivedOffersCategories,
-          removeCategories: removeReceivedOffersCategories,
-          setSort: setReceivedOffersSort,
-          setSearch: setReceivedOffersSearch,
-          setScrollTop: setReceivedOffersScrollTop,
-          toggleFilterOpen: toggleReceivedOffersFilterOpen,
-          clearFilters: clearReceivedOffersFilters,
-        }
-      } else if (activeProfileTab === 'watchlist') {
-        return {
-          setFiltersOpen: setWatchlistFiltersOpen,
-          toggleFiltersStatus: toggleWatchlistFiltersStatus,
-          setFiltersStatus: setWatchlistFiltersStatus,
-          toggleFiltersType: toggleWatchlistFiltersType,
-          setFiltersType: setWatchlistFiltersType,
-          setMarketFilters: setWatchlistMarketFilters,
-          setTextMatchFilters: setWatchlistTextMatchFilters,
-          setTextNonMatchFilters: setWatchlistTextNonMatchFilters,
-          setFiltersLength: setWatchlistFiltersLength,
-          setPriceDenomination: setWatchlistPriceDenomination,
-          setPriceRange: setWatchlistPriceRange,
-          setOfferRange: setWatchlistOfferRange,
-          setWatchersCount: setWatchlistWatchersCount,
-          setViewCount: setWatchlistViewCount,
-          setClubsCount: setWatchlistClubsCount,
-          setCreationDate: setWatchlistCreationDate,
-          toggleCategory: toggleWatchlistCategory,
-          setFiltersCategory: setWatchlistFiltersCategory,
-          addCategories: addWatchlistCategories,
-          removeCategories: removeWatchlistCategories,
-          setSort: setWatchlistSort,
-          setSearch: setWatchlistSearch,
-          setScrollTop: setWatchlistFiltersScrollTop,
-          toggleFilterOpen: toggleWatchlistFilterOpen,
-          clearFilters: clearWatchlistFilters,
-        }
-      } else if (activeProfileTab === 'activity') {
-        return {
-          setScrollTop: setProfileActivityFiltersScrollTop,
-          toggleFilterOpen: toggleProfileActivityFilterOpen,
-          toggleFiltersType: toggleActivityFiltersType,
-          setFiltersOpen: setProfileActivityFilterOpen,
-          setFiltersType: setActivityFiltersType,
-          setSearch: setProfileActivitySearch,
-          clearFilters: clearActivityFilters,
-        } as any
-      }
-
-      return {
-        setFiltersOpen: setProfileDomainsFiltersOpen,
-        toggleFiltersStatus: toggleProfileDomainsFiltersStatus,
-        setFiltersStatus: setProfileDomainsFiltersStatus,
-        toggleFiltersType: toggleProfileDomainsFiltersType,
-        setFiltersType: setProfileDomainsFiltersType,
-        setMarketFilters: setProfileDomainsMarketFilters,
-        setTextMatchFilters: setProfileDomainsTextMatchFilters,
-        setTextNonMatchFilters: setProfileDomainsTextNonMatchFilters,
-        setFiltersLength: setProfileDomainsFiltersLength,
-        setPriceDenomination: setProfileDomainsPriceDenomination,
-        setPriceRange: setProfileDomainsPriceRange,
-        setWatchersCount: setProfileDomainsWatchersCount,
-        setViewCount: setProfileDomainsViewCount,
-        setClubsCount: setProfileDomainsClubsCount,
-        setCreationDate: setProfileDomainsCreationDate,
-        toggleCategory: toggleProfileDomainsCategory,
-        setFiltersCategory: setProfileDomainsFiltersCategory,
-        addCategories: addProfileDomainsCategories,
-        removeCategories: removeProfileDomainsCategories,
-        setSort: setProfileDomainsSort,
-        setSearch: setProfileDomainsSearch,
-        setScrollTop: setProfileDomainsFiltersScrollTop,
-        toggleFilterOpen: toggleProfileDomainsFilterOpen,
-        clearFilters: clearProfileDomainsFilters,
+      switch (activeProfileTab) {
+        case 'domains':
+          return MyDomainsFilterActions
+        case 'listings':
+          return ProfileListingsFilterActions
+        case 'grace':
+          return ProfileGraceFilterActions
+        case 'expired':
+          return ProfileExpiredFilterActions
+        case 'sent_offers':
+          return MyOffersFilterActions
+        case 'received_offers':
+          return receivedOffersFiltersActions
+        case 'watchlist':
+          return WatchlistFilterActions
+        case 'activity':
+          return profileActivityFiltersActions
+        default:
+          return MyDomainsFilterActions
       }
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'names') {
-        return {
-          setFiltersOpen: setMarketplaceFiltersOpen,
-          toggleFiltersStatus: toggleMarketplaceFiltersStatus,
-          setFiltersStatus: setMarketplaceFiltersStatus,
-          toggleFiltersType: toggleMarketplaceFiltersType,
-          setFiltersType: setMarketplaceFiltersType,
-          setMarketFilters: setMarketplaceMarketFilters,
-          setTextMatchFilters: setMarketplaceTextMatchFilters,
-          setTextNonMatchFilters: setMarketplaceTextNonMatchFilters,
-          setFiltersLength: setMarketplaceFiltersLength,
-          setPriceDenomination: setMarketplacePriceDenomination,
-          setPriceRange: setMarketplacePriceRange,
-          setOfferRange: setMarketplaceOfferRange,
-          setWatchersCount: setMarketplaceWatchersCount,
-          setViewCount: setMarketplaceViewCount,
-          setClubsCount: setMarketplaceClubsCount,
-          setCreationDate: setMarketplaceCreationDate,
-          toggleCategory: toggleMarketplaceCategory,
-          setFiltersCategory: setMarketplaceFiltersCategory,
-          addCategories: addMarketplaceCategories,
-          removeCategories: removeMarketplaceCategories,
-          setSort: setMarketplaceSort,
-          setSearch: setMarketplaceSearch,
-          setScrollTop: setMarketplaceScrollTop,
-          toggleFilterOpen: toggleMarketplaceFilterOpen,
-          clearFilters: clearMarketplaceFilters,
-        }
-      } else if (activeMarketplaceTab === 'listings') {
-        return {
-          setFiltersOpen: setMarketplaceListingsFiltersOpen,
-          toggleFiltersStatus: toggleMarketplaceListingsFiltersStatus,
-          setFiltersStatus: setMarketplaceListingsFiltersStatus,
-          toggleFiltersType: toggleMarketplaceListingsFiltersType,
-          setFiltersType: setMarketplaceListingsFiltersType,
-          setMarketFilters: setMarketplaceListingsMarketFilters,
-          setTextMatchFilters: setMarketplaceListingsTextMatchFilters,
-          setTextNonMatchFilters: setMarketplaceListingsTextNonMatchFilters,
-          setFiltersLength: setMarketplaceListingsFiltersLength,
-          setPriceDenomination: setMarketplaceListingsPriceDenomination,
-          setPriceRange: setMarketplaceListingsPriceRange,
-          setOfferRange: setMarketplaceListingsOfferRange,
-          setWatchersCount: setMarketplaceListingsWatchersCount,
-          setViewCount: setMarketplaceListingsViewCount,
-          setClubsCount: setMarketplaceListingsClubsCount,
-          setCreationDate: setMarketplaceListingsCreationDate,
-          toggleCategory: toggleMarketplaceListingsCategory,
-          setFiltersCategory: setMarketplaceListingsFiltersCategory,
-          addCategories: addMarketplaceListingsCategories,
-          removeCategories: removeMarketplaceListingsCategories,
-          setSort: setMarketplaceListingsSort,
-          setSearch: setMarketplaceListingsSearch,
-          setScrollTop: setMarketplaceListingsFiltersScrollTop,
-          toggleFilterOpen: toggleMarketplaceListingsFilterOpen,
-          clearFilters: clearMarketplaceListingsFilters,
-        }
-      } else if (activeMarketplaceTab === 'premium') {
-        return {
-          setFiltersOpen: setMarketplacePremiumFiltersOpen,
-          toggleFiltersType: toggleMarketplacePremiumFiltersType,
-          setFiltersType: setMarketplacePremiumFiltersType,
-          setMarketFilters: setMarketplacePremiumMarketFilters,
-          setTextMatchFilters: setMarketplacePremiumTextMatchFilters,
-          setTextNonMatchFilters: setMarketplacePremiumTextNonMatchFilters,
-          setFiltersLength: setMarketplacePremiumFiltersLength,
-          setPriceDenomination: setMarketplacePremiumPriceDenomination,
-          setPriceRange: setMarketplacePremiumPriceRange,
-          setWatchersCount: setMarketplacePremiumWatchersCount,
-          setViewCount: setMarketplacePremiumViewCount,
-          setClubsCount: setMarketplacePremiumClubsCount,
-          setCreationDate: setMarketplacePremiumCreationDate,
-          toggleCategory: toggleMarketplacePremiumCategory,
-          setFiltersCategory: setMarketplacePremiumFiltersCategory,
-          addCategories: addMarketplacePremiumCategories,
-          removeCategories: removeMarketplacePremiumCategories,
-          setSort: setMarketplacePremiumSort,
-          setSearch: setMarketplacePremiumSearch,
-          setScrollTop: setMarketplacePremiumFiltersScrollTop,
-          toggleFilterOpen: toggleMarketplacePremiumFilterOpen,
-          clearFilters: clearMarketplacePremiumFilters,
-        }
-      } else if (activeMarketplaceTab === 'available') {
-        return {
-          setFiltersOpen: setMarketplaceAvailableFiltersOpen,
-          toggleFiltersType: toggleMarketplaceAvailableFiltersType,
-          setFiltersType: setMarketplaceAvailableFiltersType,
-          setMarketFilters: setMarketplaceAvailableMarketFilters,
-          setTextMatchFilters: setMarketplaceAvailableTextMatchFilters,
-          setTextNonMatchFilters: setMarketplaceAvailableTextNonMatchFilters,
-          setFiltersLength: setMarketplaceAvailableFiltersLength,
-          setPriceDenomination: setMarketplaceAvailablePriceDenomination,
-          setPriceRange: setMarketplaceAvailablePriceRange,
-          setWatchersCount: setMarketplaceAvailableWatchersCount,
-          setViewCount: setMarketplaceAvailableViewCount,
-          setClubsCount: setMarketplaceAvailableClubsCount,
-          setCreationDate: setMarketplaceAvailableCreationDate,
-          toggleCategory: toggleMarketplaceAvailableCategory,
-          setFiltersCategory: setMarketplaceAvailableFiltersCategory,
-          addCategories: addMarketplaceAvailableCategories,
-          removeCategories: removeMarketplaceAvailableCategories,
-          setSort: setMarketplaceAvailableSort,
-          setSearch: setMarketplaceAvailableSearch,
-          setScrollTop: setMarketplaceAvailableFiltersScrollTop,
-          toggleFilterOpen: toggleMarketplaceAvailableFilterOpen,
-          clearFilters: clearMarketplaceAvailableFilters,
-        }
-      } else if (activeMarketplaceTab === 'activity') {
-        return {
-          setScrollTop: setMarketplaceActivityFiltersScrollTop,
-          toggleFilterOpen: toggleMarketplaceActivityFilterOpen,
-          toggleFiltersType: toggleMarketplaceActivityFiltersType,
-          setFiltersOpen: setMarketplaceActivityFiltersOpen,
-          setFiltersType: setMarketplaceActivityFiltersType,
-          setSearch: setMarketplaceActivitySearch,
-          clearFilters: clearMarketplaceActivityFilters,
-        } as any
-      }
-
-      return {
-        setFiltersOpen: setMarketplaceFiltersOpen,
-        toggleFiltersStatus: toggleMarketplaceFiltersStatus,
-        setFiltersStatus: setMarketplaceFiltersStatus,
-        toggleFiltersType: toggleMarketplaceFiltersType,
-        setFiltersType: setMarketplaceFiltersType,
-        setMarketFilters: setMarketplaceMarketFilters,
-        setTextMatchFilters: setMarketplaceTextMatchFilters,
-        setTextNonMatchFilters: setMarketplaceTextNonMatchFilters,
-        setFiltersLength: setMarketplaceFiltersLength,
-        setPriceDenomination: setMarketplacePriceDenomination,
-        setPriceRange: setMarketplacePriceRange,
-        setWatchersCount: setMarketplaceWatchersCount,
-        setViewCount: setMarketplaceViewCount,
-        setClubsCount: setMarketplaceClubsCount,
-        setCreationDate: setMarketplaceCreationDate,
-        toggleCategory: toggleMarketplaceCategory,
-        setFiltersCategory: setMarketplaceFiltersCategory,
-        addCategories: addMarketplaceCategories,
-        removeCategories: removeMarketplaceCategories,
-        setSort: setMarketplaceSort,
-        setSearch: setMarketplaceSearch,
-        setScrollTop: setMarketplaceScrollTop,
-        toggleFilterOpen: toggleMarketplaceFilterOpen,
-        clearFilters: clearMarketplaceFilters,
+      switch (activeMarketplaceTab) {
+        case 'names':
+          return MarketplaceFilterActions
+        case 'listings':
+          return MarketplaceListingsFilterActions
+        case 'premium':
+          return MarketplacePremiumFilterActions
+        case 'available':
+          return MarketplaceAvailableFilterActions
+        case 'activity':
+          return marketplaceActivityFiltersActions
+        default:
+          return MarketplaceFilterActions
       }
     }
 
-    return {
-      setFiltersOpen: setMarketplaceFiltersOpen,
-      toggleFiltersStatus: toggleMarketplaceFiltersStatus,
-      setFiltersStatus: setMarketplaceFiltersStatus,
-      toggleFiltersType: toggleMarketplaceFiltersType,
-      setFiltersType: setMarketplaceFiltersType,
-      setMarketFilters: setMarketplaceMarketFilters,
-      setTextMatchFilters: setMarketplaceTextMatchFilters,
-      setTextNonMatchFilters: setMarketplaceTextNonMatchFilters,
-      setFiltersLength: setMarketplaceFiltersLength,
-      setPriceDenomination: setMarketplacePriceDenomination,
-      setPriceRange: setMarketplacePriceRange,
-      setWatchersCount: setMarketplaceWatchersCount,
-      setViewCount: setMarketplaceViewCount,
-      setClubsCount: setMarketplaceClubsCount,
-      setCreationDate: setMarketplaceCreationDate,
-      toggleCategory: toggleMarketplaceCategory,
-      setFiltersCategory: setMarketplaceFiltersCategory,
-      addCategories: addMarketplaceCategories,
-      removeCategories: removeMarketplaceCategories,
-      setSort: setMarketplaceSort,
-      setSearch: setMarketplaceSearch,
-      setScrollTop: setMarketplaceScrollTop,
-      toggleFilterOpen: toggleMarketplaceFilterOpen,
-      clearFilters: clearMarketplaceFilters,
-    }
+    return MarketplaceFilterActions
   }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'categoriesPage') {
-      if (activeCategoriesPageTab === 'categories') {
-        return emptyFilterStateCategoriesPageFilters
-      } else if (activeCategoriesPageTab === 'names') {
-        return emptyFilterStateCategoriesNamesFilters
-      } else if (activeCategoriesPageTab === 'listings') {
-        return emptyFilterStateCategoriesListingsFilters
-      } else if (activeCategoriesPageTab === 'premium') {
-        return emptyFilterStateCategoriesPremiumDomainsFilters
-      } else if (activeCategoriesPageTab === 'available') {
-        return emptyFilterStateCategoriesAvailableDomainsFilters
-      } else if (activeCategoriesPageTab === 'activity') {
-        return emptyFilterStateCategoriesActivityFilters
+      switch (activeCategoriesPageTab) {
+        case 'categories':
+          return emptyFilterStateCategoriesPageFilters
+        case 'names':
+          return emptyFilterStateCategoriesNamesFilters
+        case 'listings':
+          return emptyFilterStateCategoriesListingsFilters
+        case 'premium':
+          return emptyFilterStateCategoriesPremiumDomainsFilters
+        case 'available':
+          return emptyFilterStateCategoriesAvailableDomainsFilters
+        case 'activity':
+          return emptyFilterStateCategoriesActivityFilters
+        default:
+          return emptyFilterStateCategoriesPageFilters
       }
-      return emptyFilterStateCategoriesPageFilters
     }
 
     if (filterType === 'category') {
-      if (activeCategoryTab === 'names') {
-        return emptyFilterStateCategoryDomainsFilters
-      } else if (activeCategoryTab === 'listings') {
-        return emptyFilterStateCategoryListingsFilters
-      } else if (activeCategoryTab === 'premium') {
-        return emptyFilterStateCategoryPremiumFilters
-      } else if (activeCategoryTab === 'available') {
-        return emptyFilterStateCategoryAvailableFilters
-      } else if (activeCategoryTab === 'activity') {
-        return emptyFilterStateCategoryActivityFilters
+      switch (activeCategoryTab) {
+        case 'names':
+          return emptyFilterStateCategoryDomainsFilters
+        case 'listings':
+          return emptyFilterStateCategoryListingsFilters
+        case 'premium':
+          return emptyFilterStateCategoryPremiumFilters
+        case 'available':
+          return emptyFilterStateCategoryAvailableFilters
+        case 'activity':
+          return emptyFilterStateCategoryActivityFilters
+        default:
+          return emptyFilterStateCategoryDomainsFilters
       }
-      return emptyFilterStateCategoryDomainsFilters
     }
 
     if (filterType === 'marketplace') {
-      if (activeMarketplaceTab === 'names') {
-        return emptyFilterStateMarketplaceFilters
-      } else if (activeMarketplaceTab === 'listings') {
-        return emptyFilterStateMarketplaceListingsFilters
-      } else if (activeMarketplaceTab === 'premium') {
-        return emptyFilterStateMarketplacePremiumFilters
-      } else if (activeMarketplaceTab === 'available') {
-        return emptyFilterStateMarketplaceAvailableFilters
-      } else if (activeMarketplaceTab === 'activity') {
-        return emptyFilterStateMarketplaceActivityFilters
+      switch (activeMarketplaceTab) {
+        case 'names':
+          return emptyFilterStateMarketplaceFilters
+        case 'listings':
+          return emptyFilterStateMarketplaceListingsFilters
+        case 'premium':
+          return emptyFilterStateMarketplacePremiumFilters
+        case 'available':
+          return emptyFilterStateMarketplaceAvailableFilters
+        case 'activity':
+          return emptyFilterStateMarketplaceActivityFilters
+        default:
+          return emptyFilterStateMarketplaceFilters
       }
-      return emptyFilterStateMarketplaceFilters
     }
 
     if (filterType === 'profile') {
-      if (activeProfileTab === 'domains') {
-        return emptyFilterStateProfileDomainsFilters
-      } else if (activeProfileTab === 'listings') {
-        return emptyFilterStateProfileListingsFilters
-      } else if (activeProfileTab === 'grace') {
-        return emptyFilterStateProfileGraceFilters
-      } else if (activeProfileTab === 'sent_offers') {
-        return emptyFilterStateMyOffersFilters
-      } else if (activeProfileTab === 'received_offers') {
-        return emptyFilterStateReceivedOffersFilters
-      } else if (activeProfileTab === 'watchlist') {
-        return emptyFilterStateWatchlistFilters
-      } else if (activeProfileTab === 'activity') {
-        return emptyFilterStateProfileActivityFilters
+      switch (activeProfileTab) {
+        case 'domains':
+          return emptyFilterStateProfileDomainsFilters
+        case 'listings':
+          return emptyFilterStateProfileListingsFilters
+        case 'grace':
+          return emptyFilterStateProfileGraceFilters
+        case 'sent_offers':
+          return emptyFilterStateMyOffersFilters
+        case 'received_offers':
+          return emptyFilterStateReceivedOffersFilters
+        case 'watchlist':
+          return emptyFilterStateWatchlistFilters
+        case 'activity':
+          return emptyFilterStateProfileActivityFilters
+        default:
+          return emptyFilterStateProfileDomainsFilters
       }
-
-      return emptyFilterStateProfileDomainsFilters
     }
 
     return emptyFilterStateMarketplaceFilters

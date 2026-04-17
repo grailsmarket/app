@@ -1,13 +1,14 @@
 import fetchSentOffers from '@/api/offers/sent'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useAppSelector } from '@/state/hooks'
-import { selectMyDomainsFilters } from '@/state/reducers/filters/myDomainsFilters'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Address } from 'viem'
 
 export const useSentOffers = (user: Address | undefined) => {
-  const filters = useAppSelector(selectMyDomainsFilters)
+  const {
+    selectors: { filters },
+  } = useFilterRouter()
   const debouncedSearch = useDebounce(filters.search, 500)
 
   const {

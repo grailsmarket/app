@@ -1,7 +1,3 @@
-import { useAccount } from 'wagmi'
-import { useCallback, useMemo } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { toHex, isAddress, type Chain, encodePacked, type Address } from 'viem'
 import {
   coreEfpContracts,
   DEFAULT_CHAIN,
@@ -18,6 +14,9 @@ import {
   useTransactions,
   type ListOpType,
 } from 'ethereum-identity-kit'
+import { useAccount } from 'wagmi'
+import { useCallback, useMemo } from 'react'
+import { toHex, isAddress, type Chain, encodePacked, type Address } from 'viem'
 import { generateListStorageLocationSlot, splitListOps } from '@/utils/web3/efp'
 
 type SaveListSettingsParams = {
@@ -57,7 +56,6 @@ const useSaveListSettings = ({
   listState,
   isPrimaryList,
 }: SaveListSettingsParams) => {
-  const queryClient = useQueryClient()
   const { address: userAddress } = useAccount()
   const { addTransactions, setTxModalOpen, setChangesOpen } = useTransactions()
 

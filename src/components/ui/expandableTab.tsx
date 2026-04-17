@@ -30,7 +30,20 @@ const ExpandableTab: React.FC<ExpandableTabProps> = ({
 }) => {
   return (
     <div className={cn('border-tertiary w-full border-b', className)}>
-      <div className='flex h-auto w-full flex-col py-1.5 transition-all'>
+      <div
+        className={`flex w-full flex-col transition-all`}
+        style={{
+          height: showHeader
+            ? open
+              ? expandedHeight
+                ? expandedHeight + 'px'
+                : 'auto'
+              : headerHeight + 'px'
+            : 'auto',
+          overflow: open ? 'visible' : 'hidden',
+          padding: showHeader ? '0px' : '6px 0px',
+        }}
+      >
         {showHeader && (
           <div
             className='p-lg hover:bg-secondary flex min-h-[56px] cursor-pointer items-center justify-between rounded-sm select-none'

@@ -65,20 +65,17 @@ const useDraggable = (onClick: () => void) => {
     setPosition({ x, y })
   }, [])
 
-  const onPointerUp = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const drag = dragRef.current
-      const wasDragged = drag.hasMoved
-      drag.active = false
-      drag.hasMoved = false
-      setIsDragging(false)
+  const onPointerUp = useCallback(() => {
+    const drag = dragRef.current
+    const wasDragged = drag.hasMoved
+    drag.active = false
+    drag.hasMoved = false
+    setIsDragging(false)
 
-      if (!wasDragged) {
-        onClick()
-      }
-    },
-    [onClick]
-  )
+    if (!wasDragged) {
+      onClick()
+    }
+  }, [onClick])
 
   return { ref, position, isDragging, onPointerDown, onPointerMove, onPointerUp }
 }

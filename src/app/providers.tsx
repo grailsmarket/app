@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { WagmiProvider, type State } from 'wagmi'
 import { Provider as ReduxProvider } from 'react-redux'
 import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit'
@@ -29,12 +29,6 @@ const queryClient = new QueryClient({
 })
 
 const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
-  const [showInfoBar, setShowInfoBar] = useState(false)
-
-  const handleInfoBarVisibilityChange = useCallback((visible: boolean) => {
-    setShowInfoBar(visible)
-  }, [])
-
   const providers = useMemo(
     () => (
       <QueryClientProvider client={queryClient}>
@@ -46,7 +40,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                   <SeaportProvider>
                     <NavbarProvider>
                       <div className='relative flex min-h-[100dvh]! flex-col'>
-                        <InfoBar onVisibilityChange={handleInfoBarVisibilityChange} />
+                        <InfoBar />
                         <Navigation showInfo={false} />
                         <Cart />
                         <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>

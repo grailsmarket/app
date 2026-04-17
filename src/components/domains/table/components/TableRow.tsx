@@ -4,7 +4,6 @@ import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import {
-  EXPIRED_STATUSES,
   GRACE_PERIOD,
   PREMIUM,
   REGISTERABLE_STATUSES,

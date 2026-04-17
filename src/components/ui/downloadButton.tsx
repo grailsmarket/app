@@ -65,23 +65,23 @@ const DownloadButton = ({
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max
         ? BigNumber.from(Math.floor(filters.priceRange.max * 10 ** 6))
-          .mul(BigNumber.from(10).pow(12))
-          .toString()
+            .mul(BigNumber.from(10).pow(12))
+            .toString()
         : filters.priceRange.max || null,
       'filters[minPrice]': filters.priceRange.min
         ? BigNumber.from(Math.floor(filters.priceRange.min * 10 ** 6))
-          .mul(BigNumber.from(10).pow(12))
-          .toString()
+            .mul(BigNumber.from(10).pow(12))
+            .toString()
         : filters.priceRange.min || null,
       'filters[maxOffer]': filters.offerRange?.max
         ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
-          .mul(BigNumber.from(10).pow(12))
-          .toString()
+            .mul(BigNumber.from(10).pow(12))
+            .toString()
         : filters.offerRange?.max || null,
       'filters[minOffer]': filters.offerRange?.min
         ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
-          .mul(BigNumber.from(10).pow(12))
-          .toString()
+            .mul(BigNumber.from(10).pow(12))
+            .toString()
         : filters.offerRange?.min || null,
       'filters[minWatchersCount]': filters.watchersCount?.min || null,
       'filters[maxWatchersCount]': filters.watchersCount?.max || null,

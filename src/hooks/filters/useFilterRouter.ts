@@ -154,7 +154,6 @@ import {
   selectCategoriesActivityFilters,
   categoriesActivityFiltersActions,
 } from '@/state/reducers/filters/categoriesActivityFilters'
-import { MyDomainsFilterActions } from '@/state/reducers/filters/myDomainsFilters'
 
 export function useFilterRouter(): FilterRouter {
   const { filterType } = useFilterContext()
@@ -305,7 +304,7 @@ export function useFilterRouter(): FilterRouter {
     if (filterType === 'profile') {
       switch (activeProfileTab) {
         case 'domains':
-          return MyDomainsFilterActions
+          return ProfileDomainsFilterActions
         case 'listings':
           return ProfileListingsFilterActions
         case 'grace':
@@ -321,7 +320,7 @@ export function useFilterRouter(): FilterRouter {
         case 'activity':
           return profileActivityFiltersActions
         default:
-          return MyDomainsFilterActions
+          return ProfileDomainsFilterActions
       }
     }
 

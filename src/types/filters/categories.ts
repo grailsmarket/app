@@ -1,8 +1,4 @@
-import {
-  CATEGORIES_PAGE_OPENABLE_FILTERS,
-  CATEGORIES_PAGE_SORT_OPTIONS,
-  CATEGORIES_PAGE_TYPE_OPTIONS,
-} from '@/constants/filters/categories'
+import { CATEGORIES_PAGE_SORT_OPTIONS, CATEGORIES_PAGE_TYPE_OPTIONS } from '@/constants/filters/categories'
 import { SortDirection } from '.'
 
 export type CategoriesPageTypeOption = (typeof CATEGORIES_PAGE_TYPE_OPTIONS)[number]

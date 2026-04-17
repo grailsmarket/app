@@ -42,7 +42,7 @@ export function useSeaportClient() {
         console.log('Seaport initialized successfully')
       } catch (err) {
         // Don't hard-fail — wallet client may not be available yet (e.g. Safe wallet)
-        console.log('Seaport init deferred - wallet client not yet available')
+        console.log('Seaport init deferred - wallet client not yet available', err)
       }
     }
 

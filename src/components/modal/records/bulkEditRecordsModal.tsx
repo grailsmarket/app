@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Check, LoadingCell } from 'ethereum-identity-kit'
+import { Check } from 'ethereum-identity-kit'
 import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import PrimaryButton from '@/components/ui/buttons/primary'

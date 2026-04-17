@@ -31,9 +31,6 @@ const CategoryTypeFilter: React.FC = () => {
     return Array.from(catTypeSet)
   }, [categories])
 
-  // Calculate expanded height based on number of options
-  const expandedHeight = 56 + categoryTypes.length * 44
-
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Type' />}>
       <div className='border-tertiary w-full border-b'>

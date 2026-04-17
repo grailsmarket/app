@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { ActivityFiltersOpenedState, ActivityFiltersState, ActivityTypeFilterType } from '@/types/filters/activity'
+import { ActivityFiltersOpenedState, ActivityFiltersState } from '@/types/filters/activity'
 import {
   ACTIVITY_FILTERS_ACTIONS,
   DEFAULT_ACTIVITY_FILTERS_OPENED_STATE,

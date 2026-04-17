@@ -7,7 +7,7 @@ import { Arrow } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { useTopRegistrations } from '@/app/analytics/hooks/useAnalyticsData'
 import { RegistrationRow } from '@/app/analytics/components/AnalyticsRow'
-import { setActivityFiltersType } from '@/state/reducers/filters/marketplaceActivityFilters'
+import { setFiltersType } from '@/state/reducers/filters/marketplaceActivityFilters'
 
 const Registrations = () => {
   const dispatch = useAppDispatch()
@@ -25,7 +25,7 @@ const Registrations = () => {
         <Link
           href='/analytics'
           onClick={() => {
-            dispatch(setActivityFiltersType('mint'))
+            dispatch(setFiltersType('mint'))
           }}
           className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold sm:text-xl'
         >
@@ -36,15 +36,15 @@ const Registrations = () => {
       <div className='border-tertiary bg-secondary flex flex-col gap-0 rounded-md border-2 border-t'>
         {registrationsLoading
           ? new Array(7).fill(null).map((_, index) => (
-              <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
-                <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
-              </div>
-            ))
+            <div key={index} className='px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+              <TableLoadingRow displayedColumns={['domain', 'price', 'actions']} />
+            </div>
+          ))
           : registrationsData?.data?.results?.slice(0, 7).map((registration, index) => (
-              <div key={registration.id}>
-                <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
-              </div>
-            ))}
+            <div key={registration.id}>
+              <RegistrationRow registration={registration} index={index} className='h-[60px] w-full' />
+            </div>
+          ))}
       </div>
     </div>
   )

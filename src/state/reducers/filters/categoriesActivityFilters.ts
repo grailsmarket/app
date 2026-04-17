@@ -22,13 +22,8 @@ export const categoriesActivityFiltersSlice = createSlice({
 // Actions
 export const categoriesActivityFiltersActions = categoriesActivityFiltersSlice.actions
 
-export const {
-  toggleFiltersType,
-  setActivityFiltersType,
-  clearActivityFilters,
-  setActivityFiltersOpen,
-  setActivityFiltersScrollTop,
-} = categoriesActivityFiltersActions
+export const { toggleFiltersType, setFiltersType, clearFilters, setFiltersOpen, setFiltersScrollTop } =
+  categoriesActivityFiltersActions
 
 // Selectors
 export const selectCategoriesActivityFilters = (state: RootState) => state.filters.categoriesActivityFilters

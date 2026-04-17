@@ -24,13 +24,8 @@ export const marketplaceActivityFiltersSlice = createSlice({
 // Actions
 export const marketplaceActivityFiltersActions = marketplaceActivityFiltersSlice.actions
 
-export const {
-  toggleFiltersType,
-  setActivityFiltersType,
-  setActivityFiltersOpen,
-  setActivityFiltersScrollTop,
-  clearActivityFilters,
-} = marketplaceActivityFiltersActions
+export const { toggleFiltersType, setFiltersType, setFiltersOpen, setFiltersScrollTop, clearFilters } =
+  marketplaceActivityFiltersActions
 
 // Selectors
 export const selectMarketplaceActivityFilters = (state: RootState) => state.filters.marketplaceActivityFilters

@@ -18,8 +18,8 @@ import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
 import {
-  clearActivityFilters,
-  setActivityFiltersScrollTop as setActivityScrollTop,
+  clearFilters,
+  setFiltersScrollTop as setActivityScrollTop,
 } from '@/state/reducers/filters/profileActivityFilters'
 import {
   clearFilters as clearReceivedOffersFilters,
@@ -99,7 +99,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearMyOffersFilters())
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
-      dispatch(clearActivityFilters())
+      dispatch(clearFilters())
       dispatch(clearGraceFilters())
       dispatch(clearExpiredFilters())
       // Reset all scroll positions

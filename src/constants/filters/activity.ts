@@ -55,29 +55,29 @@ export const toggleFiltersType = (
   }
 }
 
-export const setActivityFiltersType = (
+export const setFiltersType = (
   state: ActivityFiltersOpenedState,
   { payload }: PayloadAction<ActivityTypeFilterType>
 ) => {
   state.type = [payload]
 }
 
-export const setActivityFiltersOpen = (state: ActivityFiltersOpenedState, { payload }: PayloadAction<boolean>) => {
+export const setFiltersOpen = (state: ActivityFiltersOpenedState, { payload }: PayloadAction<boolean>) => {
   state.open = payload
 }
 
-export const setActivityFiltersScrollTop = (state: ActivityFiltersOpenedState, { payload }: PayloadAction<number>) => {
+export const setFiltersScrollTop = (state: ActivityFiltersOpenedState, { payload }: PayloadAction<number>) => {
   state.scrollTop = payload
 }
 
-export const clearActivityFilters = (state: ActivityFiltersOpenedState) => {
+export const clearFilters = (state: ActivityFiltersOpenedState) => {
   state.type = []
 }
 
 export const ACTIVITY_FILTERS_ACTIONS = {
   toggleFiltersType,
-  setActivityFiltersType,
-  setActivityFiltersOpen,
-  setActivityFiltersScrollTop,
-  clearActivityFilters,
+  setFiltersType,
+  setFiltersOpen,
+  setFiltersScrollTop,
+  clearFilters,
 }

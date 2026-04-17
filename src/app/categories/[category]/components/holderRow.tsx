@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useAppDispatch } from '@/state/hooks'
 import type { Holder } from '@/api/holders'
 import { setLastVisitedProfile } from '@/state/reducers/portfolio/profile'
-import { clearActivityFilters } from '@/state/reducers/filters/profileActivityFilters'
+import { clearFilters } from '@/state/reducers/filters/profileActivityFilters'
 import { clearFilters as clearListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
 import { clearFilters as clearGraceFilters } from '@/state/reducers/filters/profileGraceFilters'
 import { clearFilters as clearExpiredFilters } from '@/state/reducers/filters/profileExpiredFilters'
@@ -39,7 +39,7 @@ const HolderRow: React.FC<HolderRowProps> = ({ holder, category, rank }) => {
     dispatch(clearMyOffersFilters())
     dispatch(clearReceivedOffersFilters())
     dispatch(clearWatchlistFilters())
-    dispatch(clearActivityFilters())
+    dispatch(clearFilters())
     dispatch(clearGraceFilters())
     dispatch(clearExpiredFilters())
     dispatch(setProfileDomainsFiltersCategory(category))

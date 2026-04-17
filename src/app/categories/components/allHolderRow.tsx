@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/state/hooks'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import type { Holder } from '@/api/holders'
 import { addCategories, clearFilters as clearDomainsFilters } from '@/state/reducers/filters/profileDomainsFilters'
-import { clearActivityFilters } from '@/state/reducers/filters/profileActivityFilters'
+import { clearFilters } from '@/state/reducers/filters/profileActivityFilters'
 import { clearFilters as clearReceivedOffersFilters } from '@/state/reducers/filters/receivedOffersFilters'
 import { clearFilters as clearMyOffersFilters } from '@/state/reducers/filters/myOffersFilters'
 import { clearFilters as clearWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
@@ -38,7 +38,7 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder, rank }) => {
       dispatch(clearMyOffersFilters())
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
-      dispatch(clearActivityFilters())
+      dispatch(clearFilters())
       dispatch(clearGraceFilters())
       dispatch(clearExpiredFilters())
 

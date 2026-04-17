@@ -316,6 +316,11 @@ export const marketplaceFiltersSlice = createSlice({
         state.openFilters.push(payload)
       }
     },
+    loadMarketplaceFilters(state, { payload }: PayloadAction<Partial<MarketplaceFiltersState>>) {
+      // Reset filter fields to defaults first so missing keys in payload don't leave stale state.
+      // Panel-UI fields (open, openFilters, scrollTop) are preserved.
+      Object.assign(state, emptyFilterState, payload)
+    },
     clearMarketplaceFilters(state) {
       state.search = ''
       state.status = []
@@ -400,6 +405,7 @@ export const {
   setMarketplaceScrollTop,
   toggleMarketplaceFilterOpen,
   clearMarketplaceFilters,
+  loadMarketplaceFilters,
 } = marketplaceFiltersSlice.actions
 
 // Selectors ------------------------------------------

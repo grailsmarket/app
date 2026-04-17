@@ -27,7 +27,7 @@ export const profileExpiredFiltersSlice = createSlice({
   reducers: {
     ...NAME_FILTERS_ACTIONS,
     clearFilters(state) {
-      state = {
+      return {
         ...emptyFilterState,
         open: state.open,
         scrollTop: state.scrollTop,

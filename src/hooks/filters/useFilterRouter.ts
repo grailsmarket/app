@@ -407,6 +407,8 @@ export function useFilterRouter(): FilterRouter {
           return emptyFilterStateProfileListingsFilters
         case 'grace':
           return emptyFilterStateProfileGraceFilters
+        case 'expired':
+          return emptyFilterStateProfileExpiredFilters
         case 'sent_offers':
           return emptyFilterStateMyOffersFilters
         case 'received_offers':
@@ -424,9 +426,9 @@ export function useFilterRouter(): FilterRouter {
   }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
 
   const isFiltersClear = useMemo(() => {
-    const filtersWithoutOpenFilters = _.omit(filters, 'openFilters')
-    const filtersWithoutOpen = _.omit(filtersWithoutOpenFilters, 'open')
+    const filtersWithoutOpen = _.omit(filters, 'open')
     const filtersWithoutScrollTop = _.omit(filtersWithoutOpen, 'scrollTop')
+    // console.log(filtersWithoutScrollTop, emptyFilterState)
     return _.isEqual(filtersWithoutScrollTop, emptyFilterState)
   }, [filters, emptyFilterState])
 

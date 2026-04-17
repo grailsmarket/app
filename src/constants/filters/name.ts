@@ -424,7 +424,7 @@ export const setScrollTop = (state: NamefiltersOpened, { payload }: PayloadActio
 }
 
 export const clearFilters = (state: NamefiltersOpened) => {
-  state = {
+  return {
     ...DEFAULT_NAME_FILTERS_STATE,
     open: state.open,
     scrollTop: state.scrollTop,

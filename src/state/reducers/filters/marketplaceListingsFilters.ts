@@ -30,8 +30,9 @@ export const marketplaceListingsFiltersSlice = createSlice({
   initialState,
   reducers: {
     ...NAME_FILTERS_ACTIONS,
-    resetFilters(state) {
-      state = {
+    clearFilters(state) {
+      console.log(emptyFilterState)
+      return {
         ...emptyFilterState,
         open: state.open,
         scrollTop: state.scrollTop,

@@ -11,8 +11,8 @@ const size = {
   height: 418,
 }
 
-export const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
+export const WRAPPED_DOMAIN_IMAGE_URL = `https://localhost:8787/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://localhost:8787/mainnet/${APP_ENS_ADDRESS}`
 
 const CHROMIUM_PACK_URL = `https://${process.env.VERCEL_URL}/chromium-pack.tar`
 
@@ -122,9 +122,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          }),
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        }),
     }
 
     console.log('Launching browser with executable path:', executablePath)

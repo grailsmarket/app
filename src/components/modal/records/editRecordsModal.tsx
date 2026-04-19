@@ -76,12 +76,12 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
       ? records.avatar
-      : `https://metadata.ens.domains/mainnet/avatar/${name}`
+      : `https://localhost:8787/mainnet/avatar/${name}`
     : DEFAULT_FALLBACK_AVATAR
   const headerUrl = records.header
     ? records.header.startsWith('http')
       ? records.header
-      : `https://metadata.ens.domains/mainnet/header/${name}`
+      : `https://localhost:8787/mainnet/header/${name}`
     : DEFAULT_FALLBACK_HEADER
 
   const handleImageSave = (url: string) => {

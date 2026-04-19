@@ -90,7 +90,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'avatar') && (
               <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`https://metadata.ens.domains/mainnet/avatar/${name}`}
+                  src={`https://localhost:8787/mainnet/avatar/${name}`}
                   alt='Avatar'
                   width={40}
                   height={40}
@@ -104,7 +104,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'header') && (
               <div key='header' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`https://metadata.ens.domains/mainnet/header/${name}`}
+                  src={`https://localhost:8787/mainnet/header/${name}`}
                   alt='Header'
                   width={120}
                   height={40}

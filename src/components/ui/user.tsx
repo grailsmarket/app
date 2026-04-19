@@ -57,7 +57,7 @@ const User: React.FC<UserProps> = ({
   const headerImageSrc = headerImage
     ? isLinkValid(headerImage)
       ? headerImage
-      : `https://metadata.ens.domains/mainnet/header/${profile?.ens?.name}`
+      : `https://localhost:8787/mainnet/header/${profile?.ens?.name}`
     : null
 
   return (

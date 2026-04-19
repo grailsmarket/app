@@ -15,8 +15,8 @@ const size = {
   height: 836,
 }
 
-const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
+const WRAPPED_DOMAIN_IMAGE_URL = `https://localhost:8787/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+const UNWRAPPED_DOMAIN_IMAGE_URL = `https://localhost:8787/mainnet/${APP_ENS_ADDRESS}`
 const CHROMIUM_PACK_URL = `https://${process.env.VERCEL_URL}/chromium-pack.tar`
 
 let cachedExecutablePath: string | null = null
@@ -287,9 +287,9 @@ export async function GET(req: NextRequest) {
       ...(process.env.VERCEL_ENV
         ? {}
         : {
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          }),
+          headless: 'new',
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        }),
     }
 
     browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
@@ -528,20 +528,18 @@ export async function GET(req: NextRequest) {
               <div class="ens-image">
                 ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
               </div>
-              ${
-                categories.length > 0
-                  ? `<div class="categories">
+              ${categories.length > 0
+        ? `<div class="categories">
                 ${categoryAvatarDataUri ? `<img class="category-logo" src="${categoryAvatarDataUri}" alt="category" />` : ''}
                 ${categories.length > 0 ? `<p class="category-label">${CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}</p>` : ''}
                 ${categories.length > 1 ? `<p class="category-count">+${categories.length - 1}</p>` : ''}
               </div>`
-                  : ''
-              }
+        : ''
+      }
             </div>
             <div class="analytics-container">
-              ${
-                hasData
-                  ? `
+              ${hasData
+        ? `
         <h2 class="analytics-title">Google Metrics</h2>
                 <div class="stats-grid">
                   <div class="stat-card">
@@ -568,19 +566,18 @@ export async function GET(req: NextRequest) {
                 </div>
                 ${chartSVG ? `<div class="chart-container">${chartSVG}</div>` : ''}
               `
-                  : '<p class="no-data">No search data available</p>'
-              }
+        : '<p class="no-data">No search data available</p>'
+      }
             </div>
           </div>
           <div class="info">
-            ${
-              ownerProfile.displayName
-                ? `<div class="owner">
+            ${ownerProfile.displayName
+        ? `<div class="owner">
                     <img class="owner-avatar" src="${ownerProfile.avatar}" alt="owner" />
                     <span class="owner-name">${ownerProfile.displayName}</span>
                   </div>`
-                : ''
-            }
+        : ''
+      }
       <img class="grails-logo" src="https://grails.app/logo-w-text.svg" alt="Grails" />
             <p class="domain-link">grails.app/${beautifyName(name)}</p>
           </div>

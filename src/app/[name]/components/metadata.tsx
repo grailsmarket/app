@@ -13,6 +13,7 @@ import { isAddress } from 'viem'
 import { MetadataType } from '@/types/api'
 import { RegistrationStatus } from '@/types/domains'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { ENS_METADATA_URL } from '@/constants/ens'
 
 interface NameDetailsProps {
   name: string
@@ -90,7 +91,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'avatar') && (
               <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`https://localhost:8787/mainnet/avatar/${name}`}
+                  src={`${ENS_METADATA_URL}/mainnet/avatar/${name}`}
                   alt='Avatar'
                   width={40}
                   height={40}
@@ -104,7 +105,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'header') && (
               <div key='header' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`https://localhost:8787/mainnet/header/${name}`}
+                  src={`${ENS_METADATA_URL}/mainnet/header/${name}`}
                   alt='Header'
                   width={120}
                   height={40}

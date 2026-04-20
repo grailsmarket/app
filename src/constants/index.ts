@@ -1,3 +1,5 @@
+import { ENS_METADATA_URL } from './ens'
+
 export const APP_NAME = 'Grails Market'
 export const APP_DESCRIPTION = 'Find your next Grail on the Grails ENS Market'
 export const APP_URL = 'https://grails.app'
@@ -6,7 +8,7 @@ export const APP_LOGO = '/logo-w-text.svg'
 export const APP_FAVICON = 'src/app/favicon.ico'
 export const APP_THEME_COLOR = '#ffdfc0'
 export const APP_ENS_ADDRESS = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'
-export const DOMAIN_IMAGE_URL = `https://localhost:8787/mainnet/${APP_ENS_ADDRESS}`
+export const DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 export const DOMAIN_IMAGE_URL_V2 = `https://raw2.seadn.io/ethereum/${APP_ENS_ADDRESS}/8759e0e53f8bcd718b565102a2410a`
 export const ENS_SUBGRAPH_URL = `https://gateway-arbitrum.network.thegraph.com/api/${process.env.NEXT_PUBLIC_ENS_SUBGRAPH_API_KEY}/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH`
 export const CAN_CLAIM_POAP = process.env.NEXT_PUBLIC_CAN_CLAIM_POAP === 'true'

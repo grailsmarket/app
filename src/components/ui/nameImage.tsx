@@ -4,9 +4,10 @@ import React, { useState } from 'react'
 import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_METADATA_URL } from '@/constants/ens'
 
-export const WRAPPED_DOMAIN_IMAGE_URL = `https://ens-metadata-flarecloud.encrypted-063.workers.dev/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://ens-metadata-flarecloud.encrypted-063.workers.dev/mainnet/${APP_ENS_ADDRESS}`
+export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 interface NameImageProps {
   name: string

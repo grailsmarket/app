@@ -8,7 +8,6 @@ import {
   Avatar,
   DEFAULT_FALLBACK_AVATAR,
   fetchAccount,
-  isLinkValid,
   ProfileTooltip,
   truncateAddress,
 } from 'ethereum-identity-kit'
@@ -16,6 +15,7 @@ import { cn } from '@/utils/tailwind'
 import LoadingCell from './loadingCell'
 import { useUserContext } from '@/context/user'
 import { beautifyName } from '@/lib/ens'
+import { ENS_METADATA_URL } from '@/constants/ens'
 
 interface UserProps {
   address: Address
@@ -53,12 +53,8 @@ const User: React.FC<UserProps> = ({
   })
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
-  const headerImage = profile?.ens?.records?.header
-  const headerImageSrc = headerImage
-    ? isLinkValid(headerImage)
-      ? headerImage
-      : `https://localhost:8787/mainnet/header/${profile?.ens?.name}`
-    : null
+  const avatarSrc = `${ENS_METADATA_URL}/mainnet/avatar/${profile?.ens?.name}`
+  const headerImageSrc = `${ENS_METADATA_URL}/mainnet/header/${profile?.ens?.name}`
 
   return (
     <TooltipWrapper
@@ -93,7 +89,7 @@ const User: React.FC<UserProps> = ({
             <Avatar
               address={address}
               name={profile?.ens?.name}
-              src={profile?.ens?.avatar}
+              src={avatarSrc}
               fallback={DEFAULT_FALLBACK_AVATAR}
               style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
             />

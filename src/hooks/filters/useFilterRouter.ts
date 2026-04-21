@@ -128,31 +128,7 @@ import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 import {
   emptyFilterState as emptyFilterStateBulkSearchFilters,
   selectBulkSearchFilters,
-  setBulkSearchFiltersOpen,
-  toggleBulkSearchFiltersStatus,
-  setBulkSearchFiltersStatus,
-  toggleBulkSearchFiltersType,
-  setBulkSearchFiltersType,
-  setBulkSearchMarketFilters,
-  setBulkSearchTextMatchFilters,
-  setBulkSearchTextNonMatchFilters,
-  setBulkSearchFiltersLength,
-  setBulkSearchPriceDenomination,
-  setBulkSearchPriceRange,
-  setBulkSearchOfferRange,
-  setBulkSearchWatchersCount,
-  setBulkSearchViewCount,
-  setBulkSearchClubsCount,
-  setBulkSearchCreationDate,
-  toggleBulkSearchCategory,
-  setBulkSearchFiltersCategory,
-  addBulkSearchCategories,
-  removeBulkSearchCategories,
-  setBulkSearchSort,
-  setBulkSearchSearch,
-  setBulkSearchFiltersScrollTop,
-  toggleBulkSearchFilterOpen,
-  clearBulkSearchFilters,
+  bulkSearchFiltersActions,
 } from '@/state/reducers/filters/bulkSearchFilters'
 
 // Import categoriesNamesFilters selectors and actions
@@ -312,33 +288,7 @@ export function useFilterRouter(): FilterRouter {
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
     if (filterType === 'bulkSearch') {
-      return {
-        setFiltersOpen: setBulkSearchFiltersOpen,
-        toggleFiltersStatus: toggleBulkSearchFiltersStatus,
-        setFiltersStatus: setBulkSearchFiltersStatus,
-        toggleFiltersType: toggleBulkSearchFiltersType,
-        setFiltersType: setBulkSearchFiltersType,
-        setMarketFilters: setBulkSearchMarketFilters,
-        setTextMatchFilters: setBulkSearchTextMatchFilters,
-        setTextNonMatchFilters: setBulkSearchTextNonMatchFilters,
-        setFiltersLength: setBulkSearchFiltersLength,
-        setPriceDenomination: setBulkSearchPriceDenomination,
-        setPriceRange: setBulkSearchPriceRange,
-        setOfferRange: setBulkSearchOfferRange,
-        setWatchersCount: setBulkSearchWatchersCount,
-        setViewCount: setBulkSearchViewCount,
-        setClubsCount: setBulkSearchClubsCount,
-        setCreationDate: setBulkSearchCreationDate,
-        toggleCategory: toggleBulkSearchCategory,
-        setFiltersCategory: setBulkSearchFiltersCategory,
-        addCategories: addBulkSearchCategories,
-        removeCategories: removeBulkSearchCategories,
-        setSort: setBulkSearchSort,
-        setSearch: setBulkSearchSearch,
-        setScrollTop: setBulkSearchFiltersScrollTop,
-        toggleFilterOpen: toggleBulkSearchFilterOpen,
-        clearFilters: clearBulkSearchFilters,
-      }
+      return bulkSearchFiltersActions
     }
 
     if (filterType === 'categoriesPage') {
@@ -421,6 +371,10 @@ export function useFilterRouter(): FilterRouter {
   }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
 
   const emptyFilterState = useMemo(() => {
+    if (filterType === 'bulkSearch') {
+      return emptyFilterStateBulkSearchFilters
+    }
+
     if (filterType === 'categoriesPage') {
       switch (activeCategoriesPageTab) {
         case 'categories':

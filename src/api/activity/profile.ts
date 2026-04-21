@@ -1,5 +1,5 @@
 import { API_URL } from '@/constants/api'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { ActivityType } from '@/types/profile'
 import { Address } from 'viem'

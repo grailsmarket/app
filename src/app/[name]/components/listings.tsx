@@ -6,8 +6,6 @@ import { SOURCE_ICONS } from '@/constants/domains/sources'
 import Price from '@/components/ui/price'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import CartIcon from '@/components/domains/table/components/CartIcon'
-import useCartDomains from '@/hooks/useCartDomains'
 import { useAccount } from 'wagmi'
 import { useAppDispatch } from '@/state/hooks'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -58,19 +56,12 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
     () => domain?.owner?.toLowerCase() === userAddress?.toLowerCase(),
     [domain?.owner, userAddress]
   )
-  // const grailsListings = listings.filter((listing) => listing.source === 'grails')
 
   const openMakeListingModal = () => {
     if (!domain) return
     dispatch(setMakeListingModalDomains([domain]))
     dispatch(setMakeListingModalPreviousListings([]))
     dispatch(setMakeListingModalOpen(true))
-
-    // if (grailsListings.length > 0) {
-    //   dispatch(setMakeListingModalPreviousListing(grailsListings[0]))
-    // } else {
-    //   dispatch(setMakeListingModalPreviousListing(null))
-    // }
   }
 
   return (
@@ -170,7 +161,6 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, domain }) => {
   const dispatch = useAppDispatch()
-  const { onSelect: addToCart } = useCartDomains()
 
   const openEditListingModal = () => {
     if (!domain) return

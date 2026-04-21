@@ -17,7 +17,7 @@ interface ExpandableTabProps {
 }
 
 const ExpandableTab: React.FC<ExpandableTabProps> = ({
-  open,
+  open = true,
   children,
   className,
   showHeader = false,

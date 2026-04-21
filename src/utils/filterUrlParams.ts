@@ -3,22 +3,20 @@ import {
   DEFAULT_MARKET_FILTERS_STATE,
   DEFAULT_TEXT_MATCH_FILTERS_STATE,
   DEFAULT_TEXT_NON_MATCH_FILTERS_STATE,
-  TypeFiltersState,
+} from '@/constants/filters/name'
+import { PRICE_DENOMINATIONS } from '@/constants/filters'
+import { DEFAULT_CATEGORIES_PAGE_SORT, DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION } from '@/constants/filters/categories'
+import {
+  MarketFilterOption,
   MarketFiltersState,
+  MarketplaceOption,
   TextMatchFiltersState,
   TextNonMatchFiltersState,
   TypeFilterOption,
-  MarketFilterOption,
-  MarketplaceOption,
-} from '@/constants/filters/marketplaceFilters'
-import { PRICE_DENOMINATIONS } from '@/constants/filters'
-import {
-  CategoriesPageTypeOption,
-  CategoriesPageSortOption,
-  CategoriesPageSortDirection,
-  DEFAULT_CATEGORIES_PAGE_SORT,
-  DEFAULT_CATEGORIES_PAGE_SORT_DIRECTION,
-} from '@/constants/filters/categoriesPageFilters'
+  TypeFiltersState,
+} from '@/types/filters/name'
+import { SortDirection } from '@/types/filters'
+import { CategoriesPageSortOption, CategoriesPageTypeOption } from '@/types/filters/categories'
 
 // Maximum search length to include in URL (characters)
 // Above this limit, search will work in the app but won't be reflected in URL
@@ -131,7 +129,7 @@ export interface ParsedUrlFilters {
   // Categories page filters
   catType?: CategoriesPageTypeOption | null
   catSort?: CategoriesPageSortOption
-  catDir?: CategoriesPageSortDirection
+  catDir?: SortDirection
 }
 
 // Default empty filter state for comparison
@@ -375,7 +373,7 @@ export interface CategoriesPageFilterState {
   search: string
   type: CategoriesPageTypeOption | null
   sort: CategoriesPageSortOption
-  sortDirection: CategoriesPageSortDirection
+  sortDirection: SortDirection
 }
 
 // Default empty categories page filter state
@@ -604,7 +602,7 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     result.catSort = catSort
   }
 
-  const catDir = searchParams.get(URL_PARAMS.catDir) as CategoriesPageSortDirection | null
+  const catDir = searchParams.get(URL_PARAMS.catDir) as SortDirection | null
   if (catDir) {
     result.catDir = catDir
   }

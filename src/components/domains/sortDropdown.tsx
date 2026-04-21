@@ -11,13 +11,13 @@ import {
   SORT_LISTING_FILTER_LABELS,
   SORT_TYPES,
   SORT_TYPE_LABELS,
-  SortListingFilter,
-  SortType,
-} from '@/constants/filters/marketplaceFilters'
-import { SortFilterType } from '@/state/reducers/filters/marketplaceFilters'
+} from '@/constants/filters/name'
 import ArrowUpIcon from 'public/icons/ascending.svg'
 import ArrowDownIcon from 'public/icons/descending.svg'
 import Image from 'next/image'
+import { SortFilterType } from '@/types/filters/name'
+import { SortListingFilter } from '@/types/filters/name'
+import { SortType } from '@/types/filters/name'
 
 type SortDirection = 'asc' | 'desc'
 

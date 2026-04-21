@@ -1,7 +1,6 @@
 import React from 'react'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import PrimaryButton from '@/components/ui/buttons/primary'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
 import { setBuyNowModalDomain, setBuyNowModalOpen, setBuyNowModalListing } from '@/state/reducers/modals/buyNowModal'
 import { UNREGISTERED } from '@/constants/domains/registrationStatuses'

@@ -4,7 +4,6 @@ import { API_URL } from '@/constants/api'
 import { useUserContext } from '@/context/user'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { normalizeName } from '@/lib/ens'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { BigNumber } from '@ethersproject/bignumber'
 import Image from 'next/image'
@@ -30,10 +29,10 @@ const DownloadButton = ({
 
   const { authStatus } = useUserContext()
   const { selectors } = useFilterRouter()
-  const filters = selectors.filters as MarketplaceFiltersState
+  const filters = selectors.filters
 
   const searchTerm = filters.search
-  const search = normalizeName(searchTerm.replace('.eth', '').toLowerCase().trim())
+  const search = normalizeName(searchTerm?.replace('.eth', '').toLowerCase().trim())
   const statusFilter = filters.status?.filter(
     (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
   )

@@ -1,7 +1,7 @@
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { TextNonMatchFilterLabel, DEFAULT_TEXT_NON_MATCH_FILTERS_STATE } from '@/constants/filters/marketplaceFilters'
-import { TextNonMatchFiltersState } from '@/types/filters'
+import { DEFAULT_TEXT_NON_MATCH_FILTERS_STATE } from '@/constants/filters/name'
+import { TextNonMatchFilterLabel, TextNonMatchFiltersState } from '@/types/filters/name'
 
 export const useTextNonMatchFilters = () => {
   const dispatch = useAppDispatch()

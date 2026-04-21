@@ -15,8 +15,7 @@ import {
 } from '@/state/reducers/modals/bulkSelectModal'
 import { MarketplaceDomainType, DomainListingType } from '@/types/domains'
 import { fetchDomains } from '@/api/domains/fetchDomains'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
-import { PortfolioFiltersState } from '@/types/filters'
+import { NameFilters } from '@/types/filters/name'
 import { Address } from 'viem'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
 
@@ -34,7 +33,7 @@ interface SelectAllProviderProps {
   children: React.ReactNode
   loadedDomains: MarketplaceDomainType[]
   totalCount: number
-  filters: MarketplaceFiltersState | PortfolioFiltersState
+  filters: NameFilters
   searchTerm: string
   ownerAddress?: Address
   category?: string

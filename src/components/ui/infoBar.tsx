@@ -5,11 +5,7 @@ import { Cross } from 'ethereum-identity-kit'
 
 const INFO_BAR_STORAGE_KEY = 'grails-info-bar-april'
 
-type InfoBarProps = {
-  onVisibilityChange?: (visible: boolean) => void
-}
-
-const InfoBar: React.FC<InfoBarProps> = ({ onVisibilityChange }) => {
+const InfoBar: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false)
   const [hasMounted, setHasMounted] = useState(false)
 
@@ -18,13 +14,11 @@ const InfoBar: React.FC<InfoBarProps> = ({ onVisibilityChange }) => {
     const dismissed = localStorage.getItem(INFO_BAR_STORAGE_KEY)
     const shouldShow = dismissed !== 'true'
     setIsVisible(shouldShow)
-    onVisibilityChange?.(shouldShow)
-  }, [onVisibilityChange])
+  }, [])
 
   const handleDismiss = () => {
     localStorage.setItem(INFO_BAR_STORAGE_KEY, 'true')
     setIsVisible(false)
-    onVisibilityChange?.(false)
   }
 
   // Don't render anything until mounted to avoid hydration mismatch

@@ -3,17 +3,16 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
-import { PortfolioFiltersState } from '@/types/filters'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import { normalizeName } from '@/lib/ens'
 import { BigNumber } from '@ethersproject/bignumber'
 import { authFetch } from '../authFetch'
 import { generateEmptyName } from '@/utils/generateEmptyName'
+import { NameFilters } from '@/types/filters/name'
 
 interface FetchDomainsOptions {
   limit: number
   pageParam: number
-  filters: MarketplaceFiltersState | PortfolioFiltersState
+  filters: NameFilters
   searchTerm: string
   ownerAddress?: Address
   category?: string

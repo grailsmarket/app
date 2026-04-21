@@ -44,7 +44,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     hasActiveSubscription,
     hasChanges,
     isEmailVerified,
-    isEmailValid,
     updateUserProfileMutation,
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,

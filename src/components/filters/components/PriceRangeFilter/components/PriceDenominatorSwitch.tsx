@@ -1,6 +1,6 @@
 import { cn } from '@/utils/tailwind'
 import { PRICE_DENOMINATIONS } from '@/constants/filters'
-import { PriceDenominationType } from '@/state/reducers/filters/marketplaceFilters'
+import { PriceDenominationType } from '@/types/filters/name'
 
 interface PriceDenominatorSwitchProps {
   denomination: PriceDenominationType

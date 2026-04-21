@@ -2,8 +2,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 import { authFetch } from '../authFetch'
 import { API_URL } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
-import { PortfolioFiltersState } from '@/types/filters'
+import { NameFilters } from '@/types/filters/name'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { normalizeName } from '@/lib/ens'
 import { BigNumber } from '@ethersproject/bignumber'
@@ -11,7 +10,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 interface GetWatchlistOptions {
   limit: number
   pageParam: number
-  filters: MarketplaceFiltersState | PortfolioFiltersState
+  filters: NameFilters
   searchTerm: string
   listId?: number | null
 }

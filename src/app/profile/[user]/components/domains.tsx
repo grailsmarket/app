@@ -15,7 +15,6 @@ import {
 import { SelectAllProvider } from '@/context/selectAll'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
 import WatchlistListSelector from '@/components/ui/watchlistListSelector'
 
@@ -104,7 +103,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
       ownerAddress={user}
       loadedDomains={domains}
       totalCount={totalCount}
-      filters={selectors.filters as MarketplaceFiltersState}
+      filters={selectors.filters}
       searchTerm={debouncedSearch}
       isWatchlist={isWatchlistTab}
       isAuthenticated={authStatus === 'authenticated'}

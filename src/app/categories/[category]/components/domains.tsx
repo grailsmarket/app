@@ -9,7 +9,6 @@ import { selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { SelectAllProvider } from '@/context/selectAll'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import BulkSelect from '@/components/ui/bulkSelect'
 import { selectCategory } from '@/state/reducers/category/category'
 
@@ -103,7 +102,7 @@ const DomainPanel: React.FC<Props> = ({ category }) => {
     <SelectAllProvider
       loadedDomains={domains}
       totalCount={totalCategoryDomains}
-      filters={selectors.filters as MarketplaceFiltersState}
+      filters={selectors.filters}
       searchTerm={debouncedSearch}
       category={category}
       isAuthenticated={authStatus === 'authenticated'}

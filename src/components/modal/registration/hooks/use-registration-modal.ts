@@ -5,7 +5,6 @@ import { useAccount, useBalance, useGasPrice, usePublicClient } from 'wagmi'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectRegistration,
-  openRegistrationModal,
   setRegistrationFlowState,
   setSecret,
   setRegistrationError,

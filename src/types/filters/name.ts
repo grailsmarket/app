@@ -98,6 +98,7 @@ export type NameFilters = {
   creationDate: { min: string | null; max: string | null }
   categories: string[]
   sort: SortFilterType | null
+  aiSearch: boolean
 }
 
 export type NamefiltersOpened = NameFilters & {
@@ -112,6 +113,7 @@ export interface FilterRouterSelectors {
 }
 
 export interface FilterRouterActions {
+  setFilters: (payload: Partial<NameFilters>) => PayloadAction<Partial<NameFilters>>
   setScrollTop: (payload: number) => PayloadAction<number>
   setFiltersOpen: (payload: boolean) => PayloadAction<boolean>
   setSearch: (payload: string) => PayloadAction<string>
@@ -137,6 +139,7 @@ export interface FilterRouterActions {
   clearFilters: () => PayloadAction<void>
   addCategories: (payload: string[]) => PayloadAction<string[]>
   removeCategories: (payload: string[]) => PayloadAction<string[]>
+  setAiSearch: (payload: boolean) => PayloadAction<boolean>
 }
 
 export interface FilterRouter {

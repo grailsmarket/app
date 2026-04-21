@@ -12,7 +12,6 @@ import {
   selectBulkSelect,
   setBulkSelectIsSelecting,
   clearSelectAllError,
-  removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
 import {
   CancelListingListing,
@@ -38,7 +37,6 @@ import Label from './label'
 import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
-import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 import { setMakeOfferModalDomain, setMakeOfferModalOpen } from '@/state/reducers/modals/makeOfferModal'
@@ -90,7 +88,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const { userAddress } = useUserContext()
   const { cartIsEmpty } = useCartDomains()
   const queryClient = useQueryClient()
-  const watchlistFilters = useAppSelector(selectWatchlistFilters)
+  // const watchlistFilters = useAppSelector(selectWatchlistFilters)
 
   // Get the selected tab based on page type
   const marketplaceTab = marketplaceState.selectedTab

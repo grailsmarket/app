@@ -1,17 +1,17 @@
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { useUserContext } from '@/context/user'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useAppSelector } from '@/state/hooks'
 import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 
-const STATUS_TABS = [
-  { key: 'names', status: [] },
-  { key: 'registered', status: ['Registered'] },
-  { key: 'grace', status: ['Grace'] },
-  { key: 'premium', status: ['Premium'] },
-  { key: 'available', status: ['Available'] },
-] as const
+// const STATUS_TABS = [
+//   { key: 'names', status: [] },
+//   { key: 'registered', status: ['Registered'] },
+//   { key: 'grace', status: ['Grace'] },
+//   { key: 'premium', status: ['Premium'] },
+//   { key: 'available', status: ['Available'] },
+// ] as const
 
 const useBulkSearchCount = (tabKey: string, forcedStatus: string[]) => {
   const { authStatus } = useUserContext()
@@ -29,21 +29,13 @@ const useBulkSearchCount = (tabKey: string, forcedStatus: string[]) => {
       filters.categories,
       filters.type,
       filters.sort,
-      // @ts-expect-error filter state type mismatch
       filters.market,
-      // @ts-expect-error filter state type mismatch
       filters.textMatch,
-      // @ts-expect-error filter state type mismatch
       filters.textNonMatch,
-      // @ts-expect-error filter state type mismatch
       filters.offerRange,
-      // @ts-expect-error filter state type mismatch
       filters.watchersCount,
-      // @ts-expect-error filter state type mismatch
       filters.viewCount,
-      // @ts-expect-error filter state type mismatch
       filters.clubsCount,
-      // @ts-expect-error filter state type mismatch
       filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {

@@ -136,7 +136,7 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
 
   if (!config) return null
 
-  const isAllEvents = config.eventTypes.length === 0
+  // const isAllEvents = config.eventTypes.length === 0
 
   return (
     <div className='flex h-full flex-col'>
@@ -212,7 +212,7 @@ const ActivityWidget: React.FC<ActivityWidgetProps> = ({ instanceId }) => {
                 <button
                   key={cat.name}
                   value={cat.name}
-                  onChange={(e) => setCategory(cat.name)}
+                  onChange={() => setCategory(cat.name)}
                   className='hover:bg-secondary flex cursor-pointer items-center justify-between px-3 py-2 text-lg font-medium transition-colors'
                 >
                   <p>{cat.name}</p>

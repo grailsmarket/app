@@ -1,4 +1,4 @@
-import { fetchDomains, API_STATUS_FILTER_OPTIONS } from '@/api/domains/fetchDomains'
+import { fetchDomains } from '@/api/domains/fetchDomains'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { useUserContext } from '@/context/user'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -44,21 +44,13 @@ export const useBulkSearchDomains = () => {
       filters.categories,
       filters.type,
       filters.sort,
-      // @ts-expect-error filter state type mismatch
       filters.market,
-      // @ts-expect-error filter state type mismatch
       filters.textMatch,
-      // @ts-expect-error filter state type mismatch
       filters.textNonMatch,
-      // @ts-expect-error filter state type mismatch
       filters.offerRange,
-      // @ts-expect-error filter state type mismatch
       filters.watchersCount,
-      // @ts-expect-error filter state type mismatch
       filters.viewCount,
-      // @ts-expect-error filter state type mismatch
       filters.clubsCount,
-      // @ts-expect-error filter state type mismatch
       filters.creationDate,
     ],
     queryFn: async ({ pageParam = 1 }) => {

@@ -4,27 +4,6 @@ import React, { useCallback, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { clearDomainFilters, updateDomainFilters } from '@/state/reducers/dashboard'
-import type { MarketplaceFiltersState, MarketplaceStatusFilterType } from '@/state/reducers/filters/marketplaceFilters'
-import {
-  MARKETPLACE_STATUS_FILTER_LABELS,
-  MARKET_FILTER_LABELS,
-  MARKET_FILTER_OPTIONS,
-  MARKET_FILTER_OPTION_LABELS,
-  MARKETPLACE_OPTIONS,
-  MARKETPLACE_OPTION_LABELS,
-  MARKETPLACE_TYPE_FILTER_LABELS,
-  TYPE_FILTER_OPTIONS,
-  TYPE_FILTER_OPTION_LABELS,
-  TEXT_MATCH_FILTER_LABELS,
-  TEXT_NON_MATCH_FILTER_LABELS,
-  type MarketFilterLabel,
-  type MarketFilterOption,
-  type MarketplaceOption,
-  type MarketplaceTypeFilterLabel,
-  type TypeFilterOption,
-  type TextMatchFilterLabel,
-  type TextNonMatchFilterLabel,
-} from '@/constants/filters/marketplaceFilters'
 import { Cross } from 'ethereum-identity-kit'
 import FilterDropdown from '@/components/filters/components/FilterDropdown'
 import FilterSelector from '@/components/filters/components/FilterSelector'
@@ -36,16 +15,40 @@ import { cn } from '@/utils/tailwind'
 import arrowDown from 'public/icons/arrow-down.svg'
 import type { CategoryType } from '@/types/domains'
 import filter from 'public/icons/filter.svg'
+import {
+  MarketFilterLabel,
+  MarketFilterOption,
+  MarketplaceOption,
+  NameFilters,
+  StatusType,
+  TextMatchFilterLabel,
+  TextNonMatchFilterLabel,
+  TypeFilterLabel,
+} from '@/types/filters/name'
+import {
+  MARKET_FILTER_LABELS,
+  MARKET_FILTER_OPTION_LABELS,
+  MARKET_FILTER_OPTIONS,
+  MARKETPLACE_OPTION_LABELS,
+  MARKETPLACE_OPTIONS,
+  MARKETPLACE_TYPE_FILTER_LABELS,
+  NAME_STATUS_FILTER_LABELS,
+  TEXT_MATCH_FILTER_LABELS,
+  TEXT_NON_MATCH_FILTER_LABELS,
+  TYPE_FILTER_OPTION_LABELS,
+  TYPE_FILTER_OPTIONS,
+} from '@/constants/filters/name'
+import { TypeFilterOption } from '@/types/filters/name'
 
-const STATUS_OPTIONS = ['none', ...MARKETPLACE_STATUS_FILTER_LABELS] as const
+const STATUS_OPTIONS = ['none', ...NAME_STATUS_FILTER_LABELS] as const
 const STATUS_OPTION_LABELS: Record<string, string> = {
   none: '---',
-  ...Object.fromEntries(MARKETPLACE_STATUS_FILTER_LABELS.map((s) => [s, s])),
+  ...Object.fromEntries(NAME_STATUS_FILTER_LABELS.map((s) => [s, s])),
 }
 
 interface DomainsWidgetFiltersProps {
   instanceId: string
-  filters: MarketplaceFiltersState
+  filters: NameFilters
 }
 
 const inputClassName = 'border-primary/20 p-md w-1/2 rounded-sm border-2 text-md outline-none'
@@ -80,7 +83,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
   const { categories, categoriesLoading } = useCategories()
 
   const update = useCallback(
-    (patch: Partial<MarketplaceFiltersState>) => {
+    (patch: Partial<NameFilters>) => {
       dispatch(updateDomainFilters({ id: instanceId, filters: patch }))
     },
     [dispatch, instanceId]
@@ -210,7 +213,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
 
   // Type filter
   const setTypeOption = useCallback(
-    (label: MarketplaceTypeFilterLabel, value: TypeFilterOption) => {
+    (label: TypeFilterLabel, value: TypeFilterOption) => {
       update({ type: { ...filters.type, [label]: value } })
     },
     [filters.type, update]
@@ -317,7 +320,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
             value={filters.status[0] ?? 'none'}
             options={STATUS_OPTIONS}
             optionLabels={STATUS_OPTION_LABELS}
-            onChange={(value) => update({ status: value === 'none' ? [] : [value as MarketplaceStatusFilterType] })}
+            onChange={(value) => update({ status: value === 'none' ? [] : [value as StatusType] })}
             noneValue='none'
           />
         </Section>
@@ -330,7 +333,7 @@ const DomainsWidgetFilters: React.FC<DomainsWidgetFiltersProps> = ({ instanceId,
                 value={filters.market[label]}
                 options={MARKET_FILTER_OPTIONS}
                 optionLabels={MARKET_FILTER_OPTION_LABELS}
-                onChange={(value) => setMarketOption(label, value)}
+                onChange={(value) => setMarketOption(label as MarketFilterLabel, value)}
                 noneValue='none'
               />
             ))}

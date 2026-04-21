@@ -9,12 +9,9 @@ import Card from '@/components/domains/grid/components/card'
 import LoadingCard from '@/components/domains/grid/components/loadingCard'
 import DomainsWidgetFilters from './DomainsWidgetFilters'
 import { cn } from '@/utils/tailwind'
-import type { SortFilterType } from '@/state/reducers/filters/marketplaceFilters'
 import Image from 'next/image'
 import filter from 'public/icons/filter.svg'
 import { ShortArrow } from 'ethereum-identity-kit'
-import { SORT_TYPE_LABELS, SORT_TYPES } from '@/constants/filters/marketplaceFilters'
-import { CategoriesPageSortDirection } from '@/constants/filters/categoriesPageFilters'
 import grid from 'public/icons/grid.svg'
 import list from 'public/icons/list.svg'
 import { useClickAway } from '@/hooks/useClickAway'
@@ -22,6 +19,9 @@ import ascending from 'public/icons/ascending.svg'
 import descending from 'public/icons/descending.svg'
 import TableRow from '@/components/domains/table/components/TableRow'
 import { MarketplaceHeaderColumn } from '@/types/domains'
+import { SortDirection } from '@/types/filters'
+import { SortFilterType } from '@/types/filters/name'
+import { SORT_TYPE_LABELS, SORT_TYPES } from '@/constants/filters/name'
 
 interface DomainsWidgetProps {
   instanceId: string
@@ -42,7 +42,7 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
   const [containerWidth, setContainerWidth] = useState(0)
   const [sortOpen, setSortOpen] = useState(false)
   const [sort, setSort] = useState<string>(config?.filters.sort ?? '')
-  const [sortDirection, setSortDirection] = useState<CategoriesPageSortDirection>('desc')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   // Measure list container width so we can pick columns and pass compact mode
   useEffect(() => {
@@ -77,7 +77,7 @@ const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
   )
 
   const handleSortChange = useCallback(
-    (sort: string, direction: CategoriesPageSortDirection) => {
+    (sort: string, direction: SortDirection) => {
       setSort(sort)
       setSortDirection(direction)
       dispatch(updateDomainFilters({ id: instanceId, filters: { sort: `${sort}_${direction}` as SortFilterType } }))

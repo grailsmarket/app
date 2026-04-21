@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { LayoutItem } from 'react-grid-layout'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
-import type { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import {
   type DashboardState,
   type DashboardLayouts,
@@ -12,6 +11,7 @@ import {
   DASHBOARD_COLS,
   WIDGET_LABELS,
 } from './types'
+import { NameFilters } from '@/types/filters/name'
 
 // ── Default configs per component type ──────────────────────────
 const createDefaultConfig = (type: DashboardComponentType): DashboardComponentConfig => {
@@ -223,7 +223,7 @@ export const dashboardSlice = createSlice({
     },
 
     // Specific action for domain filter updates to allow deep merging
-    updateDomainFilters(state, action: PayloadAction<{ id: string; filters: Partial<MarketplaceFiltersState> }>) {
+    updateDomainFilters(state, action: PayloadAction<{ id: string; filters: Partial<NameFilters> }>) {
       const { id, filters } = action.payload
       const existing = state.components[id]
       if (!existing || existing.type !== 'domains') return

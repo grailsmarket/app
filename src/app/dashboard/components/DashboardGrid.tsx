@@ -2,13 +2,7 @@
 
 import React, { useCallback, useMemo, useRef } from 'react'
 import type { Layout, LayoutItem, ResponsiveLayouts } from 'react-grid-layout'
-import {
-  ResponsiveGridLayout,
-  verticalCompactor,
-  useContainerWidth,
-  horizontalCompactor,
-  noCompactor,
-} from 'react-grid-layout'
+import { ResponsiveGridLayout, useContainerWidth, horizontalCompactor } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -21,7 +15,6 @@ import {
 } from '@/state/reducers/dashboard/selectors'
 import {
   DASHBOARD_BREAKPOINTS,
-  DASHBOARD_COLS,
   DASHBOARD_ROW_HEIGHT,
   DEFAULT_WIDGET_SIZES,
   MAX_COLS_FOR_WIDTH,

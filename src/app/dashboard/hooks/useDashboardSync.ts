@@ -8,7 +8,7 @@ import { hydrateFromServer, resetDashboard, setDashboardLayoutId } from '@/state
 import { createDashboardLayout, updateDashboardLayout } from '@/api/dashboard/saveDashboardLayout'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { Layout } from '@/api/dashboard/types'
-import { deleteDashboardLayout } from '@/api/dashboard/deleteDashboardLayout'
+// import { deleteDashboardLayout } from '@/api/dashboard/deleteDashboardLayout'
 
 export const useDashboardSync = () => {
   const dispatch = useAppDispatch()
@@ -134,7 +134,7 @@ export const useDashboardSync = () => {
     const { layoutId } = dashboard
     try {
       if (layoutId != null) {
-        const response = await deleteDashboardLayout(layoutId)
+        // const response = await deleteDashboardLayout(layoutId)
         const newQueryData = layouts?.filter((l) => l.id !== layoutId)
         if (newQueryData && newQueryData.length > 0) {
           queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)

@@ -1,8 +1,8 @@
-import { MarketplaceFiltersState, SortFilterType } from '@/state/reducers/filters/marketplaceFilters'
+import { NameFilters, SortFilterType } from '@/types/filters/name'
 
 export type SavedSearchConfig = {
   q?: string
-  filters?: Partial<MarketplaceFiltersState>
+  filters?: Partial<NameFilters>
   sortBy?: SortFilterType | null
   sortOrder?: 'asc' | 'desc' | null
 }

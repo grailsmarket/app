@@ -28,6 +28,7 @@ import { localizeNumber } from '@/utils/localizeNumber'
 import SortDropdown from '@/components/domains/sortDropdown'
 import Image from 'next/image'
 import MagnifyingGlass from 'public/icons/search.svg'
+import MagicWand from 'public/icons/grails-ai.svg'
 
 interface FiltersProps {
   isPanelCategories: boolean
@@ -167,31 +168,44 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
         <div className='flex flex-col'>
           <div className='px-lg mb-2 flex w-full flex-col gap-2'>
             {showSearchInput && (
-              <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
-                <input
-                  type='text'
-                  placeholder='Search'
-                  value={localSearch}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className='w-full bg-transparent text-lg outline-none'
-                />
-                {localSearch.length > 0 ? (
-                  <Cross
-                    onClick={() => {
-                      setLocalSearch('')
-                      handleSearchChange('')
-                    }}
-                    className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+              <div className='flex w-full items-center gap-1.5'>
+                <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
+                  <input
+                    type='text'
+                    placeholder='Search'
+                    value={localSearch}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className='w-full bg-transparent text-lg outline-none'
                   />
-                ) : (
-                  <Image
-                    src={MagnifyingGlass}
-                    alt='Search'
-                    width={16}
-                    height={16}
-                    className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
-                  />
-                )}
+                  {localSearch.length > 0 ? (
+                    <Cross
+                      onClick={() => {
+                        setLocalSearch('')
+                        handleSearchChange('')
+                      }}
+                      className='h-4 w-4 cursor-pointer p-0.5 opacity-100 transition-opacity hover:opacity-70'
+                    />
+                  ) : (
+                    <Image
+                      src={MagnifyingGlass}
+                      alt='Search'
+                      width={16}
+                      height={16}
+                      className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
+                    />
+                  )}
+                </div>
+                <button
+                  className={cn(
+                    'border-tertiary flex h-10 min-w-10 cursor-pointer items-center justify-center rounded-sm border transition-colors',
+                    selectors.filters.aiSearch
+                      ? 'border-primary text-primary bg-primary/20'
+                      : 'hover:border-primary/50 hover:bg-secondary'
+                  )}
+                  onClick={() => dispatch(actions.setAiSearch(!selectors.filters.aiSearch))}
+                >
+                  <Image src={MagicWand} alt='AI Search' width={16} height={16} />
+                </button>
               </div>
             )}
             <SortDropdown />

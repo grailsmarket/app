@@ -48,6 +48,7 @@ export const emptyFilterState: NameFilters = {
   },
   categories: [],
   sort: null,
+  aiSearch: false,
 }
 
 // Initial State ------------------------------------
@@ -91,6 +92,7 @@ export const initialState: NamefiltersOpened = {
   categories: [],
   sort: null,
   scrollTop: 0,
+  aiSearch: false,
 }
 
 // Slice -------------------------------------------

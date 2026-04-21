@@ -13,13 +13,9 @@ import useSavedSearches from '@/hooks/useSavedSearches'
 import { useUserContext } from '@/context/user'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
-import {
-  loadMarketplaceFilters,
-  MarketplaceFiltersState,
-  SortFilterType,
-} from '@/state/reducers/filters/marketplaceFilters'
 import { SavedSearch } from '@/api/savedSearches/types'
 import { cn } from '@/utils/tailwind'
+import { NameFilters, SortFilterType } from '@/types/filters/name'
 
 // Tracks whether the default saved search has been auto-applied for this SPA
 // session. Persists across component remounts (e.g. tab switches) so we only
@@ -28,7 +24,7 @@ let hasAutoAppliedDefault = false
 
 const SaveSearchButton = () => {
   const { authStatus } = useUserContext()
-  const { selectors } = useFilterRouter()
+  const { selectors, actions } = useFilterRouter()
   const dispatch = useAppDispatch()
   const [isOpen, setIsOpen] = useState(false)
   const [newName, setNewName] = useState('')
@@ -46,14 +42,14 @@ const SaveSearchButton = () => {
     removeAsync,
   } = useSavedSearches()
 
-  const filters = selectors.filters as MarketplaceFiltersState
+  const filters = selectors.filters as NameFilters
 
   // Auto-apply the default saved search once per SPA session, when filters are
   // still at their empty defaults. Skips if the user already has filters set.
   useEffect(() => {
     if (hasAutoAppliedDefault || !defaultSavedSearch) return
     if (filters.search || filters.sort) return
-    const savedFilters = (defaultSavedSearch.filters as Partial<MarketplaceFiltersState>) ?? {}
+    const savedFilters = (defaultSavedSearch.filters as Partial<NameFilters>) ?? {}
     const sortValue: SortFilterType | null = defaultSavedSearch.sortBy
       ? ((defaultSavedSearch.sortOrder
           ? `${defaultSavedSearch.sortBy}_${defaultSavedSearch.sortOrder}`
@@ -61,7 +57,7 @@ const SaveSearchButton = () => {
       : null
     console.log('[SaveSearch] auto-applying default', defaultSavedSearch)
     dispatch(
-      loadMarketplaceFilters({
+      actions.setFilters({
         ...savedFilters,
         search: defaultSavedSearch.q ?? '',
         sort: sortValue,
@@ -100,12 +96,12 @@ const SaveSearchButton = () => {
       : null
 
     const payload = {
-      ...((saved.filters as Partial<MarketplaceFiltersState>) ?? {}),
+      ...((saved.filters as Partial<NameFilters>) ?? {}),
       search: saved.q ?? '',
       sort: sortValue,
     }
     console.log('[SaveSearch] applying', { saved, payload })
-    dispatch(loadMarketplaceFilters(payload))
+    dispatch(actions.setFilters(payload))
     setIsOpen(false)
   }
 

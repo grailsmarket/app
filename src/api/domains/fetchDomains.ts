@@ -58,7 +58,7 @@ export const fetchDomains = async ({
         .filter((name) => name.length > 2)
         .join(',')
 
-      const res = await fetch(`${API_URL}/search/bulk-filters`, {
+      const res = await fetch(`${API_URL}/search/bulk-search`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -231,8 +231,8 @@ export const fetchDomains = async ({
       'filters[uniqueSeller]': showUniqueSeller ? 'true' : undefined,
     })
 
-    const fetchFunction = isAuthenticated ? fetch : authFetch
-    const endpoint = AISearchEnabled ? 'ai/search/semantic' : 'search'
+    const fetchFunction = isAuthenticated ? authFetch : fetch
+    const endpoint = AISearchEnabled && search.length > 2 ? 'ai/search/semantic' : 'search'
 
     const res = await fetchFunction(`${API_URL}/${endpoint}?${paramString}`, {
       method: 'GET',

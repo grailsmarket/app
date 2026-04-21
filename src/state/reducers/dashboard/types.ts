@@ -1,7 +1,7 @@
 import type { LayoutItem } from 'react-grid-layout'
-import type { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import type { AnalyticsPeriod, AnalyticsSource } from '@/types/analytics'
 import type { LeaderboardSortBy, LeaderboardSortOrder } from '@/types/leaderboard'
+import { NameFilters } from '@/types/filters/name'
 
 // ── Component types ─────────────────────────────────────────────
 export type DashboardComponentType =
@@ -21,7 +21,7 @@ export type DomainsInstanceConfig = {
   type: 'domains'
   name: string
   viewType: 'grid' | 'list'
-  filters: MarketplaceFiltersState
+  filters: NameFilters
   filtersOpen: boolean
 }
 

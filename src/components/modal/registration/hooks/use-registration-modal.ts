@@ -337,6 +337,7 @@ const useRegistrationModal = () => {
               })
             )
             dispatch(setBatchCommitted(pendingCommitBatch.batchIndex))
+            dispatch(setRegistrationFlowState('waiting'))
           }
         } catch (error) {
           console.error('Error resuming commit tx:', error)

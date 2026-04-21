@@ -3,7 +3,7 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { logout } from '@/api/siwe/logout'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { WEEK_IN_SECONDS } from '@/constants/time'
 import { verifySignature } from '@/api/siwe/verifySignature'
 import { checkAuthentication } from '@/api/siwe/checkAuthentication'
 import { useAppDispatch } from '@/state/hooks'
@@ -157,7 +157,7 @@ export const useAuth = () => {
     setUserDetails(user)
     queryClient.setQueryData(['auth', 'status', address], 'authenticated')
     console.log('setting token', token)
-    document.cookie = `token=${token}; path=/; max-age=${DAY_IN_SECONDS}; SameSite=None; Secure`
+    document.cookie = `token=${token}; path=/; max-age=${WEEK_IN_SECONDS}; SameSite=None; Secure`
 
     return
   }

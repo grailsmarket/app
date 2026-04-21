@@ -9,6 +9,8 @@ const size = {
   height: 418,
 }
 
+const PROBE_TIMEOUT_MS = 750
+
 const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://ens-metadata-flarecloud.encrypted-063.workers.dev'
 const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
@@ -33,7 +35,9 @@ export async function GET(req: NextRequest) {
       const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`
       const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`
 
-      const wrappedResult = await fetch(wrappedImageUrl)
+      const wrappedResult = await fetch(wrappedImageUrl, {
+        signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+      })
         .then((res) => res.ok)
         .catch(() => false)
 

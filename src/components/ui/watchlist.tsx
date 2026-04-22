@@ -70,7 +70,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
     listsContainingName,
     isInList,
     toggleInList,
-  } = useWatchlist(domain.name, domain.token_id, true, watchlistId)
+  } = useWatchlist(domain.name, domain.token_id, false, watchlistId)
 
   const { lists } = useWatchlists()
   const hasMultipleLists = lists.length > 1

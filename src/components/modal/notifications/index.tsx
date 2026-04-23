@@ -56,7 +56,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
   return (
     <div
       className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
-      // onClick={onClose}
+    // onClick={onClose}
     >
       {/* <AnimatePresence>
         {expandedImage && (
@@ -112,7 +112,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
               {allNotifications.map((notification, index) => (
                 <div
                   key={notification.id || index}
-                  className={cn('border-secondary border-t border-b', notification.isRead ? '' : 'bg-primary/10')}
+                  className={cn('border-secondary border-t border-b w-full', notification.isRead ? '' : 'bg-primary/10')}
                 >
                   <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
                 </div>

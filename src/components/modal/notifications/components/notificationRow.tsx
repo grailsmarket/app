@@ -116,9 +116,9 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     )
 
     const content = (
-      <div className='flex min-h-16 flex-col gap-3'>
+      <div className='flex min-h-16 flex-col gap-3 w-full'>
         <div className='flex w-full items-center gap-2 sm:gap-3'>
-          {!notification.isRead && <div className='bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full' />}
+          {/* {!notification.isRead && <div className='bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full' />} */}
           <div className='mt-0.5 flex-shrink-0'>
             <Image src={Bell} alt='Announcement' width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6' />
           </div>
@@ -127,12 +127,12 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
             <div className='sm:text-md text-neutral text-sm font-medium'>{timeAgo}</div>
           </div>
         </div>
-        <div className='px-sm py-md flex min-w-0 flex-1 items-start gap-3'>
+        <div className='px-sm py-md flex min-w-0 flex-1 items-start justify-between gap-3 w-full'>
           <p className='sm:text-md text-neutral text-sm break-words whitespace-pre-wrap'>{body}</p>
           {linkUrl && (
             <PrimaryButton
               className='flex h-10 min-w-10 items-center justify-center p-0!'
-              // onClick={() => linkUrl && window.open(linkUrl, '_blank')}
+            // onClick={() => linkUrl && window.open(linkUrl, '_blank')}
             >
               <Image src={ArrowRight} alt='Expand' width={26} height={26} className='h-5 w-5 invert' />
             </PrimaryButton>

@@ -12,7 +12,6 @@ export interface NotificationMetadata {
   title?: string
   body?: string
   linkUrl?: string
-  imageUrl?: string
   broadcastId?: number
   priceWei?: string
   sellerAddress?: string

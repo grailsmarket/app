@@ -109,7 +109,6 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     const title = notification.metadata.title || 'Announcement'
     const body = notification.metadata.body || ''
     const linkUrl = processLinkUrl(notification.metadata.linkUrl || null)
-    const imageUrl = notification.metadata.imageUrl
     const isExternal = !!linkUrl && /^https?:\/\//i.test(linkUrl)
     const className = cn(
       'p-md sm:p-lg flex min-h-16 w-full items-start justify-between gap-4 transition-colors hover:bg-white/5',
@@ -128,17 +127,6 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
             <div className='sm:text-md text-neutral text-sm font-medium'>{timeAgo}</div>
           </div>
         </div>
-        {imageUrl && (
-          <div className='px-sm w-full'>
-            <Image
-              src={imageUrl}
-              alt=''
-              width={1200}
-              height={1200}
-              className='max-h-80 w-full rounded-lg object-cover'
-            />
-          </div>
-        )}
         <div className='px-sm py-md flex w-full min-w-0 flex-1 items-start justify-between gap-3'>
           <p className='sm:text-md text-neutral text-sm break-words whitespace-pre-wrap'>{body}</p>
           {linkUrl && (
@@ -149,6 +137,14 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
               <Image src={ArrowRight} alt='Expand' width={26} height={26} className='h-5 w-5 invert' />
             </PrimaryButton>
           )}
+          {/* <div className='relative max-w-44 cursor-pointer' onClick={() => setExpandedImage(imageUrl)}>
+            <motion.div layoutId={`image-${imageUrl}`}>
+              <Image src={imageUrl} alt='Dashboard' width={1200} height={1200} className='h-auto w-full' />
+            </motion.div>
+            <div className='absolute top-0 right-0 h-full w-full flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300'>
+              <Image src={Expand} alt='Expand' width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6 hover:scale-120 transition-transform duration-300' />
+            </div>
+          </div> */}
         </div>
       </div>
     )

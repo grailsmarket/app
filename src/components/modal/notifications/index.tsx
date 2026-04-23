@@ -1,12 +1,15 @@
 'use client'
 
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import NotificationRow from './components/notificationRow'
 import { Cross } from 'ethereum-identity-kit'
 import NoResults from '@/components/ui/noResults'
 import { cn } from '@/utils/tailwind'
 import NotificationLoadingRow from './components/loadingRow'
 import { useNotifications } from './hooks/useNotifications'
+import { AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -14,14 +17,10 @@ interface NotificationModalProps {
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }) => {
-  // const [expandedImage, setExpandedImage] = useState<string | null>(null)
-  const {
-    notifications,
-    isNotificationsLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useNotifications({ isOpen })
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
+  const { notifications, isNotificationsLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications({
+    isOpen,
+  })
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const handleScroll = useCallback(() => {
@@ -39,7 +38,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
       onClick={onClose}
     >
-      {/* <AnimatePresence>
+      <AnimatePresence>
         {expandedImage && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -55,13 +54,16 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       </AnimatePresence>
       <AnimatePresence>
         {expandedImage ? (
-          <div className='fixed inset-0 mx-auto h-fit top-1/2 -translate-y-1/2 w-fit z-100 flex items-center justify-center' onClick={(e) => e.stopPropagation()}>
-            <div className='relative max-w-5xl w-[calc(100dvw-40px)] group'>
+          <div
+            className='fixed inset-0 top-1/2 z-100 mx-auto flex h-fit w-fit -translate-y-1/2 items-center justify-center'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className='group relative w-[calc(100dvw-40px)] max-w-7xl'>
               <motion.button
                 initial={{ display: 'none' }}
                 animate={{ display: 'flex', transition: { delay: 0.4 } }}
                 exit={{ display: 'none', transition: { duration: 0.001 } }}
-                className='absolute top-2 right-2 flex h-8 w-8 z-20 items-center p-md justify-center cursor-pointer rounded-md starting:opacity-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 hover:bg-black/70'
+                className='p-md absolute top-2 right-2 z-20 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 hover:bg-black/70 starting:opacity-0'
                 onClick={() => setExpandedImage(null)}
               >
                 <Cross className='h-auto w-6' />
@@ -71,7 +73,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
               </motion.div>
             </div>
           </div>
-        ) : null}</AnimatePresence> */}
+        ) : null}
+      </AnimatePresence>
       <div
         className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2'
         onClick={(e) => e.stopPropagation()}
@@ -98,7 +101,12 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
                     notification.isRead ? '' : 'bg-primary/10'
                   )}
                 >
-                  <NotificationRow notification={notification} onClick={onClose} index={index} />
+                  <NotificationRow
+                    notification={notification}
+                    onClick={onClose}
+                    index={index}
+                    setExpandedImage={setExpandedImage}
+                  />
                 </div>
               ))}
               {isNotificationsLoading &&

@@ -8,7 +8,7 @@ import { cn } from '@/utils/tailwind'
 import NotificationLoadingRow from './components/loadingRow'
 import { useNotifications } from './hooks/useNotifications'
 import { AnimatePresence } from 'framer-motion'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import Image from 'next/image'
 
 interface NotificationModalProps {

@@ -12,6 +12,7 @@ import marketplaceReducer from './marketplace'
 import categoryReducer from './category'
 import categoriesPageReducer from './categoriesPage'
 import bulkSearchReducer from './bulkSearch'
+import aiSearchReducer from './aiSearch'
 import transactionReducer from './transactions'
 import registrationReducer from './registration'
 import viewReducer from './view'
@@ -93,6 +94,7 @@ const reducer = combineReducers({
   category: categoryReducer,
   categoriesPage: categoriesPageReducer,
   bulkSearch: bulkSearchReducer,
+  aiSearch: aiSearchReducer,
   transactions: transactionReducer,
   scroll: scrollPosition,
   registration: registrationReducer,

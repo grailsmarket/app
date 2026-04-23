@@ -111,23 +111,26 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     (activeProfileTab === 'domains' || activeProfileTab === 'grace' || activeProfileTab === 'listings') &&
     !!userCategoryCounts
 
-  // Hide search input on bulk search page (textarea replaces it)
-  const showSearchInput = filterType !== 'bulkSearch'
+  // Hide search input on bulk search page (textarea replaces it) and on AI search page
+  // (input is rendered next to the tab switcher, and AI toggle is implicit).
+  const showSearchInput = filterType !== 'bulkSearch' && filterType !== 'aiSearch'
 
   // Use appropriate categories based on filter context
   const showCategoryTab =
     filterType === 'marketplace' ||
     filterType === 'categoriesPage' ||
     filterType === 'bulkSearch' ||
+    filterType === 'aiSearch' ||
     activeProfileTab === 'domains' ||
     activeProfileTab === 'watchlist' ||
     activeProfileTab === 'listings' ||
     activeProfileTab === 'grace' ||
     activeProfileTab === 'expired'
 
-  // Hide status filter for category/marketplace/categoriesPage Premium and Available tabs, profile Grace tab, and bulkSearch (status is controlled by tabs)
+  // Hide status filter for category/marketplace/categoriesPage Premium and Available tabs, profile Grace tab, bulkSearch, and aiSearch (status is controlled by tabs)
   const showStatusFilter = !(
     filterType === 'bulkSearch' ||
+    filterType === 'aiSearch' ||
     (filterType === 'category' && (activeCategoryTab === 'premium' || activeCategoryTab === 'available')) ||
     (filterType === 'marketplace' && (activeMarketplaceTab === 'premium' || activeMarketplaceTab === 'available')) ||
     (filterType === 'categoriesPage' &&
@@ -145,9 +148,10 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       (activeProfileTab === 'activity' || activeProfileTab === 'sent_offers' || activeProfileTab === 'received_offers'))
   )
 
-  // Show offer filter for marketplace/categoriesPage/category "Names" tabs, bulkSearch, and profile domains/grace/watchlist/listings tabs
+  // Show offer filter for marketplace/categoriesPage/category "Names" tabs, bulkSearch, aiSearch, and profile domains/grace/watchlist/listings tabs
   const showOfferFilter =
     filterType === 'bulkSearch' ||
+    filterType === 'aiSearch' ||
     (filterType === 'marketplace' && (activeMarketplaceTab === 'names' || activeMarketplaceTab === 'listings')) ||
     (filterType === 'categoriesPage' && activeCategoriesPageTab === 'names') ||
     (filterType === 'category' && activeCategoryTab === 'names') ||

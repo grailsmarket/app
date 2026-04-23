@@ -1,6 +1,16 @@
-export type NotificationType = 'new-listing' | 'price-change' | 'sale' | 'new-offer' | 'offer-received' | 'listing-sold'
+export type NotificationType =
+  | 'new-listing'
+  | 'price-change'
+  | 'sale'
+  | 'new-offer'
+  | 'offer-received'
+  | 'listing-sold'
+  | 'admin-broadcast'
 
 export interface NotificationMetadata {
+  title?: string
+  body?: string
+  linkUrl?: string
   priceWei?: string
   sellerAddress?: string
   buyerAddress?: string

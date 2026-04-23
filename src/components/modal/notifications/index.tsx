@@ -21,13 +21,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    markAllAsReadMutation,
   } = useNotifications({ isOpen })
-
-  const handleClose = useCallback(() => {
-    markAllAsReadMutation.mutate()
-    onClose()
-  }, [onClose, markAllAsReadMutation])
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const handleScroll = useCallback(() => {
@@ -43,7 +37,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
   return (
     <div
       className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
-      onClick={handleClose}
+      onClick={onClose}
     >
       {/* <AnimatePresence>
         {expandedImage && (
@@ -85,7 +79,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         {/* Header */}
         <div className='p-lg flex items-center justify-between md:p-6'>
           <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
-          <button onClick={handleClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
+          <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
           </button>
         </div>
@@ -104,7 +98,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
                     notification.isRead ? '' : 'bg-primary/10'
                   )}
                 >
-                  <NotificationRow notification={notification} onClick={handleClose} index={index} />
+                  <NotificationRow notification={notification} onClick={onClose} index={index} />
                 </div>
               ))}
               {isNotificationsLoading &&

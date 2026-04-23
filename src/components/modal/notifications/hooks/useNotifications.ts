@@ -2,6 +2,7 @@ import { fetchNotifications } from '@/api/notifications/fetchNotifications'
 import { markAllAsRead } from '@/api/notifications/markAllAsRead'
 import { useUserContext } from '@/context/user'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 
 interface UseNotificationsProps {
   isOpen: boolean
@@ -45,6 +46,11 @@ export const useNotifications = ({ isOpen }: UseNotificationsProps) => {
       queryClient.setQueryData(['unreadCount', userAddress], 0)
     },
   })
+
+  // call mutation on open
+  useEffect(() => {
+    markAllAsReadMutation.mutate()
+  }, [isOpen])
 
   return {
     notifications: allNotifications,

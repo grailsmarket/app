@@ -10,6 +10,7 @@ import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import DownloadButton from '@/components/ui/downloadButton'
+import SaveSearchButton from '@/components/ui/saveSearchButton'
 import ViewSelector from '@/components/domains/viewSelector'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
@@ -101,6 +102,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
         </div>
         <div className='hidden items-center md:flex'>
           {selectedTab.value !== 'activity' && <DownloadButton />}
+          {selectedTab.value === 'names' && <SaveSearchButton />}
           {selectedTab.value !== 'activity' && <ViewSelector />}
         </div>
       </div>
@@ -145,6 +147,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
       </div>
       <div className='hidden items-center md:flex'>
         {selectedTab.value !== 'activity' && <DownloadButton />}
+        {selectedTab.value === 'names' && <SaveSearchButton />}
         {selectedTab.value !== 'activity' && <ViewSelector />}
       </div>
       {/* {selectedTab.value === 'activity' && (

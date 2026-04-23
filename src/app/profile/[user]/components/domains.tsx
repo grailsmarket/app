@@ -16,6 +16,7 @@ import { SelectAllProvider } from '@/context/selectAll'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import BulkSelect from '@/components/ui/bulkSelect'
+import WatchlistListSelector from '@/components/ui/watchlistListSelector'
 
 interface Props {
   user: Address | undefined
@@ -70,13 +71,19 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     }
   }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains, totalWatchlistDomains])
 
+  // Check if bulk select is enabled for this tab
+  // const isBulkSelectEnabled = isSelecting
+
+  const isWatchlistTab = selectedTab.value === 'watchlist'
+
   const content = (
     <div className='z-0 flex w-full flex-col'>
+      {isWatchlistTab && isMyProfile && <WatchlistListSelector />}
       <Domains
         domains={domains}
         loadingRowCount={30}
         filtersOpen={selectors.filters.open}
-        paddingBottom={selectedTab.value === 'watchlist' ? '320px' : '160px'}
+        paddingBottom={isWatchlistTab ? '320px' : '160px'}
         noResults={!domainsLoading && domains?.length === 0}
         isLoading={domainsLoading}
         hasMoreDomains={hasMoreDomains}
@@ -86,7 +93,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
           }
         }}
         displayedDetails={displayedDetails}
-        showWatchlist={selectedTab.value === 'watchlist'}
+        showWatchlist={isWatchlistTab}
       />
     </div>
   )
@@ -98,7 +105,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
       totalCount={totalCount}
       filters={selectors.filters}
       searchTerm={debouncedSearch}
-      isWatchlist={selectedTab.value === 'watchlist'}
+      isWatchlist={isWatchlistTab}
       isAuthenticated={authStatus === 'authenticated'}
     >
       {content}

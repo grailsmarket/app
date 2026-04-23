@@ -145,6 +145,22 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       >
         Analytics
       </Link>
+      {userAddress && (
+        <Link
+          href='/dashboard'
+          className={cn(
+            'hover-underline font-medium transition-all',
+            pathname === '/dashboard'
+              ? 'text-primary active font-bold!'
+              : 'text-foreground opacity-80 hover:opacity-100'
+          )}
+          onMouseEnter={() => handleMouseEnter(null)}
+          onMouseLeave={handleMouseLeave}
+          onClick={onClick}
+        >
+          Dashboard
+        </Link>
+      )}
 
       {userAddress && (
         <Link

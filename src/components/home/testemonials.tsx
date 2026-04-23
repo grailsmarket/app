@@ -4,6 +4,7 @@ import { TESTEMONIAL_QUOTES } from '@/constants/ui/testemonials'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import quotes from 'public/icons/quotes.svg'
+import arrow from 'public/icons/arrow-back.svg'
 import User from '../ui/user'
 import { Address } from 'viem'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -55,6 +56,16 @@ export default function Testemonials() {
     [resetTimer]
   )
 
+  const goPrev = useCallback(() => {
+    setActiveIndex((prev) => (prev <= 0 ? maxIndex : prev - 1))
+    resetTimer()
+  }, [maxIndex, resetTimer])
+
+  const goNext = useCallback(() => {
+    setActiveIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
+    resetTimer()
+  }, [maxIndex, resetTimer])
+
   const translateX = -(activeIndex * (100 / visibleCount))
   console.log(activeIndex)
 
@@ -65,37 +76,60 @@ export default function Testemonials() {
       </h2>
 
       {/* Carousel container */}
-      <div className='w-full overflow-hidden sm:overflow-visible'>
-        <div
-          className='flex min-w-full items-stretch transition-transform duration-500 ease-in-out'
-          style={{ transform: `translateX(${translateX}%)` }}
-        >
-          {TESTEMONIAL_QUOTES.map((testimonial, i) => (
-            <div
-              key={testimonial.address}
-              className='shrink-0 px-2 transition-all duration-400 lg:px-2'
-              style={{
-                width: `${100 / visibleCount}%`,
-                maxWidth: '100%',
-                opacity: i > activeIndex + 2 || i < activeIndex ? 0 : 1,
-              }}
-            >
-              <div className='bg-secondary flex h-full w-full flex-col justify-between gap-4 rounded-lg pt-5'>
-                <div className='flex flex-col gap-4 px-5'>
-                  <Image src={quotes} alt='Quotes' width={24} height={24} />
-                  <p className='text-[18px] text-wrap'>{testimonial.quote}</p>
+      <div className='relative w-full'>
+        <div className='w-full overflow-hidden sm:overflow-visible'>
+          <div
+            className='flex min-w-full items-stretch transition-transform duration-500 ease-in-out'
+            style={{ transform: `translateX(${translateX}%)` }}
+          >
+            {TESTEMONIAL_QUOTES.map((testimonial, i) => (
+              <div
+                key={testimonial.address}
+                className='shrink-0 px-2 transition-all duration-400 lg:px-2'
+                style={{
+                  width: `${100 / visibleCount}%`,
+                  maxWidth: '100%',
+                  opacity: i > activeIndex + 2 || i < activeIndex ? 0 : 1,
+                }}
+              >
+                <div className='bg-secondary flex h-full w-full flex-col justify-between gap-4 rounded-lg pt-5'>
+                  <div className='flex flex-col gap-4 px-5'>
+                    <Image src={quotes} alt='Quotes' width={24} height={24} />
+                    <p className='text-[18px] text-wrap'>{testimonial.quote}</p>
+                  </div>
+                  <User
+                    address={testimonial.address as Address}
+                    className='h-16 w-full max-w-full gap-2 rounded-b-lg px-5'
+                    wrapperClassName='max-w-full'
+                    avatarSize='40px'
+                    fontSize='18px'
+                  />
                 </div>
-                <User
-                  address={testimonial.address as Address}
-                  className='h-16 w-full max-w-full gap-2 rounded-b-lg px-5'
-                  wrapperClassName='max-w-full'
-                  avatarSize='40px'
-                  fontSize='18px'
-                />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+
+        {needsCarousel && (
+          <>
+            <button
+              type='button'
+              onClick={goPrev}
+              aria-label='Previous testimonial'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 left-1 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full backdrop-blur-sm transition-colors sm:-left-4 sm:h-10 sm:w-10 lg:-left-6 lg:h-12 lg:w-12'
+            >
+              <Image src={arrow} alt='' width={18} height={16} className='rotate-180' />
+            </button>
+            <button
+              type='button'
+              onClick={goNext}
+              aria-label='Next testimonial'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 right-1 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full backdrop-blur-sm transition-colors sm:-right-4 sm:h-10 sm:w-10 lg:-right-6 lg:h-12 lg:w-12'
+            >
+              <Image src={arrow} alt='' width={18} height={16} />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Dots */}

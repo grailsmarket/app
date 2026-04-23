@@ -1,13 +1,12 @@
 'use client'
 
 import React, { useCallback, useRef } from 'react'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { fetchNotifications } from '@/api/notifications/fetchNotifications'
 import NotificationRow from './components/notificationRow'
 import { Cross } from 'ethereum-identity-kit'
 import NoResults from '@/components/ui/noResults'
 import { cn } from '@/utils/tailwind'
 import NotificationLoadingRow from './components/loadingRow'
+import { useNotifications } from './hooks/useNotifications'
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -16,33 +15,21 @@ interface NotificationModalProps {
 
 const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }) => {
   // const [expandedImage, setExpandedImage] = useState<string | null>(null)
+  const {
+    notifications,
+    isNotificationsLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    markAllAsReadMutation,
+  } = useNotifications({ isOpen })
+
+  const handleClose = useCallback(() => {
+    markAllAsReadMutation.mutate()
+    onClose()
+  }, [onClose, markAllAsReadMutation])
+
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-
-  // Fetch notifications with infinite query
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: ['notifications'],
-    queryFn: async ({ pageParam = 1 }) => {
-      return await fetchNotifications({ page: pageParam, limit: 20 })
-    },
-    getNextPageParam: (lastPage) => {
-      return lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined
-    },
-    enabled: isOpen,
-    initialPageParam: 1,
-    retry: 1,
-  })
-
-  // Get all notifications from pages. Admin broadcasts have no ensName/ensTokenId;
-  // ENS-scoped notifications still require both (malformed rows are dropped).
-  const allNotifications =
-    data?.pages
-      .flatMap((page) => page.notifications)
-      .filter(
-        (notification) =>
-          notification.type === 'admin-broadcast' || (!!notification.ensName && !!notification.ensTokenId)
-      ) || []
-  const isNotificationsLoading = isLoading || isFetchingNextPage
-
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
@@ -56,7 +43,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
   return (
     <div
       className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
-    // onClick={onClose}
+      onClick={handleClose}
     >
       {/* <AnimatePresence>
         {expandedImage && (
@@ -98,23 +85,26 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         {/* Header */}
         <div className='p-lg flex items-center justify-between md:p-6'>
           <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
-          <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
+          <button onClick={handleClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
           </button>
         </div>
 
         {/* Notifications list */}
         <div ref={scrollContainerRef} onScroll={handleScroll} className='flex-1 overflow-y-auto'>
-          {allNotifications.length === 0 && !isNotificationsLoading ? (
+          {notifications.length === 0 && !isNotificationsLoading ? (
             <NoResults label='No notifications' height='400px' />
           ) : (
             <div className='flex flex-col'>
-              {allNotifications.map((notification, index) => (
+              {notifications.map((notification, index) => (
                 <div
                   key={notification.id || index}
-                  className={cn('border-secondary border-t border-b w-full', notification.isRead ? '' : 'bg-primary/10')}
+                  className={cn(
+                    'border-secondary w-full border-t border-b',
+                    notification.isRead ? '' : 'bg-primary/10'
+                  )}
                 >
-                  <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
+                  <NotificationRow notification={notification} onClick={handleClose} index={index} />
                 </div>
               ))}
               {isNotificationsLoading &&

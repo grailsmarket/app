@@ -116,7 +116,7 @@ export default function Testemonials() {
               type='button'
               onClick={goPrev}
               aria-label='Previous testimonial'
-              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 left-1 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full backdrop-blur-sm transition-colors sm:-left-4 sm:h-10 sm:w-10 lg:-left-6 lg:h-12 lg:w-12'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -left-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors sm:-left-8 sm:h-10 sm:w-10 lg:-left-7 lg:h-12 lg:w-12 xl:-left-[min(calc(100vw-1286px),3rem)]'
             >
               <Image src={arrow} alt='' width={18} height={16} className='rotate-180' />
             </button>
@@ -124,7 +124,7 @@ export default function Testemonials() {
               type='button'
               onClick={goNext}
               aria-label='Next testimonial'
-              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 right-1 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full backdrop-blur-sm transition-colors sm:-right-4 sm:h-10 sm:w-10 lg:-right-6 lg:h-12 lg:w-12'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -right-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors sm:-right-8 sm:h-10 sm:w-10 lg:-right-7 lg:h-12 lg:w-12 xl:-right-[min(calc(100vw-1286px),3rem)]'
             >
               <Image src={arrow} alt='' width={18} height={16} />
             </button>

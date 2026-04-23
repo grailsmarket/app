@@ -9,9 +9,12 @@ import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
+import LoadingCell from './loadingCell'
 
 export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+
+const INTRINSIC_SIZE = 270
 
 interface NameImageProps {
   name: string
@@ -22,20 +25,13 @@ interface NameImageProps {
   width?: number
 }
 
-// Make the bundled 270×270 SVG scale to whatever container we drop it into
-// while preserving aspect ratio.
 function responsiveSvg(svg: string): string {
-  return svg.replace(/<svg\s+width="270"\s+height="270"/, '<svg width="100%" height="100%"')
+  return svg.replace(/<svg\b([^>]*)>/, (_match, attrs: string) => {
+    const cleaned = attrs.replace(/\s*preserveAspectRatio="[^"]*"/g, '')
+    return `<svg${cleaned} preserveAspectRatio="xMidYMid slice">`
+  })
 }
 
-// Inline SVG <defs> ids live in the same document-wide namespace as every
-// other element. When we render dozens of cards at once, all `url(#paint0_linear)`
-// / `url(#dropShadow)` references collide and browsers resolve them to
-// whichever definition parsed first — which often belongs to a different
-// card (or is missing entirely when the first card renders an avatar and
-// thus has no paint0). Result: gradients and drop-shadows vanish on every
-// card after the first. Suffixing every id + reference per instance fixes
-// it.
 const SCOPED_IDS = ['paint0_linear', 'paint1_linear', 'dropShadow']
 function scopeSvgIds(svg: string, suffix: string): string {
   let out = svg
@@ -46,21 +42,18 @@ function scopeSvgIds(svg: string, suffix: string): string {
   return out
 }
 
-export default function NameImage({ name, expiryDate, className, height, width }: NameImageProps) {
+const NameImage = ({ name, expiryDate, className, height, width }: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
-  const wrappedSrc = useMemo(
-    () => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image`,
-    [nameHash],
-  )
+  const wrappedSrc = useMemo(() => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image`, [nameHash])
   const unwrappedSrc = useMemo(
     () => `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image`,
-    [labelHash],
+    [labelHash]
   )
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
-    name,
+    name
   )}&expires=${encodeURIComponent(expireTime)}`
 
   const status = getRegistrationStatus(expiryDate)
@@ -72,6 +65,7 @@ export default function NameImage({ name, expiryDate, className, height, width }
   // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
   const [attempt, setAttempt] = useState(0)
   const [svg, setSvg] = useState<string | null>(null)
+  const [pngLoaded, setPngLoaded] = useState(false)
 
   useEffect(() => {
     if (attempt >= 2) return
@@ -93,35 +87,56 @@ export default function NameImage({ name, expiryDate, className, height, width }
     }
   }, [attempt, wrappedSrc, unwrappedSrc, status, idSuffix])
 
-  // Callers size the image via `className` (Tailwind w-*/h-*). The
-  // width/height props are a fallback for callers that don't set sizing
-  // classes — we only apply them inline when provided so className wins
-  // when both are present.
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 
-  if (attempt >= 2) {
+  const showPngFallback = attempt >= 2
+  const loaded = showPngFallback ? pngLoaded : !!svg
+
+  const wrapperClasses = cn(
+    'bg-foreground/80 rounded-sm overflow-hidden relative',
+    '[&>svg]:block [&>svg]:-m-px [&>svg]:h-[calc(100%+2px)] [&>svg]:w-[calc(100%+2px)]',
+    !loaded && 'animate-pulse',
+    className
+  )
+
+  if (showPngFallback) {
     return (
-      <Image
-        src={fallbackSrc}
-        alt={name}
-        width={width ?? 1024}
-        height={height ?? 1024}
-        className={cn('bg-foreground/80 rounded-sm', className)}
-      />
+      <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses}>
+        {!pngLoaded && (
+          <div className='absolute inset-0 z-10'>
+            <LoadingCell height='100%' width='100%' />
+          </div>
+        )}
+        <Image
+          src={fallbackSrc}
+          alt={name}
+          width={width ?? INTRINSIC_SIZE}
+          height={height ?? INTRINSIC_SIZE}
+          onLoad={() => setPngLoaded(true)}
+          className={cn(
+            '-m-px block h-[calc(100%+2px)] w-[calc(100%+2px)] object-cover transition-opacity duration-200',
+            !pngLoaded && 'opacity-0'
+          )}
+        />
+      </div>
     )
   }
 
-  // `[&>svg]:*` makes the injected SVG fill the wrapper in both dimensions
-  // so the rendered image tracks the wrapper's computed size exactly —
-  // which is what the Tailwind sizing classes on `className` control.
-  const wrapperClasses = cn(
-    'bg-foreground/80 rounded-sm overflow-hidden [&>svg]:block [&>svg]:h-full [&>svg]:w-full',
-    !svg && 'animate-pulse',
-    className,
-  )
-
   if (!svg) {
-    return <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses} />
+    return (
+      <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses}>
+        <svg
+          aria-hidden
+          viewBox={`0 0 ${INTRINSIC_SIZE} ${INTRINSIC_SIZE}`}
+          width={INTRINSIC_SIZE}
+          height={INTRINSIC_SIZE}
+          className='invisible block h-full w-full'
+        />
+        <div className='absolute inset-0'>
+          <LoadingCell height='100%' width='100%' />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -134,3 +149,4 @@ export default function NameImage({ name, expiryDate, className, height, width }
     />
   )
 }
+export default NameImage

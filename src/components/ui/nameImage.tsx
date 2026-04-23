@@ -28,7 +28,7 @@ function responsiveSvg(svg: string): string {
   return svg.replace(/<svg\s+width="270"\s+height="270"/, '<svg width="100%" height="100%"')
 }
 
-export default function NameImage({ name, expiryDate, className, height = 1024, width = 1024 }: NameImageProps) {
+export default function NameImage({ name, expiryDate, className, height, width }: NameImageProps) {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
@@ -71,35 +71,43 @@ export default function NameImage({ name, expiryDate, className, height = 1024, 
     }
   }, [attempt, wrappedSrc, unwrappedSrc, status])
 
+  // Callers size the image via `className` (Tailwind w-*/h-*). The
+  // width/height props are a fallback for callers that don't set sizing
+  // classes — we only apply them inline when provided so className wins
+  // when both are present.
+  const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
+
   if (attempt >= 2) {
     return (
       <Image
         src={fallbackSrc}
         alt={name}
-        width={width}
-        height={height}
+        width={width ?? 1024}
+        height={height ?? 1024}
         className={cn('bg-foreground/80 rounded-sm', className)}
       />
     )
   }
 
+  // `[&>svg]:*` makes the injected SVG fill the wrapper in both dimensions
+  // so the rendered image tracks the wrapper's computed size exactly —
+  // which is what the Tailwind sizing classes on `className` control.
+  const wrapperClasses = cn(
+    'bg-foreground/80 rounded-sm overflow-hidden [&>svg]:block [&>svg]:h-full [&>svg]:w-full',
+    !svg && 'animate-pulse',
+    className,
+  )
+
   if (!svg) {
-    return (
-      <div
-        aria-label={name}
-        role="img"
-        className={cn('bg-foreground/80 rounded-sm animate-pulse', className)}
-        style={{ width, height, aspectRatio: '1 / 1' }}
-      />
-    )
+    return <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses} />
   }
 
   return (
     <div
       aria-label={name}
-      role="img"
-      className={cn('bg-foreground/80 rounded-sm overflow-hidden', className)}
-      style={{ width, height, aspectRatio: '1 / 1' }}
+      role='img'
+      style={sizeStyle}
+      className={wrapperClasses}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   )

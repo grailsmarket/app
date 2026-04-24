@@ -117,7 +117,16 @@ const NameImage = ({ name, expiryDate, className, height, width }: NameImageProp
 
   const wrapperClasses = cn(
     'bg-foreground/80 rounded-sm overflow-hidden relative',
-    '[&>svg]:block [&>svg]:-m-px [&>svg]:h-[calc(100%+2px)] [&>svg]:w-[calc(100%+2px)]',
+    // `pointer-events-none` on the injected SVG lets clicks pass through to
+    // the wrapping element (e.g. the domain card's <Link>). The ENS metadata
+    // service embeds an <a> inside its SVGs, and without this those inner
+    // anchors swallow the click and navigate away from our intended href.
+    '[&>svg]:pointer-events-none [&>svg]:block [&>svg]:-m-px [&>svg]:h-[calc(100%+2px)] [&>svg]:w-[calc(100%+2px)]',
+    // The metadata service renders its name text in a bold custom font; once
+    // we inline the SVG it inherits our body font (Inter), which renders
+    // visually lighter at the same nominal weight. Force bold on <text>
+    // inside the SVG so inline rendering matches the service's direct output.
+    '[&>svg_text]:font-bold',
     !loaded && 'animate-pulse',
     className
   )

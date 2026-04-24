@@ -7,7 +7,6 @@ import { useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 import { SelectAllProvider } from '@/context/selectAll'
-import { MarketplaceFiltersState } from '@/state/reducers/filters/marketplaceFilters'
 import { useUserContext } from '@/context/user'
 import BulkSelect from '@/components/ui/bulkSelect'
 
@@ -30,7 +29,7 @@ const DomainPanel = () => {
     <SelectAllProvider
       loadedDomains={domains}
       totalCount={totalDomains}
-      filters={selectors.filters as MarketplaceFiltersState}
+      filters={selectors.filters}
       searchTerm={searchTerms}
       isAuthenticated={authStatus === 'authenticated'}
     >

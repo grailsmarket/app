@@ -5,13 +5,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useAppSelector } from '@/state/hooks'
 import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 
-const STATUS_TABS = [
-  { key: 'names', status: [] },
-  { key: 'registered', status: ['Registered'] },
-  { key: 'grace', status: ['Grace'] },
-  { key: 'premium', status: ['Premium'] },
-  { key: 'available', status: ['Available'] },
-] as const
+// const STATUS_TABS = [
+//   { key: 'names', status: [] },
+//   { key: 'registered', status: ['Registered'] },
+//   { key: 'grace', status: ['Grace'] },
+//   { key: 'premium', status: ['Premium'] },
+//   { key: 'available', status: ['Available'] },
+// ] as const
 
 function useBulkSearchCount(tabKey: string, forcedStatus: string[]) {
   const { authStatus } = useUserContext()
@@ -29,21 +29,13 @@ function useBulkSearchCount(tabKey: string, forcedStatus: string[]) {
       filters.categories,
       filters.type,
       filters.sort,
-      // @ts-expect-error filter state type mismatch
       filters.market,
-      // @ts-expect-error filter state type mismatch
       filters.textMatch,
-      // @ts-expect-error filter state type mismatch
       filters.textNonMatch,
-      // @ts-expect-error filter state type mismatch
       filters.offerRange,
-      // @ts-expect-error filter state type mismatch
       filters.watchersCount,
-      // @ts-expect-error filter state type mismatch
       filters.viewCount,
-      // @ts-expect-error filter state type mismatch
       filters.clubsCount,
-      // @ts-expect-error filter state type mismatch
       filters.creationDate,
     ],
     queryFn: async () => {

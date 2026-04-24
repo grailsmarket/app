@@ -40,7 +40,7 @@ import { changeTab } from '@/state/reducers/portfolio/profile'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { changeCategoryTab } from '@/state/reducers/category/category'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
-import { changeBulkSearchTab, setBulkSearchTerms } from '@/state/reducers/bulkSearch/bulkSearch'
+import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType

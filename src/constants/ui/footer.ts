@@ -1,5 +1,10 @@
 export const EXTRAS_ITEMS = [
   {
+    label: 'Documentation',
+    href: 'https://docs.grails.app',
+    target: '_blank',
+  },
+  {
     label: 'Terms of Service',
     href: '/terms-of-service',
   },

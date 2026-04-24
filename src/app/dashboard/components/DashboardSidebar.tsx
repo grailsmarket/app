@@ -25,7 +25,7 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
   },
   {
     label: 'Community',
-    items: ['leaderboard', 'holders'],
+    items: ['leaderboard', 'holders', 'category-holders'],
   },
 ]
 

@@ -40,6 +40,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, query: '', submittedUser: null }
     case 'watchlist':
       return { type, name, viewType: 'grid' }
+    case 'category-holders':
+      return { type, name, category: null }
   }
 }
 

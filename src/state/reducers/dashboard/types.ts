@@ -18,6 +18,7 @@ export type DashboardComponentType =
   | 'name-view'
   | 'profile-view'
   | 'watchlist'
+  | 'category-holders'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -88,6 +89,13 @@ export type WatchlistInstanceConfig = {
   viewType: 'grid' | 'list'
 }
 
+export type CategoryHoldersInstanceConfig = {
+  type: 'category-holders'
+  name: string
+  // Single category (null = prompt user to pick)
+  category: string | null
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -98,6 +106,7 @@ export type DashboardComponentConfig =
   | NameViewInstanceConfig
   | ProfileViewInstanceConfig
   | WatchlistInstanceConfig
+  | CategoryHoldersInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -159,6 +168,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   'name-view': { w: 2, h: 6, minW: 1, minH: 3 },
   'profile-view': { w: 2, h: 6, minW: 1, minH: 3 },
   watchlist: { w: 2, h: 5, minW: 1, minH: 3 },
+  'category-holders': { w: 2, h: 5, minW: 1, minH: 3 },
 }
 
 // Human-readable labels
@@ -176,4 +186,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   'name-view': 'Name',
   'profile-view': 'Profile',
   watchlist: 'Watchlist',
+  'category-holders': 'Category Holders',
 }

@@ -10,6 +10,7 @@ import type {
   NameViewInstanceConfig,
   ProfileViewInstanceConfig,
   WatchlistInstanceConfig,
+  CategoryHoldersInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -74,4 +75,12 @@ export const selectProfileViewConfig = (state: RootState, id: string): ProfileVi
 export const selectWatchlistConfig = (state: RootState, id: string): WatchlistInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'watchlist' ? config : undefined
+}
+
+export const selectCategoryHoldersConfig = (
+  state: RootState,
+  id: string
+): CategoryHoldersInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'category-holders' ? config : undefined
 }

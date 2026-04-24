@@ -44,6 +44,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, category: null }
     case 'category-stats':
       return { type, name, category: null }
+    case 'portfolio-summary':
+      return { type, name }
   }
 }
 

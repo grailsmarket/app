@@ -12,6 +12,7 @@ import type {
   WatchlistInstanceConfig,
   CategoryHoldersInstanceConfig,
   CategoryStatsInstanceConfig,
+  PortfolioSummaryInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -89,4 +90,12 @@ export const selectCategoryHoldersConfig = (
 export const selectCategoryStatsConfig = (state: RootState, id: string): CategoryStatsInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'category-stats' ? config : undefined
+}
+
+export const selectPortfolioSummaryConfig = (
+  state: RootState,
+  id: string
+): PortfolioSummaryInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'portfolio-summary' ? config : undefined
 }

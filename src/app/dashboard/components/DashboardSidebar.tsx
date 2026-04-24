@@ -20,6 +20,10 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
     items: ['name-view', 'profile-view'],
   },
   {
+    label: 'Personal',
+    items: ['portfolio-summary'],
+  },
+  {
     label: 'Analytics',
     items: [
       'top-sales',

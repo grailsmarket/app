@@ -72,15 +72,38 @@ const NameImage = ({ name, expiryDate, className, height, width }: NameImageProp
     const url = attempt === 0 ? wrappedSrc : unwrappedSrc
 
     let cancelled = false
-    fetch(url)
-      .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
-      .then((text) => {
+    const maxRetries = 3
+
+    // `/explore` fires dozens of parallel fetches; a share of them transiently
+    // fail under worker / HTTP-2 stream pressure, so retry with backoff before
+    // falling through. A genuine 404 means this name isn't at this contract —
+    // skip ahead to the next URL immediately.
+    const attemptFetch = async (retry = 0): Promise<void> => {
+      try {
+        const res = await fetch(url)
+        if (res.status === 404) {
+          if (!cancelled) setAttempt((a) => a + 1)
+          return
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const text = await res.text()
+        if (!cancelled) {
+          setSvg(scopeSvgIds(responsiveSvg(applyStateGradient(text, status)), idSuffix))
+        }
+      } catch {
         if (cancelled) return
-        setSvg(scopeSvgIds(responsiveSvg(applyStateGradient(text, status)), idSuffix))
-      })
-      .catch(() => {
+        if (retry < maxRetries) {
+          const backoff = 250 * 2 ** retry + Math.random() * 150
+          setTimeout(() => {
+            if (!cancelled) attemptFetch(retry + 1)
+          }, backoff)
+          return
+        }
         if (!cancelled) setAttempt((a) => a + 1)
-      })
+      }
+    }
+
+    attemptFetch()
 
     return () => {
       cancelled = true

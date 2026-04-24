@@ -15,6 +15,7 @@ export type DashboardComponentType =
   | 'holders'
   | 'leaderboard'
   | 'activity'
+  | 'name-view'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -61,6 +62,15 @@ export type ActivityInstanceConfig = {
   category: string | null // null = all categories
 }
 
+export type NameViewInstanceConfig = {
+  type: 'name-view'
+  name: string
+  // Current input text in the search bar (preserved across reloads)
+  query: string
+  // Submitted name being displayed (null = empty widget)
+  submittedName: string | null
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -68,6 +78,7 @@ export type DashboardComponentConfig =
   | HoldersInstanceConfig
   | LeaderboardInstanceConfig
   | ActivityInstanceConfig
+  | NameViewInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -126,6 +137,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   holders: { w: 1, h: 4, minW: 1, minH: 2 },
   leaderboard: { w: 1, h: 4, minW: 1, minH: 2 },
   activity: { w: 1, h: 3, minW: 1, minH: 2 },
+  'name-view': { w: 2, h: 6, minW: 1, minH: 3 },
 }
 
 // Human-readable labels
@@ -140,4 +152,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   holders: 'Holders',
   leaderboard: 'Leaderboard',
   activity: 'Activity',
+  'name-view': 'Name',
 }

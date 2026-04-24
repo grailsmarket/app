@@ -29,6 +29,7 @@ import ChartWidget from './widgets/ChartWidget'
 import HoldersWidget from './widgets/HoldersWidget'
 import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
+import NameWidget from './widgets/NameWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -48,6 +49,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <LeaderboardWidget instanceId={id} />
     case 'activity':
       return <ActivityWidget instanceId={id} />
+    case 'name-view':
+      return <NameWidget instanceId={id} />
     default:
       return null
   }

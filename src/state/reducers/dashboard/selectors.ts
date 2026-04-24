@@ -7,6 +7,7 @@ import type {
   HoldersInstanceConfig,
   LeaderboardInstanceConfig,
   ActivityInstanceConfig,
+  NameViewInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -56,4 +57,9 @@ export const selectLeaderboardConfig = (state: RootState, id: string): Leaderboa
 export const selectActivityConfig = (state: RootState, id: string): ActivityInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'activity' ? config : undefined
+}
+
+export const selectNameViewConfig = (state: RootState, id: string): NameViewInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'name-view' ? config : undefined
 }

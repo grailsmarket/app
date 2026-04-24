@@ -1,6 +1,6 @@
 import { API_URL } from '@/constants/api'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
 import { APIResponseType, PaginationType } from '@/types/api'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { ActivityType } from '@/types/profile'
 
 interface FetchCategoryActivityOptions {

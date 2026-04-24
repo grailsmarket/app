@@ -8,7 +8,6 @@ import { usePathname } from 'next/navigation'
 import NoResults from '../ui/noResults'
 import SecondaryButton from '../ui/buttons/secondary'
 import Label from '../ui/label'
-import PrimaryButton from '../ui/buttons/primary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 

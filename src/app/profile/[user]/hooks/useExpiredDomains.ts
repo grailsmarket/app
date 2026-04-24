@@ -7,7 +7,6 @@ import { selectProfileExpiredFilters } from '@/state/reducers/filters/profileExp
 import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { MarketplaceDomainType } from '@/types/domains'
-import { PortfolioFiltersState } from '@/types/filters'
 
 export const useExpiredDomains = (user: Address | undefined) => {
   const { authStatus } = useUserContext()
@@ -34,7 +33,6 @@ export const useExpiredDomains = (user: Address | undefined) => {
       filters.market,
       filters.textMatch,
       filters.textNonMatch,
-      // @ts-expect-error the offer range filter state will not be used for domains
       filters.offerRange,
       filters.watchersCount,
       filters.viewCount,
@@ -56,7 +54,7 @@ export const useExpiredDomains = (user: Address | undefined) => {
         fetchDomains({
           limit: DEFAULT_FETCH_LIMIT,
           pageParam,
-          filters: { ...filters, status: ['Premium'] } as unknown as PortfolioFiltersState,
+          filters: { ...filters, status: ['Premium'] },
           searchTerm: debouncedSearch,
           ownerAddress: user,
           isAuthenticated: authStatus === 'authenticated',
@@ -64,7 +62,7 @@ export const useExpiredDomains = (user: Address | undefined) => {
         fetchDomains({
           limit: DEFAULT_FETCH_LIMIT,
           pageParam,
-          filters: { ...filters, status: ['Available'] } as unknown as PortfolioFiltersState,
+          filters: { ...filters, status: ['Available'] },
           searchTerm: debouncedSearch,
           ownerAddress: user,
           isAuthenticated: authStatus === 'authenticated',

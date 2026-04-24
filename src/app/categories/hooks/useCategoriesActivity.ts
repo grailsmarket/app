@@ -4,7 +4,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { ActivityType } from '@/types/profile'
-import { ActivityTypeFilterType } from '@/state/reducers/filters/profileActivityFilters'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { fetchAllActivity } from '@/api/activity/all'
 
 export const useCategoriesActivity = () => {
@@ -24,7 +24,7 @@ export const useCategoriesActivity = () => {
       const results = await fetchAllActivity({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        eventTypes: filters.type as ActivityTypeFilterType[],
+        eventTypes: filters.type as unknown as ActivityTypeFilterType[],
         categories: 'any',
       })
 

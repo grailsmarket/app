@@ -1,5 +1,5 @@
 import { useAppDispatch } from '../state/hooks'
-import { SortFilterType } from '../types/filters'
+import { SortFilterType } from '../types/filters/name'
 import { useFilterRouter } from './filters/useFilterRouter'
 
 const useSortFilter = () => {

@@ -20,7 +20,7 @@ export const getUnreadCount = async (): Promise<number> => {
     const data = (await response.json()) as APIResponseType<UnreadCountResponse>
     return data.data.unreadCount
   } catch (error) {
-    console.warn('Failed to fetch unread count from API')
+    console.warn('Failed to fetch unread count from API', error)
     return 0
   }
 }

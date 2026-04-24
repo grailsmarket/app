@@ -109,6 +109,7 @@ const FilterPanel: React.FC = () => {
             <div className='flex items-center gap-2'>
               <SecondaryButton
                 onClick={() => {
+                  console.log('clearFilters')
                   dispatch(actions.clearFilters())
                 }}
                 disabled={isFiltersClear}

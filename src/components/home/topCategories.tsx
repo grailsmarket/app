@@ -15,7 +15,7 @@ import { Arrow, useWindowSize } from 'ethereum-identity-kit'
 import Link from 'next/link'
 import React, { useEffect, useMemo } from 'react'
 import LoadingCell from '../ui/loadingCell'
-import { DEFAULT_CATEGORIES_PAGE_SORT } from '@/constants/filters/categoriesPageFilters'
+import { DEFAULT_CATEGORIES_PAGE_SORT } from '@/constants/filters/categories'
 
 const TopCategories = () => {
   const { width } = useWindowSize()

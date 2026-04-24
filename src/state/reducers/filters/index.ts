@@ -4,7 +4,6 @@ import marketplaceListingsFiltersReducer from './marketplaceListingsFilters'
 import marketplacePremiumFiltersReducer from './marketplacePremiumFilters'
 import marketplaceAvailableFiltersReducer from './marketplaceAvailableFilters'
 import marketplaceActivityFiltersReducer from './marketplaceActivityFilters'
-import myDomainsFiltersReducer from './myDomainsFilters'
 import watchlistFiltersReducer from './watchlistFilters'
 import myOffersFiltersReducer from './myOffersFilters'
 import receivedOffersFiltersReducer from './receivedOffersFilters'
@@ -28,7 +27,6 @@ import bulkSearchFiltersReducer from './bulkSearchFilters'
 
 const filtersReducer = combineReducers({
   myOffersFilters: myOffersFiltersReducer,
-  myDomainsFilters: myDomainsFiltersReducer,
   watchlistFilters: watchlistFiltersReducer,
   marketplaceFilters: marketplaceFiltersReducer,
   marketplaceListingsFilters: marketplaceListingsFiltersReducer,

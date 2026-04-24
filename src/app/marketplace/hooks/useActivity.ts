@@ -5,7 +5,7 @@ import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { fetchAllActivity } from '@/api/activity/all'
 import { ActivityType } from '@/types/profile'
-import { MarketplaceActivityTypeFilterType } from '@/state/reducers/filters/marketplaceActivityFilters'
+import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { NameActivityType } from '@/types/domains'
 
 export const useMarketplaceActivity = (setIsLiveActivityConnected: (isConnected: boolean) => void) => {
@@ -89,7 +89,7 @@ export const useMarketplaceActivity = (setIsLiveActivityConnected: (isConnected:
       const results = await fetchAllActivity({
         limit: DEFAULT_FETCH_LIMIT,
         pageParam,
-        eventTypes: filters.type as MarketplaceActivityTypeFilterType[],
+        eventTypes: filters.type as unknown as ActivityTypeFilterType[],
       })
 
       return {

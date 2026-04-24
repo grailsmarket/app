@@ -18,27 +18,36 @@ import { useUserContext } from '@/context/user'
 import { PROFILE_TABS } from '@/constants/domains/portfolio/tabs'
 import ActionButtons from './actionButtons'
 import {
-  clearActivityFilters,
+  clearFilters,
   setFiltersScrollTop as setActivityScrollTop,
 } from '@/state/reducers/filters/profileActivityFilters'
-import { clearReceivedOffersFilters, setReceivedOffersScrollTop } from '@/state/reducers/filters/receivedOffersFilters'
-import { clearMyOffersFilters, setMyOffersScrollTop } from '@/state/reducers/filters/myOffersFilters'
-import { clearWatchlistFilters, setWatchlistFiltersScrollTop } from '@/state/reducers/filters/watchlistFilters'
+import {
+  clearFilters as clearReceivedOffersFilters,
+  setScrollTop as setReceivedOffersScrollTop,
+} from '@/state/reducers/filters/receivedOffersFilters'
+import {
+  clearFilters as clearMyOffersFilters,
+  setScrollTop as setMyOffersScrollTop,
+} from '@/state/reducers/filters/myOffersFilters'
+import {
+  clearFilters as clearWatchlistFilters,
+  setScrollTop as setWatchlistFiltersScrollTop,
+} from '@/state/reducers/filters/watchlistFilters'
 import {
   clearFilters as clearListingsFilters,
-  setFiltersScrollTop as setListingsScrollTop,
+  setScrollTop as setListingsScrollTop,
 } from '@/state/reducers/filters/profileListingsFilter'
 import {
   clearFilters as clearGraceFilters,
-  setFiltersScrollTop as setGraceScrollTop,
+  setScrollTop as setGraceScrollTop,
 } from '@/state/reducers/filters/profileGraceFilters'
 import {
   clearFilters as clearExpiredFilters,
-  setFiltersScrollTop as setExpiredScrollTop,
+  setScrollTop as setExpiredScrollTop,
 } from '@/state/reducers/filters/profileExpiredFilters'
 import {
   clearFilters as clearDomainsFilters,
-  setFiltersScrollTop as setDomainsScrollTop,
+  setScrollTop as setDomainsScrollTop,
 } from '@/state/reducers/filters/profileDomainsFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
@@ -90,7 +99,7 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(clearMyOffersFilters())
       dispatch(clearReceivedOffersFilters())
       dispatch(clearWatchlistFilters())
-      dispatch(clearActivityFilters())
+      dispatch(clearFilters())
       dispatch(clearGraceFilters())
       dispatch(clearExpiredFilters())
       // Reset all scroll positions

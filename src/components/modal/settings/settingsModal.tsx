@@ -33,7 +33,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     ensProfile,
     hasChanges,
     isEmailVerified,
-    isEmailValid,
     updateUserProfileMutation,
     updateUserProfileMutationLoading,
     updateUserProfileMutationError,

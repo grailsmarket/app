@@ -1,24 +1,17 @@
 'use client'
 
 import { PersistGate } from 'redux-persist/integration/react'
-import { useFilterOpen } from '../../hooks/useFilterOpen'
 import { useStatusFilters } from './hooks/useStatusFilters'
 import { persistor } from '@/state'
 import FilterDropdown from '../FilterDropdown'
-import ExpandableTab from '@/components/ui/expandableTab'
 import UnexpandedFilter from '../UnexpandedFilter'
-import { MARKETPLACE_STATUS_FILTER_LABELS } from '@/constants/filters/marketplaceFilters'
-import {
-  MY_DOMAINS_FILTER_LABELS,
-  RECEIVED_OFFERS_STATUS_FILTER_LABELS,
-  MY_OFFERS_STATUS_FILTER_LABELS,
-  PROFILE_ACTIVITY_FILTER_LABELS,
-} from '@/constants/filters/portfolioFilters'
+import { NAME_STATUS_FILTER_LABELS, MY_NAMES_FILTER_LABELS } from '@/constants/filters/name'
 import { useFilterContext } from '@/context/filters'
 import { useMemo } from 'react'
+import { OFFERS_STATUS_FILTER_LABELS } from '@/constants/filters/offers'
+import { ACTIVITY_TYPE_FILTERS_LABELS } from '@/constants/filters/activity'
 
 const StatusFilter: React.FC = () => {
-  const { open, toggleOpen } = useFilterOpen('Status')
   const { getStatus, setStatus } = useStatusFilters()
   const { filterType, profileTab } = useFilterContext()
   const activeProfileTab = profileTab?.value || 'domains'
@@ -26,26 +19,27 @@ const StatusFilter: React.FC = () => {
   // Determine which labels to use based on context
   const filterLabels = useMemo(() => {
     if (filterType === 'profile') {
-      if (activeProfileTab === 'domains') {
-        return MY_DOMAINS_FILTER_LABELS
-      } else if (activeProfileTab === 'listings') {
-        return []
-      } else if (activeProfileTab === 'expired') {
-        return [] // Status is fixed to Premium/Available for expired tab
-      } else if (activeProfileTab === 'received_offers') {
-        return RECEIVED_OFFERS_STATUS_FILTER_LABELS
-      } else if (activeProfileTab === 'sent_offers') {
-        return MY_OFFERS_STATUS_FILTER_LABELS
-      } else if (activeProfileTab === 'watchlist') {
-        return MARKETPLACE_STATUS_FILTER_LABELS
-      } else if (activeProfileTab === 'activity') {
-        return PROFILE_ACTIVITY_FILTER_LABELS
+      switch (activeProfileTab) {
+        case 'domains':
+          return MY_NAMES_FILTER_LABELS
+        case 'listings':
+          return []
+        case 'expired':
+          return []
+        case 'received_offers':
+          return OFFERS_STATUS_FILTER_LABELS
+        case 'sent_offers':
+          return OFFERS_STATUS_FILTER_LABELS
+        case 'watchlist':
+          return NAME_STATUS_FILTER_LABELS
+        case 'activity':
+          return ACTIVITY_TYPE_FILTERS_LABELS
+        default:
+          return MY_NAMES_FILTER_LABELS
       }
-
-      return MY_DOMAINS_FILTER_LABELS
     }
 
-    return MARKETPLACE_STATUS_FILTER_LABELS
+    return NAME_STATUS_FILTER_LABELS
   }, [filterType, activeProfileTab])
 
   // Create options with 'none' prepended
@@ -60,25 +54,24 @@ const StatusFilter: React.FC = () => {
     return labels
   }, [filterLabels])
 
-  // Calculate expanded height for one dropdown row
-  const expandedHeight = 64 + 42
-
   if (filterLabels.length === 0) return null
 
   return (
     <PersistGate persistor={persistor} loading={<UnexpandedFilter label='Status' />}>
-      <ExpandableTab open={open} toggleOpen={toggleOpen} expandedHeight={expandedHeight} label='Status'>
-        <div className='flex flex-col'>
-          <FilterDropdown<string>
-            label='Status'
-            value={getStatus()}
-            options={options}
-            optionLabels={optionLabels}
-            onChange={setStatus}
-            noneValue='none'
-          />
+      <div className='border-tertiary w-full border-b'>
+        <div className='flex h-auto w-full flex-col py-1.5 transition-all'>
+          <div className='flex flex-col'>
+            <FilterDropdown<string>
+              label='Status'
+              value={getStatus()}
+              options={options}
+              optionLabels={optionLabels}
+              onChange={setStatus}
+              noneValue='none'
+            />
+          </div>
         </div>
-      </ExpandableTab>
+      </div>
     </PersistGate>
   )
 }

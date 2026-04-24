@@ -13,6 +13,7 @@ import type {
   CategoryHoldersInstanceConfig,
   CategoryStatsInstanceConfig,
   PortfolioSummaryInstanceConfig,
+  ExpiringDomainsInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -98,4 +99,12 @@ export const selectPortfolioSummaryConfig = (
 ): PortfolioSummaryInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'portfolio-summary' ? config : undefined
+}
+
+export const selectExpiringDomainsConfig = (
+  state: RootState,
+  id: string
+): ExpiringDomainsInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'expiring-domains' ? config : undefined
 }

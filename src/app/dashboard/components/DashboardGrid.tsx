@@ -35,6 +35,7 @@ import WatchlistWidget from './widgets/WatchlistWidget'
 import CategoryHoldersWidget from './widgets/CategoryHoldersWidget'
 import CategoryStatsWidget from './widgets/CategoryStatsWidget'
 import PortfolioSummaryWidget from './widgets/PortfolioSummaryWidget'
+import ExpiringDomainsWidget from './widgets/ExpiringDomainsWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -66,6 +67,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <CategoryStatsWidget instanceId={id} />
     case 'portfolio-summary':
       return <PortfolioSummaryWidget instanceId={id} />
+    case 'expiring-domains':
+      return <ExpiringDomainsWidget instanceId={id} />
     default:
       return null
   }

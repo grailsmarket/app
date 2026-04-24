@@ -21,6 +21,7 @@ export type DashboardComponentType =
   | 'category-holders'
   | 'category-stats'
   | 'portfolio-summary'
+  | 'expiring-domains'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -109,6 +110,11 @@ export type PortfolioSummaryInstanceConfig = {
   name: string
 }
 
+export type ExpiringDomainsInstanceConfig = {
+  type: 'expiring-domains'
+  name: string
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -122,6 +128,7 @@ export type DashboardComponentConfig =
   | CategoryHoldersInstanceConfig
   | CategoryStatsInstanceConfig
   | PortfolioSummaryInstanceConfig
+  | ExpiringDomainsInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -186,6 +193,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   'category-holders': { w: 2, h: 5, minW: 1, minH: 3 },
   'category-stats': { w: 1, h: 3, minW: 1, minH: 2 },
   'portfolio-summary': { w: 1, h: 3, minW: 1, minH: 2 },
+  'expiring-domains': { w: 1, h: 4, minW: 1, minH: 2 },
 }
 
 // Human-readable labels
@@ -206,4 +214,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   'category-holders': 'Category Holders',
   'category-stats': 'Category Stats',
   'portfolio-summary': 'Portfolio Summary',
+  'expiring-domains': 'Expiring Names',
 }

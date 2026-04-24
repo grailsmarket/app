@@ -46,6 +46,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, category: null }
     case 'portfolio-summary':
       return { type, name }
+    case 'expiring-domains':
+      return { type, name }
   }
 }
 

@@ -21,7 +21,7 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
   },
   {
     label: 'Personal',
-    items: ['portfolio-summary'],
+    items: ['portfolio-summary', 'expiring-domains'],
   },
   {
     label: 'Analytics',

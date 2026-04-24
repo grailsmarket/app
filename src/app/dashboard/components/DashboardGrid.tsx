@@ -33,6 +33,7 @@ import NameWidget from './widgets/NameWidget'
 import ProfileWidget from './widgets/ProfileWidget'
 import WatchlistWidget from './widgets/WatchlistWidget'
 import CategoryHoldersWidget from './widgets/CategoryHoldersWidget'
+import CategoryStatsWidget from './widgets/CategoryStatsWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -60,6 +61,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <WatchlistWidget instanceId={id} />
     case 'category-holders':
       return <CategoryHoldersWidget instanceId={id} />
+    case 'category-stats':
+      return <CategoryStatsWidget instanceId={id} />
     default:
       return null
   }

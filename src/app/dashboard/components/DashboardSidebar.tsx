@@ -21,7 +21,15 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
   },
   {
     label: 'Analytics',
-    items: ['top-sales', 'top-offers', 'top-registrations', 'sales-chart', 'offers-chart', 'registrations-chart'],
+    items: [
+      'top-sales',
+      'top-offers',
+      'top-registrations',
+      'sales-chart',
+      'offers-chart',
+      'registrations-chart',
+      'category-stats',
+    ],
   },
   {
     label: 'Community',

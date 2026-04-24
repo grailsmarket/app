@@ -19,6 +19,7 @@ export type DashboardComponentType =
   | 'profile-view'
   | 'watchlist'
   | 'category-holders'
+  | 'category-stats'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -96,6 +97,12 @@ export type CategoryHoldersInstanceConfig = {
   category: string | null
 }
 
+export type CategoryStatsInstanceConfig = {
+  type: 'category-stats'
+  name: string
+  category: string | null
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -107,6 +114,7 @@ export type DashboardComponentConfig =
   | ProfileViewInstanceConfig
   | WatchlistInstanceConfig
   | CategoryHoldersInstanceConfig
+  | CategoryStatsInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -169,6 +177,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   'profile-view': { w: 2, h: 6, minW: 1, minH: 3 },
   watchlist: { w: 2, h: 5, minW: 1, minH: 3 },
   'category-holders': { w: 2, h: 5, minW: 1, minH: 3 },
+  'category-stats': { w: 1, h: 3, minW: 1, minH: 2 },
 }
 
 // Human-readable labels
@@ -187,4 +196,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   'profile-view': 'Profile',
   watchlist: 'Watchlist',
   'category-holders': 'Category Holders',
+  'category-stats': 'Category Stats',
 }

@@ -42,6 +42,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, viewType: 'grid' }
     case 'category-holders':
       return { type, name, category: null }
+    case 'category-stats':
+      return { type, name, category: null }
   }
 }
 

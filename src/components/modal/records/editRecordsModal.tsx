@@ -16,6 +16,7 @@ import { useClickAway } from '@/hooks/useClickAway'
 import InputWithResolution from './components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TabSelector from '@/components/ui/tabSelector'
+import { ENS_METADATA_URL } from '@/constants/ens'
 
 interface EditRecordsModalProps {
   name: string
@@ -76,12 +77,12 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
       ? records.avatar
-      : `https://metadata.ens.domains/mainnet/avatar/${name}`
+      : `${ENS_METADATA_URL}/mainnet/avatar/${name}`
     : DEFAULT_FALLBACK_AVATAR
   const headerUrl = records.header
     ? records.header.startsWith('http')
       ? records.header
-      : `https://metadata.ens.domains/mainnet/header/${name}`
+      : `${ENS_METADATA_URL}/mainnet/header/${name}`
     : DEFAULT_FALLBACK_HEADER
 
   const handleImageSave = (url: string) => {

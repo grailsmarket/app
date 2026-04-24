@@ -4,9 +4,10 @@ import React, { useState } from 'react'
 import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_METADATA_URL } from '@/constants/ens'
 
-export const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
+export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 interface NameImageProps {
   name: string
@@ -27,10 +28,12 @@ export default function NameImage({ name, expiryDate, className, height = 1024, 
   // Labelhash is used for unwrapped names
   const labelHash = labelhash(name.replace('.eth', ''))
 
-  const [imageSrc, setImageSrc] = useState(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
+  const wrappedSrc = `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image`
+  const unwrappedSrc = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image`
 
+  const [imageSrc, setImageSrc] = useState(wrappedSrc)
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
-  const fallbackSrc = `/api/og/ens-name/${hexToBigInt(labelHash).toString()}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
+  const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expireTime)}`
 
   return (
     <Image
@@ -40,8 +43,8 @@ export default function NameImage({ name, expiryDate, className, height = 1024, 
       width={width}
       height={height}
       onError={() => {
-        if (imageSrc === `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`) {
-          setImageSrc(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`)
+        if (imageSrc === wrappedSrc) {
+          setImageSrc(unwrappedSrc)
         } else {
           setDisplayFallback(true)
         }

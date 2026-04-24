@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
       const nameHash = namehash(name)
       const labelHash = labelhash(name.replace('.eth', ''))
 
-      const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`
-      const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`
+      const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+      const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
       const wrappedResult = await fetch(wrappedImageUrl, {
         signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),

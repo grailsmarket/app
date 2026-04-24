@@ -158,8 +158,8 @@ export async function GET(req: NextRequest) {
         const nameHash = namehash(displayName)
         const labelHash = labelhash(displayName.replace('.eth', ''))
 
-        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`
-        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`
+        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
         const wrappedResult = await fetch(wrappedImageUrl)
           .then((res) => res.ok)

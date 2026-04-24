@@ -22,7 +22,7 @@ import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryD
 import Explore from './dropdowns/explore'
 import Categories from './dropdowns/categories'
 import CrossIcon from 'public/icons/cross.svg'
-import Analytics from './dropdowns/analytics'
+import More from './dropdowns/more'
 import Premium from './dropdowns/premium'
 import { useUserContext } from '@/context/user'
 
@@ -234,12 +234,12 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <div
             className={cn(
               'border-neutral w-full border-b-2 md:border-none',
-              dropdownOption === 'analytics' || (dropdownOption === null && previousDropdownOption === 'analytics')
+              dropdownOption === 'more' || (dropdownOption === null && previousDropdownOption === 'more')
                 ? 'block'
                 : 'block md:hidden'
             )}
           >
-            <Analytics setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+            <More setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
           </div>
         </div>
         <div

@@ -17,6 +17,7 @@ export type DashboardComponentType =
   | 'activity'
   | 'name-view'
   | 'profile-view'
+  | 'watchlist'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -81,6 +82,12 @@ export type ProfileViewInstanceConfig = {
   submittedUser: string | null
 }
 
+export type WatchlistInstanceConfig = {
+  type: 'watchlist'
+  name: string
+  viewType: 'grid' | 'list'
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -90,6 +97,7 @@ export type DashboardComponentConfig =
   | ActivityInstanceConfig
   | NameViewInstanceConfig
   | ProfileViewInstanceConfig
+  | WatchlistInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -150,6 +158,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   activity: { w: 1, h: 3, minW: 1, minH: 2 },
   'name-view': { w: 2, h: 6, minW: 1, minH: 3 },
   'profile-view': { w: 2, h: 6, minW: 1, minH: 3 },
+  watchlist: { w: 2, h: 5, minW: 1, minH: 3 },
 }
 
 // Human-readable labels
@@ -166,4 +175,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   activity: 'Activity',
   'name-view': 'Name',
   'profile-view': 'Profile',
+  watchlist: 'Watchlist',
 }

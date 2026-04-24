@@ -9,6 +9,7 @@ import type {
   ActivityInstanceConfig,
   NameViewInstanceConfig,
   ProfileViewInstanceConfig,
+  WatchlistInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -68,4 +69,9 @@ export const selectNameViewConfig = (state: RootState, id: string): NameViewInst
 export const selectProfileViewConfig = (state: RootState, id: string): ProfileViewInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'profile-view' ? config : undefined
+}
+
+export const selectWatchlistConfig = (state: RootState, id: string): WatchlistInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'watchlist' ? config : undefined
 }

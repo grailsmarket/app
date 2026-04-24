@@ -38,6 +38,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, query: '', submittedName: null }
     case 'profile-view':
       return { type, name, query: '', submittedUser: null }
+    case 'watchlist':
+      return { type, name, viewType: 'grid' }
   }
 }
 

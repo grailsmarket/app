@@ -31,6 +31,7 @@ import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
 import NameWidget from './widgets/NameWidget'
 import ProfileWidget from './widgets/ProfileWidget'
+import WatchlistWidget from './widgets/WatchlistWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -54,6 +55,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <NameWidget instanceId={id} />
     case 'profile-view':
       return <ProfileWidget instanceId={id} />
+    case 'watchlist':
+      return <WatchlistWidget instanceId={id} />
     default:
       return null
   }

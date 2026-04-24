@@ -36,6 +36,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, eventTypes: [], category: null }
     case 'name-view':
       return { type, name, query: '', submittedName: null }
+    case 'profile-view':
+      return { type, name, query: '', submittedUser: null }
   }
 }
 

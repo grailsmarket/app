@@ -30,6 +30,7 @@ import HoldersWidget from './widgets/HoldersWidget'
 import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
 import NameWidget from './widgets/NameWidget'
+import ProfileWidget from './widgets/ProfileWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -51,6 +52,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <ActivityWidget instanceId={id} />
     case 'name-view':
       return <NameWidget instanceId={id} />
+    case 'profile-view':
+      return <ProfileWidget instanceId={id} />
     default:
       return null
   }

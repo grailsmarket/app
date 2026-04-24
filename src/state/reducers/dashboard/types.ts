@@ -16,6 +16,7 @@ export type DashboardComponentType =
   | 'leaderboard'
   | 'activity'
   | 'name-view'
+  | 'profile-view'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -71,6 +72,15 @@ export type NameViewInstanceConfig = {
   submittedName: string | null
 }
 
+export type ProfileViewInstanceConfig = {
+  type: 'profile-view'
+  name: string
+  // Current input text (ENS name or 0x address)
+  query: string
+  // Submitted user (ENS name or 0x address, null = empty widget)
+  submittedUser: string | null
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -79,6 +89,7 @@ export type DashboardComponentConfig =
   | LeaderboardInstanceConfig
   | ActivityInstanceConfig
   | NameViewInstanceConfig
+  | ProfileViewInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -138,6 +149,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   leaderboard: { w: 1, h: 4, minW: 1, minH: 2 },
   activity: { w: 1, h: 3, minW: 1, minH: 2 },
   'name-view': { w: 2, h: 6, minW: 1, minH: 3 },
+  'profile-view': { w: 2, h: 6, minW: 1, minH: 3 },
 }
 
 // Human-readable labels
@@ -153,4 +165,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   leaderboard: 'Leaderboard',
   activity: 'Activity',
   'name-view': 'Name',
+  'profile-view': 'Profile',
 }

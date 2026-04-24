@@ -17,7 +17,7 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
   },
   {
     label: 'Lookup',
-    items: ['name-view'],
+    items: ['name-view', 'profile-view'],
   },
   {
     label: 'Analytics',

@@ -119,42 +119,12 @@ import {
   categoryActivityFiltersActions,
 } from '@/state/reducers/filters/categoryActivityFilters'
 
-// Import category state selector
-import { selectCategory } from '@/state/reducers/category/category'
-
-// Import categoriesPage state selector
-import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
-
 // Import bulkSearch state selector and filter actions
 import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 import {
   emptyFilterState as emptyFilterStateBulkSearchFilters,
   selectBulkSearchFilters,
-  setBulkSearchFiltersOpen,
-  toggleBulkSearchFiltersStatus,
-  setBulkSearchFiltersStatus,
-  toggleBulkSearchFiltersType,
-  setBulkSearchFiltersType,
-  setBulkSearchMarketFilters,
-  setBulkSearchTextMatchFilters,
-  setBulkSearchTextNonMatchFilters,
-  setBulkSearchFiltersLength,
-  setBulkSearchPriceDenomination,
-  setBulkSearchPriceRange,
-  setBulkSearchOfferRange,
-  setBulkSearchWatchersCount,
-  setBulkSearchViewCount,
-  setBulkSearchClubsCount,
-  setBulkSearchCreationDate,
-  toggleBulkSearchCategory,
-  setBulkSearchFiltersCategory,
-  addBulkSearchCategories,
-  removeBulkSearchCategories,
-  setBulkSearchSort,
-  setBulkSearchSearch,
-  setBulkSearchFiltersScrollTop,
-  toggleBulkSearchFilterOpen,
-  clearBulkSearchFilters,
+  BulkSearchFilterActions,
 } from '@/state/reducers/filters/bulkSearchFilters'
 
 // Import categoriesNamesFilters selectors and actions
@@ -311,6 +281,10 @@ export function useFilterRouter(): FilterRouter {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
+    if (filterType === 'bulkSearch') {
+      return BulkSearchFilterActions
+    }
+
     if (filterType === 'categoriesPage') {
       switch (activeCategoriesPageTab) {
         case 'categories':

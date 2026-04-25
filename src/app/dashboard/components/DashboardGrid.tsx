@@ -29,6 +29,13 @@ import ChartWidget from './widgets/ChartWidget'
 import HoldersWidget from './widgets/HoldersWidget'
 import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
+import NameWidget from './widgets/NameWidget'
+import ProfileWidget from './widgets/ProfileWidget'
+import WatchlistWidget from './widgets/WatchlistWidget'
+import CategoryHoldersWidget from './widgets/CategoryHoldersWidget'
+import CategoryStatsWidget from './widgets/CategoryStatsWidget'
+import PortfolioSummaryWidget from './widgets/PortfolioSummaryWidget'
+import ExpiringDomainsWidget from './widgets/ExpiringDomainsWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -48,6 +55,20 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <LeaderboardWidget instanceId={id} />
     case 'activity':
       return <ActivityWidget instanceId={id} />
+    case 'name-view':
+      return <NameWidget instanceId={id} />
+    case 'profile-view':
+      return <ProfileWidget instanceId={id} />
+    case 'watchlist':
+      return <WatchlistWidget instanceId={id} />
+    case 'category-holders':
+      return <CategoryHoldersWidget instanceId={id} />
+    case 'category-stats':
+      return <CategoryStatsWidget instanceId={id} />
+    case 'portfolio-summary':
+      return <PortfolioSummaryWidget instanceId={id} />
+    case 'expiring-domains':
+      return <ExpiringDomainsWidget instanceId={id} />
     default:
       return null
   }

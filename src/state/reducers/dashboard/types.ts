@@ -15,6 +15,13 @@ export type DashboardComponentType =
   | 'holders'
   | 'leaderboard'
   | 'activity'
+  | 'name-view'
+  | 'profile-view'
+  | 'watchlist'
+  | 'category-holders'
+  | 'category-stats'
+  | 'portfolio-summary'
+  | 'expiring-domains'
 
 // ── Per-instance configs ────────────────────────────────────────
 export type DomainsInstanceConfig = {
@@ -61,6 +68,53 @@ export type ActivityInstanceConfig = {
   category: string | null // null = all categories
 }
 
+export type NameViewInstanceConfig = {
+  type: 'name-view'
+  name: string
+  // Current input text in the search bar (preserved across reloads)
+  query: string
+  // Submitted name being displayed (null = empty widget)
+  submittedName: string | null
+}
+
+export type ProfileViewInstanceConfig = {
+  type: 'profile-view'
+  name: string
+  // Current input text (ENS name or 0x address)
+  query: string
+  // Submitted user (ENS name or 0x address, null = empty widget)
+  submittedUser: string | null
+}
+
+export type WatchlistInstanceConfig = {
+  type: 'watchlist'
+  name: string
+  viewType: 'grid' | 'list'
+}
+
+export type CategoryHoldersInstanceConfig = {
+  type: 'category-holders'
+  name: string
+  // Single category (null = prompt user to pick)
+  category: string | null
+}
+
+export type CategoryStatsInstanceConfig = {
+  type: 'category-stats'
+  name: string
+  category: string | null
+}
+
+export type PortfolioSummaryInstanceConfig = {
+  type: 'portfolio-summary'
+  name: string
+}
+
+export type ExpiringDomainsInstanceConfig = {
+  type: 'expiring-domains'
+  name: string
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -68,6 +122,13 @@ export type DashboardComponentConfig =
   | HoldersInstanceConfig
   | LeaderboardInstanceConfig
   | ActivityInstanceConfig
+  | NameViewInstanceConfig
+  | ProfileViewInstanceConfig
+  | WatchlistInstanceConfig
+  | CategoryHoldersInstanceConfig
+  | CategoryStatsInstanceConfig
+  | PortfolioSummaryInstanceConfig
+  | ExpiringDomainsInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -126,6 +187,13 @@ export const DEFAULT_WIDGET_SIZES: Record<
   holders: { w: 1, h: 4, minW: 1, minH: 2 },
   leaderboard: { w: 1, h: 4, minW: 1, minH: 2 },
   activity: { w: 1, h: 3, minW: 1, minH: 2 },
+  'name-view': { w: 2, h: 6, minW: 1, minH: 3 },
+  'profile-view': { w: 2, h: 6, minW: 1, minH: 3 },
+  watchlist: { w: 2, h: 5, minW: 1, minH: 3 },
+  'category-holders': { w: 2, h: 5, minW: 1, minH: 3 },
+  'category-stats': { w: 1, h: 3, minW: 1, minH: 2 },
+  'portfolio-summary': { w: 1, h: 3, minW: 1, minH: 2 },
+  'expiring-domains': { w: 1, h: 4, minW: 1, minH: 2 },
 }
 
 // Human-readable labels
@@ -140,4 +208,11 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   holders: 'Holders',
   leaderboard: 'Leaderboard',
   activity: 'Activity',
+  'name-view': 'Name',
+  'profile-view': 'Profile',
+  watchlist: 'Watchlist',
+  'category-holders': 'Category Holders',
+  'category-stats': 'Category Stats',
+  'portfolio-summary': 'Portfolio Summary',
+  'expiring-domains': 'Expiring Names',
 }

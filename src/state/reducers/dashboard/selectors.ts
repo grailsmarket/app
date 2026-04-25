@@ -7,6 +7,13 @@ import type {
   HoldersInstanceConfig,
   LeaderboardInstanceConfig,
   ActivityInstanceConfig,
+  NameViewInstanceConfig,
+  ProfileViewInstanceConfig,
+  WatchlistInstanceConfig,
+  CategoryHoldersInstanceConfig,
+  CategoryStatsInstanceConfig,
+  PortfolioSummaryInstanceConfig,
+  ExpiringDomainsInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -56,4 +63,48 @@ export const selectLeaderboardConfig = (state: RootState, id: string): Leaderboa
 export const selectActivityConfig = (state: RootState, id: string): ActivityInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'activity' ? config : undefined
+}
+
+export const selectNameViewConfig = (state: RootState, id: string): NameViewInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'name-view' ? config : undefined
+}
+
+export const selectProfileViewConfig = (state: RootState, id: string): ProfileViewInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'profile-view' ? config : undefined
+}
+
+export const selectWatchlistConfig = (state: RootState, id: string): WatchlistInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'watchlist' ? config : undefined
+}
+
+export const selectCategoryHoldersConfig = (
+  state: RootState,
+  id: string
+): CategoryHoldersInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'category-holders' ? config : undefined
+}
+
+export const selectCategoryStatsConfig = (state: RootState, id: string): CategoryStatsInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'category-stats' ? config : undefined
+}
+
+export const selectPortfolioSummaryConfig = (
+  state: RootState,
+  id: string
+): PortfolioSummaryInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'portfolio-summary' ? config : undefined
+}
+
+export const selectExpiringDomainsConfig = (
+  state: RootState,
+  id: string
+): ExpiringDomainsInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'expiring-domains' ? config : undefined
 }

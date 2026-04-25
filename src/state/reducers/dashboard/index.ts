@@ -34,6 +34,20 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, sortBy: 'names_owned', sortOrder: 'desc', clubs: [] }
     case 'activity':
       return { type, name, eventTypes: [], category: null }
+    case 'name-view':
+      return { type, name, query: '', submittedName: null }
+    case 'profile-view':
+      return { type, name, query: '', submittedUser: null }
+    case 'watchlist':
+      return { type, name, viewType: 'grid' }
+    case 'category-holders':
+      return { type, name, category: null }
+    case 'category-stats':
+      return { type, name, category: null }
+    case 'portfolio-summary':
+      return { type, name }
+    case 'expiring-domains':
+      return { type, name }
   }
 }
 

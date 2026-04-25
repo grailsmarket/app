@@ -13,15 +13,31 @@ import { useClickAway } from '@/hooks/useClickAway'
 const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = [
   {
     label: 'Market',
-    items: ['domains', 'activity'],
+    items: ['domains', 'activity', 'watchlist'],
+  },
+  {
+    label: 'Lookup',
+    items: ['name-view', 'profile-view'],
+  },
+  {
+    label: 'Personal',
+    items: ['portfolio-summary', 'expiring-domains'],
   },
   {
     label: 'Analytics',
-    items: ['top-sales', 'top-offers', 'top-registrations', 'sales-chart', 'offers-chart', 'registrations-chart'],
+    items: [
+      'top-sales',
+      'top-offers',
+      'top-registrations',
+      'sales-chart',
+      'offers-chart',
+      'registrations-chart',
+      'category-stats',
+    ],
   },
   {
     label: 'Community',
-    items: ['leaderboard', 'holders'],
+    items: ['leaderboard', 'holders', 'category-holders'],
   },
 ]
 

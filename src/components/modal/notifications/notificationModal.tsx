@@ -32,14 +32,17 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
     retry: 1,
   })
 
-  // Get all notifications from pages. Admin broadcasts have no ensName/ensTokenId;
-  // ENS-scoped notifications still require both (malformed rows are dropped).
+  // Get all notifications from pages. Admin broadcasts and support ticket
+  // updates have no ensName/ensTokenId; ENS-scoped notifications still require
+  // both (malformed rows are dropped).
   const allNotifications =
     data?.pages
       .flatMap((page) => page.notifications)
       .filter(
         (notification) =>
-          notification.type === 'admin-broadcast' || (!!notification.ensName && !!notification.ensTokenId)
+          notification.type === 'admin-broadcast' ||
+          notification.type === 'support-ticket-update' ||
+          (!!notification.ensName && !!notification.ensTokenId)
       ) || []
   const isNotificationsLoading = isLoading || isFetchingNextPage
 

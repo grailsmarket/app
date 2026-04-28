@@ -103,6 +103,42 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
   const eventName = getEventName(notification.type)
   const timeAgo = formatDistanceToNow(new Date(notification.sentAt), { addSuffix: true }).replace('about ', '')
 
+  if (notification.type === 'support-ticket-update') {
+    const subject = notification.metadata.subject || 'your support ticket'
+    const kind = notification.metadata.kind
+    const newStatus = notification.metadata.newStatus
+    const ticketId = notification.metadata.ticketId
+    const headline =
+      kind === 'admin_reply'
+        ? 'New reply on your support ticket'
+        : kind === 'status_changed' && newStatus
+          ? `Ticket marked ${newStatus}`
+          : kind === 'reopened'
+            ? 'Ticket reopened'
+            : 'Ticket update'
+    const href = ticketId ? `/support?ticket=${ticketId}` : '/support'
+
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        className='p-md sm:p-lg hover:bg-white/5 flex min-h-16 w-full items-start gap-3 transition-colors'
+      >
+        {!notification.isRead && <div className='bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full' />}
+        <div className='mt-0.5 flex-shrink-0'>
+          <Image src={Bell} alt='Support' width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6' />
+        </div>
+        <div className='flex w-full flex-col gap-0.5'>
+          <div className='flex items-start justify-between gap-2'>
+            <p className='text-foreground text-md font-medium sm:text-lg'>{headline}</p>
+            <span className='sm:text-md text-neutral text-sm font-medium'>{timeAgo}</span>
+          </div>
+          <p className='text-neutral sm:text-md text-sm break-words'>{subject}</p>
+        </div>
+      </Link>
+    )
+  }
+
   if (notification.type === 'admin-broadcast') {
     const title = notification.metadata.title || 'Announcement'
     const body = notification.metadata.body || ''

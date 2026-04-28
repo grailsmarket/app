@@ -13,6 +13,7 @@ export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.R
   'listing-sold': cartSold,
   'listing-cancelled-ownership-change': alarmClock,
   'admin-broadcast': plus,
+  'support-ticket-update': plus,
 }
 
 export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> = {
@@ -24,4 +25,5 @@ export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> 
   'listing-sold': 'Sold',
   'listing-cancelled-ownership-change': 'Listing cancelled',
   'admin-broadcast': 'Announcement',
+  'support-ticket-update': 'Ticket update',
 }

@@ -7,6 +7,7 @@ export type NotificationType =
   | 'listing-sold'
   | 'listing-cancelled-ownership-change'
   | 'admin-broadcast'
+  | 'support-ticket-update'
 
 export interface NotificationMetadata {
   priceWei?: string
@@ -20,6 +21,12 @@ export interface NotificationMetadata {
   body?: string
   linkUrl?: string
   broadcastId?: number
+  // support-ticket-update fields
+  kind?: 'admin_reply' | 'status_changed' | 'reopened'
+  ticketId?: number
+  subject?: string
+  status?: 'open' | 'closed' | 'fixed'
+  newStatus?: 'open' | 'closed' | 'fixed'
 }
 
 export interface Notification {

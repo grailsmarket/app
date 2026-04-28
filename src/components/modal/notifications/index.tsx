@@ -58,7 +58,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
             className='fixed inset-0 top-1/2 z-100 mx-auto flex h-fit w-fit -translate-y-1/2 items-center justify-center'
             onClick={(e) => e.stopPropagation()}
           >
-            <div className='group relative w-[calc(100dvw-40px)] max-w-7xl'>
+            <div className='group relative w-fit max-w-7xl'>
               <motion.button
                 initial={{ display: 'none' }}
                 animate={{ display: 'flex', transition: { delay: 0.4 } }}
@@ -69,7 +69,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
                 <Cross className='h-auto w-6' />
               </motion.button>
               <motion.div layoutId={`image-${expandedImage}`}>
-                <Image width={2000} height={2000} src={expandedImage} alt='Expanded Image' className='h-auto w-full' />
+                <Image width={2000} height={2000} src={expandedImage} alt='Expanded Image' className='h-auto max-h-[90dvh] w-full max-w-[90dvw] object-contain mx-auto' />
               </motion.div>
             </div>
           </div>

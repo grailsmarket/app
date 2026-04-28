@@ -199,7 +199,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                     width={16}
                     height={16}
                     onClick={async () => {
-                      navigator.clipboard.writeText(account.ens?.name as string)
+                      if (!ownerAccount?.ens?.name) return
+                      navigator.clipboard.writeText(ownerAccount?.ens?.name)
                       setIsOwnerCopied(true)
                       setTimeout(() => {
                         setIsOwnerCopied(false)

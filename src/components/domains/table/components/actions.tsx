@@ -41,6 +41,7 @@ interface ActionsProps {
   showWatchlist?: boolean
   isBulkSelecting?: boolean
   registrationStatus: RegistrationStatus
+  compact?: boolean
 }
 
 const Actions: React.FC<ActionsProps> = ({
@@ -52,6 +53,7 @@ const Actions: React.FC<ActionsProps> = ({
   showWatchlist = true,
   isBulkSelecting,
   registrationStatus,
+  compact,
 }) => {
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -215,7 +217,19 @@ const Actions: React.FC<ActionsProps> = ({
 
   if (isMyDomain && profileTab.value !== 'watchlist') {
     if (domainListing?.price) {
-      return (
+      return compact ? (
+        <div className={cn('flex flex-row justify-end', width)}>
+          <SecondaryButton
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              router.push(`/${domain.name}`)
+            }}
+          >
+            Edit
+          </SecondaryButton>
+        </div>
+      ) : (
         <>
           <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
             <SecondaryButton
@@ -248,7 +262,7 @@ const Actions: React.FC<ActionsProps> = ({
 
     if (registrationStatus !== GRACE_PERIOD) {
       return (
-        <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+        <div className={cn(compact ? 'flex' : 'hidden sm:flex', 'flex-row justify-end gap-2 opacity-100', width)}>
           <PrimaryButton
             onClick={(e) => openListModal(e, false)}
             className={cn(
@@ -309,9 +323,11 @@ const Actions: React.FC<ActionsProps> = ({
           <PrimaryButton
             disabled={availableAction.disabled}
             className={cn(
-              'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
-              availableAction.label !== 'Reg' ? 'hidden md:block' : '',
-              watchlistId ? 'hidden sm:block' : ''
+              'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100',
+              compact ? 'w-12 max-w-12 min-w-12' : 'w-12 max-w-12 min-w-12 sm:w-18! sm:max-w-18! sm:min-w-18!',
+              compact
+                ? ''
+                : cn(availableAction.label !== 'Reg' ? 'hidden md:block' : '', watchlistId ? 'hidden sm:block' : '')
             )}
             onClick={availableAction.onClick}
           >

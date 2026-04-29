@@ -18,6 +18,7 @@ import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 import { CategoryTabType } from '@/state/reducers/category/category'
 import { CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
 import { BulkSearchTabType } from '@/constants/domains/bulkSearch/tabs'
+import { AiSearchTabType } from '@/constants/domains/aiSearch/tabs'
 
 export type StatusType = (typeof NAME_STATUS_FILTER_LABELS)[number]
 
@@ -98,6 +99,7 @@ export type NameFilters = {
   creationDate: { min: string | null; max: string | null }
   categories: string[]
   sort: SortFilterType | null
+  aiSearch: boolean
 }
 
 export type NamefiltersOpened = NameFilters & {
@@ -105,13 +107,14 @@ export type NamefiltersOpened = NameFilters & {
   scrollTop: number
 }
 
-export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage' | 'bulkSearch'
+export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage' | 'bulkSearch' | 'aiSearch'
 
 export interface FilterRouterSelectors {
   filters: NamefiltersOpened
 }
 
 export interface FilterRouterActions {
+  setFilters: (payload: Partial<NameFilters>) => PayloadAction<Partial<NameFilters>>
   setScrollTop: (payload: number) => PayloadAction<number>
   setFiltersOpen: (payload: boolean) => PayloadAction<boolean>
   setSearch: (payload: string) => PayloadAction<string>
@@ -137,6 +140,7 @@ export interface FilterRouterActions {
   clearFilters: () => PayloadAction<void>
   addCategories: (payload: string[]) => PayloadAction<string[]>
   removeCategories: (payload: string[]) => PayloadAction<string[]>
+  setAiSearch: (payload: boolean) => PayloadAction<boolean>
 }
 
 export interface FilterRouter {
@@ -148,6 +152,7 @@ export interface FilterRouter {
   categoryTab?: CategoryTabType
   categoriesPageTab?: CategoriesPageTabType
   bulkSearchTab?: BulkSearchTabType
+  aiSearchTab?: AiSearchTabType
   activeTab?: string
   isFiltersClear: boolean
 }

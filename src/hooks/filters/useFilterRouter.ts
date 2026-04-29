@@ -128,7 +128,7 @@ import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 import {
   emptyFilterState as emptyFilterStateBulkSearchFilters,
   selectBulkSearchFilters,
-  bulkSearchFiltersActions,
+  BulkSearchFilterActions,
 } from '@/state/reducers/filters/bulkSearchFilters'
 
 // Import aiSearch state selector and filter actions
@@ -316,7 +316,7 @@ export function useFilterRouter(): FilterRouter {
     }
 
     if (filterType === 'bulkSearch') {
-      return bulkSearchFiltersActions
+      return BulkSearchFilterActions
     }
 
     if (filterType === 'categoriesPage') {

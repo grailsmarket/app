@@ -11,10 +11,6 @@ export type NotificationType =
 
 export interface NotificationMetadata {
   title?: string
-  body?: string
-  linkUrl?: string
-  imageUrl?: string
-  broadcastId?: number
   priceWei?: string
   sellerAddress?: string
   buyerAddress?: string
@@ -22,10 +18,10 @@ export interface NotificationMetadata {
   offerId?: number
   offerAmountWei?: string
   // admin-broadcast fields
-  title?: string
   body?: string
   linkUrl?: string
   broadcastId?: number
+  imageUrl?: string
   // support-ticket-update fields
   kind?: 'admin_reply' | 'status_changed' | 'reopened'
   ticketId?: number

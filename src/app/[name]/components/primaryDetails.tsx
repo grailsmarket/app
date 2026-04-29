@@ -68,9 +68,16 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
   const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
+
   const { data: isWrapped } = useQuery({
     queryKey: ['isWrapped', name],
     queryFn: () => checkIfWrapped(name),
+  })
+
+  const { data: ownerAccount } = useQuery({
+    queryKey: ['profile', nameDetails?.owner], // use the same key as User component to not fetch the same profile twice
+    queryFn: () => fetchAccount(nameDetails?.owner as `0x${string}`),
+    enabled: !!nameDetails?.owner,
   })
 
   const router = useRouter()
@@ -184,7 +191,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             <div className='flex flex-col items-start gap-0.5'>
               <div className='flex flex-row items-center gap-2'>
                 {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
-                {nameDetails?.owner && (
+                {nameDetails?.owner && ownerAccount?.ens?.name && (
                   <Image
                     src={isOwnerCopied ? CheckIcon : CopyIcon}
                     alt='Copy'
@@ -192,20 +199,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                     width={16}
                     height={16}
                     onClick={async () => {
-                      const account = await fetchAccount(nameDetails?.owner as `0x${string}`)
-                      console.log(account)
-
-                      if (account) {
-                        navigator.clipboard.writeText(account.ens?.name as string)
-                        setIsOwnerCopied(true)
-                        setTimeout(() => {
-                          setIsOwnerCopied(false)
-                        }, 2000)
-
-                        return
-                      }
-
-                      navigator.clipboard.writeText(nameDetails?.owner as string)
+                      if (!ownerAccount?.ens?.name) return
+                      navigator.clipboard.writeText(ownerAccount?.ens?.name)
                       setIsOwnerCopied(true)
                       setTimeout(() => {
                         setIsOwnerCopied(false)

@@ -3,6 +3,8 @@ import cartSold from '/icons/sold.svg'
 import alarmClock from '/icons/expiring.svg'
 import cartAccepted from '/icons/offer-accepted.svg'
 import { NotificationType } from '@/types/notifications'
+import Bell from 'public/icons/bell.svg'
+import AlarmClock from 'public/icons/expiring.svg'
 
 export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.ReactNode> = {
   'new-listing': plus,

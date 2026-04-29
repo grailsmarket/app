@@ -396,7 +396,14 @@ export function useFilterRouter(): FilterRouter {
     }
 
     return MarketplaceFilterActions
-  }, [filterType, activeProfileTab, activeMarketplaceTab, activeCategoryTab, activeCategoriesPageTab])
+  }, [
+    filterType,
+    activeProfileTab,
+    activeMarketplaceTab,
+    activeCategoryTab,
+    activeCategoriesPageTab,
+    activeBulkSearchTab,
+  ])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'aiSearch') {

@@ -132,35 +132,19 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       >
         Categories
       </Link>
-      <Link
-        href='/analytics'
+      <button
+        type='button'
         className={cn(
-          'hover-underline font-medium transition-all',
-          pathname === '/analytics' ? 'text-primary active font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
-          dropdownOption === 'analytics' && 'active text-primary opacity-100'
+          'hover-underline cursor-pointer font-medium transition-all',
+          'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'more' && 'active text-primary opacity-100'
         )}
-        onMouseEnter={() => handleMouseEnter('analytics')}
+        onMouseEnter={() => handleMouseEnter('more')}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >
-        Analytics
-      </Link>
-      {userAddress && (
-        <Link
-          href='/dashboard'
-          className={cn(
-            'hover-underline font-medium transition-all',
-            pathname === '/dashboard'
-              ? 'text-primary active font-bold!'
-              : 'text-foreground opacity-80 hover:opacity-100'
-          )}
-          onMouseEnter={() => handleMouseEnter(null)}
-          onMouseLeave={handleMouseLeave}
-          onClick={onClick}
-        >
-          Dashboard
-        </Link>
-      )}
+        More
+      </button>
 
       {userAddress && (
         <Link

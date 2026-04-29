@@ -1,7 +1,7 @@
 import { fetchDomains } from '@/api/domains/fetchDomains'
 import { useUserContext } from '@/context/user'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useAppSelector } from '@/state/hooks'
 import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 
@@ -13,17 +13,17 @@ import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 //   { key: 'available', status: ['Available'] },
 // ] as const
 
-const useBulkSearchCount = (tabKey: string, forcedStatus: string[]) => {
+function useBulkSearchCount(tabKey: string, forcedStatus: string[]) {
   const { authStatus } = useUserContext()
   const filters = useFilterRouter().selectors.filters
   const { searchTerms } = useAppSelector(selectBulkSearch)
 
-  const { data } = useInfiniteQuery({
+  const { data } = useQuery({
     queryKey: [
       'bulkSearch',
-      'domains',
-      searchTerms,
+      'count',
       tabKey,
+      searchTerms,
       filters.length,
       filters.priceRange,
       filters.categories,
@@ -38,7 +38,7 @@ const useBulkSearchCount = (tabKey: string, forcedStatus: string[]) => {
       filters.clubsCount,
       filters.creationDate,
     ],
-    queryFn: async ({ pageParam = 1 }) => {
+    queryFn: async () => {
       const filtersWithStatus = {
         ...filters,
         status: forcedStatus,
@@ -46,7 +46,7 @@ const useBulkSearchCount = (tabKey: string, forcedStatus: string[]) => {
 
       const result = await fetchDomains({
         limit: 1,
-        pageParam,
+        pageParam: 1,
         // @ts-expect-error filter state type mismatch
         filters: filtersWithStatus,
         searchTerm: searchTerms,
@@ -54,24 +54,15 @@ const useBulkSearchCount = (tabKey: string, forcedStatus: string[]) => {
         isAuthenticated: authStatus === 'authenticated',
       })
 
-      return {
-        domains: result.domains,
-        nextPageParam: result.nextPageParam,
-        hasNextPage: result.hasNextPage,
-        total: result.total,
-      }
+      return result.total || 0
     },
     enabled: !!searchTerms,
-    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
-    initialPageParam: 1,
   })
 
-  const count = data?.pages[0]?.total || 0
-
-  return count
+  return data
 }
 
-export const useBulkSearchCounts = () => {
+export function useBulkSearchCounts() {
   const namesCount = useBulkSearchCount('names', [])
   const registeredCount = useBulkSearchCount('registered', ['Registered'])
   const graceCount = useBulkSearchCount('grace', ['Grace'])

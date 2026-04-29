@@ -23,7 +23,7 @@ const BulkSearchTabSwitcher: React.FC = () => {
   const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
-  const { namesCount, registeredCount, graceCount, premiumCount, availableCount } = useBulkSearchCounts()
+  const counts = useBulkSearchCounts()
 
   const setBulkSearchTab = (tab: BulkSearchTabType) => {
     dispatch(changeBulkSearchTab(tab))
@@ -56,21 +56,23 @@ const BulkSearchTabSwitcher: React.FC = () => {
     }
 
     updateIndicator()
-  }, [selectedTab, mounted, namesCount, registeredCount, graceCount, premiumCount, availableCount])
+    window.addEventListener('resize', updateIndicator)
+    return () => window.removeEventListener('resize', updateIndicator)
+  }, [selectedTab, mounted])
 
   const getTabCount = (tabValue: string): number | undefined => {
     if (!searchTerms) return undefined
     switch (tabValue) {
       case 'names':
-        return namesCount
+        return counts.namesCount
       case 'registered':
-        return registeredCount
+        return counts.registeredCount
       case 'grace':
-        return graceCount
+        return counts.graceCount
       case 'premium':
-        return premiumCount
+        return counts.premiumCount
       case 'available':
-        return availableCount
+        return counts.availableCount
       default:
         return undefined
     }

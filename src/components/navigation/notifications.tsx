@@ -2,13 +2,12 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useAppDispatch } from '@/state/hooks'
 import { setNotificationModalOpen } from '@/state/reducers/modals/notificationModal'
 import { getUnreadCount } from '@/api/notifications/getUnreadCount'
 import notifications from 'public/icons/bell.svg'
 import { cn } from '@/utils/tailwind'
-import { markAllAsRead } from '@/api/notifications/markAllAsRead'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 
@@ -18,25 +17,17 @@ const Notifications = () => {
   const dispatch = useAppDispatch()
 
   // Fetch unread count
-  const { data: unreadCount = 0, refetch: refetchUnreadCount } = useQuery({
+  const { data: unreadCount = 0 } = useQuery({
     queryKey: ['unreadCount', userAddress],
     queryFn: getUnreadCount,
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 30000, // Refetch every 30s
     retry: 1, // Only retry once on failure
     enabled: !!userAddress && authStatus === 'authenticated', // Always try to fetch
-  })
-
-  // Mark all as read mutation
-  const markAllAsReadMutation = useMutation({
-    mutationFn: markAllAsRead,
-    onSuccess: () => {
-      refetchUnreadCount()
-    },
+    refetchOnWindowFocus: true,
   })
 
   const handleClick = () => {
     if (!userAddress) return openConnectModal?.()
-    markAllAsReadMutation.mutate()
     dispatch(setNotificationModalOpen(true))
   }
 

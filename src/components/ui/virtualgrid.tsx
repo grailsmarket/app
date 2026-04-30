@@ -195,7 +195,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
                 key={index}
                 style={{
                   position: 'absolute',
-                  top: vRow.start,
+                  top: vRow.start - rowVirtualizer.options.scrollMargin,
                   left: containerPadding + col * (actualCardWidth + gap),
                   width: actualCardWidth,
                   height: cardHeight,

@@ -158,7 +158,7 @@ function VirtualListWindowInner<T>({
             data-index={vi.index}
             style={{
               position: 'absolute',
-              top: vi.start,
+              top: vi.start - virtualizer.options.scrollMargin,
               left: 0,
               width: '100%',
               height: rowHeight,

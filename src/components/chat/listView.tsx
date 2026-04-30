@@ -38,7 +38,7 @@ const ListView: React.FC = () => {
 
       <div className='border-tertiary border-b-2 p-3'>
         <PrimaryButton onClick={() => dispatch(openSidebarToNew())} className='flex w-full items-center justify-center gap-1.5'>
-          <Image src={PlusIcon} alt='' width={14} height={14} className='invert' />
+          <Image src={PlusIcon} alt='' width={14} height={14} />
           New chat
         </PrimaryButton>
       </div>

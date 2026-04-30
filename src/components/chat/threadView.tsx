@@ -139,22 +139,26 @@ const ThreadView: React.FC = () => {
                 <span className='text-neutral text-sm'>Loading older messages…</span>
               </div>
             )}
-            {messages.map((m) => {
-              const isOwn = m.sender_address?.toLowerCase() === myAddress
-              const isLastOwn = lastOwnMessage?.id === m.id
-              return (
-                <React.Fragment key={m.id}>
-                  <MessageRow message={m} isOwn={isOwn} />
-                  {isLastOwn && (
-                    <ReadReceipt
-                      lastOwnMessage={lastOwnMessage}
-                      messages={messages}
-                      otherParticipants={otherParticipants}
-                    />
-                  )}
-                </React.Fragment>
-              )
-            })}
+            {messages.map((m) => (
+              <MessageRow
+                key={m.id}
+                message={m}
+                isOwn={m.sender_address?.toLowerCase() === myAddress}
+              />
+            ))}
+            {/* Only show "Seen" if the caller's last message is also the very
+                last message in the thread. A peer reply after my message is
+                implicit acknowledgement, so we suppress the receipt rather
+                than have it float above their replies. */}
+            {messages.length > 0 &&
+              lastOwnMessage &&
+              messages[messages.length - 1].id === lastOwnMessage.id && (
+                <ReadReceipt
+                  lastOwnMessage={lastOwnMessage}
+                  messages={messages}
+                  otherParticipants={otherParticipants}
+                />
+              )}
             {otherTypingIds.length > 0 && (
               <div className={cn('flex items-center gap-2 pt-1')}>
                 <div className='bg-secondary rounded-2xl rounded-bl-sm px-4 py-2'>

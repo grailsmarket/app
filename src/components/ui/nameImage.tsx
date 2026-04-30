@@ -48,10 +48,13 @@ const NameImage = ({ name, expiryDate, className, height, width, refreshKey }: N
   const labelHash = labelhash(name.replace('.eth', ''))
 
   const cacheParam = refreshKey ? `?v=${refreshKey}` : ''
-  const wrappedSrc = useMemo(() => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image${cacheParam}`, [nameHash])
+  const wrappedSrc = useMemo(
+    () => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image${cacheParam}`,
+    [nameHash, cacheParam]
+  )
   const unwrappedSrc = useMemo(
     () => `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
-    [labelHash]
+    [labelHash, cacheParam]
   )
 
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
@@ -70,6 +73,16 @@ const NameImage = ({ name, expiryDate, className, height, width, refreshKey }: N
   const [svg, setSvg] = useState<string | null>(null)
   const [pngLoaded, setPngLoaded] = useState(false)
 
+  // When the caller bumps `refreshKey` (e.g. after a successful metadata
+  // refresh), restart from the wrapped-SVG attempt so we re-run the full
+  // fetch chain against the new cache-busted URL.
+  useEffect(() => {
+    if (refreshKey === undefined) return
+    setAttempt(0)
+    setSvg(null)
+    setPngLoaded(false)
+  }, [refreshKey])
+
   useEffect(() => {
     if (attempt >= 2) return
     const url = attempt === 0 ? wrappedSrc : unwrappedSrc
@@ -83,7 +96,11 @@ const NameImage = ({ name, expiryDate, className, height, width, refreshKey }: N
     // skip ahead to the next URL immediately.
     const attemptFetch = async (retry = 0): Promise<void> => {
       try {
-        const res = await fetch(url)
+        // `cache: 'reload'` when a refreshKey is active forces the browser to
+        // bypass its HTTP cache for this fetch — the `?v=` query already
+        // makes the URL unique, but `reload` covers any intermediate caches
+        // that ignore query params.
+        const res = await fetch(url, refreshKey !== undefined ? { cache: 'reload' } : undefined)
         if (res.status === 404) {
           if (!cancelled) setAttempt((a) => a + 1)
           return
@@ -111,7 +128,7 @@ const NameImage = ({ name, expiryDate, className, height, width, refreshKey }: N
     return () => {
       cancelled = true
     }
-  }, [attempt, wrappedSrc, unwrappedSrc, status, idSuffix])
+  }, [attempt, wrappedSrc, unwrappedSrc, status, idSuffix, refreshKey])
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 

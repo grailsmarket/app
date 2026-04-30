@@ -77,7 +77,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           maxLength={MAX_LEN}
           placeholder='Type a message…'
           className={cn(
-            'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-md outline-none',
+            'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-6 outline-none',
             disabled && 'cursor-not-allowed opacity-50'
           )}
         />
@@ -85,12 +85,12 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           onClick={submit}
           disabled={!value.trim() || send.isPending || disabled}
           className={cn(
-            'bg-primary text-background flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-all',
+            'bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all',
             'hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'
           )}
           aria-label='Send message'
         >
-          <Image src={ArrowBack} alt='' width={14} height={14} className='invert' />
+          <Image src={ArrowBack} alt='' width={12} height={12} className='invert' />
         </button>
       </div>
     </div>

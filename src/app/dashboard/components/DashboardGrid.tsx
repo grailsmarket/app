@@ -2,7 +2,8 @@
 
 import React, { useCallback, useMemo, useRef } from 'react'
 import type { Layout, LayoutItem, ResponsiveLayouts } from 'react-grid-layout'
-import { ResponsiveGridLayout, useContainerWidth, horizontalCompactor } from 'react-grid-layout'
+import { ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout'
+import { wrapCompactor } from 'react-grid-layout/extras'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -155,7 +156,7 @@ const DashboardGrid = () => {
           droppingItem={droppingItem}
           dragConfig={{ enabled: true, handle: '.dashboard-drag-handle' }}
           resizeConfig={{ enabled: true, handles: ['se'] }}
-          compactor={horizontalCompactor}
+          compactor={wrapCompactor}
           margin={[12, 12]}
           containerPadding={[0, 12]}
           style={{

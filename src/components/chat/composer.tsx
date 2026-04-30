@@ -17,9 +17,15 @@ const MAX_LEN = 4000
 const Composer: React.FC<Props> = ({ chatId, disabled }) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // When the server returns 403 BLOCKED on send, the caller is being blocked
+  // by the recipient. Disable the composer until the user reloads — further
+  // sends will keep failing with the same error.
+  const [permanentlyDisabled, setPermanentlyDisabled] = useState(false)
   const ref = useRef<HTMLTextAreaElement>(null)
   const send = useSendMessage(chatId)
   const typing = useTypingEmitter(chatId)
+
+  const inputDisabled = disabled || permanentlyDisabled
 
   const autoSize = () => {
     const el = ref.current
@@ -43,6 +49,12 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
     }
     send.mutate(trimmed, {
       onError: (e) => {
+        if (e.code === 'BLOCKED') {
+          setError("Couldn't deliver, you have been blocked")
+          setPermanentlyDisabled(true)
+          // Drop the unsent text — retry isn't useful when blocked.
+          return
+        }
         setError(e.message ?? 'Failed to send')
         // Restore the unsent text so the user can retry
         setValue(trimmed)
@@ -72,18 +84,18 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           }}
           onBlur={() => typing.flush()}
           onKeyDown={onKeyDown}
-          disabled={disabled}
+          disabled={inputDisabled}
           rows={1}
           maxLength={MAX_LEN}
           placeholder='Type a message…'
           className={cn(
             'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-6 outline-none',
-            disabled && 'cursor-not-allowed opacity-50'
+            inputDisabled && 'cursor-not-allowed opacity-50'
           )}
         />
         <button
           onClick={submit}
-          disabled={!value.trim() || send.isPending || disabled}
+          disabled={!value.trim() || send.isPending || inputDisabled}
           className={cn(
             'bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all',
             'hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'

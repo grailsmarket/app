@@ -41,6 +41,14 @@ export interface Chat {
   participants?: ChatParticipant[]
   last_message?: ChatMessage | null
   unread_count?: number
+  /** TRUE when the caller has the other participant in their message_blocks list. */
+  is_blocked_by_me?: boolean
+}
+
+export interface Block {
+  user_id: number
+  address: string
+  created_at: string
 }
 
 export interface ChatInboxResponse {

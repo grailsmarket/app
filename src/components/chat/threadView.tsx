@@ -15,8 +15,11 @@ import { useChatMessages } from '@/hooks/chat/useChatMessages'
 import { useMarkRead } from '@/hooks/chat/useMarkRead'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
 import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
+import { useBlockUser } from '@/hooks/chat/useBlockUser'
+import { useUnblockUser } from '@/hooks/chat/useUnblockUser'
 import { useUserContext } from '@/context/user'
 import LoadingCell from '@/components/ui/loadingCell'
+import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
@@ -46,6 +49,10 @@ const ThreadView: React.FC = () => {
   )
   const peer = otherParticipants[0]
   const peerProfile = usePeerProfile(peer?.address)
+  const isBlocked = !!chat?.is_blocked_by_me
+
+  const blockMutation = useBlockUser()
+  const unblockMutation = useUnblockUser()
 
   // Auto-scroll to bottom on new messages.
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -90,6 +97,24 @@ const ThreadView: React.FC = () => {
     ? typingUserIds.filter((id) => id === peer.user_id)
     : []
 
+  const headerMenuItems: ContextMenuItem[] = peer
+    ? isBlocked
+      ? [
+          {
+            label: `Unblock ${peerLabel}`,
+            onClick: () => unblockMutation.mutate(peer.user_id),
+          },
+        ]
+      : [
+          {
+            label: `Block ${peerLabel}`,
+            confirmLabel: `Confirm block ${peerLabel}`,
+            destructive: true,
+            onClick: () => blockMutation.mutate(peer.address),
+          },
+        ]
+    : []
+
   return (
     <>
       <div className='border-tertiary flex items-center justify-between gap-2 border-b-2 p-3'>
@@ -114,13 +139,16 @@ const ThreadView: React.FC = () => {
           )}
           <p className='text-foreground truncate text-lg font-semibold'>{peerLabel}</p>
         </div>
-        <button
-          onClick={() => dispatch(closeChatSidebar())}
-          className='hover:bg-primary/10 rounded-md p-1 transition-colors'
-          aria-label='Close'
-        >
-          <Cross className='text-foreground h-4 w-4 cursor-pointer' />
-        </button>
+        <div className='flex items-center gap-1'>
+          {headerMenuItems.length > 0 && <ContextMenu items={headerMenuItems} />}
+          <button
+            onClick={() => dispatch(closeChatSidebar())}
+            className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+            aria-label='Close'
+          >
+            <Cross className='text-foreground h-4 w-4 cursor-pointer' />
+          </button>
+        </div>
       </div>
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
@@ -170,7 +198,24 @@ const ThreadView: React.FC = () => {
         )}
       </div>
 
-      {activeChatId && <Composer chatId={activeChatId} />}
+      {activeChatId && (
+        isBlocked ? (
+          <div className='border-tertiary flex items-center justify-between gap-3 border-t-2 p-3'>
+            <p className='text-neutral text-md'>
+              You&apos;ve blocked {peerLabel}. Unblock to send messages.
+            </p>
+            <button
+              onClick={() => peer && unblockMutation.mutate(peer.user_id)}
+              disabled={!peer || unblockMutation.isPending}
+              className='bg-primary text-background rounded-sm px-3 py-1.5 text-md font-bold transition-all hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50'
+            >
+              {unblockMutation.isPending ? 'Unblocking…' : 'Unblock'}
+            </button>
+          </div>
+        ) : (
+          <Composer chatId={activeChatId} />
+        )
+      )}
     </>
   )
 }

@@ -22,9 +22,9 @@ type GradientStops = { from: string; to: string }
 // `feat(image): soften expired/grace/premium gradients to 2-stop mid→dark`).
 // REGISTERED intentionally absent — keep the server's default blue paint0.
 const STATE_GRADIENTS: Partial<Record<RegistrationStatus, GradientStops>> = {
-  [GRACE_PERIOD]: { from: '#EFB100', to: '#5A4300' },
-  [PREMIUM]: { from: '#74FD43', to: '#1A3C0D' },
-  [UNREGISTERED]: { from: '#2DB5FF', to: '#145071' },
+  [GRACE_PERIOD]: { from: 'rgb(161 119 1)', mid: '#CC9500', to: 'rgb(228 186 61)' },
+  [PREMIUM]: { from: '#3AAF8A', mid: '#2AAF63', to: '#2AAF2A' },
+  [UNREGISTERED]: { from: '#4460A7', mid: '#1B6E9B', to: 'rgb(39 161 214)' },
 }
 
 const PAINT0_PATTERN = /<linearGradient id="paint0_linear"[^>]*>[\s\S]*?<\/linearGradient>/
@@ -32,6 +32,6 @@ const PAINT0_PATTERN = /<linearGradient id="paint0_linear"[^>]*>[\s\S]*?<\/linea
 export function applyStateGradient(svg: string, status: RegistrationStatus): string {
   const stops = STATE_GRADIENTS[status]
   if (!stops) return svg
-  const replacement = `<linearGradient id="paint0_linear" x1="0" y1="0" x2="269.553" y2="285.527" gradientUnits="userSpaceOnUse"><stop stop-color="${stops.from}"/><stop offset="1" stop-color="${stops.to}"/></linearGradient>`
+  const replacement = `<linearGradient id="paint0_linear" x1="0" y1="0" x2="269.553" y2="285.527" gradientUnits="userSpaceOnUse"><stop stop-color="${stops.from}"/><stop offset="0.25" stop-color="${stops.mid}"/><stop offset="1" stop-color="${stops.to}"/></linearGradient>`
   return svg.replace(PAINT0_PATTERN, replacement)
 }

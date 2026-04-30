@@ -1,5 +1,6 @@
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
+import { useWindowVirtualizer, useVirtualizer } from '@tanstack/react-virtual'
 import clsx from 'clsx'
 import React, {
   useCallback,
@@ -33,57 +34,42 @@ export type VirtualListComponentType = <T = unknown>(
   ref: ForwardedRef<HTMLDivElement>
 ) => ReactElement
 
-const VirtualListComponent: VirtualListComponentType = (props, ref) => {
-  const {
-    items,
-    overscanCount = 5,
-    rowHeight,
-    renderItem,
-    gap = 16,
-    containerClassName,
-    onScrollNearBottom,
-    scrollThreshold = 300,
-    paddingBottom = '80px',
-    useLocalScrollTop = false,
-    containerScroll = false,
-    containerHeight,
-  } = props
-
+function VirtualListWindowInner<T>({
+  items,
+  rowHeight,
+  overscanCount = 5,
+  gap = 16,
+  containerClassName,
+  onScrollNearBottom,
+  scrollThreshold = 300,
+  paddingBottom = '80px',
+  useLocalScrollTop = false,
+  renderItem,
+  forwardedRef,
+}: VirtualListProps<T> & { forwardedRef: ForwardedRef<HTMLDivElement> }) {
   const dispatch = useAppDispatch()
   const { selectors, actions } = useFilterRouter()
+
   const containerRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [scrollState, setScrollState] = useState({ scrollY: 0, viewportHeight: 0 })
   const [elementTop, setElementTop] = useState(0)
   const hasRestoredScroll = useRef(false)
   const onScrollNearBottomRef = useRef(onScrollNearBottom)
 
-  // Keep onScrollNearBottom ref updated
   useEffect(() => {
     onScrollNearBottomRef.current = onScrollNearBottom
   }, [onScrollNearBottom])
 
-  // Get stored scroll position
   const storedScrollTop = useMemo(
-    () => (useLocalScrollTop || containerScroll ? 0 : selectors.filters.scrollTop),
-    [useLocalScrollTop, containerScroll, selectors.filters.scrollTop]
+    () => (useLocalScrollTop ? 0 : selectors.filters.scrollTop),
+    [useLocalScrollTop, selectors.filters.scrollTop]
   )
 
   const setStoredScrollTop = useMemo(() => {
-    if (useLocalScrollTop || containerScroll) {
-      return () => {} // No-op for local scroll or container scroll
-    } else {
-      return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
-    }
-  }, [useLocalScrollTop, containerScroll, actions])
+    if (useLocalScrollTop) return () => {}
+    return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+  }, [useLocalScrollTop, dispatch, actions])
 
-  // Total height of the list content
-  const totalHeight = items.length * (rowHeight + gap)
-
-  // Calculate element's position in document on mount and resize (only for window scroll mode)
   useEffect(() => {
-    if (containerScroll) return
-
     const updateElementTop = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect()
@@ -92,219 +78,197 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     }
 
     updateElementTop()
-
-    // Update on resize
     window.addEventListener('resize', updateElementTop)
 
-    // Use ResizeObserver for more accurate updates
     const resizeObserver = new ResizeObserver(updateElementTop)
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current)
-    }
+    if (containerRef.current) resizeObserver.observe(containerRef.current)
 
     return () => {
       window.removeEventListener('resize', updateElementTop)
       resizeObserver.disconnect()
     }
-  }, [containerScroll])
+  }, [])
 
-  // Restore scroll position on mount (only for window scroll mode)
+  const virtualizer = useWindowVirtualizer({
+    count: items.length,
+    estimateSize: () => rowHeight + gap,
+    overscan: overscanCount,
+    getItemKey: (index) => index,
+    useFlushSync: false,
+    scrollMargin: elementTop,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+
   useLayoutEffect(() => {
-    if (containerScroll) return
     if (!hasRestoredScroll.current && storedScrollTop > 0 && elementTop > 0) {
-      // Calculate the window scroll position that would put us at the stored position
-      const targetWindowScroll = elementTop + storedScrollTop
-      window.scrollTo({ top: targetWindowScroll, behavior: 'instant' })
+      window.scrollTo({ top: elementTop + storedScrollTop, behavior: 'instant' })
       hasRestoredScroll.current = true
     }
-  }, [storedScrollTop, elementTop, containerScroll])
+  }, [storedScrollTop, elementTop])
 
-  // Listen to scroll events (window or container based on mode)
+  const relativeScrollTop = Math.max(0, (typeof window !== 'undefined' ? window.scrollY : 0) - elementTop)
+
   useEffect(() => {
-    if (containerScroll) {
-      // Container scroll mode
-      const scrollContainer = scrollContainerRef.current
-      if (!scrollContainer) return
-
-      const handleScroll = () => {
-        setScrollState({
-          scrollY: scrollContainer.scrollTop,
-          viewportHeight: scrollContainer.clientHeight,
-        })
-      }
-
-      // Initial state
-      handleScroll()
-
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
-
-      return () => {
-        scrollContainer.removeEventListener('scroll', handleScroll)
-      }
-    } else {
-      // Window scroll mode
-      const handleScroll = () => {
-        setScrollState({
-          scrollY: window.scrollY,
-          viewportHeight: window.innerHeight,
-        })
-      }
-
-      // Initial state
-      handleScroll()
-
-      window.addEventListener('scroll', handleScroll, { passive: true })
-      window.addEventListener('resize', handleScroll, { passive: true })
-
-      return () => {
-        window.removeEventListener('scroll', handleScroll)
-        window.removeEventListener('resize', handleScroll)
-      }
-    }
-  }, [containerScroll])
-
-  // Calculate scroll position relative to the list
-  const relativeScrollTop = useMemo(() => {
-    if (containerScroll) {
-      return scrollState.scrollY
-    }
-    return Math.max(0, scrollState.scrollY - elementTop)
-  }, [scrollState.scrollY, elementTop, containerScroll])
-
-  // Store scroll position for restoration (debounced, only for window scroll mode)
-  useEffect(() => {
-    if (containerScroll) return
     if (hasRestoredScroll.current || storedScrollTop === 0) {
       const timeoutId = setTimeout(() => {
         setStoredScrollTop(relativeScrollTop)
       }, 100)
       return () => clearTimeout(timeoutId)
     }
-  }, [relativeScrollTop, setStoredScrollTop, storedScrollTop, containerScroll])
+  }, [relativeScrollTop, setStoredScrollTop, storedScrollTop])
 
-  // Check if we're near the bottom of the list content
   useEffect(() => {
     if (!onScrollNearBottomRef.current) return
 
-    if (containerScroll) {
-      const distanceToBottom = totalHeight - (scrollState.scrollY + scrollState.viewportHeight)
-      if (distanceToBottom < scrollThreshold) {
-        onScrollNearBottomRef.current()
-      }
-    } else {
-      const viewportBottom = scrollState.scrollY + scrollState.viewportHeight
-      const listBottom = elementTop + totalHeight
+    const lastItem = virtualItems.at(-1)
+    if (!lastItem) return
 
-      if (listBottom - viewportBottom < scrollThreshold) {
-        onScrollNearBottomRef.current()
-      }
+
+    const scrollY = typeof window !== 'undefined' ? window.scrollY : 0
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0
+    const totalHeight = virtualizer.getTotalSize()
+    const listBottom = elementTop + totalHeight
+    const viewportBottom = scrollY + viewportHeight
+
+    if (listBottom - viewportBottom < scrollThreshold && lastItem.index >= items.length - 1) {
+      onScrollNearBottomRef.current()
     }
-  }, [scrollState, elementTop, totalHeight, scrollThreshold, containerScroll])
+  }, [virtualItems, elementTop, scrollThreshold, items.length, virtualizer])
 
-  // Calculate startIndex and endIndex for the items to be rendered
-  const { startIndex, endIndex } = useMemo(() => {
-    const effectiveRowHeight = rowHeight + gap
-    const viewportHeight = scrollState.viewportHeight || (typeof window !== 'undefined' ? window.innerHeight : 0)
-
-    const start = Math.max(0, Math.floor(relativeScrollTop / effectiveRowHeight) - overscanCount)
-    const end = Math.min(
-      items.length,
-      Math.ceil((relativeScrollTop + viewportHeight) / effectiveRowHeight) + overscanCount
-    )
-
-    return { startIndex: start, endIndex: end }
-  }, [relativeScrollTop, rowHeight, gap, scrollState.viewportHeight, items.length, overscanCount])
-
-  const getOffset = (index: number): number => {
-    return index * (rowHeight + gap)
-  }
-
-  const visibleItems = items.slice(startIndex, endIndex)
-
-  // Combine refs
   const setRefs = useCallback(
     (element: HTMLDivElement | null) => {
       containerRef.current = element
-      if (typeof ref === 'function') {
-        ref(element)
-      } else if (ref) {
-        ref.current = element
-      }
+      if (typeof forwardedRef === 'function') forwardedRef(element)
+      else if (forwardedRef) forwardedRef.current = element
     },
-    [ref]
+    [forwardedRef]
   )
-
-  const innerContent = (
-    <div style={{ width: '100%', height: totalHeight, position: 'relative' }}>
-      <div
-        style={{
-          width: '100%',
-          position: 'absolute',
-          top: getOffset(startIndex),
-          left: 0,
-          right: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap,
-        }}
-      >
-        {visibleItems.map((item, i) => {
-          const index = startIndex + i
-          return (
-            <div
-              key={index}
-              style={{
-                width: '100%',
-                height: rowHeight,
-                display: 'flex',
-                alignItems: 'center',
-                boxSizing: 'border-box',
-                position: 'relative',
-              }}
-            >
-              {renderItem(item, index)}
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-
-  if (containerScroll) {
-    return (
-      <div
-        ref={(el) => {
-          scrollContainerRef.current = el
-          setRefs(el)
-        }}
-        style={{
-          position: 'relative',
-          height: containerHeight || '100%',
-          overflowY: 'auto',
-          width: '100%',
-        }}
-        className={clsx(containerClassName)}
-      >
-        {innerContent}
-      </div>
-    )
-  }
 
   return (
     <div
       ref={setRefs}
-      style={{
-        position: 'relative',
-        paddingBottom,
-        width: '100%',
-      }}
+      style={{ position: 'relative', paddingBottom, width: '100%' }}
       className={clsx(containerClassName)}
     >
-      {innerContent}
+      <div style={{ width: '100%', height: virtualizer.getTotalSize(), position: 'relative' }}>
+        {virtualItems.map((vi) => (
+          <div
+            key={vi.key}
+            data-index={vi.index}
+            style={{
+              position: 'absolute',
+              top: vi.start,
+              left: 0,
+              width: '100%',
+              height: rowHeight,
+              display: 'flex',
+              alignItems: 'center',
+              boxSizing: 'border-box',
+            }}
+          >
+            {renderItem(items[vi.index], vi.index)}
+          </div>
+        ))}
+      </div>
     </div>
   )
+}
+
+function VirtualListContainerInner<T>({
+  items,
+  rowHeight,
+  overscanCount = 5,
+  gap = 16,
+  containerClassName,
+  onScrollNearBottom,
+  scrollThreshold = 300,
+  containerHeight,
+  renderItem,
+  forwardedRef,
+}: VirtualListProps<T> & { forwardedRef: ForwardedRef<HTMLDivElement> }) {
+  useAppDispatch()
+  useFilterRouter()
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const onScrollNearBottomRef = useRef(onScrollNearBottom)
+
+  useEffect(() => {
+    onScrollNearBottomRef.current = onScrollNearBottom
+  }, [onScrollNearBottom])
+
+  const storedScrollTop = 0
+
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => rowHeight + gap,
+    overscan: overscanCount,
+    getItemKey: (index) => index,
+    useFlushSync: false,
+    initialOffset: storedScrollTop,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+
+  useEffect(() => {
+    if (!onScrollNearBottomRef.current) return
+
+    const scrollElement = scrollContainerRef.current
+    if (!scrollElement) return
+
+    const totalHeight = virtualizer.getTotalSize()
+    const distanceToBottom = totalHeight - (scrollElement.scrollTop + scrollElement.clientHeight)
+
+    if (distanceToBottom < scrollThreshold) {
+      onScrollNearBottomRef.current()
+    }
+  }, [virtualItems, scrollThreshold, virtualizer])
+
+  const setRefs = useCallback(
+    (element: HTMLDivElement | null) => {
+      scrollContainerRef.current = element
+      if (typeof forwardedRef === 'function') forwardedRef(element)
+      else if (forwardedRef) forwardedRef.current = element
+    },
+    [forwardedRef]
+  )
+
+  return (
+    <div
+      ref={setRefs}
+      style={{ position: 'relative', height: containerHeight || '100%', overflowY: 'auto', width: '100%' }}
+      className={clsx(containerClassName)}
+    >
+      <div style={{ width: '100%', height: virtualizer.getTotalSize(), position: 'relative' }}>
+        {virtualItems.map((vi) => (
+          <div
+            key={vi.key}
+            data-index={vi.index}
+            style={{
+              position: 'absolute',
+              top: vi.start,
+              left: 0,
+              width: '100%',
+              height: rowHeight,
+              display: 'flex',
+              alignItems: 'center',
+              boxSizing: 'border-box',
+            }}
+          >
+            {renderItem(items[vi.index], vi.index)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const VirtualListComponent: VirtualListComponentType = (props, ref) => {
+  if (props.containerScroll) {
+    return <VirtualListContainerInner {...props} forwardedRef={ref} />
+  }
+  return <VirtualListWindowInner {...props} forwardedRef={ref} />
 }
 
 const VirtualList = forwardRef(VirtualListComponent) as unknown as (<T>(

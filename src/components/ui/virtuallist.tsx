@@ -65,7 +65,7 @@ function VirtualListWindowInner<T>({
   )
 
   const setStoredScrollTop = useMemo(() => {
-    if (useLocalScrollTop) return () => {}
+    if (useLocalScrollTop) return () => { }
     return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
   }, [useLocalScrollTop, dispatch, actions])
 
@@ -92,7 +92,7 @@ function VirtualListWindowInner<T>({
   const virtualizer = useWindowVirtualizer({
     count: items.length,
     estimateSize: () => rowHeight + gap,
-    overscan: overscanCount,
+    overscan: overscanCount * 2,
     getItemKey: (index) => index,
     useFlushSync: false,
     scrollMargin: elementTop,

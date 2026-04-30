@@ -74,7 +74,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   )
 
   const setStoredScrollTop = useMemo(() => {
-    if (useLocalScrollTop) return () => {}
+    if (useLocalScrollTop) return () => { }
     return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
   }, [useLocalScrollTop, actions])
 
@@ -149,7 +149,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   const rowVirtualizer = useWindowVirtualizer({
     count: totalRows,
     estimateSize: () => cardHeight + gap,
-    overscan: overscanCount,
+    overscan: overscanCount * 2,
     getItemKey: (i) => i,
     useFlushSync: false,
     scrollMargin: elementTop,

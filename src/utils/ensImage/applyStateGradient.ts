@@ -16,7 +16,7 @@ import { RegistrationStatus } from '@/types/domains'
 // below finds nothing and the SVG passes through unchanged, so avatars
 // always win over state coloring.
 
-type GradientStops = { from: string; to: string }
+type GradientStops = { from: string; mid: string; to: string }
 
 // Match the gradients we previously shipped in the metadata service (PR #6
 // `feat(image): soften expired/grace/premium gradients to 2-stop mid→dark`).

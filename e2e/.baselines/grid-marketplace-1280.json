@@ -1,0 +1,17 @@
+{
+  "route": "/marketplace",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "totalHeight": 4040,
+  "renderedCards": 40,
+  "columnsCount": 5,
+  "firstCardLeft": 308,
+  "firstCardWidth": 188,
+  "paddingBottomPx": 80,
+  "itemCount": 40,
+  "cardHeight": 400,
+  "gap": 4,
+  "capturedAt": "2026-04-30T18:49:16.284Z"
+}

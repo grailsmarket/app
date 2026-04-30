@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useCallback, useMemo, useRef } from 'react'
-import type { Layout, LayoutItem, ResponsiveLayouts } from 'react-grid-layout'
+import type { Layout, LayoutItem, ResponsiveLayouts, Compactor } from 'react-grid-layout'
 import { ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout'
-import { wrapCompactor } from 'react-grid-layout/extras'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { useWindowSize } from 'ethereum-identity-kit'
@@ -60,6 +59,75 @@ const getMaxColsForWidth = (w: number): number => {
     if (w >= minWidth) return maxCols
   }
   return 1
+}
+
+const customWrapCompactor: Compactor = {
+  type: 'wrap' as any,
+  allowOverlap: false,
+  compact(layout: Layout, cols: number): Layout {
+    if (layout.length === 0) return []
+
+    const sorted = [...layout].sort((a, b) => {
+      if (a.y === b.y) return a.x - b.x
+      return a.y - b.y
+    })
+
+    const out: LayoutItem[] = new Array(layout.length)
+    const occupied = new Set<string>()
+
+    for (let i = 0; i < sorted.length; i++) {
+      const l = sorted[i]
+      if (l.static) {
+        for (let dy = 0; dy < l.h; dy++) {
+          for (let dx = 0; dx < l.w; dx++) {
+            occupied.add(`${l.y + dy},${l.x + dx}`)
+          }
+        }
+        out[layout.indexOf(l)] = { ...l, moved: false }
+      }
+    }
+
+    for (let i = 0; i < sorted.length; i++) {
+      const l = sorted[i]
+      if (l.static) continue
+
+      let x = 0
+      let y = 0
+      let placed = false
+
+      while (!placed) {
+        if (x + l.w > cols) {
+          x = 0
+          y++
+        }
+
+        let fits = true
+        for (let dy = 0; dy < l.h; dy++) {
+          for (let dx = 0; dx < l.w; dx++) {
+            if (occupied.has(`${y + dy},${x + dx}`)) {
+              fits = false
+              break
+            }
+          }
+          if (!fits) break
+        }
+
+        if (fits) {
+          for (let dy = 0; dy < l.h; dy++) {
+            for (let dx = 0; dx < l.w; dx++) {
+              occupied.add(`${y + dy},${x + dx}`)
+            }
+          }
+          out[layout.indexOf(l)] = { ...l, x, y, moved: false }
+          placed = true
+        } else {
+          x++
+        }
+      }
+    }
+
+    return out
+  }
 }
 
 const DashboardGrid = () => {
@@ -156,7 +224,7 @@ const DashboardGrid = () => {
           droppingItem={droppingItem}
           dragConfig={{ enabled: true, handle: '.dashboard-drag-handle' }}
           resizeConfig={{ enabled: true, handles: ['se'] }}
-          compactor={wrapCompactor}
+          compactor={customWrapCompactor}
           margin={[12, 12]}
           containerPadding={[0, 12]}
           style={{

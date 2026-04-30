@@ -31,7 +31,7 @@ const ReadReceipt: React.FC<Props> = ({ lastOwnMessage, messages, otherParticipa
     new Date(readMsg.created_at).getTime() >= new Date(lastOwnMessage.created_at).getTime()
   if (!seen) return null
 
-  return <p className='text-neutral mt-1 text-right text-sm'>Seen</p>
+  return <p className='text-neutral -mt-2 text-right text-sm'>Seen</p>
 }
 
 export default ReadReceipt

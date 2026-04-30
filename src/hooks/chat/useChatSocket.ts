@@ -87,13 +87,40 @@ export const useChatSocket = () => {
 
         case 'chat:message_new': {
           const { chat_id, message } = evt.data
-          // Patch messages cache (dedupe by id — handles optimistic-then-echo).
+          const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          // Patch messages cache. Three cases to handle:
+          // 1. Canonical id already present (POST onSuccess won the race) → no-op.
+          // 2. Sender is me AND an optimistic placeholder with matching body is
+          //    still in cache (WS won the race) → REPLACE in place rather than
+          //    appending, otherwise the optimistic + canonical both stick around
+          //    and the message renders twice until the next refresh.
+          // 3. Otherwise → prepend to the newest page.
           queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(
             ['chats', chat_id, 'messages'],
             (old) => {
               if (!old) return old
               const exists = old.pages.some((p) => p.messages.some((m) => m.id === message.id))
               if (exists) return old
+
+              if (senderIsMe) {
+                let replaced = false
+                const updatedPages = old.pages.map((page) => {
+                  if (replaced) return page
+                  const idx = page.messages.findIndex(
+                    (m) =>
+                      m.id.startsWith('optimistic-') &&
+                      m.body === message.body &&
+                      !m.deleted_at
+                  )
+                  if (idx === -1) return page
+                  replaced = true
+                  const next = [...page.messages]
+                  next[idx] = message
+                  return { ...page, messages: next }
+                })
+                if (replaced) return { ...old, pages: updatedPages }
+              }
+
               const [first, ...rest] = old.pages
               return {
                 ...old,
@@ -102,7 +129,6 @@ export const useChatSocket = () => {
             }
           )
           // Patch inbox: bump last_message + last_message_at + unread (unless sender is me).
-          const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
           queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
             if (!old) return old
             return {

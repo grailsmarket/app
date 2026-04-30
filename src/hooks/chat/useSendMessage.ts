@@ -66,6 +66,21 @@ export const useSendMessage = (chatId: string | null) => {
       }
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['chats', chatId, 'messages'], (old) => {
         if (!old) return old
+        // If the canonical id is already in the cache (WS arrived first and
+        // replaced our optimistic placeholder, or appended), just drop the
+        // optimistic row by id — never let both coexist.
+        const realIdExists = old.pages.some((p) =>
+          p.messages.some((m) => m.id === merged.id)
+        )
+        if (realIdExists) {
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              messages: page.messages.filter((m) => m.id !== ctx?.tempId),
+            })),
+          }
+        }
         return {
           ...old,
           pages: old.pages.map((page) => ({

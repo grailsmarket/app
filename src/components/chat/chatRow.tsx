@@ -44,6 +44,9 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
     >
       {peer ? (
         <Avatar
+          /* Key forces remount when the resolved avatar URL changes — EIK
+             Avatar caches its initial src and otherwise won't re-render. */
+          key={peerProfile?.avatar ?? `${peer.address}-default`}
           address={peer.address as `0x${string}`}
           src={peerProfile?.avatar ?? undefined}
           name={peerProfile?.ensName ?? undefined}

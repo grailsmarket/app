@@ -103,6 +103,7 @@ const ThreadView: React.FC = () => {
         <div className='flex min-w-0 flex-1 items-center gap-2'>
           {peer ? (
             <Avatar
+              key={peerProfile?.avatar ?? `${peer.address}-default`}
               address={peer.address as `0x${string}`}
               src={peerProfile?.avatar ?? undefined}
               name={peerProfile?.ensName ?? undefined}
@@ -138,18 +139,22 @@ const ThreadView: React.FC = () => {
                 <span className='text-neutral text-sm'>Loading older messages…</span>
               </div>
             )}
-            {messages.map((m) => (
-              <MessageRow
-                key={m.id}
-                message={m}
-                isOwn={m.sender_address?.toLowerCase() === myAddress}
-              />
-            ))}
-            <ReadReceipt
-              lastOwnMessage={lastOwnMessage}
-              messages={messages}
-              otherParticipants={otherParticipants}
-            />
+            {messages.map((m) => {
+              const isOwn = m.sender_address?.toLowerCase() === myAddress
+              const isLastOwn = lastOwnMessage?.id === m.id
+              return (
+                <React.Fragment key={m.id}>
+                  <MessageRow message={m} isOwn={isOwn} />
+                  {isLastOwn && (
+                    <ReadReceipt
+                      lastOwnMessage={lastOwnMessage}
+                      messages={messages}
+                      otherParticipants={otherParticipants}
+                    />
+                  )}
+                </React.Fragment>
+              )
+            })}
             {otherTypingIds.length > 0 && (
               <div className={cn('flex items-center gap-2 pt-1')}>
                 <div className='bg-secondary rounded-2xl rounded-bl-sm px-4 py-2'>

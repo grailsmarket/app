@@ -23,6 +23,7 @@ interface NameImageProps {
   className?: string
   height?: number
   width?: number
+  refreshKey?: number
 }
 
 function responsiveSvg(svg: string): string {
@@ -42,19 +43,21 @@ function scopeSvgIds(svg: string, suffix: string): string {
   return out
 }
 
-const NameImage = ({ name, expiryDate, className, height, width }: NameImageProps) => {
+const NameImage = ({ name, expiryDate, className, height, width, refreshKey }: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
-  const wrappedSrc = useMemo(() => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image`, [nameHash])
+  const cacheParam = refreshKey ? `?v=${refreshKey}` : ''
+  const wrappedSrc = useMemo(() => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image${cacheParam}`, [nameHash])
   const unwrappedSrc = useMemo(
-    () => `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image`,
+    () => `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
     [labelHash]
   )
+
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
     name
-  )}&expires=${encodeURIComponent(expireTime)}`
+  )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
 
   const status = getRegistrationStatus(expiryDate)
 

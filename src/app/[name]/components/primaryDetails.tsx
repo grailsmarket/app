@@ -38,12 +38,14 @@ import {
   ENS_NAME_WRAPPER_ADDRESS,
   ENS_REGISTRAR_ADDRESS,
 } from '@/constants/web3/contracts'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
+import RefreshIcon from 'public/icons/refresh.svg'
+import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 
 interface NameDetailsProps {
   name: string
@@ -63,6 +65,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   openEditMetadataModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
+  const [imageRefreshKey, setImageRefreshKey] = useState<number>()
+  const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false)
 
   // Determine countdown type based on registration status
   const countdownType =
@@ -74,6 +78,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   })
 
   const router = useRouter()
+  const queryClient = useQueryClient()
   const dispatch = useAppDispatch()
   const { onSelect: toggleCart } = useCartDomains()
   const { userAddress, authStatus } = useUserContext()
@@ -112,6 +117,25 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
 
   const isOwner = userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase()
 
+  const refreshMetadata = async () => {
+    if (isRefreshingMetadata) return
+
+    try {
+      setIsRefreshingMetadata(true)
+      await invalidateNameMetadataCache(name)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] }),
+        queryClient.invalidateQueries({ queryKey: ['name', 'details', name] }),
+        queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] }),
+      ])
+      setImageRefreshKey(Date.now())
+    } catch (error) {
+      console.error('Failed to refresh metadata:', error)
+    } finally {
+      setIsRefreshingMetadata(false)
+    }
+  }
+
   return (
     <div className='bg-secondary border-tertiary flex flex-col sm:rounded-lg sm:border-2'>
       <div className='bg-tertiary h-fit w-full'>
@@ -120,6 +144,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
             expiryDate={nameDetails.expiry_date}
+            refreshKey={imageRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
         )}
@@ -169,13 +194,30 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             )}
           </div>
         )}
-        <div className='flex w-full flex-row items-start justify-between gap-2'>
+        <div className='flex w-full flex-row items-center justify-between gap-2'>
           <CopyValue
             value={nameDetails?.name ? beautifyName(nameDetails.name) : name}
             canCopy={true}
             truncateValue={false}
             className='text-2xl font-bold md:text-3xl'
           />
+          <Tooltip label='Refresh metadata' align='right' position='top'>
+            <button
+              type='button'
+              className='bg-tertiary hover:bg-foreground/15 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:h-10 md:w-10'
+              onClick={refreshMetadata}
+              disabled={isRefreshingMetadata || !nameDetails?.name}
+              aria-label='Refresh metadata'
+            >
+              <Image
+                src={RefreshIcon}
+                alt=''
+                width={20}
+                height={20}
+                className={cn('h-5 w-5', isRefreshingMetadata && 'animate-spin')}
+              />
+            </button>
+          </Tooltip>
         </div>
         <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
           {nameDetailsIsLoading ? (

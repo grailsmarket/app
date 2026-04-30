@@ -2,7 +2,6 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useUserContext } from '@/context/user'
 import { useAppDispatch } from '@/state/hooks'
 import { openSidebarToList } from '@/state/reducers/chat/sidebar'
@@ -11,19 +10,16 @@ import { cn } from '@/utils/tailwind'
 import chatIcon from 'public/icons/chat.svg'
 
 const Chats: React.FC = () => {
-  const { openConnectModal } = useConnectModal()
-  const { userAddress } = useUserContext()
+  const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
   const { totalUnread } = useChatsInbox()
 
-  const handleClick = () => {
-    if (!userAddress) return openConnectModal?.()
-    dispatch(openSidebarToList())
-  }
+  // Chat is an authenticated-only feature; hide entirely when signed out.
+  if (!userAddress || authStatus !== 'authenticated') return null
 
   return (
     <button
-      onClick={handleClick}
+      onClick={() => dispatch(openSidebarToList())}
       className='hover:bg-primary/10 relative rounded-md p-1 transition-colors'
       aria-label='Messages'
     >

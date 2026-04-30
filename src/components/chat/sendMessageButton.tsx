@@ -7,7 +7,6 @@ import { useUserContext } from '@/context/user'
 import { useAppDispatch } from '@/state/hooks'
 import { openSidebarToNew, openSidebarToThread } from '@/state/reducers/chat/sidebar'
 import { useCreateChat } from '@/hooks/chat/useCreateChat'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import chatIcon from 'public/icons/chat.svg'
 import { cn } from '@/utils/tailwind'
 
@@ -23,23 +22,21 @@ interface Props {
  * creates (or fetches) the direct chat in the background, then opens the
  * sidebar straight to the thread. On any error, falls back to the new-chat
  * view with the recipient pre-filled so the user sees the failure context.
+ *
+ * Hidden entirely when the viewer isn't signed in — chat is an authed-only
+ * feature, so we don't surface a teaser that bounces them through SIWE.
  */
 const SendMessageButton: React.FC<Props> = ({ recipient, className, label = 'Message' }) => {
-  const { userAddress } = useUserContext()
-  const { openConnectModal } = useConnectModal()
+  const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
   const createChat = useCreateChat()
 
+  if (!userAddress || authStatus !== 'authenticated') return null
+
   // Don't surface this on your own profile.
-  if (userAddress && recipient && userAddress.toLowerCase() === recipient.toLowerCase()) {
-    return null
-  }
+  if (recipient && userAddress.toLowerCase() === recipient.toLowerCase()) return null
 
   const handleClick = () => {
-    if (!userAddress) {
-      openConnectModal?.()
-      return
-    }
     createChat.mutate(recipient, {
       onSuccess: (data) => dispatch(openSidebarToThread({ chatId: data.chat.id })),
       onError: () => dispatch(openSidebarToNew({ recipient })),

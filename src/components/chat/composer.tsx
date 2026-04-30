@@ -90,7 +90,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           )}
           aria-label='Send message'
         >
-          <Image src={ArrowBack} alt='' width={14} height={14} className='rotate-180 invert' />
+          <Image src={ArrowBack} alt='' width={14} height={14} className='invert' />
         </button>
       </div>
     </div>

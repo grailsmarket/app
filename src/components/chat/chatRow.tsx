@@ -5,7 +5,7 @@ import { Avatar } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { openSidebarToThread } from '@/state/reducers/chat/sidebar'
 import { useUserContext } from '@/context/user'
-import { formatAddress } from '@/utils/formatAddress'
+import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { cn } from '@/utils/tailwind'
 import type { Chat, ChatParticipant } from '@/types/chat'
@@ -25,7 +25,8 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
   const { userAddress } = useUserContext()
 
   const peer = otherParticipant(chat, userAddress)
-  const peerLabel = peer ? formatAddress(peer.address) : 'Direct chat'
+  const peerProfile = usePeerProfile(peer?.address)
+  const peerLabel = peerProfile?.displayLabel ?? 'Direct chat'
   const unread = chat.unread_count ?? 0
 
   const lastBody = chat.last_message?.deleted_at
@@ -42,7 +43,12 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
       )}
     >
       {peer ? (
-        <Avatar address={peer.address as `0x${string}`} style={{ width: '40px', height: '40px' }} />
+        <Avatar
+          address={peer.address as `0x${string}`}
+          src={peerProfile?.avatar ?? undefined}
+          name={peerProfile?.ensName ?? undefined}
+          style={{ width: '40px', height: '40px' }}
+        />
       ) : (
         <div className='bg-tertiary h-10 w-10 rounded-full' />
       )}

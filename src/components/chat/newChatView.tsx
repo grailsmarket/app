@@ -15,7 +15,6 @@ import {
 import { useDebounce } from '@/hooks/useDebounce'
 import { useCreateChat } from '@/hooks/chat/useCreateChat'
 import Input from '@/components/ui/input'
-import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { formatAddress } from '@/utils/formatAddress'
 import ArrowBack from 'public/icons/arrow-back.svg'
@@ -64,14 +63,20 @@ const NewChatView: React.FC = () => {
     enabled: !!debounced,
   })
 
-  const canSubmit = !!input.trim() && !createChat.isPending
+  /**
+   * We always send the resolved address (not the raw ENS string) to the backend.
+   * The backend's address path auto-creates a stub `users` row when a recipient
+   * has never signed in to Grails, while the ENS-string path 404s if the name
+   * isn't tracked in our `ens_names` table. Sending the address makes "first
+   * contact" with any wallet just work.
+   */
   const submit = () => {
-    const value = input.trim()
-    if (!value) return
-    createChat.mutate(value, {
-      onSuccess: (data) => {
-        dispatch(openSidebarToThread({ chatId: data.chat.id }))
-      },
+    if (createChat.isPending) return
+    const fallback = input.trim()
+    const target = account?.address ?? (isAddress(fallback) ? fallback : null)
+    if (!target) return
+    createChat.mutate(target, {
+      onSuccess: (data) => dispatch(openSidebarToThread({ chatId: data.chat.id })),
     })
   }
 
@@ -87,7 +92,7 @@ const NewChatView: React.FC = () => {
           onClick={() => dispatch(openSidebarToList())}
           className='hover:bg-primary/10 flex items-center gap-2 rounded-md p-1 transition-colors'
         >
-          <Image src={ArrowBack} alt='' width={16} height={16} />
+          <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
           <span className='text-lg font-semibold'>New chat</span>
         </button>
         <button
@@ -108,7 +113,11 @@ const NewChatView: React.FC = () => {
         />
 
         {account?.address && !isResolving && (
-          <div className='bg-secondary border-tertiary flex items-center gap-3 rounded-md border p-3'>
+          <button
+            onClick={submit}
+            disabled={createChat.isPending}
+            className='bg-secondary border-tertiary hover:bg-tertiary flex items-center gap-3 rounded-md border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+          >
             <Avatar
               address={account.address as `0x${string}`}
               src={account.ens?.avatar ?? undefined}
@@ -123,20 +132,16 @@ const NewChatView: React.FC = () => {
                 <p className='text-neutral truncate text-sm'>{formatAddress(account.address)}</p>
               )}
             </div>
-          </div>
+            <span className='text-primary text-md font-semibold whitespace-nowrap'>
+              {createChat.isPending ? 'Opening…' : 'Start chat →'}
+            </span>
+          </button>
         )}
 
         {err && <p className='text-md text-red-400'>{err}</p>}
       </div>
 
       <div className='border-tertiary flex flex-col gap-2 border-t-2 p-4'>
-        <PrimaryButton
-          onClick={submit}
-          disabled={!canSubmit}
-          className='w-full'
-        >
-          {createChat.isPending ? 'Starting…' : 'Start chat'}
-        </PrimaryButton>
         <SecondaryButton onClick={() => dispatch(openSidebarToList())} className='w-full'>
           Cancel
         </SecondaryButton>

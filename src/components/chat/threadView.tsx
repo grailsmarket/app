@@ -14,8 +14,8 @@ import { useChat } from '@/hooks/chat/useChat'
 import { useChatMessages } from '@/hooks/chat/useChatMessages'
 import { useMarkRead } from '@/hooks/chat/useMarkRead'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
+import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import { useUserContext } from '@/context/user'
-import { formatAddress } from '@/utils/formatAddress'
 import LoadingCell from '@/components/ui/loadingCell'
 import MessageRow from './messageRow'
 import Composer from './composer'
@@ -45,6 +45,7 @@ const ThreadView: React.FC = () => {
     [chat, myAddress]
   )
   const peer = otherParticipants[0]
+  const peerProfile = usePeerProfile(peer?.address)
 
   // Auto-scroll to bottom on new messages.
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -82,7 +83,7 @@ const ThreadView: React.FC = () => {
     return null
   }, [messages, myAddress])
 
-  const peerLabel = peer ? formatAddress(peer.address) : 'Direct chat'
+  const peerLabel = peerProfile?.displayLabel ?? 'Direct chat'
 
   // Filter typing events to peers only (don't show our own typing back to us).
   const otherTypingIds = peer
@@ -97,11 +98,16 @@ const ThreadView: React.FC = () => {
           className='hover:bg-primary/10 rounded-md p-1 transition-colors'
           aria-label='Back to chats'
         >
-          <Image src={ArrowBack} alt='' width={16} height={16} />
+          <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
         </button>
         <div className='flex min-w-0 flex-1 items-center gap-2'>
           {peer ? (
-            <Avatar address={peer.address as `0x${string}`} style={{ width: '32px', height: '32px' }} />
+            <Avatar
+              address={peer.address as `0x${string}`}
+              src={peerProfile?.avatar ?? undefined}
+              name={peerProfile?.ensName ?? undefined}
+              style={{ width: '32px', height: '32px' }}
+            />
           ) : (
             <div className='bg-tertiary h-8 w-8 rounded-full' />
           )}

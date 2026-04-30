@@ -57,13 +57,20 @@ export const useSendMessage = (chatId: string | null) => {
     },
     onSuccess: (serverMessage, _body, ctx) => {
       if (!chatId) return
+      // Defensive fallback: if the server response is missing sender_address
+      // (older backend before the JOIN fix), keep the value we set on the
+      // optimistic message so the bubble stays on the caller's side.
+      const merged: ChatMessage = {
+        ...serverMessage,
+        sender_address: serverMessage.sender_address ?? userAddress?.toLowerCase(),
+      }
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['chats', chatId, 'messages'], (old) => {
         if (!old) return old
         return {
           ...old,
           pages: old.pages.map((page) => ({
             ...page,
-            messages: page.messages.map((m) => (m.id === ctx?.tempId ? serverMessage : m)),
+            messages: page.messages.map((m) => (m.id === ctx?.tempId ? merged : m)),
           })),
         }
       })

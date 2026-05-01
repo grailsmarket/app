@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
-import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
+import { Avatar, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { beautifyName } from '@/lib/ens'
 import type { Comment } from '@/types/comment'
 
@@ -24,22 +24,36 @@ const CommentRow: React.FC<Props> = ({ comment }) => {
     staleTime: 60_000,
   })
 
-  const displayName = account?.ens?.name
-    ? beautifyName(account.ens.name)
+  const ensName = account?.ens?.name
+  const displayName = ensName
+    ? beautifyName(ensName)
     : truncateAddress(comment.author_address as `0x${string}`)
 
   return (
-    <div className='border-tertiary flex w-full flex-col gap-1 border-b py-3 last:border-b-0'>
-      <div className='flex items-center justify-between gap-2'>
-        <Link
-          href={`/profile/${comment.author_address}`}
-          className='text-foreground hover:text-primary text-sm font-medium'
-        >
-          {displayName}
-        </Link>
-        <span className='text-neutral text-xs'>{time}</span>
+    <div className='border-tertiary flex w-full gap-2 border-b py-3 last:border-b-0'>
+      <Link
+        href={`/profile/${comment.author_address}`}
+        className='shrink-0'
+        aria-label={displayName}
+      >
+        <Avatar
+          name={ensName || comment.author_address}
+          src={account?.ens?.avatar}
+          style={{ height: '36px', width: '36px' }}
+        />
+      </Link>
+      <div className='flex min-w-0 flex-1 flex-col gap-1'>
+        <div className='flex items-center justify-between gap-2'>
+          <Link
+            href={`/profile/${comment.author_address}`}
+            className='hover:text-primary text-foreground truncate text-md font-semibold'
+          >
+            {displayName}
+          </Link>
+          <span className='text-neutral text-xs whitespace-nowrap'>{time}</span>
+        </div>
+        <p className='text-foreground text-md whitespace-pre-wrap break-words'>{comment.body}</p>
       </div>
-      <p className='text-foreground text-md whitespace-pre-wrap break-words'>{comment.body}</p>
     </div>
   )
 }

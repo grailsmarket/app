@@ -9,6 +9,8 @@ import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
 
 export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
@@ -23,7 +25,6 @@ interface NameImageProps {
   className?: string
   height?: number
   width?: number
-  refreshKey?: number
 }
 
 function responsiveSvg(svg: string): string {
@@ -43,11 +44,26 @@ function scopeSvgIds(svg: string, suffix: string): string {
   return out
 }
 
-const NameImage = ({ name, expiryDate, className, height, width, refreshKey }: NameImageProps) => {
+const NameImage = ({ name, expiryDate, className, height, width }: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
-  const cacheParam = refreshKey ? `?v=${refreshKey}` : ''
+  // Pending hard-refresh signal published to Redux by callers like the
+  // metadata refresh button or the records-edit modal. We capture the
+  // timestamp into local state on first sight and immediately consume it
+  // from Redux so other instances of this name (or a future remount) don't
+  // refresh again — the local copy keeps the cache-busted URL stable.
+  const dispatch = useAppDispatch()
+  const pendingRefreshKey = useAppSelector(selectImageRefreshKey(name))
+  const [refreshKey, setRefreshKey] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (pendingRefreshKey === undefined || pendingRefreshKey === refreshKey) return
+    setRefreshKey(pendingRefreshKey)
+    dispatch(consumeImageRefresh(name))
+  }, [pendingRefreshKey, refreshKey, dispatch, name])
+
+  const cacheParam = useMemo(() => (refreshKey ? `?v=${refreshKey}` : ''), [refreshKey])
   const wrappedSrc = useMemo(
     () => `${WRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(nameHash).toString()}/image${cacheParam}`,
     [nameHash, cacheParam]

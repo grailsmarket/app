@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import { ShortArrow } from 'ethereum-identity-kit'
 import { CopyValue } from './primaryDetails'
@@ -14,6 +14,8 @@ import { MetadataType } from '@/types/api'
 import { RegistrationStatus } from '@/types/domains'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
 import { ENS_METADATA_URL } from '@/constants/ens'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 
 interface NameDetailsProps {
   name: string
@@ -36,6 +38,20 @@ const Metadata: React.FC<NameDetailsProps> = ({
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
   const canEditMetadata = isNameOwner && registrationStatus === REGISTERED
+
+  // Mirror the cache-busting flow used by `NameImage` so a metadata refresh
+  // also blows past any cached avatar/header image bytes. See `imageRefresh`
+  // slice — a non-undefined entry signals "fetch fresh"; we capture the
+  // timestamp locally and consume the entry so it stays one-shot.
+  const dispatch = useAppDispatch()
+  const pendingRefreshKey = useAppSelector(selectImageRefreshKey(name))
+  const [refreshKey, setRefreshKey] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    if (pendingRefreshKey === undefined || pendingRefreshKey === refreshKey) return
+    setRefreshKey(pendingRefreshKey)
+    dispatch(consumeImageRefresh(name))
+  }, [pendingRefreshKey, refreshKey, dispatch, name])
+  const cacheParam = refreshKey ? `?v=${refreshKey}` : ''
 
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
@@ -91,7 +107,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'avatar') && (
               <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`${ENS_METADATA_URL}/mainnet/avatar/${name}`}
+                  src={`${ENS_METADATA_URL}/mainnet/avatar/${name}${cacheParam}`}
                   alt='Avatar'
                   width={40}
                   height={40}
@@ -105,7 +121,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'header') && (
               <div key='header' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`${ENS_METADATA_URL}/mainnet/header/${name}`}
+                  src={`${ENS_METADATA_URL}/mainnet/header/${name}${cacheParam}`}
                   alt='Header'
                   width={120}
                   height={40}

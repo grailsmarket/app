@@ -46,6 +46,7 @@ import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
+import { markImageForRefresh } from '@/state/reducers/imageRefresh'
 
 interface NameDetailsProps {
   name: string
@@ -65,7 +66,6 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   openEditMetadataModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
-  const [imageRefreshKey, setImageRefreshKey] = useState<number>()
   const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false)
 
   // Determine countdown type based on registration status
@@ -135,7 +135,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         queryClient.invalidateQueries({ queryKey: ['name', 'details', name] }),
         queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] }),
       ])
-      setImageRefreshKey(Date.now())
+      dispatch(markImageForRefresh(name))
     } catch (error) {
       console.error('Failed to refresh metadata:', error)
     } finally {
@@ -151,7 +151,6 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
             expiryDate={nameDetails.expiry_date}
-            refreshKey={imageRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
         )}
@@ -207,6 +206,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             canCopy={true}
             truncateValue={false}
             className='text-2xl font-bold md:text-3xl'
+            containerClassName='max-w-[calc(100%-52px)]!'
           />
           <Tooltip label='Refresh metadata' align='right' position='top'>
             <button
@@ -386,11 +386,13 @@ export const CopyValue = ({
   canCopy,
   truncateValue,
   className,
+  containerClassName,
 }: {
   value: string
   canCopy: boolean
   truncateValue?: boolean
   className?: string
+  containerClassName?: string
 }) => {
   const [isCopied, setIsCopied] = useState(false)
   const handleCopy = (value: string) => {
@@ -403,7 +405,7 @@ export const CopyValue = ({
 
   return (
     <div
-      className='flex max-w-full cursor-pointer flex-row items-center gap-1.5'
+      className={cn('flex max-w-full cursor-pointer flex-row items-center gap-1.5', containerClassName)}
       onClick={() => {
         if (canCopy) handleCopy(value)
       }}

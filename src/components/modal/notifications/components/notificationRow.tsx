@@ -146,7 +146,14 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
           {imageUrl && (
             <div className='relative h-fit max-w-44 cursor-pointer' onClick={() => setExpandedImage(imageUrl)}>
               <motion.div layoutId={`image-${imageUrl}`}>
-                <Image src={imageUrl} alt='Dashboard' width={1200} height={1200} className='h-auto w-full' onClick={(e) => e.stopPropagation()} />
+                <Image
+                  src={imageUrl}
+                  alt='Dashboard'
+                  width={1200}
+                  height={1200}
+                  className='h-auto w-full'
+                  onClick={(e) => e.stopPropagation()}
+                />
               </motion.div>
               <div className='absolute top-0 right-0 flex h-full w-full items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 hover:opacity-100'>
                 <Image
@@ -171,9 +178,11 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
     )
 
     if (linkUrl) {
-      return <Link href={linkUrl} className={className}>
-        {content}
-      </Link>
+      return (
+        <Link href={linkUrl} className={className}>
+          {content}
+        </Link>
+      )
     }
 
     return <div className={className}>{content}</div>

@@ -55,7 +55,7 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
           </div>
         ) : comments.length === 0 ? (
           <div className='py-2xl flex w-full flex-col items-center justify-center gap-3'>
-            <p className='text-neutral text-md'>No comments yet — be the first.</p>
+            <p className='text-neutral text-md'>No comments yet</p>
           </div>
         ) : (
           <>

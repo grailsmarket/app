@@ -39,7 +39,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             name={domain.name}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
-            className='pointer-events-none h-8 min-w-8 rounded-sm sm:h-[34px] sm:min-w-[34px]'
+            className='pointer-events-none h-8 max-h-8 max-w-8 min-w-8 rounded-sm sm:h-[34px] sm:min-w-[34px] sm:max-w-[34px] sm:max-h-[34px]'
           />
           <div className='flex max-w-full flex-col gap-px truncate'>
             <p

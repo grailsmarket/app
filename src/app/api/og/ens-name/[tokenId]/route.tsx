@@ -40,8 +40,8 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const nameParam = searchParams.get('name')
     const name = nameParam ? decodeURIComponent(nameParam) : 'Unknown'
-    console.log('name', name)
-    console.log('beautifyName(name)', beautifyName(name))
+    // console.log('name', name)
+    // console.log('beautifyName(name)', beautifyName(name))
     const expires = searchParams.get('expires')
     const expiryDate = expires ? new Date(Number(expires)).toISOString() : null
 

@@ -1,55 +1,26 @@
+import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash, isAddress } from 'viem'
-import puppeteerCore, { LaunchOptions } from 'puppeteer-core'
-import chromium from '@sparticuz/chromium-min'
 import { formatUnits } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { TOKENS } from '@/constants/web3/tokens'
 import { beautifyName } from '@/lib/ens'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
+import { APIResponseType } from '@/types/api'
+import { MarketplaceDomainType } from '@/types/domains'
+import { API_URL } from '@/constants/api'
+import { getInterFonts } from '../_lib/inter'
 
 const size = {
   width: 1600,
   height: 836,
 }
 
-const WRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `https://metadata.ens.domains/mainnet/${APP_ENS_ADDRESS}`
-
-const CHROMIUM_PACK_URL = `https://${process.env.VERCEL_URL}/chromium-pack.tar`
-
-let cachedExecutablePath: string | null = null
-let downloadPromise: Promise<string> | null = null
-
-async function getChromiumPath(): Promise<string> {
-  if (!!process.env.VERCEL_ENV) {
-    if (cachedExecutablePath) return cachedExecutablePath
-
-    if (!downloadPromise) {
-      downloadPromise = chromium
-        .executablePath(CHROMIUM_PACK_URL)
-        .then((path) => {
-          cachedExecutablePath = path
-          return path
-        })
-        .catch((error) => {
-          console.error('Failed to get Chromium path:', error)
-          downloadPromise = null
-          throw error
-        })
-    }
-
-    return downloadPromise
-  }
-
-  if (!!process.env.CHROMIUM_LOCAL_EXEC_PATH) {
-    return Promise.resolve(process.env.CHROMIUM_LOCAL_EXEC_PATH)
-  }
-
-  throw new Error('Missing a path for Chromium executable')
-}
+const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://ens-metadata-flarecloud.encrypted-063.workers.dev'
+const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
@@ -85,35 +56,59 @@ const getCurrencySymbol = (currencyAddress: string): string => {
 }
 
 export async function GET(req: NextRequest) {
-  let browser
-  let page
-
   try {
     const searchParams = req.nextUrl.searchParams
     const name = searchParams.get('name')
-    const priceWei = searchParams.get('price')
-    const currencyAddress = searchParams.get('currency')
-    const source = searchParams.get('source')
-    const expires = searchParams.get('expires')
-    const owner_address = searchParams.get('owner')
-    const categories = searchParams.get('categories')?.split(',') || []
+    const listing_id = searchParams.get('listing_id')
 
-    if (!name || !priceWei || !currencyAddress || !source || !expires) {
+    if (!name || !listing_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const price = formatPrice(priceWei, currencyAddress)
-    const currency = getCurrencySymbol(currencyAddress)
-    const sourceLogo = SOURCE_LOGO_URLS[source] || SOURCE_LOGO_URLS.grails
-    const expiresFormatted = formatExpiryDate(expires)
+    const getNameDetails = async () => {
+      try {
+        const response = await fetch(`${API_URL}/names/${name}`)
+        const result = (await response.json()) as APIResponseType<MarketplaceDomainType>
+        const data = result.data
+
+        return {
+          listings: data.listings,
+          owner_address: data.owner,
+          categories: data.clubs || [],
+        }
+      } catch (error) {
+        console.error('Error fetching name details:', error)
+        return null
+      }
+    }
+
+    const nameDetails = await getNameDetails()
+
+    if (!nameDetails) {
+      return NextResponse.json({ error: 'Name details not found' }, { status: 404 })
+    }
+
+    const listing = nameDetails.listings.find((listing) => listing.id === parseInt(listing_id))
+    if (!listing) {
+      return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+    }
+
+    const owner_address = nameDetails.owner_address
+    if (!owner_address) {
+      return NextResponse.json({ error: 'Owner address not found' }, { status: 404 })
+    }
+
+    const categories = nameDetails.categories
+    const price = formatPrice(listing.price, listing.currency_address)
+    const currency = getCurrencySymbol(listing.currency_address)
+    const sourceLogo = SOURCE_LOGO_URLS[listing.source] || SOURCE_LOGO_URLS.grails
+    const expiresFormatted = formatExpiryDate(listing.expires_at)
     const displayName = name.endsWith('.eth') ? name : `${name}.eth`
     const defaultAvatar = 'https://efp.app/assets/art/default-avatar.svg'
-
-    // Fetch owner profile
     const getOwnerProfile = async () => {
-      if (!owner_address) return { avatar: defaultAvatar, displayName: '' }
+      if (!nameDetails.owner_address) return { avatar: defaultAvatar, displayName: '' }
       try {
-        const response = await fetchAccount(owner_address)
+        const response = await fetchAccount(nameDetails.owner_address)
         if (response === null) {
           return {
             avatar: defaultAvatar,
@@ -133,380 +128,292 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Get ENS SVG
-    const getENSSVG = async () => {
+    const getENSImage = async () => {
       try {
         const nameHash = namehash(displayName)
         const labelHash = labelhash(displayName.replace('.eth', ''))
 
-        const [wrappedResult, unwrappedResult] = await Promise.all([
-          fetch(`${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image`)
-            .then((res) => (res.status === 200 ? res.text() : null))
-            .catch(() => null),
-          fetch(`${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image`)
-            .then((res) => (res.status === 200 ? res.text() : null))
-            .catch(() => null),
-        ])
+        const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
-        return wrappedResult || unwrappedResult || null
+        const wrappedResult = await fetch(wrappedImageUrl)
+          .then((res) => res.ok)
+          .catch(() => false)
+
+        return wrappedResult ? wrappedImageUrl : unwrappedImageUrl
       } catch (error) {
-        console.error('Error fetching ENS SVG:', error)
+        console.error('Error fetching ENS Image:', error)
         return null
       }
     }
 
-    // Pre-fetch category avatars as base64 data URIs to avoid redirect/CORS issues in Puppeteer
+    // Sniff the image format from the actual bytes. The `content-type` header often
+    // lies (wrong type, extra params like `; charset=...`), and Satori's decoder will
+    // throw `RangeError: Offset is outside the bounds of the DataView` if the MIME in
+    // the data URI prefix doesn't match the bytes.
+    const detectImageMime = (bytes: Uint8Array): string | null => {
+      if (bytes.length < 4) return null
+      // PNG: 89 50 4E 47
+      if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return 'image/png'
+      // JPEG: FF D8 FF
+      if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg'
+      // GIF: 47 49 46 38
+      if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return 'image/gif'
+      // WebP: "RIFF....WEBP"
+      if (
+        bytes.length >= 12 &&
+        bytes[0] === 0x52 &&
+        bytes[1] === 0x49 &&
+        bytes[2] === 0x46 &&
+        bytes[3] === 0x46 &&
+        bytes[8] === 0x57 &&
+        bytes[9] === 0x45 &&
+        bytes[10] === 0x42 &&
+        bytes[11] === 0x50
+      )
+        return 'image/webp'
+      // SVG: text starting with <?xml or <svg
+      const head = new TextDecoder()
+        .decode(bytes.slice(0, Math.min(bytes.length, 256)))
+        .trimStart()
+        .toLowerCase()
+      if (head.startsWith('<?xml') || head.startsWith('<svg')) return 'image/svg+xml'
+      return null
+    }
+
+    const fetchImageAsDataUri = async (url: string): Promise<string | null> => {
+      try {
+        const res = await fetch(url)
+        if (!res.ok) return null
+        const buffer = await res.arrayBuffer()
+        if (buffer.byteLength === 0) return null
+        const mime = detectImageMime(new Uint8Array(buffer))
+        if (!mime) return null
+        const base64 = Buffer.from(buffer).toString('base64')
+        return `data:${mime};base64,${base64}`
+      } catch {
+        return null
+      }
+    }
+
+    // Pre-fetch category avatars as base64 data URIs for reliable rendering in Satori
     const getCategoryAvatarDataUris = async (): Promise<Record<string, string>> => {
-      if (categories.length === 0) return {}
+      if (categories.length !== 1) return {}
       const entries = await Promise.all(
         categories.map(async (category) => {
-          try {
-            const res = await fetch(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
-            if (!res.ok) return [category, ''] as const
-            const buffer = await res.arrayBuffer()
-            const contentType = res.headers.get('content-type') || 'image/jpeg'
-            const base64 = Buffer.from(buffer).toString('base64')
-            return [category, `data:${contentType};base64,${base64}`] as const
-          } catch {
-            return [category, ''] as const
-          }
+          const dataUri = await fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
+          return [category, dataUri || ''] as const
         })
       )
       return Object.fromEntries(entries)
     }
 
-    // Fetch all data in parallel
-    const [ownerProfile, ensSVG, categoryAvatars] = await Promise.all([
+    const [ownerProfile, ensImage, categoryAvatars, interFonts, defaultAvatarDataUri] = await Promise.all([
       getOwnerProfile(),
-      getENSSVG(),
+      getENSImage(),
       getCategoryAvatarDataUris(),
+      getInterFonts(),
+      fetchImageAsDataUri(defaultAvatar),
     ])
 
-    const executablePath = await getChromiumPath()
-    const launchOptions = {
-      executablePath,
-      args: [
-        ...chromium.args,
-        '--disable-blink-features=AutomationControlled',
-        '--disable-web-security',
-        '--no-first-run',
-        '--no-default-browser-check',
-      ],
-      headless: true,
-      defaultViewport: { width: size.width, height: size.height },
-      ignoreHTTPSErrors: true,
-      ...(process.env.VERCEL_ENV
-        ? {}
-        : {
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-          }),
-    }
+    const ownerAvatarDataUri = ownerProfile.displayName
+      ? await fetchImageAsDataUri(`${ENS_METADATA_URL}/mainnet/avatar/${ownerProfile.displayName}`)
+      : null
+    const ownerAvatar = ownerAvatarDataUri || (defaultAvatarDataUri as string)
 
-    browser = await puppeteerCore.launch(launchOptions as LaunchOptions)
-    page = await browser.newPage()
+    const imageBottomRadius = categories.length > 0 ? 0 : 20
 
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            svg text, svg tspan { font-family: 'Inter', sans-serif, 'Noto Color Emoji' !important; font-variant-emoji: unicode; }
-            body {
-              width: ${size.width}px;
-              height: ${size.height}px;
-              background: radial-gradient(circle, #444444, #222222);
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              justify-content: center;
-              gap: 80px;
-              color: #f4f4f4;
-              padding: 80px;
-              font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            }
-            .price, .expires, .owner-name, .category-label, .source-label, .label, .listed-label {
-              font-variant-emoji: text;
-              text-rendering: optimizeLegibility;
-            }
-            .ens-image-container {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              gap: 0px;
-            }
-            .listed-label {
-              font-size: 60px;
-              font-weight: 700;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: #222222;
-              background-color: #ffdfc0;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-              border-radius: 20px 20px 0px 0px;
-              text-align: center;
-              width: 560px;
-              height: 96px;
-            }
-            .ens-image {
-              width: 560px;
-              height: 560px;
-              display: flex;
-              padding: 0;
-              align-items: center;
-              justify-content: center;
-              overflow: hidden;
-              flex-shrink: 0;
-              border-radius: ${categories.length > 0 ? '0px' : '0px 0px 20px 20px'} !important;
-            }
-            .ens-image svg {
-              width: 560px !important;
-              height: 560px !important;
-              width: auto;
-              height: auto;
-              border-radius: ${categories.length > 0 ? '0px' : '0px 0px 20px 20px'} !important;
-            }
-            .fallback {
-              width: 560px;
-              height: 560px;
-              background-color: #5298FF;
-              border-radius: 32px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 64px;
-              font-weight: 700;
-              color: white;
-              text-align: center;
-              padding: 40px;
-              word-break: break-all;
-            }
-            .categories {
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              justify-content: ${categories.length > 1 ? 'flex-start' : 'center'};
-              width: 560px;
-              gap: 24px;
-              overflow-x: scroll;
-              background-color: #444444;
-              border-radius: 0px 0px 20px 20px;
-              padding: ${categories.length > 1 ? '18px 0px 18px 24px' : '18px'};
-            }
-            .category {
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              justify-content: ${categories.length > 1 ? 'flex-start' : 'center'};
-              gap: 16px;
-            }
-            .category-divider {
-              font-size: 44px;
-              color: #ffffff;
-              font-weight: 600;
-              padding-right: 16px;
-            }
-            .category-logo {
-              width: 64px;
-              height: 64px;
-              min-width: 64px;
-              min-height: 64px;
-              border-radius: 50%;
-              object-fit: cover;
-            }
-            .category-label {
-              font-size: 44px;
-              color: #ffffff;
-              font-weight: 600;
-              text-wrap: nowrap;
-            }
-            .divider {
-              height: 480px;
-              width: 3px;
-              background: #cccccc;
-              border-radius: 8px;
-              flex-shrink: 0;
-            }
-            .info {
-              display: flex;
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 24px;
-              max-width: 700px;
-            }
-            .domain-name {
-              font-size: 72px;
-              font-weight: 700;
-              max-width: 700px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-            .label {
-              font-size: 56px;
-              color: #ffffff;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-              font-weight: 600;
-            }
-            .price-container {
-              display: flex;
-              align-items: center;
-              gap: 32px;
-            }
-            .price {
-              font-size: 96px;
-              font-weight: 700;
-              color: #ffdfc0;
-            }
-            .expires {
-              font-size: 48px;
-              color: #cccccc;
-            }
-            .source {
-              display: flex;
-              align-items: center;
-              gap: 32px;
-              margin-top: 8px;
-            }
-            .source-label {
-              font-size: 56px;
-              color: #ffffff;
-              font-weight: 600;
-            }
-            .source-logo {
-              width: auto;
-              height: 72px;
-            }
-            .grails-logo {
-              margin-top: 24px;
-              width: 380px;
-              height: auto;
-            }
-            .owner {
-              display: flex;
-              align-items: center;
-              gap: 24px;
-              margin-top: 8px;
-              padding: 8px 0px;
-            }
-            .owner-avatar {
-              width: 80px;
-              height: 80px;
-              border-radius: 50%;
-              object-fit: cover;
-            }
-            .owner-name {
-              font-size: 48px;
-              color: #cccccc;
-              max-width: 560px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-            .domain-link {
-              font-size: 44px;
-              color: #ffdfc0;
-              max-width: 700px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-              font-family: 'Inter', system-ui, -apple-system, sans-serif, 'Noto Color Emoji';
-              font-variant-emoji: unicode;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="ens-image-container">
-            <p class="listed-label">LISTING</p>
-            <div class="ens-image">
-              ${ensSVG ? ensSVG : `<div class="fallback">${displayName}</div>`}
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            background: 'radial-gradient(circle, #444444, #222222)',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 80,
+            padding: 80,
+            color: '#f4f4f4',
+            fontFamily: 'Inter, sans-serif',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 560,
+                height: 96,
+                fontSize: 60,
+                fontWeight: 700,
+                color: '#222222',
+                backgroundColor: '#ffdfc0',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                borderRadius: '20px 20px 0px 0px',
+              }}
+            >
+              LISTING
             </div>
-            ${
-              categories.length > 0
-                ? `<div class="categories">
-                    ${categories
-                      .map(
-                        (category) => `<div class="category">
-                      ${categoryAvatars[category] ? `<img class="category-logo" src="${categoryAvatars[category]}" alt="category" />` : ''}
-                      <p class="category-label">${CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] || category}</p>
-                    </div>`
-                      )
-                      .join('')}
-                  </div>`
-                : ''
-            }
+            {ensImage && (
+              <img
+                src={ensImage}
+                alt='ens'
+                width={560}
+                height={560}
+                style={{
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  borderBottomLeftRadius: imageBottomRadius,
+                  borderBottomRightRadius: imageBottomRadius,
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+            {categories.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 560,
+                  gap: 24,
+                  overflow: 'hidden',
+                  backgroundColor: '#444444',
+                  borderRadius: '0px 0px 20px 20px',
+                  padding: categories.length === 1 ? '16px' : '10px',
+                }}
+              >
+                {categories.length === 1 ? (
+                  <div
+                    key={categories[0]}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 16,
+                    }}
+                  >
+                    {categoryAvatars[categories[0]] && (
+                      <img
+                        src={categoryAvatars[categories[0]]}
+                        alt='category'
+                        width={64}
+                        height={64}
+                        style={{ borderRadius: 32, objectFit: 'cover' }}
+                      />
+                    )}
+                    <div
+                      style={{
+                        fontSize: 44,
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 44, color: '#ffffff', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {categories.length} Categories
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-          <div class="divider"></div>
-          <div class="info">
-          <div class="price-container"><p class="price">${price} ${currency}</p> <img class="source-logo" src="${sourceLogo}" alt="source" /></div>
-            <div class="expires">Ends: ${expiresFormatted}</div>
-            ${
-              ownerProfile.displayName
-                ? `<div class="owner">
-              <img class="owner-avatar" src="${ownerProfile.avatar}" alt="owner" />
-              <span class="owner-name">${ownerProfile.displayName}</span>
-            </div>`
-                : ''
-            }
-            <p class="domain-link">grails.app/${beautifyName(name)}</p>
-              <img class="grails-logo" src="https://grails.app/your-ens-market-logo.svg" alt="Grails" />
+          <div style={{ height: 480, width: 3, backgroundColor: '#cccccc', borderRadius: 8 }} />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: 24,
+              maxWidth: 700,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+              <div style={{ fontSize: 96, fontWeight: 700, color: '#ffdfc0' }}>{`${price} ${currency}`}</div>
+              <img src={sourceLogo} alt='source' width={72} height={72} />
+            </div>
+            <div style={{ fontSize: 48, color: '#cccccc' }}>{`Ends: ${expiresFormatted}`}</div>
+            {ownerProfile.displayName && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 24,
+                  marginTop: 8,
+                  padding: '8px 0px',
+                }}
+              >
+                <img
+                  src={ownerAvatar}
+                  alt='owner'
+                  width={80}
+                  height={80}
+                  style={{ borderRadius: 40, objectFit: 'cover' }}
+                />
+                <div
+                  style={{
+                    fontSize: 48,
+                    color: '#cccccc',
+                    maxWidth: 560,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {ownerProfile.displayName}
+                </div>
+              </div>
+            )}
+            <div
+              style={{
+                fontSize: 44,
+                color: '#ffdfc0',
+                maxWidth: 700,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {`grails.app/${beautifyName(name)}`}
+            </div>
+            <img
+              src='https://grails.app/your-ens-market-logo.svg'
+              alt='Grails'
+              width={380}
+              height={116}
+              style={{ marginTop: 24 }}
+            />
           </div>
-        </body>
-      </html>
-    `
-
-    try {
-      await page.setContent(htmlContent, {
-        waitUntil: 'networkidle0',
-        timeout: 10000,
-      })
-    } catch {
-      await page.goto(`data:text/html,${encodeURIComponent(htmlContent)}`, {
-        waitUntil: 'networkidle0',
-        timeout: 10000,
-      })
-    }
-
-    const screenshot = await page.screenshot({
-      type: 'png',
-      fullPage: false,
-      clip: { x: 0, y: 0, width: size.width, height: size.height },
-    })
-
-    await page.close()
-    await browser.close()
-
-    return new NextResponse(Buffer.from(screenshot), {
-      headers: {
-        'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
-      },
-    })
+        </div>
+      ),
+      {
+        ...size,
+        emoji: 'twemoji',
+        headers: {
+          'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
+        },
+        fonts: interFonts,
+      }
+    )
   } catch (error) {
     console.error('Error generating listing image:', error)
-
-    if (page) {
-      try {
-        await page.close()
-      } catch (e) {
-        console.error('Error closing page:', e)
-      }
-    }
-
-    if (browser) {
-      try {
-        await browser.close()
-      } catch (e) {
-        console.error('Error closing browser:', e)
-      }
-    }
-
     return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 })
   }
 }

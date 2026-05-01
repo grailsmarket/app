@@ -55,23 +55,14 @@ const ShareModal: React.FC<ShareModalProps> = ({
       if (type === 'listing' && listing) {
         const params = new URLSearchParams({
           name: domainName,
-          price: listing.price,
-          currency: listing.currency_address,
-          source: listing.source,
-          expires: listing.expires_at,
-          ...(ownerAddress && { owner: ownerAddress }),
-          ...(categories && { categories: categories.join(',') }),
+          listing_id: listing.id.toString(),
         })
         endpoint = `/api/og/listing?${params.toString()}`
       } else if (type === 'offer' && offer) {
         const params = new URLSearchParams({
           name: domainName,
-          amount: offer.offer_amount_wei,
-          currency: offer.currency_address,
-          source: offer.source,
-          expires: offer.expires_at,
+          offer_id: offer.id.toString(),
           ...(ownerAddress && { owner: ownerAddress }),
-          ...(offer.buyer_address && { offerrer: offer.buyer_address }),
           ...(categories && { categories: categories.join(',') }),
         })
         endpoint = `/api/og/offer?${params.toString()}`

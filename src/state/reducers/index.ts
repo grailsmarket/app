@@ -18,6 +18,7 @@ import viewReducer from './view'
 import analyticsReducer from './analytics'
 import leaderboardReducer from './leaderboard'
 import chatReducer from './chat'
+import imageRefreshReducer from './imageRefresh'
 
 const PERSISTED_KEYS: string[] = ['registration', 'view', 'profile']
 
@@ -99,6 +100,7 @@ const reducer = combineReducers({
   analytics: analyticsReducer,
   leaderboard: leaderboardReducer,
   chat: chatReducer,
+  imageRefresh: imageRefreshReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, reducer)

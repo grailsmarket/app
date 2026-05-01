@@ -14,6 +14,7 @@ export type ProfileResponseType = {
   minOfferThreshold: number | null
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
+  notifyOnCommentReceived: boolean
 }
 
 export const checkAuthentication = async () => {

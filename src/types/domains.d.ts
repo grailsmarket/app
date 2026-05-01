@@ -33,6 +33,7 @@ export type MarketplaceDomainType = {
     notifyOnOffer: boolean
     notifyOnListing: boolean
     notifyOnPriceChange: boolean
+    notifyOnComment: boolean
   }
 }
 
@@ -249,6 +250,7 @@ export type WatchlistItemType = {
   notifyOnOffer: boolean
   notifyOnListing: boolean
   notifyOnPriceChange: boolean
+  notifyOnComment: boolean
   addedAt: string
   nameData: {
     name: string
@@ -270,6 +272,7 @@ export type WatchlistEntryType = {
   notifyOnOffer: boolean
   notifyOnPriceChange: boolean
   notifyOnSale: boolean
+  notifyOnComment: boolean
 }
 
 export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]

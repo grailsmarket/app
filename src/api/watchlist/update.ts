@@ -7,6 +7,7 @@ export type WatchlistSettingsType = {
   notifyOnOffer: boolean
   notifyOnListing: boolean
   notifyOnPriceChange: boolean
+  notifyOnComment: boolean
 }
 
 export const updateWatchlistSettings = async ({
@@ -31,6 +32,7 @@ export const updateWatchlistSettings = async ({
     notifyOnOffer: boolean
     notifyOnListing: boolean
     notifyOnPriceChange: boolean
+    notifyOnComment: boolean
   }>
 
   return json.success

@@ -44,6 +44,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setNotifyOnListingSoldValue,
     notifyOnOfferReceivedValue,
     setNotifyOnOfferReceivedValue,
+    notifyOnCommentReceivedValue,
+    setNotifyOnCommentReceivedValue,
   } = useSettings()
   const { userAddress } = useUserContext()
 
@@ -211,6 +213,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     className={cn(
                       'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
                       notifyOnOfferReceivedValue ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+              </div>
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-col'>
+                  <p className='text-lg font-medium'>Notify on Comment Received on my Names</p>
+                  <p className='text-neutral text-sm'>
+                    You will receive a notification when one of your names receives a comment
+                  </p>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => setNotifyOnCommentReceivedValue(!notifyOnCommentReceivedValue)}
+                  className={cn(
+                    'group relative h-6 w-11 cursor-pointer rounded-full transition-colors duration-200',
+                    notifyOnCommentReceivedValue ? 'bg-primary' : 'bg-tertiary'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
+                      notifyOnCommentReceivedValue ? 'translate-x-5' : 'translate-x-0'
                     )}
                   />
                 </button>

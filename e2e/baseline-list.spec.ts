@@ -46,11 +46,7 @@ async function captureListBaseline(
   // networkidle can stall on long-poll / streaming routes; treat as best-effort.
   await page.waitForLoadState('networkidle').catch(() => {})
 
-  await page.waitForFunction(
-    (sel) => document.querySelectorAll(sel).length >= 3,
-    rowSelector,
-    { timeout: 30_000 }
-  )
+  await page.waitForFunction((sel) => document.querySelectorAll(sel).length >= 3, rowSelector, { timeout: 30_000 })
 
   const metrics = await page.evaluate(
     ({ rowSel }): CapturedMetrics => {
@@ -61,9 +57,7 @@ async function captureListBaseline(
       //       <div style="position:absolute; top:..."> ... </div>
       //     </div>
       //   </div>
-      const candidates = Array.from(
-        document.querySelectorAll<HTMLElement>('div[style*="position: relative"]')
-      )
+      const candidates = Array.from(document.querySelectorAll<HTMLElement>('div[style*="position: relative"]'))
       let spacer: HTMLElement | null = null
       let bestHeight = 0
       for (const el of candidates) {
@@ -156,39 +150,21 @@ test.describe('Pre-migration VirtualList baselines', () => {
   })
 
   test('baseline /marketplace (Domains list)', async ({ page }) => {
-    const data = await captureListBaseline(
-      page,
-      '/marketplace',
-      SELECTORS.marketplace.list.row,
-      60,
-      0
-    )
+    const data = await captureListBaseline(page, '/marketplace', SELECTORS.marketplace.list.row, 60, 0)
     const written = writeBaseline('marketplace', data)
     assertValidBaseline(data)
     expect(fs.existsSync(written)).toBe(true)
   })
 
   test('baseline /leaderboard (LeaderboardList)', async ({ page }) => {
-    const data = await captureListBaseline(
-      page,
-      '/leaderboard',
-      SELECTORS.leaderboard.row,
-      60,
-      0
-    )
+    const data = await captureListBaseline(page, '/leaderboard', SELECTORS.leaderboard.row, 60, 0)
     const written = writeBaseline('leaderboard', data)
     assertValidBaseline(data)
     expect(fs.existsSync(written)).toBe(true)
   })
 
   test('baseline /categories (allHoldersPanel)', async ({ page }) => {
-    const data = await captureListBaseline(
-      page,
-      '/categories',
-      SELECTORS.allHolders.row,
-      60,
-      0
-    )
+    const data = await captureListBaseline(page, '/categories', SELECTORS.allHolders.row, 60, 0)
     const written = writeBaseline('categories', data)
     assertValidBaseline(data)
     expect(fs.existsSync(written)).toBe(true)

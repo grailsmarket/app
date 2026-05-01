@@ -38,11 +38,7 @@ for (const vp of VIEWPORTS) {
       await page.waitForLoadState('networkidle')
     }
 
-    await page.waitForFunction(
-      (sel) => document.querySelectorAll(sel).length >= 3,
-      CARD_SELECTOR,
-      { timeout: 20_000 }
-    )
+    await page.waitForFunction((sel) => document.querySelectorAll(sel).length >= 3, CARD_SELECTOR, { timeout: 20_000 })
 
     const data = await page.evaluate((cardSelector) => {
       const cardLink = document.querySelector<HTMLElement>(cardSelector)
@@ -69,9 +65,7 @@ for (const vp of VIEWPORTS) {
         columnsCount: firstRowCards.length,
         firstCardLeft: firstCardRect ? firstCardRect.left : 0,
         firstCardWidth: firstCardRect ? firstCardRect.width : 0,
-        paddingBottomPx: outerWrapper
-          ? parseInt(getComputedStyle(outerWrapper).paddingBottom, 10) || 0
-          : 0,
+        paddingBottomPx: outerWrapper ? parseInt(getComputedStyle(outerWrapper).paddingBottom, 10) || 0 : 0,
         itemCount: cards.length,
         cardHeight: firstCardRect ? firstCardRect.height : 0,
         gap: 4,
@@ -86,10 +80,7 @@ for (const vp of VIEWPORTS) {
     }
 
     fs.mkdirSync(BASELINE_DIR, { recursive: true })
-    fs.writeFileSync(
-      path.join(BASELINE_DIR, `grid-marketplace-${vp.name}.json`),
-      JSON.stringify(baseline, null, 2)
-    )
+    fs.writeFileSync(path.join(BASELINE_DIR, `grid-marketplace-${vp.name}.json`), JSON.stringify(baseline, null, 2))
 
     expect(baseline.totalHeight).toBeGreaterThan(0)
     expect(baseline.columnsCount).toBeGreaterThan(0)

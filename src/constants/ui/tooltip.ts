@@ -2,16 +2,16 @@ import { TooltipAlignType } from '@/types/ui'
 
 export const TOOLTIP_POSITION_STYLES = {
   top: {
-    bottom: '170%',
+    bottom: '140%',
   },
   left: {
-    right: '170%',
+    right: '140%',
   },
   right: {
-    left: '170%',
+    left: '140%',
   },
   bottom: {
-    top: '170%',
+    top: '140%',
   },
 } as const
 

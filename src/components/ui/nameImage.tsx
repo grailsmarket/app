@@ -25,6 +25,7 @@ interface NameImageProps {
   className?: string
   height?: number
   width?: number
+  forceRefreshKey?: number
 }
 
 function responsiveSvg(svg: string): string {
@@ -44,7 +45,7 @@ function scopeSvgIds(svg: string, suffix: string): string {
   return out
 }
 
-const NameImage = ({ name, expiryDate, className, height, width }: NameImageProps) => {
+const NameImage = ({ name, expiryDate, className, height, width, forceRefreshKey }: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 

@@ -19,7 +19,7 @@ import {
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { useUserContext } from '@/context/user'
@@ -46,7 +46,7 @@ import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
-import { markImageForRefresh } from '@/state/reducers/imageRefresh'
+import { markImageForRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 
 interface NameDetailsProps {
   name: string
@@ -90,6 +90,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   const { onSelect: toggleCart } = useCartDomains()
   const { userAddress, authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
+  const pendingRefreshKey = useAppSelector(selectImageRefreshKey(name))
 
   const openExtendNameModal = () => {
     if (!userAddress) {
@@ -151,6 +152,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
             expiryDate={nameDetails.expiry_date}
+            forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
         )}

@@ -1,18 +1,21 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import LoadingCell from '@/components/ui/loadingCell'
 import CommentRow from '@/components/comments/commentRow'
 import CommentComposer from '@/components/comments/composer'
+import DeleteCommentModal from '@/components/comments/deleteCommentModal'
 import { useComments } from '@/hooks/comments/useComments'
+import { useDeleteComment } from '@/hooks/comments/useDeleteComment'
 import { useUserContext } from '@/context/user'
+import type { Comment } from '@/types/comment'
 
 interface Props {
   name: string
 }
 
 const CommentsPanel: React.FC<Props> = ({ name }) => {
-  const { authStatus } = useUserContext()
+  const { authStatus, userAddress } = useUserContext()
   const {
     comments,
     isLoading,
@@ -22,6 +25,8 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
   } = useComments(name)
 
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
+  const deleteMutation = useDeleteComment(name)
 
   // Lazy-load older comments when the bottom sentinel scrolls into view.
   // Using IntersectionObserver scoped to the panel keeps page-scroll out of it.
@@ -39,6 +44,8 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
     observer.observe(el)
     return () => observer.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  const lowerAddr = userAddress?.toLowerCase()
 
   return (
     <div className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'>
@@ -60,7 +67,12 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
         ) : (
           <>
             {comments.map((c) => (
-              <CommentRow key={c.id} comment={c} />
+              <CommentRow
+                key={c.id}
+                comment={c}
+                canDelete={!!lowerAddr && c.author_address?.toLowerCase() === lowerAddr}
+                onRequestDelete={setPendingDelete}
+              />
             ))}
             <div ref={sentinelRef} />
             {isFetchingNextPage && (
@@ -79,6 +91,18 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
           Sign in to leave a comment.
         </div>
       )}
+
+      <DeleteCommentModal
+        isOpen={!!pendingDelete}
+        isLoading={deleteMutation.isPending}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (!pendingDelete) return
+          deleteMutation.mutate(pendingDelete.id, {
+            onSettled: () => setPendingDelete(null),
+          })
+        }}
+      />
     </div>
   )
 }

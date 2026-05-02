@@ -6,6 +6,7 @@ export type NotificationType =
   | 'offer-received'
   | 'listing-sold'
   | 'listing-cancelled-ownership-change'
+  | 'comment-received'
   | 'admin-broadcast'
 
 export interface NotificationMetadata {

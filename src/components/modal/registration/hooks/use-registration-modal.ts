@@ -337,6 +337,7 @@ const useRegistrationModal = () => {
               })
             )
             dispatch(setBatchCommitted(pendingCommitBatch.batchIndex))
+            dispatch(setRegistrationFlowState('waiting'))
           }
         } catch (error) {
           console.error('Error resuming commit tx:', error)
@@ -528,12 +529,20 @@ const useRegistrationModal = () => {
           dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
           return
         }
+
+        const batchPrices = await getBulkRentPrices(batchLabels, batchDurations)
+        if (!batchPrices) {
+          dispatch(setRegistrationError(`Failed to get per-name prices for batch ${batchIndex + 1}`))
+          return
+        }
+
         const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
 
         const tx = await submitMultiRegister(
           batchLabels,
           owner,
           batchDurations,
+          batchPrices,
           secret,
           valueWithBuffer,
           reverseRecord ? 1 : 0

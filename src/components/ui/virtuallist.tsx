@@ -14,6 +14,17 @@ import React, {
   useLayoutEffect,
 } from 'react'
 
+function getStableVirtualKey(item: unknown, index: number): React.Key {
+  if (item !== null && item !== undefined && typeof item === 'object') {
+    const record = item as Record<string, unknown>
+    const stable = record['token_id'] ?? record['id'] ?? record['address'] ?? record['name']
+    if (stable !== null && stable !== undefined) {
+      return stable as React.Key
+    }
+  }
+  return index
+}
+
 export interface VirtualListProps<T = unknown> {
   items: T[]
   rowHeight: number
@@ -93,7 +104,7 @@ function VirtualListWindowInner<T>({
     count: items.length,
     estimateSize: () => rowHeight + gap,
     overscan: overscanCount,
-    getItemKey: (index) => index,
+    getItemKey: (index) => getStableVirtualKey(items[index], index),
     useFlushSync: false,
     scrollMargin: elementTop,
   })
@@ -111,9 +122,19 @@ function VirtualListWindowInner<T>({
 
   useEffect(() => {
     if (hasRestoredScroll.current || storedScrollTop === 0) {
-      const timeoutId = setTimeout(() => {
+      if (typeof requestIdleCallback !== 'undefined') {
+        const handle = requestIdleCallback(
+          () => {
+            setStoredScrollTop(relativeScrollTop)
+          },
+          { timeout: 500 }
+        )
+        return () => cancelIdleCallback(handle)
+      }
+
+      const timeoutId = window.setTimeout(() => {
         setStoredScrollTop(relativeScrollTop)
-      }, 100)
+      }, 300)
       return () => clearTimeout(timeoutId)
     }
   }, [relativeScrollTop, setStoredScrollTop, storedScrollTop])
@@ -205,7 +226,7 @@ function VirtualListContainerInner<T>({
     getScrollElement: () => scrollContainerRef.current,
     estimateSize: () => rowHeight + gap,
     overscan: overscanCount,
-    getItemKey: (index) => index,
+    getItemKey: (index) => getStableVirtualKey(items[index], index),
     useFlushSync: false,
     initialOffset: storedScrollTop,
   })

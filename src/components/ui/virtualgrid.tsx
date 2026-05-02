@@ -14,6 +14,17 @@ import React, {
   useLayoutEffect,
 } from 'react'
 
+function getStableVirtualKey(item: unknown, index: number): React.Key {
+  if (item !== null && item !== undefined && typeof item === 'object') {
+    const record = item as Record<string, unknown>
+    const stable = record['token_id'] ?? record['id'] ?? record['address'] ?? record['name']
+    if (stable !== null && stable !== undefined) {
+      return stable as React.Key
+    }
+  }
+  return index
+}
+
 export interface VirtualGridProps<T = unknown> {
   items: T[]
   cardWidth: number
@@ -141,8 +152,20 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   useEffect(() => {
     if (hasRestoredScroll.current || storedScrollTop === 0) {
-      const id = setTimeout(() => setStoredScrollTop(relativeScrollTop), 100)
-      return () => clearTimeout(id)
+      if (typeof requestIdleCallback !== 'undefined') {
+        const handle = requestIdleCallback(
+          () => {
+            setStoredScrollTop(relativeScrollTop)
+          },
+          { timeout: 500 }
+        )
+        return () => cancelIdleCallback(handle)
+      }
+
+      const timeoutId = window.setTimeout(() => {
+        setStoredScrollTop(relativeScrollTop)
+      }, 300)
+      return () => clearTimeout(timeoutId)
     }
   }, [relativeScrollTop, setStoredScrollTop, storedScrollTop])
 
@@ -150,7 +173,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     count: totalRows,
     estimateSize: () => cardHeight + gap,
     overscan: overscanCount,
-    getItemKey: (i) => i,
+    getItemKey: (i) => getStableVirtualKey(items[i * columnsCount], i),
     useFlushSync: false,
     scrollMargin: elementTop,
   })

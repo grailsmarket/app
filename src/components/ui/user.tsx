@@ -50,6 +50,11 @@ const User: React.FC<UserProps> = ({
       const profile = await fetchAccount(address)
       return profile
     },
+    staleTime: 30 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!address,
   })
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />

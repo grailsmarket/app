@@ -48,6 +48,10 @@ const Price: React.FC<PriceProps> = ({
       return response
     },
     enabled: !!listing?.broker_address,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   })
 
   if (REGISTERABLE_STATUSES.includes(registrationStatus)) {

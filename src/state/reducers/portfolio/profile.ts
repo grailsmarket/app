@@ -30,6 +30,7 @@ type profileState = {
   offerNotificationThreshold: number | null
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
+  notifyOnCommentReceived: boolean
 }
 
 export const nullEnsProfile = {
@@ -60,6 +61,7 @@ const initialState: profileState = {
   lastVisitedProfile: null,
   notifyOnListingSold: true,
   notifyOnOfferReceived: true,
+  notifyOnCommentReceived: true,
 }
 
 // Slice -------------------------------------------
@@ -118,6 +120,9 @@ export const profileSlice = createSlice({
     setNotifyOnOfferReceived(state, { payload }: PayloadAction<boolean>) {
       state.notifyOnOfferReceived = payload
     },
+    setNotifyOnCommentReceived(state, { payload }: PayloadAction<boolean>) {
+      state.notifyOnCommentReceived = payload
+    },
     changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
     },
@@ -157,6 +162,7 @@ export const {
   setOfferNotificationThreshold,
   setNotifyOnListingSold,
   setNotifyOnOfferReceived,
+  setNotifyOnCommentReceived,
 } = profileSlice.actions
 
 // Selectors ------------------------------------------

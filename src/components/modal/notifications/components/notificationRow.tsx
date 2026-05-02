@@ -63,6 +63,8 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
         return 'Sold'
       case 'price-change':
         return 'Price changed'
+      case 'comment-received':
+        return 'New Comment'
       default:
         return type
     }

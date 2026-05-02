@@ -11,6 +11,7 @@ import {
   resetUserProfile,
   setNotifyOnListingSold,
   setNotifyOnOfferReceived,
+  setNotifyOnCommentReceived,
   setOfferNotificationThreshold,
   setUserDiscord,
   setUserEmail,
@@ -60,6 +61,7 @@ export const useAuth = () => {
     dispatch(setOfferNotificationThreshold(user.minOfferThreshold))
     dispatch(setNotifyOnListingSold(user.notifyOnListingSold))
     dispatch(setNotifyOnOfferReceived(user.notifyOnOfferReceived))
+    dispatch(setNotifyOnCommentReceived(user.notifyOnCommentReceived ?? true))
   }
 
   const {

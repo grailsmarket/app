@@ -195,10 +195,11 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
                 key={index}
                 style={{
                   position: 'absolute',
-                  top: vRow.start,
+                  top: 0,
                   left: containerPadding + col * (actualCardWidth + gap),
                   width: actualCardWidth,
                   height: cardHeight,
+                  transform: `translateY(${vRow.start - rowVirtualizer.options.scrollMargin}px)`,
                 }}
               >
                 {renderItem(items[index], index, columnsCount)}

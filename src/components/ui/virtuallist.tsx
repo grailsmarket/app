@@ -158,13 +158,14 @@ function VirtualListWindowInner<T>({
             data-index={vi.index}
             style={{
               position: 'absolute',
-              top: vi.start,
+              top: 0,
               left: 0,
               width: '100%',
               height: rowHeight,
               display: 'flex',
               alignItems: 'center',
               boxSizing: 'border-box',
+              transform: `translateY(${vi.start - virtualizer.options.scrollMargin}px)`,
             }}
           >
             {renderItem(items[vi.index], vi.index)}

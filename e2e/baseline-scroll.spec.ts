@@ -43,24 +43,15 @@ test.describe.serial('scroll behavior baseline (pre-migration)', () => {
     await page.goto('/marketplace')
     await page.waitForLoadState('networkidle')
 
-    await page.waitForFunction(
-      (sel) => document.querySelectorAll(sel).length >= 3,
-      rowSelector,
-      { timeout: 30000 }
-    )
+    await page.waitForFunction((sel) => document.querySelectorAll(sel).length >= 3, rowSelector, { timeout: 30000 })
 
-    const domRowCount = await page.evaluate(
-      (sel) => document.querySelectorAll(sel).length,
-      rowSelector
-    )
+    const domRowCount = await page.evaluate((sel) => document.querySelectorAll(sel).length, rowSelector)
 
     expect(domRowCount).toBeGreaterThan(0)
     expect(domRowCount).toBeLessThanOrEqual(60)
 
     const itemCount = await page.evaluate((rowHeight) => {
-      const inner = document.querySelector(
-        'div[style*="position: relative"][style*="height"]'
-      ) as HTMLElement | null
+      const inner = document.querySelector('div[style*="position: relative"][style*="height"]') as HTMLElement | null
       if (!inner) return null
       const heightPx = parseFloat(inner.style.height.replace('px', ''))
       if (!Number.isFinite(heightPx) || heightPx <= 0) return null
@@ -77,8 +68,7 @@ test.describe.serial('scroll behavior baseline (pre-migration)', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    const containerSelector =
-      'div[style*="overflow-y: auto"][style*="position: relative"]'
+    const containerSelector = 'div[style*="overflow-y: auto"][style*="position: relative"]'
 
     const isVisible = await page
       .locator(containerSelector)
@@ -104,8 +94,7 @@ test.describe.serial('scroll behavior baseline (pre-migration)', () => {
     const windowScrollY = await page.evaluate(() => window.scrollY)
     const containerScrollTop = await container.evaluate((el) => (el as HTMLElement).scrollTop)
 
-    baseline.activityContainerScrollIndependent =
-      windowScrollY === 0 && containerScrollTop > 0
+    baseline.activityContainerScrollIndependent = windowScrollY === 0 && containerScrollTop > 0
   })
 
   test.afterAll(() => {

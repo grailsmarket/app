@@ -69,7 +69,13 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
                 <Cross className='h-auto w-6' />
               </motion.button>
               <motion.div layoutId={`image-${expandedImage}`}>
-                <Image width={2000} height={2000} src={expandedImage} alt='Expanded Image' className='h-auto max-h-[90dvh] w-full max-w-[90dvw] object-contain mx-auto' />
+                <Image
+                  width={2000}
+                  height={2000}
+                  src={expandedImage}
+                  alt='Expanded Image'
+                  className='mx-auto h-auto max-h-[90dvh] w-full max-w-[90dvw] object-contain'
+                />
               </motion.div>
             </div>
           </div>

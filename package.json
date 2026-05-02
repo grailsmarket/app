@@ -12,8 +12,7 @@
     "e2e:test": "bun x playwright test",
     "e2e:headed": "bun x playwright test --headed",
     "e2e:debug": "bun x playwright test --debug",
-    "checks": "bun run format && bun run lint && bun run typecheck",
-    "postinstall": "node -e \"process.env.VERCEL_ENV === 'production' ? require('child_process').execSync('node scripts/postinstall.mjs', {stdio: 'inherit'}) : console.log('Skipping postinstall')\""
+    "checks": "bun run format && bun run lint && bun run typecheck"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",

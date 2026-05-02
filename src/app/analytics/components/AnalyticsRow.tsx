@@ -16,6 +16,7 @@ import { AnalyticsListing, AnalyticsOffer, AnalyticsRegistration, AnalyticsSale 
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { ETH_ADDRESS } from '@/constants/web3/tokens'
 import { useCategories } from '@/components/filters/hooks/useCategories'
+import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface SourceIconProps {
   source: string | null
@@ -54,7 +55,13 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
     >
       <div className='flex w-[45%] max-w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={listing.source} />
-        <NameImage name={listing.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
+        <NameImage
+          name={listing.name}
+          tokenId=''
+          expiryDate={null}
+          forceRegStatus={REGISTERED}
+          className='h-8 w-8 shrink-0 rounded-sm'
+        />
         <div className='max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(listing.name)}</p>
           {category && categoryDetails && (
@@ -112,7 +119,13 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={offer.source} />
-        <NameImage name={offer.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
+        <NameImage
+          name={offer.name}
+          tokenId=''
+          expiryDate={null}
+          forceRegStatus={REGISTERED}
+          className='h-8 w-8 shrink-0 rounded-sm'
+        />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(offer.name)}</p>
           {category && categoryDetails && (
@@ -173,7 +186,13 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
     >
       <div className={cn('flex flex-row items-center gap-2', hideSeller ? 'w-[50%]' : 'w-[40%]')}>
         <SourceIcon source={sale.source} />
-        <NameImage name={sale.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
+        <NameImage
+          name={sale.name}
+          tokenId=''
+          expiryDate={null}
+          forceRegStatus={REGISTERED}
+          className='h-8 w-8 shrink-0 rounded-sm'
+        />
         <div className='w-full max-w-[calc(100%-60px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(sale.name)}</p>
           {category && categoryDetails && (
@@ -246,7 +265,13 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={registration.source} />
-        <NameImage name={registration.name} tokenId='' expiryDate={null} className='h-8 w-8 shrink-0 rounded-sm' />
+        <NameImage
+          name={registration.name}
+          tokenId=''
+          forceRegStatus={REGISTERED}
+          expiryDate={null}
+          className='h-8 w-8 shrink-0 rounded-sm'
+        />
         <div className='w-full max-w-[calc(100%-34px)] truncate'>
           <p className='text-md max-w-full truncate font-semibold'>{beautifyName(registration.name)}</p>
           {category && categoryDetails && (

@@ -12,6 +12,7 @@ import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
+import { RegistrationStatus } from '@/types/domains'
 
 export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
@@ -25,6 +26,7 @@ interface NameImageProps {
   className?: string
   height?: number
   width?: number
+  forceRegStatus?: RegistrationStatus
   forceRefreshKey?: number
 }
 
@@ -45,7 +47,7 @@ function scopeSvgIds(svg: string, suffix: string): string {
   return out
 }
 
-const NameImage = ({ name, expiryDate, className, height, width, forceRefreshKey }: NameImageProps) => {
+const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus, forceRefreshKey }: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
@@ -59,10 +61,10 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRefreshKey
   const [refreshKey, setRefreshKey] = useState<number | undefined>(undefined)
 
   useEffect(() => {
-    if (pendingRefreshKey === undefined || pendingRefreshKey === refreshKey) return
-    setRefreshKey(pendingRefreshKey)
+    if (pendingRefreshKey === undefined || pendingRefreshKey === refreshKey || forceRefreshKey) return
+    setRefreshKey(forceRefreshKey ?? pendingRefreshKey)
     dispatch(consumeImageRefresh(name))
-  }, [pendingRefreshKey, refreshKey, dispatch, name])
+  }, [pendingRefreshKey, refreshKey, dispatch, name, forceRefreshKey])
 
   const cacheParam = useMemo(() => (refreshKey ? `?v=${refreshKey}` : ''), [refreshKey])
   const wrappedSrc = useMemo(
@@ -79,7 +81,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRefreshKey
     name
   )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
 
-  const status = getRegistrationStatus(expiryDate)
+  const status = forceRegStatus ?? getRegistrationStatus(expiryDate)
 
   // React's `useId` produces something like `:r5:` — the colons aren't
   // valid in SVG `id` attribute values, so strip them.

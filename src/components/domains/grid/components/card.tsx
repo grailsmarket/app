@@ -95,6 +95,10 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
       return response
     },
     enabled: !!domainListing?.broker_address,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   })
 
   const backgroundColor = useMemo(() => {

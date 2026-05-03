@@ -18,9 +18,7 @@ export const useBlockUser = () => {
       // Detail caches are keyed ['chats', <id>, 'detail'] — invalidate all of them.
       queryClient.invalidateQueries({
         predicate: (query) =>
-          Array.isArray(query.queryKey) &&
-          query.queryKey[0] === 'chats' &&
-          query.queryKey[2] === 'detail',
+          Array.isArray(query.queryKey) && query.queryKey[0] === 'chats' && query.queryKey[2] === 'detail',
       })
     },
   }) as ReturnType<typeof useMutation<Awaited<ReturnType<typeof addBlock>>, AddBlockError, string>>

@@ -1,10 +1,11 @@
+import { Address } from 'viem'
 import type { PaginationType } from './api'
 
 export type ChatType = 'direct' | 'group'
 
 export interface ChatParticipant {
   user_id: number
-  address: string
+  address: Address
   role: 'member' | 'admin'
   joined_at: string
   left_at: string | null

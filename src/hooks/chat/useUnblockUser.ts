@@ -13,9 +13,7 @@ export const useUnblockUser = () => {
       queryClient.invalidateQueries({ queryKey: ['chats', 'inbox'] })
       queryClient.invalidateQueries({
         predicate: (query) =>
-          Array.isArray(query.queryKey) &&
-          query.queryKey[0] === 'chats' &&
-          query.queryKey[2] === 'detail',
+          Array.isArray(query.queryKey) && query.queryKey[0] === 'chats' && query.queryKey[2] === 'detail',
       })
     },
   })

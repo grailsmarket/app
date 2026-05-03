@@ -13,11 +13,7 @@ interface GetMessagesParams {
  * GET /chats/:id/messages — cursor pagination, newest-first.
  * Pass `before` (a message id from the previous page's `nextCursor`) to fetch older messages.
  */
-export const getMessages = async ({
-  chatId,
-  before,
-  limit = 50,
-}: GetMessagesParams): Promise<ChatMessagesResponse> => {
+export const getMessages = async ({ chatId, before, limit = 50 }: GetMessagesParams): Promise<ChatMessagesResponse> => {
   const params = new URLSearchParams()
   params.set('limit', String(limit))
   if (before) params.set('before', before)

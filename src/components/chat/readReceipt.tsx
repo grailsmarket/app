@@ -27,8 +27,7 @@ const ReadReceipt: React.FC<Props> = ({ lastOwnMessage, messages, otherParticipa
   // only if we can confirm the order.
   if (!readMsg) return null
 
-  const seen =
-    new Date(readMsg.created_at).getTime() >= new Date(lastOwnMessage.created_at).getTime()
+  const seen = new Date(readMsg.created_at).getTime() >= new Date(lastOwnMessage.created_at).getTime()
   if (!seen) return null
 
   return <p className='text-neutral -mt-2 text-right text-sm'>Seen</p>

@@ -13,8 +13,7 @@ export const useChatsInbox = () => {
     queryKey: ['chats', 'inbox'],
     queryFn: ({ pageParam = 1 }) => getChats({ page: pageParam, limit: INBOX_PAGE_SIZE }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined,
+    getNextPageParam: (lastPage) => (lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined),
     enabled: !!userAddress && authStatus === 'authenticated',
     staleTime: 30_000,
     refetchOnWindowFocus: true,

@@ -26,7 +26,7 @@ interface Props {
  * Hidden entirely when the viewer isn't signed in — chat is an authed-only
  * feature, so we don't surface a teaser that bounces them through SIWE.
  */
-const SendMessageButton: React.FC<Props> = ({ recipient, className, label = 'Message' }) => {
+const SendMessageButton: React.FC<Props> = ({ recipient, className, label = 'Grails Chat' }) => {
   const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
   const createChat = useCreateChat()

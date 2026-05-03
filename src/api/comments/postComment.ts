@@ -19,13 +19,7 @@ interface PostCommentApiResponse {
   }
 }
 
-export const postComment = async ({
-  name,
-  body,
-}: {
-  name: string
-  body: string
-}): Promise<PostCommentResponse> => {
+export const postComment = async ({ name, body }: { name: string; body: string }): Promise<PostCommentResponse> => {
   const response = await authFetch(`${API_URL}/comments`, {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },

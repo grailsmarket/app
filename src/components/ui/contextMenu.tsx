@@ -99,7 +99,7 @@ const ContextMenu: React.FC<Props> = ({ items, className, label = 'More options'
                   handleItemClick(idx, item)
                 }}
                 className={cn(
-                  'px-md py-md text-md text-left transition-colors',
+                  'px-md py-md cursor-pointer text-left text-lg font-medium transition-colors',
                   'hover:bg-secondary',
                   item.destructive && 'text-red-400 hover:bg-red-500/10',
                   isConfirming && 'bg-red-500/10 font-semibold'

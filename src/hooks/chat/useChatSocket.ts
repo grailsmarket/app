@@ -8,12 +8,7 @@ import { useAppDispatch } from '@/state/hooks'
 import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/typing'
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
 import { setChatSocket } from './socketSingleton'
-import type {
-  ChatMessagesResponse,
-  ChatInboxResponse,
-  ChatWSEvent,
-  ChatWSOutgoing,
-} from '@/types/chat'
+import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
 
 const TYPING_TTL_MS = 4000
 const PING_INTERVAL_MS = 25_000
@@ -95,39 +90,33 @@ export const useChatSocket = () => {
           //    appending, otherwise the optimistic + canonical both stick around
           //    and the message renders twice until the next refresh.
           // 3. Otherwise → prepend to the newest page.
-          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(
-            ['chats', chat_id, 'messages'],
-            (old) => {
-              if (!old) return old
-              const exists = old.pages.some((p) => p.messages.some((m) => m.id === message.id))
-              if (exists) return old
+          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(['chats', chat_id, 'messages'], (old) => {
+            if (!old) return old
+            const exists = old.pages.some((p) => p.messages.some((m) => m.id === message.id))
+            if (exists) return old
 
-              if (senderIsMe) {
-                let replaced = false
-                const updatedPages = old.pages.map((page) => {
-                  if (replaced) return page
-                  const idx = page.messages.findIndex(
-                    (m) =>
-                      m.id.startsWith('optimistic-') &&
-                      m.body === message.body &&
-                      !m.deleted_at
-                  )
-                  if (idx === -1) return page
-                  replaced = true
-                  const next = [...page.messages]
-                  next[idx] = message
-                  return { ...page, messages: next }
-                })
-                if (replaced) return { ...old, pages: updatedPages }
-              }
-
-              const [first, ...rest] = old.pages
-              return {
-                ...old,
-                pages: [{ ...first, messages: [message, ...first.messages] }, ...rest],
-              }
+            if (senderIsMe) {
+              let replaced = false
+              const updatedPages = old.pages.map((page) => {
+                if (replaced) return page
+                const idx = page.messages.findIndex(
+                  (m) => m.id.startsWith('optimistic-') && m.body === message.body && !m.deleted_at
+                )
+                if (idx === -1) return page
+                replaced = true
+                const next = [...page.messages]
+                next[idx] = message
+                return { ...page, messages: next }
+              })
+              if (replaced) return { ...old, pages: updatedPages }
             }
-          )
+
+            const [first, ...rest] = old.pages
+            return {
+              ...old,
+              pages: [{ ...first, messages: [message, ...first.messages] }, ...rest],
+            }
+          })
           // Patch inbox: bump last_message + last_message_at + unread (unless sender is me).
           queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
             if (!old) return old
@@ -141,7 +130,7 @@ export const useChatSocket = () => {
                         ...c,
                         last_message: message,
                         last_message_at: message.created_at,
-                        unread_count: senderIsMe ? c.unread_count ?? 0 : (c.unread_count ?? 0) + 1,
+                        unread_count: senderIsMe ? (c.unread_count ?? 0) : (c.unread_count ?? 0) + 1,
                       }
                     : c
                 ),
@@ -156,21 +145,18 @@ export const useChatSocket = () => {
 
         case 'chat:message_deleted': {
           const { chat_id, message_id } = evt.data
-          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(
-            ['chats', chat_id, 'messages'],
-            (old) => {
-              if (!old) return old
-              return {
-                ...old,
-                pages: old.pages.map((page) => ({
-                  ...page,
-                  messages: page.messages.map((m) =>
-                    m.id === message_id ? { ...m, body: null, deleted_at: new Date().toISOString() } : m
-                  ),
-                })),
-              }
+          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(['chats', chat_id, 'messages'], (old) => {
+            if (!old) return old
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                messages: page.messages.map((m) =>
+                  m.id === message_id ? { ...m, body: null, deleted_at: new Date().toISOString() } : m
+                ),
+              })),
             }
-          )
+          })
           return
         }
 

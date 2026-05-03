@@ -2,27 +2,19 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { fetchAccount } from 'ethereum-identity-kit'
-import { isAddress } from 'viem'
+import { Address, isAddress } from 'viem'
 import { formatAddress } from '@/utils/formatAddress'
+import { beautifyName } from '@/lib/ens'
 
 interface PeerProfile {
-  address: string
-  /** Primary ENS name if resolved, otherwise null. */
+  address: Address
   ensName: string | null
-  /** ENS avatar URL if any. */
   avatar: string | null
-  /** Best display label: ENS name or shortened address. */
   displayLabel: string
+  records: Record<string, string>
 }
 
-/**
- * Cached lookup for a peer's ENS profile, shared via React Query so multiple
- * chat surfaces (inbox row + thread header) don't refetch the same address.
- *
- * Falls back to the formatted address when ENS resolution fails or returns no
- * primary name.
- */
-export const usePeerProfile = (address: string | null | undefined): PeerProfile | null => {
+export const usePeerProfile = (address: Address | null | undefined): PeerProfile | null => {
   const lower = address ? address.toLowerCase() : null
 
   const query = useQuery({
@@ -39,11 +31,13 @@ export const usePeerProfile = (address: string | null | undefined): PeerProfile 
 
   const ensName = query.data?.ens?.name ?? null
   const avatar = query.data?.ens?.avatar ?? null
+  const records = query.data?.ens?.records ?? {}
 
   return {
     address,
     ensName,
     avatar,
-    displayLabel: ensName || formatAddress(address),
+    displayLabel: ensName ? beautifyName(ensName) : formatAddress(address),
+    records,
   }
 }

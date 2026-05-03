@@ -9,11 +9,7 @@ interface GetCommentsParams {
   limit?: number
 }
 
-export const getComments = async ({
-  name,
-  cursor,
-  limit = 50,
-}: GetCommentsParams): Promise<CommentsResponse> => {
+export const getComments = async ({ name, cursor, limit = 50 }: GetCommentsParams): Promise<CommentsResponse> => {
   const params = new URLSearchParams()
   params.set('name', name)
   params.set('limit', String(limit))

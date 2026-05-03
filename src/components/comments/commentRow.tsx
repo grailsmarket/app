@@ -16,9 +16,7 @@ interface Props {
 }
 
 const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) => {
-  const time = comment.created_at
-    ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })
-    : ''
+  const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
 
   const { data: account } = useQuery({
     queryKey: ['account', comment.author_address],
@@ -28,17 +26,11 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) =>
   })
 
   const ensName = account?.ens?.name
-  const displayName = ensName
-    ? beautifyName(ensName)
-    : truncateAddress(comment.author_address as `0x${string}`)
+  const displayName = ensName ? beautifyName(ensName) : truncateAddress(comment.author_address as `0x${string}`)
 
   return (
     <div className='border-tertiary flex w-full gap-2 border-b py-3 last:border-b-0'>
-      <Link
-        href={`/profile/${comment.author_address}`}
-        className='shrink-0'
-        aria-label={displayName}
-      >
+      <Link href={`/profile/${comment.author_address}`} className='shrink-0' aria-label={displayName}>
         <Avatar
           name={ensName || comment.author_address}
           src={account?.ens?.avatar}
@@ -49,7 +41,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) =>
         <div className='flex items-center justify-between gap-2'>
           <Link
             href={`/profile/${comment.author_address}`}
-            className='hover:text-primary text-foreground truncate text-md font-semibold'
+            className='hover:text-primary text-foreground text-md truncate font-semibold'
           >
             {displayName}
           </Link>
@@ -60,7 +52,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) =>
                 type='button'
                 onClick={() => onRequestDelete(comment)}
                 aria-label='Delete comment'
-                className='text-neutral hover:text-red-400 cursor-pointer transition-colors'
+                className='text-neutral cursor-pointer transition-colors hover:text-red-400'
               >
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
@@ -84,7 +76,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) =>
             )}
           </div>
         </div>
-        <p className='text-foreground text-md whitespace-pre-wrap break-words'>{comment.body}</p>
+        <p className='text-foreground text-md break-words whitespace-pre-wrap'>{comment.body}</p>
       </div>
     </div>
   )

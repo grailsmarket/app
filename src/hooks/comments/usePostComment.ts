@@ -15,12 +15,7 @@ export const usePostComment = (name: string) => {
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
 
-  return useMutation<
-    PostCommentResponse,
-    PostCommentError,
-    string,
-    { tempId: string } | undefined
-  >({
+  return useMutation<PostCommentResponse, PostCommentError, string, { tempId: string } | undefined>({
     mutationFn: (body: string) => postComment({ name, body }),
     onMutate: async (body) => {
       await queryClient.cancelQueries({ queryKey: ['comments', name] })
@@ -62,9 +57,7 @@ export const usePostComment = (name: string) => {
             i === 0
               ? {
                   ...page,
-                  comments: page.comments.map((c) =>
-                    c.id === ctx?.tempId ? response.comment : c
-                  ),
+                  comments: page.comments.map((c) => (c.id === ctx?.tempId ? response.comment : c)),
                 }
               : page
           ),

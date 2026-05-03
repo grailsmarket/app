@@ -16,13 +16,7 @@ interface Props {
 
 const CommentsPanel: React.FC<Props> = ({ name }) => {
   const { authStatus, userAddress } = useUserContext()
-  const {
-    comments,
-    isLoading,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-  } = useComments(name)
+  const { comments, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useComments(name)
 
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)

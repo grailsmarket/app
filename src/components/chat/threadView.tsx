@@ -2,13 +2,9 @@
 
 import React, { useEffect, useMemo, useRef } from 'react'
 import Image from 'next/image'
-import { Avatar, Cross } from 'ethereum-identity-kit'
+import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import {
-  closeChatSidebar,
-  openSidebarToList,
-  selectChatSidebar,
-} from '@/state/reducers/chat/sidebar'
+import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
 import { selectTypingForChat } from '@/state/reducers/chat/typing'
 import { useChat } from '@/hooks/chat/useChat'
 import { useChatMessages } from '@/hooks/chat/useChatMessages'
@@ -20,13 +16,15 @@ import { useUnblockUser } from '@/hooks/chat/useUnblockUser'
 import { useUserContext } from '@/context/user'
 import LoadingCell from '@/components/ui/loadingCell'
 import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
-import MessageRow from './messageRow'
+import MessageRow from './components/chat/messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
 import ReadReceipt from './readReceipt'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
+import { ENS_METADATA_URL } from '@/constants/ens'
+import Link from 'next/link'
 
 const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -34,8 +32,13 @@ const ThreadView: React.FC = () => {
   const { userAddress } = useUserContext()
 
   const { data: chat, isLoading: chatLoading } = useChat(activeChatId)
-  const { messages, isLoading: msgsLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useChatMessages(activeChatId)
+  const {
+    messages,
+    isLoading: msgsLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useChatMessages(activeChatId)
   const markRead = useMarkRead()
   // Reads inbox cache only — keeps participants/unread state in sync via WS.
   useChatsInbox()
@@ -93,9 +96,7 @@ const ThreadView: React.FC = () => {
   const peerLabel = peerProfile?.displayLabel ?? 'Direct chat'
 
   // Filter typing events to peers only (don't show our own typing back to us).
-  const otherTypingIds = peer
-    ? typingUserIds.filter((id) => id === peer.user_id)
-    : []
+  const otherTypingIds = peer ? typingUserIds.filter((id) => id === peer.user_id) : []
 
   const headerMenuItems: ContextMenuItem[] = peer
     ? isBlocked
@@ -117,7 +118,23 @@ const ThreadView: React.FC = () => {
 
   return (
     <>
-      <div className='border-tertiary flex items-center justify-between gap-2 border-b-2 p-3'>
+      <div className='border-tertiary relative flex items-center justify-between gap-2 border-b-2 p-3'>
+        {peerProfile?.records['header'] && (
+          <HeaderImage
+            name={peerProfile?.ensName ?? undefined}
+            src={`${ENS_METADATA_URL}/mainnet/header/${peerProfile?.ensName}`}
+            isLoading={false}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              opacity: 0.15,
+            }}
+          />
+        )}
         <button
           onClick={() => dispatch(openSidebarToList())}
           className='hover:bg-primary/10 rounded-md p-1 transition-colors'
@@ -125,21 +142,26 @@ const ThreadView: React.FC = () => {
         >
           <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
         </button>
-        <div className='flex min-w-0 flex-1 items-center gap-2'>
-          {peer ? (
+        <Link
+          href={`/profile/${peer?.address}`}
+          prefetch
+          onClick={() => dispatch(closeChatSidebar())}
+          className='relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 transition-opacity hover:opacity-80'
+        >
+          {peerProfile?.ensName ? (
             <Avatar
               key={peerProfile?.avatar ?? `${peer.address}-default`}
-              address={peer.address as `0x${string}`}
-              src={peerProfile?.avatar ?? undefined}
+              address={peer?.address as `0x${string}`}
+              src={`${ENS_METADATA_URL}/mainnet/avatar/${peerProfile.ensName}`}
               name={peerProfile?.ensName ?? undefined}
-              style={{ width: '32px', height: '32px' }}
+              style={{ width: '36px', height: '36px' }}
             />
           ) : (
-            <div className='bg-tertiary h-8 w-8 rounded-full' />
+            <LoadingCell height='36px' width='36px' radius='18px' />
           )}
-          <p className='text-foreground truncate text-lg font-semibold'>{peerLabel}</p>
-        </div>
-        <div className='flex items-center gap-1'>
+          <p className='text-foreground max-w-[calc(100%-44px)] truncate text-xl font-semibold'>{peerLabel}</p>
+        </Link>
+        <div className='relative flex items-center gap-1'>
           {headerMenuItems.length > 0 && <ContextMenu items={headerMenuItems} />}
           <button
             onClick={() => dispatch(closeChatSidebar())}
@@ -159,7 +181,7 @@ const ThreadView: React.FC = () => {
             ))}
           </div>
         ) : messages.length === 0 ? (
-          <p className='text-neutral mt-8 text-center text-md'>No messages yet — say hi.</p>
+          <p className='text-neutral text-md mt-8 text-center'>No messages yet — say hi.</p>
         ) : (
           <div className='flex flex-col gap-3'>
             {isFetchingNextPage && (
@@ -172,21 +194,16 @@ const ThreadView: React.FC = () => {
                 key={m.id}
                 message={m}
                 isOwn={m.sender_address?.toLowerCase() === myAddress}
+                isRead={m.id === peer?.last_read_message_id}
               />
             ))}
             {/* Only show "Seen" if the caller's last message is also the very
                 last message in the thread. A peer reply after my message is
                 implicit acknowledgement, so we suppress the receipt rather
                 than have it float above their replies. */}
-            {messages.length > 0 &&
-              lastOwnMessage &&
-              messages[messages.length - 1].id === lastOwnMessage.id && (
-                <ReadReceipt
-                  lastOwnMessage={lastOwnMessage}
-                  messages={messages}
-                  otherParticipants={otherParticipants}
-                />
-              )}
+            {messages.length > 0 && lastOwnMessage && messages[messages.length - 1].id === lastOwnMessage.id && (
+              <ReadReceipt lastOwnMessage={lastOwnMessage} messages={messages} otherParticipants={otherParticipants} />
+            )}
             {otherTypingIds.length > 0 && (
               <div className={cn('flex items-center gap-2 pt-1')}>
                 <div className='bg-secondary rounded-2xl rounded-bl-sm px-4 py-2'>
@@ -198,24 +215,21 @@ const ThreadView: React.FC = () => {
         )}
       </div>
 
-      {activeChatId && (
-        isBlocked ? (
+      {activeChatId &&
+        (isBlocked ? (
           <div className='border-tertiary flex items-center justify-between gap-3 border-t-2 p-3'>
-            <p className='text-neutral text-md'>
-              You&apos;ve blocked {peerLabel}. Unblock to send messages.
-            </p>
+            <p className='text-neutral text-md'>You&apos;ve blocked {peerLabel}. Unblock to send messages.</p>
             <button
               onClick={() => peer && unblockMutation.mutate(peer.user_id)}
               disabled={!peer || unblockMutation.isPending}
-              className='bg-primary text-background rounded-sm px-3 py-1.5 text-md font-bold transition-all hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50'
+              className='bg-primary text-background text-md rounded-sm px-3 py-1.5 font-bold transition-all hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50'
             >
               {unblockMutation.isPending ? 'Unblocking…' : 'Unblock'}
             </button>
           </div>
         ) : (
           <Composer chatId={activeChatId} />
-        )
-      )}
+        ))}
     </>
   )
 }

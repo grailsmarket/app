@@ -6,11 +6,11 @@ import { Cross } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { closeChatSidebar, openSidebarToNew } from '@/state/reducers/chat/sidebar'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
-import ChatRow from './chatRow'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
 import PlusIcon from 'public/icons/plus.svg'
+import ChatRow from './chatRow'
 
 const ListView: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -26,7 +26,7 @@ const ListView: React.FC = () => {
   return (
     <>
       <div className='border-tertiary flex items-center justify-between border-b-2 p-4'>
-        <h2 className='font-sedan-sc text-foreground text-2xl'>Messages</h2>
+        <h2 className='font-sedan-sc text-foreground text-2xl'>Grails Chat</h2>
         <button
           onClick={() => dispatch(closeChatSidebar())}
           className='hover:bg-primary/10 rounded-md p-1 transition-colors'
@@ -37,7 +37,10 @@ const ListView: React.FC = () => {
       </div>
 
       <div className='border-tertiary border-b-2 p-3'>
-        <PrimaryButton onClick={() => dispatch(openSidebarToNew())} className='flex w-full items-center justify-center gap-1.5'>
+        <PrimaryButton
+          onClick={() => dispatch(openSidebarToNew())}
+          className='flex w-full items-center justify-center gap-1.5'
+        >
           <Image src={PlusIcon} alt='' width={14} height={14} />
           New chat
         </PrimaryButton>

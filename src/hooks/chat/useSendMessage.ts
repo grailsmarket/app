@@ -69,9 +69,7 @@ export const useSendMessage = (chatId: string | null) => {
         // If the canonical id is already in the cache (WS arrived first and
         // replaced our optimistic placeholder, or appended), just drop the
         // optimistic row by id — never let both coexist.
-        const realIdExists = old.pages.some((p) =>
-          p.messages.some((m) => m.id === merged.id)
-        )
+        const realIdExists = old.pages.some((p) => p.messages.some((m) => m.id === merged.id))
         if (realIdExists) {
           return {
             ...old,

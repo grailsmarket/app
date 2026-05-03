@@ -87,7 +87,7 @@ const Composer: React.FC<Props> = ({ name }) => {
           maxLength={MAX_LEN}
           placeholder={quotaExhausted ? 'Daily limit reached' : 'Add a comment…'}
           className={cn(
-            'text-foreground placeholder:text-neutral max-h-32 flex-1 resize-none bg-transparent text-md leading-6 outline-none',
+            'text-foreground placeholder:text-neutral text-md max-h-32 flex-1 resize-none bg-transparent leading-6 outline-none',
             (quotaExhausted || post.isPending) && 'cursor-not-allowed opacity-50'
           )}
         />

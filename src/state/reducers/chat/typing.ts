@@ -37,7 +37,9 @@ export const typingSlice = createSlice({
 
 export const { setTyping, clearTyping, clearAllTyping } = typingSlice.actions
 
-export const selectTypingForChat = (chatId: string | null) => (state: RootState): number[] =>
-  chatId ? state.chat.typing.byChat[chatId] ?? [] : []
+export const selectTypingForChat =
+  (chatId: string | null) =>
+  (state: RootState): number[] =>
+    chatId ? (state.chat.typing.byChat[chatId] ?? []) : []
 
 export default typingSlice.reducer

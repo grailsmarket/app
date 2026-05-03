@@ -2,7 +2,7 @@
 
 import { APP_ENS_ADDRESS } from '@/constants'
 import Image from 'next/image'
-import React, { useEffect, useId, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
@@ -28,23 +28,6 @@ interface NameImageProps {
   width?: number
   forceRegStatus?: RegistrationStatus
   forceRefreshKey?: number
-}
-
-function responsiveSvg(svg: string): string {
-  return svg.replace(/<svg\b([^>]*)>/, (_match, attrs: string) => {
-    const cleaned = attrs.replace(/\s*preserveAspectRatio="[^"]*"/g, '')
-    return `<svg${cleaned} preserveAspectRatio="xMidYMid slice">`
-  })
-}
-
-const SCOPED_IDS = ['paint0_linear', 'paint1_linear', 'dropShadow']
-function scopeSvgIds(svg: string, suffix: string): string {
-  let out = svg
-  for (const id of SCOPED_IDS) {
-    out = out.split(`id="${id}"`).join(`id="${id}_${suffix}"`)
-    out = out.split(`url(#${id})`).join(`url(#${id}_${suffix})`)
-  }
-  return out
 }
 
 const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus, forceRefreshKey }: NameImageProps) => {
@@ -81,16 +64,25 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     name
   )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
 
+  // Subtract 400ms to ensure the state changes at the same time as the other components
   const status = forceRegStatus ?? getRegistrationStatus(expiryDate)
-
-  // React's `useId` produces something like `:r5:` — the colons aren't
-  // valid in SVG `id` attribute values, so strip them.
-  const idSuffix = useId().replace(/:/g, '')
 
   // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
   const [attempt, setAttempt] = useState(0)
   const [svg, setSvg] = useState<string | null>(null)
   const [pngLoaded, setPngLoaded] = useState(false)
+
+  // Stack of in-flight SVG layers we render simultaneously to crossfade
+  // between gradients (e.g. when registration status flips into Premium).
+  // The newest layer mounts on top with opacity 0 and fades to 1 once it
+  // loads; older layers stay visible underneath until the fade completes,
+  // then are pruned and their blob URLs revoked.
+  type SvgLayer = { url: string; loaded: boolean }
+  const [layers, setLayers] = useState<SvgLayer[]>([])
+  const layersRef = useRef<SvgLayer[]>([])
+  useEffect(() => {
+    layersRef.current = layers
+  }, [layers])
 
   // When the caller bumps `refreshKey` (e.g. after a successful metadata
   // refresh), restart from the wrapped-SVG attempt so we re-run the full
@@ -127,7 +119,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const text = await res.text()
         if (!cancelled) {
-          setSvg(scopeSvgIds(responsiveSvg(applyStateGradient(text, status)), idSuffix))
+          setSvg(applyStateGradient(text, status))
         }
       } catch {
         if (cancelled) return
@@ -147,26 +139,75 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     return () => {
       cancelled = true
     }
-  }, [attempt, wrappedSrc, unwrappedSrc, status, idSuffix, refreshKey])
+  }, [attempt, wrappedSrc, unwrappedSrc, status, refreshKey])
+
+  // Wrap the fetched SVG markup in a same-origin blob URL so we can render it
+  // through an <img> element. That way the browser exposes the normal image
+  // context-menu actions ("Copy Image", "Save Image As…") and writes a
+  // rasterised bitmap to the system clipboard, which pastes into Twitter,
+  // Slack, etc. Inlining via dangerouslySetInnerHTML hid those actions
+  // because the SVG was just DOM, not an image.
+  useEffect(() => {
+    if (!svg) {
+      setLayers((prev) => {
+        prev.forEach((l) => URL.revokeObjectURL(l.url))
+        return []
+      })
+      return
+    }
+    const blob = new Blob([svg], { type: 'image/svg+xml' })
+    const url = URL.createObjectURL(blob)
+    setLayers((prev) => [...prev, { url, loaded: false }])
+  }, [svg])
+
+  // Once the topmost (newest) layer has rendered, wait for its opacity
+  // transition to finish then drop everything underneath. The 500ms timer
+  // matches the `duration-500` Tailwind class on the layer image.
+  useEffect(() => {
+    if (layers.length < 2) return
+    const top = layers[layers.length - 1]
+    if (!top.loaded) return
+    const timer = setTimeout(() => {
+      setLayers((prev) => {
+        const t = prev[prev.length - 1]
+        if (!t || !t.loaded) return prev
+        prev.slice(0, -1).forEach((l) => URL.revokeObjectURL(l.url))
+        return [t]
+      })
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [layers])
+
+  // Revoke any layers still around when the component unmounts.
+  useEffect(
+    () => () => {
+      layersRef.current.forEach((l) => URL.revokeObjectURL(l.url))
+    },
+    []
+  )
+
+  const markLayerLoaded = (url: string) => {
+    // Blob URLs resolve essentially instantly, so onLoad usually fires
+    // before the browser has painted the layer's initial `opacity-0`
+    // state. Toggling the class in the same frame collapses both states
+    // into a single paint and the CSS transition never triggers. Two
+    // requestAnimationFrame hops guarantee a paint of opacity:0 lands
+    // before we flip to opacity:1, so the 500ms fade actually runs.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setLayers((prev) => prev.map((l) => (l.url === url ? { ...l, loaded: true } : l)))
+      })
+    })
+  }
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 
   const showPngFallback = attempt >= 2
-  const loaded = showPngFallback ? pngLoaded : !!svg
+  const hasLoadedLayer = layers.some((l) => l.loaded)
+  const loaded = showPngFallback ? pngLoaded : hasLoadedLayer
 
   const wrapperClasses = cn(
     'bg-foreground/80 rounded-sm overflow-hidden relative',
-    // `pointer-events-none` on the injected SVG lets clicks pass through to
-    // the wrapping element (e.g. the domain card's <Link>). The ENS metadata
-    // service embeds an <a> inside its SVGs, and without this those inner
-    // anchors swallow the click and navigate away from our intended href.
-    '[&>svg]:pointer-events-none [&>svg]:block [&>svg]:-m-px [&>svg]:h-[calc(100%+2px)] [&>svg]:w-[calc(100%+2px)]',
-    // The metadata service renders its name text in a heavier custom font;
-    // once we inline the SVG it inherits our body font (Inter), which
-    // renders visually lighter at the same nominal weight. Extrabold on
-    // <text> inside the SVG gets Inter's visual weight close to the
-    // service's direct output.
-    '[&>svg_text]:font-extrabold',
     !loaded && 'animate-pulse',
     className
   )
@@ -194,31 +235,38 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     )
   }
 
-  if (!svg) {
-    return (
-      <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses}>
-        <svg
-          aria-hidden
-          viewBox={`0 0 ${INTRINSIC_SIZE} ${INTRINSIC_SIZE}`}
-          width={INTRINSIC_SIZE}
-          height={INTRINSIC_SIZE}
-          className='invisible block h-full w-full'
-        />
-        <div className='absolute inset-0'>
+  return (
+    <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses}>
+      <svg
+        aria-hidden
+        viewBox={`0 0 ${INTRINSIC_SIZE} ${INTRINSIC_SIZE}`}
+        width={INTRINSIC_SIZE}
+        height={INTRINSIC_SIZE}
+        className='invisible block h-full w-full'
+      />
+      {!hasLoadedLayer && (
+        <div className='absolute inset-0 z-10'>
           <LoadingCell height='100%' width='100%' />
         </div>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      aria-label={name}
-      role='img'
-      style={sizeStyle}
-      className={wrapperClasses}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+      )}
+      {layers.map((layer, i) => {
+        const isTop = i === layers.length - 1
+        return (
+          <img
+            key={layer.url}
+            src={layer.url}
+            alt={isTop ? name : ''}
+            aria-hidden={!isTop}
+            onLoad={() => markLayerLoaded(layer.url)}
+            className={cn(
+              'absolute -top-0 -left-0 block h-full w-full object-cover',
+              isTop && 'transition-opacity duration-400',
+              isTop && !layer.loaded && 'opacity-0'
+            )}
+          />
+        )
+      })}
+    </div>
   )
 }
 export default NameImage

@@ -64,6 +64,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     name
   )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
 
+  // Subtract 400ms to ensure the state changes at the same time as the other components
   const status = forceRegStatus ?? getRegistrationStatus(expiryDate)
 
   // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
@@ -173,7 +174,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
         prev.slice(0, -1).forEach((l) => URL.revokeObjectURL(l.url))
         return [t]
       })
-    }, 500)
+    }, 400)
     return () => clearTimeout(timer)
   }, [layers])
 
@@ -186,7 +187,17 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   )
 
   const markLayerLoaded = (url: string) => {
-    setLayers((prev) => prev.map((l) => (l.url === url ? { ...l, loaded: true } : l)))
+    // Blob URLs resolve essentially instantly, so onLoad usually fires
+    // before the browser has painted the layer's initial `opacity-0`
+    // state. Toggling the class in the same frame collapses both states
+    // into a single paint and the CSS transition never triggers. Two
+    // requestAnimationFrame hops guarantee a paint of opacity:0 lands
+    // before we flip to opacity:1, so the 500ms fade actually runs.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setLayers((prev) => prev.map((l) => (l.url === url ? { ...l, loaded: true } : l)))
+      })
+    })
   }
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
@@ -249,7 +260,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
             onLoad={() => markLayerLoaded(layer.url)}
             className={cn(
               'absolute -top-0 -left-0 block h-full w-full object-cover',
-              isTop && 'transition-opacity duration-500',
+              isTop && 'transition-opacity duration-400',
               isTop && !layer.loaded && 'opacity-0'
             )}
           />

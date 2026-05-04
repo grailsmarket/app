@@ -60,9 +60,7 @@ const TicketList: React.FC<TicketListProps> = ({ onOpenTicket }) => {
       )}
 
       {!isLoading && !isError && tickets.length === 0 && (
-        <div className='border-tertiary text-neutral rounded-md border p-6 text-center'>
-          No {status} tickets.
-        </div>
+        <div className='border-tertiary text-neutral rounded-md border p-6 text-center'>No {status} tickets.</div>
       )}
 
       <ul className='flex flex-col gap-2'>
@@ -78,12 +76,8 @@ const TicketList: React.FC<TicketListProps> = ({ onOpenTicket }) => {
                 <StatusBadge status={ticket.status} />
               </div>
               <div className='text-neutral flex items-center gap-3 text-sm'>
-                <span>
-                  Updated {formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true })}
-                </span>
-                {typeof ticket.messageCount === 'number' && (
-                  <span>· {ticket.messageCount} messages</span>
-                )}
+                <span>Updated {formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true })}</span>
+                {typeof ticket.messageCount === 'number' && <span>· {ticket.messageCount} messages</span>}
               </div>
             </button>
           </li>
@@ -99,11 +93,7 @@ const StatusBadge: React.FC<{ status: SupportTicketStatus }> = ({ status }) => {
     closed: 'bg-neutral/20 text-neutral',
     fixed: 'bg-emerald-500/20 text-emerald-400',
   }
-  return (
-    <span className={cn('rounded-sm px-2 py-0.5 text-xs font-semibold uppercase', styles[status])}>
-      {status}
-    </span>
-  )
+  return <span className={cn('rounded-sm px-2 py-0.5 text-xs font-semibold uppercase', styles[status])}>{status}</span>
 }
 
 export default TicketList

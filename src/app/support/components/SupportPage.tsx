@@ -45,8 +45,7 @@ const SupportPage = () => {
 
   const isAuthenticated = authStatus === 'authenticated'
   const tier = subscription?.tier
-  const tierExpired =
-    subscription?.tierExpiresAt && new Date(subscription.tierExpiresAt) < new Date()
+  const tierExpired = subscription?.tierExpiresAt && new Date(subscription.tierExpiresAt) < new Date()
   const hasAccess = !!tier && tier !== 'free' && !tierExpired
 
   if (authStatusIsLoading) {
@@ -62,9 +61,7 @@ const SupportPage = () => {
       <main className='flex min-h-screen flex-col items-center justify-center gap-6 px-4'>
         <div className='flex flex-col items-center gap-3 text-center'>
           <h1 className='font-sedan-sc text-4xl'>Support</h1>
-          <p className='text-neutral max-w-md text-lg'>
-            Connect your wallet to file or view support tickets.
-          </p>
+          <p className='text-neutral max-w-md text-lg'>Connect your wallet to file or view support tickets.</p>
         </div>
         <PrimaryButton onClick={() => openConnectModal?.()} className='px-8 text-lg'>
           Connect Wallet
@@ -79,8 +76,8 @@ const SupportPage = () => {
         <div className='flex flex-col items-center gap-3 text-center'>
           <h1 className='font-sedan-sc text-4xl'>Support</h1>
           <p className='text-neutral max-w-md text-lg'>
-            Direct support is included with any paid Grails subscription. Upgrade your plan to
-            open tickets and get help from our team.
+            Direct support is included with any paid Grails subscription. Upgrade your plan to open tickets and get help
+            from our team.
           </p>
         </div>
         <Link
@@ -102,24 +99,13 @@ const SupportPage = () => {
             Report a bug or open a ticket. We&apos;ll reply in-app and via email.
           </p>
         </div>
-        {view === 'list' && (
-          <PrimaryButton onClick={() => setView('create')}>New ticket</PrimaryButton>
-        )}
-        {view !== 'list' && (
-          <SecondaryButton onClick={goToList}>Back to tickets</SecondaryButton>
-        )}
+        {view === 'list' && <PrimaryButton onClick={() => setView('create')}>New ticket</PrimaryButton>}
+        {view !== 'list' && <SecondaryButton onClick={goToList}>Back to tickets</SecondaryButton>}
       </header>
 
       {view === 'list' && <TicketList onOpenTicket={(ticketId) => setView({ ticketId })} />}
-      {view === 'create' && (
-        <CreateTicketForm
-          onCreated={(ticketId) => setView({ ticketId })}
-          onCancel={goToList}
-        />
-      )}
-      {typeof view === 'object' && (
-        <TicketDetail ticketId={view.ticketId} onBack={goToList} />
-      )}
+      {view === 'create' && <CreateTicketForm onCreated={(ticketId) => setView({ ticketId })} onCancel={goToList} />}
+      {typeof view === 'object' && <TicketDetail ticketId={view.ticketId} onBack={goToList} />}
     </main>
   )
 }

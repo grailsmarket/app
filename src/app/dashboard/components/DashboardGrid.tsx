@@ -127,7 +127,7 @@ const customWrapCompactor: Compactor = {
     }
 
     return out
-  }
+  },
 }
 
 const DashboardGrid = () => {

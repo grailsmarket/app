@@ -303,6 +303,7 @@ export type WatchlistCheckListEntry = {
   notifyOnOffer: boolean
   notifyOnListing: boolean
   notifyOnPriceChange: boolean
+  notifyOnComment: boolean
 }
 
 export type RegistrationStatus = (typeof ALL_REGISTRATION_STATUSES)[number]

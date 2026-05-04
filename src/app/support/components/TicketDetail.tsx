@@ -3,11 +3,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format, formatDistanceToNow } from 'date-fns'
-import {
-  getSupportTicket,
-  postSupportMessage,
-  reopenSupportTicket,
-} from '@/api/support'
+import { getSupportTicket, postSupportMessage, reopenSupportTicket } from '@/api/support'
 import { SupportTicketStatus } from '@/types/support'
 import { cn } from '@/utils/tailwind'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -93,12 +89,7 @@ const TicketDetail: React.FC<TicketDetailProps> = ({ ticketId, onBack }) => {
             <ul className='flex flex-col gap-0.5'>
               {ticket.urls.map((u) => (
                 <li key={u}>
-                  <a
-                    href={u}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='text-primary hover:underline'
-                  >
+                  <a href={u} target='_blank' rel='noopener noreferrer' className='text-primary hover:underline'>
                     {u}
                   </a>
                 </li>
@@ -118,24 +109,17 @@ const TicketDetail: React.FC<TicketDetailProps> = ({ ticketId, onBack }) => {
             )}
           >
             <div className='flex items-center justify-between text-sm'>
-              <span
-                className={cn(
-                  'font-semibold',
-                  m.authorRole === 'admin' ? 'text-primary' : 'text-foreground'
-                )}
-              >
+              <span className={cn('font-semibold', m.authorRole === 'admin' ? 'text-primary' : 'text-foreground')}>
                 {m.authorRole === 'admin' ? 'Grails team' : 'You'}
               </span>
               <span className='text-neutral'>{format(new Date(m.createdAt), 'PPp')}</span>
             </div>
-            <p className='text-foreground text-base whitespace-pre-wrap break-words'>{m.body}</p>
+            <p className='text-foreground text-base break-words whitespace-pre-wrap'>{m.body}</p>
           </li>
         ))}
       </ul>
 
-      {error && (
-        <p className='rounded-md bg-red-500/10 p-3 text-sm text-red-400'>{error}</p>
-      )}
+      {error && <p className='rounded-md bg-red-500/10 p-3 text-sm text-red-400'>{error}</p>}
 
       {status === 'open' && (
         <form onSubmit={handleReply} className='flex flex-col gap-3'>
@@ -156,13 +140,8 @@ const TicketDetail: React.FC<TicketDetailProps> = ({ ticketId, onBack }) => {
 
       {status === 'closed' && (
         <div className='border-tertiary flex items-center justify-between gap-3 rounded-md border p-4'>
-          <p className='text-neutral text-sm'>
-            This ticket was closed. Reopen if the issue isn&apos;t resolved.
-          </p>
-          <PrimaryButton
-            onClick={() => reopenMutation.mutate()}
-            disabled={reopenMutation.isPending}
-          >
+          <p className='text-neutral text-sm'>This ticket was closed. Reopen if the issue isn&apos;t resolved.</p>
+          <PrimaryButton onClick={() => reopenMutation.mutate()} disabled={reopenMutation.isPending}>
             {reopenMutation.isPending ? 'Reopening...' : 'Reopen ticket'}
           </PrimaryButton>
         </div>
@@ -183,11 +162,7 @@ const StatusBadge: React.FC<{ status: SupportTicketStatus }> = ({ status }) => {
     closed: 'bg-neutral/20 text-neutral',
     fixed: 'bg-emerald-500/20 text-emerald-400',
   }
-  return (
-    <span className={cn('rounded-sm px-2 py-0.5 text-xs font-semibold uppercase', styles[status])}>
-      {status}
-    </span>
-  )
+  return <span className={cn('rounded-sm px-2 py-0.5 text-xs font-semibold uppercase', styles[status])}>{status}</span>
 }
 
 export default TicketDetail

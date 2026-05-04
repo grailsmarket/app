@@ -2,8 +2,10 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Avatar, ENS, HeaderImage, truncateAddress } from 'ethereum-identity-kit'
+import { Avatar, ENS, HeaderImage, SignInButton as SignInButtonComponent, truncateAddress } from 'ethereum-identity-kit'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useSettings } from './useSettings'
+import { DAY_IN_SECONDS } from '@/constants/time'
 import Input from '@/components/ui/input'
 import Link from 'next/link'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -47,9 +49,54 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     notifyOnCommentReceivedValue,
     setNotifyOnCommentReceivedValue,
   } = useSettings()
-  const { userAddress } = useUserContext()
+  const {
+    userAddress,
+    authStatus,
+    handleGetNonce,
+    verify,
+    handleSignInSuccess,
+    handleSignInError,
+  } = useUserContext()
+  const { openConnectModal } = useConnectModal()
 
-  if (!userAddress) return null
+  const isSignedIn = !!userAddress && authStatus === 'authenticated'
+
+  if (!isSignedIn) {
+    return (
+      <div
+        className={cn(
+          'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
+          isOpen ? 'translate-y-0' : 'translate-y-[100vh]'
+        )}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
+      >
+        <div
+          className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col items-center gap-6 rounded-md border-t shadow-lg md:max-w-xl md:border-2'
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className='flex min-h-6 items-center justify-center'>
+            <h2 className='font-sedan-sc text-foreground text-3xl'>Settings</h2>
+          </div>
+          <p className='text-foreground/80 text-center text-base'>Sign in to manage your settings.</p>
+          <SignInButtonComponent
+            autoSignInAfterConnection={true}
+            getNonce={handleGetNonce}
+            verifySignature={verify}
+            onSignInSuccess={handleSignInSuccess}
+            onSignInError={handleSignInError}
+            message='Grails Market wants you to sign in'
+            onDisconnectedClick={() => openConnectModal?.()}
+            darkMode={true}
+            isSignedIn={false}
+            expirationTime={DAY_IN_SECONDS * 1000}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

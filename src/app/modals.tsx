@@ -32,6 +32,7 @@ import { selectEditRecordsModal, setEditRecordsModalOpen } from '@/state/reducer
 import BulkEditRecordsModal from '@/components/modal/records/bulkEditRecordsModal'
 import { selectBulkEditRecordsModal, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
+import { useOpenSettingsFromUrl } from '@/hooks/useOpenSettingsFromUrl'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
 import { selectRegistration } from '@/state/reducers/registration'
@@ -42,6 +43,7 @@ import { selectChatSidebar } from '@/state/reducers/chat/sidebar'
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
   useGlobalSearchShortcut()
+  useOpenSettingsFromUrl()
   const dispatch = useAppDispatch()
   const {
     open: acceptOfferModalOpen,

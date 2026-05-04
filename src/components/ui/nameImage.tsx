@@ -43,9 +43,9 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   const pendingRefreshKey = useAppSelector(selectImageRefreshKey(name))
   const [refreshKey, setRefreshKey] = useState<number | undefined>(undefined)
 
-
   useEffect(() => {
-    if (!pendingRefreshKey || !forceRefreshKey || pendingRefreshKey === refreshKey || forceRefreshKey === refreshKey) return
+    if (!pendingRefreshKey || !forceRefreshKey || pendingRefreshKey === refreshKey || forceRefreshKey === refreshKey)
+      return
     setRefreshKey(forceRefreshKey ?? pendingRefreshKey)
     dispatch(consumeImageRefresh(name))
   }, [pendingRefreshKey, refreshKey, dispatch, name, forceRefreshKey])
@@ -243,7 +243,13 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   }
 
   return (
-    <div aria-label={name} id={`name-image-${name}-${refreshKey}`} role='img' style={sizeStyle} className={wrapperClasses}>
+    <div
+      aria-label={name}
+      id={`name-image-${name}-${refreshKey}`}
+      role='img'
+      style={sizeStyle}
+      className={wrapperClasses}
+    >
       <svg
         aria-hidden
         viewBox={`0 0 ${INTRINSIC_SIZE} ${INTRINSIC_SIZE}`}

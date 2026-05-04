@@ -26,9 +26,12 @@ const EFPFriends: React.FC<EFPFriendsProps> = ({ submit, createChatIsPending, se
     <div className='flex flex-col'>
       <div className='p-lg flex items-center justify-between text-xl font-semibold'>
         <div className='flex gap-1.5'>
-          <Link href={`https://efp.app/${userAddress}`} target='_blank' className='hover:opacity-80 transition-opacity'><Image src='https://efp.app/assets/logo.svg' alt='EFP Logo' width={22} height={22} /></Link>
-          <p>EFP Friends</p></div>
-        <div className='text-lg text-neutral flex items-center gap-1'>
+          <Link href={`https://efp.app/${userAddress}`} target='_blank' className='transition-opacity hover:opacity-80'>
+            <Image src='https://efp.app/assets/logo.svg' alt='EFP Logo' width={22} height={22} />
+          </Link>
+          <p>EFP Friends</p>
+        </div>
+        <div className='text-neutral flex items-center gap-1 text-lg'>
           {isLoadingFollowingCount ? <LoadingCell radius='4px' height='14px' width='40px' /> : <p>{followingCount}</p>}
           <p>friends</p>
         </div>

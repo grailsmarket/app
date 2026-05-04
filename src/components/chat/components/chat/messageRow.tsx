@@ -20,7 +20,7 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
       <div className={cn('flex max-w-[80%] flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'text-lg w-fit rounded-2xl px-4 py-2 break-words whitespace-pre-wrap',
+            'w-fit rounded-2xl px-4 py-2 text-lg break-words whitespace-pre-wrap',
             isOwn ? 'bg-primary text-background rounded-br-sm' : 'bg-secondary text-foreground rounded-bl-sm',
             isDeleted && 'italic opacity-60'
           )}

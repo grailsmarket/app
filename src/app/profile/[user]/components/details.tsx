@@ -17,6 +17,7 @@ import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { getDetails } from '@/api/user/getDetails'
 import EthereumLogo from 'public/icons/eth-gray.svg'
 import GrailsIcon from 'public/logo.svg'
+import SendMessageButton from '@/components/chat/components/sendMessageButton'
 
 interface Props {
   user?: Address | string | null
@@ -52,6 +53,7 @@ const Details: React.FC<Props> = ({ user }) => {
   return (
     <div className='border-tertiary bg-secondary flex w-full flex-col justify-between gap-2 p-2 sm:gap-4 md:p-4 lg:w-[380px] lg:border-l-2'>
       <div className='flex flex-col gap-3'>
+        {user && isAddress(user as string) && <SendMessageButton recipient={user as string} className='w-full' />}
         {/* <h3 className='font-sedan-sc hidden text-3xl lg:block'>Account</h3> */}
         <div className='grid grid-cols-4 gap-y-2 lg:grid-cols-2'>
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>

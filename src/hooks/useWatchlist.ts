@@ -31,6 +31,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
     notifyOnOffer: true,
     notifyOnListing: true,
     notifyOnPriceChange: true,
+    notifyOnComment: false,
   })
 
   const invalidateWatchlist = () => {
@@ -115,6 +116,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
           notifyOnOffer: watchlistItem.watchlist.notifyOnOffer,
           notifyOnListing: watchlistItem.watchlist.notifyOnListing,
           notifyOnPriceChange: watchlistItem.watchlist.notifyOnPriceChange,
+          notifyOnComment: watchlistItem.watchlist.notifyOnComment ?? false,
         })
       }
 
@@ -127,6 +129,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
         notifyOnOffer: watchlistItem.watchlistEntry.notifyOnOffer,
         notifyOnListing: watchlistItem.watchlistEntry.notifyOnListing,
         notifyOnPriceChange: watchlistItem.watchlistEntry.notifyOnPriceChange,
+        notifyOnComment: watchlistItem.watchlistEntry.notifyOnComment ?? false,
       })
     }
   }, [watchlistItem, watchlistId, watchlist])

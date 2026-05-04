@@ -13,6 +13,7 @@ import Searchbar from '../ui/searchbar'
 import logoMobile from 'public/logo.svg'
 import logo from 'public/logo-w-text.svg'
 import Notifications from './notifications'
+import Chats from './chats'
 import { useNavbar } from '@/context/navbar'
 import { useAppSelector } from '@/state/hooks'
 import SignInButton from '../ui/buttons/signInButton/index'
@@ -150,6 +151,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <div className='flex items-center gap-2.5'>
             <SearchIcon />
             <Cart />
+            <Chats />
             <Notifications />
             <Watchlist />
             <Hamburger

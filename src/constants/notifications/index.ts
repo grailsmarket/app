@@ -14,6 +14,7 @@ export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.R
   'offer-received': cartAccepted,
   'listing-sold': cartSold,
   'listing-cancelled-ownership-change': AlarmClock,
+  'comment-received': Bell,
   'admin-broadcast': Bell,
 }
 
@@ -25,5 +26,6 @@ export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> 
   'offer-received': 'Offer received',
   'listing-sold': 'Sold',
   'listing-cancelled-ownership-change': 'Listing cancelled (ownership changed)',
+  'comment-received': 'New Comment',
   'admin-broadcast': 'Announcement',
 }

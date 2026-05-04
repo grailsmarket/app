@@ -32,6 +32,7 @@ export type AuthUserType = {
   minOfferThreshold: number | null
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
+  notifyOnCommentReceived: boolean
 }
 
 export type VerifyResponseType = {

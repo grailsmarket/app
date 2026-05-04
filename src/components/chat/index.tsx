@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, selectChatSidebar } from '@/state/reducers/chat/sidebar'
 import NewChatView from './components/new-chat/newChatView'
-import ThreadView from './threadView'
+import ThreadView from './components/chat/threadView'
 import ListView from './components/listView'
 
 const ChatSidebar: React.FC = () => {

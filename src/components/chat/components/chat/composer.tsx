@@ -94,7 +94,11 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           )}
         />
         <button
-          onClick={submit}
+          onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            submit()
+          }}
           disabled={!value.trim() || send.isPending || inputDisabled}
           className={cn(
             'bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all',

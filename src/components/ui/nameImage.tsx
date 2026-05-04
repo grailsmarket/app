@@ -43,8 +43,9 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   const pendingRefreshKey = useAppSelector(selectImageRefreshKey(name))
   const [refreshKey, setRefreshKey] = useState<number | undefined>(undefined)
 
+
   useEffect(() => {
-    if (pendingRefreshKey === undefined || pendingRefreshKey === refreshKey || forceRefreshKey) return
+    if (!pendingRefreshKey || !forceRefreshKey || pendingRefreshKey === refreshKey || forceRefreshKey === refreshKey) return
     setRefreshKey(forceRefreshKey ?? pendingRefreshKey)
     dispatch(consumeImageRefresh(name))
   }, [pendingRefreshKey, refreshKey, dispatch, name, forceRefreshKey])
@@ -86,12 +87,18 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
 
   // When the caller bumps `refreshKey` (e.g. after a successful metadata
   // refresh), restart from the wrapped-SVG attempt so we re-run the full
-  // fetch chain against the new cache-busted URL.
+  // fetch chain against the new cache-busted URL. We deliberately do NOT
+  // clear `svg` or `layers` here — keeping the previously-loaded layer
+  // mounted lets the new fetch's layer crossfade in over it instead of
+  // flashing through gray. If the refetched SVG is byte-identical (the
+  // metadata service often returns the same content), `setSvg` bails out
+  // and the user sees no change, which is correct.
   useEffect(() => {
     if (refreshKey === undefined) return
     setAttempt(0)
-    setSvg(null)
     setPngLoaded(false)
+    setSvg(null)
+    setLayers([])
   }, [refreshKey])
 
   useEffect(() => {
@@ -236,7 +243,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   }
 
   return (
-    <div aria-label={name} role='img' style={sizeStyle} className={wrapperClasses}>
+    <div aria-label={name} id={`name-image-${name}-${refreshKey}`} role='img' style={sizeStyle} className={wrapperClasses}>
       <svg
         aria-hidden
         viewBox={`0 0 ${INTRINSIC_SIZE} ${INTRINSIC_SIZE}`}
@@ -259,8 +266,8 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
             aria-hidden={!isTop}
             onLoad={() => markLayerLoaded(layer.url)}
             className={cn(
-              'absolute -top-0 -left-0 block h-full w-full object-cover',
-              isTop && 'transition-opacity duration-400',
+              'absolute top-0 left-0 block h-full w-full object-cover',
+              isTop && 'transition-opacity duration-[400ms]',
               isTop && !layer.loaded && 'opacity-0'
             )}
           />

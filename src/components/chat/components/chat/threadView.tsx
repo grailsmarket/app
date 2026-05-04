@@ -16,10 +16,9 @@ import { useUnblockUser } from '@/hooks/chat/useUnblockUser'
 import { useUserContext } from '@/context/user'
 import LoadingCell from '@/components/ui/loadingCell'
 import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
-import MessageRow from './components/chat/messageRow'
+import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
-import ReadReceipt from './readReceipt'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
@@ -85,14 +84,6 @@ const ThreadView: React.FC = () => {
     }
   }
 
-  const lastOwnMessage = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const m = messages[i]
-      if (m.sender_address?.toLowerCase() === myAddress) return m
-    }
-    return null
-  }, [messages, myAddress])
-
   const peerLabel = peerProfile?.displayLabel ?? 'Direct chat'
 
   // Filter typing events to peers only (don't show our own typing back to us).
@@ -101,19 +92,19 @@ const ThreadView: React.FC = () => {
   const headerMenuItems: ContextMenuItem[] = peer
     ? isBlocked
       ? [
-          {
-            label: `Unblock ${peerLabel}`,
-            onClick: () => unblockMutation.mutate(peer.user_id),
-          },
-        ]
+        {
+          label: `Unblock ${peerLabel}`,
+          onClick: () => unblockMutation.mutate(peer.user_id),
+        },
+      ]
       : [
-          {
-            label: `Block ${peerLabel}`,
-            confirmLabel: `Confirm block ${peerLabel}`,
-            destructive: true,
-            onClick: () => blockMutation.mutate(peer.address),
-          },
-        ]
+        {
+          label: `Block ${peerLabel}`,
+          confirmLabel: `Confirm block ${peerLabel}`,
+          destructive: true,
+          onClick: () => blockMutation.mutate(peer.address),
+        },
+      ]
     : []
 
   return (
@@ -197,13 +188,6 @@ const ThreadView: React.FC = () => {
                 isRead={m.id === peer?.last_read_message_id}
               />
             ))}
-            {/* Only show "Seen" if the caller's last message is also the very
-                last message in the thread. A peer reply after my message is
-                implicit acknowledgement, so we suppress the receipt rather
-                than have it float above their replies. */}
-            {messages.length > 0 && lastOwnMessage && messages[messages.length - 1].id === lastOwnMessage.id && (
-              <ReadReceipt lastOwnMessage={lastOwnMessage} messages={messages} otherParticipants={otherParticipants} />
-            )}
             {otherTypingIds.length > 0 && (
               <div className={cn('flex items-center gap-2 pt-1')}>
                 <div className='bg-secondary rounded-2xl rounded-bl-sm px-4 py-2'>

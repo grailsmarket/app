@@ -7,6 +7,9 @@ import { beautifyName } from '@/lib/ens'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { Address } from 'viem'
 import LoadingCell from '@/components/ui/loadingCell'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useUserContext } from '@/context/user'
 
 interface EFPFriendsProps {
   submit: (address: Address) => void
@@ -15,14 +18,17 @@ interface EFPFriendsProps {
 }
 
 const EFPFriends: React.FC<EFPFriendsProps> = ({ submit, createChatIsPending, search }) => {
+  const { userAddress } = useUserContext()
   const { friends, isLoading, isError, hasNextPage, loadMoreRef, followingCount, isLoadingFollowingCount } =
     useEFPFriends(search)
 
   return (
     <div className='flex flex-col'>
       <div className='p-lg flex items-center justify-between text-xl font-semibold'>
-        <p>EFP Friends</p>
-        <div className='text-md text-neutral flex items-center gap-1'>
+        <div className='flex gap-1.5'>
+          <Link href={`https://efp.app/${userAddress}`} target='_blank' className='hover:opacity-80 transition-opacity'><Image src='https://efp.app/assets/logo.svg' alt='EFP Logo' width={22} height={22} /></Link>
+          <p>EFP Friends</p></div>
+        <div className='text-lg text-neutral flex items-center gap-1'>
           {isLoadingFollowingCount ? <LoadingCell radius='4px' height='14px' width='40px' /> : <p>{followingCount}</p>}
           <p>friends</p>
         </div>

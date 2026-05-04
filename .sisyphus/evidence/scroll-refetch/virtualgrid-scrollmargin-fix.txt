@@ -1,1 +1,0 @@
-scrollMargin fix applied to VirtualGridComponent

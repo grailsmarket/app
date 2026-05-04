@@ -26,7 +26,12 @@ export type AuthUserType = {
   email: string | null
   emailVerified: boolean
   telegram: string | null
+  telegramConnected: boolean
   discord: string | null
+  tier: 'free' | 'pro' | 'plus' | 'gold'
+  tierId: number
+  tierExpiresAt: string | null
+  isAdmin: boolean
   createdAt: string
   lastSignIn: string
   minOfferThreshold: number | null

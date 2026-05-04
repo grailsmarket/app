@@ -37,6 +37,7 @@
     "puppeteer-core": "^24.31.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
+    "react-grid-layout": "^2.2.3",
     "react-redux": "^9.2.0",
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",

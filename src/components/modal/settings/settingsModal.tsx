@@ -14,6 +14,9 @@ import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
+import { getTierDisplayName, SUBSCRIBABLE_TIERS } from '@/constants/subscriptions'
+import { useAppDispatch } from '@/state/hooks'
+import { setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT } from '@/constants/web3/contracts'
 
 interface SettingsModalProps {
@@ -28,9 +31,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setEmailAddress,
     // discordUsername,
     // setDiscordUsername,
-    // telegramUsername,
-    // setTelegramUsername,
+    telegram,
+    telegramUsername,
+    setTelegramUsername,
+    telegramConnected,
+    telegramVerificationCode,
+    resendTelegramCode,
+    telegramCodeStatus,
     ensProfile,
+    subscription,
+    isProSubscription,
+    hasActiveSubscription,
     hasChanges,
     isEmailVerified,
     updateUserProfileMutation,
@@ -48,13 +59,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     setNotifyOnCommentReceivedValue,
   } = useSettings()
   const { userAddress } = useUserContext()
+  const dispatch = useAppDispatch()
 
   if (!userAddress) return null
 
   return (
     <div
       className={cn(
-        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
+        'fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
         isOpen ? 'translate-y-0' : 'translate-y-[100vh]'
       )}
       onClick={(e) => {
@@ -98,19 +110,48 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </Link>
           </div>
         </div>
+        {/* Subscription Indicator */}
+        {hasActiveSubscription ? (
+          <div className='p-md flex items-center justify-between gap-2 rounded-md bg-green-400/10'>
+            <div className='flex items-center gap-2'>
+              <Image src={CheckCircle} alt='Subscription Active' height={20} width={20} />
+              <div>
+                <p className='text-md font-medium text-[#16A34A]'>
+                  {getTierDisplayName(subscription?.tierId ?? 0)} Subscription Active
+                </p>
+                {subscription?.tierExpiresAt && (
+                  <p className='text-sm text-[#16A34A]/70'>
+                    Expires {new Date(subscription.tierExpiresAt).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                onClose()
+                dispatch(setUpgradeModalOpen(true))
+              }}
+              className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+            >
+              {(subscription?.tierId ?? 0) >= Math.max(...SUBSCRIBABLE_TIERS) ? 'Extend Plan' : 'Upgrade Plan'}
+            </button>
+          </div>
+        ) : (
+          <div className='bg-secondary p-md flex items-center justify-between gap-2 rounded-md'>
+            <p className='text-md text-neutral font-medium'>Free Plan</p>
+            <button
+              onClick={() => {
+                onClose()
+                dispatch(setUpgradeModalOpen(true))
+              }}
+              className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+            >
+              Subscribe
+            </button>
+          </div>
+        )}
+
         <div className='flex flex-col gap-2 sm:gap-4'>
-          {/* <Input
-            label='Discord'
-            value={discordUsername || ''}
-            onChange={(e) => setDiscordUsername(e.target.value)}
-            placeholder='Username'
-            />
-            <Input
-            label='Telegram'
-            value={telegramUsername || ''}
-            onChange={(e) => setTelegramUsername(e.target.value)}
-            placeholder='@telegramusername'
-            /> */}
           <div className='flex flex-col gap-2'>
             <div className='bg-secondary px-lg py-md flex flex-col gap-2 rounded-md'>
               <p className='text-md text-neutral font-medium'>
@@ -240,6 +281,83 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   />
                 </button>
               </div>
+            </div>
+            {/* Telegram Notifications */}
+            <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>
+              <div className='flex flex-col gap-1'>
+                <p className='text-lg font-medium'>Telegram Notifications</p>
+                <p className='text-neutral text-sm'>
+                  {isProSubscription
+                    ? 'Connect your Telegram to receive notifications via the Grails bot.'
+                    : 'Telegram notifications require a Pro subscription.'}
+                </p>
+              </div>
+              <Input
+                label='Telegram'
+                value={telegramUsername || ''}
+                onChange={(e) => setTelegramUsername(e.target.value)}
+                placeholder='@username'
+                disabled={!isProSubscription}
+              />
+              {isProSubscription && telegramConnected && (
+                <div className='p-md flex items-center gap-2 rounded-md bg-green-400/10'>
+                  <Image src={CheckCircle} alt='Telegram Connected' height={20} width={20} />
+                  <p className='text-md max-w-full font-medium text-[#16A34A]'>Your Telegram account is connected.</p>
+                </div>
+              )}
+              {isProSubscription && telegramVerificationCode && !telegramConnected && (
+                <div className='p-md flex flex-col gap-2 rounded-md bg-blue-400/10'>
+                  <p className='text-md font-medium text-blue-400'>Send this command to the Grails bot on Telegram:</p>
+                  <div className='flex items-center gap-2'>
+                    <code className='bg-secondary rounded-md px-3 py-1.5 font-mono text-sm select-all'>
+                      /reg {telegramVerificationCode}
+                    </code>
+                    <button
+                      className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
+                      onClick={() => {
+                        navigator.clipboard.writeText(`/reg ${telegramVerificationCode}`)
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <p className='text-neutral text-xs'>This code expires in 10 minutes.</p>
+                </div>
+              )}
+              {isProSubscription &&
+                telegram &&
+                telegramUsername === telegram &&
+                !telegramConnected &&
+                !telegramVerificationCode && (
+                  <div className='flex flex-row gap-2'>
+                    <div className='p-md flex items-center gap-2 rounded-md bg-yellow-400/10'>
+                      <Image src={AlertCircle} alt='Telegram Not Connected' height={32} width={32} />
+                      <p className='text-md max-w-full font-medium text-[#E79339]'>
+                        Your Telegram account is not connected.
+                      </p>
+                    </div>
+                    <SecondaryButton
+                      className={cn(
+                        'h-auto! w-40 px-0!',
+                        telegramCodeStatus === 'error'
+                          ? 'pointer-events-none bg-red-500'
+                          : telegramCodeStatus === 'success'
+                            ? 'pointer-events-none bg-green-700'
+                            : ''
+                      )}
+                      onClick={resendTelegramCode}
+                      disabled={telegramCodeStatus === 'pending'}
+                    >
+                      {telegramCodeStatus === 'pending'
+                        ? 'Generating...'
+                        : telegramCodeStatus === 'success'
+                          ? 'Code Generated!'
+                          : telegramCodeStatus === 'error'
+                            ? 'Error, try again.'
+                            : 'Get Code'}
+                    </SecondaryButton>
+                  </div>
+                )}
             </div>
           </div>
         </div>

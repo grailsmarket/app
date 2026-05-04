@@ -37,6 +37,7 @@ export const useDomains = () => {
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      filters.aiSearch,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
@@ -44,8 +45,8 @@ export const useDomains = () => {
         pageParam,
         filters,
         searchTerm: debouncedSearch,
-        enableBulkSearch: true,
         isAuthenticated: authStatus === 'authenticated',
+        AISearchEnabled: filters.aiSearch,
       })
 
       return {

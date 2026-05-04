@@ -12,9 +12,13 @@ import {
   setUserEmail,
   setUserId,
   setUserTelegram,
+  setTelegramConnected,
+  setTelegramVerificationCode,
+  setUserSubscription,
 } from '@/state/reducers/portfolio/profile'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { getTierIdFromString } from '@/constants/subscriptions'
 
 export const useSettings = () => {
   const dispatch = useAppDispatch()
@@ -23,10 +27,13 @@ export const useSettings = () => {
     email,
     discord,
     telegram,
+    telegramConnected,
+    telegramVerificationCode,
     ensProfile,
     offerNotificationThreshold,
     notifyOnListingSold,
     notifyOnOfferReceived,
+    subscription,
     notifyOnCommentReceived,
   } = useAppSelector(selectUserProfile)
 
@@ -56,6 +63,9 @@ export const useSettings = () => {
         notifyOnOfferReceived: notifyOnOfferReceivedValue,
         notifyOnCommentReceived: notifyOnCommentReceivedValue,
       })
+      if (!result.success || !result.data) {
+        throw new Error((result as any).error?.message || 'Failed to update settings')
+      }
       return result
     },
     onSuccess: (result) => {
@@ -63,6 +73,13 @@ export const useSettings = () => {
       dispatch(setUserEmail({ address: result.data.email, verified: result.data.emailVerified }))
       dispatch(setUserDiscord(result.data.discord))
       dispatch(setUserTelegram(result.data.telegram))
+      dispatch(setTelegramConnected(result.data.telegramConnected ?? false))
+      dispatch(setTelegramVerificationCode(result.data.telegramVerificationCode ?? null))
+      if (result.data.tier) {
+        const tier = result.data.tier
+        const tierId = result.data.tierId ?? getTierIdFromString(tier)
+        dispatch(setUserSubscription({ tier, tierId, tierExpiresAt: result.data.tierExpiresAt ?? null }))
+      }
       dispatch(setOfferNotificationThreshold(result.data.minOfferThreshold))
       dispatch(setNotifyOnListingSold(result.data.notifyOnListingSold))
       dispatch(setNotifyOnOfferReceived(result.data.notifyOnOfferReceived))
@@ -73,6 +90,37 @@ export const useSettings = () => {
       console.error('Error updating user profile', error)
     },
   })
+
+  const [telegramCodeStatus, setTelegramCodeStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
+
+  const resendTelegramCode = async () => {
+    setTelegramCodeStatus('pending')
+
+    try {
+      const response = await authFetch(`${API_URL}/verification/telegram/resend`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate telegram verification code')
+      }
+
+      const json = await response.json()
+      if (json.data?.telegramVerificationCode) {
+        dispatch(setTelegramVerificationCode(json.data.telegramVerificationCode))
+      }
+
+      setTelegramCodeStatus('success')
+    } catch (error) {
+      console.error('Error generating telegram verification code', error)
+      setTelegramCodeStatus('error')
+      return
+    } finally {
+      setTimeout(() => {
+        setTelegramCodeStatus(null)
+      }, 3000)
+    }
+  }
 
   const sendVerificationEmail = async () => {
     setVerificationEmailStatus('pending')
@@ -97,6 +145,16 @@ export const useSettings = () => {
       }, 3000)
     }
   }
+
+  const isProSubscription = useMemo(() => {
+    const hasPaidTier = (subscription?.tierId ?? 0) > 0 || (subscription?.tier != null && subscription.tier !== 'free')
+    return hasPaidTier && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+  }, [subscription])
+
+  const hasActiveSubscription = useMemo(() => {
+    const hasPaidTier = (subscription?.tierId ?? 0) > 0 || (subscription?.tier != null && subscription.tier !== 'free')
+    return hasPaidTier && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+  }, [subscription])
 
   const isEmailVerified = useMemo(() => {
     if (email.address === null) return true
@@ -148,14 +206,22 @@ export const useSettings = () => {
   return {
     email,
     ensProfile,
+    subscription,
+    isProSubscription,
+    hasActiveSubscription,
     emailAddress,
     setEmailAddress,
     isEmailVerified,
     isEmailValid,
     discordUsername,
     setDiscordUsername,
+    telegram,
     telegramUsername,
     setTelegramUsername,
+    telegramConnected,
+    telegramVerificationCode,
+    resendTelegramCode,
+    telegramCodeStatus,
     hasChanges,
     updateUserProfileMutation,
     updateUserProfileMutationLoading,

@@ -204,7 +204,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition hover:opacity-100 md:opacity-80',
+        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-300 duration-300 hover:opacity-100 md:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
         backgroundColor,
         className

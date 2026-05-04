@@ -16,6 +16,7 @@ export const addToWatchlist = async (domain: MarketplaceDomainType) => {
       notifyOnOffer: true,
       notifyOnListing: true,
       notifyOnPriceChange: false,
+      notifyOnComment: false,
     }),
   })
 

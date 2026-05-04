@@ -13,6 +13,7 @@ type VerifyResponse = {
     minOfferThreshold: number | null
     notifyOnListingSold: boolean
     notifyOnOfferReceived: boolean
+    notifyOnCommentReceived: boolean
   }
 }
 

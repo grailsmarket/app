@@ -38,6 +38,7 @@ const watchlistSettingsLabels: Record<keyof WatchlistSettingsType, string> = {
   notifyOnOffer: 'Notify on offer',
   notifyOnListing: 'Notify on listing',
   notifyOnPriceChange: 'Notify on price change',
+  notifyOnComment: 'Notify on comment',
 }
 
 const Watchlist: React.FC<WatchlistProps> = ({
@@ -75,6 +76,7 @@ const Watchlist: React.FC<WatchlistProps> = ({
     notifyOnOffer: watchlistItem?.notifyOnOffer,
     notifyOnListing: watchlistItem?.notifyOnListing,
     notifyOnPriceChange: watchlistItem?.notifyOnPriceChange,
+    notifyOnComment: watchlistItem?.notifyOnComment,
   } as WatchlistSettingsType
 
   return (

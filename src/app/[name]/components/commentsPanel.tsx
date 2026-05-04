@@ -60,9 +60,10 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
           </div>
         ) : (
           <>
-            {comments.map((c) => (
+            {comments.map((c, i) => (
               <CommentRow
                 key={c.id}
+                isLast={i === comments.length - 1}
                 comment={c}
                 canDelete={!!lowerAddr && c.author_address?.toLowerCase() === lowerAddr}
                 onRequestDelete={setPendingDelete}

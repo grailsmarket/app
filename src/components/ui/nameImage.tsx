@@ -273,7 +273,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
             onLoad={() => markLayerLoaded(layer.url)}
             className={cn(
               'absolute top-0 left-0 block h-full w-full object-cover',
-              isTop && 'transition-opacity duration-[400ms]',
+              isTop && 'transition-opacity duration-[500ms]',
               isTop && !layer.loaded && 'opacity-0'
             )}
           />

@@ -60,8 +60,8 @@ const ChatSidebar: React.FC = () => {
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            style={viewport ? { height: `${viewport.height}px`, top: `0px` } : undefined}
-            className={`bg-background border-tertiary fixed right-0 z-[91] flex w-full flex-col border-l-2 transition-all duration-200 md:max-w-md ${viewport ? '' : 'top-0 h-dvh'}`}
+            style={viewport ? { height: `${viewport.height}px`, top: `${viewport.offsetTop}px` } : undefined}
+            className={`bg-background border-tertiary fixed right-0 z-[91] flex w-full flex-col border-l-2 transition-all duration-300 md:max-w-md ${viewport ? '' : 'top-0 h-dvh'}`}
             aria-label='Chat sidebar'
           >
             {view === 'list' && <ListView />}

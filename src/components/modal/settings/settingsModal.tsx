@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import type { Address } from 'viem'
 import Image from 'next/image'
 import { Avatar, ENS, HeaderImage, SignInButton as SignInButtonComponent, truncateAddress } from 'ethereum-identity-kit'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
@@ -24,31 +25,6 @@ interface SettingsModalProps {
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
-  const {
-    email,
-    emailAddress,
-    setEmailAddress,
-    // discordUsername,
-    // setDiscordUsername,
-    // telegramUsername,
-    // setTelegramUsername,
-    ensProfile,
-    hasChanges,
-    isEmailVerified,
-    updateUserProfileMutation,
-    updateUserProfileMutationLoading,
-    updateUserProfileMutationError,
-    sendVerificationEmail,
-    verificationEmailStatus,
-    offerNotificationThresholdValue,
-    setOfferNotificationThresholdValue,
-    notifyOnListingSoldValue,
-    setNotifyOnListingSoldValue,
-    notifyOnOfferReceivedValue,
-    setNotifyOnOfferReceivedValue,
-    notifyOnCommentReceivedValue,
-    setNotifyOnCommentReceivedValue,
-  } = useSettings()
   const {
     userAddress,
     authStatus,
@@ -81,22 +57,54 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             <h2 className='font-sedan-sc text-foreground text-3xl'>Settings</h2>
           </div>
           <p className='text-foreground/80 text-center text-base'>Sign in to manage your settings.</p>
-          <SignInButtonComponent
-            autoSignInAfterConnection={true}
-            getNonce={handleGetNonce}
-            verifySignature={verify}
-            onSignInSuccess={handleSignInSuccess}
-            onSignInError={handleSignInError}
-            message='Grails Market wants you to sign in'
-            onDisconnectedClick={() => openConnectModal?.()}
-            darkMode={true}
-            isSignedIn={false}
-            expirationTime={DAY_IN_SECONDS * 1000}
-          />
+          <div className='text-background'>
+            <SignInButtonComponent
+              autoSignInAfterConnection={true}
+              getNonce={handleGetNonce}
+              verifySignature={verify}
+              onSignInSuccess={handleSignInSuccess}
+              onSignInError={handleSignInError}
+              message='Grails Market wants you to sign in'
+              onDisconnectedClick={() => openConnectModal?.()}
+              darkMode={true}
+              isSignedIn={false}
+              expirationTime={DAY_IN_SECONDS * 1000}
+            />
+          </div>
         </div>
       </div>
     )
   }
+
+  return <SettingsModalContent isOpen={isOpen} onClose={onClose} userAddress={userAddress} />
+}
+
+const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address }> = ({
+  isOpen,
+  onClose,
+  userAddress,
+}) => {
+  const {
+    email,
+    emailAddress,
+    setEmailAddress,
+    ensProfile,
+    hasChanges,
+    isEmailVerified,
+    updateUserProfileMutation,
+    updateUserProfileMutationLoading,
+    updateUserProfileMutationError,
+    sendVerificationEmail,
+    verificationEmailStatus,
+    offerNotificationThresholdValue,
+    setOfferNotificationThresholdValue,
+    notifyOnListingSoldValue,
+    setNotifyOnListingSoldValue,
+    notifyOnOfferReceivedValue,
+    setNotifyOnOfferReceivedValue,
+    notifyOnCommentReceivedValue,
+    setNotifyOnCommentReceivedValue,
+  } = useSettings()
 
   return (
     <div

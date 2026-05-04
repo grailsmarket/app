@@ -6,6 +6,7 @@ import {
   selectUserProfile,
   setNotifyOnListingSold,
   setNotifyOnOfferReceived,
+  setNotifyOnCommentReceived,
   setOfferNotificationThreshold,
   setUserDiscord,
   setUserEmail,
@@ -33,6 +34,7 @@ export const useSettings = () => {
     notifyOnListingSold,
     notifyOnOfferReceived,
     subscription,
+    notifyOnCommentReceived,
   } = useAppSelector(selectUserProfile)
 
   const [verificationEmailStatus, setVerificationEmailStatus] = useState<null | 'pending' | 'success' | 'error'>(null)
@@ -44,6 +46,7 @@ export const useSettings = () => {
   )
   const [notifyOnListingSoldValue, setNotifyOnListingSoldValue] = useState(notifyOnListingSold)
   const [notifyOnOfferReceivedValue, setNotifyOnOfferReceivedValue] = useState(notifyOnOfferReceived)
+  const [notifyOnCommentReceivedValue, setNotifyOnCommentReceivedValue] = useState(notifyOnCommentReceived)
 
   const {
     mutate: updateUserProfileMutation,
@@ -58,6 +61,7 @@ export const useSettings = () => {
         offerNotificationThreshold: offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null,
         notifyOnListingSold: notifyOnListingSoldValue,
         notifyOnOfferReceived: notifyOnOfferReceivedValue,
+        notifyOnCommentReceived: notifyOnCommentReceivedValue,
       })
       if (!result.success || !result.data) {
         throw new Error((result as any).error?.message || 'Failed to update settings')
@@ -79,6 +83,7 @@ export const useSettings = () => {
       dispatch(setOfferNotificationThreshold(result.data.minOfferThreshold))
       dispatch(setNotifyOnListingSold(result.data.notifyOnListingSold))
       dispatch(setNotifyOnOfferReceived(result.data.notifyOnOfferReceived))
+      dispatch(setNotifyOnCommentReceived(result.data.notifyOnCommentReceived ?? true))
       queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
     onError: (error) => {
@@ -171,7 +176,8 @@ export const useSettings = () => {
       (offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null) !==
         offerNotificationThreshold ||
       notifyOnListingSoldValue !== notifyOnListingSold ||
-      notifyOnOfferReceivedValue !== notifyOnOfferReceived
+      notifyOnOfferReceivedValue !== notifyOnOfferReceived ||
+      notifyOnCommentReceivedValue !== notifyOnCommentReceived
 
     if (emailAddress !== email.address) {
       if (emailAddress && !emailRegex.test(emailAddress)) {
@@ -193,6 +199,8 @@ export const useSettings = () => {
     notifyOnListingSold,
     notifyOnOfferReceivedValue,
     notifyOnOfferReceived,
+    notifyOnCommentReceivedValue,
+    notifyOnCommentReceived,
   ])
 
   return {
@@ -226,5 +234,7 @@ export const useSettings = () => {
     setNotifyOnListingSoldValue,
     notifyOnOfferReceivedValue,
     setNotifyOnOfferReceivedValue,
+    notifyOnCommentReceivedValue,
+    setNotifyOnCommentReceivedValue,
   }
 }

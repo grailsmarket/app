@@ -18,6 +18,7 @@ type VerifyResponse = {
     tierId: number
     tierExpiresAt: string | null
     isAdmin: boolean
+    notifyOnCommentReceived: boolean
   }
 }
 

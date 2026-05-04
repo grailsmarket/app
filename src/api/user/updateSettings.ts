@@ -10,6 +10,7 @@ interface UpdateSettingsPayload {
   offerNotificationThreshold: number | null
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
+  notifyOnCommentReceived: boolean
 }
 
 export const updateSettings = async ({
@@ -19,6 +20,7 @@ export const updateSettings = async ({
   offerNotificationThreshold,
   notifyOnListingSold,
   notifyOnOfferReceived,
+  notifyOnCommentReceived,
 }: UpdateSettingsPayload) => {
   const response = await authFetch(`${API_URL}/users/me`, {
     method: 'PATCH',
@@ -33,6 +35,7 @@ export const updateSettings = async ({
       minOfferThreshold: Number(offerNotificationThreshold) || null,
       notifyOnListingSold: notifyOnListingSold || false,
       notifyOnOfferReceived: notifyOnOfferReceived || false,
+      notifyOnCommentReceived: notifyOnCommentReceived || false,
     }),
   })
 

@@ -15,7 +15,7 @@ import Modals from './modals'
 import Cart from '@/components/cart'
 import { SeaportProvider } from '@/context/seaport'
 import { NavbarProvider } from '@/context/navbar'
-import InfoBar from '@/components/ui/infoBar'
+// import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
   children: React.ReactNode
@@ -40,7 +40,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                   <SeaportProvider>
                     <NavbarProvider>
                       <div className='relative flex min-h-[100dvh]! flex-col'>
-                        <InfoBar />
+                        {/* <InfoBar /> */}
                         <Navigation showInfo={false} />
                         <Cart />
                         <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>

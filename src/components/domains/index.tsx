@@ -52,6 +52,11 @@ interface DomainsProps {
   showWatchlist?: boolean
   useLocalScrollTop?: boolean
   showPreviousOwner?: boolean
+  // When rendered inside a dashboard widget, layout decisions (column count,
+  // grid sizing, card sizing) should follow the widget's measured width
+  // instead of the viewport. The widget passes its own width here.
+  isWidget?: boolean
+  containerWidth?: number
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -71,6 +76,8 @@ const Domains: React.FC<DomainsProps> = ({
   showWatchlist = false,
   useLocalScrollTop = false,
   showPreviousOwner = false,
+  isWidget = false,
+  containerWidth: widgetWidth = 0,
 }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions, activeTab } = useFilterRouter()
@@ -78,6 +85,9 @@ const Domains: React.FC<DomainsProps> = ({
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
   const { width, height } = useWindowSize()
+  // All layout sizing reads `effectiveWidth` so a widget host can override
+  // viewport-based decisions with its measured cell width.
+  const effectiveWidth = isWidget ? widgetWidth : width
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {
@@ -129,27 +139,32 @@ const Domains: React.FC<DomainsProps> = ({
 
   const displayedColumns = useMemo(() => {
     const allColumns = ['domain', ...displayedDetails, 'actions'] as MarketplaceHeaderColumn[]
-    if (!width) return allColumns
+    if (!effectiveWidth) return allColumns
 
     const maxColumns = () => {
-      if (width < 320) return 0
-      if (width < 640) return 1
-      if (width < 768) return 2
-      if (width < 1024) return 3
-      if (width < 1280) return 3
-      if (width < 1536) return 5
+      if (effectiveWidth < 320) return 0
+      if (effectiveWidth < 640) return 1
+      if (effectiveWidth < 768) return 2
+      if (effectiveWidth < 1024) return 3
+      if (effectiveWidth < 1280) return 3
+      if (effectiveWidth < 1536) return 5
       return allColumns.length
     }
 
     return [allColumns[0], ...displayedDetails.slice(0, maxColumns()), allColumns[allColumns.length - 1]]
-  }, [displayedDetails, width])
+  }, [displayedDetails, effectiveWidth])
 
   const visibleCount = useMemo(() => {
     if (!height) return 50
     return Math.floor(height / 45)
   }, [height])
 
-  const containerWidth = useMemo(() => {
+  const gridContainerWidth = useMemo(() => {
+    // In widget mode, the cell width passed in is already the usable width —
+    // there's no app sidebar or filter rail to subtract. Just hand it straight
+    // to VirtualGrid (with a tiny pixel of breathing room).
+    if (isWidget) return widgetWidth ? Math.max(widgetWidth - 4, 0) : 0
+
     if (!width) return 1200
 
     if (width >= 2340) return 2340 - (filtersOpen ? 340 : 0)
@@ -159,7 +174,7 @@ const Domains: React.FC<DomainsProps> = ({
 
     // Account for sidebar (280px) and padding
     return width - (width < 1024 ? 48 : filtersOpen ? 320 : 36)
-  }, [width, filtersOpen])
+  }, [isWidget, widgetWidth, width, filtersOpen])
 
   const isClient = useIsClient()
   if (!isClient) return null
@@ -225,11 +240,11 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualGrid<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              cardWidth={width && width < 400 ? 150 : 180}
-              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 400}
+              cardWidth={effectiveWidth && effectiveWidth < 400 ? 150 : 180}
+              cardHeight={effectiveWidth && effectiveWidth < 400 ? (effectiveWidth < 328 ? 500 : 380) : 400}
               gap={4}
-              containerPadding={width && width < 768 ? 8 : 0}
-              containerWidth={containerWidth}
+              containerPadding={effectiveWidth && effectiveWidth < 768 ? 8 : 0}
+              containerWidth={gridContainerWidth}
               overscanCount={6}
               paddingBottom={paddingBottom}
               onScrollNearBottom={handleScrollNearBottom}

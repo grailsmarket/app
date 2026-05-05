@@ -51,12 +51,17 @@ import {
 } from '@/state/reducers/filters/profileDomainsFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { cn } from '@/utils/tailwind'
 
 interface Props {
   user: Address | string
+  isWidget?: boolean
+  containerWidth?: number
 }
 
-const MainPanel: React.FC<Props> = ({ user }) => {
+const WIDGET_WIDE_BREAKPOINT = 768
+
+const MainPanel: React.FC<Props> = ({ user, isWidget = false, containerWidth = 0 }) => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab, lastVisitedProfile } = useAppSelector(selectUserProfile)
@@ -112,12 +117,14 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       dispatch(setGraceScrollTop(0))
       dispatch(setExpiredScrollTop(0))
       dispatch(clearBulkSelect())
-      document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
-      window.scrollTo({ top: 0, behavior: 'instant' })
+      if (!isWidget) {
+        document.scrollingElement?.scrollTo({ top: 0, behavior: 'instant' })
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      }
     }
 
     dispatch(setLastVisitedProfile(user))
-  }, [user])
+  }, [dispatch, isWidget, lastVisitedProfile, profileTab, user])
 
   // ensure that only the owner of the profile can see the watchlist
   useEffect(() => {
@@ -156,10 +163,15 @@ const MainPanel: React.FC<Props> = ({ user }) => {
       <FilterProvider filterType='profile' profileTab={selectedTab} profileAddress={userAccount?.address || user}>
         <div className='w-full'>
           <div className='z-10 w-full'>
-            <div className='bg-background relative flex min-h-[calc(100dvh-56px)] w-full flex-col gap-0 md:min-h-[calc(100dvh-70px)]'>
-              <TabSwitcher user={userAccount?.address} />
+            <div
+              className={cn(
+                'bg-background relative flex w-full flex-col gap-0',
+                isWidget ? 'min-h-full' : 'min-h-[calc(100dvh-56px)] md:min-h-[calc(100dvh-70px)]'
+              )}
+            >
+              <TabSwitcher user={userAccount?.address} isWidget={isWidget} containerWidth={containerWidth} />
               <div className='relative flex w-full flex-row gap-0 transition-all duration-300'>
-                <FilterPanel />
+                <FilterPanel isWidget={isWidget} containerWidth={containerWidth} />
                 <ProfileContent
                   userAddress={userAccount?.address}
                   showDomainsPanel={showDomainsPanel}
@@ -167,6 +179,8 @@ const MainPanel: React.FC<Props> = ({ user }) => {
                   showActivityPanel={showActivityPanel}
                   showBrokerPanel={showBrokerPanel}
                   isMyProfile={isMyProfile}
+                  isWidget={isWidget}
+                  containerWidth={containerWidth}
                 />
               </div>
               <ActionButtons />
@@ -186,6 +200,8 @@ interface ProfileContentProps {
   showActivityPanel: boolean
   showBrokerPanel: boolean
   isMyProfile: boolean
+  isWidget: boolean
+  containerWidth: number
 }
 
 const ProfileContent: React.FC<ProfileContentProps> = ({
@@ -195,6 +211,8 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   showActivityPanel,
   showBrokerPanel,
   isMyProfile,
+  isWidget,
+  containerWidth,
 }) => {
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
@@ -202,14 +220,19 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   const filtersOpen = selectors.filters.open
 
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    const layoutWidth = isWidget ? containerWidth : windowWidth
+    const breakpoint = isWidget ? WIDGET_WIDE_BREAKPOINT : 1024
+
+    if (!isClient || !layoutWidth) return '100%'
+    if (layoutWidth < breakpoint) return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 
   return (
     <div className='z-0 flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
-      {showDomainsPanel && <DomainPanel user={userAddress} isMyProfile={isMyProfile} />}
+      {showDomainsPanel && (
+        <DomainPanel user={userAddress} isMyProfile={isMyProfile} isWidget={isWidget} containerWidth={containerWidth} />
+      )}
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}
       {showBrokerPanel && <BrokerPanel user={userAddress} />}

@@ -20,7 +20,14 @@ import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 
-const FilterPanel: React.FC = () => {
+interface FilterPanelProps {
+  isWidget?: boolean
+  containerWidth?: number
+}
+
+const WIDGET_WIDE_BREAKPOINT = 768
+
+const FilterPanel: React.FC<FilterPanelProps> = ({ isWidget = false, containerWidth = 0 }) => {
   const filterRef = useRef<HTMLDivElement>(null)
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
@@ -46,9 +53,11 @@ const FilterPanel: React.FC = () => {
   //   dispatch(actions.setFiltersOpen(false))
   // })
 
-  if (!isClient || !windowWidth) return null
+  const layoutWidth = isWidget ? containerWidth : windowWidth
 
-  const isMobile = windowWidth < 1024
+  if (!isClient || !layoutWidth) return null
+
+  const isMobile = layoutWidth < (isWidget ? WIDGET_WIDE_BREAKPOINT : 1024)
   const isOpen = filtersOpen
   // const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
   const isDisabled = filterType === 'profile' && profileTab?.value === 'broker'
@@ -66,13 +75,23 @@ const FilterPanel: React.FC = () => {
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
-        isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
-        isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
+        isMobile &&
+          (isWidget
+            ? 'absolute top-0 left-0 h-full w-full shadow-md'
+            : 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]'),
+        isMobile &&
+          !isWidget &&
+          (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
+        isMobile && !isWidget && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles
         !isMobile && 'sticky',
-        !isMobile && (isNavbarVisible ? 'top-[130px] h-[calc(100dvh-130px)]' : 'top-[58px] h-[calc(100dvh-58px)]'),
+        !isMobile &&
+          (isWidget
+            ? 'top-0 h-full'
+            : isNavbarVisible
+              ? 'top-[130px] h-[calc(100dvh-130px)]'
+              : 'top-[58px] h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? 'md:border-r-2' : 'w-0'

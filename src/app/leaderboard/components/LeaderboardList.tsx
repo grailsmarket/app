@@ -282,7 +282,7 @@ const LeaderboardList: React.FC = () => {
       </div>
 
       {/* List */}
-      <div className='w-full'>
+      <div className='@container w-full'>
         {!noResults ? (
           <VirtualList<LeaderboardUser | null>
             items={items}

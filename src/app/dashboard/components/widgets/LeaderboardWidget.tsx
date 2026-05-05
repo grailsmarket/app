@@ -5,13 +5,14 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { updateComponentConfig } from '@/state/reducers/dashboard'
 import { selectLeaderboardConfig } from '@/state/reducers/dashboard/selectors'
 import { useLeaderboard } from '@/app/leaderboard/hooks/useLeaderboard'
-import type { LeaderboardSortBy, LeaderboardSortOrder } from '@/types/leaderboard'
+import type { LeaderboardSortBy, LeaderboardSortOrder, LeaderboardUser } from '@/types/leaderboard'
 import { cn } from '@/utils/tailwind'
 import { Check, ShortArrow } from 'ethereum-identity-kit'
 import Image from 'next/image'
 import ascending from 'public/icons/ascending.svg'
 import descending from 'public/icons/descending.svg'
 import { useClickAway } from '@/hooks/useClickAway'
+import LeaderboardRow from '@/app/leaderboard/components/LeaderboardRow'
 
 const SORT_OPTIONS: { value: LeaderboardSortBy; label: string }[] = [
   { value: 'names_owned', label: 'Names' },
@@ -102,7 +103,7 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({ instanceId }) => 
       </div>
 
       {/* Content */}
-      <div className='flex-1 overflow-y-auto'>
+      <div className='@container flex-1 overflow-y-auto'>
         {isLoading ? (
           <div className='flex h-full items-center justify-center'>
             <div className='border-primary h-6 w-6 animate-spin rounded-full border-b-2' />
@@ -110,24 +111,14 @@ const LeaderboardWidget: React.FC<LeaderboardWidgetProps> = ({ instanceId }) => 
         ) : displayedUsers.length === 0 ? (
           <div className='text-neutral flex h-full items-center justify-center text-sm'>No data</div>
         ) : (
-          <div className='divide-tertiary divide-y'>
-            {displayedUsers.map((user, i) => {
-              const sortValue =
-                config.sortBy === 'sales_volume'
-                  ? `${(Number(user.sales_volume) / 1e18).toFixed(2)} ETH`
-                  : String(user[config.sortBy])
-
-              return (
-                <div key={user.address} className='flex items-center gap-3 px-3 py-2 text-sm'>
-                  <span className='text-neutral w-5 shrink-0 text-right text-xs'>{i + 1}</span>
-                  <span className='min-w-0 flex-1 truncate font-mono text-xs'>
-                    {user.address.slice(0, 6)}...{user.address.slice(-4)}
-                  </span>
-                  <span className='text-neutral shrink-0 text-xs'>{sortValue}</span>
-                </div>
-              )
-            })}
-          </div>
+          displayedUsers.map((user, i) => (
+            <LeaderboardRow
+              key={user.address}
+              user={user as unknown as LeaderboardUser}
+              rank={i + 1}
+              sortBy={config.sortBy}
+            />
+          ))
         )}
       </div>
     </div>

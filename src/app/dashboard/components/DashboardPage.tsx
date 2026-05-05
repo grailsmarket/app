@@ -89,10 +89,14 @@ const AuthenticatedDashboard = () => {
           )}
         >
           <button
-            onClick={() => dispatch(setSidebarOpen(!sidebarOpen))}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch(setSidebarOpen(!sidebarOpen))
+            }}
             className={cn(
               'border-tertiary hover:bg-secondary text-md flex h-10 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 font-medium transition-colors',
-              sidebarOpen && 'bg-primary/10 border-primary/40 text-primary'
+              sidebarOpen && 'bg-primary/10 border-primary/40 text-primary pointer-events-none'
             )}
           >
             <Image

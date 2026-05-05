@@ -29,10 +29,22 @@ import ChartWidget from './widgets/ChartWidget'
 import HoldersWidget from './widgets/HoldersWidget'
 import LeaderboardWidget from './widgets/LeaderboardWidget'
 import ActivityWidget from './widgets/ActivityWidget'
+import NameWidget from './widgets/NameWidget'
+import ProfileWidget from './widgets/ProfileWidget'
+import WatchlistWidget from './widgets/WatchlistWidget'
+import CategoryHoldersWidget from './widgets/CategoryHoldersWidget'
+import CategoryStatsWidget from './widgets/CategoryStatsWidget'
+import PortfolioSummaryWidget from './widgets/PortfolioSummaryWidget'
+import ExpiringDomainsWidget from './widgets/ExpiringDomainsWidget'
+import RecentSalesWidget from './widgets/RecentSalesWidget'
+import RecentPremiumWidget from './widgets/RecentPremiumWidget'
+import RecentRegistrationsWidget from './widgets/RecentRegistrationsWidget'
+import TwitterFeedWidget from './widgets/TwitterFeedWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
     case 'domains':
+    case 'ai-search':
       return <DomainsWidget instanceId={id} />
     case 'top-sales':
     case 'top-offers':
@@ -48,6 +60,28 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <LeaderboardWidget instanceId={id} />
     case 'activity':
       return <ActivityWidget instanceId={id} />
+    case 'name-view':
+      return <NameWidget instanceId={id} />
+    case 'profile-view':
+      return <ProfileWidget instanceId={id} />
+    case 'watchlist':
+      return <WatchlistWidget instanceId={id} />
+    case 'category-holders':
+      return <CategoryHoldersWidget instanceId={id} />
+    case 'category-stats':
+      return <CategoryStatsWidget instanceId={id} />
+    case 'portfolio-summary':
+      return <PortfolioSummaryWidget instanceId={id} />
+    case 'expiring-domains':
+      return <ExpiringDomainsWidget instanceId={id} />
+    case 'recent-sales':
+      return <RecentSalesWidget />
+    case 'recent-premium':
+      return <RecentPremiumWidget />
+    case 'recent-registrations':
+      return <RecentRegistrationsWidget />
+    case 'twitter-feed':
+      return <TwitterFeedWidget instanceId={id} />
     default:
       return null
   }

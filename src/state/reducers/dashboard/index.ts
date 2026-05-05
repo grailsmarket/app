@@ -1,17 +1,31 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, Draft } from '@reduxjs/toolkit'
 import type { LayoutItem } from 'react-grid-layout'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
+import { emptyFilterState as aiSearchEmptyFilterState } from '@/state/reducers/filters/aiSearchFilters'
 import {
   type DashboardState,
   type DashboardLayouts,
   type DashboardBreakpoint,
   type DashboardComponentType,
   type DashboardComponentConfig,
+  type DomainsInstanceConfig,
   DEFAULT_WIDGET_SIZES,
   DASHBOARD_COLS,
   WIDGET_LABELS,
 } from './types'
 import { NameFilters } from '@/types/filters/name'
+
+const DEFAULT_TWITTER_HANDLE = 'ENSMarketBot'
+
+// `domains` and `ai-search` share the DomainsInstanceConfig shape, but
+// ai-search must reset to a filter state where `aiSearch` stays true so that
+// the search request keeps routing to the AI semantic endpoint.
+const isDomainsLikeConfig = (
+  config: Draft<DashboardComponentConfig> | undefined
+): config is Draft<DomainsInstanceConfig> => config?.type === 'domains' || config?.type === 'ai-search'
+
+const emptyDomainFilters = (type: 'domains' | 'ai-search'): NameFilters =>
+  type === 'ai-search' ? { ...aiSearchEmptyFilterState } : { ...emptyFilterState }
 
 // ── Default configs per component type ──────────────────────────
 const createDefaultConfig = (type: DashboardComponentType): DashboardComponentConfig => {
@@ -19,7 +33,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
 
   switch (type) {
     case 'domains':
-      return { type, name, viewType: 'grid', filters: { ...emptyFilterState }, filtersOpen: false }
+    case 'ai-search':
+      return { type, name, viewType: 'grid', filters: emptyDomainFilters(type), filtersOpen: false }
     case 'top-sales':
     case 'top-offers':
     case 'top-registrations':
@@ -34,6 +49,26 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name, sortBy: 'names_owned', sortOrder: 'desc', clubs: [] }
     case 'activity':
       return { type, name, eventTypes: [], category: null }
+    case 'name-view':
+      return { type, name, query: '', submittedName: null }
+    case 'profile-view':
+      return { type, name, query: '', submittedUser: null }
+    case 'watchlist':
+      return { type, name, viewType: 'grid' }
+    case 'category-holders':
+      return { type, name, category: null }
+    case 'category-stats':
+      return { type, name, category: null }
+    case 'portfolio-summary':
+      return { type, name }
+    case 'expiring-domains':
+      return { type, name }
+    case 'recent-sales':
+    case 'recent-premium':
+    case 'recent-registrations':
+      return { type, name }
+    case 'twitter-feed':
+      return { type, name, handle: DEFAULT_TWITTER_HANDLE }
   }
 }
 
@@ -222,25 +257,26 @@ export const dashboardSlice = createSlice({
       state.layoutId = action.payload
     },
 
-    // Specific action for domain filter updates to allow deep merging
+    // Specific action for domain filter updates to allow deep merging.
+    // Accepts both `domains` and `ai-search` instances since they share the shape.
     updateDomainFilters(state, action: PayloadAction<{ id: string; filters: Partial<NameFilters> }>) {
       const { id, filters } = action.payload
       const existing = state.components[id]
-      if (!existing || existing.type !== 'domains') return
+      if (!isDomainsLikeConfig(existing)) return
       existing.filters = { ...existing.filters, ...filters }
     },
 
     setDomainFiltersOpen(state, action: PayloadAction<{ id: string; open: boolean }>) {
       const { id, open } = action.payload
       const existing = state.components[id]
-      if (!existing || existing.type !== 'domains') return
+      if (!isDomainsLikeConfig(existing)) return
       existing.filtersOpen = open
     },
 
     clearDomainFilters(state, action: PayloadAction<string>) {
       const existing = state.components[action.payload]
-      if (!existing || existing.type !== 'domains') return
-      existing.filters = { ...emptyFilterState }
+      if (!isDomainsLikeConfig(existing)) return
+      existing.filters = emptyDomainFilters(existing.type)
     },
 
     setSidebarOpen(state, action: PayloadAction<boolean>) {

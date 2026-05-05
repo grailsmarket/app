@@ -8,6 +8,7 @@ import analyticsIcon from 'public/icons/analytics-primary.svg'
 import trophyIcon from 'public/icons/trophy-primary.svg'
 import activityIcon from 'public/icons/activity-primary.svg'
 import searchIcon from 'public/icons/search-primary.svg'
+import dashboardIcon from 'public/icons/grid-primary.svg'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
@@ -29,6 +30,13 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
   const activityTab = MARKETPLACE_TABS.find((tab) => tab.value === 'activity')!
 
   const cards = [
+    {
+      title: 'Dashboard',
+      description: 'Customizable widgets for names, analytics, and activity.',
+      icon: <Image src={dashboardIcon} alt='Dashboard' width={24} height={24} />,
+      href: '/dashboard',
+      onClick: () => setDropdownOption(null),
+    },
     {
       title: 'Analytics',
       description: 'Market trends, sales, and volume data.',
@@ -73,7 +81,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'
-      style={{ height: isMobile ? (isDropdownOpen ? '560px' : '40px') : 'auto' }}
+      style={{ height: isMobile ? (isDropdownOpen ? '700px' : '40px') : 'auto' }}
     >
       <div
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'

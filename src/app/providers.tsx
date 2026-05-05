@@ -15,6 +15,7 @@ import Modals from './modals'
 import Cart from '@/components/cart'
 import { SeaportProvider } from '@/context/seaport'
 import { NavbarProvider } from '@/context/navbar'
+import PostHogProvider from '@/components/posthog/posthog-provider'
 // import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
@@ -31,33 +32,35 @@ const queryClient = new QueryClient({
 const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
   const providers = useMemo(
     () => (
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={config} initialState={initialState} reconnectOnMount={true}>
-          <RainbowKitProvider coolMode={false} theme={darkTheme()}>
-            <TransactionProvider batchTransactions={false}>
-              <ReduxProvider store={store}>
-                <UserProvider>
-                  <SeaportProvider>
-                    <NavbarProvider>
-                      <div className='relative flex min-h-[100dvh]! flex-col'>
-                        {/* <InfoBar /> */}
-                        <Navigation showInfo={false} />
-                        <Cart />
-                        <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
-                          {children}
+      <PostHogProvider>
+        <QueryClientProvider client={queryClient}>
+          <WagmiProvider config={config} initialState={initialState} reconnectOnMount={true}>
+            <RainbowKitProvider coolMode={false} theme={darkTheme()}>
+              <TransactionProvider batchTransactions={false}>
+                <ReduxProvider store={store}>
+                  <UserProvider>
+                    <SeaportProvider>
+                      <NavbarProvider>
+                        <div className='relative flex min-h-[100dvh]! flex-col'>
+                          {/* <InfoBar /> */}
+                          <Navigation showInfo={false} />
+                          <Cart />
+                          <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
+                            {children}
+                          </div>
                         </div>
-                      </div>
-                      <TransactionModal />
-                      <Modals />
-                      <div id='modal-root' />
-                    </NavbarProvider>
-                  </SeaportProvider>
-                </UserProvider>
-              </ReduxProvider>
-            </TransactionProvider>
-          </RainbowKitProvider>
-        </WagmiProvider>
-      </QueryClientProvider>
+                        <TransactionModal />
+                        <Modals />
+                        <div id='modal-root' />
+                      </NavbarProvider>
+                    </SeaportProvider>
+                  </UserProvider>
+                </ReduxProvider>
+              </TransactionProvider>
+            </RainbowKitProvider>
+          </WagmiProvider>
+        </QueryClientProvider>
+      </PostHogProvider>
     ),
     [initialState, children]
   )

@@ -1,29 +1,27 @@
 'use client'
 
 import posthog from 'posthog-js'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useUserContext } from '@/context/user'
 
 export default function PostHogIdentify() {
   const { userAddress, authStatus } = useUserContext()
-  const lastId = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (!posthog.__loaded) return
 
+    const persistedUserId = posthog.get_property('$user_id') as string | undefined
+
     if (authStatus === 'authenticated' && userAddress) {
       const distinctId = userAddress.toLowerCase()
-      if (lastId.current !== distinctId) {
-        if (lastId.current) posthog.reset()
-        posthog.identify(distinctId, { wallet_address: distinctId })
-        lastId.current = distinctId
-      }
+      if (persistedUserId === distinctId) return
+      if (persistedUserId) posthog.reset()
+      posthog.identify(distinctId, { wallet_address: distinctId })
       return
     }
 
-    if (lastId.current) {
+    if (authStatus === 'unauthenticated' && persistedUserId) {
       posthog.reset()
-      lastId.current = undefined
     }
   }, [authStatus, userAddress])
 

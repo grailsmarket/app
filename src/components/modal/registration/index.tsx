@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
@@ -18,11 +18,13 @@ import RegistrationToast from './components/registration-toast'
 import SuccessToast, { type SuccessSummary } from './components/success-toast'
 import { useAppDispatch } from '@/state/hooks'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { track } from '@/lib/analytics'
 
 const RegistrationModal: React.FC = () => {
   const dispatch = useAppDispatch()
   const modal = useRegistrationModal()
   const [successSummary, setSuccessSummary] = useState<SuccessSummary | null>(null)
+  const hasTrackedSuccess = useRef(false)
 
   const {
     isClient,
@@ -48,8 +50,26 @@ const RegistrationModal: React.FC = () => {
   useEffect(() => {
     if (registrationState.isOpen) {
       setSuccessSummary(null)
+      hasTrackedSuccess.current = false
     }
   }, [registrationState.isOpen])
+
+  useEffect(() => {
+    if (registrationState.flowState !== 'success') {
+      if (registrationState.flowState !== 'review' && registrationState.flowState !== 'committing') {
+        hasTrackedSuccess.current = false
+      }
+      return
+    }
+    if (hasTrackedSuccess.current) return
+    hasTrackedSuccess.current = true
+    track('bulk_register_completed', {
+      domain_count: modal.availableEntries.length,
+      is_bulk: modal.isBulk,
+      total_eth: modal.calculationResults?.priceETH ?? null,
+      total_usd: modal.calculationResults?.priceUSD ?? null,
+    })
+  }, [registrationState.flowState, modal.availableEntries.length, modal.isBulk, modal.calculationResults])
 
   // Detect success while minimized → snapshot data into toast, then reset
   useEffect(() => {

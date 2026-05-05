@@ -36,6 +36,7 @@ import {
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil-primary.svg'
+import { track } from '@/lib/analytics'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -507,6 +508,13 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
       if (receipt.status === 'success') {
         setStep('success')
+        track('buy_completed', {
+          name: domain?.name,
+          listing_source: listing?.source ?? null,
+          price_wei: listing?.price_wei ?? null,
+          currency_address: listing?.currency_address ?? null,
+          tx_hash: tx,
+        })
         refetchNameMetadata()
         refetchDomainQueries()
         const cartDomain =

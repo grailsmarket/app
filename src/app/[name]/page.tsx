@@ -3,6 +3,7 @@ import type { SearchParams } from 'next/dist/server/request/search-params'
 import NamePage from './components/name'
 import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
+import PostHogGroup from '@/components/posthog/posthog-group'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -54,6 +55,7 @@ const Name = async (props: Props) => {
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+      <PostHogGroup groupType='ens_name' groupKey={normalizedName} />
       <NamePage name={normalizedName} />
     </main>
   )

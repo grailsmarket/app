@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
 import CategoryPage from './components/category'
 import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
-import PostHogGroup from '@/components/posthog/posthog-group'
 
 interface Props {
   params: Promise<{ category: string }>
@@ -39,7 +38,6 @@ const UserPage = async (props: Props) => {
 
   return (
     <main className='w-full'>
-      <PostHogGroup groupType='category' groupKey={category} />
       <CategoryPage category={category} />
     </main>
   )

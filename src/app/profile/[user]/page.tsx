@@ -11,7 +11,6 @@ import {
 import { isAddress, isHex } from 'viem'
 import { ONE_MINUTE } from '@/constants/time'
 import Profile from './components/profile'
-import PostHogGroup from '@/components/posthog/posthog-group'
 
 interface Props {
   params: Promise<{ user: string }>
@@ -117,7 +116,6 @@ const UserPage = async (props: Props) => {
 
   return (
     <main className='min-h-screen w-full'>
-      <PostHogGroup groupType='profile' groupKey={user.toLowerCase()} />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Profile user={user} />
       </HydrationBoundary>

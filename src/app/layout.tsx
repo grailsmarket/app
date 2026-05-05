@@ -5,6 +5,7 @@ import { Sedan_SC, Inter } from 'next/font/google'
 import Providers from './providers'
 import { Production } from './production'
 import SuspendedPostHogPageView from '@/components/posthog/posthog-pageview'
+import PostHogGroupSync from '@/components/posthog/posthog-group-sync'
 import { sharedMetadata } from '@/lib/metadata'
 import 'ethereum-identity-kit/css'
 import '@rainbow-me/rainbowkit/styles.css'
@@ -38,6 +39,7 @@ export default function RootLayout({
     <html lang='en' className='dark'>
       <body className={`${inter.variable} ${sedanSC.variable} antialiased`}>
         <Providers>{children}</Providers>
+        <PostHogGroupSync />
         <SuspendedPostHogPageView />
         <Production>
           <Analytics />

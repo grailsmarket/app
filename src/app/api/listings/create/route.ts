@@ -146,20 +146,29 @@ export async function POST(request: NextRequest) {
       )
 
       if (type === 'listing') {
-        let succeededCount = 0
-        for (const r of responses) {
+        const succeededPrices: number[] = []
+        const succeededCurrencies: (string | undefined)[] = []
+        for (let batchIdx = 0; batchIdx < responses.length; batchIdx++) {
+          const r = responses[batchIdx]
           if (r instanceof Response) continue
-          const succeeded = r?.data?.summary?.succeeded
-          if (typeof succeeded === 'number') succeededCount += succeeded
+          const results = r?.data?.results ?? []
+          for (const item of results) {
+            if (item?.status !== 'success') continue
+            const localIdx = typeof item.index === 'number' ? item.index : 0
+            const globalIdx = batchIdx * CREATE_BATCH_SIZE + localIdx
+            succeededPrices.push(numericPrices[globalIdx] ?? NaN)
+            const currency = currencies?.[globalIdx]
+            succeededCurrencies.push(typeof currency === 'string' ? currency : undefined)
+          }
         }
-        if (succeededCount > 0) {
+        if (succeededPrices.length > 0) {
           after(() =>
             captureListingCreated({
               seller_address: sellerAddress,
               marketplace,
-              domain_count: succeededCount,
-              currencies: currencies ?? [],
-              prices: numericPrices,
+              domain_count: succeededPrices.length,
+              currencies: succeededCurrencies,
+              prices: succeededPrices,
             })
           )
         }

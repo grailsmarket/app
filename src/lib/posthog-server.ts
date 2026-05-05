@@ -17,12 +17,21 @@ export async function captureListingCreated(params: {
   marketplace: string
   domain_count: number
   currencies: (string | undefined)[]
+  prices: number[]
   brokered?: boolean
 }) {
   if (!params.seller_address) return
   const posthog = createPostHogServerClient()
   if (!posthog) return
   try {
+    const totalsByCurrency: Record<string, number> = {}
+    for (let i = 0; i < params.prices.length; i++) {
+      const c = params.currencies[i] ?? 'ETH'
+      const p = params.prices[i]
+      if (!Number.isFinite(p)) continue
+      totalsByCurrency[c] = (totalsByCurrency[c] ?? 0) + p
+    }
+
     posthog.capture({
       distinctId: params.seller_address,
       event: 'listing_created',
@@ -30,6 +39,8 @@ export async function captureListingCreated(params: {
         marketplace: params.marketplace,
         domain_count: params.domain_count,
         currencies: params.currencies.filter(Boolean),
+        prices: params.prices,
+        totals_by_currency: totalsByCurrency,
         brokered: params.brokered ?? false,
         $process_person_profile: false,
       },

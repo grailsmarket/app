@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
     // Determine marketplace from order_data metadata
     const marketplace = orders[0].marketplace || 'grails'
 
+    const numericPrices: number[] = Array.isArray(prices) ? prices.map((p: unknown) => parseFloat(String(p))) : []
+
     // If posting to OpenSea, submit the order to OpenSea API
     let openSeaSubmissionError = null
     if (marketplace === 'opensea') {
@@ -46,6 +48,7 @@ export async function POST(request: NextRequest) {
               marketplace,
               domain_count: domains.length,
               currencies: currencies ?? [],
+              prices: numericPrices,
             })
           )
         }
@@ -156,6 +159,7 @@ export async function POST(request: NextRequest) {
               marketplace,
               domain_count: succeededCount,
               currencies: currencies ?? [],
+              prices: numericPrices,
             })
           )
         }

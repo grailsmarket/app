@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { after } from 'next/server'
+import { formatUnits } from 'viem'
 import { API_URL } from '@/constants/api'
 import { USDC_ADDRESS } from '@/constants/web3/tokens'
 import { captureListingCreated } from '@/lib/posthog-server'
@@ -12,6 +13,16 @@ function currencyLabel(address: unknown): string | undefined {
   if (lower === ZERO_ADDRESS) return 'ETH'
   if (lower === USDC_ADDRESS.toLowerCase()) return 'USDC'
   return undefined
+}
+
+function priceFromWei(wei: unknown, currency: string | undefined): number | undefined {
+  if (typeof wei !== 'string' || wei.length === 0) return undefined
+  try {
+    const decimals = currency === 'USDC' ? 6 : 18
+    return parseFloat(formatUnits(BigInt(wei), decimals))
+  } catch {
+    return undefined
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -36,12 +47,15 @@ export async function POST(request: NextRequest) {
     }
 
     const sellerAddress = typeof body?.seller_address === 'string' ? body.seller_address.toLowerCase() : null
+    const currency = currencyLabel(body?.currency_address)
+    const price = priceFromWei(body?.price_wei, currency)
     after(() =>
       captureListingCreated({
         seller_address: sellerAddress,
         marketplace: 'grails',
         domain_count: 1,
-        currencies: [currencyLabel(body?.currency_address)],
+        currencies: [currency],
+        prices: typeof price === 'number' ? [price] : [],
         brokered: true,
       })
     )

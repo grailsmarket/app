@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { withPostHogConfig } from '@posthog/nextjs-config'
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -38,4 +39,17 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+const POSTHOG_PERSONAL_API_KEY = process.env.POSTHOG_PERSONAL_API_KEY
+const POSTHOG_PROJECT_ID = process.env.POSTHOG_PROJECT_ID
+
+const finalConfig =
+  POSTHOG_PERSONAL_API_KEY && POSTHOG_PROJECT_ID
+    ? withPostHogConfig(nextConfig, {
+        personalApiKey: POSTHOG_PERSONAL_API_KEY,
+        envId: POSTHOG_PROJECT_ID,
+        host: 'https://us.posthog.com',
+        sourcemaps: { enabled: true, deleteAfterUpload: true },
+      })
+    : nextConfig
+
+export default finalConfig

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
+import { useContainerWidth } from 'react-grid-layout'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { updateComponentConfig } from '@/state/reducers/dashboard'
 import { selectProfileViewConfig } from '@/state/reducers/dashboard/selectors'
@@ -17,6 +18,7 @@ const ProfileWidget: React.FC<ProfileWidgetProps> = ({ instanceId }) => {
   const dispatch = useAppDispatch()
   const config = useAppSelector((state) => selectProfileViewConfig(state, instanceId))
   const [localQuery, setLocalQuery] = useState(config?.query ?? '')
+  const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true })
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -66,9 +68,9 @@ const ProfileWidget: React.FC<ProfileWidgetProps> = ({ instanceId }) => {
         </button>
       </form>
 
-      <div className='flex-1 overflow-auto'>
+      <div ref={containerRef} className='relative flex-1 overflow-x-hidden overflow-y-auto'>
         {config.submittedUser ? (
-          <Profile user={config.submittedUser} />
+          <Profile user={config.submittedUser} isWidget containerWidth={mounted ? width : 0} />
         ) : (
           <div className='text-neutral flex h-full items-center justify-center px-4 text-center text-sm'>
             Enter a name or address above to view a profile.

@@ -29,12 +29,17 @@ import {
 import { useRouter } from 'next/navigation'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
+import { cn } from '@/utils/tailwind'
 
 interface Props {
   user: Address | string
+  isWidget?: boolean
+  containerWidth?: number
 }
 
-const Profile: React.FC<Props> = ({ user }) => {
+const WIDGET_WIDE_BREAKPOINT = 768
+
+const Profile: React.FC<Props> = ({ user, isWidget = false, containerWidth = 0 }) => {
   const [isFollowersAndFollowingOpen, setIsFollowersAndFollowingOpen] = useState(false)
   const [defaultTab, setDefaultTab] = useState<ProfileTabType>('following')
 
@@ -42,6 +47,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
+  const useWideWidgetLayout = isWidget && containerWidth >= WIDGET_WIDE_BREAKPOINT
   const { data: userPoap } = useQuery({
     queryKey: ['userPoap', user],
     queryFn: async () => {
@@ -112,9 +118,15 @@ const Profile: React.FC<Props> = ({ user }) => {
           </div>
         </div>
       )}
-      <div className='dark relative z-0 w-full'>
+      <div className={cn('dark relative z-0 w-full', isWidget && 'overflow-x-hidden')}>
         <div
-          className='border-tertiary relative z-20 flex w-full flex-col border-b-2 lg:flex-row'
+          className={cn(
+            'border-tertiary relative z-20 flex w-full flex-col border-b-2',
+            isWidget
+              ? useWideWidgetLayout &&
+                  'flex-row overflow-hidden [&_.full-width-profile-container]:!w-auto [&_.full-width-profile-container]:!min-w-0 [&_.full-width-profile-container]:flex-1'
+              : 'lg:flex-row'
+          )}
           suppressHydrationWarning={true}
         >
           {/* Issues inside of EIK, so having to render on the client */}
@@ -164,13 +176,13 @@ const Profile: React.FC<Props> = ({ user }) => {
                 }}
                 // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
-              <Details user={userProfile?.address} />
+              <Details user={userProfile?.address} isWidget={isWidget} useWideWidgetLayout={useWideWidgetLayout} />
             </>
           )}
         </div>
         <div className='w-full'>
           <PersistGate loading={null} persistor={persistor}>
-            <MainPanel user={user} />
+            <MainPanel user={user} isWidget={isWidget} containerWidth={containerWidth} />
           </PersistGate>
         </div>
       </div>

@@ -17,6 +17,7 @@ import { SeaportProvider } from '@/context/seaport'
 import { NavbarProvider } from '@/context/navbar'
 import PostHogProvider from '@/components/posthog/posthog-provider'
 import PostHogIdentify from '@/components/posthog/posthog-identify'
+import PostHogProfileProperties from '@/components/posthog/posthog-profile-properties'
 // import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
@@ -41,6 +42,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                 <ReduxProvider store={store}>
                   <UserProvider>
                     <PostHogIdentify />
+                    <PostHogProfileProperties />
                     <SeaportProvider>
                       <NavbarProvider>
                         <div className='relative flex min-h-[100dvh]! flex-col'>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { type RefObject, useEffect } from 'react'
 import PrimaryDetails from './primaryDetails'
 import { useName } from '../hooks/useName'
 import Listings from './listings'
@@ -16,13 +16,19 @@ import Metadata from './metadata'
 import Roles from './roles'
 import KeywordMetrics from './keywordMetrics'
 import SimilarNames from './similarNames'
+import { cn } from '@/utils/tailwind'
 // import Metadata from './metadata'
 
 interface Props {
   name: string
+  isWidget?: boolean
+  containerWidth?: number
+  scrollElementRef?: RefObject<HTMLDivElement | null>
 }
 
-const NamePage: React.FC<Props> = ({ name }) => {
+const WIDGET_WIDE_BREAKPOINT = 768
+
+const NamePage: React.FC<Props> = ({ name, isWidget = false, containerWidth = 0, scrollElementRef }) => {
   const {
     nameDetails,
     nameDetailsIsLoading,
@@ -54,11 +60,15 @@ const NamePage: React.FC<Props> = ({ name }) => {
   // }, [name])
 
   useEffect(() => {
-    document.scrollingElement?.scrollTo({
+    const scrollTarget = isWidget ? scrollElementRef?.current : document.scrollingElement
+
+    scrollTarget?.scrollTo({
       top: 0,
       behavior: 'instant',
     })
-  }, [name])
+  }, [isWidget, name, scrollElementRef])
+
+  const useWideWidgetLayout = isWidget && containerWidth >= WIDGET_WIDE_BREAKPOINT
 
   const isSubname = name.split('.').length > 2
   const registrationStatus = nameDetails
@@ -70,12 +80,27 @@ const NamePage: React.FC<Props> = ({ name }) => {
   // const isUnregistered = registrationStatus === UNREGISTERED || registrationStatus === PREMIUM
 
   return (
-    <div className='dark mx-auto flex min-h-[calc(100dvh-52px)] max-w-7xl flex-col items-center gap-3 pt-3 md:min-h-[calc(100dvh-70px)]'>
+    <div
+      className={cn(
+        'dark mx-auto flex max-w-7xl flex-col items-center gap-3 pt-3',
+        isWidget ? 'min-h-full overflow-x-hidden' : 'min-h-[calc(100dvh-52px)] md:min-h-[calc(100dvh-70px)]'
+      )}
+    >
       <div className='px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
-      <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div className='flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg lg:w-2/5'>
+      <div
+        className={cn(
+          'flex w-full flex-col gap-1 sm:gap-4',
+          isWidget ? useWideWidgetLayout && 'flex-row' : 'lg:flex-row'
+        )}
+      >
+        <div
+          className={cn(
+            'flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg',
+            isWidget ? useWideWidgetLayout && 'w-2/5' : 'lg:w-2/5'
+          )}
+        >
           <PrimaryDetails
             name={name}
             nameDetails={nameDetails}
@@ -84,10 +109,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
             isSubname={isSubname}
             openEditMetadataModal={openEditMetadataModal}
           />
-          <div className='hidden lg:block'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'block' : 'hidden') : 'hidden lg:block')}>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          <div className='hidden lg:block'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'block' : 'hidden') : 'hidden lg:block')}>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}
@@ -95,7 +120,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               categories={nameDetails?.clubs}
             />
           </div>
-          <div className='hidden lg:block'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'block' : 'hidden') : 'hidden lg:block')}>
             <Metadata
               name={name}
               registrationStatus={registrationStatus}
@@ -105,7 +130,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               openEditMetadataModal={openEditMetadataModal}
             />
           </div>
-          <div className='hidden lg:block'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'block' : 'hidden') : 'hidden lg:block')}>
             <Roles
               name={name}
               registrationStatus={registrationStatus}
@@ -115,11 +140,13 @@ const NamePage: React.FC<Props> = ({ name }) => {
               isRolesLoading={isRolesLoading}
             />
           </div>
-          <div className='hidden lg:block'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'block' : 'hidden') : 'hidden lg:block')}>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
         </div>
-        <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>
+        <div
+          className={cn('flex w-full flex-col gap-1 sm:gap-4', isWidget ? useWideWidgetLayout && 'w-3/5' : 'lg:w-3/5')}
+        >
           {isRegistered ? (
             <>
               <Listings
@@ -132,10 +159,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
           ) : (
             <Register nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
-          <div className='lg:hidden'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'hidden' : 'block') : 'lg:hidden')}>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          <div className='lg:hidden'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'hidden' : 'block') : 'lg:hidden')}>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}
@@ -143,7 +170,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               categories={nameDetails?.clubs}
             />
           </div>
-          <div className='lg:hidden'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'hidden' : 'block') : 'lg:hidden')}>
             <Metadata
               name={name}
               registrationStatus={registrationStatus}
@@ -153,7 +180,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               openEditMetadataModal={openEditMetadataModal}
             />
           </div>
-          <div className='lg:hidden'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'hidden' : 'block') : 'lg:hidden')}>
             <Roles
               name={name}
               registrationStatus={registrationStatus}
@@ -163,7 +190,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               isRolesLoading={isRolesLoading}
             />
           </div>
-          <div className='lg:hidden'>
+          <div className={cn(isWidget ? (useWideWidgetLayout ? 'hidden' : 'block') : 'lg:hidden')}>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />

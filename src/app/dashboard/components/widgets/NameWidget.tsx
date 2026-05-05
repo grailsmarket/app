@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
+import { useContainerWidth } from 'react-grid-layout'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { updateComponentConfig } from '@/state/reducers/dashboard'
 import { selectNameViewConfig } from '@/state/reducers/dashboard/selectors'
@@ -15,6 +16,7 @@ const NameWidget: React.FC<NameWidgetProps> = ({ instanceId }) => {
   const dispatch = useAppDispatch()
   const config = useAppSelector((state) => selectNameViewConfig(state, instanceId))
   const [localQuery, setLocalQuery] = useState(config?.query ?? '')
+  const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true })
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -65,9 +67,14 @@ const NameWidget: React.FC<NameWidgetProps> = ({ instanceId }) => {
         </button>
       </form>
 
-      <div className='flex-1 overflow-auto'>
+      <div ref={containerRef} className='relative flex-1 overflow-x-hidden overflow-y-auto'>
         {config.submittedName ? (
-          <NamePage name={config.submittedName} />
+          <NamePage
+            name={config.submittedName}
+            isWidget
+            containerWidth={mounted ? width : 0}
+            scrollElementRef={containerRef}
+          />
         ) : (
           <div className='text-neutral flex h-full items-center justify-center px-4 text-center text-sm'>
             Enter a name above to look it up.

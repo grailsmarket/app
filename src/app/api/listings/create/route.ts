@@ -166,12 +166,20 @@ export async function POST(request: NextRequest) {
       )
 
       if (type === 'listing') {
-        await captureListingCreated({
-          seller_address: sellerAddress,
-          marketplace,
-          domain_count: domains.length,
-          currencies: currencies ?? [],
-        })
+        let succeededCount = 0
+        for (const r of responses) {
+          if (r instanceof Response) continue
+          const succeeded = r?.data?.summary?.succeeded
+          if (typeof succeeded === 'number') succeededCount += succeeded
+        }
+        if (succeededCount > 0) {
+          await captureListingCreated({
+            seller_address: sellerAddress,
+            marketplace,
+            domain_count: succeededCount,
+            currencies: currencies ?? [],
+          })
+        }
       }
       return NextResponse.json({ grails: responses })
     } catch (error: any) {

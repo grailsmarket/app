@@ -10,6 +10,6 @@ if (key && host) {
     capture_pageleave: true,
     person_profiles: 'identified_only',
     capture_exceptions: true,
-    enable_recording_console_log: true,
+    enable_recording_console_log: false,
   })
 }

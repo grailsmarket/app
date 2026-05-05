@@ -2,12 +2,14 @@
 
 import posthog from 'posthog-js'
 import { useEffect, useRef } from 'react'
+import { useAccount } from 'wagmi'
 import { useUserContext } from '@/context/user'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 export default function PostHogProfileProperties() {
   const { userAddress, authStatus, watchlist, isPoapClaimed, poapClaimedYear } = useUserContext()
+  const { connector, chainId } = useAccount()
   const profile = useAppSelector(selectUserProfile)
   const lastKey = useRef<string | null>(null)
 
@@ -32,6 +34,9 @@ export default function PostHogProfileProperties() {
       notify_on_listing_sold: profile.notifyOnListingSold,
       notify_on_offer_received: profile.notifyOnOfferReceived,
       notify_on_comment_received: profile.notifyOnCommentReceived,
+      wallet_connector: connector?.name ?? null,
+      wallet_connector_id: connector?.id ?? null,
+      chain_id: chainId ?? null,
     }
 
     const key = `${userAddress.toLowerCase()}|${JSON.stringify(properties)}`
@@ -39,7 +44,7 @@ export default function PostHogProfileProperties() {
     lastKey.current = key
 
     posthog.setPersonProperties(properties)
-  }, [authStatus, userAddress, profile, isPoapClaimed, poapClaimedYear, watchlist])
+  }, [authStatus, userAddress, profile, isPoapClaimed, poapClaimedYear, watchlist, connector, chainId])
 
   return null
 }

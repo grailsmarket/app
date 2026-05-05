@@ -4,37 +4,11 @@ import { USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
-import { createPostHogServerClient } from '@/lib/posthog-server'
+import { captureListingCreated } from '@/lib/posthog-server'
 
 const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-async function captureListingCreated(properties: {
-  seller_address: string | null
-  marketplace: string
-  domain_count: number
-  currencies: (string | undefined)[]
-}) {
-  if (!properties.seller_address) return
-  const posthog = createPostHogServerClient()
-  if (!posthog) return
-  try {
-    posthog.capture({
-      distinctId: properties.seller_address,
-      event: 'listing_created',
-      properties: {
-        marketplace: properties.marketplace,
-        domain_count: properties.domain_count,
-        currencies: properties.currencies.filter(Boolean),
-        $process_person_profile: false,
-      },
-    })
-    await posthog.shutdown(2000)
-  } catch (err) {
-    console.error('analytics failed:', err)
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {

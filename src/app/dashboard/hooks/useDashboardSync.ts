@@ -7,7 +7,8 @@ import { getDashboardLayouts } from '@/api/dashboard/getDashboardLayouts'
 import { hydrateFromServer, resetDashboard, setDashboardLayoutId } from '@/state/reducers/dashboard'
 import { createDashboardLayout, updateDashboardLayout } from '@/api/dashboard/saveDashboardLayout'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { Layout } from '@/api/dashboard/types'
+import { CreateDashboardLayoutPayload, DashboardLayoutResponse, Layout } from '@/api/dashboard/types'
+import type { DashboardLayouts } from '@/state/reducers/dashboard/types'
 // import { deleteDashboardLayout } from '@/api/dashboard/deleteDashboardLayout'
 
 export const useDashboardSync = () => {
@@ -77,6 +78,14 @@ export const useDashboardSync = () => {
       try {
         if (layoutId != null) {
           const updated = await updateDashboardLayout(layoutId, payload)
+
+          if (!updated) {
+            return {
+              success: false,
+              error: 'Failed to update dashboard layout',
+              message: 'Failed to update dashboard layout',
+            }
+          }
 
           const newQueryData = layouts?.map((l) => (l.id === layoutId ? updated : l))
           if (newQueryData) {
@@ -167,11 +176,58 @@ export const useDashboardSync = () => {
     }
   }, [dashboard, layouts, userAddress, subscription?.tierId, loadLayout])
 
+  const createNewLayout = useCallback(
+    async (
+      name: string,
+      options?: { preserveLocalState?: boolean }
+    ): Promise<{ success: boolean; error?: string; message?: unknown }> => {
+      const emptyLayouts: DashboardLayouts = { lg: [], md: [], sm: [], xs: [] }
+      const payload: CreateDashboardLayoutPayload = {
+        name,
+        layouts: emptyLayouts,
+        components: {},
+        nextId: 1,
+        colOverride: null,
+        isDefault: false,
+      }
+
+      try {
+        const created = await createDashboardLayout(payload)
+        if (!created) {
+          return {
+            success: false,
+            error: 'Failed to create dashboard layout',
+            message: 'Failed to create dashboard layout',
+          }
+        }
+
+        dispatch(setDashboardLayoutId(created.id))
+
+        queryClient.setQueryData<DashboardLayoutResponse[]>(
+          ['dashboard-layouts', userAddress, subscription?.tierId],
+          (old) => [...(old ?? []), created]
+        )
+
+        if (!options?.preserveLocalState) {
+          loadLayout(created)
+        }
+        setSelectedLayoutId(created.id)
+
+        return { success: true, message: 'Dashboard layout created' }
+      } catch (err) {
+        console.error('Failed to create dashboard layout:', err)
+        return { success: false, error: 'Failed to create dashboard layout', message: err }
+      }
+    },
+    [dispatch, queryClient, userAddress, subscription?.tierId, loadLayout]
+  )
+
   return {
     layouts,
     isLoadingLayouts,
     loadLayout,
     saveLayout,
+    createNewLayout,
     removeLayout,
     selectedLayoutId,
     setSelectedLayoutId,

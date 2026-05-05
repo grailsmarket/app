@@ -73,6 +73,11 @@ const RegistrationModal: React.FC = () => {
     if (registrationState.flowState === 'success' && !hasTrackedSuccess.current) {
       hasTrackedSuccess.current = true
       const firstBatch = registrationState.batches[0]
+      const entryDurations = modal.availableEntries.map(
+        (entry) => modal.entryDurations[modal.entries.indexOf(entry)] ?? 0
+      )
+      const nameLengths = modal.availableEntries.map((entry) => entry.name.replace(/\.eth$/, '').length)
+      const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
       track('bulk_register_completed', {
         domain_count: modal.availableEntries.length,
         is_bulk: modal.isBulk,
@@ -81,6 +86,12 @@ const RegistrationModal: React.FC = () => {
         total_usd: modal.calculationResults?.priceUSD ?? null,
         commit_tx_hash: firstBatch?.commitTxHash ?? null,
         register_tx_hash: firstBatch?.registerTxHash ?? null,
+        entry_durations: entryDurations,
+        name_lengths: nameLengths,
+        avg_duration_seconds: entryDurations.length ? sum(entryDurations) / entryDurations.length : 0,
+        avg_name_length: nameLengths.length ? sum(nameLengths) / nameLengths.length : 0,
+        min_name_length: nameLengths.length ? Math.min(...nameLengths) : 0,
+        max_name_length: nameLengths.length ? Math.max(...nameLengths) : 0,
       })
     }
 
@@ -102,7 +113,9 @@ const RegistrationModal: React.FC = () => {
     registrationState.batches,
     registrationState.currentBatchIndex,
     registrationState.errorMessage,
-    modal.availableEntries.length,
+    modal.availableEntries,
+    modal.entries,
+    modal.entryDurations,
     modal.isBulk,
     modal.totalBatches,
     modal.calculationResults,

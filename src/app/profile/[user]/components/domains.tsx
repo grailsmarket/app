@@ -21,9 +21,11 @@ import WatchlistListSelector from '@/components/ui/watchlistListSelector'
 interface Props {
   user: Address | undefined
   isMyProfile?: boolean
+  isWidget?: boolean
+  containerWidth?: number
 }
 
-const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
+const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false, isWidget = false, containerWidth = 0 }) => {
   const { selectors } = useFilterRouter()
   const {
     domains,
@@ -94,6 +96,8 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
         }}
         displayedDetails={displayedDetails}
         showWatchlist={isWatchlistTab}
+        isWidget={isWidget}
+        containerWidth={containerWidth}
       />
     </div>
   )

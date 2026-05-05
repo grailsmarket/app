@@ -56,17 +56,17 @@ const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
   }, [holders, isLoading, isFetchingNextPage])
 
   return (
-    <div className='w-full'>
+    <div className='@container w-full'>
       <div
         className={cn(
-          'py-md px-md lg:px-lg transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300',
+          'py-md px-md @[1024px]:px-lg transition-top bg-background border-tertiary sticky z-50 flex w-full items-center justify-start border-b duration-300',
           isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
         )}
       >
-        <p className='text-neutral text-md w-[30px] text-center font-medium sm:w-[48px]'>#</p>
-        <p className='text-neutral text-md w-[55%] font-medium sm:w-[55%] lg:w-[45%]'>Users</p>
-        <p className='text-neutral text-md w-[25%] font-medium sm:w-[35%] lg:w-[50%]'>Names</p>
-        <p className='text-neutral text-md w-[10%] min-w-[120px] font-medium lg:w-[5%]'></p>
+        <p className='text-neutral text-md w-[30px] text-center font-medium @[640px]:w-[48px]'>#</p>
+        <p className='text-neutral text-md w-[55%] font-medium @[640px]:w-[55%] @[1024px]:w-[45%]'>Users</p>
+        <p className='text-neutral text-md w-[25%] font-medium @[640px]:w-[35%] @[1024px]:w-[50%]'>Names</p>
+        <p className='text-neutral text-md w-[10%] min-w-[120px] font-medium @[1024px]:w-[5%]'></p>
       </div>
       <div className='w-full'>
         {!noResults ? (

@@ -5,11 +5,12 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { updateComponentConfig } from '@/state/reducers/dashboard'
 import { selectHoldersConfig } from '@/state/reducers/dashboard/selectors'
-import { fetchHolders, fetchAllHolders } from '@/api/holders'
+import { fetchHolders, fetchAllHolders, type Holder } from '@/api/holders'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import { cn } from '@/utils/tailwind'
 import { Check, ShortArrow } from 'ethereum-identity-kit'
 import { useClickAway } from '@/hooks/useClickAway'
+import HolderRow from '@/app/categories/[category]/components/holderRow'
 
 interface HoldersWidgetProps {
   instanceId: string
@@ -107,7 +108,7 @@ const HoldersWidget: React.FC<HoldersWidgetProps> = ({ instanceId }) => {
       </div>
 
       {/* Content */}
-      <div className='flex-1 overflow-y-auto'>
+      <div className='@container flex-1 overflow-y-auto'>
         {isLoading ? (
           <div className='flex h-full items-center justify-center'>
             <div className='border-primary h-6 w-6 animate-spin rounded-full border-b-2' />
@@ -115,17 +116,9 @@ const HoldersWidget: React.FC<HoldersWidgetProps> = ({ instanceId }) => {
         ) : holders.length === 0 ? (
           <div className='text-neutral flex h-full items-center justify-center text-sm'>No holders</div>
         ) : (
-          <div className='divide-tertiary divide-y'>
-            {holders.map((holder: any, i: number) => (
-              <div key={holder.address} className='flex items-center gap-3 px-3 py-2 text-sm'>
-                <span className='text-neutral w-5 shrink-0 text-right text-xs'>{i + 1}</span>
-                <span className='min-w-0 flex-1 truncate font-mono text-xs'>
-                  {holder.address.slice(0, 6)}...{holder.address.slice(-4)}
-                </span>
-                <span className='text-neutral shrink-0 text-xs'>{holder.name_count} names</span>
-              </div>
-            ))}
-          </div>
+          (holders as Holder[]).map((holder, i) => (
+            <HolderRow key={holder.address} holder={holder} category={config.categories[0] ?? ''} rank={i + 1} />
+          ))
         )}
       </div>
     </div>

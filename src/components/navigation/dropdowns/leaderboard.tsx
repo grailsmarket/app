@@ -172,7 +172,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDr
           </Link>
         </div>
       </div>
-      <div className='hidden w-full flex-col md:flex'>
+      <div className='@container hidden w-full flex-col md:flex'>
         <div
           className={cn(
             'py-md px-sm sm:px-md lg:px-lg transition-top border-tertiary sticky z-40 flex w-full items-center justify-between border-b duration-300'

@@ -86,7 +86,7 @@ const CategoryHoldersWidget: React.FC<CategoryHoldersWidgetProps> = ({ instanceI
         </div>
       </div>
 
-      <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto'>
+      <div ref={scrollRef} onScroll={handleScroll} className='@container flex-1 overflow-y-auto'>
         {!config.category ? (
           <div className='text-neutral flex h-full items-center justify-center px-4 text-center text-sm'>
             Pick a category above to see its top holders.

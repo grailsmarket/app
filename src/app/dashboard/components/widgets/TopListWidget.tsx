@@ -6,11 +6,18 @@ import { updateComponentConfig } from '@/state/reducers/dashboard'
 import { selectAnalyticsListConfig } from '@/state/reducers/dashboard/selectors'
 import { useDashboardTopList } from '../../hooks/useDashboardAnalytics'
 import { PERIOD_OPTIONS, SOURCE_OPTIONS } from '@/constants/analytics'
-import type { AnalyticsPeriod, AnalyticsSource } from '@/types/analytics'
+import type {
+  AnalyticsPeriod,
+  AnalyticsSource,
+  AnalyticsOffer,
+  AnalyticsRegistration,
+  AnalyticsSale,
+} from '@/types/analytics'
 import { cn } from '@/utils/tailwind'
 import { Check, ShortArrow } from 'ethereum-identity-kit'
 import Image from 'next/image'
 import { useClickAway } from '@/hooks/useClickAway'
+import { OfferRow, RegistrationRow, SaleRow } from '@/app/analytics/components/AnalyticsRow'
 
 interface TopListWidgetProps {
   instanceId: string
@@ -126,7 +133,7 @@ const TopListWidget: React.FC<TopListWidgetProps> = ({ instanceId }) => {
       </div>
 
       {/* Content */}
-      <div className='flex-1 overflow-y-auto'>
+      <div className='@container flex-1 overflow-y-auto'>
         {isLoading ? (
           <div className='flex h-full items-center justify-center'>
             <div className='border-primary h-6 w-6 animate-spin rounded-full border-b-2' />
@@ -134,23 +141,45 @@ const TopListWidget: React.FC<TopListWidgetProps> = ({ instanceId }) => {
         ) : results.length === 0 ? (
           <div className='text-neutral flex h-full items-center justify-center text-sm'>No data</div>
         ) : (
-          <div className='divide-tertiary divide-y'>
-            {results.map((item: any, i: number) => (
-              <div key={item.id ?? i} className='flex items-center gap-3 px-3 py-2 text-sm'>
-                <span className='text-neutral w-5 shrink-0 text-right text-xs'>{i + 1}</span>
-                <span className='min-w-0 flex-1 truncate font-medium'>{item.name}</span>
-                <span className='text-neutral shrink-0 text-xs'>
-                  {item.sale_price_wei || item.offer_amount_wei || item.price_wei || item.total_cost_wei
-                    ? `${(Number(item.sale_price_wei || item.offer_amount_wei || item.price_wei || item.total_cost_wei) / 1e18).toFixed(4)} ETH`
-                    : ''}
-                </span>
-              </div>
-            ))}
-          </div>
+          <TopListRows type={config.type} results={results} />
         )}
       </div>
     </div>
   )
+}
+
+interface TopListRowsProps {
+  type: 'top-sales' | 'top-offers' | 'top-registrations'
+  results: (AnalyticsSale | AnalyticsOffer | AnalyticsRegistration)[]
+}
+
+const TopListRows: React.FC<TopListRowsProps> = ({ type, results }) => {
+  switch (type) {
+    case 'top-sales':
+      return (
+        <>
+          {(results as AnalyticsSale[]).map((sale, index) => (
+            <SaleRow key={sale.id} sale={sale} index={index} hideSeller />
+          ))}
+        </>
+      )
+    case 'top-offers':
+      return (
+        <>
+          {(results as AnalyticsOffer[]).map((offer, index) => (
+            <OfferRow key={offer.id} offer={offer} index={index} />
+          ))}
+        </>
+      )
+    case 'top-registrations':
+      return (
+        <>
+          {(results as AnalyticsRegistration[]).map((registration, index) => (
+            <RegistrationRow key={registration.id} registration={registration} index={index} />
+          ))}
+        </>
+      )
+  }
 }
 
 export default TopListWidget

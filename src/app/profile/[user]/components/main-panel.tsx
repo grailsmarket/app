@@ -230,7 +230,9 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
 
   return (
     <div className='z-0 flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
-      {showDomainsPanel && <DomainPanel user={userAddress} isMyProfile={isMyProfile} />}
+      {showDomainsPanel && (
+        <DomainPanel user={userAddress} isMyProfile={isMyProfile} isWidget={isWidget} containerWidth={containerWidth} />
+      )}
       {showOfferPanel && <OfferPanel user={userAddress} />}
       {showActivityPanel && <ActivityPanel user={userAddress} />}
       {showBrokerPanel && <BrokerPanel user={userAddress} />}

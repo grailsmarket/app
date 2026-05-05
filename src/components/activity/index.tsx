@@ -132,7 +132,7 @@ const Activity: React.FC<ActivityProps> = ({
           <div className='h-1 w-6' />
         </div>
       )}
-      <div className='h-full w-full rounded-sm px-0' ref={listRef}>
+      <div className='@container h-full w-full rounded-sm px-0' ref={listRef}>
         {!noResults ? (
           <VirtualList<ActivityType>
             ref={listRef}
@@ -149,9 +149,9 @@ const Activity: React.FC<ActivityProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[86px] w-full flex-wrap items-center justify-between border-b py-1 sm:h-[60px] sm:flex-nowrap sm:py-0'>
+                  <div className='px-md @[1024px]:px-lg border-tertiary flex h-[86px] w-full flex-wrap items-center justify-between border-b py-1 @[640px]:h-[60px] @[640px]:flex-nowrap @[640px]:py-0'>
                     <LoadingRow displayedColumns={displayedColumns} />
-                    <div className='flex w-full flex-row justify-between sm:hidden'>
+                    <div className='flex w-full flex-row justify-between @[640px]:hidden'>
                       <LoadingCell height='24px' width='120px' />
                       <LoadingCell height='24px' width='120px' />
                     </div>

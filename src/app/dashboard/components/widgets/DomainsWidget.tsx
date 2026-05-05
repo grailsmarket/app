@@ -37,11 +37,15 @@ const getListColumns = (width: number): MarketplaceHeaderColumn[] => {
 const DomainsWidget: React.FC<DomainsWidgetProps> = ({ instanceId }) => {
   const dispatch = useAppDispatch()
   const config = useAppSelector((state) => selectDomainsConfig(state, instanceId))
+  const filters = config?.filters
+
   const { domains, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useDashboardDomains(instanceId)
+
   const scrollRef = useRef<HTMLDivElement>(null)
+
   const [containerWidth, setContainerWidth] = useState(0)
   const [sortOpen, setSortOpen] = useState(false)
-  const [sort, setSort] = useState<string>(config?.filters.sort ?? '')
+  const [sort, setSort] = useState<string>(filters?.sort ?? '')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   // Measure list container width so we can pick columns and pass compact mode

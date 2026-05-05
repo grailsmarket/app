@@ -43,24 +43,9 @@ const PortfolioSummaryWidget: React.FC<PortfolioSummaryWidgetProps> = ({ instanc
   return (
     <div className='flex h-full flex-col overflow-y-auto p-3'>
       <div className='grid grid-cols-2 gap-x-3 gap-y-3'>
-        <BalanceStat
-          label='ETH'
-          loading={balancesLoading}
-          wei={balances?.['eth']?.wei}
-          address={ETH_ADDRESS}
-        />
-        <BalanceStat
-          label='WETH'
-          loading={balancesLoading}
-          wei={balances?.['weth']?.wei}
-          address={WETH_ADDRESS}
-        />
-        <BalanceStat
-          label='USDC'
-          loading={balancesLoading}
-          wei={balances?.['usdc']?.wei}
-          address={USDC_ADDRESS}
-        />
+        <BalanceStat label='ETH' loading={balancesLoading} wei={balances?.['eth']?.wei} address={ETH_ADDRESS} />
+        <BalanceStat label='WETH' loading={balancesLoading} wei={balances?.['weth']?.wei} address={WETH_ADDRESS} />
+        <BalanceStat label='USDC' loading={balancesLoading} wei={balances?.['usdc']?.wei} address={USDC_ADDRESS} />
         <BalanceStat
           label='ENS'
           loading={balancesLoading}

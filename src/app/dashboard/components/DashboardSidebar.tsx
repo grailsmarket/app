@@ -13,7 +13,7 @@ import { useClickAway } from '@/hooks/useClickAway'
 const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = [
   {
     label: 'Market',
-    items: ['domains', 'activity', 'watchlist'],
+    items: ['domains', 'ai-search', 'activity', 'watchlist'],
   },
   {
     label: 'Lookup',
@@ -22,6 +22,10 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
   {
     label: 'Personal',
     items: ['portfolio-summary', 'expiring-domains'],
+  },
+  {
+    label: 'Recent',
+    items: ['recent-sales', 'recent-premium', 'recent-registrations'],
   },
   {
     label: 'Analytics',
@@ -37,7 +41,7 @@ const WIDGET_CATEGORIES: { label: string; items: DashboardComponentType[] }[] = 
   },
   {
     label: 'Community',
-    items: ['leaderboard', 'holders', 'category-holders'],
+    items: ['leaderboard', 'holders', 'category-holders', 'twitter-feed'],
   },
 ]
 
@@ -90,7 +94,7 @@ const DashboardSidebar = () => {
   const sidebarContent = (
     <div
       className={cn(
-        'border-tertiary bg-background absolute top-0 left-0 z-40 h-full w-72 flex-col border-r transition-all starting:-translate-x-full',
+        'border-tertiary bg-background absolute top-0 left-0 z-40 h-full max-h-[calc(100dvh-56px)] w-72 flex-col overflow-y-scroll border-r pb-20 transition-all starting:-translate-x-full',
         isOpen ? 'flex translate-x-0' : 'hidden -translate-x-full'
       )}
     >
@@ -106,7 +110,7 @@ const DashboardSidebar = () => {
 
       <p className='text-neutral px-4 pb-3 text-xs'>Drag onto the grid or click to add.</p>
 
-      <div className='flex-1 space-y-4 overflow-y-auto px-4 pb-4'>
+      <div className='flex-1 space-y-4 px-4 pb-4'>
         {WIDGET_CATEGORIES.map((category) => (
           <div key={category.label}>
             <p className='text-neutral mb-2 text-xs font-semibold tracking-wider uppercase'>{category.label}</p>

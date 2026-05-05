@@ -14,6 +14,8 @@ import type {
   CategoryStatsInstanceConfig,
   PortfolioSummaryInstanceConfig,
   ExpiringDomainsInstanceConfig,
+  RecentInstanceConfig,
+  TwitterFeedInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -29,7 +31,8 @@ export const selectDashboardComponent = (state: RootState, id: string): Dashboar
 
 export const selectDomainsConfig = (state: RootState, id: string): DomainsInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
-  return config?.type === 'domains' ? config : undefined
+  if (!config) return undefined
+  return config.type === 'domains' || config.type === 'ai-search' ? config : undefined
 }
 
 export const selectAnalyticsListConfig = (state: RootState, id: string): AnalyticsListInstanceConfig | undefined => {
@@ -107,4 +110,17 @@ export const selectExpiringDomainsConfig = (
 ): ExpiringDomainsInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'expiring-domains' ? config : undefined
+}
+
+export const selectRecentConfig = (state: RootState, id: string): RecentInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  if (!config) return undefined
+  return config.type === 'recent-sales' || config.type === 'recent-premium' || config.type === 'recent-registrations'
+    ? config
+    : undefined
+}
+
+export const selectTwitterFeedConfig = (state: RootState, id: string): TwitterFeedInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'twitter-feed' ? config : undefined
 }

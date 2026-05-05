@@ -41,7 +41,7 @@ const TwitterBot = () => {
       <iframe
         loading='lazy'
         className='mx-auto aspect-[400/642] w-full max-w-[400px] md:mx-0 md:w-[340px] lg:w-[380px]'
-        src='https://platform.twitter.com/embed/Tweet.html?frame=false&hideCard=false&hideThread=true&id=1990916043254972604&origin=YOUR_DOMAIN_HERE&theme=dark&width=500px'
+        src='https://platform.twitter.com/embed/Tweet.html?frame=false&hideCard=false&hideThread=true&id=1990916043254972604&origin=https://grails.app&theme=dark&width=500px'
         scrolling='no'
       ></iframe>
       <div className='flex flex-col gap-6'>

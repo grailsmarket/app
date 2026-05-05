@@ -26,10 +26,7 @@ const CategoryStatsWidget: React.FC<CategoryStatsWidgetProps> = ({ instanceId })
     setIsCategoryOpen(false)
   })
 
-  const details = useMemo(
-    () => categories?.find((c) => c.name === config?.category),
-    [categories, config?.category]
-  )
+  const details = useMemo(() => categories?.find((c) => c.name === config?.category), [categories, config?.category])
 
   const setCategory = useCallback(
     (category: string | null) => {

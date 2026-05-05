@@ -36,10 +36,15 @@ import CategoryHoldersWidget from './widgets/CategoryHoldersWidget'
 import CategoryStatsWidget from './widgets/CategoryStatsWidget'
 import PortfolioSummaryWidget from './widgets/PortfolioSummaryWidget'
 import ExpiringDomainsWidget from './widgets/ExpiringDomainsWidget'
+import RecentSalesWidget from './widgets/RecentSalesWidget'
+import RecentPremiumWidget from './widgets/RecentPremiumWidget'
+import RecentRegistrationsWidget from './widgets/RecentRegistrationsWidget'
+import TwitterFeedWidget from './widgets/TwitterFeedWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
     case 'domains':
+    case 'ai-search':
       return <DomainsWidget instanceId={id} />
     case 'top-sales':
     case 'top-offers':
@@ -69,6 +74,14 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <PortfolioSummaryWidget instanceId={id} />
     case 'expiring-domains':
       return <ExpiringDomainsWidget instanceId={id} />
+    case 'recent-sales':
+      return <RecentSalesWidget />
+    case 'recent-premium':
+      return <RecentPremiumWidget />
+    case 'recent-registrations':
+      return <RecentRegistrationsWidget />
+    case 'twitter-feed':
+      return <TwitterFeedWidget instanceId={id} />
     default:
       return null
   }

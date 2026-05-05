@@ -55,10 +55,7 @@ const WatchlistWidget: React.FC<WatchlistWidgetProps> = ({ instanceId }) => {
 
   const listColumns = useMemo(() => getListColumns(containerWidth), [containerWidth])
 
-  const domains = useMemo(
-    () => watchlistDomains?.pages?.flatMap((page) => page.domains) ?? [],
-    [watchlistDomains]
-  )
+  const domains = useMemo(() => watchlistDomains?.pages?.flatMap((page) => page.domains) ?? [], [watchlistDomains])
 
   const displayedDomains = useMemo(
     () => [...domains, ...Array(isWatchlistDomainsFetchingNextPage ? 18 : 0).fill(null)],

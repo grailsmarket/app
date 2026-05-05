@@ -16,11 +16,22 @@ export const useDashboardDomains = (instanceId: string) => {
     queryKey: ['dashboard', 'domains', instanceId, debouncedSearch, filters],
     queryFn: async ({ pageParam }) => {
       if (!filters) throw new Error('No filters')
+
+      if (filters.aiSearch && debouncedSearch.length < 2) {
+        return {
+          domains: [],
+          total: 0,
+          nextPageParam: pageParam ?? 1,
+          hasNextPage: false,
+        }
+      }
+
       return fetchDomains({
         searchTerm: debouncedSearch,
         filters,
         pageParam: pageParam ?? 1,
         limit: DEFAULT_FETCH_LIMIT,
+        AISearchEnabled: filters.aiSearch,
       })
     },
     getNextPageParam: (lastPage) => lastPage?.nextPageParam,

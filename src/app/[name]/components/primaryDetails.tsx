@@ -19,7 +19,7 @@ import {
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { useAppDispatch } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { useUserContext } from '@/context/user'
@@ -38,12 +38,15 @@ import {
   ENS_NAME_WRAPPER_ADDRESS,
   ENS_REGISTRAR_ADDRESS,
 } from '@/constants/web3/contracts'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
+import RefreshIcon from 'public/icons/refresh.svg'
+import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
+import { markImageForRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 
 interface NameDetailsProps {
   name: string
@@ -63,21 +66,31 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   openEditMetadataModal,
 }) => {
   const [isOwnerCopied, setIsOwnerCopied] = useState(false)
+  const [isRefreshingMetadata, setIsRefreshingMetadata] = useState(false)
 
   // Determine countdown type based on registration status
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
   const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
+
   const { data: isWrapped } = useQuery({
     queryKey: ['isWrapped', name],
     queryFn: () => checkIfWrapped(name),
   })
 
+  const { data: ownerAccount } = useQuery({
+    queryKey: ['profile', nameDetails?.owner], // use the same key as User component to not fetch the same profile twice
+    queryFn: () => fetchAccount(nameDetails?.owner as `0x${string}`),
+    enabled: !!nameDetails?.owner,
+  })
+
   const router = useRouter()
+  const queryClient = useQueryClient()
   const dispatch = useAppDispatch()
   const { onSelect: toggleCart } = useCartDomains()
   const { userAddress, authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
+  const pendingRefreshKey = useAppSelector(selectImageRefreshKey(name))
 
   const openExtendNameModal = () => {
     if (!userAddress) {
@@ -112,6 +125,25 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
 
   const isOwner = userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase()
 
+  const refreshMetadata = async () => {
+    if (isRefreshingMetadata) return
+
+    try {
+      setIsRefreshingMetadata(true)
+      await invalidateNameMetadataCache(name)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] }),
+        queryClient.invalidateQueries({ queryKey: ['name', 'details', name] }),
+        queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] }),
+      ])
+      dispatch(markImageForRefresh(name))
+    } catch (error) {
+      console.error('Failed to refresh metadata:', error)
+    } finally {
+      setIsRefreshingMetadata(false)
+    }
+  }
+
   return (
     <div className='bg-secondary border-tertiary flex flex-col sm:rounded-lg sm:border-2'>
       <div className='bg-tertiary h-fit w-full'>
@@ -120,6 +152,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
             expiryDate={nameDetails.expiry_date}
+            forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
         )}
@@ -169,13 +202,31 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             )}
           </div>
         )}
-        <div className='flex w-full flex-row items-start justify-between gap-2'>
+        <div className='flex w-full flex-row items-center justify-between gap-2'>
           <CopyValue
             value={nameDetails?.name ? beautifyName(nameDetails.name) : name}
             canCopy={true}
             truncateValue={false}
             className='text-2xl font-bold md:text-3xl'
+            containerClassName='max-w-[calc(100%-52px)]!'
           />
+          <Tooltip label='Refresh metadata' align='right' position='top'>
+            <button
+              type='button'
+              className='bg-tertiary hover:bg-foreground/15 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:h-10 md:w-10'
+              onClick={refreshMetadata}
+              disabled={isRefreshingMetadata || !nameDetails?.name}
+              aria-label='Refresh metadata'
+            >
+              <Image
+                src={RefreshIcon}
+                alt=''
+                width={20}
+                height={20}
+                className={cn('h-5 w-5', isRefreshingMetadata && 'animate-spin')}
+              />
+            </button>
+          </Tooltip>
         </div>
         <div className='border-neutral flex w-full flex-row items-center justify-between gap-2 border-l-2 pt-0.5 pl-2'>
           {nameDetailsIsLoading ? (
@@ -184,7 +235,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             <div className='flex flex-col items-start gap-0.5'>
               <div className='flex flex-row items-center gap-2'>
                 {nameDetails?.owner && <User address={nameDetails.owner} alignTooltip='left' />}
-                {nameDetails?.owner && (
+                {nameDetails?.owner && ownerAccount?.ens?.name && (
                   <Image
                     src={isOwnerCopied ? CheckIcon : CopyIcon}
                     alt='Copy'
@@ -192,20 +243,8 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                     width={16}
                     height={16}
                     onClick={async () => {
-                      const account = await fetchAccount(nameDetails?.owner as `0x${string}`)
-                      console.log(account)
-
-                      if (account) {
-                        navigator.clipboard.writeText(account.ens?.name as string)
-                        setIsOwnerCopied(true)
-                        setTimeout(() => {
-                          setIsOwnerCopied(false)
-                        }, 2000)
-
-                        return
-                      }
-
-                      navigator.clipboard.writeText(nameDetails?.owner as string)
+                      if (!ownerAccount?.ens?.name) return
+                      navigator.clipboard.writeText(ownerAccount?.ens?.name)
                       setIsOwnerCopied(true)
                       setTimeout(() => {
                         setIsOwnerCopied(false)
@@ -349,11 +388,13 @@ export const CopyValue = ({
   canCopy,
   truncateValue,
   className,
+  containerClassName,
 }: {
   value: string
   canCopy: boolean
   truncateValue?: boolean
   className?: string
+  containerClassName?: string
 }) => {
   const [isCopied, setIsCopied] = useState(false)
   const handleCopy = (value: string) => {
@@ -366,7 +407,7 @@ export const CopyValue = ({
 
   return (
     <div
-      className='flex max-w-full cursor-pointer flex-row items-center gap-1.5'
+      className={cn('flex max-w-full cursor-pointer flex-row items-center gap-1.5', containerClassName)}
       onClick={() => {
         if (canCopy) handleCopy(value)
       }}

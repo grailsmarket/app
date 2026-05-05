@@ -29,8 +29,8 @@ const useWatchlists = () => {
   const subscription = profile.subscription
 
   const canManageLists = useMemo(
-    () => ALLOWED_TIERS.includes(subscription.tier as (typeof ALLOWED_TIERS)[number]),
-    [subscription.tier]
+    () => ALLOWED_TIERS.includes(subscription?.tier as (typeof ALLOWED_TIERS)[number]),
+    [subscription?.tier]
   )
 
   const { data, isLoading, refetch } = useQuery({

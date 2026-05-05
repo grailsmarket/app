@@ -6,6 +6,7 @@ import { selectBulkSearch, setBulkSearchTerms } from '@/state/reducers/bulkSearc
 import { useSearchParams } from 'next/navigation'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
+import { formatNumber } from 'ethereum-identity-kit'
 
 const MAX_NAMES = 10000
 
@@ -73,14 +74,14 @@ const TextareaSection: React.FC = () => {
       <div className='bg-background pt-lg px-lg pb-md absolute top-4.5 left-4.5 flex w-[calc(100%-36px)] items-center justify-between gap-3'>
         <h1 className='text-xl font-bold sm:text-2xl'>Bulk Search</h1>
         <p className={`text-lg font-medium ${isOverLimit ? 'text-red-500' : 'opacity-50'}`}>
-          {nameCount} / {MAX_NAMES} names
+          {formatNumber(nameCount)} / {formatNumber(MAX_NAMES)} names
         </p>
       </div>
       <textarea
         value={textareaValue}
         onChange={(e) => setTextareaValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder='Enter up to 1,000 names separated by commas, spaces, or new lines'
+        placeholder='Enter up to 10,000 names separated by commas, spaces, or new lines'
         className='border-tertiary p-lg min-h-[180px] w-full resize-y rounded-sm border-2 bg-transparent pt-13 pb-16 text-lg transition-all outline-none hover:border-white/50 focus:border-white/80'
         rows={4}
       />

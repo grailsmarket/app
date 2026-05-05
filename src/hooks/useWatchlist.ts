@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: WatchlistSettingsType = {
   notifyOnOffer: true,
   notifyOnListing: true,
   notifyOnPriceChange: true,
+  notifyOnComment: false,
 }
 
 const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, watchlistId?: number | null) => {
@@ -134,6 +135,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
           notifyOnOffer: watchlistItem.watchlist.notifyOnOffer,
           notifyOnListing: watchlistItem.watchlist.notifyOnListing,
           notifyOnPriceChange: watchlistItem.watchlist.notifyOnPriceChange,
+          notifyOnComment: watchlistItem.watchlist.notifyOnComment ?? false,
         })
       }
 
@@ -149,6 +151,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
         notifyOnOffer: preferred.notifyOnOffer,
         notifyOnListing: preferred.notifyOnListing,
         notifyOnPriceChange: preferred.notifyOnPriceChange,
+        notifyOnComment: preferred.notifyOnComment ?? false,
       })
       return
     }
@@ -159,6 +162,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
         notifyOnOffer: watchlistCheck.watchlistEntry.notifyOnOffer,
         notifyOnListing: watchlistCheck.watchlistEntry.notifyOnListing,
         notifyOnPriceChange: watchlistCheck.watchlistEntry.notifyOnPriceChange,
+        notifyOnComment: watchlistCheck.watchlistEntry.notifyOnComment ?? false,
       })
     }
   }, [watchlistCheck, watchlistId, watchlist, listsContainingName])

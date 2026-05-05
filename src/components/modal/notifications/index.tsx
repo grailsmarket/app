@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useCallback, useRef } from 'react'
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { fetchNotifications } from '@/api/notifications/fetchNotifications'
-import NotificationRow from './notificationRow'
+import React, { useCallback, useRef, useState } from 'react'
+import NotificationRow from './components/notificationRow'
 import { Cross } from 'ethereum-identity-kit'
-import NotificationLoadingRow from './loadingRow'
 import NoResults from '@/components/ui/noResults'
 import { cn } from '@/utils/tailwind'
+import NotificationLoadingRow from './components/loadingRow'
+import { useNotifications } from './hooks/useNotifications'
+import { AnimatePresence } from 'framer-motion'
+import { motion } from 'motion/react'
+import Image from 'next/image'
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -15,34 +17,12 @@ interface NotificationModalProps {
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }) => {
-  // const [expandedImage, setExpandedImage] = useState<string | null>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-
-  // Fetch notifications with infinite query
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-    queryKey: ['notifications'],
-    queryFn: async ({ pageParam = 1 }) => {
-      return await fetchNotifications({ page: pageParam, limit: 20 })
-    },
-    getNextPageParam: (lastPage) => {
-      return lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined
-    },
-    enabled: isOpen,
-    initialPageParam: 1,
-    retry: 1,
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
+  const { notifications, isNotificationsLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useNotifications({
+    isOpen,
   })
 
-  // Get all notifications from pages. Admin broadcasts have no ensName/ensTokenId;
-  // ENS-scoped notifications still require both (malformed rows are dropped).
-  const allNotifications =
-    data?.pages
-      .flatMap((page) => page.notifications)
-      .filter(
-        (notification) =>
-          notification.type === 'admin-broadcast' || (!!notification.ensName && !!notification.ensTokenId)
-      ) || []
-  const isNotificationsLoading = isLoading || isFetchingNextPage
-
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current
@@ -55,10 +35,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
 
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
-      // onClick={onClose}
+      className='fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
+      onClick={onClose}
     >
-      {/* <AnimatePresence>
+      <AnimatePresence>
         {expandedImage && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -74,23 +54,33 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
       </AnimatePresence>
       <AnimatePresence>
         {expandedImage ? (
-          <div className='fixed inset-0 mx-auto h-fit top-1/2 -translate-y-1/2 w-fit z-100 flex items-center justify-center' onClick={(e) => e.stopPropagation()}>
-            <div className='relative max-w-5xl w-[calc(100dvw-40px)] group'>
+          <div
+            className='fixed inset-0 top-1/2 z-100 mx-auto flex h-fit w-fit -translate-y-1/2 items-center justify-center'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className='group relative w-fit max-w-7xl'>
               <motion.button
                 initial={{ display: 'none' }}
                 animate={{ display: 'flex', transition: { delay: 0.4 } }}
                 exit={{ display: 'none', transition: { duration: 0.001 } }}
-                className='absolute top-2 right-2 flex h-8 w-8 z-20 items-center p-md justify-center cursor-pointer rounded-md starting:opacity-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 hover:bg-black/70'
+                className='p-md absolute top-2 right-2 z-20 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 hover:bg-black/70 starting:opacity-0'
                 onClick={() => setExpandedImage(null)}
               >
                 <Cross className='h-auto w-6' />
               </motion.button>
               <motion.div layoutId={`image-${expandedImage}`}>
-                <Image width={2000} height={2000} src={expandedImage} alt='Expanded Image' className='h-auto w-full' />
+                <Image
+                  width={2000}
+                  height={2000}
+                  src={expandedImage}
+                  alt='Expanded Image'
+                  className='mx-auto h-auto max-h-[90dvh] w-full max-w-[90dvw] object-contain'
+                />
               </motion.div>
             </div>
           </div>
-        ) : null}</AnimatePresence> */}
+        ) : null}
+      </AnimatePresence>
       <div
         className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2'
         onClick={(e) => e.stopPropagation()}
@@ -105,16 +95,24 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
 
         {/* Notifications list */}
         <div ref={scrollContainerRef} onScroll={handleScroll} className='flex-1 overflow-y-auto'>
-          {allNotifications.length === 0 && !isNotificationsLoading ? (
+          {notifications.length === 0 && !isNotificationsLoading ? (
             <NoResults label='No notifications' height='400px' />
           ) : (
             <div className='flex flex-col'>
-              {allNotifications.map((notification, index) => (
+              {notifications.map((notification, index) => (
                 <div
                   key={notification.id || index}
-                  className={cn('border-secondary border-t border-b', notification.isRead ? '' : 'bg-primary/10')}
+                  className={cn(
+                    'border-secondary w-full border-t border-b',
+                    notification.isRead ? '' : 'bg-primary/10'
+                  )}
                 >
-                  <NotificationRow notification={notification} onClick={() => onClose()} index={index} />
+                  <NotificationRow
+                    notification={notification}
+                    onClick={onClose}
+                    index={index}
+                    setExpandedImage={setExpandedImage}
+                  />
                 </div>
               ))}
               {isNotificationsLoading &&

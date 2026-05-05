@@ -16,6 +16,10 @@ import { useClickAway } from '@/hooks/useClickAway'
 import InputWithResolution from './components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TabSelector from '@/components/ui/tabSelector'
+import { ENS_METADATA_URL } from '@/constants/ens'
+import { useAppDispatch } from '@/state/hooks'
+import { markImageForRefresh } from '@/state/reducers/imageRefresh'
+import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 
 interface EditRecordsModalProps {
   name: string
@@ -76,12 +80,12 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
       ? records.avatar
-      : `https://metadata.ens.domains/mainnet/avatar/${name}`
+      : `${ENS_METADATA_URL}/mainnet/avatar/${name}`
     : DEFAULT_FALLBACK_AVATAR
   const headerUrl = records.header
     ? records.header.startsWith('http')
       ? records.header
-      : `https://metadata.ens.domains/mainnet/header/${name}`
+      : `${ENS_METADATA_URL}/mainnet/header/${name}`
     : DEFAULT_FALLBACK_HEADER
 
   const handleImageSave = (url: string) => {
@@ -91,8 +95,16 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
     }
   }
 
+  const dispatch = useAppDispatch()
+
   const handleClose = () => {
     if (step === 'processing') return
+    if (step === 'success') {
+      // Server-side cache bust + Redux signal so name page consumers
+      // (NameImage, metadata avatar/header) hard-refetch on next render.
+      invalidateNameMetadataCache(name).catch((err) => console.error('Failed to invalidate metadata cache:', err))
+      dispatch(markImageForRefresh(name))
+    }
     onClose()
   }
 
@@ -149,7 +161,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                     View on Etherscan
                   </a>
                 )}
-                <SecondaryButton className='w-full' onClick={onClose}>
+                <SecondaryButton className='w-full' onClick={handleClose}>
                   Close
                 </SecondaryButton>
               </div>
@@ -167,7 +179,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                 <PrimaryButton onClick={resetToEditing} className='w-full'>
                   Try Again
                 </PrimaryButton>
-                <SecondaryButton onClick={onClose} className='w-full'>
+                <SecondaryButton onClick={handleClose} className='w-full'>
                   Close
                 </SecondaryButton>
               </div>

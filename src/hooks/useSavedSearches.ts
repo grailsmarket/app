@@ -20,8 +20,8 @@ const useSavedSearches = () => {
   const subscription = profile.subscription
 
   const canManageSavedSearches = useMemo(
-    () => ALLOWED_TIERS.includes(subscription.tier as (typeof ALLOWED_TIERS)[number]),
-    [subscription.tier]
+    () => ALLOWED_TIERS.includes(subscription?.tier as (typeof ALLOWED_TIERS)[number]),
+    [subscription?.tier]
   )
 
   const { data, isLoading, refetch } = useQuery({

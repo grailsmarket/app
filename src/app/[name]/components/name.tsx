@@ -17,6 +17,7 @@ import Roles from './roles'
 import KeywordMetrics from './keywordMetrics'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
+import CommentsPanel from './commentsPanel'
 // import Metadata from './metadata'
 
 interface Props {
@@ -195,6 +196,7 @@ const NamePage: React.FC<Props> = ({ name, isWidget = false, containerWidth = 0,
           </div>
           <ActivityPanel name={name} />
           <SimilarNames name={name} />
+          <CommentsPanel name={name} />
         </div>
       </div>
     </div>

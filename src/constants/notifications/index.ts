@@ -3,6 +3,7 @@ import cartSold from '/icons/sold.svg'
 import alarmClock from '/icons/expiring.svg'
 import cartAccepted from '/icons/offer-accepted.svg'
 import { NotificationType } from '@/types/notifications'
+import Bell from 'public/icons/bell.svg'
 
 export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.ReactNode> = {
   'new-listing': plus,
@@ -12,7 +13,9 @@ export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.R
   'offer-received': cartAccepted,
   'listing-sold': cartSold,
   'listing-cancelled-ownership-change': alarmClock,
+  'comment-received': Bell,
   'admin-broadcast': plus,
+  'support-ticket-update': plus,
 }
 
 export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> = {
@@ -23,5 +26,7 @@ export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> 
   'offer-received': 'Offer received',
   'listing-sold': 'Sold',
   'listing-cancelled-ownership-change': 'Listing cancelled',
+  'comment-received': 'New Comment',
   'admin-broadcast': 'Announcement',
+  'support-ticket-update': 'Ticket update',
 }

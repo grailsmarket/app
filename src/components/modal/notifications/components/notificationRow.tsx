@@ -14,20 +14,24 @@ import OfferMade from 'public/icons/bid.svg'
 import Sold from 'public/icons/sold.svg'
 import PriceChange from 'public/icons/transfer.svg'
 import Bell from 'public/icons/bell.svg'
-// import Expired from 'public/icons/expiring.svg' // Using burn icon for expiration
 import NameImage from '@/components/ui/nameImage'
 import { beautifyName } from '@/lib/ens'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import ArrowRight from 'public/icons/arrow-back.svg'
+import { useNotificationRow } from '../hooks/useNotificationRow'
+import { motion } from 'motion/react'
+import Expand from 'public/icons/expand.svg'
+import { Arrow } from 'ethereum-identity-kit'
 
 interface NotificationRowProps {
   notification: Notification
   onClick?: () => void
   index: number
-  // setExpandedImage: (image: string) => void
+  setExpandedImage: (image: string) => void
 }
 
-const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick, index }) => {
+const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick, index, setExpandedImage }) => {
+  const { processLinkUrl } = useNotificationRow()
   // Get icon based on notification type
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -59,6 +63,8 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
         return 'Sold'
       case 'price-change':
         return 'Price changed'
+      case 'comment-received':
+        return 'New Comment'
       default:
         return type
     }
@@ -106,17 +112,17 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
   if (notification.type === 'admin-broadcast') {
     const title = notification.metadata.title || 'Announcement'
     const body = notification.metadata.body || ''
-    const linkUrl = notification.metadata.linkUrl
-    const isExternal = !!linkUrl && /^https?:\/\//i.test(linkUrl)
+    const imageUrl = notification.metadata.imageUrl || null
+    const linkUrl = processLinkUrl(notification.metadata.linkUrl || null)
     const className = cn(
       'p-md sm:p-lg flex min-h-16 w-full items-start justify-between gap-4 transition-colors hover:bg-white/5',
       linkUrl ? 'cursor-pointer' : 'cursor-default'
     )
 
     const content = (
-      <div className='flex min-h-16 flex-col gap-3'>
+      <div className='flex min-h-16 w-full flex-col gap-3'>
         <div className='flex w-full items-center gap-2 sm:gap-3'>
-          {!notification.isRead && <div className='bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full' />}
+          {/* {!notification.isRead && <div className='bg-primary mt-2 h-2 w-2 flex-shrink-0 rounded-full' />} */}
           <div className='mt-0.5 flex-shrink-0'>
             <Image src={Bell} alt='Announcement' width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6' />
           </div>
@@ -125,37 +131,62 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
             <div className='sm:text-md text-neutral text-sm font-medium'>{timeAgo}</div>
           </div>
         </div>
-        <div className='px-sm py-md flex min-w-0 flex-1 items-start gap-3'>
-          <p className='sm:text-md text-neutral text-sm break-words whitespace-pre-wrap'>{body}</p>
-          <PrimaryButton
-            className='flex h-10 min-w-10 items-center justify-center p-0!'
-            onClick={() => window.open(linkUrl, '_blank')}
-          >
-            <Image src={ArrowRight} alt='Expand' width={26} height={26} className='h-5 w-5 invert' />
-          </PrimaryButton>
-          {/* <div className='relative max-w-44 cursor-pointer' onClick={() => setExpandedImage(imageUrl)}>
-            <motion.div layoutId={`image-${imageUrl}`}>
-              <Image src={imageUrl} alt='Dashboard' width={1200} height={1200} className='h-auto w-full' />
-            </motion.div>
-            <div className='absolute top-0 right-0 h-full w-full flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300'>
-              <Image src={Expand} alt='Expand' width={26} height={26} className='h-5 w-5 sm:h-6 sm:w-6 hover:scale-120 transition-transform duration-300' />
+        <div className='px-sm py-md flex w-full min-w-0 flex-1 items-stretch justify-between gap-3'>
+          <div className='flex flex-col gap-2'>
+            <p className='sm:text-md text-neutral text-sm break-words whitespace-pre-wrap'>{body}</p>
+            {linkUrl && imageUrl && (
+              <Link
+                href={linkUrl}
+                className='text-primary hover:text-primary/80 flex items-center gap-1 text-lg transition-all duration-200 hover:gap-2'
+              >
+                <PrimaryButton className='flex h-7! w-20 items-center gap-1'>
+                  <Arrow className='mx-auto h-3 w-3 rotate-180' />
+                </PrimaryButton>
+              </Link>
+            )}
+          </div>
+          {imageUrl && (
+            <div className='relative h-fit max-w-44 cursor-pointer' onClick={() => setExpandedImage(imageUrl)}>
+              <motion.div layoutId={`image-${imageUrl}`}>
+                <Image
+                  src={imageUrl}
+                  alt='Dashboard'
+                  width={1200}
+                  height={1200}
+                  className='h-auto w-full'
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </motion.div>
+              <div className='absolute top-0 right-0 flex h-full w-full items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 hover:opacity-100'>
+                <Image
+                  src={Expand}
+                  alt='Expand'
+                  width={26}
+                  height={26}
+                  className='h-5 w-5 transition-transform duration-300 hover:scale-150 sm:h-6 sm:w-6'
+                />
+              </div>
             </div>
-          </div> */}
+          )}
+          {linkUrl && !imageUrl && (
+            <Link href={linkUrl} className='w-fit' onClick={onClick}>
+              <PrimaryButton className='flex h-10 min-w-10 items-center justify-center p-0!'>
+                <Image src={ArrowRight} alt='Expand' width={26} height={26} className='h-5 w-5 invert' />
+              </PrimaryButton>
+            </Link>
+          )}
         </div>
       </div>
     )
 
     if (linkUrl) {
-      return isExternal ? (
-        <a href={linkUrl} target='_blank' rel='noopener noreferrer' className={className}>
-          {content}
-        </a>
-      ) : (
+      return (
         <Link href={linkUrl} className={className}>
           {content}
         </Link>
       )
     }
+
     return <div className={className}>{content}</div>
   }
 

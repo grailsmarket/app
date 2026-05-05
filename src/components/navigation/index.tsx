@@ -13,6 +13,7 @@ import Searchbar from '../ui/searchbar'
 import logoMobile from 'public/logo.svg'
 import logo from 'public/logo-w-text.svg'
 import Notifications from './notifications'
+import Chats from './chats'
 import { useNavbar } from '@/context/navbar'
 import { useAppSelector } from '@/state/hooks'
 import SignInButton from '../ui/buttons/signInButton/index'
@@ -22,7 +23,7 @@ import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryD
 import Explore from './dropdowns/explore'
 import Categories from './dropdowns/categories'
 import CrossIcon from 'public/icons/cross.svg'
-import Analytics from './dropdowns/analytics'
+import More from './dropdowns/more'
 import Premium from './dropdowns/premium'
 import { useUserContext } from '@/context/user'
 
@@ -150,6 +151,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <div className='flex items-center gap-2.5'>
             <SearchIcon />
             <Cart />
+            <Chats />
             <Notifications />
             <Watchlist />
             <Hamburger
@@ -234,12 +236,12 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           <div
             className={cn(
               'border-neutral w-full border-b-2 md:border-none',
-              dropdownOption === 'analytics' || (dropdownOption === null && previousDropdownOption === 'analytics')
+              dropdownOption === 'more' || (dropdownOption === null && previousDropdownOption === 'more')
                 ? 'block'
                 : 'block md:hidden'
             )}
           >
-            <Analytics setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+            <More setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
           </div>
         </div>
         <div

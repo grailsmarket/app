@@ -16,7 +16,7 @@ import CancelOfferModal from '@/components/modal/offer/cancelOfferModal'
 import AcceptOfferModal from '@/components/modal/offer/acceptOfferModal'
 import GlobalSearchModal from '@/components/modal/search/globalSearchModal'
 import { selectSearchModal, setSearchModalOpen } from '@/state/reducers/modals/searchModal'
-import NotificationModal from '@/components/modal/notifications/notificationModal'
+import NotificationModal from '@/components/modal/notifications'
 import { selectNotificationModal, setNotificationModalOpen } from '@/state/reducers/modals/notificationModal'
 import ExtendModal from '@/components/modal/renewal/extendModal'
 import { selectBulkRenewalModal, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
@@ -39,6 +39,9 @@ import BulkOfferModal from '@/components/modal/offer/bulkOfferModal'
 import { selectBulkOfferModal, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
 import UpgradeModal from '@/components/modal/subscription/upgradeModal'
 import { selectUpgradeModal, setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
+import ChatSidebar from '@/components/chat'
+import ChatSocketMount from '@/components/chat/socketMount'
+import { selectChatSidebar } from '@/state/reducers/chat/sidebar'
 
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
@@ -97,6 +100,7 @@ const Modals: React.FC = () => {
   const { open: bulkOfferModalOpen, domains: bulkOfferModalDomains } = useAppSelector(selectBulkOfferModal)
   const { open: upgradeModalOpen } = useAppSelector(selectUpgradeModal)
   const { isOpen: registrationModalOpen } = useAppSelector(selectRegistration)
+  const { open: chatSidebarOpen } = useAppSelector(selectChatSidebar)
 
   const anyModalOpen =
     makeOfferModalOpen ||
@@ -113,7 +117,8 @@ const Modals: React.FC = () => {
     editRecordsModalOpen ||
     isSettingsOpen ||
     listSettingsModalOpen ||
-    registrationModalOpen
+    registrationModalOpen ||
+    chatSidebarOpen
 
   useEffect(() => {
     if (anyModalOpen) {
@@ -214,6 +219,8 @@ const Modals: React.FC = () => {
           selectedList={listSettingsModalList}
         />
       )}
+      <ChatSocketMount />
+      <ChatSidebar />
       {bulkOfferModalOpen && bulkOfferModalDomains.length > 0 && (
         <BulkOfferModal onClose={() => dispatch(setBulkOfferModalOpen(false))} domains={bulkOfferModalDomains} />
       )}

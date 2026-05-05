@@ -16,6 +16,7 @@ export const addToWatchlist = async ({ domain, listId }: { domain: MarketplaceDo
       notifyOnOffer: true,
       notifyOnListing: true,
       notifyOnPriceChange: false,
+      notifyOnComment: false,
       ...(listId ? { listId } : {}),
     }),
   })

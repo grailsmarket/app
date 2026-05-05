@@ -18,6 +18,7 @@ import { getDetails } from '@/api/user/getDetails'
 import EthereumLogo from 'public/icons/eth-gray.svg'
 import GrailsIcon from 'public/logo.svg'
 import { cn } from '@/utils/tailwind'
+import SendMessageButton from '@/components/chat/components/sendMessageButton'
 
 interface Props {
   user?: Address | string | null
@@ -60,6 +61,7 @@ const Details: React.FC<Props> = ({ user, isWidget = false, useWideWidgetLayout 
       )}
     >
       <div className='flex flex-col gap-3'>
+        {user && isAddress(user as string) && <SendMessageButton recipient={user as string} className='w-full' />}
         {/* <h3 className='font-sedan-sc hidden text-3xl lg:block'>Account</h3> */}
         <div
           className={cn('grid grid-cols-4 gap-y-2', isWidget ? useWideWidgetLayout && 'grid-cols-2' : 'lg:grid-cols-2')}

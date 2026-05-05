@@ -162,8 +162,6 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
     }
   }, [address, mode, manualUrl, dataURL, signTypedDataAsync, imageType, name, onSave, dataURLToBytes])
 
-  console.log(previewUrl)
-
   return (
     <div
       className='fixed top-0 right-0 bottom-0 left-0 z-[110] flex h-[100dvh] w-screen items-center justify-center bg-black/60 backdrop-blur-sm'

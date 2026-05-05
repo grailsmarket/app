@@ -6,9 +6,12 @@ export type NotificationType =
   | 'offer-received'
   | 'listing-sold'
   | 'listing-cancelled-ownership-change'
+  | 'comment-received'
   | 'admin-broadcast'
+  | 'support-ticket-update'
 
 export interface NotificationMetadata {
+  title?: string
   priceWei?: string
   sellerAddress?: string
   buyerAddress?: string
@@ -16,10 +19,16 @@ export interface NotificationMetadata {
   offerId?: number
   offerAmountWei?: string
   // admin-broadcast fields
-  title?: string
   body?: string
   linkUrl?: string
   broadcastId?: number
+  imageUrl?: string
+  // support-ticket-update fields
+  kind?: 'admin_reply' | 'status_changed' | 'reopened'
+  ticketId?: number
+  subject?: string
+  status?: 'open' | 'closed' | 'fixed'
+  newStatus?: 'open' | 'closed' | 'fixed'
 }
 
 export interface Notification {

@@ -16,6 +16,7 @@ import Cart from '@/components/cart'
 import { SeaportProvider } from '@/context/seaport'
 import { NavbarProvider } from '@/context/navbar'
 import PostHogProvider from '@/components/posthog/posthog-provider'
+import PostHogIdentify from '@/components/posthog/posthog-identify'
 // import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
@@ -39,6 +40,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
               <TransactionProvider batchTransactions={false}>
                 <ReduxProvider store={store}>
                   <UserProvider>
+                    <PostHogIdentify />
                     <SeaportProvider>
                       <NavbarProvider>
                         <div className='relative flex min-h-[100dvh]! flex-col'>

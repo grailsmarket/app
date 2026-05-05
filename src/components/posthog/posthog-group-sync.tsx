@@ -24,17 +24,22 @@ function deriveGroup(pathname: string): Group | null {
   return null
 }
 
+export function applyGroupForPathname(pathname: string) {
+  if (!posthog.__loaded || !pathname) return
+  const group = deriveGroup(pathname)
+  if (group) {
+    posthog.group(group.type, group.key)
+  } else {
+    posthog.resetGroups()
+  }
+}
+
 export default function PostHogGroupSync() {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!posthog.__loaded || !pathname) return
-    const group = deriveGroup(pathname)
-    if (group) {
-      posthog.group(group.type, group.key)
-    } else {
-      posthog.resetGroups()
-    }
+    if (!pathname) return
+    applyGroupForPathname(pathname)
   }, [pathname])
 
   return null

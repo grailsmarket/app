@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createPostHogServerClient } from '@/lib/posthog-server'
 
 const API_URL = 'https://api.grails.app/api/v1'
@@ -58,20 +59,22 @@ export async function POST(request: NextRequest) {
           maxAge: 60 * 60 * 24 * 7, // 1 week
         })
       }
-      await captureAuthVerified({ address, success: true, status: response.status })
+      after(() => captureAuthVerified({ address, success: true, status: response.status }))
       return res
     }
 
-    await captureAuthVerified({
-      address,
-      success: false,
-      status: response.status,
-      failure_reason: typeof data?.error === 'string' ? data.error : 'upstream_error',
-    })
+    after(() =>
+      captureAuthVerified({
+        address,
+        success: false,
+        status: response.status,
+        failure_reason: typeof data?.error === 'string' ? data.error : 'upstream_error',
+      })
+    )
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
     console.error('Error verifying signature:', error)
-    await captureAuthVerified({ address, success: false, failure_reason: 'exception' })
+    after(() => captureAuthVerified({ address, success: false, failure_reason: 'exception' }))
     return NextResponse.json({ error: 'Failed to verify signature' }, { status: 500 })
   }
 }

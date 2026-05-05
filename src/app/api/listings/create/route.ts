@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
@@ -65,12 +66,14 @@ export async function POST(request: NextRequest) {
         )
         console.log('Successfully submitted order to OpenSea')
         if (type === 'listing') {
-          await captureListingCreated({
-            seller_address: sellerAddress,
-            marketplace,
-            domain_count: domains.length,
-            currencies: currencies ?? [],
-          })
+          after(() =>
+            captureListingCreated({
+              seller_address: sellerAddress,
+              marketplace,
+              domain_count: domains.length,
+              currencies: currencies ?? [],
+            })
+          )
         }
         return NextResponse.json({ openSea: openSeaResponses })
       } catch (openSeaError: any) {
@@ -173,12 +176,14 @@ export async function POST(request: NextRequest) {
           if (typeof succeeded === 'number') succeededCount += succeeded
         }
         if (succeededCount > 0) {
-          await captureListingCreated({
-            seller_address: sellerAddress,
-            marketplace,
-            domain_count: succeededCount,
-            currencies: currencies ?? [],
-          })
+          after(() =>
+            captureListingCreated({
+              seller_address: sellerAddress,
+              marketplace,
+              domain_count: succeededCount,
+              currencies: currencies ?? [],
+            })
+          )
         }
       }
       return NextResponse.json({ grails: responses })

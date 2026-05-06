@@ -1,11 +1,12 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useChat } from '@/hooks/chat/useChat'
+import { useChatMessages } from '@/hooks/chat/useChatMessages'
 import { useE2ESession } from '@/hooks/chat/useE2ESession'
 import { handshakeBus } from '@/lib/e2e/handshakeBus'
 import { sendMessage } from '@/api/chats/sendMessage'
-import { encodeHandshake } from '@/lib/e2e/wire'
+import { encodeHandshake, tryDecode, isHandshakeEnvelope } from '@/lib/e2e/wire'
 
 interface Props {
   chatId: string
@@ -16,31 +17,76 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   const enabled = search?.get('e2e') === '1'
 
   const { data: chat } = useChat(chatId)
+  const { messages } = useChatMessages(chatId)
   const e2e = useE2ESession(chatId, chat?.dm_key ?? null)
 
+  // Guards against re-processing the same handshake row. Survives renders;
+  // resets on banner unmount (the per-mount semantics are fine — the
+  // expensive part is consumePeerBundle's outbound-session creation, which
+  // useE2ESession itself tracks via sessionsRef).
+  const processedHsRef = useRef<Set<string>>(new Set())
+
+  // Republishing our own handshake is a side effect that must not be racy:
+  // multiple new dids observed in quick succession should result in a single
+  // handshake (or at most one per discovery batch). A simple inflight flag is
+  // enough since consumePeerBundle is already idempotent.
+  const republishingRef = useRef(false)
+  const republishOurHandshake = async () => {
+    if (republishingRef.current) return
+    republishingRef.current = true
+    try {
+      const myBundle = e2e.buildHandshakeBundle()
+      await sendMessage({
+        chatId,
+        body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
+      })
+    } finally {
+      republishingRef.current = false
+    }
+  }
+
+  // Live WS path — fast for handshakes posted while the banner is mounted.
   useEffect(() => {
     if (!enabled) return
     const off = handshakeBus.on(async ({ chatId: cid, bundle, senderUserId }) => {
       if (cid !== chatId || !e2e.isUnlocked) return
       try {
         const { isNew } = await e2e.consumePeerBundle(bundle, senderUserId)
-        // When a new device shows up, auto-publish our own handshake so the
-        // new device can derive an inbound session to us from the pre-key in
-        // the next fanout we send. This is the client-only equivalent of
-        // Sesame's roster-validated send.
-        if (isNew) {
-          const myBundle = e2e.buildHandshakeBundle()
-          await sendMessage({
-            chatId,
-            body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
-          })
-        }
+        if (isNew) await republishOurHandshake()
       } catch (e) {
         console.error(e)
       }
     })
     return off
   }, [chatId, e2e, enabled])
+
+  // REST/cache path — catches handshakes posted while this tab was closed
+  // or before unlock. Without this, a peer's handshake sitting in chat
+  // history would only render as setup text and never actually establish
+  // the session, so async setup would stall until another live handshake.
+  useEffect(() => {
+    if (!enabled || !e2e.isUnlocked) return
+    let cancelled = false
+    ;(async () => {
+      for (const m of messages) {
+        if (cancelled) return
+        if (processedHsRef.current.has(m.id)) continue
+        if (m.id.startsWith('optimistic-')) continue
+        const env = tryDecode(m.body)
+        if (!env || !isHandshakeEnvelope(env)) continue
+        processedHsRef.current.add(m.id)
+        try {
+          const { isNew } = await e2e.consumePeerBundle(env.bundle, m.sender_user_id)
+          if (isNew && !cancelled) await republishOurHandshake()
+        } catch (err) {
+          console.error(err)
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [enabled, e2e, e2e.isUnlocked, messages, chatId])
 
   if (!enabled) return null
   if (chat?.type !== 'direct') return null

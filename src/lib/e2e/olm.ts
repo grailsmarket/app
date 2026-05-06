@@ -67,9 +67,16 @@ export type PeerBundle = {
 // address. Out of scope here.
 export function exportBundle(account: Olm.Account): string {
   const identity = JSON.parse(account.identity_keys()) as { curve25519: string; ed25519: string }
-  const otks = JSON.parse(account.one_time_keys()).curve25519 as Record<string, string>
+  // mark_keys_as_published() (called below) drains the unpublished pool, so a
+  // second exportBundle will find one_time_keys() empty. Refill on demand so
+  // every handshake gets a fresh OTK.
+  let otks = JSON.parse(account.one_time_keys()).curve25519 as Record<string, string>
+  if (Object.keys(otks).length === 0) {
+    account.generate_one_time_keys(50)
+    otks = JSON.parse(account.one_time_keys()).curve25519 as Record<string, string>
+  }
   const otkId = Object.keys(otks)[0]
-  if (!otkId) throw new Error('Out of one-time keys — call generate_one_time_keys')
+  if (!otkId) throw new Error('Failed to generate one-time keys')
   const bundle: PeerBundle = {
     identity: identity.curve25519,
     signing: identity.ed25519,

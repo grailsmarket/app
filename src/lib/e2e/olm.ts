@@ -56,11 +56,15 @@ export type PeerBundle = {
   otk: string
 }
 
-type SignedBundle = { payload: string; sig: string }
-
-// X3DH-style signed bundle. The Ed25519 signature over the JSON payload lets
-// the peer detect handshake-time tampering by the backend (server can read the
-// bundle, but cannot forge a new one without the signing key).
+// Bundle authentication: NOT cryptographically guaranteed in v1. The wire
+// format trusts that whoever posted a handshake message in the chat is the
+// participant we expect. An ACTIVE backend can substitute a forged bundle on
+// first contact; we accept this since the agreed threat model is
+// passive-attacker-only (see plan: "Risks and follow-ups → Active-MITM
+// detection"). Future work: bind the Olm identity key to the user's wallet
+// via a one-time wallet-signed attestation included in the bundle, so peers
+// can verify the bundle came from the wallet that owns the chat participant
+// address. Out of scope here.
 export function exportBundle(account: Olm.Account): string {
   const identity = JSON.parse(account.identity_keys()) as { curve25519: string; ed25519: string }
   const otks = JSON.parse(account.one_time_keys()).curve25519 as Record<string, string>
@@ -72,23 +76,10 @@ export function exportBundle(account: Olm.Account): string {
     otkId,
     otk: otks[otkId]!,
   }
-  const payload = JSON.stringify(bundle)
-  const sig = account.sign(payload)
   account.mark_keys_as_published()
-  const wrapper: SignedBundle = { payload, sig }
-  return bytesToBase64(utf8ToBytes(JSON.stringify(wrapper)))
+  return bytesToBase64(utf8ToBytes(JSON.stringify(bundle)))
 }
 
 export function parseBundle(encoded: string): PeerBundle {
-  const wrapper = JSON.parse(bytesToUtf8(base64ToBytes(encoded))) as SignedBundle
-  const inner = JSON.parse(wrapper.payload) as PeerBundle
-  const utility = new Olm.Utility()
-  try {
-    utility.ed25519_verify(inner.signing, wrapper.payload, wrapper.sig)
-  } catch {
-    throw new Error('Invalid handshake signature')
-  } finally {
-    utility.free()
-  }
-  return inner
+  return JSON.parse(bytesToUtf8(base64ToBytes(encoded))) as PeerBundle
 }

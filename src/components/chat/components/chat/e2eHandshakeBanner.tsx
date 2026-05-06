@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useChat } from '@/hooks/chat/useChat'
 import { useE2ESession } from '@/hooks/chat/useE2ESession'
@@ -18,16 +18,11 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   const { data: chat } = useChat(chatId)
   const e2e = useE2ESession(chatId, chat?.dm_key ?? null)
 
-  const [bundleError, setBundleError] = useState<string | null>(null)
-
   useEffect(() => {
     if (!enabled) return
     const off = handshakeBus.on(({ chatId: cid, bundle }) => {
       if (cid !== chatId || !e2e.isUnlocked) return
-      e2e.consumePeerBundle(bundle).catch((err) => {
-        setBundleError(err instanceof Error ? err.message : 'handshake failed')
-        console.error(err)
-      })
+      e2e.consumePeerBundle(bundle).catch(console.error)
     })
     return off
   }, [chatId, e2e, enabled])
@@ -57,7 +52,6 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   return (
     <div className='border-tertiary bg-secondary/40 border-b p-3 text-center text-sm'>
       <p className='mb-2'>Setting up encryption with this peer…</p>
-      {bundleError && <p className='mb-2 text-red-500'>⚠️ {bundleError}</p>}
       <button
         type='button'
         onClick={async () => {

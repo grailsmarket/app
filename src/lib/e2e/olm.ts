@@ -31,7 +31,13 @@ export async function loadOrCreateAccount(storageKey: Uint8Array): Promise<Olm.A
     return account
   }
   account.create()
+  // OTKs are still generated to support inbound pre-key messages from peers
+  // running an older bundle format (which referenced single-use OTKs). New
+  // bundles we publish use the fallback key (see exportBundle below) so the
+  // same handshake message can bootstrap multiple peer devices without OTK
+  // exhaustion (Olm consumes OTKs after first use; fallback survives).
   account.generate_one_time_keys(50)
+  account.generate_fallback_key()
   await persistAccount(account, storageKey)
   return account
 }
@@ -81,41 +87,45 @@ export async function saveRoster(dmKey: string, roster: RosterEntry[], storageKe
   await putEncrypted(rosterKey(dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
 }
 
+// PeerBundle preferred shape: identity + signing + fallback_key. Older bundles
+// also accept otkId/otk fields (parseBundle keeps both forms; createOutbound
+// prefers fallback_key). Bundle authentication is NOT cryptographically
+// guaranteed: an active backend could substitute a forged bundle on first
+// contact. We accept this in the documented passive-attacker threat model
+// (see plan: "Risks and follow-ups → Active-MITM detection").
 export type PeerBundle = {
   identity: string
   signing: string
-  otkId: string
-  otk: string
+  fallback_key?: string
+  otkId?: string
+  otk?: string
 }
 
-// Bundle authentication: NOT cryptographically guaranteed in v1. The wire
-// format trusts that whoever posted a handshake message in the chat is the
-// participant we expect. An ACTIVE backend can substitute a forged bundle on
-// first contact; we accept this since the agreed threat model is
-// passive-attacker-only (see plan: "Risks and follow-ups → Active-MITM
-// detection"). Future work: bind the Olm identity key to the user's wallet
-// via a one-time wallet-signed attestation included in the bundle, so peers
-// can verify the bundle came from the wallet that owns the chat participant
-// address. Out of scope here.
+function readFallbackPublicKey(account: Olm.Account): string {
+  const fb = JSON.parse(account.fallback_key()) as { curve25519?: Record<string, string> }
+  const entries = fb.curve25519 ? Object.entries(fb.curve25519) : []
+  if (entries.length === 0) {
+    account.generate_fallback_key()
+    const next = JSON.parse(account.fallback_key()) as { curve25519?: Record<string, string> }
+    const nextEntries = next.curve25519 ? Object.entries(next.curve25519) : []
+    if (nextEntries.length === 0) throw new Error('Failed to obtain fallback key')
+    return nextEntries[0]![1]!
+  }
+  return entries[0]![1]!
+}
+
 export function exportBundle(account: Olm.Account): string {
   const identity = JSON.parse(account.identity_keys()) as { curve25519: string; ed25519: string }
-  // mark_keys_as_published() (called below) drains the unpublished pool, so a
-  // second exportBundle will find one_time_keys() empty. Refill on demand so
-  // every handshake gets a fresh OTK.
-  let otks = JSON.parse(account.one_time_keys()).curve25519 as Record<string, string>
-  if (Object.keys(otks).length === 0) {
-    account.generate_one_time_keys(50)
-    otks = JSON.parse(account.one_time_keys()).curve25519 as Record<string, string>
-  }
-  const otkId = Object.keys(otks)[0]
-  if (!otkId) throw new Error('Failed to generate one-time keys')
+  const fallback_key = readFallbackPublicKey(account)
+  // mark_keys_as_published() flips the fallback (and any leftover OTKs) into
+  // the "published" pool so the bundle we hand out can be referenced by
+  // incoming pre-key messages.
+  account.mark_keys_as_published()
   const bundle: PeerBundle = {
     identity: identity.curve25519,
     signing: identity.ed25519,
-    otkId,
-    otk: otks[otkId]!,
+    fallback_key,
   }
-  account.mark_keys_as_published()
   return bytesToBase64(utf8ToBytes(JSON.stringify(bundle)))
 }
 

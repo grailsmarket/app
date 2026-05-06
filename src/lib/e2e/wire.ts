@@ -96,7 +96,13 @@ export function decryptFromPeer(session: Olm.Session, ciphertext: string, type: 
 export async function createOutboundSession(account: Olm.Account, peer: PeerBundle): Promise<Olm.Session> {
   await ensureOlm()
   const session = new Olm.Session()
-  session.create_outbound(account, peer.identity, peer.otk)
+  // Prefer the fallback key — it survives multiple create_outbound calls from
+  // different peer devices, where a single OTK would be consumed after the
+  // first peer's pre-key message reaches us. Falls back to the legacy single
+  // OTK for handshakes published by older clients.
+  const key = peer.fallback_key ?? peer.otk
+  if (!key) throw new Error('Bundle missing fallback_key and otk')
+  session.create_outbound(account, peer.identity, key)
   return session
 }
 

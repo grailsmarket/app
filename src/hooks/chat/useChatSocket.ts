@@ -8,7 +8,17 @@ import { useAppDispatch } from '@/state/hooks'
 import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/typing'
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
 import { setChatSocket } from './socketSingleton'
-import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
+import type {
+  ChatMessage,
+  ChatMessagesResponse,
+  ChatInboxResponse,
+  ChatWSEvent,
+  ChatWSOutgoing,
+} from '@/types/chat'
+import { tryDecode, isMsgEnvelope, isHandshakeEnvelope } from '@/lib/e2e/wire'
+import { plaintextCache } from '@/lib/e2e/plaintextCache'
+import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
+import { handshakeBus } from '@/lib/e2e/handshakeBus'
 
 const TYPING_TTL_MS = 4000
 const PING_INTERVAL_MS = 25_000
@@ -83,12 +93,35 @@ export const useChatSocket = () => {
         case 'chat:message_new': {
           const { chat_id, message } = evt.data
           const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          const env = tryDecode(message.body)
+
+          // Inbound peer E2E: decrypt async, populate plaintextCache so
+          // MessageRow resolves via useDecryptedBody on the next render.
+          if (env && isMsgEnvelope(env) && !senderIsMe) {
+            const session = sessionRegistry.get(chat_id)
+            if (session) {
+              void session
+                .decrypt(env.ct, env.type)
+                .then((plaintext) => plaintextCache.set(message.id, plaintext))
+                .catch((err) => console.warn('[chat ws] e2e decrypt failed', err))
+            }
+          }
+
+          // Handshake bundle from peer: surface to banner.
+          if (env && isHandshakeEnvelope(env)) {
+            handshakeBus.emit({
+              chatId: chat_id,
+              bundle: env.bundle,
+              senderUserId: message.sender_user_id,
+            })
+          }
+
           // Patch messages cache. Three cases to handle:
           // 1. Canonical id already present (POST onSuccess won the race) → no-op.
-          // 2. Sender is me AND an optimistic placeholder with matching body is
-          //    still in cache (WS won the race) → REPLACE in place rather than
-          //    appending, otherwise the optimistic + canonical both stick around
-          //    and the message renders twice until the next refresh.
+          // 2. Sender is me AND an optimistic placeholder is still in cache
+          //    (WS won the race) → REPLACE in place. Dedup is body-match for
+          //    plaintext sends and `mid`-match for E2E sends (the optimistic
+          //    body is plaintext but the echo body is the JSON envelope).
           // 3. Otherwise → prepend to the newest page.
           queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(['chats', chat_id, 'messages'], (old) => {
             if (!old) return old
@@ -96,12 +129,15 @@ export const useChatSocket = () => {
             if (exists) return old
 
             if (senderIsMe) {
+              const matchOptimistic = (m: ChatMessage): boolean => {
+                if (!m.id.startsWith('optimistic-') || m.deleted_at) return false
+                if (env && isMsgEnvelope(env) && env.mid) return m.id === env.mid
+                return m.body === message.body
+              }
               let replaced = false
               const updatedPages = old.pages.map((page) => {
                 if (replaced) return page
-                const idx = page.messages.findIndex(
-                  (m) => m.id.startsWith('optimistic-') && m.body === message.body && !m.deleted_at
-                )
+                const idx = page.messages.findIndex(matchOptimistic)
                 if (idx === -1) return page
                 replaced = true
                 const next = [...page.messages]

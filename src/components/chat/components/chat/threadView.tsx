@@ -19,6 +19,7 @@ import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
+import E2EHandshakeBanner from './e2eHandshakeBanner'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
@@ -203,6 +204,8 @@ const ThreadView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {activeChatId && <E2EHandshakeBanner chatId={activeChatId} />}
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
         {chatLoading || msgsLoading ? (

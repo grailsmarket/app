@@ -1,6 +1,14 @@
 'use client'
-import Olm from '@matrix-org/olm'
+// Type-only import: see olm.ts for why the runtime is loaded via script tag.
+import type Olm from '@matrix-org/olm'
 import { ensureOlm, type PeerBundle } from './olm'
+
+function olmRuntime(): typeof Olm {
+  if (typeof window === 'undefined' || !window.Olm) {
+    throw new Error('Olm runtime not initialized — call ensureOlm() first')
+  }
+  return window.Olm
+}
 
 // Single-device legacy envelope. Senders no longer emit this; receivers
 // continue to decode it for backward compatibility.
@@ -95,6 +103,7 @@ export function decryptFromPeer(session: Olm.Session, ciphertext: string, type: 
 
 export async function createOutboundSession(account: Olm.Account, peer: PeerBundle): Promise<Olm.Session> {
   await ensureOlm()
+  const Olm = olmRuntime()
   const session = new Olm.Session()
   // Prefer the fallback key — it survives multiple create_outbound calls from
   // different peer devices, where a single OTK would be consumed after the
@@ -114,6 +123,7 @@ export async function createInboundSessionFromPrekey(
   ciphertext: string,
 ): Promise<{ session: Olm.Session; plaintext: string }> {
   await ensureOlm()
+  const Olm = olmRuntime()
   const session = new Olm.Session()
   session.create_inbound(account, ciphertext)
   account.remove_one_time_keys(session)

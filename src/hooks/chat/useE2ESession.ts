@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSignMessage } from 'wagmi'
+// Type-only import: see lib/e2e/olm.ts — runtime is loaded dynamically.
 import type Olm from '@matrix-org/olm'
 import {
   ensureOlm,

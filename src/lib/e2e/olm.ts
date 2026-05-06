@@ -1,14 +1,60 @@
 'use client'
-import Olm from '@matrix-org/olm'
+// Type-only import: turbopack/webpack will not pull olm.js into the bundle
+// (its UMD wrapper contains static `require('fs')` calls in dead Node-only
+// branches that cannot be statically resolved for the browser). The runtime
+// is loaded via a script tag from /public/olm.js the first time we need it,
+// and exposes `window.Olm`.
+import type Olm from '@matrix-org/olm'
 import { putEncrypted, getEncrypted } from './storage'
 import { bytesToBase64, utf8ToBytes, bytesToUtf8, base64ToBytes } from './encoding'
 
-let olmReady: Promise<void> | null = null
-export function ensureOlm(): Promise<void> {
-  if (!olmReady) {
-    olmReady = Olm.init({ locateFile: () => '/olm.wasm' })
+declare global {
+  interface Window {
+    Olm?: typeof Olm
   }
+}
+
+let olmReady: Promise<void> | null = null
+
+function loadOlmScript(): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (typeof document === 'undefined') {
+      reject(new Error('Olm requires a browser environment'))
+      return
+    }
+    const existing = document.querySelector<HTMLScriptElement>('script[data-olm]')
+    if (existing) {
+      if (window.Olm) return resolve()
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('olm.js load failed')), { once: true })
+      return
+    }
+    const script = document.createElement('script')
+    script.src = '/olm.js'
+    script.async = true
+    script.dataset.olm = '1'
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('olm.js load failed'))
+    document.head.appendChild(script)
+  })
+}
+
+export function ensureOlm(): Promise<void> {
+  if (olmReady) return olmReady
+  olmReady = (async () => {
+    if (typeof window === 'undefined') throw new Error('Olm requires a browser environment')
+    if (!window.Olm) await loadOlmScript()
+    if (!window.Olm) throw new Error('Olm global not available after script load')
+    await window.Olm.init({ locateFile: () => '/olm.wasm' })
+  })()
   return olmReady
+}
+
+function olmRuntime(): typeof Olm {
+  if (typeof window === 'undefined' || !window.Olm) {
+    throw new Error('Olm runtime not initialized — call ensureOlm() first')
+  }
+  return window.Olm
 }
 
 const ACCOUNT_KEY = 'account'
@@ -24,6 +70,7 @@ const pickleKey = (storageKey: Uint8Array) => bytesToBase64(storageKey)
 
 export async function loadOrCreateAccount(storageKey: Uint8Array): Promise<Olm.Account> {
   await ensureOlm()
+  const Olm = olmRuntime()
   const account = new Olm.Account()
   const pickled = await getEncrypted(ACCOUNT_KEY, storageKey)
   if (pickled) {
@@ -51,6 +98,7 @@ export async function loadSession(dmKey: string, did: string, storageKey: Uint8A
   await ensureOlm()
   const pickled = await getEncrypted(sessionKey(dmKey, did), storageKey)
   if (!pickled) return null
+  const Olm = olmRuntime()
   const session = new Olm.Session()
   session.unpickle(pickleKey(storageKey), bytesToUtf8(pickled))
   return session

@@ -41,5 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# e2e olm wasm (staged by postinstall)
+# e2e olm runtime (staged by postinstall)
 /public/olm.wasm
+/public/olm.js

@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "checks": "bun run format && bun run lint && bun run typecheck",
-    "postinstall": "cp -f node_modules/@matrix-org/olm/olm.wasm public/olm.wasm 2>/dev/null || true"
+    "postinstall": "cp -f node_modules/@matrix-org/olm/olm.wasm public/olm.wasm 2>/dev/null; cp -f node_modules/@matrix-org/olm/olm.js public/olm.js 2>/dev/null; true"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",

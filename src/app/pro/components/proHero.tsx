@@ -26,7 +26,7 @@ const itemVariants = {
   },
 }
 
-const glowVariants = {
+export const glowVariants = {
   animate: {
     scale: [1, 1.1, 1],
     opacity: [0.3, 0.5, 0.3],

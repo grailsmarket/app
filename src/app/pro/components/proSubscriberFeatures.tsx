@@ -108,12 +108,12 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
           </div>
 
           {isAccessible ? (
-            <span className='flex shrink-0 items-center gap-1.5 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-bold text-green-400'>
+            <span className='flex shrink-0 items-center gap-1.5 rounded-full bg-green-500/15 px-2.5 py-1 text-sm font-bold text-green-400'>
               <Image src={checkIcon} alt='Available' width={14} height={14} />
               Available
             </span>
           ) : (
-            <span className='flex shrink-0 items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-400'>
+            <span className='flex shrink-0 items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-1 text-sm font-bold text-red-400'>
               <Image src={lockIcon} alt='Locked' width={14} height={14} />
               Locked
             </span>
@@ -184,7 +184,7 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className='absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-secondary/80 hover:bg-secondary transition-colors cursor-pointer z-[101]'
+              className='absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-secondary/80 hover:bg-secondary transition-colors cursor-pointer z-101'
               onClick={() => setActive(null)}
             >
               <Cross className='h-auto w-5' />
@@ -270,14 +270,16 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
       <div className='flex w-full flex-col gap-14 sm:gap-20'>
         {accessibleFeatures.length > 0 && (
           <section className='flex flex-col gap-8'>
-            <div className='flex items-center gap-3'>
-              <div className='bg-green-500/20 flex h-8 w-8 items-center justify-center rounded-full'>
-                <Image src={checkIcon} alt='' width={16} height={16} />
+            <div className='flex items-center gap-3 justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='bg-green-500/20 flex h-8 w-8 items-center justify-center rounded-full'>
+                  <Image src={checkIcon} alt='' width={16} height={16} />
+                </div>
+                <h2 className='font-sedan-sc text-3xl sm:text-4xl'>
+                  Your <span className='text-primary'>Features</span>
+                </h2>
               </div>
-              <h2 className='font-sedan-sc text-3xl sm:text-4xl'>
-                Your <span className='text-primary'>Features</span>
-              </h2>
-              <span className='text-neutral ml-2 text-sm font-medium'>
+              <span className='text-neutral ml-2 text-lg font-medium'>
                 {accessibleFeatures.length} available
               </span>
             </div>
@@ -296,14 +298,16 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
 
         {lockedFeatures.length > 0 && (
           <section className='flex flex-col gap-8'>
-            <div className='flex items-center gap-3'>
-              <div className='bg-red-500/20 flex h-8 w-8 items-center justify-center rounded-full'>
-                <Image src={lockIcon} alt='' width={16} height={16} />
+            <div className='flex items-center gap-3 justify-between'>
+              <div className='flex items-center gap-3'>
+                <div className='bg-red-500/20 flex h-8 w-8 items-center justify-center rounded-full'>
+                  <Image src={lockIcon} alt='' width={16} height={16} />
+                </div>
+                <h2 className='font-sedan-sc text-3xl sm:text-4xl'>
+                  Unlock <span className='text-primary'>More</span>
+                </h2>
               </div>
-              <h2 className='font-sedan-sc text-3xl sm:text-4xl'>
-                Unlock <span className='text-primary'>More</span>
-              </h2>
-              <span className='text-neutral ml-2 text-sm font-medium'>
+              <span className='text-neutral ml-2 text-lg font-medium'>
                 {lockedFeatures.length} locked
               </span>
             </div>

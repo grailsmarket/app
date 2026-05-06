@@ -3,6 +3,9 @@
 import { motion } from 'motion/react'
 import { cn } from '@/utils/tailwind'
 import { TIER_LABELS, TIER_COLORS } from './proSubscriberData'
+import ShootingStars from '@/components/ui/shootingStars'
+import StarsBackground from '@/components/ui/starsBackground'
+import { glowVariants } from './proHero'
 
 interface ProSubscriberHeroProps {
   tierId: number
@@ -19,12 +22,11 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
     : null
 
   return (
-    <section className='relative flex min-h-[50vh] flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-12 sm:pt-32 sm:pb-16 md:pt-40 md:pb-20'>
+    <section className='relative flex min-h-[50vh] flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-16 sm:pt-32 sm:pb-24 md:min-h-[60vh] md:pt-40 md:pb-32'>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className='background-radial-primary absolute top-1/2 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 md:h-[700px] md:w-[700px]'
+        variants={glowVariants}
+        animate='animate'
+        className='background-radial-primary absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 md:h-[800px] md:w-[800px]'
       />
 
       <motion.div
@@ -79,6 +81,9 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
           </div>
         )}
       </motion.div>
+
+      <StarsBackground />
+      <ShootingStars />
     </section>
   )
 }

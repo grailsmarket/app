@@ -6,6 +6,7 @@ import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { openUpgradeModalWithTier } from '@/state/reducers/modals/upgradeModal'
 import { Check } from 'ethereum-identity-kit'
+import { TIER_LABELS } from './proSubscriberData'
 
 const ANNUAL_DISCOUNT = 0.15
 
@@ -135,7 +136,7 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
         </h2>
         <p className='text-neutral max-w-xl text-lg sm:text-xl'>
           {isSubscriberView
-            ? 'You are currently subscribed. Upgrade anytime to unlock more features.'
+            ? 'You are currently subscribed to the ' + TIER_LABELS[userTierId] + ' plan. Upgrade anytime to unlock more features.'
             : 'Choose the plan that fits your domaining strategy. Upgrade or cancel anytime.'}
         </p>
       </div>
@@ -256,11 +257,12 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
 
               {isCurrent ? (
                 <div
+                  onClick={() => dispatch(openUpgradeModalWithTier(tier.tierId))}
                   className={cn(
-                    'w-full rounded border-2 border-green-500/50 bg-green-500/10 px-4 py-3 text-center text-base font-bold text-green-400'
+                    'w-full cursor-pointer rounded border-2 border-green-500/50 transition-all hover:bg-green-500/20 bg-green-500/10 px-4 py-3 text-center text-base font-bold hover:scale-[1.02] active:scale-[0.98] text-green-400'
                   )}
                 >
-                  Active
+                  Extend Plan
                 </div>
               ) : isLower ? (
                 <div
@@ -302,20 +304,18 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
         })}
       </motion.div>
 
-      {!isSubscriberView && (
-        <div className='border-tertiary/50 flex w-full max-w-2xl flex-col items-center gap-3 rounded-lg border px-6 py-5 text-center sm:flex-row sm:justify-between'>
-          <div className='text-left'>
-            <p className='text-lg font-bold'>Need something bigger?</p>
-            <p className='text-neutral text-sm'>Patron tier for teams, funds, and institutions.</p>
-          </div>
-          <button
-            onClick={() => dispatch(openUpgradeModalWithTier(4))}
-            className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base font-semibold text-purple-400 transition-colors hover:bg-purple-400/10'
-          >
-            Explore Patron
-          </button>
+      <div className='border-purple-400/50 flex w-full max-w-2xl flex-col items-center gap-3 rounded-lg border-2 px-6 py-5 text-center sm:flex-row sm:justify-between'>
+        <div className='text-left'>
+          <p className='text-lg font-bold'>Need something bigger?</p>
+          <p className='text-neutral text-sm'>Patron tier for teams, funds, and institutions.</p>
         </div>
-      )}
+        <button
+          onClick={() => dispatch(openUpgradeModalWithTier(4))}
+          className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base hover:scale-[1.02] active:scale-[0.98] font-semibold text-purple-400 transition-colors hover:bg-purple-400/10'
+        >
+          Explore Patron
+        </button>
+      </div>
     </section>
   )
 }

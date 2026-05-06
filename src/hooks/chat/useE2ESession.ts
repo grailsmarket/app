@@ -30,6 +30,9 @@ type SessionState =
 export function useE2ESession(chatId: string | null, dmKey: string | null) {
   const { signMessageAsync } = useSignMessage()
   const [state, setState] = useState<SessionState>({ kind: 'locked' })
+  // Tracks whether unlock() has populated storageKeyRef + accountRef. Drives
+  // the session-load effect — using a ref alone wouldn't trigger re-runs.
+  const [unlocked, setUnlocked] = useState(false)
 
   const storageKeyRef = useRef<Uint8Array | null>(null)
   const accountRef = useRef<Olm.Account | null>(null)
@@ -41,12 +44,18 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     storageKeyRef.current = deriveStorageKey(sig)
     await ensureOlm()
     accountRef.current = await loadOrCreateAccount(storageKeyRef.current)
+    setUnlocked(true)
     setState({ kind: 'no_session' })
   }, [signMessageAsync])
 
-  // Try existing session for this peer once unlocked.
+  // Load (or report missing) session for the current peer. Re-runs when:
+  //   - dmKey changes (chat switch — must drop the previous chat's session
+  //     before attempting load, otherwise switching to an un-handshaken chat
+  //     would still hold the prior peer's session in sessionRef)
+  //   - unlocked flips true (the user just signed; prior runs early-returned)
   useEffect(() => {
-    if (!dmKey || !storageKeyRef.current) return
+    sessionRef.current = null
+    if (!dmKey || !unlocked || !storageKeyRef.current) return
     let cancelled = false
     ;(async () => {
       try {
@@ -66,7 +75,7 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     return () => {
       cancelled = true
     }
-  }, [dmKey])
+  }, [dmKey, unlocked])
 
   const buildHandshakeBundle = useCallback((): string => {
     if (!accountRef.current || !storageKeyRef.current) throw new Error('Account not loaded')

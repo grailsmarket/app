@@ -40,6 +40,16 @@ class PlaintextCache {
     if (this.map.delete(id)) this.notify()
   }
 
+  // Drop all cached plaintexts. Used when the authed user changes (sign-out
+  // or wallet switch on the same device) so the next signed-in user can't
+  // read leftover plaintext from memory.
+  clear() {
+    if (this.map.size === 0 && this.inflight.size === 0) return
+    this.map.clear()
+    this.inflight.clear()
+    this.notify()
+  }
+
   subscribe(l: () => void): () => void {
     this.listeners.add(l)
     return () => {

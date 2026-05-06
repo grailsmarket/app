@@ -115,14 +115,36 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     return bundle
   }, [])
 
+  // Maximum devices tracked per chat. Each known device costs one ciphertext
+  // per send (fanout grows linearly), so the cap bounds wire size and memory.
+  // 16 is well above any realistic 1:1 DM (typically 1-2 devices per side)
+  // while preventing a malicious peer from inflating the roster indefinitely.
+  const ROSTER_MAX = 16
+
   // Add a roster entry (or refresh it). Returns true if the entry is new.
+  // FIFO-evicts the oldest entry once ROSTER_MAX is reached.
   const upsertRoster = useCallback(
     async (entry: RosterEntry) => {
       if (!storageKeyRef.current || !dmKey) return false
       const existing = rosterRef.current.findIndex((e) => e.did === entry.did)
       let isNew = false
       if (existing === -1) {
-        rosterRef.current = [...rosterRef.current, entry]
+        let next = [...rosterRef.current, entry]
+        if (next.length > ROSTER_MAX) {
+          // Drop the oldest entries (front of array) and free their sessions
+          // so we don't keep encrypting to a roster we no longer track.
+          const drop = next.length - ROSTER_MAX
+          for (let i = 0; i < drop; i++) {
+            const evicted = next[i]!
+            const session = sessionsRef.current.get(evicted.did)
+            if (session) {
+              session.free()
+              sessionsRef.current.delete(evicted.did)
+            }
+          }
+          next = next.slice(drop)
+        }
+        rosterRef.current = next
         isNew = true
       } else {
         const next = [...rosterRef.current]

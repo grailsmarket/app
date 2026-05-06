@@ -54,6 +54,17 @@ export const useChatSocket = () => {
   const typingTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const intentionalCloseRef = useRef(false)
 
+  // Clear E2E in-memory state whenever the authed wallet changes. The Olm
+  // accounts are stored encrypted under the previous wallet's key derivation,
+  // so leaving plaintext or sessions around for the new user would be a
+  // memory-resident leak across user switches on the same device.
+  useEffect(() => {
+    return () => {
+      plaintextCache.clear()
+      sessionRegistry.clearAll()
+    }
+  }, [userAddress])
+
   useEffect(() => {
     if (!userAddress || authStatus !== 'authenticated') return
 

@@ -47,6 +47,15 @@ class SessionRegistry {
   private notify() {
     this.listeners.forEach((l) => l())
   }
+
+  // Drop all registered sessions. Used on auth change so a different user
+  // signing in on the same device doesn't inherit access to encrypt/decrypt
+  // through stale APIs left behind by the previous user's banner mount.
+  clearAll() {
+    if (this.map.size === 0) return
+    this.map.clear()
+    this.notify()
+  }
 }
 
 export const sessionRegistry = new SessionRegistry()

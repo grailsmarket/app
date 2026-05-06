@@ -17,7 +17,6 @@ import type {
 } from '@/types/chat'
 import {
   tryDecode,
-  isMsgEnvelope,
   isFanoutEnvelope,
   isHandshakeEnvelope,
   isCiphertextEnvelope,
@@ -101,19 +100,17 @@ export const useChatSocket = () => {
           const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
           const env = tryDecode(message.body)
 
-          // Inbound E2E (msg or fanout). Skip self-echoes — the sender's
-          // plaintext is already seeded in plaintextCache by useSendMessage,
-          // and our own fanouts include no entry for ourselves. We use the
-          // single-owner plaintextCache.decrypt to share the in-flight
-          // decryption Promise with useDecryptedBody (Olm decrypt is stateful
-          // and cannot be invoked twice on the same ciphertext).
+          // Inbound E2E fanout. Skip self-echoes — the sender's plaintext is
+          // already seeded in plaintextCache by useSendMessage, and fanouts
+          // never include an entry for the sender. The single-owner
+          // plaintextCache.decrypt shares the in-flight decryption Promise
+          // with useDecryptedBody (Olm decrypt is stateful and cannot be
+          // invoked twice on the same ciphertext).
           if (env && isCiphertextEnvelope(env)) {
             const session = sessionRegistry.get(chat_id)
             if (session) {
               const ownDid = session.ownDid()
-              const isOwnSend = isFanoutEnvelope(env)
-                ? !!ownDid && env.sender_did === ownDid
-                : senderIsMe
+              const isOwnSend = !!ownDid && env.sender_did === ownDid
               if (!isOwnSend) {
                 void plaintextCache
                   .decrypt(message.id, () => session.decrypt(env))
@@ -149,8 +146,7 @@ export const useChatSocket = () => {
             if (exists) return old
 
             if (senderIsMe) {
-              const envMid =
-                env && (isMsgEnvelope(env) || isFanoutEnvelope(env)) ? env.mid : undefined
+              const envMid = env && isFanoutEnvelope(env) ? env.mid : undefined
               const matchOptimistic = (m: ChatMessage): boolean => {
                 if (!m.id.startsWith('optimistic-') || m.deleted_at) return false
                 if (envMid) return m.id === envMid

@@ -20,13 +20,9 @@ import {
   decryptFromPeer,
   createOutboundSession,
   createInboundSessionFromPrekey,
-  encodeMsg,
   encodeFanout,
-  encryptForPeer,
-  isMsgEnvelope,
   isFanoutEnvelope,
   findOwnCiphertext,
-  type E2EMsgEnvelope,
   type E2EFanoutEnvelope,
   type E2EFanoutCiphertext,
 } from '@/lib/e2e/wire'
@@ -167,9 +163,8 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     [dmKey, upsertRoster]
   )
 
-  // Encrypt for every known device on either side (excluding self). If the
-  // roster has only one peer device known, falls back to the simpler
-  // legacy `kind: 'msg'` envelope (smaller, and matches single-device flow).
+  // Encrypt for every known device on either side (excluding self). Always
+  // emits fanout so receivers can route by `sender_did`.
   const encrypt = useCallback(
     (plaintext: string, mid?: string): string => {
       if (!storageKeyRef.current || !dmKey || !ownDidRef.current) {
@@ -182,20 +177,10 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
       }
       if (targets.length === 0) throw new Error('No active sessions')
 
-      // Single peer device: use legacy `msg` envelope (1 ct, smaller wire size).
-      if (targets.length === 1) {
-        const t = targets[0]!
-        const env = encryptForPeer(t.session, plaintext, mid)
-        persistSession(dmKey, t.did, t.session, storageKeyRef.current).catch(console.error)
-        return encodeMsg(env)
-      }
-
-      // Multi-device: emit fanout.
       const cts: E2EFanoutCiphertext[] = targets.map((t) => {
         const r = t.session.encrypt(plaintext)
         return { did: t.did, type: r.type as 0 | 1, ct: r.body }
       })
-      // Persist every advanced session.
       for (const t of targets) {
         persistSession(dmKey, t.did, t.session, storageKeyRef.current).catch(console.error)
       }
@@ -212,40 +197,34 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
   )
 
   const decryptCt = useCallback(
-    async (senderDid: string | null, ct: string, type: 0 | 1): Promise<string> => {
+    async (senderDid: string, ct: string, type: 0 | 1): Promise<string> => {
       if (!accountRef.current || !storageKeyRef.current || !dmKey) {
         throw new Error('Not unlocked')
       }
       // If we already have a session for this sender, the common case is to
-      // reuse it. But when both sides eagerly created `outbound` sessions
+      // reuse it. But when both sides eagerly created outbound sessions
       // (each consuming the other's bundle), neither outbound matches the
-      // other's pre-key. Olm's matches_inbound tells us whether the existing
-      // session can decrypt this pre-key; if not, we discard it and create
-      // a fresh inbound session from the pre-key. The previous outbound is
-      // released — any messages we sent through it are orphaned, but Olm's
-      // bidirectional ratchet means the new inbound carries forward correctly.
-      let existing = senderDid ? sessionsRef.current.get(senderDid) : undefined
+      // other's pre-key. matches_inbound tells us whether the existing
+      // session can decrypt this pre-key; if not, discard and create a fresh
+      // inbound. The old outbound is released — any messages we sent through
+      // it are orphaned, but Olm's bidirectional ratchet means the new
+      // inbound carries forward correctly.
+      let existing = sessionsRef.current.get(senderDid)
       if (existing && type === 0 && !existing.matches_inbound(ct)) {
         existing.free()
-        if (senderDid) sessionsRef.current.delete(senderDid)
+        sessionsRef.current.delete(senderDid)
         existing = undefined
       }
       if (existing) {
         const out = decryptFromPeer(existing, ct, type)
-        if (senderDid) await persistSession(dmKey, senderDid, existing, storageKeyRef.current)
+        await persistSession(dmKey, senderDid, existing, storageKeyRef.current)
         return out
       }
-      // First contact (or session was just discarded): pre-key message
-      // creates a new inbound session.
       if (type !== 0) throw new Error('No session and not a pre-key message')
       const { session, plaintext } = await createInboundSessionFromPrekey(accountRef.current, ct)
-      // For fanout, senderDid is known; key the new session by it. For legacy
-      // msg without senderDid we fall back to the session id so we don't
-      // collide with future fanout-keyed sessions.
-      const keyedDid = senderDid ?? session.session_id()
-      sessionsRef.current.set(keyedDid, session)
+      sessionsRef.current.set(senderDid, session)
       await persistAccount(accountRef.current, storageKeyRef.current)
-      await persistSession(dmKey, keyedDid, session, storageKeyRef.current)
+      await persistSession(dmKey, senderDid, session, storageKeyRef.current)
       setState({ kind: 'ready' })
       return plaintext
     },
@@ -253,21 +232,12 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
   )
 
   const decrypt = useCallback(
-    async (env: E2EMsgEnvelope | E2EFanoutEnvelope): Promise<string> => {
+    async (env: E2EFanoutEnvelope): Promise<string> => {
       if (!ownDidRef.current) throw new Error('Account not loaded')
-      if (isMsgEnvelope(env)) {
-        // Legacy: try our only known session if there's exactly one; otherwise
-        // attempt pre-key path (sender_did unknown).
-        const sessions = Array.from(sessionsRef.current.entries())
-        const onlyDid = sessions.length === 1 ? sessions[0]![0] : null
-        return decryptCt(onlyDid, env.ct, env.type)
-      }
-      if (isFanoutEnvelope(env)) {
-        const own = findOwnCiphertext(env, ownDidRef.current)
-        if (!own) throw new Error('Fanout has no entry for this device')
-        return decryptCt(env.sender_did, own.ct, own.type)
-      }
-      throw new Error('Unsupported envelope kind')
+      if (!isFanoutEnvelope(env)) throw new Error('Unsupported envelope kind')
+      const own = findOwnCiphertext(env, ownDidRef.current)
+      if (!own) throw new Error('Fanout has no entry for this device')
+      return decryptCt(env.sender_did, own.ct, own.type)
     },
     [decryptCt]
   )

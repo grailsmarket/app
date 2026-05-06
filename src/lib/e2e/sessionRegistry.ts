@@ -1,6 +1,6 @@
 'use client'
 
-import type { E2EMsgEnvelope, E2EFanoutEnvelope } from './wire'
+import type { E2EFanoutEnvelope } from './wire'
 
 // `useE2ESession` is owned by the E2EHandshakeBanner (one mount per chat).
 // All other consumers (useSendMessage, useDecryptedBody, the WS handler) reach
@@ -15,11 +15,11 @@ export interface SessionAPI {
   // matches) and skip decryption for those — the plaintext is already in
   // the cache from useSendMessage's mutationFn.
   ownDid(): string | null
-  // Returns the encoded body (msg or fanout envelope JSON) ready for POST.
+  // Returns the encoded fanout envelope JSON ready for POST.
   encrypt: (plaintext: string, mid?: string) => string
-  // Decrypt accepts the parsed envelope so it can route by sender_did
-  // (fanout) or fall back to the only-known-session heuristic (legacy msg).
-  decrypt: (env: E2EMsgEnvelope | E2EFanoutEnvelope) => Promise<string>
+  // Decrypt accepts the parsed fanout envelope; resolves with the plaintext
+  // for this device's `cts` entry.
+  decrypt: (env: E2EFanoutEnvelope) => Promise<string>
 }
 
 class SessionRegistry {

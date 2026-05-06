@@ -7,6 +7,7 @@
 import type Olm from '@matrix-org/olm'
 import { putEncrypted, getEncrypted } from './storage'
 import { bytesToBase64, utf8ToBytes, bytesToUtf8, base64ToBytes } from './encoding'
+import { deriveSubkey } from './identity'
 
 declare global {
   interface Window {
@@ -66,7 +67,10 @@ const sessionKey = (dmKey: string, did: string) => `session/${dmKey}/${did}`
 // observed in their handshake message).
 const rosterKey = (dmKey: string) => `roster/${dmKey}`
 
-const pickleKey = (storageKey: Uint8Array) => bytesToBase64(storageKey)
+// HKDF subkey for Olm pickle, distinct from the secretbox-at-rest key used
+// in storage.ts. Olm requires a string/Uint8Array input; we hand it the
+// base64 of the derived 32 bytes for stable formatting across pickle/unpickle.
+const pickleKey = (storageKey: Uint8Array) => bytesToBase64(deriveSubkey(storageKey, 'pickle'))
 
 export async function loadOrCreateAccount(storageKey: Uint8Array): Promise<Olm.Account> {
   await ensureOlm()

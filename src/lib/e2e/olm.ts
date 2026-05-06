@@ -12,7 +12,13 @@ export function ensureOlm(): Promise<void> {
 }
 
 const ACCOUNT_KEY = 'account'
-const sessionKey = (dmKey: string) => `session/${dmKey}`
+// Sessions are keyed by (dmKey, remote device id) — multi-device fanout means
+// one session per remote device per chat. The `did` is the peer's Olm
+// curve25519 identity key (stable per Olm Account).
+const sessionKey = (dmKey: string, did: string) => `session/${dmKey}/${did}`
+// Per-chat list of known peer + own-other devices (each carries the bundle we
+// observed in their handshake message).
+const rosterKey = (dmKey: string) => `roster/${dmKey}`
 
 const pickleKey = (storageKey: Uint8Array) => bytesToBase64(storageKey)
 
@@ -35,18 +41,44 @@ export async function persistAccount(account: Olm.Account, storageKey: Uint8Arra
   await putEncrypted(ACCOUNT_KEY, utf8ToBytes(pickled), storageKey)
 }
 
-export async function loadSession(dmKey: string, storageKey: Uint8Array): Promise<Olm.Session | null> {
+export async function loadSession(dmKey: string, did: string, storageKey: Uint8Array): Promise<Olm.Session | null> {
   await ensureOlm()
-  const pickled = await getEncrypted(sessionKey(dmKey), storageKey)
+  const pickled = await getEncrypted(sessionKey(dmKey, did), storageKey)
   if (!pickled) return null
   const session = new Olm.Session()
   session.unpickle(pickleKey(storageKey), bytesToUtf8(pickled))
   return session
 }
 
-export async function persistSession(dmKey: string, session: Olm.Session, storageKey: Uint8Array) {
+export async function persistSession(
+  dmKey: string,
+  did: string,
+  session: Olm.Session,
+  storageKey: Uint8Array,
+) {
   const pickled = session.pickle(pickleKey(storageKey))
-  await putEncrypted(sessionKey(dmKey), utf8ToBytes(pickled), storageKey)
+  await putEncrypted(sessionKey(dmKey, did), utf8ToBytes(pickled), storageKey)
+}
+
+// Roster: per-chat list of {did, user_id, identity, signing} entries we've
+// observed via handshake messages. The `otk`/`otkId` we received are NOT
+// stored — Olm consumes them at create_outbound time, and a stale OTK is
+// useless. Outbound sessions are persisted independently per (dmKey, did).
+export type RosterEntry = {
+  did: string
+  user_id: number
+  identity: string
+  signing: string
+}
+
+export async function loadRoster(dmKey: string, storageKey: Uint8Array): Promise<RosterEntry[]> {
+  const blob = await getEncrypted(rosterKey(dmKey), storageKey)
+  if (!blob) return []
+  return JSON.parse(bytesToUtf8(blob)) as RosterEntry[]
+}
+
+export async function saveRoster(dmKey: string, roster: RosterEntry[], storageKey: Uint8Array) {
+  await putEncrypted(rosterKey(dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
 }
 
 export type PeerBundle = {

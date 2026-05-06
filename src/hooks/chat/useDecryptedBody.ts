@@ -1,7 +1,12 @@
 'use client'
 import { useEffect, useState } from 'react'
 import type { ChatMessage } from '@/types/chat'
-import { tryDecode, isMsgEnvelope, isHandshakeEnvelope, handshakeDisplay } from '@/lib/e2e/wire'
+import {
+  tryDecode,
+  isCiphertextEnvelope,
+  isHandshakeEnvelope,
+  handshakeDisplay,
+} from '@/lib/e2e/wire'
 import { plaintextCache } from '@/lib/e2e/plaintextCache'
 import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
 
@@ -34,7 +39,7 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
       setState({ body: handshakeDisplay(), status: 'handshake' })
       return
     }
-    if (!isMsgEnvelope(env)) return
+    if (!isCiphertextEnvelope(env)) return
 
     const cached = plaintextCache.get(message.id)
     if (cached !== undefined) {
@@ -51,7 +56,7 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
     let cancelled = false
     ;(async () => {
       try {
-        const plaintext = await session.decrypt(env.ct, env.type)
+        const plaintext = await session.decrypt(env)
         if (cancelled) return
         plaintextCache.set(message.id, plaintext)
         setState({ body: plaintext, status: 'decrypted' })

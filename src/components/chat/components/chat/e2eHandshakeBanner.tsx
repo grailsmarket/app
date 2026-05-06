@@ -20,9 +20,9 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
 
   useEffect(() => {
     if (!enabled) return
-    const off = handshakeBus.on(({ chatId: cid, bundle }) => {
+    const off = handshakeBus.on(({ chatId: cid, bundle, senderUserId }) => {
       if (cid !== chatId || !e2e.isUnlocked) return
-      e2e.consumePeerBundle(bundle).catch(console.error)
+      e2e.consumePeerBundle(bundle, senderUserId).catch(console.error)
     })
     return off
   }, [chatId, e2e, enabled])

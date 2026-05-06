@@ -1,5 +1,7 @@
 'use client'
 
+import type { E2EMsgEnvelope, E2EFanoutEnvelope } from './wire'
+
 // `useE2ESession` is owned by the E2EHandshakeBanner (one mount per chat).
 // All other consumers (useSendMessage, useDecryptedBody, the WS handler) reach
 // the live session through this module-level registry — instantiating the hook
@@ -8,8 +10,11 @@
 
 export interface SessionAPI {
   isReady(): boolean
+  // Returns the encoded body (msg or fanout envelope JSON) ready for POST.
   encrypt: (plaintext: string, mid?: string) => string
-  decrypt: (ciphertext: string, type: 0 | 1) => Promise<string>
+  // Decrypt accepts the parsed envelope so it can route by sender_did
+  // (fanout) or fall back to the only-known-session heuristic (legacy msg).
+  decrypt: (env: E2EMsgEnvelope | E2EFanoutEnvelope) => Promise<string>
 }
 
 class SessionRegistry {

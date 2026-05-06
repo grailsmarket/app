@@ -15,7 +15,13 @@ import type {
   ChatWSEvent,
   ChatWSOutgoing,
 } from '@/types/chat'
-import { tryDecode, isMsgEnvelope, isHandshakeEnvelope } from '@/lib/e2e/wire'
+import {
+  tryDecode,
+  isMsgEnvelope,
+  isFanoutEnvelope,
+  isHandshakeEnvelope,
+  isCiphertextEnvelope,
+} from '@/lib/e2e/wire'
 import { plaintextCache } from '@/lib/e2e/plaintextCache'
 import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
 import { handshakeBus } from '@/lib/e2e/handshakeBus'
@@ -95,22 +101,28 @@ export const useChatSocket = () => {
           const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
           const env = tryDecode(message.body)
 
-          // Inbound peer E2E: decrypt async, populate plaintextCache so
-          // MessageRow resolves via useDecryptedBody on the next render.
-          if (env && isMsgEnvelope(env) && !senderIsMe) {
+          // Inbound peer E2E (msg or fanout): decrypt async and populate
+          // plaintextCache so MessageRow resolves via useDecryptedBody on
+          // the next render. Fanout from our own other devices reaches us
+          // here too — sender_address matches but the cts array contains an
+          // entry keyed to this device's did, which the session API decrypts.
+          if (env && isCiphertextEnvelope(env)) {
             const session = sessionRegistry.get(chat_id)
             if (session) {
               void session
-                .decrypt(env.ct, env.type)
+                .decrypt(env)
                 .then((plaintext) => plaintextCache.set(message.id, plaintext))
                 .catch((err) => console.warn('[chat ws] e2e decrypt failed', err))
             }
           }
 
-          // Handshake bundle from peer: surface to banner. Skip self-echo —
-          // consuming our own bundle would create a session pointing at our
-          // own keys, breaking subsequent encryption.
-          if (env && isHandshakeEnvelope(env) && !senderIsMe) {
+          // Handshake bundle: emit to bus so the banner consumes it.
+          // We previously skipped self-echo; with multi-device, our OTHER
+          // devices' handshakes also have senderIsMe=true (same wallet,
+          // different did) and we DO want to consume those for self-fanout.
+          // The consumer (consumePeerBundle) filters by ownDid so true
+          // self-echoes are ignored without missing sibling-device bundles.
+          if (env && isHandshakeEnvelope(env)) {
             handshakeBus.emit({
               chatId: chat_id,
               bundle: env.bundle,
@@ -131,9 +143,11 @@ export const useChatSocket = () => {
             if (exists) return old
 
             if (senderIsMe) {
+              const envMid =
+                env && (isMsgEnvelope(env) || isFanoutEnvelope(env)) ? env.mid : undefined
               const matchOptimistic = (m: ChatMessage): boolean => {
                 if (!m.id.startsWith('optimistic-') || m.deleted_at) return false
-                if (env && isMsgEnvelope(env) && env.mid) return m.id === env.mid
+                if (envMid) return m.id === envMid
                 return m.body === message.body
               }
               let replaced = false

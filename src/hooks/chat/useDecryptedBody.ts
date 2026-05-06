@@ -28,6 +28,15 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
   const [registryTick, setRegistryTick] = useState(0)
   useEffect(() => sessionRegistry.subscribe(() => setRegistryTick((t) => t + 1)), [])
 
+  // Bumped whenever plaintextCache mutates. Covers two cases:
+  //   - Own-sent rows: the WS echo replaces the optimistic placeholder
+  //     before mutationFn finishes seeding plaintextCache; we re-run when
+  //     the cache later receives the canonical id.
+  //   - Late peer decrypts: the WS handler eventually populates the cache
+  //     for a row that initially mounted as `locked` (no session yet).
+  const [cacheTick, setCacheTick] = useState(0)
+  useEffect(() => plaintextCache.subscribe(() => setCacheTick((t) => t + 1)), [])
+
   useEffect(() => {
     if (!message.body) return
     const env = tryDecode(message.body)
@@ -56,9 +65,12 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
     let cancelled = false
     ;(async () => {
       try {
-        const plaintext = await session.decrypt(env)
+        // Single-owner decrypt: if the WS handler already started decrypting
+        // this message, awaiting the same in-flight Promise resolves us with
+        // the same plaintext. Olm decrypt is not idempotent, so this is the
+        // only safe way to dual-source decryption.
+        const plaintext = await plaintextCache.decrypt(message.id, () => session.decrypt(env))
         if (cancelled) return
-        plaintextCache.set(message.id, plaintext)
         setState({ body: plaintext, status: 'decrypted' })
       } catch {
         if (cancelled) return
@@ -68,7 +80,7 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
     return () => {
       cancelled = true
     }
-  }, [message.id, message.body, message.chat_id, registryTick])
+  }, [message.id, message.body, message.chat_id, registryTick, cacheTick])
 
   return state
 }

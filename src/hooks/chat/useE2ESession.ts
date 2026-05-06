@@ -275,7 +275,12 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
   useEffect(() => {
     if (!chatId || state.kind === 'locked') return
     const ready = state.kind === 'ready'
-    const api: SessionAPI = { isReady: () => ready, encrypt, decrypt }
+    const api: SessionAPI = {
+      isReady: () => ready,
+      ownDid: () => ownDidRef.current,
+      encrypt,
+      decrypt,
+    }
     sessionRegistry.register(chatId, api)
     return () => {
       sessionRegistry.unregister(chatId)

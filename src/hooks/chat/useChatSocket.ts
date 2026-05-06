@@ -101,18 +101,24 @@ export const useChatSocket = () => {
           const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
           const env = tryDecode(message.body)
 
-          // Inbound peer E2E (msg or fanout): decrypt async and populate
-          // plaintextCache so MessageRow resolves via useDecryptedBody on
-          // the next render. Fanout from our own other devices reaches us
-          // here too — sender_address matches but the cts array contains an
-          // entry keyed to this device's did, which the session API decrypts.
+          // Inbound E2E (msg or fanout). Skip self-echoes — the sender's
+          // plaintext is already seeded in plaintextCache by useSendMessage,
+          // and our own fanouts include no entry for ourselves. We use the
+          // single-owner plaintextCache.decrypt to share the in-flight
+          // decryption Promise with useDecryptedBody (Olm decrypt is stateful
+          // and cannot be invoked twice on the same ciphertext).
           if (env && isCiphertextEnvelope(env)) {
             const session = sessionRegistry.get(chat_id)
             if (session) {
-              void session
-                .decrypt(env)
-                .then((plaintext) => plaintextCache.set(message.id, plaintext))
-                .catch((err) => console.warn('[chat ws] e2e decrypt failed', err))
+              const ownDid = session.ownDid()
+              const isOwnSend = isFanoutEnvelope(env)
+                ? !!ownDid && env.sender_did === ownDid
+                : senderIsMe
+              if (!isOwnSend) {
+                void plaintextCache
+                  .decrypt(message.id, () => session.decrypt(env))
+                  .catch((err) => console.warn('[chat ws] e2e decrypt failed', err))
+              }
             }
           }
 

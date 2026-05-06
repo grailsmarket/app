@@ -10,6 +10,11 @@ import type { E2EMsgEnvelope, E2EFanoutEnvelope } from './wire'
 
 export interface SessionAPI {
   isReady(): boolean
+  // This device's Olm identity (curve25519 public key). Used by the WS
+  // handler to detect own-device echoes of fanout envelopes (sender_did
+  // matches) and skip decryption for those — the plaintext is already in
+  // the cache from useSendMessage's mutationFn.
+  ownDid(): string | null
   // Returns the encoded body (msg or fanout envelope JSON) ready for POST.
   encrypt: (plaintext: string, mid?: string) => string
   // Decrypt accepts the parsed envelope so it can route by sender_did

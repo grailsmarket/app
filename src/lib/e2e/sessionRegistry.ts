@@ -14,14 +14,28 @@ export interface SessionAPI {
 
 class SessionRegistry {
   private map = new Map<string, SessionAPI>()
+  private listeners = new Set<() => void>()
   register(chatId: string, api: SessionAPI) {
     this.map.set(chatId, api)
+    this.notify()
   }
   unregister(chatId: string) {
     this.map.delete(chatId)
+    this.notify()
   }
   get(chatId: string): SessionAPI | undefined {
     return this.map.get(chatId)
+  }
+  // Re-render trigger for `useDecryptedBody`: when the banner unlocks and
+  // registers a session, locked rows mounted before unlock must retry.
+  subscribe(l: () => void): () => void {
+    this.listeners.add(l)
+    return () => {
+      this.listeners.delete(l)
+    }
+  }
+  private notify() {
+    this.listeners.forEach((l) => l())
   }
 }
 

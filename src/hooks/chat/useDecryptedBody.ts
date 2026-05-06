@@ -18,6 +18,11 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
     return { body: null, status: 'decrypting' }
   })
 
+  // Bumped whenever sessionRegistry mutates so locked rows retry after the
+  // banner unlocks/establishes a session in a sibling component.
+  const [registryTick, setRegistryTick] = useState(0)
+  useEffect(() => sessionRegistry.subscribe(() => setRegistryTick((t) => t + 1)), [])
+
   useEffect(() => {
     if (!message.body) return
     const env = tryDecode(message.body)
@@ -58,7 +63,7 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
     return () => {
       cancelled = true
     }
-  }, [message.id, message.body, message.chat_id])
+  }, [message.id, message.body, message.chat_id, registryTick])
 
   return state
 }

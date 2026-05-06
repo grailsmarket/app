@@ -10,11 +10,12 @@ import ArrowBack from 'public/icons/arrow-back.svg'
 interface Props {
   chatId: string
   disabled?: boolean
+  disabledReason?: string | null
 }
 
 const MAX_LEN = 4000
 
-const Composer: React.FC<Props> = ({ chatId, disabled }) => {
+const Composer: React.FC<Props> = ({ chatId, disabled, disabledReason }) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
   // When the server returns 403 BLOCKED on send, the caller is being blocked
@@ -73,6 +74,9 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
   return (
     <div className='border-tertiary border-t-2 p-3'>
       {error && <p className='text-md mb-2 text-red-400'>{error}</p>}
+      {!error && disabled && disabledReason && (
+        <p className='text-neutral text-md mb-2'>{disabledReason}</p>
+      )}
       <div className='bg-secondary border-tertiary flex items-end gap-2 rounded-md border p-2'>
         <textarea
           ref={ref}

@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
@@ -20,6 +21,7 @@ import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
 import E2EHandshakeBanner from './e2eHandshakeBanner'
+import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
@@ -30,6 +32,14 @@ const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
   const { activeChatId } = useAppSelector(selectChatSidebar)
   const { userAddress } = useUserContext()
+  const search = useSearchParams()
+  const e2eEnabled = search?.get('e2e') === '1'
+
+  // Subscribe to sessionRegistry so the composer disables/enables in real
+  // time as the banner moves the chat through `unlocked → no_session → ready`.
+  const [, forceTick] = useState(0)
+  useEffect(() => sessionRegistry.subscribe(() => forceTick((t) => t + 1)), [])
+  const e2eReady = !!(activeChatId && sessionRegistry.get(activeChatId)?.isReady())
 
   const { data: chat, isLoading: chatLoading } = useChat(activeChatId)
   const {
@@ -255,7 +265,17 @@ const ThreadView: React.FC = () => {
             </button>
           </div>
         ) : (
-          <Composer chatId={activeChatId} />
+          // When the user has opted into E2E (`?e2e=1`) but no session is
+          // ready yet, refuse to send: useSendMessage's plaintext fallback
+          // would silently leak the message in the clear, which contradicts
+          // what the visible banner is telling the user.
+          <Composer
+            chatId={activeChatId}
+            disabled={e2eEnabled && !e2eReady}
+            disabledReason={
+              e2eEnabled && !e2eReady ? 'Setting up encryption with this peer — sending paused.' : null
+            }
+          />
         ))}
     </>
   )

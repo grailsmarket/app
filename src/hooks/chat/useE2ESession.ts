@@ -215,24 +215,32 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
       if (!accountRef.current || !storageKeyRef.current || !dmKey) {
         throw new Error('Not unlocked')
       }
-      // Known sender: use the existing pairwise session and advance ratchet.
-      if (senderDid && sessionsRef.current.has(senderDid)) {
-        const session = sessionsRef.current.get(senderDid)!
-        const out = decryptFromPeer(session, ct, type)
-        await persistSession(dmKey, senderDid, session, storageKeyRef.current)
+      // If we already have a session for this sender, the common case is to
+      // reuse it. But when both sides eagerly created `outbound` sessions
+      // (each consuming the other's bundle), neither outbound matches the
+      // other's pre-key. Olm's matches_inbound tells us whether the existing
+      // session can decrypt this pre-key; if not, we discard it and create
+      // a fresh inbound session from the pre-key. The previous outbound is
+      // released — any messages we sent through it are orphaned, but Olm's
+      // bidirectional ratchet means the new inbound carries forward correctly.
+      let existing = senderDid ? sessionsRef.current.get(senderDid) : undefined
+      if (existing && type === 0 && !existing.matches_inbound(ct)) {
+        existing.free()
+        if (senderDid) sessionsRef.current.delete(senderDid)
+        existing = undefined
+      }
+      if (existing) {
+        const out = decryptFromPeer(existing, ct, type)
+        if (senderDid) await persistSession(dmKey, senderDid, existing, storageKeyRef.current)
         return out
       }
-      // First contact: pre-key message creates a new inbound session that we
-      // associate with the sender's did (which Olm derives internally; we
-      // re-derive from the freshly-created session's session_id mapping by
-      // requiring the caller to pass senderDid for fanout). For legacy `msg`
-      // envelopes without senderDid, we still create the inbound session but
-      // can only key it by senderDid if the caller supplies one.
+      // First contact (or session was just discarded): pre-key message
+      // creates a new inbound session.
       if (type !== 0) throw new Error('No session and not a pre-key message')
       const { session, plaintext } = await createInboundSessionFromPrekey(accountRef.current, ct)
       // For fanout, senderDid is known; key the new session by it. For legacy
-      // msg without senderDid we lose multi-device routing for this peer
-      // until they handshake — acceptable for a transitional case.
+      // msg without senderDid we fall back to the session id so we don't
+      // collide with future fanout-keyed sessions.
       const keyedDid = senderDid ?? session.session_id()
       sessionsRef.current.set(keyedDid, session)
       await persistAccount(accountRef.current, storageKeyRef.current)

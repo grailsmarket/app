@@ -134,21 +134,22 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
   )
 
   // Consume a peer (or own-other-device) bundle: parse, create outbound
-  // session, persist, and add to the roster. Idempotent on did.
+  // session, persist, and add to the roster. Idempotent on did. Returns
+  // whether the bundle introduced a previously-unknown device — callers use
+  // this to decide whether to auto-republish their own handshake (so the new
+  // device can derive an inbound session to us from a pre-key fanout).
   const consumePeerBundle = useCallback(
-    async (encoded: string, senderUserId: number) => {
+    async (encoded: string, senderUserId: number): Promise<{ isNew: boolean }> => {
       if (!accountRef.current || !storageKeyRef.current || !dmKey) {
         throw new Error('Not unlocked')
       }
       const peer = parseBundle(encoded)
       if (peer.identity === ownDidRef.current) {
         // Self-bundle echo — never consume our own keys.
-        return
+        return { isNew: false }
       }
-      // Avoid creating a redundant outbound session if we already have one
-      // (every fresh handshake from the peer would otherwise consume one of
-      // our OTKs needlessly).
-      if (!sessionsRef.current.has(peer.identity)) {
+      const isNew = !sessionsRef.current.has(peer.identity)
+      if (isNew) {
         const session = await createOutboundSession(accountRef.current, peer)
         sessionsRef.current.set(peer.identity, session)
         await persistSession(dmKey, peer.identity, session, storageKeyRef.current)
@@ -160,6 +161,7 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
         signing: peer.signing,
       })
       setState({ kind: 'ready' })
+      return { isNew }
     },
     [dmKey, upsertRoster]
   )

@@ -20,9 +20,24 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
 
   useEffect(() => {
     if (!enabled) return
-    const off = handshakeBus.on(({ chatId: cid, bundle, senderUserId }) => {
+    const off = handshakeBus.on(async ({ chatId: cid, bundle, senderUserId }) => {
       if (cid !== chatId || !e2e.isUnlocked) return
-      e2e.consumePeerBundle(bundle, senderUserId).catch(console.error)
+      try {
+        const { isNew } = await e2e.consumePeerBundle(bundle, senderUserId)
+        // When a new device shows up, auto-publish our own handshake so the
+        // new device can derive an inbound session to us from the pre-key in
+        // the next fanout we send. This is the client-only equivalent of
+        // Sesame's roster-validated send.
+        if (isNew) {
+          const myBundle = e2e.buildHandshakeBundle()
+          await sendMessage({
+            chatId,
+            body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
+          })
+        }
+      } catch (e) {
+        console.error(e)
+      }
     })
     return off
   }, [chatId, e2e, enabled])

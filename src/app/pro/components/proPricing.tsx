@@ -223,7 +223,7 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
 
               <div className={cn('mb-5 rounded-lg p-4 text-center', tier.headerBg)}>
                 <h3 className={cn('font-sedan-sc text-4xl', tier.color)}>{tier.name}</h3>
-                <p className='text-neutral mt-1 text-sm font-medium'>{tier.tagline}</p>
+                <p className='text-neutral mt-1 text-lg font-medium'>{tier.tagline}</p>
               </div>
 
               <div className='mb-6 text-center'>
@@ -239,14 +239,14 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
                       <span className={cn('text-5xl font-bold', tier.color)}>
                         ${getMonthlyEquivalent(tier.monthlyPrice)}
                       </span>
-                      <span className='text-neutral mb-1.5 text-base font-medium'>/mo</span>
+                      <span className='text-neutral mb-1.5 text-2xl font-medium'>/mo</span>
                     </div>
                     {isYearly && (
                       <div className='mt-1.5'>
-                        <span className='text-neutral text-md line-through'>
+                        <span className='text-neutral text-lg line-through'>
                           {formatPrice(tier.monthlyPrice * 12)}
                         </span>
-                        <span className='text-md ml-2 font-semibold text-green-400'>
+                        <span className='text-lg ml-2 font-semibold text-green-400'>
                           {formatPrice(Number(getPrice(tier.monthlyPrice)))}/year
                         </span>
                       </div>
@@ -284,9 +284,9 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
                 </button>
               )}
 
-              <ul className='mt-6 flex flex-col gap-2.5'>
+              <ul className='mt-6 flex flex-col gap-3'>
                 {tier.features.map((feature) => (
-                  <li key={feature} className='flex items-start gap-2.5 text-sm font-medium'>
+                  <li key={feature} className='flex items-center gap-2.5 text-lg font-medium'>
                     <div
                       className={cn(
                         'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',

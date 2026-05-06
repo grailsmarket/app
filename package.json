@@ -9,9 +9,6 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "e2e:test": "bun x playwright test",
-    "e2e:headed": "bun x playwright test --headed",
-    "e2e:debug": "bun x playwright test --debug",
     "checks": "bun run format && bun run lint && bun run typecheck",
     "postinstall": "node -e \"process.env.VERCEL_ENV === 'production' ? require('child_process').execSync('node scripts/postinstall.mjs', {stdio: 'inherit'}) : console.log('Skipping postinstall')\""
   },
@@ -26,7 +23,6 @@
     "@sparticuz/chromium": "^141.0.0",
     "@sparticuz/chromium-min": "^141.0.0",
     "@tanstack/react-query": "^5.90.2",
-    "@tanstack/react-virtual": "^3.13.24",
     "@types/d3": "^7.4.3",
     "@vercel/analytics": "^1.5.0",
     "@vercel/og": "^0.8.5",
@@ -52,7 +48,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

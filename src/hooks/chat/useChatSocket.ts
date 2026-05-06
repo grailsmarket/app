@@ -107,8 +107,10 @@ export const useChatSocket = () => {
             }
           }
 
-          // Handshake bundle from peer: surface to banner.
-          if (env && isHandshakeEnvelope(env)) {
+          // Handshake bundle from peer: surface to banner. Skip self-echo —
+          // consuming our own bundle would create a session pointing at our
+          // own keys, breaking subsequent encryption.
+          if (env && isHandshakeEnvelope(env) && !senderIsMe) {
             handshakeBus.emit({
               chatId: chat_id,
               bundle: env.bundle,

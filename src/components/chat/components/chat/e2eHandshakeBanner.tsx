@@ -1,9 +1,9 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { useChat } from '@/hooks/chat/useChat'
 import { useChatMessages } from '@/hooks/chat/useChatMessages'
 import { useE2ESession } from '@/hooks/chat/useE2ESession'
+import { useE2EEnabled } from '@/hooks/chat/useE2EEnabled'
 import { handshakeBus } from '@/lib/e2e/handshakeBus'
 import { sendMessage } from '@/api/chats/sendMessage'
 import { encodeHandshake, tryDecode, isHandshakeEnvelope } from '@/lib/e2e/wire'
@@ -13,8 +13,7 @@ interface Props {
 }
 
 const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
-  const search = useSearchParams()
-  const enabled = search?.get('e2e') === '1'
+  const enabled = useE2EEnabled()
 
   const { data: chat } = useChat(chatId)
   const { messages } = useChatMessages(chatId)

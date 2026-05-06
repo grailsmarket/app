@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
-import { useSearchParams } from 'next/navigation'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
@@ -22,6 +21,7 @@ import Composer from './composer'
 import TypingDots from './typingDots'
 import E2EHandshakeBanner from './e2eHandshakeBanner'
 import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
+import { useE2EEnabled } from '@/hooks/chat/useE2EEnabled'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
@@ -32,8 +32,7 @@ const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
   const { activeChatId } = useAppSelector(selectChatSidebar)
   const { userAddress } = useUserContext()
-  const search = useSearchParams()
-  const e2eEnabled = search?.get('e2e') === '1'
+  const e2eEnabled = useE2EEnabled()
 
   // Subscribe to sessionRegistry so the composer disables/enables in real
   // time as the banner moves the chat through `unlocked → no_session → ready`.

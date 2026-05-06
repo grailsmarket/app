@@ -4,6 +4,7 @@ import { useChat } from '@/hooks/chat/useChat'
 import { useChatMessages } from '@/hooks/chat/useChatMessages'
 import { useE2ESession } from '@/hooks/chat/useE2ESession'
 import { useE2EEnabled } from '@/hooks/chat/useE2EEnabled'
+import { useUserContext } from '@/context/user'
 import { handshakeBus } from '@/lib/e2e/handshakeBus'
 import { sendMessage } from '@/api/chats/sendMessage'
 import { encodeHandshake, tryDecode, isHandshakeEnvelope } from '@/lib/e2e/wire'
@@ -14,10 +15,11 @@ interface Props {
 
 const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   const enabled = useE2EEnabled()
+  const { userAddress } = useUserContext()
 
   const { data: chat } = useChat(chatId)
   const { messages } = useChatMessages(chatId)
-  const e2e = useE2ESession(chatId, chat?.dm_key ?? null)
+  const e2e = useE2ESession(chatId, chat?.dm_key ?? null, userAddress?.toLowerCase() ?? null)
 
   // Guards against re-processing the same handshake row. Survives renders;
   // resets on banner unmount (the per-mount semantics are fine — the

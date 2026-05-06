@@ -58,25 +58,32 @@ function olmRuntime(): typeof Olm {
   return window.Olm
 }
 
-const ACCOUNT_KEY = 'account'
-// Sessions are keyed by (dmKey, remote device id) — multi-device fanout means
-// one session per remote device per chat. The `did` is the peer's Olm
-// curve25519 identity key (stable per Olm Account).
-const sessionKey = (dmKey: string, did: string) => `session/${dmKey}/${did}`
+// All storage keys are namespaced by the authed wallet address so two
+// different wallets used in the same browser can each maintain their own
+// Olm account, sessions, and rosters without secretbox-decrypt collisions.
+// Without this prefix, wallet B's `getEncrypted` against wallet A's blob
+// (encrypted with a different storage key) throws "wrong wallet?" and the
+// only recovery is manually clearing IndexedDB.
+const accountKey = (address: string) => `wallet/${address}/account`
+// Sessions are keyed by (address, dmKey, remote device id) — multi-device
+// fanout means one session per remote device per chat. The `did` is the
+// peer's Olm curve25519 identity key (stable per Olm Account).
+const sessionKey = (address: string, dmKey: string, did: string) =>
+  `wallet/${address}/session/${dmKey}/${did}`
 // Per-chat list of known peer + own-other devices (each carries the bundle we
 // observed in their handshake message).
-const rosterKey = (dmKey: string) => `roster/${dmKey}`
+const rosterKey = (address: string, dmKey: string) => `wallet/${address}/roster/${dmKey}`
 
 // HKDF subkey for Olm pickle, distinct from the secretbox-at-rest key used
 // in storage.ts. Olm requires a string/Uint8Array input; we hand it the
 // base64 of the derived 32 bytes for stable formatting across pickle/unpickle.
 const pickleKey = (storageKey: Uint8Array) => bytesToBase64(deriveSubkey(storageKey, 'pickle'))
 
-export async function loadOrCreateAccount(storageKey: Uint8Array): Promise<Olm.Account> {
+export async function loadOrCreateAccount(address: string, storageKey: Uint8Array): Promise<Olm.Account> {
   await ensureOlm()
   const Olm = olmRuntime()
   const account = new Olm.Account()
-  const pickled = await getEncrypted(ACCOUNT_KEY, storageKey)
+  const pickled = await getEncrypted(accountKey(address), storageKey)
   if (pickled) {
     account.unpickle(pickleKey(storageKey), bytesToUtf8(pickled))
     return account
@@ -89,18 +96,23 @@ export async function loadOrCreateAccount(storageKey: Uint8Array): Promise<Olm.A
   // exhaustion (Olm consumes OTKs after first use; fallback survives).
   account.generate_one_time_keys(50)
   account.generate_fallback_key()
-  await persistAccount(account, storageKey)
+  await persistAccount(address, account, storageKey)
   return account
 }
 
-export async function persistAccount(account: Olm.Account, storageKey: Uint8Array) {
+export async function persistAccount(address: string, account: Olm.Account, storageKey: Uint8Array) {
   const pickled = account.pickle(pickleKey(storageKey))
-  await putEncrypted(ACCOUNT_KEY, utf8ToBytes(pickled), storageKey)
+  await putEncrypted(accountKey(address), utf8ToBytes(pickled), storageKey)
 }
 
-export async function loadSession(dmKey: string, did: string, storageKey: Uint8Array): Promise<Olm.Session | null> {
+export async function loadSession(
+  address: string,
+  dmKey: string,
+  did: string,
+  storageKey: Uint8Array,
+): Promise<Olm.Session | null> {
   await ensureOlm()
-  const pickled = await getEncrypted(sessionKey(dmKey, did), storageKey)
+  const pickled = await getEncrypted(sessionKey(address, dmKey, did), storageKey)
   if (!pickled) return null
   const Olm = olmRuntime()
   const session = new Olm.Session()
@@ -109,13 +121,14 @@ export async function loadSession(dmKey: string, did: string, storageKey: Uint8A
 }
 
 export async function persistSession(
+  address: string,
   dmKey: string,
   did: string,
   session: Olm.Session,
   storageKey: Uint8Array,
 ) {
   const pickled = session.pickle(pickleKey(storageKey))
-  await putEncrypted(sessionKey(dmKey, did), utf8ToBytes(pickled), storageKey)
+  await putEncrypted(sessionKey(address, dmKey, did), utf8ToBytes(pickled), storageKey)
 }
 
 // Roster: per-chat list of {did, user_id, identity, signing} entries we've
@@ -129,14 +142,23 @@ export type RosterEntry = {
   signing: string
 }
 
-export async function loadRoster(dmKey: string, storageKey: Uint8Array): Promise<RosterEntry[]> {
-  const blob = await getEncrypted(rosterKey(dmKey), storageKey)
+export async function loadRoster(
+  address: string,
+  dmKey: string,
+  storageKey: Uint8Array,
+): Promise<RosterEntry[]> {
+  const blob = await getEncrypted(rosterKey(address, dmKey), storageKey)
   if (!blob) return []
   return JSON.parse(bytesToUtf8(blob)) as RosterEntry[]
 }
 
-export async function saveRoster(dmKey: string, roster: RosterEntry[], storageKey: Uint8Array) {
-  await putEncrypted(rosterKey(dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
+export async function saveRoster(
+  address: string,
+  dmKey: string,
+  roster: RosterEntry[],
+  storageKey: Uint8Array,
+) {
+  await putEncrypted(rosterKey(address, dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
 }
 
 // PeerBundle preferred shape: identity + signing + fallback_key. Older bundles

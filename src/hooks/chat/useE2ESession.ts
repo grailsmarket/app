@@ -35,10 +35,19 @@ type SessionState =
   | { kind: 'ready' }
   | { kind: 'error'; message: string }
 
-// Sesame-style multi-session lifecycle. One Olm Account per device; one Olm
-// Session per remote device; a per-chat roster of known devices. Senders
-// fan out to every entry in the roster other than themselves.
-export function useE2ESession(chatId: string | null, dmKey: string | null) {
+// Sesame-style multi-session lifecycle. One Olm Account per (device, wallet);
+// one Olm Session per remote device; a per-chat roster of known devices.
+// Senders fan out to every entry in the roster other than themselves.
+//
+// `userAddress` namespaces every IndexedDB key. Switching wallets in the same
+// browser does NOT inherit the previous wallet's account or sessions — they
+// live under different storage paths and the in-memory hook state is reset
+// via the wallet-change effect below.
+export function useE2ESession(
+  chatId: string | null,
+  dmKey: string | null,
+  userAddress: string | null,
+) {
   const { signMessageAsync } = useSignMessage()
   const [state, setState] = useState<SessionState>({ kind: 'locked' })
   const [unlocked, setUnlocked] = useState(false)
@@ -59,33 +68,64 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     ownDidRef.current = ids.curve25519
   }
 
+  // Wallet identity changed (or initial mount of the hook). Every cached Olm
+  // object was derived from the prior wallet's storage key and is unusable
+  // against the new wallet's namespace. Free and reset to the locked state
+  // so the user re-signs with the new wallet on next unlock attempt.
+  // MUST run before the dmKey-load effect below so a simultaneous wallet+chat
+  // switch resets first, then the load effect early-returns on `!unlocked`.
+  useEffect(() => {
+    for (const s of sessionsRef.current.values()) s.free()
+    sessionsRef.current = new Map()
+    accountRef.current?.free()
+    accountRef.current = null
+    storageKeyRef.current = null
+    ownDidRef.current = null
+    rosterRef.current = []
+    setUnlocked(false)
+    setState({ kind: 'locked' })
+  }, [userAddress])
+
   const unlock = useCallback(async () => {
     if (storageKeyRef.current) return
+    if (!userAddress) throw new Error('No authed wallet')
     const sig = await signMessageAsync({ message: HANDSHAKE_MSG })
     storageKeyRef.current = deriveStorageKey(sig)
     await ensureOlm()
-    accountRef.current = await loadOrCreateAccount(storageKeyRef.current)
+    accountRef.current = await loadOrCreateAccount(userAddress, storageKeyRef.current)
     refreshOwnDid()
     setUnlocked(true)
     setState({ kind: 'no_session' })
-  }, [signMessageAsync])
+  }, [signMessageAsync, userAddress])
 
   // Load roster + any stored sessions for this chat. Re-runs on chat switch
   // (clears stale state) and after unlock (the previous run early-returned).
+  // Sets state explicitly on every code path — leaving state untouched when
+  // dmKey becomes null would carry a previous chat's `ready` into a chat
+  // without a dm_key (e.g. group chats), causing useSendMessage to call
+  // encrypt() and throw because dmKey is missing.
   useEffect(() => {
+    for (const s of sessionsRef.current.values()) s.free()
     sessionsRef.current = new Map()
     rosterRef.current = []
-    if (!dmKey || !unlocked || !storageKeyRef.current) return
+    if (!unlocked || !storageKeyRef.current) {
+      setState({ kind: 'locked' })
+      return
+    }
+    if (!dmKey || !userAddress) {
+      setState({ kind: 'no_session' })
+      return
+    }
     let cancelled = false
     ;(async () => {
       try {
-        const roster = await loadRoster(dmKey, storageKeyRef.current!)
+        const roster = await loadRoster(userAddress, dmKey, storageKeyRef.current!)
         if (cancelled) return
         rosterRef.current = roster
         let anySessionLoaded = false
         for (const entry of roster) {
           if (entry.did === ownDidRef.current) continue
-          const s = await loadSession(dmKey, entry.did, storageKeyRef.current!)
+          const s = await loadSession(userAddress, dmKey, entry.did, storageKeyRef.current!)
           if (cancelled) return
           if (s) {
             sessionsRef.current.set(entry.did, s)
@@ -101,19 +141,21 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     return () => {
       cancelled = true
     }
-  }, [dmKey, unlocked])
+  }, [dmKey, unlocked, userAddress])
 
   const buildHandshakeBundle = useCallback(async (): Promise<string> => {
-    if (!accountRef.current || !storageKeyRef.current) throw new Error('Account not loaded')
+    if (!accountRef.current || !storageKeyRef.current || !userAddress) {
+      throw new Error('Account not loaded')
+    }
     const bundle = exportBundle(accountRef.current)
     // Must persist BEFORE returning. exportBundle calls
     // mark_keys_as_published() which mutates the in-memory account; if the
     // caller broadcasts the bundle and the page is closed before the persist
     // completes, the next session would reload the prior pickle and could
     // republish the same fallback key with a stale "unpublished" pool state.
-    await persistAccount(accountRef.current, storageKeyRef.current)
+    await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
     return bundle
-  }, [])
+  }, [userAddress])
 
   // Maximum devices tracked per chat. Each known device costs one ciphertext
   // per send (fanout grows linearly), so the cap bounds wire size and memory.
@@ -125,7 +167,7 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
   // FIFO-evicts the oldest entry once ROSTER_MAX is reached.
   const upsertRoster = useCallback(
     async (entry: RosterEntry) => {
-      if (!storageKeyRef.current || !dmKey) return false
+      if (!storageKeyRef.current || !dmKey || !userAddress) return false
       const existing = rosterRef.current.findIndex((e) => e.did === entry.did)
       let isNew = false
       if (existing === -1) {
@@ -151,10 +193,10 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
         next[existing] = entry
         rosterRef.current = next
       }
-      await saveRoster(dmKey, rosterRef.current, storageKeyRef.current)
+      await saveRoster(userAddress, dmKey, rosterRef.current, storageKeyRef.current)
       return isNew
     },
-    [dmKey]
+    [dmKey, userAddress]
   )
 
   // Consume a peer (or own-other-device) bundle: parse, create outbound
@@ -164,7 +206,7 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
   // device can derive an inbound session to us from a pre-key fanout).
   const consumePeerBundle = useCallback(
     async (encoded: string, senderUserId: number): Promise<{ isNew: boolean }> => {
-      if (!accountRef.current || !storageKeyRef.current || !dmKey) {
+      if (!accountRef.current || !storageKeyRef.current || !dmKey || !userAddress) {
         throw new Error('Not unlocked')
       }
       const peer = parseBundle(encoded)
@@ -176,7 +218,7 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
       if (isNew) {
         const session = await createOutboundSession(accountRef.current, peer)
         sessionsRef.current.set(peer.identity, session)
-        await persistSession(dmKey, peer.identity, session, storageKeyRef.current)
+        await persistSession(userAddress, dmKey, peer.identity, session, storageKeyRef.current)
       }
       await upsertRoster({
         did: peer.identity,
@@ -187,14 +229,14 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
       setState({ kind: 'ready' })
       return { isNew }
     },
-    [dmKey, upsertRoster]
+    [dmKey, upsertRoster, userAddress]
   )
 
   // Encrypt for every known device on either side (excluding self). Always
   // emits fanout so receivers can route by `sender_did`.
   const encrypt = useCallback(
     (plaintext: string, mid?: string): string => {
-      if (!storageKeyRef.current || !dmKey || !ownDidRef.current) {
+      if (!storageKeyRef.current || !dmKey || !ownDidRef.current || !userAddress) {
         throw new Error('Session not ready')
       }
       const targets: { did: string; session: Olm.Session }[] = []
@@ -209,7 +251,7 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
         return { did: t.did, type: r.type as 0 | 1, ct: r.body }
       })
       for (const t of targets) {
-        persistSession(dmKey, t.did, t.session, storageKeyRef.current).catch(console.error)
+        persistSession(userAddress, dmKey, t.did, t.session, storageKeyRef.current).catch(console.error)
       }
       const env: E2EFanoutEnvelope = {
         v: 1,
@@ -220,12 +262,12 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
       }
       return encodeFanout(env)
     },
-    [dmKey]
+    [dmKey, userAddress]
   )
 
   const decryptCt = useCallback(
     async (senderDid: string, ct: string, type: 0 | 1): Promise<string> => {
-      if (!accountRef.current || !storageKeyRef.current || !dmKey) {
+      if (!accountRef.current || !storageKeyRef.current || !dmKey || !userAddress) {
         throw new Error('Not unlocked')
       }
       // If we already have a session for this sender, the common case is to
@@ -244,18 +286,18 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
       }
       if (existing) {
         const out = decryptFromPeer(existing, ct, type)
-        await persistSession(dmKey, senderDid, existing, storageKeyRef.current)
+        await persistSession(userAddress, dmKey, senderDid, existing, storageKeyRef.current)
         return out
       }
       if (type !== 0) throw new Error('No session and not a pre-key message')
       const { session, plaintext } = await createInboundSessionFromPrekey(accountRef.current, ct)
       sessionsRef.current.set(senderDid, session)
-      await persistAccount(accountRef.current, storageKeyRef.current)
-      await persistSession(dmKey, senderDid, session, storageKeyRef.current)
+      await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
+      await persistSession(userAddress, dmKey, senderDid, session, storageKeyRef.current)
       setState({ kind: 'ready' })
       return plaintext
     },
-    [dmKey]
+    [dmKey, userAddress]
   )
 
   const decrypt = useCallback(

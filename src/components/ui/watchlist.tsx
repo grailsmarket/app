@@ -17,6 +17,7 @@ import { WatchlistSettingsType } from '@/api/watchlist/update'
 import PrimaryButton from './buttons/primary'
 import { useClickAway } from '@/hooks/useClickAway'
 import { ShortArrow } from 'ethereum-identity-kit'
+import { track } from '@/lib/analytics'
 
 interface WatchlistProps {
   domain: MarketplaceDomainType
@@ -95,7 +96,13 @@ const Watchlist: React.FC<WatchlistProps> = ({
               if (authStatus !== 'authenticated') {
                 if (!userAddress) openConnectModal?.()
                 else handleSignIn()
-              } else toggleWatchlist(domain)
+              } else {
+                track('watchlist_toggled', {
+                  name: domain.name,
+                  action: isWatching ? 'remove' : 'add',
+                })
+                toggleWatchlist(domain)
+              }
             }}
           >
             <Image

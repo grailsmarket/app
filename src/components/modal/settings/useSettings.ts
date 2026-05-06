@@ -15,6 +15,7 @@ import {
 } from '@/state/reducers/portfolio/profile'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
+import { track } from '@/lib/analytics'
 
 export const useSettings = () => {
   const dispatch = useAppDispatch()
@@ -68,6 +69,20 @@ export const useSettings = () => {
       dispatch(setNotifyOnOfferReceived(result.data.notifyOnOfferReceived))
       dispatch(setNotifyOnCommentReceived(result.data.notifyOnCommentReceived ?? true))
       queryClient.invalidateQueries({ queryKey: ['profile'] })
+      const fieldsChanged: string[] = []
+      if (emailAddress !== email.address) fieldsChanged.push('email')
+      if (discordUsername !== discord) fieldsChanged.push('discord')
+      if (telegramUsername !== telegram) fieldsChanged.push('telegram')
+      if (
+        (offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null) !==
+        offerNotificationThreshold
+      ) {
+        fieldsChanged.push('offer_notification_threshold')
+      }
+      if (notifyOnListingSoldValue !== notifyOnListingSold) fieldsChanged.push('notify_on_listing_sold')
+      if (notifyOnOfferReceivedValue !== notifyOnOfferReceived) fieldsChanged.push('notify_on_offer_received')
+      if (notifyOnCommentReceivedValue !== notifyOnCommentReceived) fieldsChanged.push('notify_on_comment_received')
+      track('settings_updated', { fields_changed: fieldsChanged })
     },
     onError: (error) => {
       console.error('Error updating user profile', error)

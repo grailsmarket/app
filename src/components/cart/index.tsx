@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import { useUserContext } from '@/context/user'
 import { Cross } from 'ethereum-identity-kit'
@@ -10,6 +10,7 @@ import SecondaryButton from '../ui/buttons/secondary'
 import Label from '../ui/label'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
+import { track } from '@/lib/analytics'
 
 const Cart = () => {
   const pathname = usePathname()
@@ -19,16 +20,27 @@ const Cart = () => {
   const { purchaseDomains, registerDomains, offerDomains, cartIsEmpty, clearCart } = useCartDomains()
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const wasCartOpen = useRef(false)
 
   useEffect(() => {
     if (isCartOpen) {
       setIsVisible(true)
       setTimeout(() => setIsAnimating(true), 10)
+      if (!wasCartOpen.current) {
+        track('cart_opened', {
+          cart_size: purchaseDomains.length + registerDomains.length + offerDomains.length,
+          purchase_count: purchaseDomains.length,
+          register_count: registerDomains.length,
+          offer_count: offerDomains.length,
+        })
+      }
+      wasCartOpen.current = true
     } else {
       setIsAnimating(false)
       setTimeout(() => setIsVisible(false), 300)
+      wasCartOpen.current = false
     }
-  }, [isCartOpen])
+  }, [isCartOpen, purchaseDomains.length, registerDomains.length, offerDomains.length])
 
   useEffect(() => {
     setIsCartOpen(false)

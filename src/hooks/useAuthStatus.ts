@@ -158,7 +158,6 @@ export const useAuth = () => {
 
     setUserDetails(user)
     queryClient.setQueryData(['auth', 'status', address], 'authenticated')
-    console.log('setting token', token)
     document.cookie = `token=${token}; path=/; max-age=${WEEK_IN_SECONDS}; SameSite=None; Secure`
 
     return

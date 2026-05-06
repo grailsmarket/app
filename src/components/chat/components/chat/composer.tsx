@@ -89,7 +89,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           maxLength={MAX_LEN}
           placeholder='Type a message…'
           className={cn(
-            'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-6 outline-none',
+            'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-7 outline-none',
             inputDisabled && 'cursor-not-allowed opacity-50'
           )}
         />

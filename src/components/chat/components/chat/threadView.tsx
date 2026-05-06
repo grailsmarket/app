@@ -67,7 +67,47 @@ const ThreadView: React.FC = () => {
     lastSeenCount.current = messages.length
   }, [messages.length])
 
-  // Mark-read: when the thread is open and there are messages, mark the newest as read.
+  // Adjust for the virtual keyboard along with keeping the latest message visible
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+    const vv = window.visualViewport
+    let previousHeight = vv.height
+    let pinning = false
+
+    const KEYBOARD_REVEAL_THRESHOLD = 80
+    const PIN_DURATION_MS = 350
+
+    const pinToBottom = () => {
+      if (pinning) return
+      pinning = true
+      const start = performance.now()
+      const tick = () => {
+        const el = scrollRef.current
+        if (el) el.scrollTop = el.scrollHeight
+        if (performance.now() - start < PIN_DURATION_MS) {
+          requestAnimationFrame(tick)
+        } else {
+          pinning = false
+        }
+      }
+      requestAnimationFrame(tick)
+    }
+
+    const onResize = () => {
+      const nextHeight = vv.height
+      if (nextHeight < previousHeight - KEYBOARD_REVEAL_THRESHOLD) {
+        pinToBottom()
+      }
+      previousHeight = nextHeight
+    }
+
+    vv.addEventListener('resize', onResize)
+    return () => {
+      vv.removeEventListener('resize', onResize)
+    }
+  }, [])
+
+  // when the thread is open and there are messages, mark the newest as read.
   useEffect(() => {
     if (!activeChatId || messages.length === 0) return
     const newest: ChatMessage | undefined = messages[messages.length - 1]
@@ -92,19 +132,19 @@ const ThreadView: React.FC = () => {
   const headerMenuItems: ContextMenuItem[] = peer
     ? isBlocked
       ? [
-          {
-            label: `Unblock ${peerLabel}`,
-            onClick: () => unblockMutation.mutate(peer.user_id),
-          },
-        ]
+        {
+          label: `Unblock ${peerLabel}`,
+          onClick: () => unblockMutation.mutate(peer.user_id),
+        },
+      ]
       : [
-          {
-            label: `Block ${peerLabel}`,
-            confirmLabel: `Confirm block ${peerLabel}`,
-            destructive: true,
-            onClick: () => blockMutation.mutate(peer.address),
-          },
-        ]
+        {
+          label: `Block ${peerLabel}`,
+          confirmLabel: `Confirm block ${peerLabel}`,
+          destructive: true,
+          onClick: () => blockMutation.mutate(peer.address),
+        },
+      ]
     : []
 
   return (

@@ -11,10 +11,6 @@ import ListView from './components/listView'
 const ChatSidebar: React.FC = () => {
   const dispatch = useAppDispatch()
   const { open, view } = useAppSelector(selectChatSidebar)
-  // Track the visual viewport so the panel shrinks (instead of being pushed
-  // off-screen) when the mobile keyboard opens. `100dvh` alone leaves the
-  // fixed panel anchored to the *layout* viewport, which iOS scrolls upward
-  // to reveal the focused input.
   const [viewport, setViewport] = useState<{ height: number; offsetTop: number } | null>(null)
 
   // Close on Escape
@@ -61,7 +57,7 @@ const ChatSidebar: React.FC = () => {
             transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
             style={viewport ? { height: `${viewport.height}px`, top: `${viewport.offsetTop}px` } : undefined}
-            className={`bg-background border-tertiary fixed right-0 z-[91] flex w-full flex-col border-l-2 transition-all duration-300 md:max-w-md ${viewport ? '' : 'top-0 h-dvh'}`}
+            className={`bg-background border-tertiary fixed right-0 z-[91] flex w-full flex-col border-l-2 transition-[height,top] duration-[250ms] ease-[cubic-bezier(0.32,0.72,0,1)] md:max-w-md ${viewport ? '' : 'top-0 h-dvh'}`}
             aria-label='Chat sidebar'
           >
             {view === 'list' && <ListView />}

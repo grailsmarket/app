@@ -20,6 +20,8 @@ const ProPageShell = () => {
     subscription.tierId > 0 &&
     (!subscription.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
 
+  const isPatron = isSubscriber && subscription.tierId === 4
+
   if (isSubscriber) {
     return (
       <>
@@ -27,9 +29,11 @@ const ProPageShell = () => {
 
         <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-20 px-4 pt-12 pb-8 sm:gap-28 sm:pt-16 sm:pb-12 md:gap-36 md:px-8 md:pt-20 md:pb-16'>
           <ProSubscriberFeatures userTierId={subscription.tierId} />
-          <div id='pricing'>
-            <ProPricing />
-          </div>
+          {!isPatron && (
+            <div id='pricing'>
+              <ProPricing userTierId={subscription.tierId} />
+            </div>
+          )}
           <ProComparisonTable />
           <ProFaq />
           <ProCta />

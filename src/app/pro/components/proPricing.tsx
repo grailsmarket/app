@@ -102,7 +102,11 @@ const cardVariants = {
   },
 }
 
-const ProPricing = () => {
+interface ProPricingProps {
+  userTierId?: number
+}
+
+const ProPricing = ({ userTierId }: ProPricingProps) => {
   const dispatch = useAppDispatch()
   const [billing, setBilling] = useState<BillingPeriod>('monthly')
   const isYearly = billing === 'yearly'
@@ -121,14 +125,18 @@ const ProPricing = () => {
     return monthly.toFixed(2)
   }
 
+  const isSubscriberView = userTierId != null && userTierId > 0
+
   return (
     <section className='flex w-full flex-col items-center gap-10 sm:gap-12'>
       <div className='flex max-w-3xl flex-col items-center gap-4 text-center'>
         <h2 className='font-sedan-sc text-4xl sm:text-5xl md:text-6xl'>
-          Simple, Transparent <span className='text-primary'>Pricing</span>
+          {isSubscriberView ? 'Your Plan & ' : ''}Simple, Transparent <span className='text-primary'>Pricing</span>
         </h2>
         <p className='text-neutral max-w-xl text-lg sm:text-xl'>
-          Choose the plan that fits your domaining strategy. Upgrade or cancel anytime.
+          {isSubscriberView
+            ? 'You are currently subscribed. Upgrade anytime to unlock more features.'
+            : 'Choose the plan that fits your domaining strategy. Upgrade or cancel anytime.'}
         </p>
       </div>
 
@@ -177,97 +185,137 @@ const ProPricing = () => {
         viewport={{ once: true, margin: '-60px' }}
         className='grid w-full grid-cols-1 gap-5 md:grid-cols-3 md:items-stretch'
       >
-        {tiers.map((tier) => (
-          <motion.div
-            key={tier.name}
-            variants={cardVariants}
-            className={cn(
-              'relative flex flex-col rounded-xl border-2 p-6 sm:p-7',
-              tier.popular ? tier.borderColor : 'border-tertiary/60',
-              tier.popular && 'bg-primary/3 shadow-bulk md:-mt-4 md:mb-4'
-            )}
-          >
-            {tier.popular && (
-              <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
-                <span className='bg-primary text-background rounded-full px-4 py-1 text-sm font-bold shadow-lg'>
-                  Most Popular
-                </span>
-              </div>
-            )}
+        {tiers.map((tier) => {
+          const isCurrent = isSubscriberView && userTierId === tier.tierId
+          const isUpgrade = isSubscriberView && userTierId != null && userTierId < tier.tierId
+          const isLower = isSubscriberView && userTierId != null && userTierId > tier.tierId
 
-            <div className={cn('mb-5 rounded-lg p-4 text-center', tier.headerBg)}>
-              <h3 className={cn('font-sedan-sc text-4xl', tier.color)}>{tier.name}</h3>
-              <p className='text-neutral mt-1 text-sm font-medium'>{tier.tagline}</p>
-            </div>
-
-            <div className='mb-6 text-center'>
-              <AnimatePresence mode='wait'>
-                <motion.div
-                  key={billing}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className='flex items-end justify-center gap-1'>
-                    <span className={cn('text-5xl font-bold', tier.color)}>
-                      ${getMonthlyEquivalent(tier.monthlyPrice)}
-                    </span>
-                    <span className='text-neutral mb-1.5 text-base font-medium'>/mo</span>
-                  </div>
-                  {isYearly && (
-                    <div className='mt-1.5'>
-                      <span className='text-neutral text-md line-through'>{formatPrice(tier.monthlyPrice * 12)}</span>
-                      <span className='text-md ml-2 font-semibold text-green-400'>
-                        {formatPrice(Number(getPrice(tier.monthlyPrice)))}/year
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            <button
-              onClick={() => dispatch(openUpgradeModalWithTier(tier.tierId))}
+          return (
+            <motion.div
+              key={tier.name}
+              variants={cardVariants}
               className={cn(
-                'w-full cursor-pointer rounded border-2 px-4 py-3 text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98]',
-                tier.buttonStyle
+                'relative flex flex-col rounded-xl border-2 p-6 sm:p-7',
+                isCurrent
+                  ? 'border-green-500/50 bg-green-500/5'
+                  : tier.popular && !isSubscriberView
+                    ? tier.borderColor
+                    : 'border-tertiary/60',
+                tier.popular && !isSubscriberView && 'bg-primary/3 shadow-bulk md:-mt-4 md:mb-4'
               )}
             >
-              {tier.buttonText}
-            </button>
+              {isCurrent && (
+                <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
+                  <span className='rounded-full bg-green-500 px-4 py-1 text-sm font-bold text-background shadow-lg'>
+                    Current Plan
+                  </span>
+                </div>
+              )}
 
-            <ul className='mt-6 flex flex-col gap-2.5'>
-              {tier.features.map((feature) => (
-                <li key={feature} className='flex items-start gap-2.5 text-lg font-medium'>
-                  <div
-                    className={cn(
-                      'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
-                      tier.popular ? 'bg-primary/20' : 'bg-white/10'
-                    )}
+              {!isCurrent && tier.popular && !isSubscriberView && (
+                <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
+                  <span className='bg-primary text-background rounded-full px-4 py-1 text-sm font-bold shadow-lg'>
+                    Most Popular
+                  </span>
+                </div>
+              )}
+
+              <div className={cn('mb-5 rounded-lg p-4 text-center', tier.headerBg)}>
+                <h3 className={cn('font-sedan-sc text-4xl', tier.color)}>{tier.name}</h3>
+                <p className='text-neutral mt-1 text-sm font-medium'>{tier.tagline}</p>
+              </div>
+
+              <div className='mb-6 text-center'>
+                <AnimatePresence mode='wait'>
+                  <motion.div
+                    key={billing}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <Check className={cn('h-3 w-3', tier.color)} />
-                  </div>
-                  {feature}
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        ))}
+                    <div className='flex items-end justify-center gap-1'>
+                      <span className={cn('text-5xl font-bold', tier.color)}>
+                        ${getMonthlyEquivalent(tier.monthlyPrice)}
+                      </span>
+                      <span className='text-neutral mb-1.5 text-base font-medium'>/mo</span>
+                    </div>
+                    {isYearly && (
+                      <div className='mt-1.5'>
+                        <span className='text-neutral text-md line-through'>
+                          {formatPrice(tier.monthlyPrice * 12)}
+                        </span>
+                        <span className='text-md ml-2 font-semibold text-green-400'>
+                          {formatPrice(Number(getPrice(tier.monthlyPrice)))}/year
+                        </span>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {isCurrent ? (
+                <div
+                  className={cn(
+                    'w-full rounded border-2 border-green-500/50 bg-green-500/10 px-4 py-3 text-center text-base font-bold text-green-400'
+                  )}
+                >
+                  Active
+                </div>
+              ) : isLower ? (
+                <div
+                  className={cn(
+                    'w-full rounded border-2 border-tertiary/40 px-4 py-3 text-center text-base font-bold text-neutral'
+                  )}
+                >
+                  Included
+                </div>
+              ) : (
+                <button
+                  onClick={() => dispatch(openUpgradeModalWithTier(tier.tierId))}
+                  className={cn(
+                    'w-full cursor-pointer rounded border-2 px-4 py-3 text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98]',
+                    tier.buttonStyle
+                  )}
+                >
+                  {isUpgrade ? `Upgrade to ${tier.name}` : tier.buttonText}
+                </button>
+              )}
+
+              <ul className='mt-6 flex flex-col gap-2.5'>
+                {tier.features.map((feature) => (
+                  <li key={feature} className='flex items-start gap-2.5 text-sm font-medium'>
+                    <div
+                      className={cn(
+                        'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
+                        isCurrent ? 'bg-green-500/20' : tier.popular && !isSubscriberView ? 'bg-primary/20' : 'bg-white/10'
+                      )}
+                    >
+                      <Check className={cn('h-3 w-3', isCurrent ? 'text-green-400' : tier.color)} />
+                    </div>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )
+        })}
       </motion.div>
 
-      <div className='border-tertiary/50 flex w-full max-w-2xl flex-col items-center gap-3 rounded-lg border px-6 py-5 text-center sm:flex-row sm:justify-between'>
-        <div className='text-left'>
-          <p className='text-lg font-bold'>Need something bigger?</p>
-          <p className='text-neutral text-sm'>Patron tier for teams, funds, and institutions.</p>
+      {!isSubscriberView && (
+        <div className='border-tertiary/50 flex w-full max-w-2xl flex-col items-center gap-3 rounded-lg border px-6 py-5 text-center sm:flex-row sm:justify-between'>
+          <div className='text-left'>
+            <p className='text-lg font-bold'>Need something bigger?</p>
+            <p className='text-neutral text-sm'>Patron tier for teams, funds, and institutions.</p>
+          </div>
+          <button
+            onClick={() => dispatch(openUpgradeModalWithTier(4))}
+            className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base font-semibold text-purple-400 transition-colors hover:bg-purple-400/10'
+          >
+            Explore Patron
+          </button>
         </div>
-        <button
-          onClick={() => dispatch(openUpgradeModalWithTier(4))}
-          className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base font-semibold text-purple-400 transition-colors hover:bg-purple-400/10'
-        >
-          Explore Patron
-        </button>
-      </div>
+      )}
     </section>
   )
 }

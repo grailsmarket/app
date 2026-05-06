@@ -25,9 +25,7 @@ export interface ListTicketsParams {
   limit?: number
 }
 
-export const listSupportTickets = async (
-  params: ListTicketsParams = {}
-): Promise<SupportTicketsListResponse> => {
+export const listSupportTickets = async (params: ListTicketsParams = {}): Promise<SupportTicketsListResponse> => {
   const query = new URLSearchParams()
   if (params.status) query.set('status', params.status)
   if (params.page) query.set('page', params.page.toString())
@@ -49,9 +47,7 @@ export const getSupportTicket = async (id: number): Promise<SupportTicketDetail>
   return unwrap<SupportTicketDetail>(response)
 }
 
-export const createSupportTicket = async (
-  payload: CreateTicketPayload
-): Promise<SupportTicketDetail> => {
+export const createSupportTicket = async (payload: CreateTicketPayload): Promise<SupportTicketDetail> => {
   const response = await authFetch(SUPPORT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

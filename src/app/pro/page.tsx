@@ -34,10 +34,10 @@ const ProPage = () => {
 
         <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-20 px-4 pt-16 pb-8 sm:gap-28 sm:pt-24 sm:pb-12 md:gap-36 md:px-8 md:pt-32 lg:pt-40'>
           <ProFeatures />
-          <div id='pricing'>
+          <div id='pricing' className='flex w-full flex-col items-center gap-10'>
             <ProPricing />
+            <ProComparisonTable />
           </div>
-          <ProComparisonTable />
           <ProFaq />
           <ProCta />
         </div>

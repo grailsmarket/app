@@ -144,7 +144,11 @@ const ProComparisonTable = () => {
                           'border-b-tertiary'
                         )}
                       >
-                        {tier.monthlyPrice != null ? formatPrice(tier.monthlyPrice) : <span className='text-neutral'>—</span>}
+                        {tier.monthlyPrice != null ? (
+                          formatPrice(tier.monthlyPrice)
+                        ) : (
+                          <span className='text-neutral'>—</span>
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -152,7 +156,9 @@ const ProComparisonTable = () => {
                     <td className='border-tertiary border-b p-4 text-base font-semibold'>
                       <div className='flex items-center gap-2'>
                         Annual
-                        <span className='rounded-full bg-green-500/20 px-2.5 py-0.5 text-sm font-bold text-green-400'>-15%</span>
+                        <span className='rounded-full bg-green-500/20 px-2.5 py-0.5 text-sm font-bold text-green-400'>
+                          -15%
+                        </span>
                       </div>
                     </td>
                     {tiers.map((tier) => {
@@ -160,7 +166,11 @@ const ProComparisonTable = () => {
                         return (
                           <td
                             key={tier.name}
-                            className={cn('border-x-2 border-b p-4 text-center text-base font-medium', tier.borderColor, 'border-b-tertiary')}
+                            className={cn(
+                              'border-x-2 border-b p-4 text-center text-base font-medium',
+                              tier.borderColor,
+                              'border-b-tertiary'
+                            )}
                           >
                             <span className='text-neutral'>—</span>
                           </td>
@@ -171,7 +181,11 @@ const ProComparisonTable = () => {
                       return (
                         <td
                           key={tier.name}
-                          className={cn('border-x-2 border-b p-4 text-center text-base font-medium', tier.borderColor, 'border-b-tertiary')}
+                          className={cn(
+                            'border-x-2 border-b p-4 text-center text-base font-medium',
+                            tier.borderColor,
+                            'border-b-tertiary'
+                          )}
                         >
                           <span className='text-neutral mr-1.5 text-sm line-through'>{formatPrice(fullYear)}</span>
                           <span className='font-semibold text-green-400'>{formatPrice(discountedYear)}</span>
@@ -195,7 +209,12 @@ const ProComparisonTable = () => {
                           )}
                         >
                           {included ? (
-                            <div className={cn('mx-auto flex h-6 w-6 items-center justify-center rounded-sm', tiers[j].backgroundColor)}>
+                            <div
+                              className={cn(
+                                'mx-auto flex h-6 w-6 items-center justify-center rounded-sm',
+                                tiers[j].backgroundColor
+                              )}
+                            >
                               <span className='text-background font-sans text-xl font-black'>&#10003;</span>
                             </div>
                           ) : (
@@ -245,14 +264,21 @@ const ProComparisonTable = () => {
                       <p className='flex items-center justify-center gap-1.5'>
                         <span className='text-neutral'>Annual:</span>{' '}
                         <span className='text-neutral text-sm line-through'>{formatPrice(tier.monthlyPrice * 12)}</span>
-                        <span className='font-semibold text-green-400'>{formatPrice(tier.monthlyPrice * 12 * (1 - ANNUAL_DISCOUNT))}</span>
-                        <span className='rounded-full bg-green-500/20 px-2 py-0.5 text-sm font-bold text-green-400'>-15%</span>
+                        <span className='font-semibold text-green-400'>
+                          {formatPrice(tier.monthlyPrice * 12 * (1 - ANNUAL_DISCOUNT))}
+                        </span>
+                        <span className='rounded-full bg-green-500/20 px-2 py-0.5 text-sm font-bold text-green-400'>
+                          -15%
+                        </span>
                       </p>
                     )}
                   </div>
                   <button
                     onClick={() => dispatch(openUpgradeModalWithTier(tier.tierId))}
-                    className={cn('mt-4 w-full cursor-pointer rounded border-2 px-4 py-2.5 text-lg font-semibold transition-colors', tier.buttonStyle)}
+                    className={cn(
+                      'mt-4 w-full cursor-pointer rounded border-2 px-4 py-2.5 text-lg font-semibold transition-colors',
+                      tier.buttonStyle
+                    )}
                   >
                     {tier.buttonText}
                   </button>
@@ -261,7 +287,10 @@ const ProComparisonTable = () => {
                       const tierIndex = tiers.findIndex((t) => t.name === tier.name)
                       const included = feature.tiers[tierIndex]
                       return (
-                        <li key={feature.label} className={cn('flex items-start gap-2 text-base', !included && 'text-neutral/40')}>
+                        <li
+                          key={feature.label}
+                          className={cn('flex items-start gap-2 text-base', !included && 'text-neutral/40')}
+                        >
                           <span className={cn('mt-0.5 shrink-0 text-lg', included ? tier.color : 'text-neutral/40')}>
                             {included ? '✓' : '—'}
                           </span>

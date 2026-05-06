@@ -113,9 +113,7 @@ const CreateTicketForm: React.FC<CreateTicketFormProps> = ({ onCreated, onCancel
         </button>
       </div>
 
-      {error && (
-        <p className='rounded-md bg-red-500/10 p-3 text-sm text-red-400'>{error}</p>
-      )}
+      {error && <p className='rounded-md bg-red-500/10 p-3 text-sm text-red-400'>{error}</p>}
 
       <div className='flex items-center justify-end gap-2'>
         <SecondaryButton onClick={onCancel} disabled={mutation.isPending}>

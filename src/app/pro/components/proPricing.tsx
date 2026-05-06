@@ -122,7 +122,7 @@ const ProPricing = () => {
   }
 
   return (
-    <section className='flex w-full flex-col items-center gap-10 sm:gap-14'>
+    <section className='flex w-full flex-col items-center gap-10 sm:gap-12'>
       <div className='flex max-w-3xl flex-col items-center gap-4 text-center'>
         <h2 className='font-sedan-sc text-4xl sm:text-5xl md:text-6xl'>
           Simple, Transparent <span className='text-primary'>Pricing</span>
@@ -132,7 +132,7 @@ const ProPricing = () => {
         </p>
       </div>
 
-      <div className='relative flex w-full max-w-sm rounded-full bg-secondary p-1'>
+      <div className='bg-secondary relative flex w-full max-w-sm rounded-full p-1'>
         <motion.div
           className='bg-primary absolute top-1 bottom-1 rounded-full'
           layout
@@ -217,10 +217,8 @@ const ProPricing = () => {
                   </div>
                   {isYearly && (
                     <div className='mt-1.5'>
-                      <span className='text-neutral text-sm line-through'>
-                        {formatPrice(tier.monthlyPrice * 12)}
-                      </span>
-                      <span className='ml-2 text-sm font-semibold text-green-400'>
+                      <span className='text-neutral text-md line-through'>{formatPrice(tier.monthlyPrice * 12)}</span>
+                      <span className='text-md ml-2 font-semibold text-green-400'>
                         {formatPrice(Number(getPrice(tier.monthlyPrice)))}/year
                       </span>
                     </div>
@@ -241,9 +239,14 @@ const ProPricing = () => {
 
             <ul className='mt-6 flex flex-col gap-2.5'>
               {tier.features.map((feature) => (
-                <li key={feature} className='flex items-start gap-2.5 text-sm font-medium'>
-                  <div className={cn('mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full', tier.popular ? 'bg-primary/20' : 'bg-white/10')}>
-                    <Check className={cn('h-2.5 w-2.5', tier.color)} />
+                <li key={feature} className='flex items-start gap-2.5 text-lg font-medium'>
+                  <div
+                    className={cn(
+                      'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
+                      tier.popular ? 'bg-primary/20' : 'bg-white/10'
+                    )}
+                  >
+                    <Check className={cn('h-3 w-3', tier.color)} />
                   </div>
                   {feature}
                 </li>
@@ -260,7 +263,7 @@ const ProPricing = () => {
         </div>
         <button
           onClick={() => dispatch(openUpgradeModalWithTier(4))}
-          className='border-purple-400 text-purple-400 hover:bg-purple-400/10 shrink-0 cursor-pointer rounded border-2 px-5 py-2.5 text-base font-semibold transition-colors'
+          className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base font-semibold text-purple-400 transition-colors hover:bg-purple-400/10'
         >
           Explore Patron
         </button>

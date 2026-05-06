@@ -105,12 +105,7 @@ const ProFaq = () => {
       </div>
       <div className='flex flex-col'>
         {faqs.map(({ question, answer }, index) => (
-          <QuestionItem
-            key={question}
-            question={question}
-            answer={answer}
-            isLast={index === faqs.length - 1}
-          />
+          <QuestionItem key={question} question={question} answer={answer} isLast={index === faqs.length - 1} />
         ))}
       </div>
     </section>

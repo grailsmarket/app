@@ -31,6 +31,13 @@ const features = [
     tier: 'Plus',
   },
   {
+    title: 'Feature Notifications',
+    description: 'Be the first to access new tools, categories, and market features.',
+    icon: notification,
+    iconSize: 20,
+    tier: 'Plus',
+  },
+  {
     title: 'Custom Dashboard',
     description: 'Build your own command center with widgets tailored to your strategy.',
     icon: grid,
@@ -45,20 +52,6 @@ const features = [
     tier: 'Pro',
   },
   {
-    title: 'Private Chat Group',
-    description: 'Join the exclusive Grails Pro chat with the biggest names in ENS.',
-    icon: message,
-    iconSize: 20,
-    tier: 'Gold',
-  },
-  {
-    title: 'Feature Notifications',
-    description: 'Be the first to access new tools, categories, and market features.',
-    icon: notification,
-    iconSize: 20,
-    tier: 'Plus',
-  },
-  {
     title: 'Profile & Name Analytics',
     description: 'See exactly who views your profile and name pages, and when.',
     icon: view,
@@ -71,6 +64,13 @@ const features = [
     icon: grailsAI,
     iconSize: 20,
     tier: 'Pro',
+  },
+  {
+    title: 'Private Chat Group',
+    description: 'Join the exclusive Grails Pro chat with the biggest names in ENS.',
+    icon: message,
+    iconSize: 20,
+    tier: 'Gold',
   },
 ]
 
@@ -141,7 +141,7 @@ const ProFeatures = () => {
               </div>
               <span
                 className={cn(
-                  'rounded-full border px-2.5 py-0.5 text-xs font-bold tracking-wide uppercase',
+                  'rounded-full border px-2.5 py-0.5 text-sm font-bold tracking-wide uppercase',
                   tierBadgeStyle[feature.tier]
                 )}
               >
@@ -150,7 +150,7 @@ const ProFeatures = () => {
             </div>
             <div className='flex flex-col gap-1.5'>
               <h3 className='text-lg font-bold'>{feature.title}</h3>
-              <p className='text-neutral text-sm leading-relaxed'>{feature.description}</p>
+              <p className='text-neutral text-md leading-relaxed font-medium'>{feature.description}</p>
             </div>
             <div className='mt-auto pt-2'>
               <button
@@ -158,7 +158,7 @@ const ProFeatures = () => {
                   const tierId = feature.tier === 'Plus' ? 1 : feature.tier === 'Pro' ? 2 : 3
                   dispatch(openUpgradeModalWithTier(tierId))
                 }}
-                className='text-primary hover:text-primary/80 text-sm font-semibold transition-colors'
+                className='text-primary hover:text-primary/80 cursor-pointer text-lg font-semibold transition-colors'
               >
                 Unlock with {feature.tier} →
               </button>

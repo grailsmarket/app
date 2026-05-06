@@ -1,6 +1,8 @@
 'use client'
 
 import { motion } from 'motion/react'
+import ShootingStars from '@/components/ui/shootingStars'
+import StarsBackground from '@/components/ui/starsBackground'
 
 const containerVariants = {
   hidden: {},
@@ -56,13 +58,6 @@ const ProHero = () => {
         animate='visible'
         className='relative z-10 flex max-w-4xl flex-col items-center text-center'
       >
-        <motion.div variants={itemVariants} className='mb-4'>
-          <span className='border-primary/30 bg-primary/10 text-primary inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold tracking-wide uppercase'>
-            <span className='bg-primary h-1.5 w-1.5 animate-pulse rounded-full' />
-            Premium ENS Tools
-          </span>
-        </motion.div>
-
         <motion.h1
           variants={itemVariants}
           className='font-sedan-sc text-5xl leading-tight sm:text-7xl md:text-8xl lg:text-9xl'
@@ -76,35 +71,59 @@ const ProHero = () => {
           variants={itemVariants}
           className='text-neutral mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl md:text-2xl'
         >
-          Supercharge your ENS domaining with premium analytics, bulk tools, AI recommendations, and
-          exclusive access built for serious collectors.
+          Supercharge your ENS domaining with premium analytics, bulk tools, AI recommendations, and exclusive access
+          built for serious collectors.
         </motion.p>
 
-        <motion.div variants={itemVariants} className='mt-10 flex flex-col items-center gap-4 sm:flex-row'>
+        <motion.div variants={itemVariants} className='mt-10 flex flex-col items-center gap-6'>
           <button
             onClick={scrollToPricing}
-            className='bg-primary text-background hover:bg-primary/90 cursor-pointer rounded-sm px-8 py-3.5 text-lg font-bold transition-all hover:scale-105 active:scale-95'
+            className='bg-primary text-background hover:bg-primary/90 cursor-pointer rounded-sm px-8 py-3.5 text-xl font-bold transition-all hover:scale-105 active:scale-95'
           >
             Get Grails Pro
           </button>
           <span className='text-neutral text-sm font-medium'>No credit card required to explore</span>
         </motion.div>
 
-        <motion.div variants={itemVariants} className='mt-12 flex items-center gap-6 text-sm text-neutral/80'>
+        <motion.div variants={itemVariants} className='text-md text-neutral/80 mt-8 flex items-center gap-6'>
           <div className='flex items-center gap-2'>
-            <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' className='text-green-400'>
+            <svg
+              width='18'
+              height='18'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              className='text-green-400'
+            >
               <polyline points='20 6 9 17 4 12' />
             </svg>
             <span>Cancel anytime</span>
           </div>
           <div className='flex items-center gap-2'>
-            <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' className='text-green-400'>
+            <svg
+              width='18'
+              height='18'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              className='text-green-400'
+            >
               <polyline points='20 6 9 17 4 12' />
             </svg>
             <span>Pay with ETH</span>
           </div>
           <div className='flex items-center gap-2'>
-            <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' className='text-green-400'>
+            <svg
+              width='18'
+              height='18'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              className='text-green-400'
+            >
               <polyline points='20 6 9 17 4 12' />
             </svg>
             <span>Instant access</span>
@@ -126,6 +145,8 @@ const ProHero = () => {
           <div className='bg-neutral h-1.5 w-1.5 rounded-full' />
         </motion.div>
       </motion.div>
+      <ShootingStars />
+      <StarsBackground />
     </section>
   )
 }

@@ -1,8 +1,13 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import Footer from '@/components/footer'
-import ProPageContent from './components/proPageContent'
-import AdvancedTools from './components/advancedTools'
+import ProHero from './components/proHero'
+import ProSocialProof from './components/proSocialProof'
+import ProFeatures from './components/proFeatures'
+import ProPricing from './components/proPricing'
+import ProComparisonTable from './components/proComparisonTable'
+import ProFaq from './components/proFaq'
+import ProCta from './components/proCta'
 
 export const metadata: Metadata = {
   title: 'Grails Pro',
@@ -24,20 +29,19 @@ const ProPage = () => {
   return (
     <Suspense>
       <main className='relative min-h-screen'>
-        {/* Hero */}
-        <div className='flex flex-col items-center gap-4 text-center sm:pt-4 lg:pt-32'>
-          <h1 className='font-sedan-sc text-6xl sm:text-8xl'>
-            Do more, with Grails <span className='text-primary'>Pro</span>
-          </h1>
-          <p className='text-neutral max-w-xl text-xl md:text-2xl'>
-            Supercharge your ENS experience with premium tools, analytics, and exclusive access.
-          </p>
+        <ProHero />
+        <ProSocialProof />
+
+        <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-20 px-4 pt-16 pb-8 sm:gap-28 sm:pt-24 sm:pb-12 md:gap-36 md:px-8 md:pt-32 lg:pt-40'>
+          <ProFeatures />
+          <div id='pricing'>
+            <ProPricing />
+          </div>
+          <ProComparisonTable />
+          <ProFaq />
+          <ProCta />
         </div>
 
-        <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-12 px-4 pt-12 pb-8 md:gap-36 md:px-8 lg:pt-28'>
-          <AdvancedTools />
-          <ProPageContent />
-        </div>
         <Footer />
       </main>
     </Suspense>

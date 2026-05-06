@@ -103,10 +103,15 @@ export function useE2ESession(chatId: string | null, dmKey: string | null) {
     }
   }, [dmKey, unlocked])
 
-  const buildHandshakeBundle = useCallback((): string => {
+  const buildHandshakeBundle = useCallback(async (): Promise<string> => {
     if (!accountRef.current || !storageKeyRef.current) throw new Error('Account not loaded')
     const bundle = exportBundle(accountRef.current)
-    persistAccount(accountRef.current, storageKeyRef.current).catch(console.error)
+    // Must persist BEFORE returning. exportBundle calls
+    // mark_keys_as_published() which mutates the in-memory account; if the
+    // caller broadcasts the bundle and the page is closed before the persist
+    // completes, the next session would reload the prior pickle and could
+    // republish the same fallback key with a stale "unpublished" pool state.
+    await persistAccount(accountRef.current, storageKeyRef.current)
     return bundle
   }, [])
 

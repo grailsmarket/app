@@ -35,7 +35,7 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
     if (republishingRef.current) return
     republishingRef.current = true
     try {
-      const myBundle = e2e.buildHandshakeBundle()
+      const myBundle = await e2e.buildHandshakeBundle()
       await sendMessage({
         chatId,
         body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
@@ -116,7 +116,7 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
       <button
         type='button'
         onClick={async () => {
-          const bundle = e2e.buildHandshakeBundle()
+          const bundle = await e2e.buildHandshakeBundle()
           await sendMessage({
             chatId,
             body: encodeHandshake({ v: 1, kind: 'hs', bundle }),

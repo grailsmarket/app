@@ -11,6 +11,10 @@ export interface ChatParticipant {
   left_at: string | null
   last_read_message_id: string | null
   muted?: boolean
+  /** Base64 X25519 pubkey for encrypting DMs to this participant. Null if they haven't enrolled. */
+  public_encryption_key?: string | null
+  /** Wallet signature binding `public_encryption_key` to `address`. Required for safe encryption. */
+  public_encryption_key_signature?: string | null
 }
 
 export interface ChatMessage {
@@ -25,6 +29,14 @@ export interface ChatMessage {
   created_at: string
   edited_at: string | null
   deleted_at: string | null
+  /**
+   * Decrypted plaintext body, attached client-side after a successful E2E
+   * decrypt. Never sent or stored on the server. Renderers should prefer this
+   * over `body` whenever it is set.
+   */
+  decrypted_body?: string | null
+  /** Set to true client-side when `body` is encrypted but decryption failed. */
+  decryption_failed?: boolean
 }
 
 export interface Chat {

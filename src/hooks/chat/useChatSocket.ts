@@ -8,7 +8,16 @@ import { useAppDispatch } from '@/state/hooks'
 import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/typing'
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
 import { setChatSocket } from './socketSingleton'
-import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
+import { getCurrentMessagingKeypair } from './messagingKeysSingleton'
+import { tryDecryptMessage } from '@/lib/crypto'
+import type {
+  Chat,
+  ChatMessage,
+  ChatMessagesResponse,
+  ChatInboxResponse,
+  ChatWSEvent,
+  ChatWSOutgoing,
+} from '@/types/chat'
 
 const TYPING_TTL_MS = 4000
 const PING_INTERVAL_MS = 25_000
@@ -81,12 +90,19 @@ export const useChatSocket = () => {
           return
 
         case 'chat:message_new': {
-          const { chat_id, message } = evt.data
-          const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          const { chat_id, message: rawMessage } = evt.data
+          const senderIsMe = rawMessage.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          // Decrypt up-front so all downstream cache writes carry plaintext
+          // and our optimistic-dedupe can match on plaintext.
+          const myKeypair = getCurrentMessagingKeypair()
+          const chatDetail = queryClient.getQueryData<Chat>(['chats', chat_id, 'detail'])
+          const participants = chatDetail?.participants ?? []
+          const message: ChatMessage = tryDecryptMessage(rawMessage, userAddress, myKeypair, participants)
+          const incomingPlain = message.decrypted_body ?? message.body
           // Patch messages cache. Three cases to handle:
           // 1. Canonical id already present (POST onSuccess won the race) → no-op.
-          // 2. Sender is me AND an optimistic placeholder with matching body is
-          //    still in cache (WS won the race) → REPLACE in place rather than
+          // 2. Sender is me AND an optimistic placeholder with matching plaintext
+          //    is still in cache (WS won the race) → REPLACE in place rather than
           //    appending, otherwise the optimistic + canonical both stick around
           //    and the message renders twice until the next refresh.
           // 3. Otherwise → prepend to the newest page.
@@ -100,7 +116,8 @@ export const useChatSocket = () => {
               const updatedPages = old.pages.map((page) => {
                 if (replaced) return page
                 const idx = page.messages.findIndex(
-                  (m) => m.id.startsWith('optimistic-') && m.body === message.body && !m.deleted_at
+                  (m) =>
+                    m.id.startsWith('optimistic-') && (m.decrypted_body ?? m.body) === incomingPlain && !m.deleted_at
                 )
                 if (idx === -1) return page
                 replaced = true

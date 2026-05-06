@@ -31,6 +31,8 @@ type profileState = {
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
   notifyOnCommentReceived: boolean
+  publicEncryptionKey: string | null
+  publicEncryptionKeySignature: string | null
 }
 
 export const nullEnsProfile = {
@@ -62,6 +64,8 @@ const initialState: profileState = {
   notifyOnListingSold: true,
   notifyOnOfferReceived: true,
   notifyOnCommentReceived: true,
+  publicEncryptionKey: null,
+  publicEncryptionKeySignature: null,
 }
 
 // Slice -------------------------------------------
@@ -123,6 +127,10 @@ export const profileSlice = createSlice({
     setNotifyOnCommentReceived(state, { payload }: PayloadAction<boolean>) {
       state.notifyOnCommentReceived = payload
     },
+    setPublicEncryptionKey(state, { payload }: PayloadAction<{ publicKey: string | null; signature: string | null }>) {
+      state.publicEncryptionKey = payload.publicKey
+      state.publicEncryptionKeySignature = payload.signature
+    },
     changeTab(state, { payload }: PayloadAction<ProfileTabType>) {
       state.selectedTab = payload
     },
@@ -138,6 +146,8 @@ export const profileSlice = createSlice({
       state.poapClaimed = false
       state.watchlist = []
       state.pendingWatchlistTokenIds = []
+      state.publicEncryptionKey = null
+      state.publicEncryptionKeySignature = null
     },
   },
 })
@@ -163,6 +173,7 @@ export const {
   setNotifyOnListingSold,
   setNotifyOnOfferReceived,
   setNotifyOnCommentReceived,
+  setPublicEncryptionKey,
 } = profileSlice.actions
 
 // Selectors ------------------------------------------

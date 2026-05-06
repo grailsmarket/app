@@ -33,6 +33,10 @@ export type AuthUserType = {
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
   notifyOnCommentReceived: boolean
+  /** Base64-encoded X25519 public key used for E2E messaging encryption. */
+  publicEncryptionKey: string | null
+  /** Wallet signature over the binding message; lets peers verify the pubkey came from `address`. */
+  publicEncryptionKeySignature: string | null
 }
 
 export type VerifyResponseType = {

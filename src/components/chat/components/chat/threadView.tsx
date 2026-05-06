@@ -13,6 +13,7 @@ import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
 import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import { useBlockUser } from '@/hooks/chat/useBlockUser'
 import { useUnblockUser } from '@/hooks/chat/useUnblockUser'
+import { useMessagingKeys } from '@/hooks/chat/useMessagingKeys'
 import { useUserContext } from '@/context/user'
 import LoadingCell from '@/components/ui/loadingCell'
 import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
@@ -52,9 +53,16 @@ const ThreadView: React.FC = () => {
   const peer = otherParticipants[0]
   const peerProfile = usePeerProfile(peer?.address)
   const isBlocked = !!chat?.is_blocked_by_me
+  const peerHasKey = !!peer?.public_encryption_key
 
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
+  const {
+    isReady: keysReady,
+    isSettingUp: keysSettingUp,
+    setupError: keysError,
+    setup: retryKeysSetup,
+  } = useMessagingKeys()
 
   // Auto-scroll to bottom on new messages.
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -210,6 +218,31 @@ const ThreadView: React.FC = () => {
             >
               {unblockMutation.isPending ? 'Unblocking…' : 'Unblock'}
             </button>
+          </div>
+        ) : !keysReady ? (
+          <div className='border-tertiary flex items-center justify-between gap-3 border-t-2 p-3'>
+            <p className='text-neutral text-md'>
+              {keysSettingUp
+                ? 'Setting up encrypted messaging — approve the signature in your wallet…'
+                : keysError
+                  ? 'Encryption setup was cancelled. Approve the signature to send messages.'
+                  : 'Encryption keys are loading…'}
+            </p>
+            {!keysSettingUp && (
+              <button
+                onClick={() => retryKeysSetup()}
+                className='bg-primary text-background text-md rounded-sm px-3 py-1.5 font-bold transition-all hover:opacity-80 active:scale-95'
+              >
+                {keysError ? 'Retry' : 'Set up'}
+              </button>
+            )}
+          </div>
+        ) : !peerHasKey ? (
+          <div className='border-tertiary flex items-center gap-3 border-t-2 p-3'>
+            <p className='text-neutral text-md'>
+              {peerLabel} hasn&apos;t enabled encrypted messaging yet. They need to sign in once before you can send
+              them messages.
+            </p>
           </div>
         ) : (
           <Composer chatId={activeChatId} />

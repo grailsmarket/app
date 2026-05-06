@@ -14,6 +14,8 @@ type VerifyResponse = {
     notifyOnListingSold: boolean
     notifyOnOfferReceived: boolean
     notifyOnCommentReceived: boolean
+    publicEncryptionKey: string | null
+    publicEncryptionKeySignature: string | null
   }
 }
 

@@ -38,6 +38,7 @@ import ListSettings from '@/components/modal/list-settings'
 import { selectRegistration } from '@/state/reducers/registration'
 import ChatSidebar from '@/components/chat'
 import ChatSocketMount from '@/components/chat/socketMount'
+import MessagingKeysMount from '@/components/chat/messagingKeysMount'
 import { selectChatSidebar } from '@/state/reducers/chat/sidebar'
 
 const Modals: React.FC = () => {
@@ -215,6 +216,7 @@ const Modals: React.FC = () => {
           selectedList={listSettingsModalList}
         />
       )}
+      <MessagingKeysMount />
       <ChatSocketMount />
       <ChatSidebar />
     </div>

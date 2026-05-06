@@ -38,7 +38,12 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
 
-  const lastBody = chat.last_message?.deleted_at ? 'Message deleted' : (chat.last_message?.body ?? '')
+  const lastMessage = chat.last_message
+  const lastBody = lastMessage?.deleted_at
+    ? 'Message deleted'
+    : lastMessage?.decryption_failed
+      ? 'Unable to decrypt'
+      : (lastMessage?.decrypted_body ?? lastMessage?.body ?? '')
   const time = chat.last_message_at ? formatTimeAgo(chat.last_message_at) : ''
 
   const open = () => dispatch(openSidebarToThread({ chatId: chat.id }))

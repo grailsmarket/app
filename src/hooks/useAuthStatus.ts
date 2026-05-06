@@ -13,6 +13,7 @@ import {
   setNotifyOnOfferReceived,
   setNotifyOnCommentReceived,
   setOfferNotificationThreshold,
+  setPublicEncryptionKey,
   setUserDiscord,
   setUserEmail,
   setUserId,
@@ -62,6 +63,12 @@ export const useAuth = () => {
     dispatch(setNotifyOnListingSold(user.notifyOnListingSold))
     dispatch(setNotifyOnOfferReceived(user.notifyOnOfferReceived))
     dispatch(setNotifyOnCommentReceived(user.notifyOnCommentReceived ?? true))
+    dispatch(
+      setPublicEncryptionKey({
+        publicKey: user.publicEncryptionKey ?? null,
+        signature: user.publicEncryptionKeySignature ?? null,
+      })
+    )
   }
 
   const {

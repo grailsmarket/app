@@ -15,6 +15,8 @@ export type ProfileResponseType = {
   notifyOnListingSold: boolean
   notifyOnOfferReceived: boolean
   notifyOnCommentReceived: boolean
+  publicEncryptionKey: string | null
+  publicEncryptionKeySignature: string | null
 }
 
 export const checkAuthentication = async () => {

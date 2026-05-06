@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useRef } from 'react'
-import { sha256 } from '@noble/hashes/sha256'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex } from 'viem'
 import { useAccount, useSignTypedData } from 'wagmi'
 import PrimaryButton from '@/components/ui/buttons/primary'

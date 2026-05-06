@@ -1,4 +1,3 @@
-import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch } from '@/state/hooks'
 import clsx from 'clsx'
@@ -64,35 +63,50 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   const hasRestoredScroll = useRef(false)
   const onScrollNearBottomRef = useRef(onScrollNearBottom)
 
+  // Keep onScrollNearBottom ref updated
   useEffect(() => {
     onScrollNearBottomRef.current = onScrollNearBottom
   }, [onScrollNearBottom])
 
+  // Get stored scroll position
   const storedScrollTop = useMemo(
     () => (useLocalScrollTop ? 0 : selectors.filters.scrollTop),
     [useLocalScrollTop, selectors.filters.scrollTop]
   )
 
   const setStoredScrollTop = useMemo(() => {
-    if (useLocalScrollTop) return () => {}
-    return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+    if (useLocalScrollTop) {
+      return () => {} // No-op for local scroll
+    } else {
+      return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+    }
   }, [useLocalScrollTop, actions])
 
+  // Calculate columns based on container width
   const columnsCount = useMemo(() => {
     const availableWidth = containerWidth - gap - containerPadding * 2
     const calculatedColumns = Math.floor(availableWidth / (cardWidth + gap)) || 1
+
+    // Limit to maxColumns if specified
     return Math.min(calculatedColumns, maxColumns)
   }, [containerWidth, cardWidth, gap, containerPadding, maxColumns])
 
+  // Calculate actual card width when columns are constrained
   const actualCardWidth = useMemo(() => {
     const availableWidth = containerWidth - gap - containerPadding
     const totalGaps = (columnsCount - 1) * gap
     const calculatedWidth = (availableWidth - totalGaps) / columnsCount
+
+    // Ensure card width doesn't go below minimum
     return Math.max(calculatedWidth, minCardWidth)
   }, [containerWidth, columnsCount, gap, containerPadding, minCardWidth])
 
+  // Calculate total rows and heights
   const totalRows = Math.ceil(items.length / columnsCount)
+  const rowHeight = cardHeight + gap
+  const totalHeight = totalRows * rowHeight
 
+  // Calculate element's position in document on mount and resize
   useEffect(() => {
     const updateElementTop = () => {
       if (containerRef.current) {
@@ -100,24 +114,35 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
         setElementTop(rect.top + window.scrollY)
       }
     }
+
     updateElementTop()
+
+    // Update on resize
     window.addEventListener('resize', updateElementTop)
+
+    // Use ResizeObserver for more accurate updates
     const resizeObserver = new ResizeObserver(updateElementTop)
-    if (containerRef.current) resizeObserver.observe(containerRef.current)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
     return () => {
       window.removeEventListener('resize', updateElementTop)
       resizeObserver.disconnect()
     }
   }, [])
 
+  // Restore scroll position on mount
   useLayoutEffect(() => {
     if (!hasRestoredScroll.current && storedScrollTop > 0 && elementTop > 0) {
+      // Calculate the window scroll position that would put us at the stored position
       const targetWindowScroll = elementTop + storedScrollTop
       window.scrollTo({ top: targetWindowScroll, behavior: 'instant' })
       hasRestoredScroll.current = true
     }
   }, [storedScrollTop, elementTop])
 
+  // Listen to window scroll
   useEffect(() => {
     const handleScroll = () => {
       setScrollState({
@@ -126,6 +151,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
       })
     }
 
+    // Initial state
     handleScroll()
 
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -137,44 +163,71 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
     }
   }, [])
 
-  const relativeScrollTop = useMemo(() => Math.max(0, scrollState.scrollY - elementTop), [scrollState.scrollY, elementTop])
+  // Calculate scroll position relative to the grid
+  const relativeScrollTop = useMemo(() => {
+    return Math.max(0, scrollState.scrollY - elementTop)
+  }, [scrollState.scrollY, elementTop])
 
+  // Store scroll position for restoration (debounced)
   useEffect(() => {
     if (hasRestoredScroll.current || storedScrollTop === 0) {
-      const id = setTimeout(() => setStoredScrollTop(relativeScrollTop), 100)
-      return () => clearTimeout(id)
+      const timeoutId = setTimeout(() => {
+        setStoredScrollTop(relativeScrollTop)
+      }, 100)
+      return () => clearTimeout(timeoutId)
     }
   }, [relativeScrollTop, setStoredScrollTop, storedScrollTop])
 
-  const rowVirtualizer = useWindowVirtualizer({
-    count: totalRows,
-    estimateSize: () => cardHeight + gap,
-    overscan: overscanCount,
-    getItemKey: (i) => i,
-    useFlushSync: false,
-    scrollMargin: elementTop,
-  })
-  const virtualRows = rowVirtualizer.getVirtualItems()
-
+  // Check if we're near the bottom of the grid content
   useEffect(() => {
     if (!onScrollNearBottomRef.current) return
-    const lastRow = virtualRows.at(-1)
-    if (!lastRow) return
-    const scrollY = typeof window !== 'undefined' ? window.scrollY : 0
-    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0
-    const totalHeight = rowVirtualizer.getTotalSize()
+
+    const viewportBottom = scrollState.scrollY + scrollState.viewportHeight
     const gridBottom = elementTop + totalHeight
-    const viewportBottom = scrollY + viewportHeight
-    if (gridBottom - viewportBottom < scrollThreshold && lastRow.index >= totalRows - 1) {
+
+    if (gridBottom - viewportBottom < scrollThreshold) {
       onScrollNearBottomRef.current()
     }
-  }, [virtualRows, rowVirtualizer, elementTop, scrollThreshold, totalRows])
+  }, [scrollState, elementTop, totalHeight, scrollThreshold])
 
+  // Calculate visible rows
+  const { startRow, endRow } = useMemo(() => {
+    const viewportHeight = scrollState.viewportHeight || window.innerHeight
+
+    const start = Math.max(0, Math.floor(relativeScrollTop / rowHeight) - overscanCount)
+    const end = Math.min(totalRows, Math.ceil((relativeScrollTop + viewportHeight) / rowHeight) + overscanCount)
+
+    return { startRow: start, endRow: end }
+  }, [relativeScrollTop, rowHeight, scrollState.viewportHeight, totalRows, overscanCount])
+
+  // Get items for visible rows
+  const visibleItems = useMemo(() => {
+    const result: Array<{ item: (typeof items)[0]; index: number; row: number; col: number }> = []
+    for (let row = startRow; row < endRow; row++) {
+      for (let col = 0; col < columnsCount; col++) {
+        const index = row * columnsCount + col
+        if (index < items.length) {
+          result.push({
+            item: items[index],
+            index,
+            row,
+            col,
+          })
+        }
+      }
+    }
+    return result
+  }, [startRow, endRow, columnsCount, items])
+
+  // Combine refs
   const setRefs = useCallback(
     (element: HTMLDivElement | null) => {
       containerRef.current = element
-      if (typeof ref === 'function') ref(element)
-      else if (ref) ref.current = element
+      if (typeof ref === 'function') {
+        ref(element)
+      } else if (ref) {
+        ref.current = element
+      }
     },
     [ref]
   )
@@ -182,30 +235,34 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
   return (
     <div
       ref={setRefs}
-      style={{ position: 'relative', paddingBottom, width: '100%' }}
+      style={{
+        position: 'relative',
+        paddingBottom,
+        width: '100%',
+      }}
       className={clsx(containerClassName)}
     >
-      <div style={{ width: '100%', height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
-        {virtualRows.map((vRow) => {
-          return Array.from({ length: columnsCount }, (_, col) => {
-            const index = vRow.index * columnsCount + col
-            if (index >= items.length) return null
-            return (
-              <div
-                key={index}
-                style={{
-                  position: 'absolute',
-                  top: vRow.start,
-                  left: containerPadding + col * (actualCardWidth + gap),
-                  width: actualCardWidth,
-                  height: cardHeight,
-                }}
-              >
-                {renderItem(items[index], index, columnsCount)}
-              </div>
-            )
-          })
-        })}
+      <div
+        style={{
+          width: '100%',
+          height: totalHeight,
+          position: 'relative',
+        }}
+      >
+        {visibleItems.map(({ item, index, row, col }) => (
+          <div
+            key={index}
+            style={{
+              position: 'absolute',
+              top: row * rowHeight,
+              left: containerPadding + col * (actualCardWidth + gap),
+              width: actualCardWidth,
+              height: cardHeight,
+            }}
+          >
+            {renderItem(item, index, columnsCount)}
+          </div>
+        ))}
       </div>
     </div>
   )

@@ -2,22 +2,41 @@
 import Olm from '@matrix-org/olm'
 import { ensureOlm, type PeerBundle } from './olm'
 
-// `did` is reserved for future Sesame-style multi-device fan-out. Single-device
-// clients omit it; readers ignore it.
+// Single-device legacy envelope. Senders no longer emit this; receivers
+// continue to decode it for backward compatibility.
 export type E2EMsgEnvelope = {
   v: 1
   kind: 'msg'
   type: 0 | 1
   ct: string
   mid?: string
-  did?: string
 }
+
+// Sesame-style fanout: one ciphertext per recipient device (peer's devices +
+// our own other devices). Each `cts` entry is independently encrypted under
+// the (sender, recipient_device) pairwise Olm session. `sender_did` is the
+// sender's Olm identity (curve25519) so receivers know which session to use.
+export type E2EFanoutCiphertext = { did: string; type: 0 | 1; ct: string }
+export type E2EFanoutEnvelope = {
+  v: 1
+  kind: 'fanout'
+  sender_did: string
+  mid?: string
+  cts: E2EFanoutCiphertext[]
+}
+
 export type E2EHandshakeEnvelope = { v: 1; kind: 'hs'; bundle: string }
-export type E2EBody = { __e2e: E2EMsgEnvelope } | { __e2e: E2EHandshakeEnvelope }
+export type E2EBody =
+  | { __e2e: E2EMsgEnvelope }
+  | { __e2e: E2EHandshakeEnvelope }
+  | { __e2e: E2EFanoutEnvelope }
 
 const HANDSHAKE_DISPLAY = '🔐 Encryption setup'
 
 export function encodeMsg(env: E2EMsgEnvelope): string {
+  return JSON.stringify({ __e2e: env })
+}
+export function encodeFanout(env: E2EFanoutEnvelope): string {
   return JSON.stringify({ __e2e: env })
 }
 export function encodeHandshake(env: E2EHandshakeEnvelope): string {
@@ -39,15 +58,30 @@ export function tryDecode(body: string | null | undefined): E2EBody['__e2e'] | n
   if (!env || typeof env !== 'object') return null
   const e = env as { v?: number; kind?: string }
   if (e.v !== 1) return null
-  if (e.kind === 'msg' || e.kind === 'hs') return env as E2EBody['__e2e']
+  if (e.kind === 'msg' || e.kind === 'hs' || e.kind === 'fanout') return env as E2EBody['__e2e']
   return null
 }
 
 export function isMsgEnvelope(env: E2EBody['__e2e']): env is E2EMsgEnvelope {
   return env.kind === 'msg'
 }
+export function isFanoutEnvelope(env: E2EBody['__e2e']): env is E2EFanoutEnvelope {
+  return env.kind === 'fanout'
+}
 export function isHandshakeEnvelope(env: E2EBody['__e2e']): env is E2EHandshakeEnvelope {
   return env.kind === 'hs'
+}
+
+// True if the message represents an outbound or inbound encrypted payload
+// (msg or fanout) — i.e. anything `useDecryptedBody` will need to decrypt.
+export function isCiphertextEnvelope(
+  env: E2EBody['__e2e']
+): env is E2EMsgEnvelope | E2EFanoutEnvelope {
+  return env.kind === 'msg' || env.kind === 'fanout'
+}
+
+export function findOwnCiphertext(env: E2EFanoutEnvelope, ownDid: string): E2EFanoutCiphertext | null {
+  return env.cts.find((c) => c.did === ownDid) ?? null
 }
 
 export function encryptForPeer(session: Olm.Session, plaintext: string, mid?: string): E2EMsgEnvelope {

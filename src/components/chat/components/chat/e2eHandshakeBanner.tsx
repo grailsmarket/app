@@ -14,7 +14,11 @@ interface Props {
 }
 
 const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
-  const enabled = useE2EEnabled()
+  // While the PostHog flag is still loading we deliberately render nothing —
+  // the composer-level gate handles the privacy-critical fail-closed path
+  // (see threadView). Showing a flicker of "Unlock encryption" UI before
+  // the flag resolves would be worse UX than the silent wait.
+  const { enabled } = useE2EEnabled()
   const { userAddress } = useUserContext()
 
   const { data: chat } = useChat(chatId)

@@ -32,7 +32,7 @@ const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
   const { activeChatId } = useAppSelector(selectChatSidebar)
   const { userAddress } = useUserContext()
-  const e2eEnabled = useE2EEnabled()
+  const { enabled: e2eEnabled, loading: e2eFlagLoading } = useE2EEnabled()
 
   // Subscribe to sessionRegistry so the composer disables/enables in real
   // time as the banner moves the chat through `unlocked → no_session → ready`.
@@ -63,14 +63,17 @@ const ThreadView: React.FC = () => {
   const peerProfile = usePeerProfile(peer?.address)
   const isBlocked = !!chat?.is_blocked_by_me
 
-  // Pause composer when the user opted into E2E for any chat that isn't
-  // confirmed-not-direct. Default-blocked while `chat` is still loading
-  // (`chat?.type` is undefined) — without this, the composer would briefly
-  // accept input that `useSendMessage` then sends as plaintext, because the
-  // session can't be ready before we even know which chat we're in. Once
-  // `chat` resolves to `'group'`, the gate releases (Olm is 1:1; group
-  // chats have no E2E mechanism).
-  const blockSendsForE2E = e2eEnabled && !e2eReady && chat?.type !== 'group'
+  // Pause composer when the user has (or might have) opted into E2E for any
+  // chat that isn't confirmed-not-direct. Three default-blocked cases:
+  //   - `chat?.type` undefined (useChat still loading) — we can't tell if
+  //     the chat is direct or group yet; assume direct.
+  //   - `e2eFlagLoading` — PostHog hasn't resolved the rollout cohort yet;
+  //     fail closed so a cohort user who types fast doesn't slip through
+  //     to the plaintext fallback.
+  //   - `e2eEnabled` — the user is confirmed in the cohort and the session
+  //     isn't ready (this is the post-load steady-state gate).
+  // Group chats explicitly release the gate (Olm is 1:1; no E2E mechanism).
+  const blockSendsForE2E = (e2eEnabled || e2eFlagLoading) && !e2eReady && chat?.type !== 'group'
 
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
@@ -273,16 +276,19 @@ const ThreadView: React.FC = () => {
             </button>
           </div>
         ) : (
-          // When the user has opted into E2E (`?e2e=1`) but no session is
-          // ready yet, refuse to send: useSendMessage's plaintext fallback
-          // would silently leak the message in the clear, which contradicts
-          // what the visible banner is telling the user. See `blockSendsForE2E`
-          // above for the direct-chat-only scoping.
+          // When the user has (or might have) opted into E2E but no session
+          // is ready yet, refuse to send: useSendMessage's plaintext fallback
+          // would silently leak the message in the clear. See
+          // `blockSendsForE2E` above for the loading + direct-chat scoping.
           <Composer
             chatId={activeChatId}
             disabled={blockSendsForE2E}
             disabledReason={
-              blockSendsForE2E ? 'Setting up encryption with this peer — sending paused.' : null
+              blockSendsForE2E
+                ? e2eFlagLoading
+                  ? 'Checking encryption settings…'
+                  : 'Setting up encryption with this peer — sending paused.'
+                : null
             }
           />
         ))}

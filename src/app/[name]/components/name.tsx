@@ -17,6 +17,7 @@ import Roles from './roles'
 import KeywordMetrics from './keywordMetrics'
 import SimilarNames from './similarNames'
 import CommentsPanel from './commentsPanel'
+import ValuationEvidencePanel from './valuationEvidencePanel'
 // import Metadata from './metadata'
 
 interface Props {
@@ -86,6 +87,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
             openEditMetadataModal={openEditMetadataModal}
           />
           <div className='hidden @[64rem]/app:block'>
+            <ValuationEvidencePanel name={name} />
+          </div>
+          <div className='hidden @[64rem]/app:block'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden @[64rem]/app:block'>
@@ -133,6 +137,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
           ) : (
             <Register nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
+          <div className='@[64rem]/app:hidden'>
+            <ValuationEvidencePanel name={name} />
+          </div>
           <div className='@[64rem]/app:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>

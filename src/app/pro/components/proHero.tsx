@@ -29,7 +29,7 @@ const itemVariants = {
 export const glowVariants = {
   animate: {
     scale: [1, 1.1, 1],
-    opacity: [0.3, 0.5, 0.3],
+    opacity: [0.5, 0.7, 0.5],
     transition: {
       duration: 6,
       repeat: Infinity,

@@ -26,7 +26,7 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
       <motion.div
         variants={glowVariants}
         animate='animate'
-        className='background-radial-primary absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 md:h-[800px] md:w-[800px]'
+        className='background-radial-primary absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2'
       />
 
       <motion.div

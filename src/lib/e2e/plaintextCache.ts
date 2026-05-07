@@ -13,6 +13,12 @@ class PlaintextCache {
   // own-send where the ciphertext has no entry for our own device), a
   // tick bump lets the row recover.
   private listeners = new Set<() => void>()
+  // Bumped on every `clear()`. Inflight decrypts started before a clear
+  // check this on completion and refuse to write back if the epoch has
+  // moved on. Without this, a wallet switch that calls clear() while a
+  // decrypt is mid-flight would re-cache the previous wallet's plaintext
+  // for the next user.
+  private epoch = 0
 
   set(id: string, plaintext: string) {
     this.map.set(id, plaintext)
@@ -42,8 +48,11 @@ class PlaintextCache {
 
   // Drop all cached plaintexts. Used when the authed user changes (sign-out
   // or wallet switch on the same device) so the next signed-in user can't
-  // read leftover plaintext from memory.
+  // read leftover plaintext from memory. Bumping `epoch` ensures any decrypts
+  // already running don't write their results back into the now-cleared
+  // cache after we return.
   clear() {
+    this.epoch++
     if (this.map.size === 0 && this.inflight.size === 0) return
     this.map.clear()
     this.inflight.clear()
@@ -63,18 +72,22 @@ class PlaintextCache {
   // Single-owner decrypt: run `fn` exactly once per message id and share the
   // result with all concurrent callers. The decrypted plaintext is cached so
   // late callers (post-decrypt) get the result synchronously via `get`.
+  // If `clear()` runs while `fn` is in-flight, the result is returned to the
+  // awaiting caller but is NOT written back into the (now-different-epoch)
+  // cache.
   async decrypt(id: string, fn: () => Promise<string>): Promise<string> {
     const cached = this.map.get(id)
     if (cached !== undefined) return cached
     const inflight = this.inflight.get(id)
     if (inflight) return inflight
+    const startEpoch = this.epoch
     const p = (async () => {
       try {
         const plaintext = await fn()
-        this.set(id, plaintext)
+        if (this.epoch === startEpoch) this.set(id, plaintext)
         return plaintext
       } finally {
-        this.inflight.delete(id)
+        if (this.epoch === startEpoch) this.inflight.delete(id)
       }
     })()
     this.inflight.set(id, p)

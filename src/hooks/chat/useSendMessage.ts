@@ -33,7 +33,7 @@ export const useSendMessage = (chatId: string | null) => {
       pendingMidsRef.current.delete(body)
       const session = sessionRegistry.get(chatId)
       if (session?.isReady() && tempId) {
-        const encodedBody = session.encrypt(body, tempId)
+        const encodedBody = await session.encrypt(body, tempId)
         const sent = await sendMessage({ chatId, body: encodedBody })
         plaintextCache.set(sent.id, body)
         return sent

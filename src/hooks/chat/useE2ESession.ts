@@ -289,7 +289,7 @@ export function useE2ESession(
   // Encrypt for every known device on either side (excluding self). Always
   // emits fanout so receivers can route by `sender_did`.
   const encrypt = useCallback(
-    (plaintext: string, mid?: string): string => {
+    async (plaintext: string, mid?: string): Promise<string> => {
       if (!storageKeyRef.current || !dmKey || !ownDidRef.current || !userAddress) {
         throw new Error('Session not ready')
       }
@@ -300,16 +300,16 @@ export function useE2ESession(
       // inbound: Olm sessions are bidirectional, so encrypting on our
       // inbound view also produces ciphertext the peer's outbound can
       // decrypt.
-      const targets: { did: string; session: Olm.Session }[] = []
+      const targets: { did: string; session: Olm.Session; direction: SessionDirection }[] = []
       const seen = new Set<string>()
       for (const [did, session] of outboundSessionsRef.current.entries()) {
         if (did === ownDidRef.current) continue
         seen.add(did)
-        targets.push({ did, session })
+        targets.push({ did, session, direction: 'out' })
       }
       for (const [did, session] of inboundSessionsRef.current.entries()) {
         if (did === ownDidRef.current || seen.has(did)) continue
-        targets.push({ did, session })
+        targets.push({ did, session, direction: 'in' })
       }
       if (targets.length === 0) throw new Error('No active sessions')
 
@@ -317,10 +317,17 @@ export function useE2ESession(
         const r = t.session.encrypt(plaintext)
         return { did: t.did, type: r.type as 0 | 1, ct: r.body }
       })
-      for (const t of targets) {
-        const direction: SessionDirection = outboundSessionsRef.current.has(t.did) ? 'out' : 'in'
-        persistSession(userAddress, dmKey, t.did, direction, t.session, storageKeyRef.current).catch(console.error)
-      }
+      // Each session.encrypt() advances the Olm ratchet in memory. Persist
+      // BEFORE returning — if the page closes after the message is posted
+      // but before the persist completes, on the next load we'd reload the
+      // pre-encrypt pickle and our next encrypt would re-use ratchet
+      // material the peer has already consumed, breaking decryption on
+      // their side. Run persists in parallel to keep latency low.
+      await Promise.all(
+        targets.map((t) =>
+          persistSession(userAddress, dmKey, t.did, t.direction, t.session, storageKeyRef.current!),
+        ),
+      )
       const env: E2EFanoutEnvelope = {
         v: 1,
         kind: 'fanout',

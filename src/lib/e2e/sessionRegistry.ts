@@ -15,8 +15,11 @@ export interface SessionAPI {
   // matches) and skip decryption for those — the plaintext is already in
   // the cache from useSendMessage's mutationFn.
   ownDid(): string | null
-  // Returns the encoded fanout envelope JSON ready for POST.
-  encrypt: (plaintext: string, mid?: string) => string
+  // Returns the encoded fanout envelope JSON ready for POST. Async so the
+  // ratchet-state persist completes before the caller treats the message as
+  // sent — a tab close mid-flight would otherwise roll back to a stale
+  // ratchet on the next load.
+  encrypt: (plaintext: string, mid?: string) => Promise<string>
   // Decrypt accepts the parsed fanout envelope; resolves with the plaintext
   // for this device's `cts` entry.
   decrypt: (env: E2EFanoutEnvelope) => Promise<string>

@@ -25,14 +25,7 @@ interface SettingsModalProps {
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
-  const {
-    userAddress,
-    authStatus,
-    handleGetNonce,
-    verify,
-    handleSignInSuccess,
-    handleSignInError,
-  } = useUserContext()
+  const { userAddress, authStatus, handleGetNonce, verify, handleSignInSuccess, handleSignInError } = useUserContext()
   const { openConnectModal } = useConnectModal()
 
   const isSignedIn = !!userAddress && authStatus === 'authenticated'

@@ -132,19 +132,19 @@ const ThreadView: React.FC = () => {
   const headerMenuItems: ContextMenuItem[] = peer
     ? isBlocked
       ? [
-        {
-          label: `Unblock ${peerLabel}`,
-          onClick: () => unblockMutation.mutate(peer.user_id),
-        },
-      ]
+          {
+            label: `Unblock ${peerLabel}`,
+            onClick: () => unblockMutation.mutate(peer.user_id),
+          },
+        ]
       : [
-        {
-          label: `Block ${peerLabel}`,
-          confirmLabel: `Confirm block ${peerLabel}`,
-          destructive: true,
-          onClick: () => blockMutation.mutate(peer.address),
-        },
-      ]
+          {
+            label: `Block ${peerLabel}`,
+            confirmLabel: `Confirm block ${peerLabel}`,
+            destructive: true,
+            onClick: () => blockMutation.mutate(peer.address),
+          },
+        ]
     : []
 
   return (

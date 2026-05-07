@@ -44,7 +44,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDele
         <div className='flex items-center justify-between gap-2'>
           <Link
             href={`/profile/${comment.author_address}`}
-            className='hover:text-primary text-foreground text-lg truncate font-semibold'
+            className='hover:text-primary text-foreground truncate text-lg font-semibold'
           >
             {displayName}
           </Link>
@@ -79,7 +79,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDele
             )}
           </div>
         </div>
-        <p className='text-foreground font-medium text-md break-words whitespace-pre-wrap'>{comment.body}</p>
+        <p className='text-foreground text-md font-medium break-words whitespace-pre-wrap'>{comment.body}</p>
       </div>
     </div>
   )

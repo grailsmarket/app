@@ -48,6 +48,12 @@ export function useE2ESession(
   chatId: string | null,
   dmKey: string | null,
   userAddress: string | null,
+  // The authed user's chat-service user_id, looked up from chat.participants
+  // by the caller. Required to distinguish own-other-device handshakes
+  // (which are supplemental fanout targets) from peer handshakes (which
+  // mark the chat as actually ready to send). When null (chat hasn't loaded
+  // yet), readiness defers — see updateReadiness.
+  myUserId: number | null,
 ) {
   const { signMessageAsync } = useSignMessage()
   const [state, setState] = useState<SessionState>({ kind: 'locked' })
@@ -77,6 +83,29 @@ export function useE2ESession(
     const ids = JSON.parse(accountRef.current.identity_keys()) as { curve25519: string }
     ownDidRef.current = ids.curve25519
   }
+
+  // Readiness requires at least one peer-user device — encrypting only to
+  // sibling devices of the same wallet would leave the actual peer with no
+  // ciphertext entry while the UI claims the chat is encrypted. When
+  // myUserId is null (chat data hasn't loaded yet) we conservatively treat
+  // every roster entry as potentially-peer, so the gate doesn't accidentally
+  // block first-handshake flows.
+  const hasPeerDevice = useCallback((): boolean => {
+    if (rosterRef.current.length === 0) return false
+    if (myUserId === null) return true
+    return rosterRef.current.some((e) => e.user_id !== myUserId)
+  }, [myUserId])
+
+  const updateReadiness = useCallback(() => {
+    setState((prev) => {
+      if (prev.kind === 'locked' || prev.kind === 'error') return prev
+      const ready = hasPeerDevice()
+      const next: SessionState = ready ? { kind: 'ready' } : { kind: 'no_session' }
+      // Avoid spurious re-renders from same-value setState.
+      if (prev.kind === next.kind) return prev
+      return next
+    })
+  }, [hasPeerDevice])
 
   // Wallet identity changed (or initial mount of the hook). Every cached Olm
   // object was derived from the prior wallet's storage key and is unusable
@@ -162,7 +191,11 @@ export function useE2ESession(
             anySessionLoaded = true
           }
         }
-        setState({ kind: anySessionLoaded ? 'ready' : 'no_session' })
+        if (anySessionLoaded) {
+          updateReadiness()
+        } else {
+          setState({ kind: 'no_session' })
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'load failed'
         setState({ kind: 'error', message: msg })
@@ -171,7 +204,18 @@ export function useE2ESession(
     return () => {
       cancelled = true
     }
+    // updateReadiness is intentionally omitted — it depends on myUserId,
+    // which has its own re-evaluation effect below. Including it here would
+    // cause the load effect to re-run (and re-fetch from IndexedDB) every
+    // time chat.participants resolves and we discover myUserId.
   }, [dmKey, unlocked, userAddress])
+
+  // Re-evaluate readiness when myUserId resolves (chat.participants loads).
+  // The first roster build happens before chat data, so we have to recheck
+  // once we can distinguish self from peer.
+  useEffect(() => {
+    updateReadiness()
+  }, [myUserId, updateReadiness])
 
   // Final cleanup on unmount. The chat-switch and wallet-change effects
   // free as part of their re-run, but unmounting the hook (e.g. closing the
@@ -280,10 +324,13 @@ export function useE2ESession(
         identity: peer.identity,
         signing: peer.signing,
       })
-      setState({ kind: 'ready' })
+      // Don't unconditionally mark ready — sibling-device handshakes alone
+      // shouldn't unlock the composer (encrypt would fan out only to our
+      // own other devices and the peer would never get ciphertext).
+      updateReadiness()
       return { isNew }
     },
-    [dmKey, upsertRoster, userAddress]
+    [dmKey, upsertRoster, userAddress, updateReadiness]
   )
 
   // Encrypt for every known device on either side (excluding self). Always
@@ -368,7 +415,11 @@ export function useE2ESession(
         inboundSessionsRef.current.set(senderDid, session)
         await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
         await persistSession(userAddress, dmKey, senderDid, 'in', session, storageKeyRef.current)
-        setState({ kind: 'ready' })
+        // We just received from a sender — assume they're a peer for
+        // readiness; if myUserId resolves later and the roster says
+        // otherwise, the participants effect re-runs updateReadiness and
+        // brings the state back to no_session.
+        updateReadiness()
         return plaintext
       }
 
@@ -396,7 +447,7 @@ export function useE2ESession(
       }
       throw new Error('No session to decrypt type=1 message')
     },
-    [dmKey, userAddress]
+    [dmKey, userAddress, updateReadiness]
   )
 
   const decrypt = useCallback(

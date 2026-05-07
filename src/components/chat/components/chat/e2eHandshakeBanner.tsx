@@ -23,7 +23,12 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
 
   const { data: chat } = useChat(chatId)
   const { messages } = useChatMessages(chatId)
-  const e2e = useE2ESession(chatId, chat?.dm_key ?? null, userAddress?.toLowerCase() ?? null)
+  // Find ourselves in the participants list to get our chat-service user_id.
+  // useE2ESession needs this to distinguish own-other-device handshakes
+  // (supplemental fanout targets) from peer handshakes (real readiness).
+  const myAddress = userAddress?.toLowerCase() ?? null
+  const myUserId = chat?.participants?.find((p) => p.address.toLowerCase() === myAddress)?.user_id ?? null
+  const e2e = useE2ESession(chatId, chat?.dm_key ?? null, myAddress, myUserId)
 
   // Guards against re-processing the same handshake row. Survives renders;
   // resets on banner unmount (the per-mount semantics are fine — the

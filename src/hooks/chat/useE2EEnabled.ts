@@ -12,13 +12,24 @@ import { useFeatureFlagEnabled } from 'posthog-js/react'
 // pausing the composer to avoid plaintext fallback — should treat loading
 // as "possibly enabled" until proven otherwise. The query-param branch
 // short-circuits loading because we can decide it locally.
+//
+// If PostHog isn't configured at all (no NEXT_PUBLIC_POSTHOG_KEY / HOST —
+// see instrumentation-client.ts), `posthog.init` never runs and
+// `useFeatureFlagEnabled` returns `undefined` forever. We must NOT treat
+// that as "loading" — doing so would permanently disable the composer for
+// every direct chat in dev, self-hosted, and CI environments. Detect the
+// absent config and short-circuit to `loading: false, enabled: false`.
+
+const POSTHOG_CONFIGURED =
+  !!process.env.NEXT_PUBLIC_POSTHOG_KEY && !!process.env.NEXT_PUBLIC_POSTHOG_HOST
+
 export function useE2EEnabled(): { enabled: boolean; loading: boolean } {
   const search = useSearchParams()
   const queryParamEnabled = search?.get('e2e') === '1'
   const flagValue = useFeatureFlagEnabled('e2e')
-  const loading = !queryParamEnabled && flagValue === undefined
+  const loading = !queryParamEnabled && POSTHOG_CONFIGURED && flagValue === undefined
   return {
-    enabled: queryParamEnabled || flagValue === true,
+    enabled: queryParamEnabled || (POSTHOG_CONFIGURED && flagValue === true),
     loading,
   }
 }

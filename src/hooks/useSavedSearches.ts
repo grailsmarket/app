@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAppSelector } from '@/state/hooks'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useUserContext } from '@/context/user'
 import { getSavedSearches } from '@/api/savedSearches/getSavedSearches'
@@ -10,13 +10,18 @@ import { createSavedSearch } from '@/api/savedSearches/createSavedSearch'
 import { updateSavedSearch } from '@/api/savedSearches/updateSavedSearch'
 import { deleteSavedSearch } from '@/api/savedSearches/deleteSavedSearch'
 import { SavedSearch, SavedSearchErrorCode } from '@/api/savedSearches/types'
+import { matchMarketplaceFilters } from '@/components/modal/saved-searches/components/savedSearchRow'
+import { setSavedSearchActive } from '@/state/reducers/modals/savedSearchesModal'
+import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 
 const ALLOWED_TIERS = ['plus', 'pro', 'gold'] as const
 
 const useSavedSearches = () => {
+  const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const { userAddress, authStatus } = useUserContext()
   const profile = useAppSelector(selectUserProfile)
+  const filters = useAppSelector(selectMarketplaceFilters)
   const subscription = profile.subscription
 
   const canManageSavedSearches = useMemo(
@@ -32,6 +37,11 @@ const useSavedSearches = () => {
 
   const savedSearches = data ?? []
   const defaultSavedSearch = useMemo(() => savedSearches.find((s) => s.isDefault) ?? null, [savedSearches])
+
+  useEffect(() => {
+    const anySearchActive = savedSearches.some((search) => matchMarketplaceFilters(search, filters))
+    dispatch(setSavedSearchActive(anySearchActive))
+  }, [savedSearches, dispatch, filters])
 
   const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['savedSearches', userAddress] })

@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import Footer from '@/components/footer'
 import ProPageShell from './components/proPageShell'
 
 export const metadata: Metadata = {
@@ -22,9 +21,8 @@ export const metadata: Metadata = {
 const ProPage = () => {
   return (
     <Suspense>
-      <main className='relative min-h-screen'>
+      <main className='relative min-h-screen overflow-x-hidden'>
         <ProPageShell />
-        <Footer />
       </main>
     </Suspense>
   )

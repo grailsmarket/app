@@ -1,7 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { motion } from 'motion/react'
 import ShootingStars from '@/components/ui/shootingStars'
 import StarsBackground from '@/components/ui/starsBackground'
 
@@ -40,41 +39,25 @@ export const glowVariants = {
 }
 
 const ProHero = () => {
-  const sectionRef = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, 220])
-  const starsY = useTransform(scrollYProgress, [0, 1], [0, 120])
-  const shootingStarsY = useTransform(scrollYProgress, [0, 1], [0, 200])
-  const glowY = useTransform(scrollYProgress, [0, 1], [0, 80])
-
   const scrollToPricing = () => {
     const el = document.getElementById('pricing')
     el?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <section ref={sectionRef} className='relative h-[150vh] overflow-hidden'>
+    <section className='relative h-[calc(100vh-56px)] md:h-[calc(100vh-70px)]'>
       <motion.div
         variants={glowVariants}
         animate='animate'
-        style={{ y: glowY }}
-        className='background-radial-primary absolute top-[35vh] left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 md:h-[800px] md:w-[800px]'
+        className='background-radial-primary absolute top-[35vh] left-1/2 h-[600px] w-screen -translate-x-1/2 -translate-y-1/2 md:h-[800px] md:w-[800px]'
       />
 
-      <motion.div style={{ y: starsY }} className='absolute inset-x-0 top-0 z-0 h-[115vh]'>
-        <StarsBackground />
-      </motion.div>
-
-      <motion.div style={{ y: shootingStarsY }} className='absolute inset-x-0 top-0 z-0 h-[115vh]'>
-        <ShootingStars />
-      </motion.div>
-
-      <div className='sticky top-0 z-10 flex h-screen items-center justify-center px-4 pt-24 pb-16 sm:pt-32 sm:pb-24 md:pt-40 md:pb-32'>
+      <div className='p<-16> z-10 flex h-full items-center justify-center px-4 sm:pt-32 sm:pb-24 md:pb-32'>
         <motion.div
           variants={containerVariants}
           initial='hidden'
           animate='visible'
-          style={{ y: contentY }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
           className='flex max-w-4xl flex-col items-center text-center'
         >
           <motion.h1
@@ -104,7 +87,10 @@ const ProHero = () => {
             <span className='text-neutral text-sm font-medium'>No credit card required to explore</span>
           </motion.div>
 
-          <motion.div variants={itemVariants} className='text-md text-neutral/80 mt-8 flex items-center gap-6'>
+          <motion.div
+            variants={itemVariants}
+            className='text-md text-neutral/80 mt-8 flex flex-col items-center gap-6 sm:flex-row'
+          >
             <div className='flex items-center gap-2'>
               <svg
                 width='18'
@@ -155,7 +141,7 @@ const ProHero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 0.8 }}
-        className='absolute bottom-6 left-1/2 -translate-x-1/2'
+        className='fixed bottom-8 left-1/2 hidden -translate-x-1/2'
       >
         <motion.div
           animate={{ y: [0, 8, 0] }}
@@ -165,6 +151,11 @@ const ProHero = () => {
           <div className='bg-neutral h-1.5 w-1.5 rounded-full' />
         </motion.div>
       </motion.div>
+
+      <div className='fixed inset-x-0 top-0 h-full w-screen overflow-hidden'>
+        <StarsBackground />
+        <ShootingStars />
+      </div>
     </section>
   )
 }

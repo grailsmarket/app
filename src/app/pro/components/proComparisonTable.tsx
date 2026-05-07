@@ -84,7 +84,7 @@ const ProComparisonTable = () => {
   const dispatch = useAppDispatch()
 
   return (
-    <section className='flex w-full flex-col items-center gap-6'>
+    <section className='hidden w-full flex-col items-center gap-6 lg:flex'>
       <button
         onClick={() => setExpanded((p) => !p)}
         className='group flex cursor-pointer items-center gap-2 text-lg font-semibold transition-colors hover:text-white/80'

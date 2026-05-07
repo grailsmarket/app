@@ -1,7 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { motion } from 'motion/react'
 import { cn } from '@/utils/tailwind'
 import { TIER_LABELS, TIER_COLORS } from './proSubscriberData'
 import ShootingStars from '@/components/ui/shootingStars'
@@ -14,13 +13,6 @@ interface ProSubscriberHeroProps {
 }
 
 const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) => {
-  const sectionRef = useRef<HTMLElement>(null)
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, 180])
-  const starsY = useTransform(scrollYProgress, [0, 1], [0, 120])
-  const shootingStarsY = useTransform(scrollYProgress, [0, 1], [0, 200])
-  const glowY = useTransform(scrollYProgress, [0, 1], [0, 80])
-
   const tierName = TIER_LABELS[tierId] ?? 'Free'
   const tierColor = TIER_COLORS[tierId] ?? 'text-neutral'
 
@@ -30,28 +22,18 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
     : null
 
   return (
-    <section ref={sectionRef} className='relative h-[150vh] overflow-hidden'>
+    <section className='border-tertiary/50 relative h-[calc(100vh-56px)] overflow-hidden border-b-2 md:h-[calc(100vh-70px)]'>
       <motion.div
         variants={glowVariants}
         animate='animate'
-        style={{ y: glowY }}
-        className='background-radial-primary absolute top-[35vh] left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2'
+        className='background-radial-primary absolute top-[50vh] left-1/2 h-[600px] w-screen -translate-x-1/2 -translate-y-1/2 sm:w-[600px]'
       />
 
-      <motion.div style={{ y: starsY }} className='absolute inset-x-0 top-0 z-0 h-[115vh]'>
-        <StarsBackground />
-      </motion.div>
-
-      <motion.div style={{ y: shootingStarsY }} className='absolute inset-x-0 top-0 z-0 h-[115vh]'>
-        <ShootingStars />
-      </motion.div>
-
-      <div className='sticky top-0 z-10 flex h-screen items-center justify-center px-4 pt-24 pb-16 sm:pt-32 sm:pb-24 md:pt-40 md:pb-32'>
+      <div className='z-10 flex h-full items-center justify-center px-4 py-16 sm:pt-32 sm:pb-24 md:pb-32'>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
-          style={{ y: contentY }}
           className='flex max-w-3xl flex-col items-center text-center'
         >
           <div className='mb-4'>
@@ -65,10 +47,7 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
               )}
             >
               <span
-                className={cn(
-                  'h-1.5 w-1.5 rounded-full',
-                  isExpired ? 'bg-red-400' : 'bg-green-400 animate-pulse'
-                )}
+                className={cn('h-1.5 w-1.5 rounded-full', isExpired ? 'bg-red-400' : 'animate-pulse bg-green-400')}
               />
               {isExpired ? 'Expired' : 'Active'} {tierName} Plan
             </span>
@@ -85,12 +64,8 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
           </p>
 
           {daysLeft != null && !isExpired && (
-            <div className='mt-4 rounded-full bg-secondary px-4 py-1.5 text-sm font-medium text-neutral'>
-              {daysLeft === 0
-                ? 'Expires today'
-                : daysLeft === 1
-                  ? 'Expires tomorrow'
-                  : `${daysLeft} days remaining`}
+            <div className='bg-secondary text-neutral mt-4 rounded-full px-4 py-1.5 text-sm font-medium'>
+              {daysLeft === 0 ? 'Expires today' : daysLeft === 1 ? 'Expires tomorrow' : `${daysLeft} days remaining`}
             </div>
           )}
 
@@ -100,6 +75,11 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
             </div>
           )}
         </motion.div>
+      </div>
+
+      <div className='fixed inset-x-0 top-0 h-full w-screen overflow-hidden'>
+        <StarsBackground />
+        <ShootingStars />
       </div>
     </section>
   )

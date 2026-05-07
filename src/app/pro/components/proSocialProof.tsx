@@ -31,7 +31,7 @@ const ProSocialProof = () => {
   const displayed = TESTEMONIAL_QUOTES.slice(0, 7)
 
   return (
-    <section className='border-tertiary/50 flex w-full flex-col items-center gap-6 border-y py-10 sm:py-14'>
+    <section className='border-tertiary/50 bg-background relative z-10 flex w-full flex-col items-center gap-6 border-y px-4 py-10 sm:py-14'>
       <p className='text-neutral text-center text-lg font-semibold tracking-widest uppercase'>
         Trusted by top ENS collectors
       </p>

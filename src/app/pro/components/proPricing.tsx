@@ -129,14 +129,16 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
   const isSubscriberView = userTierId != null && userTierId > 0
 
   return (
-    <section className='flex w-full flex-col items-center gap-10 sm:gap-12'>
+    <section className='flex w-full flex-col items-center gap-6 sm:gap-12'>
       <div className='flex max-w-3xl flex-col items-center gap-4 text-center'>
         <h2 className='font-sedan-sc text-4xl sm:text-5xl md:text-6xl'>
           {isSubscriberView ? 'Your Plan & ' : ''}Simple, Transparent <span className='text-primary'>Pricing</span>
         </h2>
         <p className='text-neutral max-w-xl text-lg sm:text-xl'>
           {isSubscriberView
-            ? 'You are currently subscribed to the ' + TIER_LABELS[userTierId] + ' plan. Upgrade anytime to unlock more features.'
+            ? 'You are currently subscribed to the ' +
+              TIER_LABELS[userTierId] +
+              ' plan. Upgrade anytime to unlock more features.'
             : 'Choose the plan that fits your domaining strategy. Upgrade or cancel anytime.'}
         </p>
       </div>
@@ -184,7 +186,7 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
         initial='hidden'
         whileInView='visible'
         viewport={{ once: true, margin: '-60px' }}
-        className='grid w-full grid-cols-1 gap-5 md:grid-cols-3 md:items-stretch'
+        className='grid w-full grid-cols-1 gap-6 md:grid-cols-3 md:items-stretch'
       >
         {tiers.map((tier) => {
           const isCurrent = isSubscriberView && userTierId === tier.tierId
@@ -207,7 +209,7 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
             >
               {isCurrent && (
                 <div className='absolute -top-3 left-1/2 -translate-x-1/2'>
-                  <span className='rounded-full bg-green-500 px-4 py-1 text-sm font-bold text-background shadow-lg'>
+                  <span className='text-background rounded-full bg-green-500 px-4 py-1 text-sm font-bold shadow-lg'>
                     Current Plan
                   </span>
                 </div>
@@ -243,10 +245,8 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
                     </div>
                     {isYearly && (
                       <div className='mt-1.5'>
-                        <span className='text-neutral text-lg line-through'>
-                          {formatPrice(tier.monthlyPrice * 12)}
-                        </span>
-                        <span className='text-lg ml-2 font-semibold text-green-400'>
+                        <span className='text-neutral text-lg line-through'>{formatPrice(tier.monthlyPrice * 12)}</span>
+                        <span className='ml-2 text-lg font-semibold text-green-400'>
                           {formatPrice(Number(getPrice(tier.monthlyPrice)))}/year
                         </span>
                       </div>
@@ -259,7 +259,7 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
                 <div
                   onClick={() => dispatch(openUpgradeModalWithTier(tier.tierId))}
                   className={cn(
-                    'w-full cursor-pointer rounded border-2 border-green-500/50 transition-all hover:bg-green-500/20 bg-green-500/10 px-4 py-3 text-center text-base font-bold hover:scale-[1.02] active:scale-[0.98] text-green-400'
+                    'w-full cursor-pointer rounded border-2 border-green-500/50 bg-green-500/10 px-4 py-3 text-center text-base font-bold text-green-400 transition-all hover:scale-[1.02] hover:bg-green-500/20 active:scale-[0.98]'
                   )}
                 >
                   Extend Plan
@@ -267,7 +267,7 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
               ) : isLower ? (
                 <div
                   className={cn(
-                    'w-full rounded border-2 border-tertiary/40 px-4 py-3 text-center text-base font-bold text-neutral'
+                    'border-tertiary/40 text-neutral w-full rounded border-2 px-4 py-3 text-center text-base font-bold'
                   )}
                 >
                   Included
@@ -290,7 +290,11 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
                     <div
                       className={cn(
                         'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
-                        isCurrent ? 'bg-green-500/20' : tier.popular && !isSubscriberView ? 'bg-primary/20' : 'bg-white/10'
+                        isCurrent
+                          ? 'bg-green-500/20'
+                          : tier.popular && !isSubscriberView
+                            ? 'bg-primary/20'
+                            : 'bg-white/10'
                       )}
                     >
                       <Check className={cn('h-3 w-3', isCurrent ? 'text-green-400' : tier.color)} />
@@ -304,14 +308,14 @@ const ProPricing = ({ userTierId }: ProPricingProps) => {
         })}
       </motion.div>
 
-      <div className='border-purple-400/50 flex w-full max-w-2xl flex-col items-center gap-3 rounded-lg border-2 px-6 py-5 text-center sm:flex-row sm:justify-between'>
-        <div className='text-left'>
+      <div className='flex w-full max-w-2xl flex-col items-center gap-3 rounded-lg border-2 border-purple-400/50 px-6 py-5 text-center sm:flex-row sm:justify-between'>
+        <div className='text-center sm:text-left'>
           <p className='text-lg font-bold'>Need something bigger?</p>
           <p className='text-neutral text-sm'>Patron tier for teams, funds, and institutions.</p>
         </div>
         <button
           onClick={() => dispatch(openUpgradeModalWithTier(4))}
-          className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base hover:scale-[1.02] active:scale-[0.98] font-semibold text-purple-400 transition-colors hover:bg-purple-400/10'
+          className='shrink-0 cursor-pointer rounded border-2 border-purple-400 px-5 py-2.5 text-base font-semibold text-purple-400 transition-colors hover:scale-[1.02] hover:bg-purple-400/10 active:scale-[0.98]'
         >
           Explore Patron
         </button>

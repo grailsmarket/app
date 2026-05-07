@@ -120,12 +120,7 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
           )}
         </div>
 
-        <p
-          className={cn(
-            'text-sm leading-relaxed',
-            isAccessible ? 'text-neutral/90' : 'text-neutral/60'
-          )}
-        >
+        <p className={cn('text-sm leading-relaxed', isAccessible ? 'text-neutral/90' : 'text-neutral/60')}>
           {feature.longDescription}
         </p>
 
@@ -184,7 +179,7 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.05 } }}
-              className='absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-secondary/80 hover:bg-secondary transition-colors cursor-pointer z-101'
+              className='bg-secondary/80 hover:bg-secondary absolute top-3 right-3 z-101 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors'
               onClick={() => setActive(null)}
             >
               <Cross className='h-auto w-5' />
@@ -193,9 +188,9 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
             <motion.div
               layoutId={`card-${active.id}-${id}`}
               ref={ref}
-              className='dark:bg-background flex h-fit w-full max-w-[560px] flex-col overflow-hidden rounded-xl bg-secondary border-2 border-tertiary/60 shadow-xl'
+              className='dark:bg-background bg-secondary border-tertiary/60 flex h-fit w-full max-w-[560px] flex-col overflow-hidden rounded-xl border-2 shadow-xl'
             >
-              <div className='flex items-center gap-4 border-b border-tertiary/40 p-5 sm:p-6'>
+              <div className='border-tertiary/40 flex items-center gap-4 border-b p-5 sm:p-6'>
                 <motion.div
                   layoutId={`icon-${active.id}-${id}`}
                   className='flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10'
@@ -203,10 +198,7 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
                   <Image src={active.icon} alt={active.name} width={28} height={28} />
                 </motion.div>
                 <div className='flex flex-col'>
-                  <motion.h3
-                    layoutId={`title-${active.id}-${id}`}
-                    className='text-xl font-bold'
-                  >
+                  <motion.h3 layoutId={`title-${active.id}-${id}`} className='text-xl font-bold'>
                     {active.name}
                   </motion.h3>
                   <motion.p layoutId={`desc-${active.id}-${id}`} className='text-neutral text-sm font-medium'>
@@ -220,7 +212,7 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15, duration: 0.3 }}
-                  className='text-sm leading-relaxed text-neutral/90'
+                  className='text-neutral/90 text-sm leading-relaxed'
                 >
                   {active.modalDescription}
                 </motion.p>
@@ -270,18 +262,16 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
       <div className='flex w-full flex-col gap-14 sm:gap-20'>
         {accessibleFeatures.length > 0 && (
           <section className='flex flex-col gap-8'>
-            <div className='flex items-center gap-3 justify-between'>
+            <div className='flex items-center justify-between gap-3'>
               <div className='flex items-center gap-3'>
-                <div className='bg-green-500/20 flex h-8 w-8 items-center justify-center rounded-full'>
+                <div className='flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20'>
                   <Image src={checkIcon} alt='' width={16} height={16} />
                 </div>
                 <h2 className='font-sedan-sc text-3xl sm:text-4xl'>
                   Your <span className='text-primary'>Features</span>
                 </h2>
               </div>
-              <span className='text-neutral ml-2 text-lg font-medium'>
-                {accessibleFeatures.length} available
-              </span>
+              <span className='text-neutral ml-2 text-lg font-medium'>{accessibleFeatures.length} available</span>
             </div>
 
             <motion.div
@@ -298,18 +288,16 @@ const ProSubscriberFeatures = ({ userTierId }: ProSubscriberFeaturesProps) => {
 
         {lockedFeatures.length > 0 && (
           <section className='flex flex-col gap-8'>
-            <div className='flex items-center gap-3 justify-between'>
+            <div className='flex items-center justify-between gap-3'>
               <div className='flex items-center gap-3'>
-                <div className='bg-red-500/20 flex h-8 w-8 items-center justify-center rounded-full'>
+                <div className='flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20'>
                   <Image src={lockIcon} alt='' width={16} height={16} />
                 </div>
                 <h2 className='font-sedan-sc text-3xl sm:text-4xl'>
                   Unlock <span className='text-primary'>More</span>
                 </h2>
               </div>
-              <span className='text-neutral ml-2 text-lg font-medium'>
-                {lockedFeatures.length} locked
-              </span>
+              <span className='text-neutral ml-2 text-lg font-medium'>{lockedFeatures.length} locked</span>
             </div>
 
             <motion.div

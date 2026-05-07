@@ -12,6 +12,8 @@ import CommentsPanel from './commentsPanel'
 import NamePageTabContent from './namePageTabContent'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
+import ValuationRangePanel from './valuationRangePanel'
+// import Metadata from './metadata'
 
 interface Props {
   name: string
@@ -92,6 +94,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
             openEditMetadataModal={openEditMetadataModal}
           />
           <div className='hidden @[64rem]/app:block'>
+            <ValuationRangePanel key={`range-${name}`} name={name} />
+          </div>
+          <div className='hidden @[64rem]/app:block'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden @[64rem]/app:block'>
@@ -104,6 +109,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
           </div>
         </div>
         <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:w-3/5'>
+          <div className='@[64rem]/app:hidden'>
+            <ValuationRangePanel key={`range-${name}`} name={name} />
+          </div>
           <div className='@[64rem]/app:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>

@@ -76,6 +76,14 @@ export function useE2ESession(
   const outboundSessionsRef = useRef<Map<string, Olm.Session>>(new Map())
   const inboundSessionsRef = useRef<Map<string, Olm.Session>>(new Map())
   const rosterRef = useRef<RosterEntry[]>([])
+  // Sesame "active session" convergence: which direction's session most
+  // recently decrypted for this peer. Encrypt() prefers this one so the
+  // session that just received also sends — that's the round-trip Olm needs
+  // to step its DH ratchet (post-compromise security). Without this, the
+  // both-sides-eager init flow leaves all four sessions unidirectional and
+  // the DH ratchet never advances. Default 'out'; flips to 'in' on the
+  // first received message; converges within one round-trip.
+  const activeDirectionRef = useRef<Map<string, SessionDirection>>(new Map())
 
   const refreshOwnDid = () => {
     if (!accountRef.current) {
@@ -120,6 +128,7 @@ export function useE2ESession(
     for (const s of inboundSessionsRef.current.values()) s.free()
     outboundSessionsRef.current = new Map()
     inboundSessionsRef.current = new Map()
+    activeDirectionRef.current = new Map()
     accountRef.current?.free()
     accountRef.current = null
     storageKeyRef.current = null
@@ -152,6 +161,7 @@ export function useE2ESession(
     for (const s of inboundSessionsRef.current.values()) s.free()
     outboundSessionsRef.current = new Map()
     inboundSessionsRef.current = new Map()
+    activeDirectionRef.current = new Map()
     rosterRef.current = []
     if (!unlocked || !storageKeyRef.current) {
       setState({ kind: 'locked' })
@@ -228,6 +238,7 @@ export function useE2ESession(
       for (const s of inboundSessionsRef.current.values()) s.free()
       outboundSessionsRef.current = new Map()
       inboundSessionsRef.current = new Map()
+      activeDirectionRef.current = new Map()
       accountRef.current?.free()
       accountRef.current = null
     }
@@ -342,23 +353,37 @@ export function useE2ESession(
       if (!storageKeyRef.current || !dmKey || !ownDidRef.current || !userAddress) {
         throw new Error('Session not ready')
       }
-      // Encrypt with our outbound session per peer device. If we only have
-      // an inbound session for some peer (they sent us their pre-key but we
-      // never established our own outbound — e.g., they republished while
-      // we were unlocked but had no chance to consume), fall back to that
-      // inbound: Olm sessions are bidirectional, so encrypting on our
-      // inbound view also produces ciphertext the peer's outbound can
-      // decrypt.
+      // Pick the session we encrypt with based on Sesame-style active-
+      // direction tracking: prefer whichever session most recently decrypted
+      // for this peer. That's the one that just observed their fresh DH
+      // pubkey, so encrypting on it includes our matching DH and steps the
+      // ratchet — without this, every session ends up unidirectional and
+      // PCS never kicks in. Default 'out' for first-send before any
+      // decrypt; falls back to the other direction if the preferred map
+      // doesn't have an entry yet.
+      const peerDids = new Set<string>([
+        ...outboundSessionsRef.current.keys(),
+        ...inboundSessionsRef.current.keys(),
+      ])
+      peerDids.delete(ownDidRef.current)
+
       const targets: { did: string; session: Olm.Session; direction: SessionDirection }[] = []
-      const seen = new Set<string>()
-      for (const [did, session] of outboundSessionsRef.current.entries()) {
-        if (did === ownDidRef.current) continue
-        seen.add(did)
-        targets.push({ did, session, direction: 'out' })
-      }
-      for (const [did, session] of inboundSessionsRef.current.entries()) {
-        if (did === ownDidRef.current || seen.has(did)) continue
-        targets.push({ did, session, direction: 'in' })
+      for (const did of peerDids) {
+        const preferred: SessionDirection = activeDirectionRef.current.get(did) ?? 'out'
+        const primary =
+          preferred === 'out'
+            ? outboundSessionsRef.current.get(did)
+            : inboundSessionsRef.current.get(did)
+        if (primary) {
+          targets.push({ did, session: primary, direction: preferred })
+          continue
+        }
+        const fallbackDir: SessionDirection = preferred === 'out' ? 'in' : 'out'
+        const fallback =
+          fallbackDir === 'out'
+            ? outboundSessionsRef.current.get(did)
+            : inboundSessionsRef.current.get(did)
+        if (fallback) targets.push({ did, session: fallback, direction: fallbackDir })
       }
       if (targets.length === 0) throw new Error('No active sessions')
 
@@ -410,6 +435,7 @@ export function useE2ESession(
         if (inbound && inbound.matches_inbound(ct)) {
           const out = decryptFromPeer(inbound, ct, 0)
           await persistSession(userAddress, dmKey, senderDid, 'in', inbound, storageKeyRef.current)
+          activeDirectionRef.current.set(senderDid, 'in')
           return out
         }
         const { session, plaintext } = await createInboundSessionFromPrekey(accountRef.current, ct)
@@ -417,6 +443,7 @@ export function useE2ESession(
         inboundSessionsRef.current.set(senderDid, session)
         await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
         await persistSession(userAddress, dmKey, senderDid, 'in', session, storageKeyRef.current)
+        activeDirectionRef.current.set(senderDid, 'in')
         // We just received from a sender — assume they're a peer for
         // readiness; if myUserId resolves later and the roster says
         // otherwise, the participants effect re-runs updateReadiness and
@@ -437,6 +464,7 @@ export function useE2ESession(
         try {
           const plaintext = decryptFromPeer(inbound, ct, 1)
           await persistSession(userAddress, dmKey, senderDid, 'in', inbound, storageKeyRef.current)
+          activeDirectionRef.current.set(senderDid, 'in')
           return plaintext
         } catch {
           // Fall through to outbound — message must be on our channel.
@@ -445,6 +473,7 @@ export function useE2ESession(
       if (outbound) {
         const plaintext = decryptFromPeer(outbound, ct, 1)
         await persistSession(userAddress, dmKey, senderDid, 'out', outbound, storageKeyRef.current)
+        activeDirectionRef.current.set(senderDid, 'out')
         return plaintext
       }
       throw new Error('No session to decrypt type=1 message')

@@ -63,10 +63,14 @@ const ThreadView: React.FC = () => {
   const peerProfile = usePeerProfile(peer?.address)
   const isBlocked = !!chat?.is_blocked_by_me
 
-  // Pause composer only when the user opted into E2E for an unready DIRECT
-  // chat. Group chats have no E2E mechanism (Olm is 1:1) so locking sends
-  // for them when the user is in the rollout cohort would break group DMs.
-  const blockSendsForE2E = e2eEnabled && !e2eReady && chat?.type === 'direct'
+  // Pause composer when the user opted into E2E for any chat that isn't
+  // confirmed-not-direct. Default-blocked while `chat` is still loading
+  // (`chat?.type` is undefined) — without this, the composer would briefly
+  // accept input that `useSendMessage` then sends as plaintext, because the
+  // session can't be ready before we even know which chat we're in. Once
+  // `chat` resolves to `'group'`, the gate releases (Olm is 1:1; group
+  // chats have no E2E mechanism).
+  const blockSendsForE2E = e2eEnabled && !e2eReady && chat?.type !== 'group'
 
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()

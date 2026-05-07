@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useChat } from '@/hooks/chat/useChat'
 import { useChatMessages } from '@/hooks/chat/useChatMessages'
 import { useE2ESession } from '@/hooks/chat/useE2ESession'
@@ -22,7 +22,7 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   const { userAddress } = useUserContext()
 
   const { data: chat } = useChat(chatId)
-  const { messages } = useChatMessages(chatId)
+  const { messages, isLoading: msgsLoading } = useChatMessages(chatId)
   // Find ourselves in the participants list to get our chat-service user_id.
   // useE2ESession needs this to distinguish own-other-device handshakes
   // (supplemental fanout targets) from peer handshakes (real readiness).
@@ -36,14 +36,15 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   // useE2ESession itself tracks via sessionsRef).
   const processedHsRef = useRef<Set<string>>(new Set())
 
-  // Republishing our own handshake is a side effect that must not be racy:
-  // multiple new dids observed in quick succession should result in a single
-  // handshake (or at most one per discovery batch). A simple inflight flag is
-  // enough since consumePeerBundle is already idempotent.
-  const republishingRef = useRef(false)
+  // Tracked as state (not just a ref) so the manual "Send my keys" button
+  // can render a spinner / disable itself while a publish is in flight,
+  // preventing double-clicks that would post duplicate handshake messages.
+  const [publishing, setPublishing] = useState(false)
+  const publishingRef = useRef(false)
   const republishOurHandshake = async () => {
-    if (republishingRef.current) return
-    republishingRef.current = true
+    if (publishingRef.current) return
+    publishingRef.current = true
+    setPublishing(true)
     try {
       const myBundle = await e2e.buildHandshakeBundle()
       await sendMessage({
@@ -51,9 +52,19 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
         body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
       })
     } finally {
-      republishingRef.current = false
+      publishingRef.current = false
+      setPublishing(false)
     }
   }
+
+  // Auto-publish our bundle once after unlock if the cache shows we've
+  // never sent ours in this chat. Removes the second click ("Send my
+  // keys") from the bootstrap flow — the user's signature on `unlock` is
+  // already a clear consent gesture, and republishing is harmless if a
+  // peer handshake later arrives (consumePeerBundle is idempotent).
+  // Gated on `!msgsLoading` so we don't publish a duplicate when our
+  // existing handshake is just not in the cache yet.
+  const autoPublishedRef = useRef(false)
 
   // Live WS path — fast for handshakes posted while the banner is mounted.
   useEffect(() => {
@@ -78,12 +89,19 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
     if (!enabled || !e2e.isUnlocked) return
     let cancelled = false
     ;(async () => {
+      let sawOwnHandshake = false
       for (const m of messages) {
         if (cancelled) return
-        if (processedHsRef.current.has(m.id)) continue
         if (m.id.startsWith('optimistic-')) continue
         const env = tryDecode(m.body)
         if (!env || !isHandshakeEnvelope(env)) continue
+        // Track whether our own bundle is already in this chat's history,
+        // so the auto-publish step below can skip when we've sent before.
+        if (m.sender_address?.toLowerCase() === myAddress) {
+          sawOwnHandshake = true
+          continue
+        }
+        if (processedHsRef.current.has(m.id)) continue
         try {
           const { isNew } = await e2e.consumePeerBundle(env.bundle, m.sender_user_id)
           // Only mark processed AFTER a successful consume. A transient
@@ -96,11 +114,24 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
           console.error(err)
         }
       }
+      // Auto-publish our bundle once if we've never sent one for this
+      // chat. Wait for messages to finish loading first so we don't
+      // duplicate an existing handshake that hasn't arrived in the cache
+      // yet. `republishOurHandshake` is inflight-guarded, so a concurrent
+      // republish triggered by an `isNew` peer bundle above is a no-op.
+      if (!cancelled && !msgsLoading && !sawOwnHandshake && !autoPublishedRef.current) {
+        autoPublishedRef.current = true
+        try {
+          await republishOurHandshake()
+        } catch (err) {
+          console.error(err)
+        }
+      }
     })()
     return () => {
       cancelled = true
     }
-  }, [enabled, e2e, e2e.isUnlocked, messages, chatId])
+  }, [enabled, e2e, e2e.isUnlocked, messages, msgsLoading, myAddress, chatId])
 
   if (!enabled) return null
   if (chat?.type !== 'direct') return null
@@ -129,16 +160,13 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
       <p className='mb-2'>Setting up encryption with this peer…</p>
       <button
         type='button'
-        onClick={async () => {
-          const bundle = await e2e.buildHandshakeBundle()
-          await sendMessage({
-            chatId,
-            body: encodeHandshake({ v: 1, kind: 'hs', bundle }),
-          })
+        onClick={() => {
+          republishOurHandshake().catch(console.error)
         }}
-        className='bg-primary text-background rounded px-3 py-1 font-semibold'
+        disabled={publishing}
+        className='bg-primary text-background rounded px-3 py-1 font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-60'
       >
-        Send my keys
+        {publishing ? 'Sending…' : 'Send my keys'}
       </button>
     </div>
   )

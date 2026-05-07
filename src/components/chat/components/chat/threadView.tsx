@@ -22,6 +22,7 @@ import TypingDots from './typingDots'
 import E2EHandshakeBanner from './e2eHandshakeBanner'
 import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
 import { useE2EEnabled } from '@/hooks/chat/useE2EEnabled'
+import { useEncryptionDisabled } from '@/hooks/chat/useEncryptionDisabled'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
@@ -39,7 +40,12 @@ const ThreadView: React.FC = () => {
   const [, forceTick] = useState(0)
   useEffect(() => sessionRegistry.subscribe(() => forceTick((t) => t + 1)), [])
   const session = activeChatId ? sessionRegistry.get(activeChatId) : undefined
-  const e2eReady = !!session?.isReady()
+  const sessionReady = !!session?.isReady()
+  const { encryptionDisabled, setEncryptionDisabled } = useEncryptionDisabled(activeChatId)
+  // Effective encryption state for THIS send: a session must be ready AND
+  // the user must not have explicitly opted out. The opt-out exists so users
+  // who bootstrapped E2E aren't permanently locked into it.
+  const e2eReady = sessionReady && !encryptionDisabled
   // Compute a plaintext cap that keeps the encrypted fanout body under the
   // server's 4000-byte limit. Olm ciphertext is ~1.5× the plaintext size
   // (header + base64), each `cts` entry adds ~80 bytes of JSON wrapping,
@@ -78,7 +84,7 @@ const ThreadView: React.FC = () => {
   const isBlocked = !!chat?.is_blocked_by_me
 
   // Pause composer when the user has (or might have) opted into E2E for any
-  // chat that isn't confirmed-not-direct. Three default-blocked cases:
+  // chat that isn't confirmed-not-direct. Default-blocked cases:
   //   - `chat?.type` undefined (useChat still loading) — we can't tell if
   //     the chat is direct or group yet; assume direct.
   //   - `e2eFlagLoading` — PostHog hasn't resolved the rollout cohort yet;
@@ -86,8 +92,15 @@ const ThreadView: React.FC = () => {
   //     to the plaintext fallback.
   //   - `e2eEnabled` — the user is confirmed in the cohort and the session
   //     isn't ready (this is the post-load steady-state gate).
-  // Group chats explicitly release the gate (Olm is 1:1; no E2E mechanism).
-  const blockSendsForE2E = (e2eEnabled || e2eFlagLoading) && !e2eReady && chat?.type !== 'group'
+  // Group chats and an explicit per-chat opt-out release the gate. The
+  // gate uses `sessionReady` (raw) rather than `e2eReady` so a user who
+  // toggles encryption off while still bootstrapping doesn't get blocked
+  // — once they've opted out, plaintext is the intended path.
+  const blockSendsForE2E =
+    (e2eEnabled || e2eFlagLoading) &&
+    !sessionReady &&
+    !encryptionDisabled &&
+    chat?.type !== 'group'
 
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
@@ -229,6 +242,26 @@ const ThreadView: React.FC = () => {
           <p className='text-foreground max-w-[calc(100%-44px)] truncate text-xl font-semibold'>{peerLabel}</p>
         </Link>
         <div className='relative flex items-center gap-1'>
+          {sessionReady && (
+            <button
+              type='button'
+              onClick={() => setEncryptionDisabled(!encryptionDisabled)}
+              aria-pressed={!encryptionDisabled}
+              aria-label={
+                encryptionDisabled
+                  ? 'Encryption off — click to turn on'
+                  : 'Encryption on — click to turn off'
+              }
+              title={
+                encryptionDisabled
+                  ? 'Encryption is OFF for this chat — new messages will be sent in plaintext. Click to re-enable.'
+                  : 'Encryption is ON for this chat — new messages will be end-to-end encrypted. Click to send plaintext instead.'
+              }
+              className='hover:bg-primary/10 rounded-md p-1 text-base leading-none transition-colors'
+            >
+              {encryptionDisabled ? '🔓' : '🔒'}
+            </button>
+          )}
           {headerMenuItems.length > 0 && <ContextMenu items={headerMenuItems} />}
           <button
             onClick={() => dispatch(closeChatSidebar())}

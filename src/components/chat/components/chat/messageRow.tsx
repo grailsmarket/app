@@ -22,7 +22,7 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
     : status === 'locked'
       ? '🔒 Encrypted — unlock to read'
       : status === 'failed'
-        ? '⚠️ Could not decrypt'
+        ? '⚠️ Could not decrypt — sender may need to re-send keys'
         : status === 'decrypting'
           ? '…'
           : displayBody
@@ -43,6 +43,15 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
         </div>
         <span className={cn('text-neutral text-sm', isOwn ? 'text-right' : 'text-left')}>
           {isOwn && isRead ? 'Seen •' : ''} {time}
+          {/* Lock badge on rows that arrived encrypted and were successfully
+              decrypted, so users can tell at a glance which messages were
+              transit-encrypted vs. sent in plaintext (the per-chat toggle
+              lets a user opt out, so the two can coexist in one history). */}
+          {status === 'decrypted' && (
+            <span className='ml-1' title='End-to-end encrypted' aria-label='End-to-end encrypted'>
+              🔒
+            </span>
+          )}
         </span>
       </div>
     </div>

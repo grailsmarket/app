@@ -6,6 +6,7 @@ import type { ChatMessage, ChatMessagesResponse } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
 import { plaintextCache } from '@/lib/e2e/plaintextCache'
+import { getEncryptionDisabled } from '@/lib/e2e/encryptionPref'
 
 interface MessagesPage extends ChatMessagesResponse {}
 
@@ -38,7 +39,13 @@ export const useSendMessage = (chatId: string | null) => {
     mutationFn: async ({ body, tempId }) => {
       if (!chatId) throw new Error('No chat selected')
       const session = sessionRegistry.get(chatId)
-      if (session?.isReady()) {
+      // Honour the per-chat user opt-out: even when a session is ready,
+      // a user who toggled "encryption off" in the header expects the
+      // next send to go in plaintext. Read at send time (not at hook
+      // mount) so a toggle right before the click is respected without
+      // waiting for a re-render.
+      const optedOut = getEncryptionDisabled(chatId)
+      if (session?.isReady() && !optedOut) {
         const encodedBody = await session.encrypt(body, tempId)
         const sent = await sendMessage({ chatId, body: encodedBody })
         plaintextCache.set(sent.id, body)

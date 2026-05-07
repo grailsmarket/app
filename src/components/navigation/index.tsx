@@ -26,6 +26,7 @@ import CrossIcon from 'public/icons/cross.svg'
 import More from './dropdowns/more'
 import Premium from './dropdowns/premium'
 import { useUserContext } from '@/context/user'
+import Pro from './dropdowns/pro'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [dropdownOption, setDropdownOption] = useState<string | null>(null)
@@ -242,6 +243,16 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             )}
           >
             <More setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+          </div>
+          <div
+            className={cn(
+              'border-neutral w-full border-b-2 md:border-none',
+              dropdownOption === 'pro' || (dropdownOption === null && previousDropdownOption === 'pro')
+                ? 'block'
+                : 'block md:hidden'
+            )}
+          >
+            <Pro setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
           </div>
         </div>
         <div

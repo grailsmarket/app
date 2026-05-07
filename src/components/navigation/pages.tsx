@@ -145,6 +145,19 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       >
         More
       </button>
+      <Link
+        href='/pro'
+        className={cn(
+          'hover-underline font-medium transition-all',
+          pathname === '/pro' ? 'text-primary active font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'pro' && 'active text-primary opacity-100'
+        )}
+        onMouseEnter={() => handleMouseEnter('pro')}
+        onMouseLeave={handleMouseLeave}
+        onClick={onClick}
+      >
+        Pro
+      </Link>
 
       {userAddress && (
         <Link

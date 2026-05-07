@@ -4,8 +4,6 @@ import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { cn } from '@/utils/tailwind'
 import { TIER_LABELS, TIER_COLORS } from './proSubscriberData'
-import ShootingStars from '@/components/ui/shootingStars'
-import StarsBackground from '@/components/ui/starsBackground'
 import { glowVariants } from './proHero'
 
 interface ProSubscriberHeroProps {
@@ -17,8 +15,6 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
   const sectionRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] })
   const contentY = useTransform(scrollYProgress, [0, 1], [0, 180])
-  const starsY = useTransform(scrollYProgress, [0, 1], [0, 120])
-  const shootingStarsY = useTransform(scrollYProgress, [0, 1], [0, 200])
   const glowY = useTransform(scrollYProgress, [0, 1], [0, 80])
 
   const tierName = TIER_LABELS[tierId] ?? 'Free'
@@ -37,14 +33,6 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
         style={{ y: glowY }}
         className='background-radial-primary absolute top-[35vh] left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2'
       />
-
-      <motion.div style={{ y: starsY }} className='absolute inset-x-0 top-0 z-0 h-[115vh]'>
-        <StarsBackground />
-      </motion.div>
-
-      <motion.div style={{ y: shootingStarsY }} className='absolute inset-x-0 top-0 z-0 h-[115vh]'>
-        <ShootingStars />
-      </motion.div>
 
       <div className='sticky top-0 z-10 flex h-screen items-center justify-center px-4 pt-24 pb-16 sm:pt-32 sm:pb-24 md:pt-40 md:pb-32'>
         <motion.div

@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { Suspense } from 'react'
 import Footer from '@/components/footer'
 import ProPageShell from './components/proPageShell'
+import ProPageBackground from './components/proPageBackground'
 
 export const metadata: Metadata = {
   title: 'Grails Pro',
@@ -22,9 +23,12 @@ export const metadata: Metadata = {
 const ProPage = () => {
   return (
     <Suspense>
-      <main className='relative min-h-screen'>
+      <main className='relative h-screen overflow-y-auto scroll-smooth [scroll-snap-type:y_proximity]'>
+        <ProPageBackground />
         <ProPageShell />
-        <Footer />
+        <div className='relative z-10 snap-start'>
+          <Footer />
+        </div>
       </main>
     </Suspense>
   )

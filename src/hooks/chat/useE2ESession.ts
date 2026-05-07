@@ -508,6 +508,17 @@ export function useE2ESession(
     [userAddress]
   )
 
+  // How many distinct devices the next encrypt() will fan out to. Counts the
+  // union of outbound + inbound session keys minus self.
+  const fanoutTargetCountApi = useCallback((): number => {
+    const dids = new Set<string>([
+      ...outboundSessionsRef.current.keys(),
+      ...inboundSessionsRef.current.keys(),
+    ])
+    if (ownDidRef.current) dids.delete(ownDidRef.current)
+    return dids.size
+  }, [])
+
   // Expose to non-React callers via the module-level registry.
   useEffect(() => {
     if (!chatId || state.kind === 'locked') return
@@ -519,12 +530,21 @@ export function useE2ESession(
       decrypt,
       persistOwnPlaintext: persistOwnPlaintextApi,
       loadOwnPlaintext: loadOwnPlaintextApi,
+      fanoutTargetCount: fanoutTargetCountApi,
     }
     sessionRegistry.register(chatId, api)
     return () => {
       sessionRegistry.unregister(chatId)
     }
-  }, [chatId, state.kind, encrypt, decrypt, persistOwnPlaintextApi, loadOwnPlaintextApi])
+  }, [
+    chatId,
+    state.kind,
+    encrypt,
+    decrypt,
+    persistOwnPlaintextApi,
+    loadOwnPlaintextApi,
+    fanoutTargetCountApi,
+  ])
 
   return {
     state,

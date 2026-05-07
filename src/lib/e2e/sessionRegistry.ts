@@ -35,6 +35,11 @@ export interface SessionAPI {
   // Read back a previously-persisted own-send. Returns null if not stored
   // (peer-sent messages, or own sends from before this PR).
   loadOwnPlaintext: (messageId: string) => Promise<string | null>
+  // Number of distinct peer + own-other devices we'll fan out to on the
+  // next encrypt. Used by the composer to cap plaintext length so the
+  // resulting fanout body doesn't exceed the server's body-size limit
+  // (Olm + JSON expansion + N copies multiply quickly).
+  fanoutTargetCount: () => number
 }
 
 class SessionRegistry {

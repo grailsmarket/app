@@ -38,7 +38,21 @@ const ThreadView: React.FC = () => {
   // time as the banner moves the chat through `unlocked → no_session → ready`.
   const [, forceTick] = useState(0)
   useEffect(() => sessionRegistry.subscribe(() => forceTick((t) => t + 1)), [])
-  const e2eReady = !!(activeChatId && sessionRegistry.get(activeChatId)?.isReady())
+  const session = activeChatId ? sessionRegistry.get(activeChatId) : undefined
+  const e2eReady = !!session?.isReady()
+  // Compute a plaintext cap that keeps the encrypted fanout body under the
+  // server's 4000-byte limit. Olm ciphertext is ~1.5× the plaintext size
+  // (header + base64), each `cts` entry adds ~80 bytes of JSON wrapping,
+  // and the envelope itself takes ~200 fixed bytes. With N=fanout targets:
+  //   max_plaintext ≈ ((SERVER_LIMIT - 200) / N - 80) / 1.5
+  // Floored to leave headroom and keep typing latency reasonable.
+  const PLAINTEXT_FLOOR_FOR_E2E = 1500
+  const composerMaxLen = (() => {
+    if (!e2eReady || !session) return 4000
+    const targets = Math.max(1, session.fanoutTargetCount())
+    const room = Math.floor(((4000 - 200) / targets - 80) / 1.5)
+    return Math.max(200, Math.min(PLAINTEXT_FLOOR_FOR_E2E, room))
+  })()
 
   const { data: chat, isLoading: chatLoading } = useChat(activeChatId)
   const {
@@ -290,6 +304,7 @@ const ThreadView: React.FC = () => {
                   : 'Setting up encryption with this peer — sending paused.'
                 : null
             }
+            maxLen={composerMaxLen}
           />
         ))}
     </>

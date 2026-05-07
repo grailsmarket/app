@@ -8,6 +8,7 @@ import { useUserContext } from '@/context/user'
 import { handshakeBus } from '@/lib/e2e/handshakeBus'
 import { sendMessage } from '@/api/chats/sendMessage'
 import { encodeHandshake, tryDecode, isHandshakeEnvelope } from '@/lib/e2e/wire'
+import { parseBundle } from '@/lib/e2e/olm'
 
 interface Props {
   chatId: string
@@ -29,6 +30,12 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
   const myAddress = userAddress?.toLowerCase() ?? null
   const myUserId = chat?.participants?.find((p) => p.address.toLowerCase() === myAddress)?.user_id ?? null
   const e2e = useE2ESession(chatId, chat?.dm_key ?? null, myAddress, myUserId)
+
+  // Effects must mirror the render-time guards: the banner returns null for
+  // non-direct or blocked chats, but the cache-scan and bus-listener effects
+  // would otherwise still fire — and could publish an `hs` setup message
+  // into a group or blocked chat. Compute once, gate every effect on it.
+  const isEligibleChat = chat?.type === 'direct' && !chat?.is_blocked_by_me
 
   // Guards against re-processing the same handshake row. Survives renders;
   // resets on banner unmount (the per-mount semantics are fine — the
@@ -57,18 +64,16 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
     }
   }
 
-  // Auto-publish our bundle once after unlock if the cache shows we've
-  // never sent ours in this chat. Removes the second click ("Send my
-  // keys") from the bootstrap flow — the user's signature on `unlock` is
-  // already a clear consent gesture, and republishing is harmless if a
-  // peer handshake later arrives (consumePeerBundle is idempotent).
-  // Gated on `!msgsLoading` so we don't publish a duplicate when our
-  // existing handshake is just not in the cache yet.
-  const autoPublishedRef = useRef(false)
+  // Auto-publish our bundle once per chat after unlock if the cache shows
+  // we've never sent ours in that chat. Tracked per chatId so the latch
+  // doesn't carry across switches — a previously-seen direct chat that DID
+  // auto-publish shouldn't suppress auto-publish in a different chat that
+  // mounts later in the same banner instance.
+  const autoPublishedChatsRef = useRef<Set<string>>(new Set())
 
   // Live WS path — fast for handshakes posted while the banner is mounted.
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled || !isEligibleChat) return
     const off = handshakeBus.on(async ({ chatId: cid, bundle, senderUserId }) => {
       if (cid !== chatId || !e2e.isUnlocked) return
       try {
@@ -79,14 +84,14 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
       }
     })
     return off
-  }, [chatId, e2e, enabled])
+  }, [chatId, e2e, enabled, isEligibleChat])
 
   // REST/cache path — catches handshakes posted while this tab was closed
   // or before unlock. Without this, a peer's handshake sitting in chat
   // history would only render as setup text and never actually establish
   // the session, so async setup would stall until another live handshake.
   useEffect(() => {
-    if (!enabled || !e2e.isUnlocked) return
+    if (!enabled || !isEligibleChat || !e2e.isUnlocked) return
     let cancelled = false
     ;(async () => {
       let sawOwnHandshake = false
@@ -95,9 +100,19 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
         if (m.id.startsWith('optimistic-')) continue
         const env = tryDecode(m.body)
         if (!env || !isHandshakeEnvelope(env)) continue
-        // Track whether our own bundle is already in this chat's history,
-        // so the auto-publish step below can skip when we've sent before.
-        if (m.sender_address?.toLowerCase() === myAddress) {
+        // Identify OUR DEVICE's prior handshakes by Olm identity, not by
+        // wallet address — sibling devices share the address but have
+        // distinct Olm identities, and we want to consume their bundles
+        // (multi-device fanout) rather than skip them as "own".
+        let bundleIdentity: string | null = null
+        try {
+          bundleIdentity = parseBundle(env.bundle).identity
+        } catch {
+          // Malformed bundle — skip silently; consumePeerBundle would
+          // throw too, this just avoids the noisy error log path.
+          continue
+        }
+        if (bundleIdentity === e2e.ownDid) {
           sawOwnHandshake = true
           continue
         }
@@ -114,13 +129,19 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
           console.error(err)
         }
       }
-      // Auto-publish our bundle once if we've never sent one for this
-      // chat. Wait for messages to finish loading first so we don't
-      // duplicate an existing handshake that hasn't arrived in the cache
-      // yet. `republishOurHandshake` is inflight-guarded, so a concurrent
-      // republish triggered by an `isNew` peer bundle above is a no-op.
-      if (!cancelled && !msgsLoading && !sawOwnHandshake && !autoPublishedRef.current) {
-        autoPublishedRef.current = true
+      // Auto-publish our bundle once per chat if we've never sent one
+      // for this chat. Wait for messages to finish loading first so we
+      // don't duplicate an existing handshake that hasn't arrived in the
+      // cache yet. `republishOurHandshake` is inflight-guarded, so a
+      // concurrent republish triggered by an `isNew` peer bundle above is
+      // a no-op.
+      if (
+        !cancelled &&
+        !msgsLoading &&
+        !sawOwnHandshake &&
+        !autoPublishedChatsRef.current.has(chatId)
+      ) {
+        autoPublishedChatsRef.current.add(chatId)
         try {
           await republishOurHandshake()
         } catch (err) {
@@ -131,11 +152,10 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
     return () => {
       cancelled = true
     }
-  }, [enabled, e2e, e2e.isUnlocked, messages, msgsLoading, myAddress, chatId])
+  }, [enabled, isEligibleChat, e2e, e2e.isUnlocked, messages, msgsLoading, chatId])
 
   if (!enabled) return null
-  if (chat?.type !== 'direct') return null
-  if (chat?.is_blocked_by_me) return null
+  if (!isEligibleChat) return null
   if (e2e.state.kind === 'ready') return null
 
   if (!e2e.isUnlocked) {

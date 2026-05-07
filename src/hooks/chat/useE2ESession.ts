@@ -116,12 +116,14 @@ export function useE2ESession(
   // Readiness requires at least one peer-user device — encrypting only to
   // sibling devices of the same wallet would leave the actual peer with no
   // ciphertext entry while the UI claims the chat is encrypted. When
-  // myUserId is null (chat data hasn't loaded yet) we conservatively treat
-  // every roster entry as potentially-peer, so the gate doesn't accidentally
-  // block first-handshake flows.
+  // myUserId is null (chat data hasn't loaded yet) we DEFER readiness; the
+  // participants effect re-runs updateReadiness once myUserId resolves.
+  // Treating "any entry" as peer in the loading window would briefly enable
+  // the composer for a sibling-only roster, leaking plaintext via the
+  // self-only fanout path.
   const hasPeerDevice = useCallback((): boolean => {
     if (rosterRef.current.length === 0) return false
-    if (myUserId === null) return true
+    if (myUserId === null) return false
     return rosterRef.current.some((e) => e.user_id !== myUserId)
   }, [myUserId])
 
@@ -592,6 +594,10 @@ export function useE2ESession(
     decrypt,
     isReady: state.kind === 'ready',
     isUnlocked: !!storageKeyRef.current,
+    // This device's Olm identity (curve25519). Exposed so callers can tell
+    // OUR handshake from a sibling-device handshake — both share the wallet
+    // address but each device has a distinct Olm identity. Null until unlock.
+    ownDid: ownDidRef.current,
   }
 }
 

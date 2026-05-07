@@ -51,14 +51,20 @@ const ThreadView: React.FC = () => {
   // (header + base64), each `cts` entry adds ~80 bytes of JSON wrapping,
   // and the envelope itself takes ~200 fixed bytes. With N=fanout targets:
   //   max_plaintext ≈ ((SERVER_LIMIT - 200) / N - 80) / 1.5
-  // Floored to leave headroom and keep typing latency reasonable.
-  const PLAINTEXT_FLOOR_FOR_E2E = 1500
+  // Capped at 1500 so latency / typing stays reasonable for typical chats;
+  // can drop arbitrarily low for very large fan-outs (16+ devices). When
+  // it falls below SAFE_MIN_PLAINTEXT, sending is blocked entirely — better
+  // a hard "too many devices" error than a silent server reject of an
+  // over-limit body that the user had no way to see coming.
+  const PLAINTEXT_CAP_FOR_E2E = 1500
+  const SAFE_MIN_PLAINTEXT = 100
   const composerMaxLen = (() => {
     if (!e2eReady || !session) return 4000
     const targets = Math.max(1, session.fanoutTargetCount())
     const room = Math.floor(((4000 - 200) / targets - 80) / 1.5)
-    return Math.max(200, Math.min(PLAINTEXT_FLOOR_FOR_E2E, room))
+    return Math.min(PLAINTEXT_CAP_FOR_E2E, room)
   })()
+  const overFanoutLimit = e2eReady && composerMaxLen < SAFE_MIN_PLAINTEXT
 
   const { data: chat, isLoading: chatLoading } = useChat(activeChatId)
   const {
@@ -97,10 +103,11 @@ const ThreadView: React.FC = () => {
   // toggles encryption off while still bootstrapping doesn't get blocked
   // — once they've opted out, plaintext is the intended path.
   const blockSendsForE2E =
-    (e2eEnabled || e2eFlagLoading) &&
-    !sessionReady &&
-    !encryptionDisabled &&
-    chat?.type !== 'group'
+    ((e2eEnabled || e2eFlagLoading) &&
+      !sessionReady &&
+      !encryptionDisabled &&
+      chat?.type !== 'group') ||
+    overFanoutLimit
 
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
@@ -332,9 +339,11 @@ const ThreadView: React.FC = () => {
             disabled={blockSendsForE2E}
             disabledReason={
               blockSendsForE2E
-                ? e2eFlagLoading
-                  ? 'Checking encryption settings…'
-                  : 'Setting up encryption with this peer — sending paused.'
+                ? overFanoutLimit
+                  ? 'Too many devices in this chat to fit an encrypted message under the server limit.'
+                  : e2eFlagLoading
+                    ? 'Checking encryption settings…'
+                    : 'Setting up encryption with this peer — sending paused.'
                 : null
             }
             maxLen={composerMaxLen}

@@ -85,6 +85,25 @@ export function useE2ESession(
   // first received message; converges within one round-trip.
   const activeDirectionRef = useRef<Map<string, SessionDirection>>(new Map())
 
+  // Per-key write/work queue. Two concurrent triggers (e.g. WS handshakeBus
+  // + cache scan emitting the same peer bundle, or two upsertRoster calls
+  // racing on the same baseline ref) would otherwise both clone-mutate-
+  // persist and the later in-memory write could be overwritten on disk by
+  // the earlier persist completing last. Per-key chains preserve order
+  // without serializing unrelated work.
+  const writeQueuesRef = useRef<Map<string, Promise<unknown>>>(new Map())
+  const enqueue = useCallback(<T,>(key: string, fn: () => Promise<T>): Promise<T> => {
+    const prev = writeQueuesRef.current.get(key) ?? Promise.resolve()
+    const next = prev.then(fn, fn)
+    // Swallow rejections in the chain so a failure doesn't poison subsequent
+    // calls; the awaited `next` still rejects for the original caller.
+    writeQueuesRef.current.set(
+      key,
+      next.catch(() => {}),
+    )
+    return next
+  }, [])
+
   const refreshOwnDid = () => {
     if (!accountRef.current) {
       ownDidRef.current = null
@@ -266,44 +285,55 @@ export function useE2ESession(
 
   // Add a roster entry (or refresh it). Returns true if the entry is new.
   // FIFO-evicts the oldest entry once ROSTER_MAX is reached.
+  //
+  // The full read-modify-write — including the IndexedDB persist — runs
+  // inside a single 'roster'-keyed queue slot. Two concurrent calls
+  // (WS handshakeBus + cache scan re-emitting the same row, or two sibling
+  // bundles arriving within the same tick) would otherwise both compute
+  // their `next` from the same baseline `rosterRef.current` and the later
+  // saveRoster could land on disk first, dropping the earlier addition.
   const upsertRoster = useCallback(
-    async (entry: RosterEntry) => {
-      if (!storageKeyRef.current || !dmKey || !userAddress) return false
-      const existing = rosterRef.current.findIndex((e) => e.did === entry.did)
-      let isNew = false
-      if (existing === -1) {
-        let next = [...rosterRef.current, entry]
-        if (next.length > ROSTER_MAX) {
-          // Drop the oldest entries (front of array) and free their sessions
-          // (both directions) so we don't keep encrypting to a roster we no
-          // longer track.
-          const drop = next.length - ROSTER_MAX
-          for (let i = 0; i < drop; i++) {
-            const evicted = next[i]!
-            const out = outboundSessionsRef.current.get(evicted.did)
-            if (out) {
-              out.free()
-              outboundSessionsRef.current.delete(evicted.did)
+    (entry: RosterEntry) =>
+      enqueue('roster', async () => {
+        if (!storageKeyRef.current || !dmKey || !userAddress) return false
+        const existing = rosterRef.current.findIndex((e) => e.did === entry.did)
+        let isNew = false
+        if (existing === -1) {
+          let next = [...rosterRef.current, entry]
+          if (next.length > ROSTER_MAX) {
+            // Drop the oldest entries (front of array) and free their sessions
+            // (both directions) so we don't keep encrypting to a roster we no
+            // longer track. Also drop the cached active-direction preference
+            // for the evicted DID — it would silently bias session selection
+            // if the DID is later reintroduced via a new handshake.
+            const drop = next.length - ROSTER_MAX
+            for (let i = 0; i < drop; i++) {
+              const evicted = next[i]!
+              const out = outboundSessionsRef.current.get(evicted.did)
+              if (out) {
+                out.free()
+                outboundSessionsRef.current.delete(evicted.did)
+              }
+              const inb = inboundSessionsRef.current.get(evicted.did)
+              if (inb) {
+                inb.free()
+                inboundSessionsRef.current.delete(evicted.did)
+              }
+              activeDirectionRef.current.delete(evicted.did)
             }
-            const inb = inboundSessionsRef.current.get(evicted.did)
-            if (inb) {
-              inb.free()
-              inboundSessionsRef.current.delete(evicted.did)
-            }
+            next = next.slice(drop)
           }
-          next = next.slice(drop)
+          rosterRef.current = next
+          isNew = true
+        } else {
+          const next = [...rosterRef.current]
+          next[existing] = entry
+          rosterRef.current = next
         }
-        rosterRef.current = next
-        isNew = true
-      } else {
-        const next = [...rosterRef.current]
-        next[existing] = entry
-        rosterRef.current = next
-      }
-      await saveRoster(userAddress, dmKey, rosterRef.current, storageKeyRef.current)
-      return isNew
-    },
-    [dmKey, userAddress]
+        await saveRoster(userAddress, dmKey, rosterRef.current, storageKeyRef.current)
+        return isNew
+      }),
+    [dmKey, enqueue, userAddress],
   )
 
   // Consume a peer (or own-other-device) bundle: parse, create outbound
@@ -312,38 +342,45 @@ export function useE2ESession(
   // this to decide whether to auto-republish their own handshake (so the new
   // device can derive an inbound session to us from a pre-key fanout).
   const consumePeerBundle = useCallback(
-    async (encoded: string, senderUserId: number): Promise<{ isNew: boolean }> => {
-      if (!accountRef.current || !storageKeyRef.current || !dmKey || !userAddress) {
-        throw new Error('Not unlocked')
-      }
+    (encoded: string, senderUserId: number): Promise<{ isNew: boolean }> => {
       const peer = parseBundle(encoded)
-      if (peer.identity === ownDidRef.current) {
-        // Self-bundle echo — never consume our own keys.
-        return { isNew: false }
-      }
-      // "New" means we haven't established our outbound to this device yet.
-      // The peer might already have sent us a pre-key (giving us an inbound
-      // session) without us ever creating outbound — in which case we still
-      // want to create the outbound now so future encrypts to them work.
-      const isNew = !outboundSessionsRef.current.has(peer.identity)
-      if (isNew) {
-        const session = await createOutboundSession(accountRef.current, peer)
-        outboundSessionsRef.current.set(peer.identity, session)
-        await persistSession(userAddress, dmKey, peer.identity, 'out', session, storageKeyRef.current)
-      }
-      await upsertRoster({
-        did: peer.identity,
-        user_id: senderUserId,
-        identity: peer.identity,
-        signing: peer.signing,
+      // Serialize per-DID so two near-simultaneous triggers (WS handshakeBus
+      // + cache scan, or two cache scans across re-renders) can't both pass
+      // the `outboundSessionsRef.has(...)` check, both call
+      // `createOutboundSession`, and orphan/leak the loser's Olm session
+      // (the second .set() overwrites the first without freeing it).
+      return enqueue(`bundle/${peer.identity}`, async () => {
+        if (!accountRef.current || !storageKeyRef.current || !dmKey || !userAddress) {
+          throw new Error('Not unlocked')
+        }
+        if (peer.identity === ownDidRef.current) {
+          // Self-bundle echo — never consume our own keys.
+          return { isNew: false }
+        }
+        // "New" means we haven't established our outbound to this device yet.
+        // The peer might already have sent us a pre-key (giving us an inbound
+        // session) without us ever creating outbound — in which case we still
+        // want to create the outbound now so future encrypts to them work.
+        const isNew = !outboundSessionsRef.current.has(peer.identity)
+        if (isNew) {
+          const session = await createOutboundSession(accountRef.current, peer)
+          outboundSessionsRef.current.set(peer.identity, session)
+          await persistSession(userAddress, dmKey, peer.identity, 'out', session, storageKeyRef.current)
+        }
+        await upsertRoster({
+          did: peer.identity,
+          user_id: senderUserId,
+          identity: peer.identity,
+          signing: peer.signing,
+        })
+        // Don't unconditionally mark ready — sibling-device handshakes alone
+        // shouldn't unlock the composer (encrypt would fan out only to our
+        // own other devices and the peer would never get ciphertext).
+        updateReadiness()
+        return { isNew }
       })
-      // Don't unconditionally mark ready — sibling-device handshakes alone
-      // shouldn't unlock the composer (encrypt would fan out only to our
-      // own other devices and the peer would never get ciphertext).
-      updateReadiness()
-      return { isNew }
     },
-    [dmKey, upsertRoster, userAddress, updateReadiness]
+    [dmKey, enqueue, upsertRoster, userAddress, updateReadiness],
   )
 
   // Encrypt for every known device on either side (excluding self). Always

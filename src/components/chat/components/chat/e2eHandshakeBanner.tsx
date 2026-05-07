@@ -84,9 +84,13 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
         if (m.id.startsWith('optimistic-')) continue
         const env = tryDecode(m.body)
         if (!env || !isHandshakeEnvelope(env)) continue
-        processedHsRef.current.add(m.id)
         try {
           const { isNew } = await e2e.consumePeerBundle(env.bundle, m.sender_user_id)
+          // Only mark processed AFTER a successful consume. A transient
+          // failure (e.g. parseBundle on a partially-corrupted body, or
+          // an Olm error mid-init) would otherwise permanently suppress
+          // retries for this message until the banner remounts.
+          processedHsRef.current.add(m.id)
           if (isNew && !cancelled) await republishOurHandshake()
         } catch (err) {
           console.error(err)

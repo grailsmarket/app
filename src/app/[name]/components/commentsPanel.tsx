@@ -62,7 +62,9 @@ const CommentsPanel: React.FC<Props> = ({ name, nameDetails }) => {
               </div>
             ) : comments.length === 0 ? (
               <div className='py-2xl flex w-full flex-col items-center justify-center gap-3'>
-                <p className='text-neutral text-lg'>Start the discussion on {beautifyName(name)} with fellow domainers!</p>
+                <p className='text-neutral text-lg'>
+                  Start the discussion on {beautifyName(name)} with fellow domainers!
+                </p>
               </div>
             ) : (
               <>

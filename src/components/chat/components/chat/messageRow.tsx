@@ -1,9 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { format } from 'date-fns'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage } from '@/types/chat'
+import { linkifyMessage } from '../../utils/linkifyMessage'
+import { useAppDispatch } from '@/state/hooks'
+import { closeChatSidebar } from '@/state/reducers/chat/sidebar'
 
 interface Props {
   message: ChatMessage
@@ -12,8 +15,18 @@ interface Props {
 }
 
 const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
+  const dispatch = useAppDispatch()
   const isDeleted = !!message.deleted_at
   const time = format(new Date(message.created_at), 'h:mm a')
+
+  const body = useMemo(() => {
+    if (isDeleted) return 'This message was deleted'
+    return linkifyMessage(message.body ?? '', {
+      onClick: () => {
+        dispatch(closeChatSidebar())
+      },
+    })
+  }, [isDeleted, message.body])
 
   return (
     <div className={cn('flex w-full', isOwn ? 'justify-end' : 'justify-start')}>
@@ -25,7 +38,7 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
             isDeleted && 'italic opacity-60'
           )}
         >
-          {isDeleted ? 'This message was deleted' : message.body}
+          {body}
         </div>
         <span className={cn('text-neutral text-sm', isOwn ? 'text-right' : 'text-left')}>
           {isOwn && isRead ? 'Seen •' : ''} {time}

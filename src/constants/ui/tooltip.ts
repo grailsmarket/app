@@ -20,7 +20,7 @@ export const ALIGN_STYLES = {
   bottom: { bottom: 0 },
   right: { right: '-5px' },
   left: { left: '-5px' },
-  center: { bottom: 0, transform: 'translateY(30%)' },
+  center: { bottom: 0, transform: 'translateY(20%)' },
 } as const
 
 export const POINT_STYLES = {

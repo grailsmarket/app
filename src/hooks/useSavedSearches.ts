@@ -9,7 +9,7 @@ import { getSavedSearches } from '@/api/savedSearches/getSavedSearches'
 import { createSavedSearch } from '@/api/savedSearches/createSavedSearch'
 import { updateSavedSearch } from '@/api/savedSearches/updateSavedSearch'
 import { deleteSavedSearch } from '@/api/savedSearches/deleteSavedSearch'
-import { SavedSearchErrorCode } from '@/api/savedSearches/types'
+import { SavedSearch, SavedSearchErrorCode } from '@/api/savedSearches/types'
 
 const ALLOWED_TIERS = ['plus', 'pro', 'gold'] as const
 
@@ -45,6 +45,26 @@ const useSavedSearches = () => {
   const updateMutation = useMutation({
     mutationFn: updateSavedSearch,
     onSuccess: invalidate,
+    // optimistic update
+    onMutate: async (saved) => {
+      await queryClient.cancelQueries({ queryKey: ['savedSearches', userAddress] })
+      const previousSavedSearches = queryClient.getQueryData<SavedSearch[]>(['savedSearches', userAddress])
+      queryClient.setQueryData(['savedSearches', userAddress], (old: SavedSearch[] | undefined) => {
+        // handle updating ALL saved searches default status
+        const isDefault = saved.isDefault
+        const newSavedSearches = old?.map((s) =>
+          s.id === saved.id ? saved : isDefault ? { ...s, isDefault: false } : s
+        )
+
+        return newSavedSearches
+      })
+
+      return { previousSavedSearches }
+    },
+    // rollback optimistic update if error
+    onError: (error, saved, context) => {
+      queryClient.setQueryData(['savedSearches', userAddress], context?.previousSavedSearches)
+    },
   })
 
   const deleteMutation = useMutation({

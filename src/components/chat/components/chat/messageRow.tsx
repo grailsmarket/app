@@ -21,15 +21,6 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
   const { body: displayBody, status } = useDecryptedBody(message)
   const time = format(new Date(message.created_at), 'h:mm a')
 
-  const body = useMemo(() => {
-    if (isDeleted) return 'This message was deleted'
-    return linkifyMessage(message.body ?? '', {
-      onClick: () => {
-        dispatch(closeChatSidebar())
-      },
-    })
-  }, [isDeleted, message.body])
-
   const content = isDeleted
     ? 'This message was deleted'
     : status === 'locked'
@@ -39,6 +30,15 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
         : status === 'decrypting'
           ? '…'
           : displayBody
+
+  const body = useMemo(() => {
+    if (isDeleted) return 'This message was deleted'
+    return linkifyMessage(content ?? '', {
+      onClick: () => {
+        dispatch(closeChatSidebar())
+      },
+    })
+  }, [isDeleted, content])
 
   const isPlaceholder = isDeleted || status === 'locked' || status === 'failed' || status === 'decrypting' || status === 'handshake'
 

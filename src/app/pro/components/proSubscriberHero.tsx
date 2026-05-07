@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { cn } from '@/utils/tailwind'
 import { TIER_LABELS, TIER_COLORS } from './proSubscriberData'
 import ShootingStars from '@/components/ui/shootingStars'
@@ -13,6 +13,11 @@ interface ProSubscriberHeroProps {
 }
 
 const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) => {
+  const { scrollY } = useScroll()
+  const starsY = useTransform(scrollY, [0, 800], [0, 120])
+  const shootingStarsY = useTransform(scrollY, [0, 800], [0, 200])
+  const glowY = useTransform(scrollY, [0, 800], [0, 60])
+
   const tierName = TIER_LABELS[tierId] ?? 'Free'
   const tierColor = TIER_COLORS[tierId] ?? 'text-neutral'
 
@@ -26,8 +31,17 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
       <motion.div
         variants={glowVariants}
         animate='animate'
+        style={{ y: glowY }}
         className='background-radial-primary absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2'
       />
+
+      <motion.div style={{ y: starsY }} className='absolute inset-0 z-0'>
+        <StarsBackground />
+      </motion.div>
+
+      <motion.div style={{ y: shootingStarsY }} className='absolute inset-0 z-0'>
+        <ShootingStars />
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -81,9 +95,6 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
           </div>
         )}
       </motion.div>
-
-      <StarsBackground />
-      <ShootingStars />
     </section>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import ShootingStars from '@/components/ui/shootingStars'
 import StarsBackground from '@/components/ui/starsBackground'
 
@@ -39,6 +39,11 @@ export const glowVariants = {
 }
 
 const ProHero = () => {
+  const { scrollY } = useScroll()
+  const starsY = useTransform(scrollY, [0, 800], [0, 120])
+  const shootingStarsY = useTransform(scrollY, [0, 800], [0, 200])
+  const glowY = useTransform(scrollY, [0, 800], [0, 60])
+
   const scrollToPricing = () => {
     const el = document.getElementById('pricing')
     el?.scrollIntoView({ behavior: 'smooth' })
@@ -49,8 +54,17 @@ const ProHero = () => {
       <motion.div
         variants={glowVariants}
         animate='animate'
+        style={{ y: glowY }}
         className='background-radial-primary absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 md:h-[800px] md:w-[800px]'
       />
+
+      <motion.div style={{ y: starsY }} className='absolute inset-0 z-0'>
+        <StarsBackground />
+      </motion.div>
+
+      <motion.div style={{ y: shootingStarsY }} className='absolute inset-0 z-0'>
+        <ShootingStars />
+      </motion.div>
 
       <motion.div
         variants={containerVariants}
@@ -145,8 +159,6 @@ const ProHero = () => {
           <div className='bg-neutral h-1.5 w-1.5 rounded-full' />
         </motion.div>
       </motion.div>
-      <ShootingStars />
-      <StarsBackground />
     </section>
   )
 }

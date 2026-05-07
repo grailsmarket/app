@@ -21,8 +21,20 @@ export interface SessionAPI {
   // ratchet on the next load.
   encrypt: (plaintext: string, mid?: string) => Promise<string>
   // Decrypt accepts the parsed fanout envelope; resolves with the plaintext
-  // for this device's `cts` entry.
+  // for this device's `cts` entry. Throws "Fanout has no entry for this
+  // device" if called for a self-sent message (we don't include ourselves
+  // in the cts array). Callers must check `loadOwnPlaintext` first for
+  // their own messages — see useDecryptedBody.
   decrypt: (env: E2EFanoutEnvelope) => Promise<string>
+  // Persist the plaintext of a message we just sent so we can read our own
+  // history after a refresh. The fanout envelope omits an entry for our
+  // own device, so without this store our past sends become permanently
+  // undecryptable in-place. Encrypted at rest with the same secretbox key
+  // as the Olm pickle.
+  persistOwnPlaintext: (messageId: string, plaintext: string) => Promise<void>
+  // Read back a previously-persisted own-send. Returns null if not stored
+  // (peer-sent messages, or own sends from before this PR).
+  loadOwnPlaintext: (messageId: string) => Promise<string | null>
 }
 
 class SessionRegistry {

@@ -69,7 +69,17 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
         // this message, awaiting the same in-flight Promise resolves us with
         // the same plaintext. Olm decrypt is not idempotent, so this is the
         // only safe way to dual-source decryption.
-        const plaintext = await plaintextCache.decrypt(message.id, () => session.decrypt(env))
+        //
+        // The fn() inner first checks the on-disk own-plaintext store: our
+        // own sent fanouts have no `cts` entry for this device (we exclude
+        // ourselves), so session.decrypt would throw on every reload of our
+        // own history. Peer messages don't have an entry in this store and
+        // fall through to session.decrypt naturally.
+        const plaintext = await plaintextCache.decrypt(message.id, async () => {
+          const stored = await session.loadOwnPlaintext(message.id)
+          if (stored !== null) return stored
+          return session.decrypt(env)
+        })
         if (cancelled) return
         setState({ body: plaintext, status: 'decrypted' })
       } catch {

@@ -78,6 +78,13 @@ const sessionKey = (address: string, dmKey: string, did: string, direction: Sess
 // Per-chat list of known peer + own-other devices (each carries the bundle we
 // observed in their handshake message).
 const rosterKey = (address: string, dmKey: string) => `wallet/${address}/roster/${dmKey}`
+// Per-message plaintext store for messages WE sent. Self-fanouts have no
+// `cts` entry for our own device (we exclude ourselves), so on refresh
+// `session.decrypt` would throw and we'd lose our own history. The store
+// is wallet-scoped and encrypted at rest with the secretbox-subkey, so a
+// different wallet on the same browser can't read it.
+const ownPlaintextKey = (address: string, messageId: string) =>
+  `wallet/${address}/own-plaintext/${messageId}`
 
 // HKDF subkey for Olm pickle, distinct from the secretbox-at-rest key used
 // in storage.ts. Olm requires a string/Uint8Array input; we hand it the
@@ -166,6 +173,24 @@ export async function saveRoster(
   storageKey: Uint8Array,
 ) {
   await putEncrypted(rosterKey(address, dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
+}
+
+export async function persistOwnPlaintext(
+  address: string,
+  messageId: string,
+  plaintext: string,
+  storageKey: Uint8Array,
+) {
+  await putEncrypted(ownPlaintextKey(address, messageId), utf8ToBytes(plaintext), storageKey)
+}
+
+export async function loadOwnPlaintext(
+  address: string,
+  messageId: string,
+  storageKey: Uint8Array,
+): Promise<string | null> {
+  const blob = await getEncrypted(ownPlaintextKey(address, messageId), storageKey)
+  return blob ? bytesToUtf8(blob) : null
 }
 
 // PeerBundle preferred shape: identity + signing + fallback_key. Older bundles

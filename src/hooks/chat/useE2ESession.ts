@@ -11,6 +11,8 @@ import {
   persistSession,
   loadRoster,
   saveRoster,
+  persistOwnPlaintext,
+  loadOwnPlaintext,
   exportBundle,
   parseBundle,
   type RosterEntry,
@@ -461,6 +463,22 @@ export function useE2ESession(
     [decryptCt]
   )
 
+  const persistOwnPlaintextApi = useCallback(
+    async (messageId: string, plaintext: string): Promise<void> => {
+      if (!storageKeyRef.current || !userAddress) return
+      await persistOwnPlaintext(userAddress, messageId, plaintext, storageKeyRef.current)
+    },
+    [userAddress]
+  )
+
+  const loadOwnPlaintextApi = useCallback(
+    async (messageId: string): Promise<string | null> => {
+      if (!storageKeyRef.current || !userAddress) return null
+      return loadOwnPlaintext(userAddress, messageId, storageKeyRef.current)
+    },
+    [userAddress]
+  )
+
   // Expose to non-React callers via the module-level registry.
   useEffect(() => {
     if (!chatId || state.kind === 'locked') return
@@ -470,12 +488,14 @@ export function useE2ESession(
       ownDid: () => ownDidRef.current,
       encrypt,
       decrypt,
+      persistOwnPlaintext: persistOwnPlaintextApi,
+      loadOwnPlaintext: loadOwnPlaintextApi,
     }
     sessionRegistry.register(chatId, api)
     return () => {
       sessionRegistry.unregister(chatId)
     }
-  }, [chatId, state.kind, encrypt, decrypt])
+  }, [chatId, state.kind, encrypt, decrypt, persistOwnPlaintextApi, loadOwnPlaintextApi])
 
   return {
     state,

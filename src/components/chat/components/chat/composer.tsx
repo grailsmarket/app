@@ -48,7 +48,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled, disabledReason }) => {
     if (ref.current) {
       ref.current.style.height = 'auto'
     }
-    send.mutate(trimmed, {
+    send.send(trimmed, {
       onError: (e) => {
         if (e.code === 'BLOCKED') {
           setError("Couldn't deliver, you have been blocked")

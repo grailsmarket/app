@@ -70,17 +70,29 @@ export function useDecryptedBody(message: ChatMessage): { body: string | null; s
         // the same plaintext. Olm decrypt is not idempotent, so this is the
         // only safe way to dual-source decryption.
         //
-        // The fn() inner first checks the on-disk own-plaintext store: our
-        // own sent fanouts have no `cts` entry for this device (we exclude
-        // ourselves), so session.decrypt would throw on every reload of our
-        // own history. Peer messages don't have an entry in this store and
-        // fall through to session.decrypt naturally.
+        // The fn() inner first checks the on-disk plaintext store: own
+        // sent fanouts have no `cts` entry for this device, and peer
+        // messages whose ratchet step has already advanced cannot be
+        // re-decrypted by Olm. Live-decryption results are persisted to
+        // the same store (see post-await write below) so subsequent
+        // refreshes hit the disk fast path instead of failing.
+        let fromDisk = false
         const plaintext = await plaintextCache.decrypt(message.id, async () => {
           const stored = await session.loadOwnPlaintext(message.id)
-          if (stored !== null) return stored
+          if (stored !== null) {
+            fromDisk = true
+            return stored
+          }
           return session.decrypt(env)
         })
         if (cancelled) return
+        // Persist the freshly-decrypted plaintext for next refresh — Olm's
+        // ratchet is forward-only, so without this we'd never be able to
+        // re-render this peer message after a reload. Skip when we just
+        // loaded from disk; the value is already there.
+        if (!fromDisk) {
+          session.persistOwnPlaintext(message.id, plaintext).catch(console.error)
+        }
         setState({ body: plaintext, status: 'decrypted' })
       } catch {
         if (cancelled) return

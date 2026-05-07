@@ -125,6 +125,16 @@ export const useChatSocket = () => {
               if (!isOwnSend) {
                 void plaintextCache
                   .decrypt(message.id, () => session.decrypt(env))
+                  .then((plaintext) => {
+                    // Persist the decrypted plaintext at rest. Olm's ratchet
+                    // is forward-only — after the next persist of this
+                    // session, we can never re-derive this message's key, so
+                    // a refresh that landed AFTER decrypt but BEFORE this
+                    // persist would render the message as "Could not
+                    // decrypt" forever. The own-plaintext store doubles as
+                    // a peer-history cache once we've decrypted.
+                    return session.persistOwnPlaintext(message.id, plaintext)
+                  })
                   .catch((err) => console.warn('[chat ws] e2e decrypt failed', err))
               }
             }

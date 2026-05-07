@@ -561,9 +561,16 @@ export function useE2ESession(
   // Expose to non-React callers via the module-level registry.
   useEffect(() => {
     if (!chatId || state.kind === 'locked') return
-    const ready = state.kind === 'ready'
     const api: SessionAPI = {
-      isReady: () => ready,
+      // Reads LIVE refs — not the captured `state.kind` — so a chat-switch
+      // commit cycle where the load effect cleared sessions synchronously
+      // but state.kind hasn't yet committed to no_session can't trip a
+      // transient ready window where useSendMessage calls encrypt() and
+      // throws. Sessions go through refs that update synchronously; state
+      // is a useState that batches and commits one render later.
+      isReady: () =>
+        (outboundSessionsRef.current.size > 0 || inboundSessionsRef.current.size > 0) &&
+        hasPeerDevice(),
       ownDid: () => ownDidRef.current,
       encrypt,
       decrypt,
@@ -583,6 +590,7 @@ export function useE2ESession(
     persistOwnPlaintextApi,
     loadOwnPlaintextApi,
     fanoutTargetCountApi,
+    hasPeerDevice,
   ])
 
   return {

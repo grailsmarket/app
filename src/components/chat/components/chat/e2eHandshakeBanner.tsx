@@ -14,12 +14,23 @@ interface Props {
   chatId: string
 }
 
+// Outer wrapper: when the feature gate flips off (PostHog cohort change,
+// `?e2e=1` removed via navigation), the inner sub-component unmounts. That
+// triggers `useE2ESession`'s cleanup effect, which unregisters from the
+// session registry — without this split, the registry would stay populated
+// and `useSendMessage` would keep encrypting after the rollout/kill switch
+// said E2E is off for this tab.
 const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
+  const { enabled } = useE2EEnabled()
   // While the PostHog flag is still loading we deliberately render nothing —
   // the composer-level gate handles the privacy-critical fail-closed path
   // (see threadView). Showing a flicker of "Unlock encryption" UI before
   // the flag resolves would be worse UX than the silent wait.
-  const { enabled } = useE2EEnabled()
+  if (!enabled) return null
+  return <E2EHandshakeBannerInner chatId={chatId} />
+}
+
+const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
   const { userAddress } = useUserContext()
 
   const { data: chat } = useChat(chatId)
@@ -73,7 +84,7 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
 
   // Live WS path — fast for handshakes posted while the banner is mounted.
   useEffect(() => {
-    if (!enabled || !isEligibleChat) return
+    if (!isEligibleChat) return
     const off = handshakeBus.on(async ({ chatId: cid, bundle, senderUserId }) => {
       if (cid !== chatId || !e2e.isUnlocked) return
       try {
@@ -84,14 +95,14 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
       }
     })
     return off
-  }, [chatId, e2e, enabled, isEligibleChat])
+  }, [chatId, e2e, isEligibleChat])
 
   // REST/cache path — catches handshakes posted while this tab was closed
   // or before unlock. Without this, a peer's handshake sitting in chat
   // history would only render as setup text and never actually establish
   // the session, so async setup would stall until another live handshake.
   useEffect(() => {
-    if (!enabled || !isEligibleChat || !e2e.isUnlocked) return
+    if (!isEligibleChat || !e2e.isUnlocked) return
     let cancelled = false
     ;(async () => {
       let sawOwnHandshake = false
@@ -152,9 +163,8 @@ const E2EHandshakeBanner: React.FC<Props> = ({ chatId }) => {
     return () => {
       cancelled = true
     }
-  }, [enabled, isEligibleChat, e2e, e2e.isUnlocked, messages, msgsLoading, chatId])
+  }, [isEligibleChat, e2e, e2e.isUnlocked, messages, msgsLoading, chatId])
 
-  if (!enabled) return null
   if (!isEligibleChat) return null
   if (e2e.state.kind === 'ready') return null
 

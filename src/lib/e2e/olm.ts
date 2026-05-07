@@ -65,11 +65,16 @@ function olmRuntime(): typeof Olm {
 // (encrypted with a different storage key) throws "wrong wallet?" and the
 // only recovery is manually clearing IndexedDB.
 const accountKey = (address: string) => `wallet/${address}/account`
-// Sessions are keyed by (address, dmKey, remote device id) — multi-device
-// fanout means one session per remote device per chat. The `did` is the
-// peer's Olm curve25519 identity key (stable per Olm Account).
-const sessionKey = (address: string, dmKey: string, did: string) =>
-  `wallet/${address}/session/${dmKey}/${did}`
+// Sessions are keyed by (address, dmKey, remote_did, direction). Each
+// (this_device, peer_device) pair has up to TWO sessions: the outbound we
+// initiated (used to encrypt our messages on our channel) and the inbound
+// peer initiated (used to decrypt their messages on their channel). Keeping
+// both is required to survive the race where both sides eagerly send a
+// pre-key — discarding either loses the channel that's still active for
+// future messages from one direction.
+export type SessionDirection = 'out' | 'in'
+const sessionKey = (address: string, dmKey: string, did: string, direction: SessionDirection) =>
+  `wallet/${address}/session/${dmKey}/${did}/${direction}`
 // Per-chat list of known peer + own-other devices (each carries the bundle we
 // observed in their handshake message).
 const rosterKey = (address: string, dmKey: string) => `wallet/${address}/roster/${dmKey}`
@@ -109,10 +114,11 @@ export async function loadSession(
   address: string,
   dmKey: string,
   did: string,
+  direction: SessionDirection,
   storageKey: Uint8Array,
 ): Promise<Olm.Session | null> {
   await ensureOlm()
-  const pickled = await getEncrypted(sessionKey(address, dmKey, did), storageKey)
+  const pickled = await getEncrypted(sessionKey(address, dmKey, did, direction), storageKey)
   if (!pickled) return null
   const Olm = olmRuntime()
   const session = new Olm.Session()
@@ -124,11 +130,12 @@ export async function persistSession(
   address: string,
   dmKey: string,
   did: string,
+  direction: SessionDirection,
   session: Olm.Session,
   storageKey: Uint8Array,
 ) {
   const pickled = session.pickle(pickleKey(storageKey))
-  await putEncrypted(sessionKey(address, dmKey, did), utf8ToBytes(pickled), storageKey)
+  await putEncrypted(sessionKey(address, dmKey, did, direction), utf8ToBytes(pickled), storageKey)
 }
 
 // Roster: per-chat list of {did, user_id, identity, signing} entries we've

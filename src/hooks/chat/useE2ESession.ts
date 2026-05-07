@@ -15,6 +15,7 @@ import {
   parseBundle,
   type RosterEntry,
   type PeerBundle,
+  type SessionDirection,
 } from '@/lib/e2e/olm'
 import {
   decryptFromPeer,
@@ -55,8 +56,17 @@ export function useE2ESession(
   const storageKeyRef = useRef<Uint8Array | null>(null)
   const accountRef = useRef<Olm.Account | null>(null)
   const ownDidRef = useRef<string | null>(null)
-  // remote_did → live Olm.Session for this peer device.
-  const sessionsRef = useRef<Map<string, Olm.Session>>(new Map())
+  // Up to TWO Olm sessions per peer device, one per direction:
+  //   - outbound: created when we consume the peer's bundle. Used to
+  //     encrypt our own messages on the channel WE initiated, and to
+  //     decrypt the peer's replies on that same channel.
+  //   - inbound:  created when we receive a pre-key message from the peer.
+  //     Used to decrypt their messages on the channel THEY initiated, and
+  //     to encrypt back if we don't have an outbound for them yet.
+  // Both must persist after a both-sides-eager race; discarding either
+  // strands the channel it represents and breaks future decryption.
+  const outboundSessionsRef = useRef<Map<string, Olm.Session>>(new Map())
+  const inboundSessionsRef = useRef<Map<string, Olm.Session>>(new Map())
   const rosterRef = useRef<RosterEntry[]>([])
 
   const refreshOwnDid = () => {
@@ -75,8 +85,10 @@ export function useE2ESession(
   // MUST run before the dmKey-load effect below so a simultaneous wallet+chat
   // switch resets first, then the load effect early-returns on `!unlocked`.
   useEffect(() => {
-    for (const s of sessionsRef.current.values()) s.free()
-    sessionsRef.current = new Map()
+    for (const s of outboundSessionsRef.current.values()) s.free()
+    for (const s of inboundSessionsRef.current.values()) s.free()
+    outboundSessionsRef.current = new Map()
+    inboundSessionsRef.current = new Map()
     accountRef.current?.free()
     accountRef.current = null
     storageKeyRef.current = null
@@ -105,8 +117,10 @@ export function useE2ESession(
   // without a dm_key (e.g. group chats), causing useSendMessage to call
   // encrypt() and throw because dmKey is missing.
   useEffect(() => {
-    for (const s of sessionsRef.current.values()) s.free()
-    sessionsRef.current = new Map()
+    for (const s of outboundSessionsRef.current.values()) s.free()
+    for (const s of inboundSessionsRef.current.values()) s.free()
+    outboundSessionsRef.current = new Map()
+    inboundSessionsRef.current = new Map()
     rosterRef.current = []
     if (!unlocked || !storageKeyRef.current) {
       setState({ kind: 'locked' })
@@ -125,10 +139,16 @@ export function useE2ESession(
         let anySessionLoaded = false
         for (const entry of roster) {
           if (entry.did === ownDidRef.current) continue
-          const s = await loadSession(userAddress, dmKey, entry.did, storageKeyRef.current!)
+          const out = await loadSession(userAddress, dmKey, entry.did, 'out', storageKeyRef.current!)
           if (cancelled) return
-          if (s) {
-            sessionsRef.current.set(entry.did, s)
+          if (out) {
+            outboundSessionsRef.current.set(entry.did, out)
+            anySessionLoaded = true
+          }
+          const inb = await loadSession(userAddress, dmKey, entry.did, 'in', storageKeyRef.current!)
+          if (cancelled) return
+          if (inb) {
+            inboundSessionsRef.current.set(entry.did, inb)
             anySessionLoaded = true
           }
         }
@@ -174,14 +194,20 @@ export function useE2ESession(
         let next = [...rosterRef.current, entry]
         if (next.length > ROSTER_MAX) {
           // Drop the oldest entries (front of array) and free their sessions
-          // so we don't keep encrypting to a roster we no longer track.
+          // (both directions) so we don't keep encrypting to a roster we no
+          // longer track.
           const drop = next.length - ROSTER_MAX
           for (let i = 0; i < drop; i++) {
             const evicted = next[i]!
-            const session = sessionsRef.current.get(evicted.did)
-            if (session) {
-              session.free()
-              sessionsRef.current.delete(evicted.did)
+            const out = outboundSessionsRef.current.get(evicted.did)
+            if (out) {
+              out.free()
+              outboundSessionsRef.current.delete(evicted.did)
+            }
+            const inb = inboundSessionsRef.current.get(evicted.did)
+            if (inb) {
+              inb.free()
+              inboundSessionsRef.current.delete(evicted.did)
             }
           }
           next = next.slice(drop)
@@ -214,11 +240,15 @@ export function useE2ESession(
         // Self-bundle echo — never consume our own keys.
         return { isNew: false }
       }
-      const isNew = !sessionsRef.current.has(peer.identity)
+      // "New" means we haven't established our outbound to this device yet.
+      // The peer might already have sent us a pre-key (giving us an inbound
+      // session) without us ever creating outbound — in which case we still
+      // want to create the outbound now so future encrypts to them work.
+      const isNew = !outboundSessionsRef.current.has(peer.identity)
       if (isNew) {
         const session = await createOutboundSession(accountRef.current, peer)
-        sessionsRef.current.set(peer.identity, session)
-        await persistSession(userAddress, dmKey, peer.identity, session, storageKeyRef.current)
+        outboundSessionsRef.current.set(peer.identity, session)
+        await persistSession(userAddress, dmKey, peer.identity, 'out', session, storageKeyRef.current)
       }
       await upsertRoster({
         did: peer.identity,
@@ -239,9 +269,22 @@ export function useE2ESession(
       if (!storageKeyRef.current || !dmKey || !ownDidRef.current || !userAddress) {
         throw new Error('Session not ready')
       }
+      // Encrypt with our outbound session per peer device. If we only have
+      // an inbound session for some peer (they sent us their pre-key but we
+      // never established our own outbound — e.g., they republished while
+      // we were unlocked but had no chance to consume), fall back to that
+      // inbound: Olm sessions are bidirectional, so encrypting on our
+      // inbound view also produces ciphertext the peer's outbound can
+      // decrypt.
       const targets: { did: string; session: Olm.Session }[] = []
-      for (const [did, session] of sessionsRef.current.entries()) {
+      const seen = new Set<string>()
+      for (const [did, session] of outboundSessionsRef.current.entries()) {
         if (did === ownDidRef.current) continue
+        seen.add(did)
+        targets.push({ did, session })
+      }
+      for (const [did, session] of inboundSessionsRef.current.entries()) {
+        if (did === ownDidRef.current || seen.has(did)) continue
         targets.push({ did, session })
       }
       if (targets.length === 0) throw new Error('No active sessions')
@@ -251,7 +294,8 @@ export function useE2ESession(
         return { did: t.did, type: r.type as 0 | 1, ct: r.body }
       })
       for (const t of targets) {
-        persistSession(userAddress, dmKey, t.did, t.session, storageKeyRef.current).catch(console.error)
+        const direction: SessionDirection = outboundSessionsRef.current.has(t.did) ? 'out' : 'in'
+        persistSession(userAddress, dmKey, t.did, direction, t.session, storageKeyRef.current).catch(console.error)
       }
       const env: E2EFanoutEnvelope = {
         v: 1,
@@ -270,32 +314,56 @@ export function useE2ESession(
       if (!accountRef.current || !storageKeyRef.current || !dmKey || !userAddress) {
         throw new Error('Not unlocked')
       }
-      // If we already have a session for this sender, the common case is to
-      // reuse it. But when both sides eagerly created outbound sessions
-      // (each consuming the other's bundle), neither outbound matches the
-      // other's pre-key. matches_inbound tells us whether the existing
-      // session can decrypt this pre-key; if not, discard and create a fresh
-      // inbound. The old outbound is released — any messages we sent through
-      // it are orphaned, but Olm's bidirectional ratchet means the new
-      // inbound carries forward correctly.
-      let existing = sessionsRef.current.get(senderDid)
-      if (existing && type === 0 && !existing.matches_inbound(ct)) {
-        existing.free()
-        sessionsRef.current.delete(senderDid)
-        existing = undefined
+      const inbound = inboundSessionsRef.current.get(senderDid)
+      const outbound = outboundSessionsRef.current.get(senderDid)
+
+      if (type === 0) {
+        // Pre-key message. Either:
+        //   (a) replay of the channel that established our existing inbound
+        //       — `inbound.matches_inbound(ct)` returns true, decrypt with it
+        //   (b) a fresh channel from the peer (different X3DH derivation,
+        //       e.g. peer republished, or both-sides-eager race) — create a
+        //       new inbound and replace any older one.
+        // In neither case do we touch the outbound: peer's responses on the
+        // channel WE initiated continue to arrive as type=1 and decrypt
+        // through that outbound.
+        if (inbound && inbound.matches_inbound(ct)) {
+          const out = decryptFromPeer(inbound, ct, 0)
+          await persistSession(userAddress, dmKey, senderDid, 'in', inbound, storageKeyRef.current)
+          return out
+        }
+        const { session, plaintext } = await createInboundSessionFromPrekey(accountRef.current, ct)
+        if (inbound) inbound.free()
+        inboundSessionsRef.current.set(senderDid, session)
+        await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
+        await persistSession(userAddress, dmKey, senderDid, 'in', session, storageKeyRef.current)
+        setState({ kind: 'ready' })
+        return plaintext
       }
-      if (existing) {
-        const out = decryptFromPeer(existing, ct, type)
-        await persistSession(userAddress, dmKey, senderDid, existing, storageKeyRef.current)
-        return out
+
+      // type === 1: ordinary ratchet message. Could be on EITHER channel:
+      //   - peer's outbound channel (their pre-key already produced our
+      //     inbound) → decrypt via inbound
+      //   - the channel WE initiated (peer's response after they consumed
+      //     our pre-key) → decrypt via outbound
+      // Try each in turn. Olm's decrypt advances the ratchet on success and
+      // throws on failure; we catch the inbound path so we can try the
+      // outbound.
+      if (inbound) {
+        try {
+          const plaintext = decryptFromPeer(inbound, ct, 1)
+          await persistSession(userAddress, dmKey, senderDid, 'in', inbound, storageKeyRef.current)
+          return plaintext
+        } catch {
+          // Fall through to outbound — message must be on our channel.
+        }
       }
-      if (type !== 0) throw new Error('No session and not a pre-key message')
-      const { session, plaintext } = await createInboundSessionFromPrekey(accountRef.current, ct)
-      sessionsRef.current.set(senderDid, session)
-      await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
-      await persistSession(userAddress, dmKey, senderDid, session, storageKeyRef.current)
-      setState({ kind: 'ready' })
-      return plaintext
+      if (outbound) {
+        const plaintext = decryptFromPeer(outbound, ct, 1)
+        await persistSession(userAddress, dmKey, senderDid, 'out', outbound, storageKeyRef.current)
+        return plaintext
+      }
+      throw new Error('No session to decrypt type=1 message')
     },
     [dmKey, userAddress]
   )

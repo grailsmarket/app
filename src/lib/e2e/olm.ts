@@ -5,7 +5,7 @@
 // is loaded via a script tag from /public/olm.js the first time we need it,
 // and exposes `window.Olm`.
 import type Olm from '@matrix-org/olm'
-import { putEncrypted, getEncrypted } from './storage'
+import { putEncrypted, getEncrypted, listKeys } from './storage'
 import { bytesToBase64, utf8ToBytes, bytesToUtf8, base64ToBytes } from './encoding'
 import { deriveSubkey } from './identity'
 
@@ -143,6 +143,38 @@ export async function persistSession(
 ) {
   const pickled = session.pickle(pickleKey(storageKey))
   await putEncrypted(sessionKey(address, dmKey, did, direction), utf8ToBytes(pickled), storageKey)
+}
+
+// Discover and unpickle every persisted session for a (wallet, chat) pair —
+// independent of what the roster claims. Source-of-truth for "what sessions
+// exist on disk" is the IndexedDB key space, not the roster: `decryptCt`
+// can persist an inbound session without ever upserting the roster (peer's
+// pre-key arrives before we observe their handshake), and a refresh would
+// otherwise leave that session unloaded and the message undecryptable.
+export async function loadAllSessionsForChat(
+  address: string,
+  dmKey: string,
+  storageKey: Uint8Array,
+): Promise<Array<{ did: string; direction: SessionDirection; session: Olm.Session }>> {
+  await ensureOlm()
+  const Olm = olmRuntime()
+  const prefix = `wallet/${address}/session/${dmKey}/`
+  const keys = await listKeys(prefix)
+  const out: Array<{ did: string; direction: SessionDirection; session: Olm.Session }> = []
+  for (const key of keys) {
+    const tail = key.slice(prefix.length)
+    const lastSlash = tail.lastIndexOf('/')
+    if (lastSlash === -1) continue
+    const did = tail.slice(0, lastSlash)
+    const dir = tail.slice(lastSlash + 1)
+    if (dir !== 'out' && dir !== 'in') continue
+    const blob = await getEncrypted(key, storageKey)
+    if (!blob) continue
+    const session = new Olm.Session()
+    session.unpickle(pickleKey(storageKey), bytesToUtf8(blob))
+    out.push({ did, direction: dir, session })
+  }
+  return out
 }
 
 // Roster: per-chat list of {did, user_id, identity, signing} entries we've

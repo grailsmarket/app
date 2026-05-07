@@ -7,7 +7,7 @@ import {
   ensureOlm,
   loadOrCreateAccount,
   persistAccount,
-  loadSession,
+  loadAllSessionsForChat,
   persistSession,
   loadRoster,
   saveRoster,
@@ -198,31 +198,31 @@ export function useE2ESession(
         const roster = await loadRoster(userAddress, dmKey, storageKeyRef.current!)
         if (cancelled) return
         rosterRef.current = roster
+
+        // Load every persisted session for this chat by IndexedDB key scan,
+        // not by iterating the roster. `decryptCt` can persist an inbound
+        // session without ever calling upsertRoster (peer's pre-key arrives
+        // before we observe their handshake), so a refresh that only walks
+        // the roster would leave those inbound sessions on disk and the
+        // peer's old messages permanently undecryptable.
+        const sessions = await loadAllSessionsForChat(
+          userAddress,
+          dmKey,
+          storageKeyRef.current!,
+        )
+        if (cancelled) {
+          for (const { session } of sessions) session.free()
+          return
+        }
         let anySessionLoaded = false
-        for (const entry of roster) {
-          if (entry.did === ownDidRef.current) continue
-          const out = await loadSession(userAddress, dmKey, entry.did, 'out', storageKeyRef.current!)
-          // If the load was cancelled (chat switch / unmount) AFTER Olm
-          // unpickled the session, we must free it ourselves — nothing else
-          // holds a reference, and Olm bindings only release WASM memory on
-          // explicit `.free()`.
-          if (cancelled) {
-            out?.free()
-            return
+        for (const { did, direction, session } of sessions) {
+          if (did === ownDidRef.current) {
+            session.free()
+            continue
           }
-          if (out) {
-            outboundSessionsRef.current.set(entry.did, out)
-            anySessionLoaded = true
-          }
-          const inb = await loadSession(userAddress, dmKey, entry.did, 'in', storageKeyRef.current!)
-          if (cancelled) {
-            inb?.free()
-            return
-          }
-          if (inb) {
-            inboundSessionsRef.current.set(entry.did, inb)
-            anySessionLoaded = true
-          }
+          if (direction === 'out') outboundSessionsRef.current.set(did, session)
+          else inboundSessionsRef.current.set(did, session)
+          anySessionLoaded = true
         }
         if (anySessionLoaded) {
           updateReadiness()

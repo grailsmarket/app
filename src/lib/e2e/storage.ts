@@ -46,3 +46,14 @@ export async function deleteEntry(key: string) {
   const d = await db()
   await d.delete(STORE, key)
 }
+
+// Range-scan helper used by olm.ts to discover all session blobs for a chat
+// without depending on the roster being in sync with the keyspace. The
+// upper-bound sentinel '￿' is the standard prefix-range trick on
+// IDBKeyRange — every string starting with `prefix` sorts strictly below it.
+export async function listKeys(prefix: string): Promise<string[]> {
+  const d = await db()
+  const range = IDBKeyRange.bound(prefix, prefix + '￿')
+  const keys = await d.getAllKeys(STORE, range)
+  return keys as string[]
+}

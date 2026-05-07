@@ -140,13 +140,23 @@ export function useE2ESession(
         for (const entry of roster) {
           if (entry.did === ownDidRef.current) continue
           const out = await loadSession(userAddress, dmKey, entry.did, 'out', storageKeyRef.current!)
-          if (cancelled) return
+          // If the load was cancelled (chat switch / unmount) AFTER Olm
+          // unpickled the session, we must free it ourselves — nothing else
+          // holds a reference, and Olm bindings only release WASM memory on
+          // explicit `.free()`.
+          if (cancelled) {
+            out?.free()
+            return
+          }
           if (out) {
             outboundSessionsRef.current.set(entry.did, out)
             anySessionLoaded = true
           }
           const inb = await loadSession(userAddress, dmKey, entry.did, 'in', storageKeyRef.current!)
-          if (cancelled) return
+          if (cancelled) {
+            inb?.free()
+            return
+          }
           if (inb) {
             inboundSessionsRef.current.set(entry.did, inb)
             anySessionLoaded = true
@@ -162,6 +172,20 @@ export function useE2ESession(
       cancelled = true
     }
   }, [dmKey, unlocked, userAddress])
+
+  // Final cleanup on unmount. The chat-switch and wallet-change effects
+  // free as part of their re-run, but unmounting the hook (e.g. closing the
+  // sidebar) leaves Olm bindings alive in the Wasm heap until this runs.
+  useEffect(() => {
+    return () => {
+      for (const s of outboundSessionsRef.current.values()) s.free()
+      for (const s of inboundSessionsRef.current.values()) s.free()
+      outboundSessionsRef.current = new Map()
+      inboundSessionsRef.current = new Map()
+      accountRef.current?.free()
+      accountRef.current = null
+    }
+  }, [])
 
   const buildHandshakeBundle = useCallback(async (): Promise<string> => {
     if (!accountRef.current || !storageKeyRef.current || !userAddress) {

@@ -94,7 +94,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
             key={card.title}
             href={card.href}
             onClick={card.onClick}
-            className='fadeIn hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border-1 transition-colors md:min-w-[220px] md:flex-1'
+            className='fadeIn hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
             style={{ animationDelay: `${defaultAnimationDelay + ANIMATION_DELAY_INCREMENT * index}s` }}
           >
             <div className='flex flex-row items-center gap-2'>

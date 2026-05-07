@@ -9,15 +9,19 @@ import { useComments } from '@/hooks/comments/useComments'
 import { useDeleteComment } from '@/hooks/comments/useDeleteComment'
 import { useUserContext } from '@/context/user'
 import type { Comment } from '@/types/comment'
+import { MarketplaceDomainType } from '@/types/domains'
+import { beautifyName } from '@/lib/ens'
 
 interface Props {
   name: string
+  nameDetails: MarketplaceDomainType | undefined
 }
 
-const CommentsPanel: React.FC<Props> = ({ name }) => {
+const CommentsPanel: React.FC<Props> = ({ name, nameDetails }) => {
   const { authStatus, userAddress } = useUserContext()
   const { comments, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useComments(name)
 
+  const nameId = nameDetails?.id
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
   const deleteMutation = useDeleteComment(name)
@@ -48,56 +52,66 @@ const CommentsPanel: React.FC<Props> = ({ name }) => {
         <span className='text-neutral text-lg'>{comments.length}</span>
       </div>
 
-      <div className='px-lg xl:px-xl max-h-[480px] w-full overflow-y-auto'>
-        {isLoading ? (
-          <div className='flex h-[200px] w-full animate-pulse flex-col items-center justify-center gap-3'>
-            <LoadingCell height='20px' width='140px' radius='4px' />
-            <span className='text-neutral text-md'>Loading comments…</span>
-          </div>
-        ) : comments.length === 0 ? (
-          <div className='py-2xl flex w-full flex-col items-center justify-center gap-3'>
-            <p className='text-neutral text-md'>No comments yet</p>
-          </div>
-        ) : (
-          <>
-            {comments.map((c, i) => (
-              <CommentRow
-                key={c.id}
-                isLast={i === comments.length - 1}
-                comment={c}
-                canDelete={!!lowerAddr && c.author_address?.toLowerCase() === lowerAddr}
-                onRequestDelete={setPendingDelete}
-              />
-            ))}
-            <div ref={sentinelRef} />
-            {isFetchingNextPage && (
-              <div className='py-md flex w-full items-center justify-center'>
-                <span className='text-neutral text-sm'>Loading more…</span>
+      {nameId ? (
+        <>
+          <div className='px-lg xl:px-xl max-h-[480px] w-full overflow-y-auto'>
+            {isLoading ? (
+              <div className='flex h-[200px] w-full animate-pulse flex-col items-center justify-center gap-3'>
+                <LoadingCell height='20px' width='140px' radius='4px' />
+                <span className='text-neutral text-md'>Loading comments…</span>
               </div>
+            ) : comments.length === 0 ? (
+              <div className='py-2xl flex w-full flex-col items-center justify-center gap-3'>
+                <p className='text-neutral text-lg'>
+                  Start the discussion on {beautifyName(name)} with fellow domainers!
+                </p>
+              </div>
+            ) : (
+              <>
+                {comments.map((c, i) => (
+                  <CommentRow
+                    key={c.id}
+                    isLast={i === comments.length - 1}
+                    comment={c}
+                    canDelete={!!lowerAddr && c.author_address?.toLowerCase() === lowerAddr}
+                    onRequestDelete={setPendingDelete}
+                  />
+                ))}
+                <div ref={sentinelRef} />
+                {isFetchingNextPage && (
+                  <div className='py-md flex w-full items-center justify-center'>
+                    <span className='text-neutral text-sm'>Loading more…</span>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
+          </div>
 
-      {authStatus === 'authenticated' ? (
-        <CommentComposer name={name} />
+          {authStatus === 'authenticated' ? (
+            <CommentComposer name={name} />
+          ) : (
+            <div className='border-tertiary text-neutral px-lg py-md text-md border-t-2 text-center'>
+              Sign in to leave a comment.
+            </div>
+          )}
+
+          <DeleteCommentModal
+            isOpen={!!pendingDelete}
+            isLoading={deleteMutation.isPending}
+            onCancel={() => setPendingDelete(null)}
+            onConfirm={() => {
+              if (!pendingDelete) return
+              deleteMutation.mutate(pendingDelete.id, {
+                onSettled: () => setPendingDelete(null),
+              })
+            }}
+          />
+        </>
       ) : (
-        <div className='border-tertiary text-neutral px-lg py-md text-md border-t-2 text-center'>
-          Sign in to leave a comment.
+        <div className='border-tertiary text-neutral p-xl text-center text-lg'>
+          Name has never been registered, comments are not available.
         </div>
       )}
-
-      <DeleteCommentModal
-        isOpen={!!pendingDelete}
-        isLoading={deleteMutation.isPending}
-        onCancel={() => setPendingDelete(null)}
-        onConfirm={() => {
-          if (!pendingDelete) return
-          deleteMutation.mutate(pendingDelete.id, {
-            onSettled: () => setPendingDelete(null),
-          })
-        }}
-      />
     </div>
   )
 }

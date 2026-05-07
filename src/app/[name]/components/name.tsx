@@ -168,7 +168,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />
-          <CommentsPanel name={name} />
+          <CommentsPanel name={name} nameDetails={nameDetails} />
           <SimilarNames name={name} />
         </div>
       </div>

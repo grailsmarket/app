@@ -25,21 +25,15 @@ const ProPageShell = () => {
   if (isSubscriber) {
     return (
       <>
-        <div className='relative z-10 snap-start'>
-          <ProSubscriberHero tierId={subscription.tierId} tierExpiresAt={subscription.tierExpiresAt} />
-        </div>
+        <ProSubscriberHero tierId={subscription.tierId} tierExpiresAt={subscription.tierExpiresAt} />
 
         <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-20 px-4 pt-12 pb-8 sm:gap-28 sm:pt-16 sm:pb-12 md:gap-36 md:px-8 md:pt-20 md:pb-16'>
-          <section className='w-full snap-start'>
-            <ProSubscriberFeatures userTierId={subscription.tierId} />
-          </section>
-          <section id='pricing comparison-table' className='flex w-full snap-start flex-col gap-10'>
+          <ProSubscriberFeatures userTierId={subscription.tierId} />
+          <div id='pricing comparison-table' className='flex flex-col w-full gap-10'>
             {!isPatron && <ProPricing userTierId={subscription.tierId} />}
             <ProComparisonTable />
-          </section>
-          <section className='w-full snap-start'>
-            <ProFaq />
-          </section>
+          </div>
+          <ProFaq />
         </div>
       </>
     )
@@ -47,27 +41,17 @@ const ProPageShell = () => {
 
   return (
     <>
-      <div className='relative z-10 snap-start'>
-        <ProHero />
-      </div>
-      <section className='relative z-10 snap-start'>
-        <ProSocialProof />
-      </section>
+      <ProHero />
+      <ProSocialProof />
 
       <div className='z-10 mx-auto flex w-full max-w-[1400px] flex-col items-center gap-20 px-4 pt-16 pb-8 sm:gap-28 sm:pt-24 sm:pb-12 md:gap-36 md:px-8 md:pt-32 lg:pt-40'>
-        <section className='w-full snap-start'>
-          <ProFeatures />
-        </section>
-        <section id='pricing' className='flex w-full snap-start flex-col gap-10'>
+        <ProFeatures />
+        <div id='pricing' className='flex flex-col w-full gap-10'>
           <ProPricing />
           <ProComparisonTable />
-        </section>
-        <section className='w-full snap-start'>
-          <ProFaq />
-        </section>
-        <section className='w-full snap-start'>
-          <ProCta />
-        </section>
+        </div>
+        <ProFaq />
+        <ProCta />
       </div>
     </>
   )

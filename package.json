@@ -10,6 +10,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "checks": "bun run format && bun run lint && bun run typecheck",
+    "test": "bun test",
     "postinstall": "cp -f node_modules/@matrix-org/olm/olm.wasm public/olm.wasm 2>/dev/null; cp -f node_modules/@matrix-org/olm/olm.js public/olm.js 2>/dev/null; true"
   },
   "dependencies": {
@@ -56,6 +57,7 @@
     "@eslint/eslintrc": "^3",
     "@posthog/nextjs-config": "^1.9.18",
     "@tailwindcss/postcss": "^4",
+    "@types/bun": "^1.3.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

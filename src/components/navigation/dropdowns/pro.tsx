@@ -61,8 +61,9 @@ const Pro: React.FC<ProProps> = ({ setDropdownOption, previousDropdownOption }) 
     }
   }, [previousDropdownOption])
 
-  const isMobile = useMemo(() => width ? width < 768 : false, [width])
-  const isSubscriber = subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription?.tierExpiresAt) > new Date())
+  const isMobile = useMemo(() => (width ? width < 768 : false), [width])
+  const isSubscriber =
+    subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription?.tierExpiresAt) > new Date())
 
   return (
     <div
@@ -83,30 +84,33 @@ const Pro: React.FC<ProProps> = ({ setDropdownOption, previousDropdownOption }) 
         }}
       >
         <h3 className='text-3xl font-semibold'>Pro</h3>
-        {isSubscriber && <Image
-          src={Arrowdown}
-          alt='Arrow Down'
-          width={20}
-          height={20}
-          className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
-        />}
+        {isSubscriber && (
+          <Image
+            src={Arrowdown}
+            alt='Arrow Down'
+            width={20}
+            height={20}
+            className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
+          />
+        )}
       </Link>
       <div className='px-md flex w-full flex-row flex-wrap gap-4 md:px-0'>
-        {isSubscriber && cards.map((card, index) => (
-          <Link
-            key={card.title}
-            href={card.href}
-            onClick={card.onClick}
-            className='fadeIn hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
-            style={{ animationDelay: `${defaultAnimationDelay + ANIMATION_DELAY_INCREMENT * index}s` }}
-          >
-            <div className='flex flex-row items-center gap-2'>
-              {card.icon}
-              <h3 className='text-primary text-2xl font-bold'>{card.title}</h3>
-            </div>
-            <p className='text-lg font-medium'>{card.description}</p>
-          </Link>
-        ))}
+        {isSubscriber &&
+          cards.map((card, index) => (
+            <Link
+              key={card.title}
+              href={card.href}
+              onClick={card.onClick}
+              className='fadeIn hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
+              style={{ animationDelay: `${defaultAnimationDelay + ANIMATION_DELAY_INCREMENT * index}s` }}
+            >
+              <div className='flex flex-row items-center gap-2'>
+                {card.icon}
+                <h3 className='text-primary text-2xl font-bold'>{card.title}</h3>
+              </div>
+              <p className='text-lg font-medium'>{card.description}</p>
+            </Link>
+          ))}
       </div>
     </div>
   )

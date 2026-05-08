@@ -30,7 +30,8 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
   const containerRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const isSubscriber = subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription?.tierExpiresAt) > new Date())
+  const isSubscriber =
+    subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription?.tierExpiresAt) > new Date())
 
   const handleMouseEnter = useCallback(
     (option: string | null) => {

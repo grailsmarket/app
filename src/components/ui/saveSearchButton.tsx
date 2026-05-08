@@ -34,8 +34,8 @@ const SaveSearchButton = () => {
     const savedFilters = (defaultSavedSearch.filters as Partial<NameFilters>) ?? {}
     const sortValue: SortFilterType | null = defaultSavedSearch.sortBy
       ? ((defaultSavedSearch.sortOrder
-        ? `${defaultSavedSearch.sortBy}_${defaultSavedSearch.sortOrder}`
-        : defaultSavedSearch.sortBy) as SortFilterType)
+          ? `${defaultSavedSearch.sortBy}_${defaultSavedSearch.sortOrder}`
+          : defaultSavedSearch.sortBy) as SortFilterType)
       : null
 
     dispatch(

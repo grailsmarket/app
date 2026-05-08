@@ -68,7 +68,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
     }
   }, [previousDropdownOption])
 
-  const isMobile = useMemo(() => width ? width < 768 : false, [width])
+  const isMobile = useMemo(() => (width ? width < 768 : false), [width])
 
   return (
     <div

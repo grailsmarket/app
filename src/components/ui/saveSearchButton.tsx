@@ -23,8 +23,6 @@ const SaveSearchButton = () => {
   const { defaultSavedSearch, canManageSavedSearches } = useSavedSearches()
   const { savedSearchActive } = useAppSelector(selectSavedSearchesModal)
 
-  console.log('savedSearchActive', savedSearchActive)
-
   const filters = selectors.filters as NameFilters
 
   // Auto-apply the default saved search once per session, only when the user
@@ -36,8 +34,8 @@ const SaveSearchButton = () => {
     const savedFilters = (defaultSavedSearch.filters as Partial<NameFilters>) ?? {}
     const sortValue: SortFilterType | null = defaultSavedSearch.sortBy
       ? ((defaultSavedSearch.sortOrder
-          ? `${defaultSavedSearch.sortBy}_${defaultSavedSearch.sortOrder}`
-          : defaultSavedSearch.sortBy) as SortFilterType)
+        ? `${defaultSavedSearch.sortBy}_${defaultSavedSearch.sortOrder}`
+        : defaultSavedSearch.sortBy) as SortFilterType)
       : null
 
     dispatch(

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Arrowdown from 'public/icons/arrow-down.svg'
 import analyticsIcon from 'public/icons/analytics-primary.svg'
 import trophyIcon from 'public/icons/trophy-primary.svg'
@@ -68,12 +68,12 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
     }
   }, [previousDropdownOption])
 
-  const isMobile = width ? width < 768 : false
+  const isMobile = useMemo(() => width ? width < 768 : false, [width])
 
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'
-      style={{ height: isMobile ? (isDropdownOpen ? '700px' : '40px') : 'auto' }}
+      style={{ height: isMobile ? (isDropdownOpen ? '480px' : '40px') : 'auto' }}
     >
       <div
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'

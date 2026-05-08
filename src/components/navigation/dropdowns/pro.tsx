@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Arrowdown from 'public/icons/arrow-down.svg'
 import analyticsIcon from 'public/icons/analytics-primary.svg'
 import trophyIcon from 'public/icons/trophy-primary.svg'
@@ -10,7 +10,8 @@ import dashboardIcon from 'public/icons/grid-primary.svg'
 import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
-
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 interface ProProps {
   setDropdownOption: (option: string | null) => void
   previousDropdownOption: string | null
@@ -19,6 +20,7 @@ interface ProProps {
 const Pro: React.FC<ProProps> = ({ setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { width } = useWindowSize()
+  const { subscription } = useAppSelector(selectUserProfile)
 
   const defaultAnimationDelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
 
@@ -59,28 +61,38 @@ const Pro: React.FC<ProProps> = ({ setDropdownOption, previousDropdownOption }) 
     }
   }, [previousDropdownOption])
 
-  const isMobile = width ? width < 768 : false
+  const isMobile = useMemo(() => width ? width < 768 : false, [width])
+  const isSubscriber = subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription?.tierExpiresAt) > new Date())
 
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'
-      style={{ height: isMobile ? (isDropdownOpen ? '700px' : '40px') : 'auto' }}
+      style={{ height: isMobile ? (isDropdownOpen ? '490px' : '40px') : 'auto' }}
     >
-      <div
+      <Link
+        href='/pro'
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onClick={(e) => {
+          if (isSubscriber) {
+            e.preventDefault()
+            e.stopPropagation()
+            setIsDropdownOpen(!isDropdownOpen)
+          } else {
+            setDropdownOption(null)
+          }
+        }}
       >
         <h3 className='text-3xl font-semibold'>Pro</h3>
-        <Image
+        {isSubscriber && <Image
           src={Arrowdown}
           alt='Arrow Down'
           width={20}
           height={20}
           className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
-        />
-      </div>
+        />}
+      </Link>
       <div className='px-md flex w-full flex-row flex-wrap gap-4 md:px-0'>
-        {cards.map((card, index) => (
+        {isSubscriber && cards.map((card, index) => (
           <Link
             key={card.title}
             href={card.href}

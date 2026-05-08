@@ -19,6 +19,7 @@ import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
+import LockIcon from './lockIcon'
 import E2EHandshakeBanner from './e2eHandshakeBanner'
 import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
 import { useE2EEnabled } from '@/hooks/chat/useE2EEnabled'
@@ -28,6 +29,7 @@ import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import Link from 'next/link'
+import Tooltip from '@/components/ui/tooltip'
 
 const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -188,19 +190,19 @@ const ThreadView: React.FC = () => {
   const headerMenuItems: ContextMenuItem[] = peer
     ? isBlocked
       ? [
-          {
-            label: `Unblock ${peerLabel}`,
-            onClick: () => unblockMutation.mutate(peer.user_id),
-          },
-        ]
+        {
+          label: `Unblock ${peerLabel}`,
+          onClick: () => unblockMutation.mutate(peer.user_id),
+        },
+      ]
       : [
-          {
-            label: `Block ${peerLabel}`,
-            confirmLabel: `Confirm block ${peerLabel}`,
-            destructive: true,
-            onClick: () => blockMutation.mutate(peer.address),
-          },
-        ]
+        {
+          label: `Block ${peerLabel}`,
+          confirmLabel: `Confirm block ${peerLabel}`,
+          destructive: true,
+          onClick: () => blockMutation.mutate(peer.address),
+        },
+      ]
     : []
 
   return (
@@ -250,24 +252,26 @@ const ThreadView: React.FC = () => {
         </Link>
         <div className='relative flex items-center gap-1'>
           {sessionReady && (
-            <button
-              type='button'
-              onClick={() => setEncryptionDisabled(!encryptionDisabled)}
-              aria-pressed={!encryptionDisabled}
-              aria-label={
-                encryptionDisabled
-                  ? 'Encryption off — click to turn on'
-                  : 'Encryption on — click to turn off'
-              }
-              title={
-                encryptionDisabled
-                  ? 'Encryption is OFF for this chat — new messages will be sent in plaintext. Click to re-enable.'
-                  : 'Encryption is ON for this chat — new messages will be end-to-end encrypted. Click to send plaintext instead.'
-              }
-              className='hover:bg-primary/10 rounded-md p-1 text-base leading-none transition-colors'
-            >
-              {encryptionDisabled ? '🔓' : '🔒'}
-            </button>
+            <Tooltip label={encryptionDisabled ? 'Enable encryption' : 'Disable encryption'} position='bottom' align='right'>
+              <button
+                type='button'
+                onClick={() => setEncryptionDisabled(!encryptionDisabled)}
+                aria-pressed={!encryptionDisabled}
+                aria-label={
+                  encryptionDisabled
+                    ? 'Encryption off — click to turn on'
+                    : 'Encryption on — click to turn off'
+                }
+                title={
+                  encryptionDisabled
+                    ? 'Encryption is OFF for this chat — new messages will be sent in plaintext. Click to re-enable.'
+                    : 'Encryption is ON for this chat — new messages will be end-to-end encrypted. Click to send plaintext instead.'
+                }
+                className='hover:bg-primary/10 text-foreground rounded-md p-1 transition-colors'
+              >
+                <LockIcon isLocked={!encryptionDisabled} />
+              </button>
+            </Tooltip>
           )}
           {headerMenuItems.length > 0 && <ContextMenu items={headerMenuItems} />}
           <button

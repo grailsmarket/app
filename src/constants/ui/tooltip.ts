@@ -18,8 +18,8 @@ export const TOOLTIP_POSITION_STYLES = {
 export const ALIGN_STYLES = {
   top: { top: 0 },
   bottom: { bottom: 0 },
-  right: { right: '-5px' },
-  left: { left: '-5px' },
+  right: { right: '-4px' },
+  left: { left: '-4px' },
   center: { bottom: 0, transform: 'translateY(30%)' },
 } as const
 

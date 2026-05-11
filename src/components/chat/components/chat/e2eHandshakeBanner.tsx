@@ -104,62 +104,62 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
   useEffect(() => {
     if (!isEligibleChat || !e2e.isUnlocked) return
     let cancelled = false
-    ;(async () => {
-      let sawOwnHandshake = false
-      for (const m of messages) {
-        if (cancelled) return
-        if (m.id.startsWith('optimistic-')) continue
-        const env = tryDecode(m.body)
-        if (!env || !isHandshakeEnvelope(env)) continue
-        // Identify OUR DEVICE's prior handshakes by Olm identity, not by
-        // wallet address — sibling devices share the address but have
-        // distinct Olm identities, and we want to consume their bundles
-        // (multi-device fanout) rather than skip them as "own".
-        let bundleIdentity: string | null = null
-        try {
-          bundleIdentity = parseBundle(env.bundle).identity
-        } catch {
-          // Malformed bundle — skip silently; consumePeerBundle would
-          // throw too, this just avoids the noisy error log path.
-          continue
+      ; (async () => {
+        let sawOwnHandshake = false
+        for (const m of messages) {
+          if (cancelled) return
+          if (m.id.startsWith('optimistic-')) continue
+          const env = tryDecode(m.body)
+          if (!env || !isHandshakeEnvelope(env)) continue
+          // Identify OUR DEVICE's prior handshakes by Olm identity, not by
+          // wallet address — sibling devices share the address but have
+          // distinct Olm identities, and we want to consume their bundles
+          // (multi-device fanout) rather than skip them as "own".
+          let bundleIdentity: string | null = null
+          try {
+            bundleIdentity = parseBundle(env.bundle).identity
+          } catch {
+            // Malformed bundle — skip silently; consumePeerBundle would
+            // throw too, this just avoids the noisy error log path.
+            continue
+          }
+          if (bundleIdentity === e2e.ownDid) {
+            sawOwnHandshake = true
+            continue
+          }
+          if (processedHsRef.current.has(m.id)) continue
+          try {
+            const { isNew } = await e2e.consumePeerBundle(env.bundle, m.sender_user_id)
+            // Only mark processed AFTER a successful consume. A transient
+            // failure (e.g. parseBundle on a partially-corrupted body, or
+            // an Olm error mid-init) would otherwise permanently suppress
+            // retries for this message until the banner remounts.
+            processedHsRef.current.add(m.id)
+            if (isNew && !cancelled) await republishOurHandshake()
+          } catch (err) {
+            console.error(err)
+          }
         }
-        if (bundleIdentity === e2e.ownDid) {
-          sawOwnHandshake = true
-          continue
+        // Auto-publish our bundle once per chat if we've never sent one
+        // for this chat. Wait for messages to finish loading first so we
+        // don't duplicate an existing handshake that hasn't arrived in the
+        // cache yet. `republishOurHandshake` is inflight-guarded, so a
+        // concurrent republish triggered by an `isNew` peer bundle above is
+        // a no-op.
+        if (
+          !cancelled &&
+          !msgsLoading &&
+          !sawOwnHandshake &&
+          !autoPublishedChatsRef.current.has(chatId)
+        ) {
+          autoPublishedChatsRef.current.add(chatId)
+          try {
+            await republishOurHandshake()
+          } catch (err) {
+            console.error(err)
+          }
         }
-        if (processedHsRef.current.has(m.id)) continue
-        try {
-          const { isNew } = await e2e.consumePeerBundle(env.bundle, m.sender_user_id)
-          // Only mark processed AFTER a successful consume. A transient
-          // failure (e.g. parseBundle on a partially-corrupted body, or
-          // an Olm error mid-init) would otherwise permanently suppress
-          // retries for this message until the banner remounts.
-          processedHsRef.current.add(m.id)
-          if (isNew && !cancelled) await republishOurHandshake()
-        } catch (err) {
-          console.error(err)
-        }
-      }
-      // Auto-publish our bundle once per chat if we've never sent one
-      // for this chat. Wait for messages to finish loading first so we
-      // don't duplicate an existing handshake that hasn't arrived in the
-      // cache yet. `republishOurHandshake` is inflight-guarded, so a
-      // concurrent republish triggered by an `isNew` peer bundle above is
-      // a no-op.
-      if (
-        !cancelled &&
-        !msgsLoading &&
-        !sawOwnHandshake &&
-        !autoPublishedChatsRef.current.has(chatId)
-      ) {
-        autoPublishedChatsRef.current.add(chatId)
-        try {
-          await republishOurHandshake()
-        } catch (err) {
-          console.error(err)
-        }
-      }
-    })()
+      })()
     return () => {
       cancelled = true
     }
@@ -170,14 +170,14 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
 
   if (!e2e.isUnlocked) {
     return (
-      <div className='border-tertiary bg-secondary/40 border-b p-3 text-center text-sm'>
-        <p className='mb-2'>🔒 This chat supports end-to-end encryption.</p>
+      <div className='border-tertiary flex justify-between items-center bg-secondary/40 border-b p-3 text-center'>
+        <p className='text-md text-left font-medium'><span className='text-xl leading-none'>🔒</span> This chat supports end-to-end encryption.</p>
         <button
           type='button'
           onClick={() => {
             e2e.unlock().catch(console.error)
           }}
-          className='bg-primary text-background rounded px-3 py-1 font-semibold'
+          className='bg-primary text-background rounded px-3 py-1.5 text-md font-semibold hover:opacity-80 transition-opacity cursor-pointer'
         >
           Unlock encryption
         </button>

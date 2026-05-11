@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -19,16 +19,54 @@ import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
+import LockIcon from './lockIcon'
+import E2EHandshakeBanner from './e2eHandshakeBanner'
+import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
+import { useE2EEnabled } from '@/hooks/chat/useE2EEnabled'
+import { useEncryptionDisabled } from '@/hooks/chat/useEncryptionDisabled'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import Link from 'next/link'
+import Tooltip from '@/components/ui/tooltip'
 
 const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
   const { activeChatId } = useAppSelector(selectChatSidebar)
   const { userAddress } = useUserContext()
+  const { enabled: e2eEnabled, loading: e2eFlagLoading } = useE2EEnabled()
+
+  // Subscribe to sessionRegistry so the composer disables/enables in real
+  // time as the banner moves the chat through `unlocked → no_session → ready`.
+  const [, forceTick] = useState(0)
+  useEffect(() => sessionRegistry.subscribe(() => forceTick((t) => t + 1)), [])
+  const session = activeChatId ? sessionRegistry.get(activeChatId) : undefined
+  const sessionReady = !!session?.isReady()
+  const { encryptionDisabled, setEncryptionDisabled } = useEncryptionDisabled(activeChatId)
+  // Effective encryption state for THIS send: a session must be ready AND
+  // the user must not have explicitly opted out. The opt-out exists so users
+  // who bootstrapped E2E aren't permanently locked into it.
+  const e2eReady = sessionReady && !encryptionDisabled
+  // Compute a plaintext cap that keeps the encrypted fanout body under the
+  // server's 4000-byte limit. Olm ciphertext is ~1.5× the plaintext size
+  // (header + base64), each `cts` entry adds ~80 bytes of JSON wrapping,
+  // and the envelope itself takes ~200 fixed bytes. With N=fanout targets:
+  //   max_plaintext ≈ ((SERVER_LIMIT - 200) / N - 80) / 1.5
+  // Capped at 1500 so latency / typing stays reasonable for typical chats;
+  // can drop arbitrarily low for very large fan-outs (16+ devices). When
+  // it falls below SAFE_MIN_PLAINTEXT, sending is blocked entirely — better
+  // a hard "too many devices" error than a silent server reject of an
+  // over-limit body that the user had no way to see coming.
+  const PLAINTEXT_CAP_FOR_E2E = 1500
+  const SAFE_MIN_PLAINTEXT = 100
+  const composerMaxLen = (() => {
+    if (!e2eReady || !session) return 4000
+    const targets = Math.max(1, session.fanoutTargetCount())
+    const room = Math.floor(((4000 - 200) / targets - 80) / 1.5)
+    return Math.min(PLAINTEXT_CAP_FOR_E2E, room)
+  })()
+  const overFanoutLimit = e2eReady && composerMaxLen < SAFE_MIN_PLAINTEXT
 
   const { data: chat, isLoading: chatLoading } = useChat(activeChatId)
   const {
@@ -52,6 +90,26 @@ const ThreadView: React.FC = () => {
   const peer = otherParticipants[0]
   const peerProfile = usePeerProfile(peer?.address)
   const isBlocked = !!chat?.is_blocked_by_me
+
+  // Pause composer when the user has (or might have) opted into E2E for any
+  // chat that isn't confirmed-not-direct. Default-blocked cases:
+  //   - `chat?.type` undefined (useChat still loading) — we can't tell if
+  //     the chat is direct or group yet; assume direct.
+  //   - `e2eFlagLoading` — PostHog hasn't resolved the rollout cohort yet;
+  //     fail closed so a cohort user who types fast doesn't slip through
+  //     to the plaintext fallback.
+  //   - `e2eEnabled` — the user is confirmed in the cohort and the session
+  //     isn't ready (this is the post-load steady-state gate).
+  // Group chats and an explicit per-chat opt-out release the gate. The
+  // gate uses `sessionReady` (raw) rather than `e2eReady` so a user who
+  // toggles encryption off while still bootstrapping doesn't get blocked
+  // — once they've opted out, plaintext is the intended path.
+  const blockSendsForE2E =
+    ((e2eEnabled || e2eFlagLoading) &&
+      !sessionReady &&
+      !encryptionDisabled &&
+      chat?.type !== 'group') ||
+    overFanoutLimit
 
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
@@ -132,19 +190,19 @@ const ThreadView: React.FC = () => {
   const headerMenuItems: ContextMenuItem[] = peer
     ? isBlocked
       ? [
-          {
-            label: `Unblock ${peerLabel}`,
-            onClick: () => unblockMutation.mutate(peer.user_id),
-          },
-        ]
+        {
+          label: `Unblock ${peerLabel}`,
+          onClick: () => unblockMutation.mutate(peer.user_id),
+        },
+      ]
       : [
-          {
-            label: `Block ${peerLabel}`,
-            confirmLabel: `Confirm block ${peerLabel}`,
-            destructive: true,
-            onClick: () => blockMutation.mutate(peer.address),
-          },
-        ]
+        {
+          label: `Block ${peerLabel}`,
+          confirmLabel: `Confirm block ${peerLabel}`,
+          destructive: true,
+          onClick: () => blockMutation.mutate(peer.address),
+        },
+      ]
     : []
 
   return (
@@ -193,6 +251,28 @@ const ThreadView: React.FC = () => {
           <p className='text-foreground max-w-[calc(100%-44px)] truncate text-xl font-semibold'>{peerLabel}</p>
         </Link>
         <div className='relative flex items-center gap-1'>
+          {sessionReady && (
+            <Tooltip label={encryptionDisabled ? 'Enable encryption' : 'Disable encryption'} position='bottom' align='right'>
+              <button
+                type='button'
+                onClick={() => setEncryptionDisabled(!encryptionDisabled)}
+                aria-pressed={!encryptionDisabled}
+                aria-label={
+                  encryptionDisabled
+                    ? 'Encryption off — click to turn on'
+                    : 'Encryption on — click to turn off'
+                }
+                title={
+                  encryptionDisabled
+                    ? 'Encryption is OFF for this chat — new messages will be sent in plaintext. Click to re-enable.'
+                    : 'Encryption is ON for this chat — new messages will be end-to-end encrypted. Click to send plaintext instead.'
+                }
+                className='hover:bg-primary/10 text-foreground rounded-md p-1 transition-colors'
+              >
+                <LockIcon isLocked={!encryptionDisabled} />
+              </button>
+            </Tooltip>
+          )}
           {headerMenuItems.length > 0 && <ContextMenu items={headerMenuItems} />}
           <button
             onClick={() => dispatch(closeChatSidebar())}
@@ -203,6 +283,8 @@ const ThreadView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {activeChatId && <E2EHandshakeBanner chatId={activeChatId} />}
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
         {chatLoading || msgsLoading ? (
@@ -252,7 +334,24 @@ const ThreadView: React.FC = () => {
             </button>
           </div>
         ) : (
-          <Composer chatId={activeChatId} />
+          // When the user has (or might have) opted into E2E but no session
+          // is ready yet, refuse to send: useSendMessage's plaintext fallback
+          // would silently leak the message in the clear. See
+          // `blockSendsForE2E` above for the loading + direct-chat scoping.
+          <Composer
+            chatId={activeChatId}
+            disabled={blockSendsForE2E}
+            disabledReason={
+              blockSendsForE2E
+                ? overFanoutLimit
+                  ? 'Too many devices in this chat to fit an encrypted message under the server limit.'
+                  : e2eFlagLoading
+                    ? 'Checking encryption settings…'
+                    : 'Setting up encryption with this peer — sending paused.'
+                : null
+            }
+            maxLen={composerMaxLen}
+          />
         ))}
     </>
   )

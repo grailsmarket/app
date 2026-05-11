@@ -8,7 +8,22 @@ import { useAppDispatch } from '@/state/hooks'
 import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/typing'
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
 import { setChatSocket } from './socketSingleton'
-import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
+import type {
+  ChatMessage,
+  ChatMessagesResponse,
+  ChatInboxResponse,
+  ChatWSEvent,
+  ChatWSOutgoing,
+} from '@/types/chat'
+import {
+  tryDecode,
+  isFanoutEnvelope,
+  isHandshakeEnvelope,
+  isCiphertextEnvelope,
+} from '@/lib/e2e/wire'
+import { plaintextCache } from '@/lib/e2e/plaintextCache'
+import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
+import { handshakeBus } from '@/lib/e2e/handshakeBus'
 
 const TYPING_TTL_MS = 4000
 const PING_INTERVAL_MS = 25_000
@@ -38,6 +53,17 @@ export const useChatSocket = () => {
   const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const typingTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   const intentionalCloseRef = useRef(false)
+
+  // Clear E2E in-memory state whenever the authed wallet changes. The Olm
+  // accounts are stored encrypted under the previous wallet's key derivation,
+  // so leaving plaintext or sessions around for the new user would be a
+  // memory-resident leak across user switches on the same device.
+  useEffect(() => {
+    return () => {
+      plaintextCache.clear()
+      sessionRegistry.clearAll()
+    }
+  }, [userAddress])
 
   useEffect(() => {
     if (!userAddress || authStatus !== 'authenticated') return
@@ -83,12 +109,57 @@ export const useChatSocket = () => {
         case 'chat:message_new': {
           const { chat_id, message } = evt.data
           const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          const env = tryDecode(message.body)
+
+          // Inbound E2E fanout. Skip self-echoes — the sender's plaintext is
+          // already seeded in plaintextCache by useSendMessage, and fanouts
+          // never include an entry for the sender. The single-owner
+          // plaintextCache.decrypt shares the in-flight decryption Promise
+          // with useDecryptedBody (Olm decrypt is stateful and cannot be
+          // invoked twice on the same ciphertext).
+          if (env && isCiphertextEnvelope(env)) {
+            const session = sessionRegistry.get(chat_id)
+            if (session) {
+              const ownDid = session.ownDid()
+              const isOwnSend = !!ownDid && env.sender_did === ownDid
+              if (!isOwnSend) {
+                void plaintextCache
+                  .decrypt(message.id, () => session.decrypt(env))
+                  .then((plaintext) => {
+                    // Persist the decrypted plaintext at rest. Olm's ratchet
+                    // is forward-only — after the next persist of this
+                    // session, we can never re-derive this message's key, so
+                    // a refresh that landed AFTER decrypt but BEFORE this
+                    // persist would render the message as "Could not
+                    // decrypt" forever. The own-plaintext store doubles as
+                    // a peer-history cache once we've decrypted.
+                    return session.persistOwnPlaintext(message.id, plaintext)
+                  })
+                  .catch((err) => console.warn('[chat ws] e2e decrypt failed', err))
+              }
+            }
+          }
+
+          // Handshake bundle: emit to bus so the banner consumes it.
+          // We previously skipped self-echo; with multi-device, our OTHER
+          // devices' handshakes also have senderIsMe=true (same wallet,
+          // different did) and we DO want to consume those for self-fanout.
+          // The consumer (consumePeerBundle) filters by ownDid so true
+          // self-echoes are ignored without missing sibling-device bundles.
+          if (env && isHandshakeEnvelope(env)) {
+            handshakeBus.emit({
+              chatId: chat_id,
+              bundle: env.bundle,
+              senderUserId: message.sender_user_id,
+            })
+          }
+
           // Patch messages cache. Three cases to handle:
           // 1. Canonical id already present (POST onSuccess won the race) → no-op.
-          // 2. Sender is me AND an optimistic placeholder with matching body is
-          //    still in cache (WS won the race) → REPLACE in place rather than
-          //    appending, otherwise the optimistic + canonical both stick around
-          //    and the message renders twice until the next refresh.
+          // 2. Sender is me AND an optimistic placeholder is still in cache
+          //    (WS won the race) → REPLACE in place. Dedup is body-match for
+          //    plaintext sends and `mid`-match for E2E sends (the optimistic
+          //    body is plaintext but the echo body is the JSON envelope).
           // 3. Otherwise → prepend to the newest page.
           queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(['chats', chat_id, 'messages'], (old) => {
             if (!old) return old
@@ -96,12 +167,16 @@ export const useChatSocket = () => {
             if (exists) return old
 
             if (senderIsMe) {
+              const envMid = env && isFanoutEnvelope(env) ? env.mid : undefined
+              const matchOptimistic = (m: ChatMessage): boolean => {
+                if (!m.id.startsWith('optimistic-') || m.deleted_at) return false
+                if (envMid) return m.id === envMid
+                return m.body === message.body
+              }
               let replaced = false
               const updatedPages = old.pages.map((page) => {
                 if (replaced) return page
-                const idx = page.messages.findIndex(
-                  (m) => m.id.startsWith('optimistic-') && m.body === message.body && !m.deleted_at
-                )
+                const idx = page.messages.findIndex(matchOptimistic)
                 if (idx === -1) return page
                 replaced = true
                 const next = [...page.messages]

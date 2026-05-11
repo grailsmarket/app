@@ -90,10 +90,10 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   useEffect(() => {
     // reset filters when visiting a new profile
     if (lastVisitedProfile && lastVisitedProfile !== user) {
-      console.log('resetting filters')
       if (profileTab !== 'watchlist') {
         dispatch(changeTab(PROFILE_TABS[0]))
       }
+
       dispatch(clearDomainsFilters())
       dispatch(clearListingsFilters())
       dispatch(clearMyOffersFilters())

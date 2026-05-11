@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Cross, useWindowSize } from 'ethereum-identity-kit'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -51,6 +51,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   // Delayed state for content switch - keeps expanded content visible during close animation
   const [showExpandedContent, setShowExpandedContent] = useState(false)
 
+  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const {
     isSelecting,
@@ -400,6 +401,13 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           ? 'min(130px,95vw)'
           : 'min(420px,95vw)'
 
+  const componentWidth = useMemo(() => {
+    if (!isClient) return '136px'
+    if (isSelecting) return bulkSelectWidth
+    if (windowWidth && windowWidth < 640) return '130px'
+    return '136px'
+  }, [isSelecting, windowWidth, bulkSelectWidth, isClient])
+
   if (!isBulkSelectSupportedTab) return null
 
   return (
@@ -467,12 +475,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       <div
-        className={cn(
-          'shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200'
-          // isSelecting ? bulkSelectWidth : 'w-34'
-        )}
+        className='shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200'
         style={{
-          width: isSelecting ? bulkSelectWidth : windowWidth && windowWidth < 640 ? '130px' : '136px',
+          width: componentWidth,
           // transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)'
         }}
       >

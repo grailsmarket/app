@@ -14,6 +14,7 @@ import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import type { Chat, ChatParticipant } from '@/types/chat'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { Address } from 'viem'
+import { tryDecode } from '@/lib/e2e/wire'
 
 interface Props {
   chat: Chat
@@ -38,7 +39,11 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
 
-  const lastBody = chat.last_message?.deleted_at ? 'Message deleted' : (chat.last_message?.body ?? '')
+  const lastBody = chat.last_message?.deleted_at
+    ? 'Message deleted'
+    : tryDecode(chat.last_message?.body)
+      ? '🔒 Encrypted message'
+      : (chat.last_message?.body ?? '')
   const time = chat.last_message_at ? formatTimeAgo(chat.last_message_at) : ''
 
   const open = () => dispatch(openSidebarToThread({ chatId: chat.id }))

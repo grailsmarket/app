@@ -11,9 +11,15 @@ import MentionDropdown from './mentionDropdown'
 interface Props {
   chatId: string
   disabled?: boolean
+  disabledReason?: string | null
+  // Plaintext char cap. Defaults to 4000 (the server's body limit). E2E mode
+  // passes a lower value because Olm's ciphertext expansion + JSON envelope +
+  // per-device fanout can blow up the on-the-wire body to several times the
+  // plaintext length. See ThreadView for the calculation.
+  maxLen?: number
 }
 
-const MAX_LEN = 4000
+const DEFAULT_MAX_LEN = 4000
 const MENTION_MIN_QUERY = 2
 
 interface MentionState {
@@ -39,7 +45,7 @@ const detectMention = (value: string, caret: number): MentionState | null => {
   return null
 }
 
-const Composer: React.FC<Props> = ({ chatId, disabled }) => {
+const Composer: React.FC<Props> = ({ chatId, disabled, disabledReason, maxLen = DEFAULT_MAX_LEN }) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
   // When the server returns 403 BLOCKED on send, the caller is being blocked
@@ -107,8 +113,8 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
   const submit = () => {
     const trimmed = value.trim()
     if (!trimmed || send.isPending) return
-    if (trimmed.length > MAX_LEN) {
-      setError(`Message too long (max ${MAX_LEN} characters)`)
+    if (trimmed.length > maxLen) {
+      setError(`Message too long (max ${maxLen} characters)`)
       return
     }
     setError(null)
@@ -118,7 +124,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
     if (ref.current) {
       ref.current.style.height = 'auto'
     }
-    send.mutate(trimmed, {
+    send.send(trimmed, {
       onError: (e) => {
         if (e.code === 'BLOCKED') {
           setError("Couldn't deliver, you have been blocked")
@@ -174,6 +180,9 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
   return (
     <div className='border-tertiary relative border-t-2 p-3'>
       {error && <p className='text-md mb-2 text-red-400'>{error}</p>}
+      {!error && disabled && disabledReason && (
+        <p className='text-neutral text-md mb-2'>{disabledReason}</p>
+      )}
       <div className='bg-secondary border-tertiary relative flex items-end gap-2 rounded-md border p-2'>
         {mention && codePointLength(mention.query) >= MENTION_MIN_QUERY && (
           <MentionDropdown
@@ -207,7 +216,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           onKeyDown={onKeyDown}
           disabled={inputDisabled}
           rows={1}
-          maxLength={MAX_LEN}
+          maxLength={maxLen}
           placeholder='Type a message…'
           className={cn(
             'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-7 outline-none',

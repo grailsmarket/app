@@ -4,28 +4,66 @@ import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-
 import { sendMessage, type SendMessageError } from '@/api/chats/sendMessage'
 import type { ChatMessage, ChatMessagesResponse } from '@/types/chat'
 import { useUserContext } from '@/context/user'
+import { sessionRegistry } from '@/lib/e2e/sessionRegistry'
+import { plaintextCache } from '@/lib/e2e/plaintextCache'
+import { getEncryptionDisabled } from '@/lib/e2e/encryptionPref'
 
 interface MessagesPage extends ChatMessagesResponse {}
+
+export type SendVariables = { body: string; tempId: string }
+
+const newTempId = (): string =>
+  `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
 /**
  * Optimistically appends the message to the messages cache and rolls back on failure.
  * The canonical server-broadcast `chat:message_new` event carries the same UUID and
  * replaces the optimistic copy in useChatSocket via id-based dedupe.
+ *
+ * `tempId` is provided by the caller (Composer) on each `mutate` invocation so
+ * onMutate, mutationFn, and onSuccess all see the same id without the race
+ * window of a body-keyed pending map (two identical-body sends in quick
+ * succession would otherwise overwrite each other's tempId and either trigger
+ * the plaintext fallback or break self-echo dedup).
+ *
+ * When E2E is ready for this chat the body is encrypted and wrapped in the
+ * body-encoded JSON envelope before posting; the optimistic row keeps plaintext
+ * for instant UI. `tempId` is embedded in the envelope as `mid` so the WS
+ * handler can dedup the self-echo without body match.
  */
 export const useSendMessage = (chatId: string | null) => {
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
 
-  return useMutation<ChatMessage, SendMessageError, string, { tempId: string } | undefined>({
-    mutationFn: (body: string) => {
+  const mutation = useMutation<ChatMessage, SendMessageError, SendVariables, { tempId: string } | undefined>({
+    mutationFn: async ({ body, tempId }) => {
       if (!chatId) throw new Error('No chat selected')
+      const session = sessionRegistry.get(chatId)
+      // Honour the per-chat user opt-out: even when a session is ready,
+      // a user who toggled "encryption off" in the header expects the
+      // next send to go in plaintext. Read at send time (not at hook
+      // mount) so a toggle right before the click is respected without
+      // waiting for a re-render.
+      const optedOut = getEncryptionDisabled(chatId)
+      if (session?.isReady() && !optedOut) {
+        const encodedBody = await session.encrypt(body, tempId)
+        const sent = await sendMessage({ chatId, body: encodedBody })
+        plaintextCache.set(sent.id, body)
+        // Persist the plaintext at rest so we can render our own message
+        // again after a refresh. The fanout we just posted has no `cts` entry
+        // for our own device (we don't include ourselves), so without this
+        // persistent copy `useDecryptedBody` would fail on every reload.
+        await session.persistOwnPlaintext(sent.id, body)
+        return sent
+      }
       return sendMessage({ chatId, body })
     },
-    onMutate: async (body) => {
+    onMutate: async ({ body, tempId }) => {
       if (!chatId) return undefined
       await queryClient.cancelQueries({ queryKey: ['chats', chatId, 'messages'] })
 
-      const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      plaintextCache.set(tempId, body)
+
       const optimistic: ChatMessage = {
         id: tempId,
         chat_id: chatId,
@@ -55,8 +93,9 @@ export const useSendMessage = (chatId: string | null) => {
 
       return { tempId }
     },
-    onSuccess: (serverMessage, _body, ctx) => {
+    onSuccess: (serverMessage, _vars, ctx) => {
       if (!chatId) return
+      if (ctx?.tempId) plaintextCache.rename(ctx.tempId, serverMessage.id)
       // Defensive fallback: if the server response is missing sender_address
       // (older backend before the JOIN fix), keep the value we set on the
       // optimistic message so the bubble stays on the caller's side.
@@ -90,7 +129,8 @@ export const useSendMessage = (chatId: string | null) => {
       // Inbox needs the new last_message + bumped sort.
       queryClient.invalidateQueries({ queryKey: ['chats', 'inbox'] })
     },
-    onError: (_err, _body, ctx) => {
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.tempId) plaintextCache.delete(ctx.tempId)
       if (!chatId || !ctx) return
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['chats', chatId, 'messages'], (old) => {
         if (!old) return old
@@ -103,5 +143,15 @@ export const useSendMessage = (chatId: string | null) => {
         }
       })
     },
+  })
+
+  // Convenience wrapper so callers don't have to generate tempId themselves —
+  // they just call `send.send(body)` like before. The shared tempId travels
+  // with the variables for the lifetime of the mutation, no body-keyed map.
+  return Object.assign(mutation, {
+    send: (
+      body: string,
+      options?: Parameters<typeof mutation.mutate>[1],
+    ) => mutation.mutate({ body, tempId: newTempId() }, options),
   })
 }

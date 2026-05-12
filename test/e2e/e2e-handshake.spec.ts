@@ -27,11 +27,20 @@ async function wipeBrowserStorage(page: import('@playwright/test').Page) {
     }
     // Wipe the E2E store directly. Using deleteDatabase is enough — the next
     // openDB() call from src/lib/e2e/storage.ts will re-create the schema.
-    await new Promise<void>((resolve) => {
+    //
+    // `onblocked` fires when another tab/connection still holds the database
+    // open. Resolving silently in that case would leave the DB alive and the
+    // next test would see stale state (e.g. a published-flag from a previous
+    // run would suppress the legitimate first-publish here). Playwright's
+    // per-test context isolation makes this unlikely in practice, but
+    // failing loud beats a silent order-dependence bug if a future Synpress
+    // version reuses contexts.
+    await new Promise<void>((resolve, reject) => {
       const req = indexedDB.deleteDatabase('grails-e2e')
       req.onsuccess = () => resolve()
-      req.onerror = () => resolve() // best-effort; an absent DB also resolves
-      req.onblocked = () => resolve()
+      req.onerror = () => resolve() // absent DB also lands here; benign
+      req.onblocked = () =>
+        reject(new Error('grails-e2e deleteDatabase blocked — stale IDB connection'))
     })
   })
 }
@@ -71,11 +80,13 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     await metamask.confirmSignature()
 
     // Cache scan consumes peer's pre-published handshake and (legitimately)
-    // publishes our own bundle. Exactly one handshake POST expected here.
+    // publishes our own bundle. Exactly one handshake POST expected here —
+    // asserted inside the poll so a second POST landing between two
+    // assertions (very unlikely, but exactly the bug we'd want to catch)
+    // would fail the test instead of slipping through.
     await expect
       .poll(() => backend.handshakePostCount(), { timeout: 15_000 })
-      .toBeGreaterThanOrEqual(1)
-    expect(backend.handshakePostCount()).toBe(1)
+      .toBe(1)
   }
 
   test('regression: existing peer session does not trigger a duplicate handshake POST', async ({
@@ -123,12 +134,22 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     const firstPostCount = backend.handshakePostCount()
 
     // Inject 60 peer messages NEWER than the user's just-sent handshake.
-    // useChatMessages caps the first page at 50, sorted newest-first, so the
-    // user's handshake row (now position ~60 in newest-first order) ends up
-    // outside the visible window. After reload + unlock, the cache scan will
-    // see peer rows but NOT our own handshake — exactly the failure mode the
-    // persisted-flag fix is for. Without the fix, sawOwnHandshake stays
-    // false and the auto-publish fallback would fire here.
+    // useChatMessages caps the first page at 50, sorted newest-first, so:
+    //   - reversed[0..49] = post-padding rows 60..11 (the newest 50)
+    //   - reversed[50]    = post-padding row 10
+    //   - reversed[60]    = the user's handshake POST
+    //   - reversed[61]    = the peer's original handshake (oldest)
+    //
+    // The cache scan sees rows [0..49] and therefore neither own NOR peer
+    // handshake. This means the test actually exercises a STRICTLY STRONGER
+    // invariant than the PR body's "own paginated, peer visible" framing:
+    // because the feed is chronologically ordered, if the user's POST
+    // (newer) is out of the page, the peer's older handshake is necessarily
+    // out too. The "own paginated, peer visible" branch is unreachable
+    // under a chronologically-ordered backend — the persisted-flag +
+    // restored-session suppression is what's being exercised here, and
+    // that's the correct invariant. Without the fix, sawOwnHandshake stays
+    // false (nothing to find) and the auto-publish fallback would fire.
     backend.pushPaddingAfterUserSend(60)
 
     await page.reload()

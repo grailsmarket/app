@@ -44,3 +44,9 @@ next-env.d.ts
 # e2e olm runtime (staged by postinstall)
 /public/olm.wasm
 /public/olm.js
+
+# Synpress / Playwright artifacts
+/test/e2e/.cache-synpress
+/test/e2e/test-results
+/playwright-report
+/test-results

@@ -1,0 +1,321 @@
+// Browser-side request interception for the e2e tests. We don't run the
+// real api.grails.app backend — instead, Playwright's page.route() catches
+// every request the app makes and we serve fixture responses inline.
+//
+// Two intercept layers:
+//   1. The Next.js auth API routes (`/api/auth/*`) the app's client code
+//      calls — both go through the browser, so page.route catches them
+//      before Next.js sees them.
+//   2. The chat REST endpoints under `https://api.grails.app/api/v1/*`,
+//      which authFetch calls directly from the browser. Returning fixture
+//      JSON here exercises the real client code paths against the real
+//      Olm crypto.
+//
+// The `POST /chats/:id/messages` interceptor records every body it receives
+// in an observable buffer — tests assert against this to count how many
+// handshake-shaped sends the app actually issued.
+import type { Page } from '@playwright/test'
+import { isHandshakeBody } from './fixtures/peer-bundle'
+
+export type MockBackendOptions = {
+  /** Address of the test user (matches the imported MetaMask wallet). */
+  userAddress: string
+  /** The fake peer's bundle, base64-encoded — served in the chat history. */
+  peerHandshakeBundle: string
+  /**
+   * Number of additional non-handshake messages to inject between the peer's
+   * handshake and the "latest" row. Useful for exercising the > 50-message
+   * pagination case where our own handshake row would be outside the first
+   * page. Default 0 (no padding).
+   */
+  paddingMessages?: number
+}
+
+/**
+ * Live state exposed to the test. Mutating the message list at runtime (e.g.
+ * appending an echoed message after a POST) is how we simulate the backend
+ * reflecting our writes — the next GET sees the updated list.
+ */
+export type MockBackend = {
+  /** Bodies of every POST /chats/:id/messages the app has issued, in order. */
+  recordedSends: { id: string; body: string }[]
+  /** Predicate-filtered view: count of POSTs whose body is a handshake. */
+  handshakePostCount(): number
+}
+
+const FAKE_TOKEN = 'mock-token-grails-test'
+const CHAT_ID = 'test-chat-1'
+const PEER_USER_ID = 2
+const USER_USER_ID = 1
+
+function isoNow(): string {
+  return new Date().toISOString()
+}
+
+export async function installMockBackend(
+  page: Page,
+  opts: MockBackendOptions,
+): Promise<MockBackend> {
+  const peerUserId = PEER_USER_ID
+  const peerAddress = '0x000000000000000000000000000000000000beef'
+  const recordedSends: { id: string; body: string }[] = []
+
+  const state = {
+    recordedSends,
+    handshakePostCount: () =>
+      recordedSends.filter((m) => isHandshakeBody(m.body)).length,
+  }
+
+  // The chat's message history. We mutate this as the test progresses so the
+  // app's next GET reflects writes the app itself issued. We start with the
+  // peer's pre-published handshake row + optional padding so that, after the
+  // user unlocks, the cache scan sees a peer bundle to consume but no
+  // own-handshake of ours.
+  const peerHandshakeRow = {
+    id: 'msg-peer-hs-1',
+    chat_id: CHAT_ID,
+    sender_user_id: peerUserId,
+    sender_address: peerAddress,
+    body: JSON.stringify({ __e2e: { v: 1, kind: 'hs', bundle: opts.peerHandshakeBundle } }),
+    content_type: 'text',
+    metadata: null,
+    // Order in chat history: peer's handshake is the OLDEST row.
+    created_at: new Date(Date.UTC(2026, 0, 1, 0, 0, 0)).toISOString(),
+    edited_at: null,
+    deleted_at: null,
+  }
+
+  const paddingCount = opts.paddingMessages ?? 0
+  const paddingRows = Array.from({ length: paddingCount }, (_, i) => ({
+    id: `msg-pad-${i}`,
+    chat_id: CHAT_ID,
+    sender_user_id: peerUserId,
+    sender_address: peerAddress,
+    body: 'padding plaintext (test fixture, not a real message)',
+    content_type: 'text' as const,
+    metadata: null,
+    created_at: new Date(Date.UTC(2026, 0, 1, 0, i + 1, 0)).toISOString(),
+    edited_at: null,
+    deleted_at: null,
+  }))
+
+  type MsgRow = typeof peerHandshakeRow
+  const messages: MsgRow[] = [peerHandshakeRow, ...paddingRows]
+
+  // --- Next.js auth API routes (browser-originated) ---
+
+  await page.route(/\/api\/auth\/nonce(\?.*)?$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ nonce: 'test-nonce-deterministic' }),
+    })
+  })
+
+  await page.route(/\/api\/auth\/verify$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      // The Next.js route returns success: true + a token; the wrapper
+      // route also sets a httpOnly cookie, but in dev mode httpOnly is
+      // off (NODE_ENV !== 'production') so document.cookie can see it.
+      // We set a non-httpOnly cookie via Set-Cookie so authFetch can read
+      // it back regardless of the prod-flag.
+      headers: {
+        'Set-Cookie': `token=${FAKE_TOKEN}; Path=/; SameSite=Lax`,
+      },
+      body: JSON.stringify({
+        success: true,
+        token: FAKE_TOKEN,
+        user: {
+          id: USER_USER_ID,
+          address: opts.userAddress,
+          email: null,
+          emailVerified: false,
+          telegram: null,
+          discord: null,
+          createdAt: isoNow(),
+          lastSignIn: isoNow(),
+          minOfferThreshold: null,
+          notifyOnListingSold: true,
+          notifyOnOfferReceived: true,
+          notifyOnCommentReceived: true,
+        },
+      }),
+    })
+  })
+
+  // --- Grails chat REST API (called directly from authFetch) ---
+
+  const apiBase = /https:\/\/api\.grails\.app\/api\/v1/
+
+  // Auth status check.
+  await page.route(new RegExp(`${apiBase.source}/auth/check$`), async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          authenticated: true,
+          user: { id: USER_USER_ID, address: opts.userAddress },
+        },
+      }),
+    })
+  })
+
+  // Inbox list.
+  await page.route(new RegExp(`${apiBase.source}/chats(\\?.*)?$`), async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          chats: [
+            {
+              id: CHAT_ID,
+              type: 'direct',
+              title: null,
+              dm_key: 'dm-key-test-1',
+              created_by_user_id: USER_USER_ID,
+              created_at: isoNow(),
+              last_message_at: messages[messages.length - 1]?.created_at ?? null,
+              last_read_message_id: null,
+              muted: false,
+              unread_count: 0,
+              is_blocked_by_me: false,
+            },
+          ],
+          pagination: { page: 1, limit: 50, total: 1, totalPages: 1, hasNext: false, hasPrev: false },
+        },
+      }),
+    })
+  })
+
+  // Chat detail.
+  await page.route(
+    new RegExp(`${apiBase.source}/chats/${CHAT_ID}$`),
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            chat: {
+              id: CHAT_ID,
+              type: 'direct',
+              title: null,
+              dm_key: 'dm-key-test-1',
+              created_by_user_id: USER_USER_ID,
+              created_at: isoNow(),
+              last_message_at: messages[messages.length - 1]?.created_at ?? null,
+              participants: [
+                {
+                  user_id: USER_USER_ID,
+                  address: opts.userAddress,
+                  role: 'member',
+                  joined_at: isoNow(),
+                  left_at: null,
+                  last_read_message_id: null,
+                  muted: false,
+                },
+                {
+                  user_id: peerUserId,
+                  address: peerAddress,
+                  role: 'member',
+                  joined_at: isoNow(),
+                  left_at: null,
+                  last_read_message_id: null,
+                  muted: false,
+                },
+              ],
+              is_blocked_by_me: false,
+            },
+          },
+        }),
+      })
+    },
+  )
+
+  // Messages: returns the current snapshot, newest-first (matches the real
+  // backend's ordering — see useChatMessages's reverse + flatten step).
+  await page.route(
+    new RegExp(`${apiBase.source}/chats/${CHAT_ID}/messages(\\?.*)?$`),
+    async (route) => {
+      const method = route.request().method()
+      if (method === 'GET') {
+        // Newest-first, capped at 50 per page.
+        const newestFirst = [...messages].reverse().slice(0, 50)
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            data: { messages: newestFirst, nextCursor: null },
+          }),
+        })
+        return
+      }
+      if (method === 'POST') {
+        const body = route.request().postData() ?? ''
+        let parsedBody = ''
+        try {
+          parsedBody = (JSON.parse(body) as { body?: string }).body ?? ''
+        } catch {
+          parsedBody = body
+        }
+        const id = `msg-sent-${recordedSends.length + 1}`
+        recordedSends.push({ id, body: parsedBody })
+        const row = {
+          id,
+          chat_id: CHAT_ID,
+          sender_user_id: USER_USER_ID,
+          sender_address: opts.userAddress,
+          body: parsedBody,
+          content_type: 'text' as const,
+          metadata: null,
+          created_at: isoNow(),
+          edited_at: null,
+          deleted_at: null,
+        }
+        messages.push(row)
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, data: { message: row } }),
+        })
+        return
+      }
+      // PUT / DELETE / etc not modeled — fall through.
+      await route.continue()
+    },
+  )
+
+  // Read pointer — no-op acknowledgment so markRead doesn't blow up.
+  await page.route(new RegExp(`${apiBase.source}/chats/${CHAT_ID}/read$`), async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, data: {} }),
+    })
+  })
+
+  // Catch-all for any other grails.app API call — return an empty success
+  // so we don't leak real network attempts and so the test stays hermetic.
+  await page.route(new RegExp(`${apiBase.source}/.*`), async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, data: null }),
+    })
+  })
+
+  // Block any WebSocket attempt — the bug is in the REST/cache-scan path,
+  // and live WS events would just add nondeterminism. Aborting the request
+  // is fine: the app's chat socket failure path is silent.
+  await page.route(/wss?:\/\//, (route) => route.abort())
+
+  return state
+}

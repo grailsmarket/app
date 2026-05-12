@@ -41,6 +41,16 @@ export type MockBackend = {
   recordedSends: { id: string; body: string }[]
   /** Predicate-filtered view: count of POSTs whose body is a handshake. */
   handshakePostCount(): number
+  /**
+   * Inject N synthetic peer messages with timestamps STRICTLY NEWER than the
+   * most recent row currently in the chat. Use after the user's first
+   * handshake POST to push that row outside the first 50-message page —
+   * GET /messages returns newest-first capped at 50, so adding 60+ newer
+   * rows makes the user's handshake invisible to the cache scan after a
+   * reload. This is what actually exercises the "own handshake row
+   * paginated past first page" failure mode.
+   */
+  pushPaddingAfterUserSend(count: number): void
 }
 
 const FAKE_TOKEN = 'mock-token-grails-test'
@@ -60,10 +70,17 @@ export async function installMockBackend(
   const peerAddress = '0x000000000000000000000000000000000000beef'
   const recordedSends: { id: string; body: string }[] = []
 
+  // Forward declaration so the closure-captured `messages` array is reachable
+  // from the state methods. Populated below right after the array is built.
+  let pushPaddingFn: (count: number) => void = () => {
+    throw new Error('mock backend: pushPaddingAfterUserSend called before install completed')
+  }
+
   const state = {
     recordedSends,
     handshakePostCount: () =>
       recordedSends.filter((m) => isHandshakeBody(m.body)).length,
+    pushPaddingAfterUserSend: (count: number) => pushPaddingFn(count),
   }
 
   // The chat's message history. We mutate this as the test progresses so the
@@ -101,6 +118,33 @@ export async function installMockBackend(
 
   type MsgRow = typeof peerHandshakeRow
   const messages: MsgRow[] = [peerHandshakeRow, ...paddingRows]
+  let postPaddingCounter = 0
+  pushPaddingFn = (count: number) => {
+    // Find the chronologically-latest row currently in the list. New rows
+    // start strictly after it so chronological ordering on the GET path is
+    // preserved (the mock returns newest-first via .reverse()).
+    const latestMs = messages.reduce(
+      (acc, m) => Math.max(acc, Date.parse(m.created_at)),
+      0,
+    )
+    for (let i = 0; i < count; i++) {
+      postPaddingCounter += 1
+      messages.push({
+        id: `msg-post-pad-${postPaddingCounter}`,
+        chat_id: CHAT_ID,
+        sender_user_id: peerUserId,
+        sender_address: peerAddress,
+        body: 'post-handshake padding (test fixture)',
+        content_type: 'text' as const,
+        metadata: null,
+        // +1s per row; bigger gap than the chat would realistically see but
+        // makes the ordering trivially debuggable on test failure.
+        created_at: new Date(latestMs + (i + 1) * 1000).toISOString(),
+        edited_at: null,
+        deleted_at: null,
+      })
+    }
+  }
 
   // --- Next.js auth API routes (browser-originated) ---
 

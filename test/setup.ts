@@ -21,13 +21,39 @@ await Olm.init()
 // test and its module-level state is scoped to that import.
 ;(Olm as unknown as { init: (...args: unknown[]) => Promise<void> }).init = async () => {}
 
-// Minimal browser shape: src/lib/e2e/olm.ts gates on `typeof window === 'undefined'`
-// and `typeof document === 'undefined'`. We don't need a real DOM — only the
-// presence checks matter, plus `window.Olm` and a document with a no-op
-// querySelector / createElement for the loader's early-return path.
+// `window.Olm` is what the prod loader checks for. Setting it satisfies
+// `typeof window !== 'undefined'` AND lets ensureOlm() skip the script-tag
+// load entirely. This is safe to install globally — no module under test
+// branches on `typeof window` for anything other than this lookup.
 ;(globalThis as unknown as { window: { Olm: typeof Olm } }).window = { Olm }
-;(globalThis as unknown as { document: { querySelector: () => null; head: { appendChild: () => void }; createElement: () => Record<string, unknown> } }).document = {
-  querySelector: () => null,
-  head: { appendChild: () => {} },
-  createElement: () => ({ addEventListener: () => {} }),
+
+/**
+ * Install a minimal browser-shaped `document` so prod modules whose
+ * `typeof document !== 'undefined'` branch we want to exercise can run in
+ * Bun. Currently only `src/lib/e2e/olm.ts` consumes it, and the path that
+ * touches it (`loadOlmScript`) is short-circuited above by `window.Olm`
+ * already being set.
+ *
+ * Scoped to a function (not installed in the preload) so that future
+ * `'use client'` modules with different `typeof document` branches don't
+ * silently flip into browser mode when accidentally imported into a Bun
+ * test. Tests that need the shim call this explicitly; everything else
+ * runs with `document === undefined`, the honest Node default.
+ *
+ * Returns a cleanup function. Pair with `beforeAll(() => cleanup =
+ * installBrowserDocumentShim())` and `afterAll(() => cleanup())` to keep
+ * the shim from leaking into adjacent test files.
+ */
+export function installBrowserDocumentShim(): () => void {
+  const target = globalThis as unknown as { document?: unknown }
+  const prior = target.document
+  target.document = {
+    querySelector: () => null,
+    head: { appendChild: () => {} },
+    createElement: () => ({ addEventListener: () => {} }),
+  }
+  return () => {
+    if (prior === undefined) delete target.document
+    else target.document = prior
+  }
 }

@@ -58,33 +58,47 @@ function olmRuntime(): typeof Olm {
   return window.Olm
 }
 
-// All storage keys are namespaced by the authed wallet address so two
-// different wallets used in the same browser can each maintain their own
-// Olm account, sessions, and rosters without secretbox-decrypt collisions.
-// Without this prefix, wallet B's `getEncrypted` against wallet A's blob
-// (encrypted with a different storage key) throws "wrong wallet?" and the
-// only recovery is manually clearing IndexedDB.
-const accountKey = (address: string) => `wallet/${address}/account`
-// Sessions are keyed by (address, dmKey, remote_did, direction). Each
-// (this_device, peer_device) pair has up to TWO sessions: the outbound we
-// initiated (used to encrypt our messages on our channel) and the inbound
-// peer initiated (used to decrypt their messages on their channel). Keeping
-// both is required to survive the race where both sides eagerly send a
-// pre-key — discarding either loses the channel that's still active for
-// future messages from one direction.
+// Up to TWO Olm sessions per (this_device, peer_device): the outbound we
+// initiated (encrypts our messages on our channel) and the inbound peer
+// initiated (decrypts their messages on their channel). Keeping both is
+// required to survive the race where both sides eagerly send a pre-key —
+// discarding either loses the channel that's still active for future
+// messages from one direction.
 export type SessionDirection = 'out' | 'in'
-const sessionKey = (address: string, dmKey: string, did: string, direction: SessionDirection) =>
-  `wallet/${address}/session/${dmKey}/${did}/${direction}`
-// Per-chat list of known peer + own-other devices (each carries the bundle we
-// observed in their handshake message).
-const rosterKey = (address: string, dmKey: string) => `wallet/${address}/roster/${dmKey}`
-// Per-message plaintext store for messages WE sent. Self-fanouts have no
-// `cts` entry for our own device (we exclude ourselves), so on refresh
-// `session.decrypt` would throw and we'd lose our own history. The store
-// is wallet-scoped and encrypted at rest with the secretbox-subkey, so a
-// different wallet on the same browser can't read it.
-const ownPlaintextKey = (address: string, messageId: string) =>
-  `wallet/${address}/own-plaintext/${messageId}`
+
+// All storage keys are namespaced by the authed wallet address so two
+// different wallets in the same browser maintain their own Olm account,
+// sessions, rosters, and flags without secretbox-decrypt collisions. Without
+// this prefix, wallet B's `getEncrypted` against wallet A's blob (encrypted
+// with a different storage key) throws "wrong wallet?" and the only recovery
+// is manually clearing IndexedDB.
+//
+// Centralized so callers can't drift away from the `wallet/{address}/...`
+// shape and so a refactor of the key space lives in one place.
+export const storageKeys = {
+  account: (address: string) => `wallet/${address}/account`,
+  session: (address: string, dmKey: string, did: string, direction: SessionDirection) =>
+    `wallet/${address}/session/${dmKey}/${did}/${direction}`,
+  // Prefix used by listKeys() in loadAllSessionsForChat — must match the
+  // shape session() produces, minus the (did, direction) suffix.
+  sessionPrefix: (address: string, dmKey: string) =>
+    `wallet/${address}/session/${dmKey}/`,
+  // Per-chat list of known peer + own-other devices (each carries the bundle
+  // we observed in their handshake message).
+  roster: (address: string, dmKey: string) => `wallet/${address}/roster/${dmKey}`,
+  // Per-message plaintext store for messages WE sent. Self-fanouts have no
+  // `cts` entry for our own device (we exclude ourselves), so on refresh
+  // `session.decrypt` would throw and we'd lose our own history.
+  ownPlaintext: (address: string, messageId: string) =>
+    `wallet/${address}/own-plaintext/${messageId}`,
+  // Per-chat boolean: have we already broadcast our handshake bundle into
+  // this chat at least once? Survives refresh and is independent of message
+  // history pagination depth — defeats the failure mode where our own
+  // handshake row is older than useChatMessages's first page (50 entries)
+  // and the banner's `sawOwnHandshake` heuristic mis-fires.
+  ownHandshakePublished: (address: string, dmKey: string) =>
+    `wallet/${address}/published/${dmKey}`,
+} as const
 
 // HKDF subkey for Olm pickle, distinct from the secretbox-at-rest key used
 // in storage.ts. Olm requires a string/Uint8Array input; we hand it the
@@ -95,7 +109,7 @@ export async function loadOrCreateAccount(address: string, storageKey: Uint8Arra
   await ensureOlm()
   const Olm = olmRuntime()
   const account = new Olm.Account()
-  const pickled = await getEncrypted(accountKey(address), storageKey)
+  const pickled = await getEncrypted(storageKeys.account(address), storageKey)
   if (pickled) {
     account.unpickle(pickleKey(storageKey), bytesToUtf8(pickled))
     return account
@@ -114,7 +128,7 @@ export async function loadOrCreateAccount(address: string, storageKey: Uint8Arra
 
 export async function persistAccount(address: string, account: Olm.Account, storageKey: Uint8Array) {
   const pickled = account.pickle(pickleKey(storageKey))
-  await putEncrypted(accountKey(address), utf8ToBytes(pickled), storageKey)
+  await putEncrypted(storageKeys.account(address), utf8ToBytes(pickled), storageKey)
 }
 
 export async function loadSession(
@@ -125,7 +139,7 @@ export async function loadSession(
   storageKey: Uint8Array,
 ): Promise<Olm.Session | null> {
   await ensureOlm()
-  const pickled = await getEncrypted(sessionKey(address, dmKey, did, direction), storageKey)
+  const pickled = await getEncrypted(storageKeys.session(address, dmKey, did, direction), storageKey)
   if (!pickled) return null
   const Olm = olmRuntime()
   const session = new Olm.Session()
@@ -142,7 +156,7 @@ export async function persistSession(
   storageKey: Uint8Array,
 ) {
   const pickled = session.pickle(pickleKey(storageKey))
-  await putEncrypted(sessionKey(address, dmKey, did, direction), utf8ToBytes(pickled), storageKey)
+  await putEncrypted(storageKeys.session(address, dmKey, did, direction), utf8ToBytes(pickled), storageKey)
 }
 
 // Discover and unpickle every persisted session for a (wallet, chat) pair —
@@ -158,7 +172,7 @@ export async function loadAllSessionsForChat(
 ): Promise<Array<{ did: string; direction: SessionDirection; session: Olm.Session }>> {
   await ensureOlm()
   const Olm = olmRuntime()
-  const prefix = `wallet/${address}/session/${dmKey}/`
+  const prefix = storageKeys.sessionPrefix(address, dmKey)
   const keys = await listKeys(prefix)
   const out: Array<{ did: string; direction: SessionDirection; session: Olm.Session }> = []
   for (const key of keys) {
@@ -193,7 +207,7 @@ export async function loadRoster(
   dmKey: string,
   storageKey: Uint8Array,
 ): Promise<RosterEntry[]> {
-  const blob = await getEncrypted(rosterKey(address, dmKey), storageKey)
+  const blob = await getEncrypted(storageKeys.roster(address, dmKey), storageKey)
   if (!blob) return []
   return JSON.parse(bytesToUtf8(blob)) as RosterEntry[]
 }
@@ -204,7 +218,7 @@ export async function saveRoster(
   roster: RosterEntry[],
   storageKey: Uint8Array,
 ) {
-  await putEncrypted(rosterKey(address, dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
+  await putEncrypted(storageKeys.roster(address, dmKey), utf8ToBytes(JSON.stringify(roster)), storageKey)
 }
 
 export async function persistOwnPlaintext(
@@ -213,7 +227,7 @@ export async function persistOwnPlaintext(
   plaintext: string,
   storageKey: Uint8Array,
 ) {
-  await putEncrypted(ownPlaintextKey(address, messageId), utf8ToBytes(plaintext), storageKey)
+  await putEncrypted(storageKeys.ownPlaintext(address, messageId), utf8ToBytes(plaintext), storageKey)
 }
 
 export async function loadOwnPlaintext(
@@ -221,8 +235,36 @@ export async function loadOwnPlaintext(
   messageId: string,
   storageKey: Uint8Array,
 ): Promise<string | null> {
-  const blob = await getEncrypted(ownPlaintextKey(address, messageId), storageKey)
+  const blob = await getEncrypted(storageKeys.ownPlaintext(address, messageId), storageKey)
   return blob ? bytesToUtf8(blob) : null
+}
+
+// Per-chat boolean flag — set after the first time we broadcast our handshake
+// bundle into a chat. Read on banner mount to suppress the auto-publish
+// fallback when our handshake row would otherwise be invisible (paginated
+// past the first 50 messages). The flag is encrypted at rest with the same
+// secretbox-subkey as everything else so the cross-wallet isolation contract
+// is unchanged. Stored as a single byte (`Uint8Array([1])`) — its presence
+// is the signal, the value is incidental.
+export async function loadHandshakePublished(
+  address: string,
+  dmKey: string,
+  storageKey: Uint8Array,
+): Promise<boolean> {
+  const blob = await getEncrypted(storageKeys.ownHandshakePublished(address, dmKey), storageKey)
+  return blob !== null
+}
+
+export async function markHandshakePublished(
+  address: string,
+  dmKey: string,
+  storageKey: Uint8Array,
+) {
+  await putEncrypted(
+    storageKeys.ownHandshakePublished(address, dmKey),
+    new Uint8Array([1]),
+    storageKey,
+  )
 }
 
 // PeerBundle preferred shape: identity + signing + fallback_key. Older bundles

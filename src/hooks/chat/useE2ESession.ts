@@ -8,11 +8,14 @@ import {
   loadOrCreateAccount,
   persistAccount,
   loadAllSessionsForChat,
+  loadSession,
   persistSession,
   loadRoster,
   saveRoster,
   persistOwnPlaintext,
   loadOwnPlaintext,
+  loadHandshakePublished,
+  markHandshakePublished,
   exportBundle,
   parseBundle,
   type RosterEntry,
@@ -64,6 +67,12 @@ export function useE2ESession(
   const storageKeyRef = useRef<Uint8Array | null>(null)
   const accountRef = useRef<Olm.Account | null>(null)
   const ownDidRef = useRef<string | null>(null)
+  // Per-chat "we've broadcast our handshake at least once" flag, loaded from
+  // IndexedDB on chat enter. Exposed via state (not just a ref) so the banner
+  // re-renders when it flips — the cache-scan auto-publish fallback reads it
+  // to suppress republish when our own handshake row is paginated out of the
+  // visible message window. Resets on chat/wallet switch.
+  const [hasPublishedForChat, setHasPublishedForChat] = useState(false)
   // Up to TWO Olm sessions per peer device, one per direction:
   //   - outbound: created when we consume the peer's bundle. Used to
   //     encrypt our own messages on the channel WE initiated, and to
@@ -155,6 +164,7 @@ export function useE2ESession(
     storageKeyRef.current = null
     ownDidRef.current = null
     rosterRef.current = []
+    setHasPublishedForChat(false)
     setUnlocked(false)
     setState({ kind: 'locked' })
   }, [userAddress])
@@ -184,6 +194,10 @@ export function useE2ESession(
     inboundSessionsRef.current = new Map()
     activeDirectionRef.current = new Map()
     rosterRef.current = []
+    // Reset per-chat flag while we re-load. The async load below restores it
+    // from disk; consumers shouldn't see the previous chat's value while the
+    // new chat's IndexedDB read is pending.
+    setHasPublishedForChat(false)
     if (!unlocked || !storageKeyRef.current) {
       setState({ kind: 'locked' })
       return
@@ -198,6 +212,17 @@ export function useE2ESession(
         const roster = await loadRoster(userAddress, dmKey, storageKeyRef.current!)
         if (cancelled) return
         rosterRef.current = roster
+
+        // Restore the per-chat published flag. Read in parallel-ish with the
+        // session load — both come off the same encrypted IndexedDB store, no
+        // need to gate them on each other.
+        const publishedFlag = await loadHandshakePublished(
+          userAddress,
+          dmKey,
+          storageKeyRef.current!,
+        )
+        if (cancelled) return
+        if (publishedFlag) setHasPublishedForChat(true)
 
         // Load every persisted session for this chat by IndexedDB key scan,
         // not by iterating the roster. `decryptCt` can persist an inbound
@@ -220,8 +245,20 @@ export function useE2ESession(
             session.free()
             continue
           }
-          if (direction === 'out') outboundSessionsRef.current.set(did, session)
-          else inboundSessionsRef.current.set(did, session)
+          // Dedupe on insert: consumePeerBundle's cache-miss path can install
+          // a disk-loaded session into the ref while this `await
+          // loadAllSessionsForChat(...)` is in flight. Without this check, the
+          // .set() here would overwrite that session and leak the original
+          // Olm.Session (Wasm heap allocation never freed). The first-installed
+          // session wins; we free the duplicate we just unpickled.
+          const targetMap =
+            direction === 'out' ? outboundSessionsRef.current : inboundSessionsRef.current
+          if (targetMap.has(did)) {
+            session.free()
+            anySessionLoaded = true
+            continue
+          }
+          targetMap.set(did, session)
           anySessionLoaded = true
         }
         if (anySessionLoaded) {
@@ -338,11 +375,12 @@ export function useE2ESession(
     [dmKey, enqueue, userAddress],
   )
 
-  // Consume a peer (or own-other-device) bundle: parse, create outbound
-  // session, persist, and add to the roster. Idempotent on did. Returns
-  // whether the bundle introduced a previously-unknown device — callers use
-  // this to decide whether to auto-republish their own handshake (so the new
-  // device can derive an inbound session to us from a pre-key fanout).
+  // Consume a peer (or own-other-device) bundle: parse, create (or restore)
+  // outbound session, persist, and add to the roster. Idempotent on did.
+  // Returns whether the bundle introduced a previously-unknown device —
+  // callers use this to decide whether to auto-republish their own handshake
+  // (so the new device can derive an inbound session to us from a pre-key
+  // fanout).
   const consumePeerBundle = useCallback(
     (encoded: string, senderUserId: number): Promise<{ isNew: boolean }> => {
       const peer = parseBundle(encoded)
@@ -359,11 +397,35 @@ export function useE2ESession(
           // Self-bundle echo — never consume our own keys.
           return { isNew: false }
         }
-        // "New" means we haven't established our outbound to this device yet.
-        // The peer might already have sent us a pre-key (giving us an inbound
-        // session) without us ever creating outbound — in which case we still
-        // want to create the outbound now so future encrypts to them work.
-        const isNew = !outboundSessionsRef.current.has(peer.identity)
+        // Cache miss in memory is NOT the same as "we've never met this
+        // peer" — the dmKey-load effect's `await loadAllSessionsForChat(...)`
+        // may still be in flight (concurrent with this banner-side cache
+        // scan, which fires the moment isUnlocked flips true). Fall through
+        // to IndexedDB before declaring `isNew`: if a session pickle from a
+        // prior handshake exists on disk, we restore it instead of building
+        // a fresh outbound. Without this, the freshly-created session would
+        // overwrite the stored pickle via persistSession() below, and any
+        // already-sent ciphertexts on the original session would become
+        // permanently undecryptable. We're inside the per-peer queue so the
+        // disk read + ref install is atomic w.r.t. other consumePeerBundle
+        // calls for the same DID.
+        let outbound = outboundSessionsRef.current.get(peer.identity)
+        if (!outbound) {
+          const fromDisk = await loadSession(
+            userAddress,
+            dmKey,
+            peer.identity,
+            'out',
+            storageKeyRef.current,
+          )
+          if (fromDisk) {
+            outboundSessionsRef.current.set(peer.identity, fromDisk)
+            outbound = fromDisk
+          }
+        }
+        // "New" now correctly means: no session for this peer in memory AND
+        // none on disk. Only then do we create + persist a fresh outbound.
+        const isNew = !outbound
         if (isNew) {
           const session = await createOutboundSession(accountRef.current, peer)
           outboundSessionsRef.current.set(peer.identity, session)
@@ -558,6 +620,17 @@ export function useE2ESession(
     return dids.size
   }, [])
 
+  // Persist that we've broadcast our handshake into this chat at least once,
+  // and reflect it in state for the banner. Idempotent — callers (the banner's
+  // republishOurHandshake success path) invoke after every successful send;
+  // the disk write is a single-byte put and the state setter is a no-op when
+  // already true.
+  const markOwnHandshakePublished = useCallback(async (): Promise<void> => {
+    if (!storageKeyRef.current || !dmKey || !userAddress) return
+    await markHandshakePublished(userAddress, dmKey, storageKeyRef.current)
+    setHasPublishedForChat(true)
+  }, [dmKey, userAddress])
+
   // Expose to non-React callers via the module-level registry.
   useEffect(() => {
     if (!chatId || state.kind === 'locked') return
@@ -606,6 +679,12 @@ export function useE2ESession(
     // OUR handshake from a sibling-device handshake — both share the wallet
     // address but each device has a distinct Olm identity. Null until unlock.
     ownDid: ownDidRef.current,
+    // Have we broadcast our handshake bundle into this chat at least once?
+    // Loaded from IndexedDB on chat enter, set after a successful republish.
+    // Banner reads this to suppress its auto-publish fallback when our own
+    // handshake row is paginated outside the visible message window.
+    hasPublishedForChat,
+    markOwnHandshakePublished,
   }
 }
 

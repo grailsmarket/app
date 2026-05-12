@@ -6,6 +6,7 @@ import { useAppSelector } from '@/state/hooks'
 import { selectFilterPanel } from '@/state/reducers/filterPanel'
 import TabSwitcher from './tabSwitcher'
 import DomainPanel from './domainPanel'
+import AiSearchHero from './aiSearchHero'
 import FilterPanel from '@/components/filters'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
 
@@ -23,6 +24,7 @@ const MainPanel: React.FC = () => {
   return (
     <div className='flex w-full flex-col gap-0'>
       <TabSwitcher />
+      <AiSearchHero />
       <div className='flex w-full flex-row gap-0'>
         <FilterPanel />
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>

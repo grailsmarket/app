@@ -115,7 +115,15 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
   // history would only render as setup text and never actually establish
   // the session, so async setup would stall until another live handshake.
   useEffect(() => {
-    if (!isEligibleChat || !e2e.isUnlocked) return
+    // Wait for the hook's dmKey effect to finish restoring (roster + sessions
+    // + published flag) from IndexedDB before scanning. Without this gate the
+    // auto-publish fallback below would read default-`false` values for
+    // hasPublishedForChat / isReady during the unlock-to-load window, which
+    // would (incorrectly) green-light a republish on a chat where our own
+    // handshake row is paginated outside the visible message page. The
+    // disk-fallback inside consumePeerBundle handles its own race; this gate
+    // protects the FALLBACK auto-publish decision.
+    if (!isEligibleChat || !e2e.isUnlocked || !e2e.restoredFromDisk) return
     let cancelled = false
       ; (async () => {
         let sawOwnHandshake = false
@@ -185,7 +193,7 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
     return () => {
       cancelled = true
     }
-  }, [isEligibleChat, e2e, e2e.isUnlocked, messages, msgsLoading, chatId])
+  }, [isEligibleChat, e2e, e2e.isUnlocked, e2e.restoredFromDisk, messages, msgsLoading, chatId])
 
   if (!isEligibleChat) return null
   if (e2e.state.kind === 'ready') return null

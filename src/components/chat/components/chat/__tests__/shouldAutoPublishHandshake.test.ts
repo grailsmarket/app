@@ -61,4 +61,23 @@ describe('shouldAutoPublishHandshake', () => {
       }),
     ).toBe(false)
   })
+
+  it('regression: simultaneously-true hasPersistedPublishedFlag AND isReady still suppresses', () => {
+    // Pinning the AND-of-suppressions behavior so a future "any one signal
+    // implies safe to publish" inversion would be caught here. The bug we
+    // fixed required EITHER signal being true to be enough on its own; this
+    // test is the load-bearing assertion that one stays sufficient.
+    expect(
+      shouldAutoPublishHandshake({
+        ...happyPath,
+        hasPersistedPublishedFlag: true,
+      }),
+    ).toBe(false)
+    expect(
+      shouldAutoPublishHandshake({
+        ...happyPath,
+        isReady: true,
+      }),
+    ).toBe(false)
+  })
 })

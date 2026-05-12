@@ -73,6 +73,18 @@ export function useE2ESession(
   // to suppress republish when our own handshake row is paginated out of the
   // visible message window. Resets on chat/wallet switch.
   const [hasPublishedForChat, setHasPublishedForChat] = useState(false)
+  // "We have finished reading what's on disk for this chat" signal. Flips
+  // false → true at the END of the dmKey load effect's async body, and back
+  // to false on every chat / wallet switch and at the top of the effect.
+  //
+  // Banner-side callers (the cache-scan auto-publish fallback) MUST gate on
+  // this — otherwise their closure captures hasPublishedForChat=false /
+  // isReady=false during the brief window between unlock-complete and
+  // dmKey-load-complete, and a chat where our own handshake row is paginated
+  // outside the visible window would (incorrectly) trip the auto-publish
+  // path. The disk-fallback inside consumePeerBundle handles its own race;
+  // this flag handles the FALLBACK auto-publish decision.
+  const [restoredFromDisk, setRestoredFromDisk] = useState(false)
   // Up to TWO Olm sessions per peer device, one per direction:
   //   - outbound: created when we consume the peer's bundle. Used to
   //     encrypt our own messages on the channel WE initiated, and to
@@ -165,6 +177,7 @@ export function useE2ESession(
     ownDidRef.current = null
     rosterRef.current = []
     setHasPublishedForChat(false)
+    setRestoredFromDisk(false)
     setUnlocked(false)
     setState({ kind: 'locked' })
   }, [userAddress])
@@ -194,16 +207,29 @@ export function useE2ESession(
     inboundSessionsRef.current = new Map()
     activeDirectionRef.current = new Map()
     rosterRef.current = []
-    // Reset per-chat flag while we re-load. The async load below restores it
-    // from disk; consumers shouldn't see the previous chat's value while the
-    // new chat's IndexedDB read is pending.
+    // Reset per-chat flags while we re-load. The async load below restores
+    // hasPublishedForChat from disk and flips restoredFromDisk true at the
+    // end. Consumers shouldn't see the previous chat's values while the new
+    // chat's IndexedDB read is pending — and the banner's cache-scan
+    // auto-publish fallback shouldn't run AT ALL until restoredFromDisk is
+    // true (otherwise its closure captures the default-false flag values
+    // and incorrectly republishes our handshake when an own handshake row
+    // is paginated out).
     setHasPublishedForChat(false)
+    setRestoredFromDisk(false)
     if (!unlocked || !storageKeyRef.current) {
       setState({ kind: 'locked' })
+      // Locked state has nothing on disk to restore — flip the flag true so
+      // the banner can render the unlock UI without waiting for a no-op load.
+      // The flag resets again on next unlock attempt via the top of this
+      // effect (or via the wallet-change effect).
+      setRestoredFromDisk(true)
       return
     }
     if (!dmKey || !userAddress) {
       setState({ kind: 'no_session' })
+      // No dmKey (e.g. group chat) — also nothing to restore.
+      setRestoredFromDisk(true)
       return
     }
     let cancelled = false
@@ -266,9 +292,24 @@ export function useE2ESession(
         } else {
           setState({ kind: 'no_session' })
         }
+        // Restoration complete. The banner's auto-publish fallback can now
+        // safely consult e2e.hasPublishedForChat / e2e.isReady — both reflect
+        // what's on disk for this chat. Flipping this LAST means a banner
+        // closure that captures restoredFromDisk=true is guaranteed to also
+        // see consistent flag + readiness state from the same render.
+        setRestoredFromDisk(true)
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'load failed'
         setState({ kind: 'error', message: msg })
+        // Even on error, mark restoration "done" — the banner shouldn't hang
+        // waiting on a flag that's never going to flip. A failed restore
+        // surfaces as state.kind === 'error'; the banner's eligibility check
+        // (state.kind === 'ready' early-return) doesn't apply here so we
+        // need this so the cache-scan effect doesn't loop forever on the
+        // disabled gate. Auto-publish stays suppressed because isReady is
+        // false and hasPublishedForChat stays at whatever the partial load
+        // reached (default false), which keeps us in fail-closed territory.
+        setRestoredFromDisk(true)
       }
     })()
     return () => {
@@ -685,6 +726,12 @@ export function useE2ESession(
     // handshake row is paginated outside the visible message window.
     hasPublishedForChat,
     markOwnHandshakePublished,
+    // Have we finished reading roster + sessions + published-flag from disk
+    // for this chat? Banner-side cache-scan auto-publish MUST wait on this
+    // before consulting hasPublishedForChat / isReady — otherwise stale
+    // default-false values would (incorrectly) green-light a republish
+    // during the unlock-to-load window.
+    restoredFromDisk,
   }
 }
 

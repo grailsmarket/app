@@ -78,6 +78,7 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
       tabIndex={0}
       onClick={open}
       onKeyDown={onKeyDown}
+      data-testid='chat-inbox-row'
       title={isBlocked ? 'Blocked — open menu to unblock' : undefined}
       className={cn(
         'border-secondary relative flex w-full cursor-pointer items-center gap-3 border-b p-3 text-left transition-colors hover:bg-white/5',

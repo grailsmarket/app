@@ -9,6 +9,7 @@ import { handshakeBus } from '@/lib/e2e/handshakeBus'
 import { sendMessage } from '@/api/chats/sendMessage'
 import { encodeHandshake, tryDecode, isHandshakeEnvelope } from '@/lib/e2e/wire'
 import { parseBundle } from '@/lib/e2e/olm'
+import { shouldAutoPublishHandshake } from './shouldAutoPublishHandshake'
 
 interface Props {
   chatId: string
@@ -69,6 +70,18 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
         chatId,
         body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
       })
+      // Persist the per-chat "I've published" flag AFTER the POST succeeds,
+      // not before. If sendMessage rejects (network drop, 5xx) we leave the
+      // flag unset so the next mount will retry — marking it eagerly would
+      // suppress the retry and strand the peer without our bundle. Errors
+      // from this call are swallowed: a successful send + failed flag write
+      // is a degraded but recoverable state (next mount re-publishes, peer
+      // ignores the duplicate via their own outboundSessionsRef cache).
+      try {
+        await e2e.markOwnHandshakePublished()
+      } catch (err) {
+        console.error(err)
+      }
     } finally {
       publishingRef.current = false
       setPublishing(false)
@@ -140,17 +153,26 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
             console.error(err)
           }
         }
-        // Auto-publish our bundle once per chat if we've never sent one
-        // for this chat. Wait for messages to finish loading first so we
-        // don't duplicate an existing handshake that hasn't arrived in the
-        // cache yet. `republishOurHandshake` is inflight-guarded, so a
-        // concurrent republish triggered by an `isNew` peer bundle above is
-        // a no-op.
+        // Auto-publish our bundle once per chat if we've never sent one for
+        // this chat. The decision is delegated to a pure helper so its
+        // suppression rules are unit-testable without a DOM harness. The
+        // critical inputs beyond the local scan state are:
+        //   - e2e.hasPublishedForChat: persisted IndexedDB flag, survives
+        //     refresh, independent of message pagination — defeats the
+        //     "own handshake row paginated past first 50" failure mode.
+        //   - e2e.isReady: peer session already established (loaded from
+        //     disk on unlock). Republish would only emit a duplicate.
+        // `republishOurHandshake` is inflight-guarded, so a concurrent call
+        // triggered by an `isNew` peer bundle above is a no-op.
         if (
-          !cancelled &&
-          !msgsLoading &&
-          !sawOwnHandshake &&
-          !autoPublishedChatsRef.current.has(chatId)
+          shouldAutoPublishHandshake({
+            cancelled,
+            msgsLoading,
+            sawOwnHandshake,
+            alreadyAttemptedThisMount: autoPublishedChatsRef.current.has(chatId),
+            hasPersistedPublishedFlag: e2e.hasPublishedForChat,
+            isReady: e2e.isReady,
+          })
         ) {
           autoPublishedChatsRef.current.add(chatId)
           try {

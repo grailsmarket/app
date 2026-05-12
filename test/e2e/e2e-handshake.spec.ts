@@ -54,9 +54,32 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
   })
 
   /**
-   * Drives a wallet → SIWE → open chat → unlock-encryption flow. Centralized
-   * so both scenarios share the exact same setup; the only thing that varies
-   * between them is what happens AFTER the first handshake POST.
+   * Open the inbox (Messages button → chat row) and click "Unlock encryption".
+   * Used both on the initial bootstrap AND after each page.reload() — the
+   * Redux chat-sidebar slice isn't in the redux-persist whitelist, so a
+   * reload lands us on the inbox-closed root and the chat thread (along with
+   * the unlock button) isn't mounted until we re-navigate.
+   */
+  async function openChatAndUnlock(
+    page: import('@playwright/test').Page,
+    metamask: import('@synthetixio/synpress/playwright').MetaMask,
+  ): Promise<void> {
+    await page.waitForLoadState('networkidle')
+    // Open the Messages sidebar. aria-label is the stable selector — the
+    // icon-only button has no visible text.
+    await page.getByRole('button', { name: 'Messages' }).click()
+    // Inbox renders; click the first (only) chat in the mock backend.
+    const chatRow = page.locator('[data-testid="chat-inbox-row"]').first()
+    await chatRow.click()
+    // Unlock encryption — MetaMask signs HANDSHAKE_MSG.
+    await page.getByRole('button', { name: /unlock encryption/i }).click()
+    await metamask.confirmSignature()
+  }
+
+  /**
+   * Full wallet → SIWE → open chat → unlock sequence used at the start of
+   * each scenario. The only difference between scenarios is what happens
+   * AFTER the first handshake POST, so this is the shared head.
    */
   async function bootstrapToReady(
     page: import('@playwright/test').Page,
@@ -70,14 +93,7 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     await metamask.connectToDapp()
     await metamask.confirmSignature()
 
-    // Open the first (only) chat row.
-    await page.waitForLoadState('networkidle')
-    const chatRow = page.locator('[data-testid="chat-inbox-row"]').first()
-    if (await chatRow.count()) await chatRow.click()
-
-    // Unlock encryption — MetaMask signs HANDSHAKE_MSG.
-    await page.getByRole('button', { name: /unlock encryption/i }).click()
-    await metamask.confirmSignature()
+    await openChatAndUnlock(page, metamask)
 
     // Cache scan consumes peer's pre-published handshake and (legitimately)
     // publishes our own bundle. Exactly one handshake POST expected here —
@@ -105,10 +121,10 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // --- The regression check: full page reload, then unlock again. ---
     // Hard reload preserves IndexedDB (sessions + roster + flag survive),
     // so when the user re-signs, the app should restore the session from
-    // disk and NOT re-publish.
+    // disk and NOT re-publish. We have to re-open Messages + the chat row
+    // because the Redux chat-sidebar slice isn't persisted across reloads.
     await page.reload()
-    await page.getByRole('button', { name: /unlock encryption/i }).click()
-    await metamask.confirmSignature()
+    await openChatAndUnlock(page, metamask)
 
     // Give the cache scan effect a chance to (incorrectly) fire if the race
     // is regressing. networkidle + a short pause is a decent canary.
@@ -153,8 +169,7 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     backend.pushPaddingAfterUserSend(60)
 
     await page.reload()
-    await page.getByRole('button', { name: /unlock encryption/i }).click()
-    await metamask.confirmSignature()
+    await openChatAndUnlock(page, metamask)
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(2_000)
 

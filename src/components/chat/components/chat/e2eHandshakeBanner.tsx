@@ -174,12 +174,17 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
         // Auto-publish our bundle once per chat if we've never sent one for
         // this chat. The decision is delegated to a pure helper so its
         // suppression rules are unit-testable without a DOM harness. The
-        // critical inputs beyond the local scan state are:
-        //   - e2e.hasPublishedForChat: persisted IndexedDB flag, survives
-        //     refresh, independent of message pagination — defeats the
-        //     "own handshake row paginated past first 50" failure mode.
-        //   - e2e.isReady: peer session already established (loaded from
-        //     disk on unlock). Republish would only emit a duplicate.
+        // critical input beyond the local scan state is:
+        //   - e2e.hasPublishedForChat: persisted IndexedDB flag (set ONLY
+        //     after a successful sendMessage POST), survives refresh,
+        //     independent of message pagination — defeats the "own
+        //     handshake row paginated past first 50" failure mode.
+        // We deliberately do NOT gate on e2e.isReady: ready means we have
+        // a peer session in memory (constructed from THEIR bundle), not
+        // that we've broadcast ours. If the very first send failed but
+        // consumePeerBundle already established sessions, isReady would
+        // be true while the peer is still waiting on our bundle — gating
+        // on it would lock us out of retrying.
         // `republishOurHandshake` is inflight-guarded, so a concurrent call
         // triggered by an `isNew` peer bundle above is a no-op.
         if (
@@ -189,7 +194,6 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
             sawOwnHandshake,
             alreadyAttemptedThisMount: autoPublishedChatsRef.current.has(chatId),
             hasPersistedPublishedFlag: e2e.hasPublishedForChat,
-            isReady: e2e.isReady,
           })
         ) {
           autoPublishedChatsRef.current.add(chatId)

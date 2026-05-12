@@ -10,7 +10,6 @@ const happyPath = {
   sawOwnHandshake: false,
   alreadyAttemptedThisMount: false,
   hasPersistedPublishedFlag: false,
-  isReady: false,
 } as const
 
 describe('shouldAutoPublishHandshake', () => {
@@ -46,38 +45,30 @@ describe('shouldAutoPublishHandshake', () => {
     ).toBe(false)
   })
 
-  it('returns false when the session is already ready (peer session exists)', () => {
-    expect(shouldAutoPublishHandshake({ ...happyPath, isReady: true })).toBe(false)
+  it('regression: must NOT suppress on "ready" alone — peer session present without our broadcast', () => {
+    // "Ready" (peer session in memory, from THEIR published bundle) is not
+    // a substitute for "we have broadcast OUR bundle". If consumePeerBundle
+    // succeeded but the subsequent sendMessage POST failed (network drop,
+    // 5xx), markOwnHandshakePublished is never called and the persisted
+    // flag stays false. On next mount we MUST retry the publish — otherwise
+    // the peer has no way to initiate their inbound channel to us.
+    //
+    // Previously the helper accepted an `isReady` input that suppressed
+    // publishing whenever true; this test pins the corrected behavior so a
+    // future "add isReady back as a guard" regression gets caught here.
+    expect(shouldAutoPublishHandshake({ ...happyPath })).toBe(true)
   })
 
-  it('combines suppressions — any one is enough', () => {
-    // Sanity check: multiple suppressions still return false. Belt-and-
-    // suspenders rather than each replacing the other.
+  it('does not need any per-mount latch to publish on first try', () => {
+    // Sanity check: a brand-new mount with nothing on disk gets through.
     expect(
       shouldAutoPublishHandshake({
-        ...happyPath,
-        hasPersistedPublishedFlag: true,
-        isReady: true,
+        cancelled: false,
+        msgsLoading: false,
+        sawOwnHandshake: false,
+        alreadyAttemptedThisMount: false,
+        hasPersistedPublishedFlag: false,
       }),
-    ).toBe(false)
-  })
-
-  it('regression: simultaneously-true hasPersistedPublishedFlag AND isReady still suppresses', () => {
-    // Pinning the AND-of-suppressions behavior so a future "any one signal
-    // implies safe to publish" inversion would be caught here. The bug we
-    // fixed required EITHER signal being true to be enough on its own; this
-    // test is the load-bearing assertion that one stays sufficient.
-    expect(
-      shouldAutoPublishHandshake({
-        ...happyPath,
-        hasPersistedPublishedFlag: true,
-      }),
-    ).toBe(false)
-    expect(
-      shouldAutoPublishHandshake({
-        ...happyPath,
-        isReady: true,
-      }),
-    ).toBe(false)
+    ).toBe(true)
   })
 })

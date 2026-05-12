@@ -17,28 +17,34 @@
 //   - alreadyAttemptedThisMount:  we've already tried to publish in this
 //                                 component instance (per-mount latch).
 //   - hasPersistedPublishedFlag:  the per-chat IndexedDB flag says we've
-//                                 broadcast before. Survives refresh AND is
-//                                 independent of message pagination — this is
-//                                 the signal that defeats the "own handshake
-//                                 paginated past first 50" failure mode.
-//   - isReady:                    we already have an established peer
-//                                 session for this chat (loaded from disk on
-//                                 unlock). Republishing here would only emit
-//                                 a duplicate handshake row — the peer
-//                                 already has everything they need.
+//                                 broadcast before — set ONLY after a
+//                                 successful sendMessage POST, so its
+//                                 presence means the peer has actually
+//                                 received our bundle. Survives refresh AND
+//                                 is independent of message pagination —
+//                                 this is the signal that defeats the
+//                                 "own handshake paginated past first 50"
+//                                 failure mode.
+//
+// `isReady` is INTENTIONALLY not a suppression signal. "Ready" means we have
+// a peer session in memory (constructed from THEIR published bundle via
+// consumePeerBundle); it does NOT imply we've broadcast OUR bundle to them.
+// The two are independent: a peer can have a usable outbound session from
+// our pre-key, while we never managed to POST our handshake because the
+// first send failed. In that case isReady=true / hasPersistedPublishedFlag=
+// false should still allow a retry on next mount, otherwise the peer never
+// gets our bundle and they can't initiate their inbound channel to us.
 export function shouldAutoPublishHandshake(input: {
   cancelled: boolean
   msgsLoading: boolean
   sawOwnHandshake: boolean
   alreadyAttemptedThisMount: boolean
   hasPersistedPublishedFlag: boolean
-  isReady: boolean
 }): boolean {
   if (input.cancelled) return false
   if (input.msgsLoading) return false
   if (input.sawOwnHandshake) return false
   if (input.alreadyAttemptedThisMount) return false
   if (input.hasPersistedPublishedFlag) return false
-  if (input.isReady) return false
   return true
 }

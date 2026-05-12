@@ -10,7 +10,7 @@ import Image from 'next/image'
 import DownloadIcon from 'public/icons/download-white.svg'
 import { Address } from 'viem'
 import Tooltip from './tooltip'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 interface DownloadButtonProps {
   ownerAddress?: Address
@@ -32,7 +32,11 @@ const DownloadButton = ({
   const filters = selectors.filters
 
   const searchTerm = filters.search
-  const search = normalizeName(searchTerm?.replace('.eth', '').toLowerCase().trim())
+  const search = useMemo(
+    () =>
+      searchTerm && searchTerm.length > 0 ? normalizeName(searchTerm?.replace('.eth', '').toLowerCase().trim()) : '',
+    [searchTerm]
+  )
   const statusFilter = filters.status?.filter(
     (status) => API_STATUS_FILTER_OPTIONS[status as keyof typeof API_STATUS_FILTER_OPTIONS]
   )

@@ -67,7 +67,6 @@ export default function Testemonials() {
   }, [maxIndex, resetTimer])
 
   const translateX = -(activeIndex * (100 / visibleCount))
-  console.log(activeIndex)
 
   return (
     <div className='flex w-full flex-col items-center justify-center gap-4 sm:gap-6 md:gap-8 lg:items-start'>

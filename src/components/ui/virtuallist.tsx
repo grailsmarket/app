@@ -73,7 +73,11 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
     if (useLocalScrollTop || containerScroll) {
       return () => {} // No-op for local scroll or container scroll
     } else {
-      return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+      if (actions.setScrollTop) {
+        return (scrollTop: number) => dispatch(actions.setScrollTop(scrollTop))
+      }
+
+      return () => {} // No-op fif no setScrollTop function
     }
   }, [useLocalScrollTop, containerScroll, actions])
 
@@ -174,7 +178,7 @@ const VirtualListComponent: VirtualListComponentType = (props, ref) => {
   // Store scroll position for restoration (debounced, only for window scroll mode)
   useEffect(() => {
     if (containerScroll) return
-    if (hasRestoredScroll.current || storedScrollTop === 0) {
+    if (!!setStoredScrollTop && (hasRestoredScroll.current || storedScrollTop === 0)) {
       const timeoutId = setTimeout(() => {
         setStoredScrollTop(relativeScrollTop)
       }, 100)

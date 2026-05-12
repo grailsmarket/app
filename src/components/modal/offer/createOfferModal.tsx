@@ -28,6 +28,7 @@ import { beautifyName } from '@/lib/ens'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
+import { track } from '@/lib/analytics'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -139,6 +140,14 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
       })
 
       setSuccess(true)
+
+      track('offer_created', {
+        name: ensName,
+        currency,
+        amount: price,
+        expiry: expiryDate,
+        marketplaces: selectedMarketplace,
+      })
 
       const cartDomain =
         cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||

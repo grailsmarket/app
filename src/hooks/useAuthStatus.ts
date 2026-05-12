@@ -81,7 +81,6 @@ export const useAuth = () => {
         // escape early if no token is found
         if (!token || token.length === 0) return 'unauthenticated'
 
-        console.log('token found')
         setIsSigningIn(true)
 
         const authenticateRes = await checkAuthentication()
@@ -92,17 +91,6 @@ export const useAuth = () => {
         }
 
         dispatch(resetUserProfile())
-
-        // console.log(document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='))?.split('=')[1])
-        // check if the token exists, since auth verification fialed, the user should be disconnected
-        // const token = document.cookie
-        //   .split(';')
-        //   .find((cookie) => cookie.trim().startsWith('token='))
-        //   ?.split('=')[1]
-        // if ((token && token.length > 0)) {
-        //   disconnect()
-        //   document.cookie = `token=; path=/; max-age=0;`
-        // }
 
         return 'unauthenticated'
       } catch (error) {
@@ -158,7 +146,6 @@ export const useAuth = () => {
 
     setUserDetails(user)
     queryClient.setQueryData(['auth', 'status', address], 'authenticated')
-    console.log('setting token', token)
     document.cookie = `token=${token}; path=/; max-age=${WEEK_IN_SECONDS}; SameSite=None; Secure`
 
     return

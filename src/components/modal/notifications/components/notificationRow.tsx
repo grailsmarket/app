@@ -146,11 +146,14 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
             )}
           </div>
           {imageUrl && (
-            <div className='relative h-fit max-w-44 cursor-pointer' onClick={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-              setExpandedImage(imageUrl)
-            }}>
+            <div
+              className='relative h-fit max-w-44 cursor-pointer'
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                setExpandedImage(imageUrl)
+              }}
+            >
               <motion.div layoutId={`image-${imageUrl}`}>
                 <Image
                   src={imageUrl}

@@ -40,6 +40,7 @@ import { cn } from '@/utils/tailwind'
 import { BigNumber } from '@ethersproject/bignumber'
 import { formatPrice } from '@/utils/formatPrice'
 import { AssetType } from '@/types/assets'
+import { track } from '@/lib/analytics'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -323,6 +324,14 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         await acceptOfferApi(offer.id)
 
         setStep('success')
+        track('offer_accepted', {
+          name: domain?.name,
+          offer_id: offer.id,
+          source: offer.source ?? null,
+          currency_address: offer.currency_address ?? null,
+          amount_wei: offer.offer_amount_wei ?? null,
+          tx_hash: tx,
+        })
         refetchDomainQueries()
 
         // TODO: Call API to update offer status

@@ -46,7 +46,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
       <button
         onClick={(e) => clickHandler(e, openRegistrationModalHandler)}
         className={cn(
-          'border-primary text-primary hover:bg-primary hover:text-background h-10 w-24 cursor-pointer rounded-md border-2 font-bold transition-all duration-300',
+          'border-primary text-primary hover:bg-primary hover:text-background h-10 w-24 cursor-pointer rounded-sm border-2 text-lg font-semibold transition-all duration-300',
           registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
         )}
       >
@@ -59,7 +59,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
     return (
       <button
         onClick={(e) => clickHandler(e, openBuyNowModal)}
-        className='border-primary text-primary hover:bg-primary hover:text-background font-bol h-10 w-[94px] cursor-pointer rounded-md border-2 transition-all duration-300 sm:w-24'
+        className='border-primary text-primary hover:bg-primary hover:text-background font-bol h-10 w-[94px] cursor-pointer rounded-sm border-2 text-lg font-semibold transition-all duration-300 sm:w-24'
       >
         Buy Now
       </button>
@@ -68,7 +68,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ domain, registrationStatu
 
   return (
     <button
-      className={`border-primary text-primary hover:bg-primary hover:text-background h-10 w-20 cursor-pointer rounded-md border-2 font-bold transition-all duration-300 sm:w-24`}
+      className={`border-primary text-primary hover:bg-primary hover:text-background h-10 w-20 cursor-pointer rounded-sm border-2 text-lg font-semibold transition-all duration-300 sm:w-24`}
       onClick={(e) => clickHandler(e, openMakeOfferModal)}
     >
       Offer

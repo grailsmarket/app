@@ -22,8 +22,6 @@ import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
 import PremiumPriceControls from './PremiumPriceControls'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
-import CartIcon from '@/components/domains/table/components/CartIcon'
-import useCartDomains from '@/hooks/useCartDomains'
 
 interface RegisterProps {
   nameDetails?: MarketplaceDomainType
@@ -38,7 +36,6 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const publicClient = usePublicClient({ chainId: mainnet.id })
-  const { onSelect: toggleCart } = useCartDomains()
   const registrationState = useAppSelector(selectRegistration)
 
   // Lifted state for premium price controls
@@ -199,7 +196,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             >
               Register
             </PrimaryButton>
-            <button
+            {/* <button
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -211,7 +208,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                 hasBorder={true}
                 className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
               />
-            </button>
+            </button> */}
           </div>
         </div>
         {nameDetails?.expiry_date && ethPrice && oracle && (
@@ -271,7 +268,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           >
             Register
           </PrimaryButton>
-          <button
+          {/* <button
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -283,7 +280,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
               hasBorder={true}
               className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
             />
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

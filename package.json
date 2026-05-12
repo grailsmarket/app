@@ -11,9 +11,8 @@
     "typecheck": "tsc --noEmit",
     "checks": "bun run format && bun run lint && bun run typecheck",
     "test": "bun test src/",
-    "test:e2e:setup": "synpress test/e2e/wallet-setup",
-    "test:e2e": "playwright test --headed",
-    "test:e2e:headless": "PLAYWRIGHT_HEADED=0 playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
     "postinstall": "cp -f node_modules/@matrix-org/olm/olm.wasm public/olm.wasm 2>/dev/null; cp -f node_modules/@matrix-org/olm/olm.js public/olm.js 2>/dev/null; true"
   },
   "dependencies": {

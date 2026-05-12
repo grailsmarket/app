@@ -343,19 +343,29 @@ export function useE2ESession(
     }
   }, [])
 
-  const buildHandshakeBundle = useCallback(async (): Promise<string> => {
-    if (!accountRef.current || !storageKeyRef.current || !userAddress) {
-      throw new Error('Account not loaded')
-    }
-    const bundle = exportBundle(accountRef.current)
-    // Must persist BEFORE returning. exportBundle calls
-    // mark_keys_as_published() which mutates the in-memory account; if the
-    // caller broadcasts the bundle and the page is closed before the persist
-    // completes, the next session would reload the prior pickle and could
-    // republish the same fallback key with a stale "unpublished" pool state.
-    await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
-    return bundle
-  }, [userAddress])
+  const buildHandshakeBundle = useCallback((): Promise<string> => {
+    // Serialize mark+persist on the 'account' queue. exportBundle internally
+    // calls mark_keys_as_published(), which mutates the in-memory account;
+    // two concurrent callers (cache-scan banner path + WS handshakeBus) would
+    // otherwise interleave their mark/persist pairs and the later in-memory
+    // mutation could be overwritten on disk by the earlier persist completing
+    // last. Same race shape as the per-DID session-pickle bug in
+    // consumePeerBundle. Check inside the queued function so a wallet switch
+    // that races us into the queue fails closed instead of dereferencing a
+    // freed account.
+    return enqueue('account', async () => {
+      if (!accountRef.current || !storageKeyRef.current || !userAddress) {
+        throw new Error('Account not loaded')
+      }
+      const bundle = exportBundle(accountRef.current)
+      // Must persist BEFORE returning. If the caller broadcasts the bundle
+      // and the page is closed before the persist completes, the next session
+      // would reload the prior pickle and could republish the same fallback
+      // key with a stale "unpublished" pool state.
+      await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
+      return bundle
+    })
+  }, [enqueue, userAddress])
 
   // Maximum devices tracked per chat. Each known device costs one ciphertext
   // per send (fanout grows linearly), so the cap bounds wire size and memory.

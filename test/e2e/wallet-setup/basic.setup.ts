@@ -6,7 +6,7 @@ import { MetaMask } from '@synthetixio/synpress-metamask/playwright'
 // strings against our mocked backend. NEVER use this for anything else.
 // First derived account: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 const SEED_PHRASE =
-  'test test test test test test test test test test test junk'
+  'test test test test test test test test test test test junk' // gitleaks:allow trufflehog:ignore
 const PASSWORD = 'SynpressTestE2E1!'
 
 // One-time wallet setup. Synpress hashes this function body + password and

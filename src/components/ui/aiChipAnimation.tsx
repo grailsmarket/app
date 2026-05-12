@@ -2,61 +2,97 @@
 
 import React, { useMemo } from 'react'
 
-interface CircuitPath {
+interface Trace {
   d: string
   delay: number
   duration: number
-  nodeX: number
-  nodeY: number
+  endX: number
+  endY: number
 }
 
-const generateCircuitPaths = (count: number): CircuitPath[] => {
-  const paths: CircuitPath[] = []
-  const chipCenterX = 400
-  const chipCenterY = 200
-  const halfW = 60
-  const halfH = 40
+const generateTraces = (): Trace[] => {
+  const traces: Trace[] = []
+  const cx = 400
+  const cy = 200
+  const half = 50
+  const chipLeft = cx - half
+  const chipRight = cx + half
+  const chipTop = cy - half
+  const chipBottom = cy + half
 
-  for (let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2
-    const isHorizontal = Math.abs(Math.cos(angle)) > Math.abs(Math.sin(angle))
-
-    let startX = chipCenterX
-    let startY = chipCenterY
-    if (isHorizontal) {
-      startX += Math.cos(angle) > 0 ? halfW : -halfW
-      startY += Math.sin(angle) * halfH * 0.6
-    } else {
-      startX += Math.cos(angle) * halfW * 0.6
-      startY += Math.sin(angle) > 0 ? halfH : -halfH
+  const addTopTraces = () => {
+    const count = 18
+    for (let i = 0; i < count; i++) {
+      const startX = chipLeft + ((i + 0.5) / count) * (half * 2)
+      const startY = chipTop
+      const up1 = 20 + Math.random() * 30
+      const side = (i % 2 === 0 ? -1 : 1) * (10 + Math.random() * 25)
+      const up2 = 15 + Math.random() * 35
+      const endX = startX + side
+      const endY = startY - up1 - up2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${startX.toFixed(1)} ${(startY - up1).toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      traces.push({ d, delay: i * 0.12, duration: 1.8 + Math.random() * 1.4, endX, endY })
     }
-
-    const midDist = 80 + Math.random() * 60
-    const bendX = startX + Math.cos(angle) * midDist
-    const bendY = startY + Math.sin(angle) * midDist
-
-    const endDist = 180 + Math.random() * 100
-    const endX = Math.max(20, Math.min(780, chipCenterX + Math.cos(angle) * (halfW + endDist)))
-    const endY = Math.max(20, Math.min(380, chipCenterY + Math.sin(angle) * (halfH + endDist)))
-
-    const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${bendX.toFixed(1)} ${bendY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
-
-    paths.push({
-      d,
-      delay: i * 0.3 + Math.random() * 0.5,
-      duration: 2 + Math.random() * 2,
-      nodeX: endX,
-      nodeY: endY,
-    })
   }
 
-  return paths
+  const addBottomTraces = () => {
+    const count = 18
+    for (let i = 0; i < count; i++) {
+      const startX = chipLeft + ((i + 0.5) / count) * (half * 2)
+      const startY = chipBottom
+      const down1 = 20 + Math.random() * 30
+      const side = (i % 2 === 0 ? -1 : 1) * (10 + Math.random() * 25)
+      const down2 = 15 + Math.random() * 35
+      const endX = startX + side
+      const endY = startY + down1 + down2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${startX.toFixed(1)} ${(startY + down1).toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      traces.push({ d, delay: i * 0.12 + 0.5, duration: 1.8 + Math.random() * 1.4, endX, endY })
+    }
+  }
+
+  const addLeftTraces = () => {
+    const count = 14
+    for (let i = 0; i < count; i++) {
+      const startX = chipLeft
+      const startY = chipTop + ((i + 0.5) / count) * (half * 2)
+      const left1 = 20 + Math.random() * 30
+      const side = (i % 2 === 0 ? -1 : 1) * (10 + Math.random() * 25)
+      const left2 = 15 + Math.random() * 35
+      const endY = startY + side
+      const endX = startX - left1 - left2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${(startX - left1).toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      traces.push({ d, delay: i * 0.14 + 1.0, duration: 1.8 + Math.random() * 1.4, endX, endY })
+    }
+  }
+
+  const addRightTraces = () => {
+    const count = 14
+    for (let i = 0; i < count; i++) {
+      const startX = chipRight
+      const startY = chipTop + ((i + 0.5) / count) * (half * 2)
+      const right1 = 20 + Math.random() * 30
+      const side = (i % 2 === 0 ? -1 : 1) * (10 + Math.random() * 25)
+      const right2 = 15 + Math.random() * 35
+      const endY = startY + side
+      const endX = startX + right1 + right2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${(startX + right1).toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      traces.push({ d, delay: i * 0.14 + 1.5, duration: 1.8 + Math.random() * 1.4, endX, endY })
+    }
+  }
+
+  addTopTraces()
+  addBottomTraces()
+  addLeftTraces()
+  addRightTraces()
+
+  return traces
 }
 
-const CHIP_PATHS_COUNT = 24
-
 const AiChipAnimation: React.FC = () => {
-  const circuitPaths = useMemo(() => generateCircuitPaths(CHIP_PATHS_COUNT), [])
+  const traces = useMemo(() => generateTraces(), [])
+  const cx = 400
+  const cy = 200
+  const half = 50
 
   return (
     <svg
@@ -67,118 +103,80 @@ const AiChipAnimation: React.FC = () => {
     >
       <defs>
         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
           <feMerge>
-            <feMergeNode in="blur" />
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
 
         <radialGradient id="chipBg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ffdfc0" stopOpacity="0.08" />
+          <stop offset="0%" stopColor="#ffdfc0" stopOpacity="0.06" />
           <stop offset="100%" stopColor="#ffdfc0" stopOpacity="0" />
         </radialGradient>
-
-        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#ffdfc0" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#ffdfc0" stopOpacity="0.05" />
-        </linearGradient>
       </defs>
 
       <rect x="0" y="0" width="800" height="400" fill="url(#chipBg)" />
 
-      {circuitPaths.map((path, i) => (
+      {traces.map((trace, i) => (
         <g key={i}>
           <path
-            d={path.d}
+            d={trace.d}
             fill="none"
-            stroke="url(#lineGradient)"
-            strokeWidth="1"
+            stroke="#ffdfc0"
+            strokeWidth="0.8"
+            strokeOpacity="0.12"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
           <path
-            d={path.d}
+            d={trace.d}
             fill="none"
             stroke="#ffdfc0"
-            strokeWidth="1.5"
+            strokeWidth="1.2"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter="url(#glow)"
             style={{
-              strokeDasharray: '8 200',
+              strokeDasharray: '6 180',
               strokeDashoffset: '0',
-              opacity: 0.8,
-              animation: `circuitPulse ${path.duration}s linear ${path.delay}s infinite`,
+              opacity: 0.7,
+              animation: `circuitPulse ${trace.duration}s linear ${trace.delay}s infinite`,
             }}
           />
           <circle
-            cx={path.nodeX}
-            cy={path.nodeY}
-            r="2"
+            cx={trace.endX}
+            cy={trace.endY}
+            r="1.8"
             fill="#ffdfc0"
             style={{
               opacity: 0,
-              animation: `nodeGlow ${path.duration}s linear ${path.delay + path.duration * 0.4}s infinite`,
+              animation: `nodeGlow ${trace.duration}s linear ${trace.delay + trace.duration * 0.35}s infinite`,
             }}
           />
         </g>
       ))}
 
       <rect
-        x="340"
-        y="160"
-        width="120"
-        height="80"
-        rx="8"
-        fill="none"
+        x={cx - half}
+        y={cy - half}
+        width={half * 2}
+        height={half * 2}
+        fill="#222222"
+        fillOpacity="0.85"
         stroke="#ffdfc0"
         strokeWidth="1.5"
-        strokeOpacity="0.3"
+        strokeOpacity="0.35"
       />
-      <rect
-        x="344"
-        y="164"
-        width="112"
-        height="72"
-        rx="6"
-        fill="#222222"
-        fillOpacity="0.8"
-        stroke="#ffdfc0"
-        strokeWidth="0.5"
-        strokeOpacity="0.15"
-      />
-
-      {Array.from({ length: 8 }).map((_, i) => (
-        <React.Fragment key={`pin-t-${i}`}>
-          <rect
-            x={350 + i * 13}
-            y="158"
-            width="4"
-            height="4"
-            fill="#ffdfc0"
-            fillOpacity="0.25"
-          />
-          <rect
-            x={350 + i * 13}
-            y="238"
-            width="4"
-            height="4"
-            fill="#ffdfc0"
-            fillOpacity="0.25"
-          />
-        </React.Fragment>
-      ))}
 
       <text
-        x="400"
-        y="208"
+        x={cx}
+        y={cy + 2}
         textAnchor="middle"
         dominantBaseline="middle"
         fill="#ffdfc0"
-        fillOpacity="0.9"
-        fontSize="28"
+        fillOpacity="0.95"
+        fontSize="26"
         fontWeight="700"
         fontFamily="var(--font-inter), Arial, sans-serif"
         letterSpacing="2"
@@ -187,28 +185,24 @@ const AiChipAnimation: React.FC = () => {
       </text>
 
       <circle
-        cx="400"
-        cy="200"
-        r="50"
+        cx={cx}
+        cy={cy}
+        r="55"
         fill="none"
         stroke="#ffdfc0"
-        strokeWidth="1"
+        strokeWidth="0.8"
         strokeOpacity="0"
-        style={{
-          animation: 'centralPulse 4s ease-out infinite',
-        }}
+        style={{ animation: 'centralPulse 3.5s ease-out infinite' }}
       />
       <circle
-        cx="400"
-        cy="200"
-        r="70"
+        cx={cx}
+        cy={cy}
+        r="75"
         fill="none"
         stroke="#ffdfc0"
         strokeWidth="0.5"
         strokeOpacity="0"
-        style={{
-          animation: 'centralPulse 4s ease-out 1.3s infinite',
-        }}
+        style={{ animation: 'centralPulse 3.5s ease-out 1.1s infinite' }}
       />
     </svg>
   )

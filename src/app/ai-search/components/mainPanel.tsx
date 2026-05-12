@@ -23,8 +23,8 @@ const MainPanel: React.FC = () => {
 
   return (
     <div className='flex w-full flex-col gap-0'>
-      <TabSwitcher />
       <AiSearchHero />
+      <TabSwitcher />
       <div className='flex w-full flex-row gap-0'>
         <FilterPanel />
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>

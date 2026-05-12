@@ -1,9 +1,12 @@
 import { defineConfig } from '@playwright/test'
 
-// Synpress requires headed Chromium (the MetaMask extension can't run
-// headless reliably). Local runs default to non-headless; CI overrides via
-// PLAYWRIGHT_HEADED=1 + xvfb.
+// Synpress requires headed Chromium — the MetaMask extension can't load via
+// the headless Chromium build. We force `headless: false` here rather than
+// relying on `--headed`, so any invocation (CI, local, IDE-runner) gets the
+// right mode without needing to remember the flag. Set PLAYWRIGHT_HEADED=0
+// to opt back into headless ONLY for debugging non-wallet tests.
 const PORT = Number(process.env.E2E_PORT ?? 3100)
+const HEADLESS = process.env.PLAYWRIGHT_HEADED === '0'
 
 export default defineConfig({
   testDir: './test/e2e',
@@ -28,6 +31,7 @@ export default defineConfig({
   },
   use: {
     baseURL: `http://localhost:${PORT}`,
+    headless: HEADLESS,
     trace: 'on-first-retry',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',

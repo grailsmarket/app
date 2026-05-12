@@ -46,7 +46,7 @@ next-env.d.ts
 /public/olm.js
 
 # Synpress / Playwright artifacts
-/test/e2e/.cache-synpress
+.cache-synpress
 /test/e2e/test-results
 /playwright-report
 /test-results

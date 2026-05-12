@@ -41,7 +41,8 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
   // (supplemental fanout targets) from peer handshakes (real readiness).
   const myAddress = userAddress?.toLowerCase() ?? null
   const myUserId = chat?.participants?.find((p) => p.address.toLowerCase() === myAddress)?.user_id ?? null
-  const e2e = useE2ESession(chatId, chat?.dm_key ?? null, myAddress, myUserId)
+  const dmKey = chat?.dm_key ?? null
+  const e2e = useE2ESession(chatId, dmKey, myAddress, myUserId)
 
   // Effects must mirror the render-time guards: the banner returns null for
   // non-direct or blocked chats, but the cache-scan and bus-listener effects
@@ -116,14 +117,23 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
   // the session, so async setup would stall until another live handshake.
   useEffect(() => {
     // Wait for the hook's dmKey effect to finish restoring (roster + sessions
-    // + published flag) from IndexedDB before scanning. Without this gate the
-    // auto-publish fallback below would read default-`false` values for
-    // hasPublishedForChat / isReady during the unlock-to-load window, which
-    // would (incorrectly) green-light a republish on a chat where our own
-    // handshake row is paginated outside the visible message page. The
-    // disk-fallback inside consumePeerBundle handles its own race; this gate
-    // protects the FALLBACK auto-publish decision.
-    if (!isEligibleChat || !e2e.isUnlocked || !e2e.restoredFromDisk) return
+    // + published flag) from IndexedDB before scanning. The gate is a dmKey
+    // MATCH, not a boolean — a stale "restored=true" carried over from a
+    // previous chat / previous unlock window cannot pass, because the loaded
+    // dmKey won't equal the current dmKey. Without this gate the auto-publish
+    // fallback below would read default-`false` values for hasPublishedForChat
+    // / isReady during the unlock-to-load window, which would (incorrectly)
+    // green-light a republish on a chat where our own handshake row is
+    // paginated outside the visible message page. The disk-fallback inside
+    // consumePeerBundle handles its own race; this gate protects the FALLBACK
+    // auto-publish decision specifically.
+    if (
+      !isEligibleChat ||
+      !e2e.isUnlocked ||
+      dmKey == null ||
+      e2e.restoredForDmKey !== dmKey
+    )
+      return
     let cancelled = false
       ; (async () => {
         let sawOwnHandshake = false
@@ -193,7 +203,7 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
     return () => {
       cancelled = true
     }
-  }, [isEligibleChat, e2e, e2e.isUnlocked, e2e.restoredFromDisk, messages, msgsLoading, chatId])
+  }, [isEligibleChat, e2e, e2e.isUnlocked, e2e.restoredForDmKey, dmKey, messages, msgsLoading, chatId])
 
   if (!isEligibleChat) return null
   if (e2e.state.kind === 'ready') return null

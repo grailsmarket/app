@@ -7,7 +7,24 @@ import pluginReactHooks from 'eslint-plugin-react-hooks'
 
 const eslintConfig = [
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
-  { ignores: ['public/*', 'node_modules/*', '.next/*', '.next-env.d.ts'] },
+  {
+    ignores: [
+      'public/*',
+      'node_modules/*',
+      '.next/*',
+      '.next-env.d.ts',
+      // Synpress + Playwright test artifacts. The CLI unpacks MetaMask
+      // sources under .cache-synpress (anywhere — see .gitignore), and
+      // Playwright drops reports under playwright-report / test-results.
+      // Linting these would flood the report with thousands of bundled-JS
+      // errors that aren't ours to fix.
+      '.cache-synpress/**',
+      '**/.cache-synpress/**',
+      'playwright-report/**',
+      'test-results/**',
+      'test/e2e/test-results/**',
+    ],
+  },
   { languageOptions: { globals: globals.browser } },
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,

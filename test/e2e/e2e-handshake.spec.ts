@@ -111,10 +111,14 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
       .waitFor({ state: 'visible', timeout: 15_000 })
     await page.getByRole('button', { name: 'Messages' }).click()
 
-    // Chat sidebar slides in from the right (250ms animation). It carries
-    // aria-label='Chat sidebar' on the <aside>. Wait for it to be visible
-    // before reaching into its contents.
-    const sidebar = page.getByLabel('Chat sidebar')
+    // Chat sidebar slides in from the right (250ms animation). The <aside>
+    // carries aria-label='Chat sidebar', AND it contains a resize handle
+    // labeled 'Resize chat sidebar'. getByLabel does substring matching —
+    // both elements match 'Chat sidebar', which trips Playwright's strict
+    // mode. Use the implicit ARIA role of <aside> ('complementary') to
+    // disambiguate; that role only fires for the sidebar shell itself,
+    // not the inner resize separator.
+    const sidebar = page.getByRole('complementary', { name: 'Chat sidebar' })
     await sidebar.waitFor({ state: 'visible', timeout: 10_000 })
 
     // ListView fetches /chats while the sidebar animates in. Wait for at
@@ -171,26 +175,31 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // without this click the modal sits open forever and the SIWE flow
     // never starts.
     //
-    // The MetaMask tile is unstable under default Playwright clicking
-    // semantics: clicking it triggers wagmi.connect → eth_requestAccounts
+    // RainbowKit's connect modal lists every supported connector. Clicking
+    // the MetaMask tile triggers wagmi.connect → eth_requestAccounts
     // (instant via wallet-mock) → RainbowKit transitions the modal from
-    // "list" to "connecting" then "success" and detaches the tile element
-    // mid-animation. Playwright's actionability check ("stable for
-    // 100ms") then retries against a freshly-rendered or detached
-    // element, often burning the full test timeout before any click
-    // actually fires.
+    // "list" to "connecting" then "success", detaching the tile element
+    // mid-animation. Two failure modes we have to handle together:
     //
-    // Bypass the stability check with force:true. The click is recorded
-    // and dispatched immediately — wagmi sees it, connects, and the
-    // post-click DOM detach no longer aborts the action. noWaitAfter
-    // prevents Playwright from waiting for navigation that never happens
-    // (the modal close is internal, not a route change).
+    //   1. Stability: Playwright's "stable for 100ms" actionability check
+    //      keeps retrying against a freshly-rendered or detached element,
+    //      burning the full test timeout. Bypass with force:true.
+    //   2. Viewport: the wallet list overflows the modal and MetaMask sits
+    //      below the visible portion on the default 1280x720 viewport.
+    //      force:true skips actionability but does NOT scroll — the click
+    //      coordinates resolve to a point off-screen and the event never
+    //      dispatches. Call scrollIntoViewIfNeeded() first.
+    //
+    // noWaitAfter prevents Playwright from waiting for a navigation that
+    // never happens (the modal close is internal, not a route change).
     //
     // The modal renders in a portal at the document root; scope to the
-    // dialog so we don't accidentally match "MetaMask" text elsewhere.
+    // dialog role so we don't accidentally match "MetaMask" text from
+    // elsewhere on the page (e.g. a footer connector list).
     const connectModal = page.getByRole('dialog')
     const metamaskTile = connectModal.getByRole('button', { name: 'MetaMask' })
     await metamaskTile.waitFor({ state: 'visible', timeout: 10_000 })
+    await metamaskTile.scrollIntoViewIfNeeded()
     await metamaskTile.click({ force: true, noWaitAfter: true })
 
     // Sequence after the modal click:

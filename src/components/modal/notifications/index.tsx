@@ -87,7 +87,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='flex flex-col gap-4 p-lg md:p-6'>
+        <div className='p-lg flex flex-col gap-4 md:p-6'>
           <div className='flex items-center justify-between'>
             <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
             <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>

@@ -65,15 +65,15 @@ Open <http://localhost:3000>.
 
 ### Scripts
 
-| Command | Description |
-| --- | --- |
-| `bun run dev` | Start the dev server (Turbopack) |
-| `bun run build` | Production build |
-| `bun run start` | Run the production build |
-| `bun run lint` | ESLint |
-| `bun run typecheck` | TypeScript check |
-| `bun run format` | Prettier |
-| `bun run checks` | Format + lint + typecheck |
+| Command             | Description                      |
+| ------------------- | -------------------------------- |
+| `bun run dev`       | Start the dev server (Turbopack) |
+| `bun run build`     | Production build                 |
+| `bun run start`     | Run the production build         |
+| `bun run lint`      | ESLint                           |
+| `bun run typecheck` | TypeScript check                 |
+| `bun run format`    | Prettier                         |
+| `bun run checks`    | Format + lint + typecheck        |
 
 ## Environment variables
 
@@ -81,44 +81,44 @@ Copy `.env.example` to `.env.local` and fill in the values. Variables prefixed w
 
 ### Wallet & RPC
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | yes | WalletConnect Cloud project ID for client-side connections |
-| `WALLET_CONNECT_PROJECT_ID` | yes | Same value, used server-side |
-| `NEXT_PUBLIC_QUICKNODE_ID` | recommended | QuickNode endpoint ID (fallback RPC across all chains) |
-| `NEXT_PUBLIC_MAINNET_ALCHEMY_ID` | recommended | Alchemy app key for Ethereum mainnet |
-| `NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID` | optional | Alchemy app key for Sepolia |
-| `NEXT_PUBLIC_BASE_ALCHEMY_ID` | recommended | Alchemy app key for Base |
-| `NEXT_PUBLIC_BASE_SEPOLIA_ALCHEMY_ID` | optional | Alchemy app key for Base Sepolia |
-| `NEXT_PUBLIC_OPTIMISM_ALCHEMY_ID` | recommended | Alchemy app key for Optimism |
-| `NEXT_PUBLIC_OP_SEPOLIA_ALCHEMY_ID` | optional | Alchemy app key for Optimism Sepolia |
+| Variable                                | Required    | Description                                                |
+| --------------------------------------- | ----------- | ---------------------------------------------------------- |
+| `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | yes         | WalletConnect Cloud project ID for client-side connections |
+| `WALLET_CONNECT_PROJECT_ID`             | yes         | Same value, used server-side                               |
+| `NEXT_PUBLIC_QUICKNODE_ID`              | recommended | QuickNode endpoint ID (fallback RPC across all chains)     |
+| `NEXT_PUBLIC_MAINNET_ALCHEMY_ID`        | recommended | Alchemy app key for Ethereum mainnet                       |
+| `NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID`        | optional    | Alchemy app key for Sepolia                                |
+| `NEXT_PUBLIC_BASE_ALCHEMY_ID`           | recommended | Alchemy app key for Base                                   |
+| `NEXT_PUBLIC_BASE_SEPOLIA_ALCHEMY_ID`   | optional    | Alchemy app key for Base Sepolia                           |
+| `NEXT_PUBLIC_OPTIMISM_ALCHEMY_ID`       | recommended | Alchemy app key for Optimism                               |
+| `NEXT_PUBLIC_OP_SEPOLIA_ALCHEMY_ID`     | optional    | Alchemy app key for Optimism Sepolia                       |
 
 Public RPCs are used as a final fallback, but reliable Alchemy / QuickNode keys are strongly recommended.
 
 ### OpenSea / Seaport
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `OPENSEA_API_KEY` | yes | Server-side OpenSea API key |
-| `NEXT_PUBLIC_OPENSEA_API_KEY` | yes | Client-side OpenSea API key |
-| `NEXT_PUBLIC_OPENSEA_API_URL` | yes | OpenSea API base URL (e.g. `https://api.opensea.io`) |
-| `NEXT_PUBLIC_USE_CONDUIT` | optional | Set to `true` to route Seaport orders through the Grails conduit |
+| Variable                      | Required | Description                                                      |
+| ----------------------------- | -------- | ---------------------------------------------------------------- |
+| `OPENSEA_API_KEY`             | yes      | Server-side OpenSea API key                                      |
+| `NEXT_PUBLIC_OPENSEA_API_KEY` | yes      | Client-side OpenSea API key                                      |
+| `NEXT_PUBLIC_OPENSEA_API_URL` | yes      | OpenSea API base URL (e.g. `https://api.opensea.io`)             |
+| `NEXT_PUBLIC_USE_CONDUIT`     | optional | Set to `true` to route Seaport orders through the Grails conduit |
 
 ### ENS metadata
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `ENS_METADATA_URL` | optional | Base URL of the ENS metadata service |
+| Variable                                | Required | Description                           |
+| --------------------------------------- | -------- | ------------------------------------- |
+| `ENS_METADATA_URL`                      | optional | Base URL of the ENS metadata service  |
 | `ENS_METADATA_CACHE_INVALIDATION_TOKEN` | optional | Token used to bust the metadata cache |
 
 ### Misc
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `NODE_ENV` | yes | `development` or `production` |
-| `NODE_OPTIONS` | optional | Defaults to `--no-warnings` |
-| `CHROMIUM_LOCAL_EXEC_PATH` | optional | Local Chromium path for OG-image rendering in dev |
-| `NEXT_PUBLIC_CAN_CLAIM_POAP` | optional | Feature flag for POAP claim UI |
+| Variable                     | Required | Description                                       |
+| ---------------------------- | -------- | ------------------------------------------------- |
+| `NODE_ENV`                   | yes      | `development` or `production`                     |
+| `NODE_OPTIONS`               | optional | Defaults to `--no-warnings`                       |
+| `CHROMIUM_LOCAL_EXEC_PATH`   | optional | Local Chromium path for OG-image rendering in dev |
+| `NEXT_PUBLIC_CAN_CLAIM_POAP` | optional | Feature flag for POAP claim UI                    |
 
 ## Project layout
 
@@ -139,11 +139,11 @@ public/           Static assets (logos, icons, OG previews)
 
 ## Related repositories
 
-| Repo | Purpose |
-| --- | --- |
-| [grailsmarket/app](https://github.com/grailsmarket/app) | This Next.js frontend |
-| [grailsmarket/backend](https://github.com/grailsmarket/backend) | REST API and Postgres database powering listings, offers, activity, chat, search and analytics |
-| [grailsmarket/contracts](https://github.com/grailsmarket/contracts) | Solidity smart contracts (Seaport conduit, registration helpers, on-chain logic) |
+| Repo                                                                | Purpose                                                                                        |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [grailsmarket/app](https://github.com/grailsmarket/app)             | This Next.js frontend                                                                          |
+| [grailsmarket/backend](https://github.com/grailsmarket/backend)     | REST API and Postgres database powering listings, offers, activity, chat, search and analytics |
+| [grailsmarket/contracts](https://github.com/grailsmarket/contracts) | Solidity smart contracts (Seaport conduit, registration helpers, on-chain logic)               |
 
 ## Contributing
 

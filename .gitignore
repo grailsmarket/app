@@ -50,3 +50,4 @@ next-env.d.ts
 # from MetaMask extension downloads. Keep it ignored so it can't end up
 # tracked accidentally.
 .cache-synpress
+/test-results

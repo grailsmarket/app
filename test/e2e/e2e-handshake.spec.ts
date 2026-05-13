@@ -171,11 +171,27 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // without this click the modal sits open forever and the SIWE flow
     // never starts.
     //
-    // The modal renders in a portal at the document root. Scope the lookup
-    // to the visible dialog so we don't accidentally match a sibling
-    // element with "MetaMask" text elsewhere on the page.
+    // The MetaMask tile is unstable under default Playwright clicking
+    // semantics: clicking it triggers wagmi.connect → eth_requestAccounts
+    // (instant via wallet-mock) → RainbowKit transitions the modal from
+    // "list" to "connecting" then "success" and detaches the tile element
+    // mid-animation. Playwright's actionability check ("stable for
+    // 100ms") then retries against a freshly-rendered or detached
+    // element, often burning the full test timeout before any click
+    // actually fires.
+    //
+    // Bypass the stability check with force:true. The click is recorded
+    // and dispatched immediately — wagmi sees it, connects, and the
+    // post-click DOM detach no longer aborts the action. noWaitAfter
+    // prevents Playwright from waiting for navigation that never happens
+    // (the modal close is internal, not a route change).
+    //
+    // The modal renders in a portal at the document root; scope to the
+    // dialog so we don't accidentally match "MetaMask" text elsewhere.
     const connectModal = page.getByRole('dialog')
-    await connectModal.getByRole('button', { name: 'MetaMask' }).click()
+    const metamaskTile = connectModal.getByRole('button', { name: 'MetaMask' })
+    await metamaskTile.waitFor({ state: 'visible', timeout: 10_000 })
+    await metamaskTile.click({ force: true, noWaitAfter: true })
 
     // Sequence after the modal click:
     //   eth_requestAccounts (wallet-mock) → RainbowKit closes modal →

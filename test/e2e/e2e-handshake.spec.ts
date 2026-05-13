@@ -21,6 +21,41 @@ import { installMockBackend, type MockBackend } from './mock-backend'
 // against this as the "current user" the mocked backend authenticates.
 export const TEST_USER_ADDRESS = '0xd73b04b0e696b0945283defa3eee453814758f1a'
 
+// Fixed mock signature returned for every personal_sign request. Two
+// independent paths call signMessage in this test:
+//   - ethereum-identity-kit's SIWE flow (validated server-side by our
+//     mocked /api/auth/verify, which accepts any payload).
+//   - useE2ESession.unlock() signs HANDSHAKE_MSG and feeds the result
+//     into deriveStorageKey — the IndexedDB encryption key. The
+//     refresh-then-unlock regression depends on producing the SAME
+//     storage key both times, so the signature must be deterministic.
+// 65 bytes hex (130 chars + '0x') is the standard secp256k1 signature
+// shape. Content is arbitrary — neither path verifies the bytes
+// cryptographically.
+const FIXED_PERSONAL_SIGN = '0x' + 'a'.repeat(130)
+
+/**
+ * Add a Web3Mock signature handler. Synpress's wallet-mock fixture sets
+ * up `accounts: { return }` but NOT `signature: { return }`, so any
+ * personal_sign request from the page (SIWE auto-fire, HANDSHAKE_MSG
+ * unlock) crashes with viem's UnknownRpcError. This patches that gap.
+ *
+ * Web3Mock.mock() is additive — calling it again leaves the existing
+ * accounts mock in place and registers a new signature matcher.
+ */
+async function mockPersonalSign(page: import('@playwright/test').Page): Promise<void> {
+  await page.evaluate((sig) => {
+    const w = window as unknown as {
+      Web3Mock?: { mock: (config: unknown) => void }
+    }
+    if (!w.Web3Mock) throw new Error('Web3Mock global not present — wallet-mock fixture failed to load')
+    w.Web3Mock.mock({
+      blockchain: 'ethereum',
+      signature: { return: sig },
+    })
+  }, FIXED_PERSONAL_SIGN)
+}
+
 const test = ethereumWalletMockFixtures
 const { expect } = test
 
@@ -92,6 +127,11 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // identity the modal click below relies on).
     await ethereumWalletMock.connectToDapp('metamask')
 
+    // Register the personal_sign handler. The wallet-mock fixture only
+    // sets up accounts; without this the SIWE auto-fire (and later the
+    // HANDSHAKE_MSG unlock signature) crash with UnknownRpcError.
+    await mockPersonalSign(page)
+
     // RainbowKit's modal trigger — ethereum-identity-kit's SignInButton
     // when disconnected. The visible label is "SIGN IN" (the button's
     // accessible name is the same).
@@ -160,7 +200,13 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // so when the user re-signs, the app should restore the session from
     // disk and NOT re-publish. We have to re-open Messages + the chat row
     // because the Redux chat-sidebar slice isn't persisted across reloads.
+    //
+    // page.reload() resets in-page Web3Mock state (the fixture's
+    // addInitScript re-runs on every navigation, but only mocks accounts).
+    // Re-register the signature handler so the HANDSHAKE_MSG sign on the
+    // second unlock doesn't crash.
     await page.reload()
+    await mockPersonalSign(page)
     await openChatAndUnlock(page)
 
     // Give the cache-scan effect a chance to (incorrectly) fire if the
@@ -201,6 +247,7 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     backend.pushPaddingAfterUserSend(60)
 
     await page.reload()
+    await mockPersonalSign(page)
     await openChatAndUnlock(page)
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(2_000)

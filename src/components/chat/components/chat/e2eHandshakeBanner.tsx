@@ -171,6 +171,28 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
             console.error(err)
           }
         }
+        // Backfill the persisted flag if our own handshake row is visible
+        // in the cached window but the on-disk flag is still false. Two
+        // cases this covers:
+        //   - Chats whose handshake was sent before the persisted-flag
+        //     mechanism existed (no migration was written; the flag
+        //     stays missing).
+        //   - Chats where markOwnHandshakePublished previously threw
+        //     (IDB quota, private-window quirks) and the flag never
+        //     landed despite the publish succeeding.
+        // Without this, once the visible row ages past the first 50
+        // messages, sawOwnHandshake flips back to false and the
+        // auto-publish fallback fires a duplicate. The backfill is
+        // idempotent — markOwnHandshakePublished writes a single-byte
+        // blob; the storageKey it captures is the same one this scan
+        // ran against, so a wallet switch can't race it.
+        if (!cancelled && sawOwnHandshake && !e2e.hasPublishedForChat) {
+          try {
+            await e2e.markOwnHandshakePublished()
+          } catch (err) {
+            console.error(err)
+          }
+        }
         // Auto-publish our bundle once per chat if we've never sent one for
         // this chat. The decision is delegated to a pure helper so its
         // suppression rules are unit-testable without a DOM harness. The

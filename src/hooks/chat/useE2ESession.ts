@@ -707,25 +707,35 @@ export function useE2ESession(
   // Persist that we've broadcast our handshake into this chat at least once,
   // and reflect it in state for the banner. Called by republishOurHandshake's
   // success path — AFTER the sendMessage POST has succeeded, so we know the
-  // peer has the bundle for the dmKey captured here.
+  // peer has the bundle for the (wallet, dmKey) captured here.
   //
-  // The two writes have DIFFERENT scope requirements:
+  // Capture EVERYTHING that namespaces the IDB write at call time:
+  // userAddress + dmKey come from the useCallback closure; storageKey we
+  // grab explicitly. The ref dereference is critical — `storageKeyRef.current`
+  // is rebound by the wallet-change effect, so reading it inside the
+  // `await` would give us the NEW wallet's key. Writing wallet A's
+  // namespace path with wallet B's encryption key produces a blob the
+  // next wallet-A restore can't decrypt ("wrong wallet?" from
+  // storage.ts:41), permanently breaking handshake-flag restoration for
+  // that chat under wallet A.
   //
-  //   - Disk write: always runs, keyed by the dmKey captured at call time.
-  //     The peer has our bundle for THAT chat; the on-disk flag for THAT
-  //     chat must reflect it, regardless of whether the user has since
-  //     switched to another chat. Skipping the disk write would leave the
-  //     original chat's flag false, and the next visit to that chat —
-  //     once the handshake row is paginated past the visible 50 — would
-  //     auto-publish a duplicate via the sawOwnHandshake-false fallback.
+  // The two writes have different scope requirements:
+  //
+  //   - Disk write: always runs against the captured triple. The peer
+  //     has our bundle for that (wallet, dmKey); the on-disk flag for
+  //     that pair must reflect it, regardless of whether the user has
+  //     since switched chats OR wallets. Skipping the write would leave
+  //     the flag false and the next visit — once the handshake row is
+  //     paginated past the visible 50 — would auto-publish a duplicate
+  //     via the sawOwnHandshake-false fallback.
   //
   //   - In-memory setState: gated on `dmKeyRef.current === callForDmKey`.
-  //     setHasPublishedForChat operates on the hook's current React state,
-  //     which is shared across chat switches (same banner instance, dmKey
-  //     prop changes). If the user has switched chats between the call
-  //     starting and now, flipping the in-memory flag would corrupt the
-  //     NEW chat's published-state and suppress its legitimate first
-  //     publish.
+  //     setHasPublishedForChat operates on the hook's current React
+  //     state, which is shared across chat switches (same banner
+  //     instance, dmKey prop changes). If the user switched chats
+  //     between the call starting and now, flipping the in-memory flag
+  //     would corrupt the new chat's published-state and suppress its
+  //     legitimate first publish.
   //
   // In-memory flip happens BEFORE the disk write so the running mount
   // correctly suppresses republish even if the IDB persist throws (quota,
@@ -736,14 +746,17 @@ export function useE2ESession(
   const markOwnHandshakePublished = useCallback(async (): Promise<void> => {
     if (!storageKeyRef.current || !dmKey || !userAddress) return
     const callForDmKey = dmKey
+    const callForUserAddress = userAddress
+    const callForStorageKey = storageKeyRef.current
     // In-memory: only flip if we're still rendering the chat this call
     // was for. Otherwise we'd write the wrong chat's flag.
     if (dmKeyRef.current === callForDmKey) {
       setHasPublishedForChat(true)
     }
-    // Disk: always write, keyed by the captured chat. The peer has the
-    // bundle for callForDmKey regardless of where the user is now.
-    await markHandshakePublished(userAddress, callForDmKey, storageKeyRef.current)
+    // Disk: always write, keyed by the captured (wallet, chat, storageKey)
+    // triple. Reading storageKeyRef.current LIVE here would be wrong if
+    // the user has switched wallets — see the comment above.
+    await markHandshakePublished(callForUserAddress, callForDmKey, callForStorageKey)
   }, [dmKey, userAddress])
 
   // Expose to non-React callers via the module-level registry.

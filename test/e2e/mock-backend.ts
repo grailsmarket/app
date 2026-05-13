@@ -160,38 +160,69 @@ export async function installMockBackend(
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      // The Next.js route returns success: true + a token; the wrapper
-      // route also sets a httpOnly cookie, but in dev mode httpOnly is
-      // off (NODE_ENV !== 'production') so document.cookie can see it.
-      // We set a non-httpOnly cookie via Set-Cookie so authFetch can read
-      // it back regardless of the prod-flag.
+      // In dev mode (httpOnly: process.env.NODE_ENV === 'production' from
+      // the Next.js verify route), the token cookie is set with httpOnly
+      // off, so document.cookie can read it. We set a non-httpOnly cookie
+      // via Set-Cookie here so authFetch can pick it up regardless of
+      // NODE_ENV at test time.
       headers: {
         'Set-Cookie': `token=${FAKE_TOKEN}; Path=/; SameSite=Lax`,
       },
+      // The client (src/api/siwe/verifySignature.ts) reads
+      // `(await response.json()).data` — i.e. it expects the verify
+      // payload to be wrapped under a top-level `data` key. The earlier
+      // version of this mock returned the fields flat, which made the
+      // client receive `undefined`, the SIWE flow silently fail, and
+      // the dApp stayed parked on the "Sign in" screen. Wrap under data.
       body: JSON.stringify({
         success: true,
-        token: FAKE_TOKEN,
-        user: {
-          id: USER_USER_ID,
-          address: opts.userAddress,
-          email: null,
-          emailVerified: false,
-          telegram: null,
-          discord: null,
-          createdAt: isoNow(),
-          lastSignIn: isoNow(),
-          minOfferThreshold: null,
-          notifyOnListingSold: true,
-          notifyOnOfferReceived: true,
-          notifyOnCommentReceived: true,
+        data: {
+          success: true,
+          token: FAKE_TOKEN,
+          user: {
+            id: USER_USER_ID,
+            address: opts.userAddress,
+            email: null,
+            emailVerified: false,
+            telegram: null,
+            discord: null,
+            createdAt: isoNow(),
+            lastSignIn: isoNow(),
+            minOfferThreshold: null,
+            notifyOnListingSold: true,
+            notifyOnOfferReceived: true,
+            notifyOnCommentReceived: true,
+          },
         },
       }),
     })
   })
 
   // --- Grails chat REST API (called directly from authFetch) ---
+  //
+  // Playwright evaluates route handlers in REVERSE order of registration
+  // (LIFO) and stops at the first handler that calls route.fulfill() / abort()
+  // / continue(). To keep the catch-all as a true fallback, we register it
+  // FIRST here — that way the specific handlers below (registered later)
+  // are tried first, and only requests that match nothing else reach the
+  // catch-all. The earlier ordering (catch-all last) made it intercept every
+  // request before the specific handlers had a chance, returning
+  // { success: true, data: null } for /chats, /chats/:id, /messages, etc.,
+  // which the dApp's React Query layer then read as "no chats, no messages."
 
   const apiBase = /https:\/\/api\.grails\.app\/api\/v1/
+
+  // Catch-all for any grails.app API call that doesn't match a specific
+  // handler. Returns an empty success so unmodeled endpoints don't leak
+  // real network attempts and keep the test hermetic. REGISTERED FIRST so
+  // it's evaluated LAST in Playwright's LIFO matcher order.
+  await page.route(new RegExp(`${apiBase.source}/.*`), async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, data: null }),
+    })
+  })
 
   // Auth status check.
   await page.route(new RegExp(`${apiBase.source}/auth/check$`), async (route) => {
@@ -343,16 +374,6 @@ export async function installMockBackend(
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ success: true, data: {} }),
-    })
-  })
-
-  // Catch-all for any other grails.app API call — return an empty success
-  // so we don't leak real network attempts and so the test stays hermetic.
-  await page.route(new RegExp(`${apiBase.source}/.*`), async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ success: true, data: null }),
     })
   })
 

@@ -31,7 +31,7 @@ const generateTraces = (): Trace[] => {
       const endX = startX + side
       const endY = startY - up1 - up2
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${startX.toFixed(1)} ${(startY - up1).toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
-      traces.push({ d, delay: i * 0.12, duration: 1.8 + Math.random() * 1.4, endX, endY })
+      traces.push({ d, delay: i * 0.2, duration: 2.5 + Math.random() * 2, endX, endY })
     }
   }
 
@@ -46,7 +46,7 @@ const generateTraces = (): Trace[] => {
       const endX = startX + side
       const endY = startY + down1 + down2
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${startX.toFixed(1)} ${(startY + down1).toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
-      traces.push({ d, delay: i * 0.12 + 0.5, duration: 1.8 + Math.random() * 1.4, endX, endY })
+      traces.push({ d, delay: i * 0.2 + 0.5, duration: 2.5 + Math.random() * 2, endX, endY })
     }
   }
 
@@ -69,7 +69,7 @@ const generateTraces = (): Trace[] => {
       const endY = mid2Y
 
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${mid1X.toFixed(1)} ${mid1Y.toFixed(1)} L ${mid2X.toFixed(1)} ${mid2Y.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
-      traces.push({ d, delay: i * 0.14 + 1.0, duration: 1.8 + Math.random() * 1.4, endX, endY })
+      traces.push({ d, delay: i * 0.2 + 1.0, duration: 2.5 + Math.random() * 2, endX, endY })
     }
   }
 
@@ -84,7 +84,7 @@ const generateTraces = (): Trace[] => {
       const endY = startY + side
       const endX = startX + right1 + right2
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${(startX + right1).toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
-      traces.push({ d, delay: i * 0.14 + 1.5, duration: 1.8 + Math.random() * 1.4, endX, endY })
+      traces.push({ d, delay: i * 0.2 + 1.5, duration: 2.5 + Math.random() * 2, endX, endY })
     }
   }
 

@@ -232,7 +232,7 @@ export const fetchDomains = async ({
     })
 
     const fetchFunction = isAuthenticated ? authFetch : fetch
-    const endpoint = AISearchEnabled && search.length > 2 ? 'ai/search/semantic' : 'search'
+    const endpoint = AISearchEnabled && search.length > 2 ? 'ai/search/related' : 'search'
 
     const res = await fetchFunction(`${API_URL}/${endpoint}?${paramString}`, {
       method: 'GET',

@@ -45,8 +45,8 @@ next-env.d.ts
 /public/olm.wasm
 /public/olm.js
 
-# Synpress / Playwright artifacts
+# Defensive: dev machines that ran an earlier Synpress-based test setup
+# (removed from this branch) may still have a .cache-synpress directory
+# from MetaMask extension downloads. Keep it ignored so it can't end up
+# tracked accidentally.
 .cache-synpress
-/test/e2e/test-results
-/playwright-report
-/test-results

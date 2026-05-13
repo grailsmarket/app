@@ -13,16 +13,12 @@ const eslintConfig = [
       'node_modules/*',
       '.next/*',
       '.next-env.d.ts',
-      // Synpress + Playwright test artifacts. The CLI unpacks MetaMask
-      // sources under .cache-synpress (anywhere — see .gitignore), and
-      // Playwright drops reports under playwright-report / test-results.
-      // Linting these would flood the report with thousands of bundled-JS
-      // errors that aren't ours to fix.
+      // Defensive: dev machines that ran an earlier Synpress-based test
+      // setup may still have a .cache-synpress directory holding MetaMask's
+      // bundled JS. Linting those would flood the report with errors that
+      // aren't ours to fix.
       '.cache-synpress/**',
       '**/.cache-synpress/**',
-      'playwright-report/**',
-      'test-results/**',
-      'test/e2e/test-results/**',
     ],
   },
   { languageOptions: { globals: globals.browser } },

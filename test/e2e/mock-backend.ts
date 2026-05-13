@@ -398,19 +398,38 @@ export async function installMockBackend(
     })
   })
 
-  // Quiet third-party noise from the homepage. Not strictly required for
-  // correctness — these endpoints don't affect the chat flow — but
-  // unmocked they fail loudly in the test console and slow down the
-  // test's network-idle wait while they retry.
+  // Redirect Alchemy + QuickNode RPC calls to public, key-less endpoints.
   //
-  // Alchemy mainnet RPC (price feed via Chainlink readContract). The
-  // dApp's NEXT_PUBLIC_MAINNET_ALCHEMY_ID isn't set in test, so the URL
-  // is "/v2/undefined" and Alchemy returns text-not-JSON. Abort instead
-  // so getEtherPrice's catch path swallows it cleanly.
-  await page.route(/eth-mainnet\.g\.alchemy\.com/, (route) => route.abort())
-  await page.route(/optimism\.g\.alchemy\.com/, (route) => route.abort())
-  await page.route(/base-mainnet\.g\.alchemy\.com/, (route) => route.abort())
-  await page.route(/quiknode\.pro/, (route) => route.abort())
+  // Why: the dApp's NEXT_PUBLIC_*_ALCHEMY_ID / NEXT_PUBLIC_QUICKNODE_ID env
+  // vars aren't set in test, so the URLs include literal "undefined" path
+  // segments and the endpoints return HTML "Must be authenticated" pages.
+  // wagmi has a llamarpc/optimism.io/base.org fallback chain for chain
+  // reads, but `src/utils/web3/getEtherPrice.ts` creates its own client
+  // with no fallback and crashes on the Alchemy 401. Routing the request
+  // to publicnode.com gives every caller a working RPC — same JSON-RPC
+  // shape, no API key required.
+  //
+  // `route.continue({ url })` rewrites the request URL in the browser's
+  // network layer; method, headers, and POST body are preserved. The
+  // publicnode endpoints all serve CORS with `Allow-Origin: *` so the
+  // browser accepts the response.
+  await page.route(/eth-mainnet\.g\.alchemy\.com/, (route) =>
+    route.continue({ url: 'https://ethereum-rpc.publicnode.com' }),
+  )
+  await page.route(/opt-mainnet\.g\.alchemy\.com/, (route) =>
+    route.continue({ url: 'https://optimism-rpc.publicnode.com' }),
+  )
+  await page.route(/base-mainnet\.g\.alchemy\.com/, (route) =>
+    route.continue({ url: 'https://base-rpc.publicnode.com' }),
+  )
+  // QuickNode subdomains encode the chain in the host. We could pattern-
+  // match each, but the dApp only uses them as a second-tier fallback
+  // after Alchemy — Alchemy is already redirected above, so QuickNode
+  // shouldn't fire. Redirect ETH-mainnet QuickNode requests to publicnode
+  // as a safety net for anything that does slip through.
+  await page.route(/quiknode\.pro/, (route) =>
+    route.continue({ url: 'https://ethereum-rpc.publicnode.com' }),
+  )
 
   // Block any WebSocket attempt — the bug is in the REST/cache-scan path,
   // and live WS events would just add nondeterminism. Aborting the request

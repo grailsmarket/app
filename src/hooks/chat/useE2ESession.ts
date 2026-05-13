@@ -707,41 +707,42 @@ export function useE2ESession(
   // Persist that we've broadcast our handshake into this chat at least once,
   // and reflect it in state for the banner. Called by republishOurHandshake's
   // success path — AFTER the sendMessage POST has succeeded, so we know the
-  // peer has the bundle.
+  // peer has the bundle for the dmKey captured here.
   //
-  // In-memory state flips FIRST, IDB write second. If the IDB persist throws
-  // (quota exhausted, private-window quirks, transient errors), the running
-  // session still sees hasPublishedForChat=true and won't republish on this
-  // mount. Disk and memory diverge until the next refresh, at which point
-  // the missing on-disk flag causes one extra republish — better than the
-  // reverse ordering, where both this session AND every subsequent session
-  // would republish until the IDB error clears.
+  // The two writes have DIFFERENT scope requirements:
   //
-  // Both writes are guarded by a chat-identity check: if the user has
-  // switched chats between the call starting and either write happening,
-  // we bail. The closure's dmKey is the chat this call was started FOR;
-  // dmKeyRef.current is the chat the hook is rendering NOW. If they
-  // differ, the in-memory setState would set the WRONG chat's flag (the
-  // hook instance is reused across chat switches — same setHasPublishedForChat
-  // setter, different render). The disk write would write the correct
-  // (closure-captured) chat's flag, but that's already wasted work since
-  // we're no longer in that chat — and worse, the in-memory flag for the
-  // CURRENT chat would now be true even if its on-disk flag is false,
-  // suppressing that chat's legitimate first publish.
+  //   - Disk write: always runs, keyed by the dmKey captured at call time.
+  //     The peer has our bundle for THAT chat; the on-disk flag for THAT
+  //     chat must reflect it, regardless of whether the user has since
+  //     switched to another chat. Skipping the disk write would leave the
+  //     original chat's flag false, and the next visit to that chat —
+  //     once the handshake row is paginated past the visible 50 — would
+  //     auto-publish a duplicate via the sawOwnHandshake-false fallback.
   //
-  // The replay isn't a leak when the chat IS still active: republishOurHandshake
-  // is inflight-guarded and autoPublishedChatsRef latches one attempt per
-  // mount. The peer's side sees a duplicate handshake row but
-  // consumePeerBundle is idempotent on peer.identity, so the duplicate is
-  // observably a no-op.
+  //   - In-memory setState: gated on `dmKeyRef.current === callForDmKey`.
+  //     setHasPublishedForChat operates on the hook's current React state,
+  //     which is shared across chat switches (same banner instance, dmKey
+  //     prop changes). If the user has switched chats between the call
+  //     starting and now, flipping the in-memory flag would corrupt the
+  //     NEW chat's published-state and suppress its legitimate first
+  //     publish.
+  //
+  // In-memory flip happens BEFORE the disk write so the running mount
+  // correctly suppresses republish even if the IDB persist throws (quota,
+  // private-window, transient). On persist failure the running session's
+  // memory still reads true; only the next refresh would see the missing
+  // on-disk flag and retry — observably a no-op on the peer side
+  // (consumePeerBundle is idempotent on peer.identity).
   const markOwnHandshakePublished = useCallback(async (): Promise<void> => {
     if (!storageKeyRef.current || !dmKey || !userAddress) return
     const callForDmKey = dmKey
-    // Skip both writes if we're no longer on this chat. The disk write
-    // would be wasted (peer already has the bundle from sendMessage), and
-    // the in-memory write would corrupt the current chat's flag.
-    if (dmKeyRef.current !== callForDmKey) return
-    setHasPublishedForChat(true)
+    // In-memory: only flip if we're still rendering the chat this call
+    // was for. Otherwise we'd write the wrong chat's flag.
+    if (dmKeyRef.current === callForDmKey) {
+      setHasPublishedForChat(true)
+    }
+    // Disk: always write, keyed by the captured chat. The peer has the
+    // bundle for callForDmKey regardless of where the user is now.
     await markHandshakePublished(userAddress, callForDmKey, storageKeyRef.current)
   }, [dmKey, userAddress])
 

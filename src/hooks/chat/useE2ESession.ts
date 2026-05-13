@@ -693,14 +693,26 @@ export function useE2ESession(
   }, [])
 
   // Persist that we've broadcast our handshake into this chat at least once,
-  // and reflect it in state for the banner. Idempotent — callers (the banner's
-  // republishOurHandshake success path) invoke after every successful send;
-  // the disk write is a single-byte put and the state setter is a no-op when
-  // already true.
+  // and reflect it in state for the banner. Called by republishOurHandshake's
+  // success path — AFTER the sendMessage POST has succeeded, so we know the
+  // peer has the bundle.
+  //
+  // In-memory state flips FIRST, IDB write second. If the IDB persist throws
+  // (quota exhausted, private-window quirks, transient errors), the running
+  // session still sees hasPublishedForChat=true and won't republish on this
+  // mount. Disk and memory diverge until the next refresh, at which point
+  // the missing on-disk flag causes one extra republish — better than the
+  // reverse ordering, where both this session AND every subsequent session
+  // would republish until the IDB error clears.
+  //
+  // The replay isn't a leak: republishOurHandshake is inflight-guarded and
+  // autoPublishedChatsRef latches one attempt per mount. The peer's side
+  // sees a duplicate handshake row but consumePeerBundle is idempotent on
+  // peer.identity, so the duplicate is observably a no-op.
   const markOwnHandshakePublished = useCallback(async (): Promise<void> => {
     if (!storageKeyRef.current || !dmKey || !userAddress) return
-    await markHandshakePublished(userAddress, dmKey, storageKeyRef.current)
     setHasPublishedForChat(true)
+    await markHandshakePublished(userAddress, dmKey, storageKeyRef.current)
   }, [dmKey, userAddress])
 
   // Expose to non-React callers via the module-level registry.

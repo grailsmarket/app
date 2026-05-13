@@ -97,6 +97,18 @@ export function useE2ESession(
   // Both go away if the gate is "does the loaded dmKey match the dmKey I'm
   // rendering" — stale values literally cannot pass.
   const [restoredForDmKey, setRestoredForDmKey] = useState<string | null>(null)
+  // Live mirror of the dmKey prop. Async callbacks (markOwnHandshakePublished
+  // notably) capture the dmKey from their closure at creation time, but the
+  // hook instance can be re-rendered for a different chat before the
+  // callback's IDB write resolves. Comparing the captured dmKey against
+  // dmKeyRef.current at state-setting time tells us whether the user is
+  // still on the chat we started for — if not, we skip the in-memory
+  // setState (the disk write still uses the captured dmKey, so the right
+  // chat's flag lands on disk; only the in-memory mirror needs the guard).
+  const dmKeyRef = useRef<string | null>(dmKey)
+  useEffect(() => {
+    dmKeyRef.current = dmKey
+  }, [dmKey])
   // Up to TWO Olm sessions per peer device, one per direction:
   //   - outbound: created when we consume the peer's bundle. Used to
   //     encrypt our own messages on the channel WE initiated, and to
@@ -705,14 +717,32 @@ export function useE2ESession(
   // reverse ordering, where both this session AND every subsequent session
   // would republish until the IDB error clears.
   //
-  // The replay isn't a leak: republishOurHandshake is inflight-guarded and
-  // autoPublishedChatsRef latches one attempt per mount. The peer's side
-  // sees a duplicate handshake row but consumePeerBundle is idempotent on
-  // peer.identity, so the duplicate is observably a no-op.
+  // Both writes are guarded by a chat-identity check: if the user has
+  // switched chats between the call starting and either write happening,
+  // we bail. The closure's dmKey is the chat this call was started FOR;
+  // dmKeyRef.current is the chat the hook is rendering NOW. If they
+  // differ, the in-memory setState would set the WRONG chat's flag (the
+  // hook instance is reused across chat switches — same setHasPublishedForChat
+  // setter, different render). The disk write would write the correct
+  // (closure-captured) chat's flag, but that's already wasted work since
+  // we're no longer in that chat — and worse, the in-memory flag for the
+  // CURRENT chat would now be true even if its on-disk flag is false,
+  // suppressing that chat's legitimate first publish.
+  //
+  // The replay isn't a leak when the chat IS still active: republishOurHandshake
+  // is inflight-guarded and autoPublishedChatsRef latches one attempt per
+  // mount. The peer's side sees a duplicate handshake row but
+  // consumePeerBundle is idempotent on peer.identity, so the duplicate is
+  // observably a no-op.
   const markOwnHandshakePublished = useCallback(async (): Promise<void> => {
     if (!storageKeyRef.current || !dmKey || !userAddress) return
+    const callForDmKey = dmKey
+    // Skip both writes if we're no longer on this chat. The disk write
+    // would be wasted (peer already has the bundle from sendMessage), and
+    // the in-memory write would corrupt the current chat's flag.
+    if (dmKeyRef.current !== callForDmKey) return
     setHasPublishedForChat(true)
-    await markHandshakePublished(userAddress, dmKey, storageKeyRef.current)
+    await markHandshakePublished(userAddress, callForDmKey, storageKeyRef.current)
   }, [dmKey, userAddress])
 
   // Expose to non-React callers via the module-level registry.

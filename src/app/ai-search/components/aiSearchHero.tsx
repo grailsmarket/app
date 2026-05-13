@@ -51,12 +51,12 @@ const AiSearchHero: React.FC = () => {
   }
 
   return (
-    <section className="bg-background relative flex w-full flex-col items-center justify-center overflow-hidden border-b-2 border-tertiary px-4 py-12 md:py-16 lg:py-20">
-      <div className="absolute inset-0 z-0 opacity-60">
+    <section className="bg-background relative flex w-full flex-col justify-center overflow-hidden border-b-2 border-tertiary px-4 py-12 md:py-16 lg:py-20">
+      <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-0 w-full opacity-30 md:w-3/5 md:opacity-50 lg:w-1/2">
         <AiChipAnimation />
       </div>
 
-      <div className="fadeIn relative z-10 flex w-full max-w-2xl flex-col items-center gap-5 text-center">
+      <div className="fadeIn relative z-10 flex w-full flex-col items-start gap-5 text-left">
         <h1 className="font-sedan-sc text-primary text-4xl md:text-5xl lg:text-6xl">
           Grails AI
         </h1>

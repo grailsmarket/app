@@ -85,12 +85,37 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
   ): Promise<void> {
     await page.goto('/?e2e=1')
 
+    // Re-mock as MetaMask so RainbowKit sees window.ethereum.isMetaMask=true
+    // and lists it under the "MetaMask" tile in the connect modal (the
+    // fixture's importWallet() also mocks as 'metamask', so this is
+    // belt-and-suspenders — explicit because it documents the wallet
+    // identity the modal click below relies on).
+    await ethereumWalletMock.connectToDapp('metamask')
+
     // RainbowKit's modal trigger — ethereum-identity-kit's SignInButton
-    // when disconnected. The visible label varies by package version but
-    // the button has a stable accessible name containing "Sign in".
+    // when disconnected. The visible label is "SIGN IN" (the button's
+    // accessible name is the same).
     await page.getByRole('button', { name: /sign in/i }).click()
-    // Wallet-mock auto-handles eth_requestAccounts when RainbowKit asks.
-    await ethereumWalletMock.connectToDapp()
+
+    // RainbowKit modal opens listing every supported connector. We need to
+    // CLICK the MetaMask tile inside the modal — connectToDapp() only
+    // re-mocks window.ethereum; it does not interact with the UI, so
+    // without this click the modal sits open forever and the SIWE flow
+    // never starts.
+    //
+    // The modal renders in a portal at the document root. Scope the lookup
+    // to the visible dialog so we don't accidentally match a sibling
+    // element with "MetaMask" text elsewhere on the page.
+    const connectModal = page.getByRole('dialog')
+    await connectModal.getByRole('button', { name: 'MetaMask' }).click()
+
+    // Wagmi now requests eth_requestAccounts → wallet-mock returns the
+    // mocked account → RainbowKit closes the modal →
+    // ethereum-identity-kit's autoSignInAfterConnection fires
+    // personal_sign → wallet-mock auto-signs → /api/auth/verify (mocked)
+    // returns the JWT cookie → app authenticated. networkidle is the
+    // cleanest signal that all of this has settled.
+    await page.waitForLoadState('networkidle')
 
     await openChatAndUnlock(page)
 

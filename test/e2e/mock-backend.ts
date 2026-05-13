@@ -377,6 +377,41 @@ export async function installMockBackend(
     })
   })
 
+  // Homepage search ("/search?...") — the dApp's landing-page query for
+  // marketplace domains. The bug we're testing isn't in this path, but the
+  // homepage renders before we navigate into the chat sidebar, and an
+  // unmocked /search would either hit the catch-all (data: null → client
+  // throws on json.data.names) or the real backend. Return an empty
+  // result set so the homepage renders quietly.
+  await page.route(new RegExp(`${apiBase.source}/search(\\?.*)?$`), async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          names: [],
+          results: [],
+          pagination: { page: 1, limit: 0, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+        },
+      }),
+    })
+  })
+
+  // Quiet third-party noise from the homepage. Not strictly required for
+  // correctness — these endpoints don't affect the chat flow — but
+  // unmocked they fail loudly in the test console and slow down the
+  // test's network-idle wait while they retry.
+  //
+  // Alchemy mainnet RPC (price feed via Chainlink readContract). The
+  // dApp's NEXT_PUBLIC_MAINNET_ALCHEMY_ID isn't set in test, so the URL
+  // is "/v2/undefined" and Alchemy returns text-not-JSON. Abort instead
+  // so getEtherPrice's catch path swallows it cleanly.
+  await page.route(/eth-mainnet\.g\.alchemy\.com/, (route) => route.abort())
+  await page.route(/optimism\.g\.alchemy\.com/, (route) => route.abort())
+  await page.route(/base-mainnet\.g\.alchemy\.com/, (route) => route.abort())
+  await page.route(/quiknode\.pro/, (route) => route.abort())
+
   // Block any WebSocket attempt — the bug is in the REST/cache-scan path,
   // and live WS events would just add nondeterminism. Aborting the request
   // is fine: the app's chat socket failure path is silent.

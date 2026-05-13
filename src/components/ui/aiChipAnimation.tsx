@@ -12,7 +12,7 @@ interface Trace {
 
 const generateTraces = (): Trace[] => {
   const traces: Trace[] = []
-  const cx = 400
+  const cx = 600
   const cy = 200
   const half = 50
   const chipLeft = cx - half
@@ -25,7 +25,7 @@ const generateTraces = (): Trace[] => {
     for (let i = 0; i < count; i++) {
       const startX = chipLeft + ((i + 0.5) / count) * (half * 2)
       const startY = chipTop
-      const up = 50 + Math.random() * 90
+      const up = 20 + Math.random() * 30
       const endX = startX
       const endY = startY - up
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
@@ -38,7 +38,7 @@ const generateTraces = (): Trace[] => {
     for (let i = 0; i < count; i++) {
       const startX = chipLeft + ((i + 0.5) / count) * (half * 2)
       const startY = chipBottom
-      const down = 50 + Math.random() * 90
+      const down = 20 + Math.random() * 30
       const endX = startX
       const endY = startY + down
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
@@ -74,7 +74,7 @@ const generateTraces = (): Trace[] => {
     for (let i = 0; i < count; i++) {
       const startX = chipRight
       const startY = chipTop + ((i + 0.5) / count) * (half * 2)
-      const right = 50 + Math.random() * 90
+      const right = 20 + Math.random() * 30
       const endX = startX + right
       const endY = startY
       const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
@@ -92,7 +92,7 @@ const generateTraces = (): Trace[] => {
 
 const AiChipAnimation: React.FC = () => {
   const traces = useMemo(() => generateTraces(), [])
-  const cx = 400
+  const cx = 600
   const cy = 200
   const half = 50
 
@@ -100,7 +100,7 @@ const AiChipAnimation: React.FC = () => {
     <svg
       viewBox="0 0 800 400"
       className="absolute inset-0 h-full w-full"
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMaxYMid meet"
       aria-hidden="true"
     >
       <defs>
@@ -146,16 +146,6 @@ const AiChipAnimation: React.FC = () => {
               animation: `circuitPulse ${trace.duration}s linear ${trace.delay}s infinite`,
             }}
           />
-          <circle
-            cx={trace.endX}
-            cy={trace.endY}
-            r="1.8"
-            fill="#ffdfc0"
-            style={{
-              opacity: 0,
-              animation: `nodeGlow ${trace.duration}s linear ${trace.delay + trace.duration * 0.35}s infinite`,
-            }}
-          />
         </g>
       ))}
 
@@ -186,26 +176,7 @@ const AiChipAnimation: React.FC = () => {
         AI
       </text>
 
-      <circle
-        cx={cx}
-        cy={cy}
-        r="55"
-        fill="none"
-        stroke="#ffdfc0"
-        strokeWidth="0.8"
-        strokeOpacity="0"
-        style={{ animation: 'centralPulse 3.5s ease-out infinite' }}
-      />
-      <circle
-        cx={cx}
-        cy={cy}
-        r="75"
-        fill="none"
-        stroke="#ffdfc0"
-        strokeWidth="0.5"
-        strokeOpacity="0"
-        style={{ animation: 'centralPulse 3.5s ease-out 1.1s infinite' }}
-      />
+
     </svg>
   )
 }

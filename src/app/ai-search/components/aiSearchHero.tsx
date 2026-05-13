@@ -52,7 +52,7 @@ const AiSearchHero: React.FC = () => {
 
   return (
     <section className="bg-background relative flex w-full flex-col justify-center overflow-hidden border-b-2 border-tertiary px-4 py-12 md:py-16 lg:py-20">
-      <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-0 w-full opacity-30 md:w-3/5 md:opacity-50 lg:w-1/2">
+      <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-0 w-full opacity-20 md:w-1/2 md:opacity-40 lg:w-2/5">
         <AiChipAnimation />
       </div>
 

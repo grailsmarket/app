@@ -83,10 +83,36 @@ async function wipeBrowserStorage(page: import('@playwright/test').Page) {
   })
 }
 
+// Same fixed token the mock backend's /api/auth/verify Set-Cookie returns.
+// Pre-setting this via context.addCookies guards against useAuthStatus's
+// verify() running `document.cookie = 'token=...; SameSite=None; Secure'` —
+// the Secure attribute is rejected on http://localhost, and depending on
+// browser/version that rejection can briefly clear the existing cookie,
+// triggering a refetch that reads no token and flips authStatus to
+// 'unauthenticated'. The Messages button (gated on authStatus) then
+// unmounts mid-test, even though it was visible moments earlier. Planting
+// the cookie at the context level means even if the document.cookie write
+// transiently nukes it, the next query refetch finds it again via the
+// browser's cookie jar.
+const E2E_FAKE_TOKEN = 'mock-token-grails-test'
+
 test.describe('E2E handshake: refresh + unlock must not republish', () => {
   test.beforeEach(async ({ context, page }) => {
     await context.clearCookies()
     await wipeBrowserStorage(page)
+    // Plant the token cookie at the context level AFTER the storage wipe
+    // (which navigates to /?e2e=1). The cookie has to live on whatever
+    // origin the dev server serves on — pick it up from the page URL.
+    const url = new URL(page.url())
+    await context.addCookies([
+      {
+        name: 'token',
+        value: E2E_FAKE_TOKEN,
+        domain: url.hostname,
+        path: '/',
+        sameSite: 'Lax',
+      },
+    ])
   })
 
   /**

@@ -2,7 +2,7 @@ import type { NOfManyOfferResponse } from '@/lib/seaport/bulkTypes'
 
 interface CreateNOfManyOfferParams {
   buyerAddress: string
-  offerAmountWei: string
+  offerAmountsWei: string[]
   tokenIds: string[]
   targetCount: number
   merkleRoot: string

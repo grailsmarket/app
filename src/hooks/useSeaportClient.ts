@@ -547,7 +547,7 @@ export function useSeaportClient() {
   const createNOfManyOffer = useCallback(
     async (params: {
       domains: MarketplaceDomainType[]
-      price: number
+      prices: number[]
       targetCount: number
       currency: 'WETH' | 'USDC'
       expiryDate: number
@@ -564,7 +564,7 @@ export function useSeaportClient() {
       try {
         const decimals = TOKEN_DECIMALS[params.currency]
         const currencyAddress = TOKEN_ADDRESSES[params.currency]
-        const offerAmountWei = BigInt(Math.floor(params.price * Math.pow(10, decimals))).toString()
+        const offerAmountsWei = params.prices.map((p) => BigInt(Math.floor(p * Math.pow(10, decimals))).toString())
 
         const tokenIds = params.domains.map((d) => d.token_id)
 
@@ -575,7 +575,7 @@ export function useSeaportClient() {
         const builder = new BulkOfferOrderBuilder()
         const { orders, merkleRoot } = builder.buildNOfManyOfferOrders({
           tokenIds,
-          offerAmountWei,
+          offerAmountsWei,
           offerer: address,
           count: params.targetCount,
           durationDays,
@@ -610,7 +610,7 @@ export function useSeaportClient() {
         // 6. Submit to backend
         const result = await createNOfManyOfferApi({
           buyerAddress: address.toLowerCase(),
-          offerAmountWei,
+          offerAmountsWei,
           tokenIds,
           targetCount: params.targetCount,
           merkleRoot,

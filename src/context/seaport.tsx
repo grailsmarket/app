@@ -50,7 +50,7 @@ type SeaportContextValue = {
   }) => Promise<BulkOfferResponse>
   createNOfManyOffer: (params: {
     domains: MarketplaceDomainType[]
-    price: number
+    prices: number[]
     targetCount: number
     currency: 'WETH' | 'USDC'
     expiryDate: number

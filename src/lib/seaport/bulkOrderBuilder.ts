@@ -113,7 +113,7 @@ export class BulkOfferOrderBuilder {
    */
   buildNOfManyOfferOrders(params: {
     tokenIds: string[]
-    offerAmountWei: string
+    offerAmountsWei: string[]
     offerer: string
     count: number
     durationDays?: number
@@ -128,7 +128,7 @@ export class BulkOfferOrderBuilder {
   } {
     const {
       tokenIds,
-      offerAmountWei,
+      offerAmountsWei,
       offerer,
       count,
       durationDays = 7,
@@ -168,8 +168,8 @@ export class BulkOfferOrderBuilder {
           itemType: ItemType.ERC20,
           token,
           identifierOrCriteria: '0',
-          startAmount: offerAmountWei,
-          endAmount: offerAmountWei,
+          startAmount: offerAmountsWei[i],
+          endAmount: offerAmountsWei[i],
         },
       ]
 

@@ -169,59 +169,67 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // accessible name is the same).
     await page.getByRole('button', { name: /sign in/i }).click()
 
-    // RainbowKit modal opens listing every supported connector. We need to
-    // CLICK the MetaMask tile inside the modal — connectToDapp() only
-    // re-mocks window.ethereum; it does not interact with the UI, so
-    // without this click the modal sits open forever and the SIWE flow
-    // never starts.
+    // Two paths after the Sign In click:
     //
-    // RainbowKit's connect modal lists every supported connector. Clicking
-    // the MetaMask tile triggers wagmi.connect → eth_requestAccounts
-    // (instant via wallet-mock) → RainbowKit transitions the modal from
-    // "list" to "connecting" then "success", detaching the tile element
-    // mid-animation. Two failure modes we have to handle together:
+    //   A. RainbowKit's connect modal opens, we click the MetaMask tile,
+    //      wagmi.connect runs → eth_requestAccounts (instant via wallet-
+    //      mock) → modal closes → ethereum-identity-kit auto-fires
+    //      personal_sign → SIWE completes → authenticated.
     //
-    //   1. Stability: Playwright's "stable for 100ms" actionability check
-    //      keeps retrying against a freshly-rendered or detached element,
-    //      burning the full test timeout. Bypass with force:true.
-    //   2. Viewport: the wallet list overflows the modal and MetaMask sits
-    //      below the visible portion on the default 1280x720 viewport.
-    //      force:true skips actionability but does NOT scroll — the click
-    //      coordinates resolve to a point off-screen and the event never
-    //      dispatches. Call scrollIntoViewIfNeeded() first.
+    //   B. wagmi auto-reconnects from window.ethereum.eth_accounts (the
+    //      wallet-mock has the account loaded by the time the modal
+    //      would render) and SIWE auto-fires WITHOUT the modal ever
+    //      fully opening. The modal flashes in the DOM and detaches.
     //
-    // noWaitAfter prevents Playwright from waiting for a navigation that
-    // never happens (the modal close is internal, not a route change).
+    // Either way, the canonical "we're authenticated" signal is the
+    // navbar Messages button (gated on authStatus === 'authenticated'
+    // AND userAddress in src/components/navigation/chats.tsx). Wait
+    // for it directly rather than leaning on networkidle, which fires
+    // before /api/users/me has even run and would hide downstream
+    // failures behind a confusing 120s timeout.
     //
-    // The modal renders in a portal at the document root; scope to the
-    // dialog role so we don't accidentally match "MetaMask" text from
-    // elsewhere on the page (e.g. a footer connector list).
-    const connectModal = page.getByRole('dialog')
-    const metamaskTile = connectModal.getByRole('button', { name: 'MetaMask' })
-    await metamaskTile.waitFor({ state: 'visible', timeout: 10_000 })
-    await metamaskTile.scrollIntoViewIfNeeded()
-    await metamaskTile.click({ force: true, noWaitAfter: true })
-
-    // Sequence after the modal click:
-    //   eth_requestAccounts (wallet-mock) → RainbowKit closes modal →
-    //   ethereum-identity-kit auto-fires personal_sign → wallet-mock
-    //   auto-signs → POST /api/auth/verify (mocked, sets token cookie) →
-    //   useAuthStatus refetches → GET /api/users/me (mocked) → authStatus
-    //   flips to 'authenticated' → the navbar's Messages button mounts.
-    //
-    // The Messages button is the canonical authenticated-state signal
-    // (it renders only when authStatus === 'authenticated' AND
-    // userAddress is set — see src/components/navigation/chats.tsx).
-    // Wait for it EXPLICITLY here rather than leaning on networkidle:
-    // networkidle resolves after 500ms of request silence, which fires
-    // long before /api/users/me has run when verify is mocked — and if
-    // /api/users/me ever fails, networkidle would resolve and the test
-    // would push on into openChatAndUnlock, only failing 120s later
-    // with a confusing "couldn't find Messages" message. Waiting on
-    // Messages directly makes the failure mode obvious.
-    await page
-      .getByRole('button', { name: 'Messages' })
+    // Race the two outcomes — whichever resolves first decides whether
+    // we need to click the modal at all. The previous fixed-order
+    // approach (waitFor tile → scrollIntoView → click) failed when path
+    // (B) detached the tile between the waitFor and the scroll: "Element
+    // is not attached to the DOM."
+    const messagesButton = page.getByRole('button', { name: 'Messages' })
+    const signedInPromise = messagesButton
       .waitFor({ state: 'visible', timeout: 30_000 })
+      .then(() => 'signed-in' as const)
+    const modalPromise = page
+      .getByRole('dialog')
+      .waitFor({ state: 'visible', timeout: 10_000 })
+      .then(() => 'modal' as const)
+      // If the modal never opens (path B), this rejects on timeout —
+      // catch so Promise.race doesn't reject on the modal arm and
+      // instead resolves with whatever the signed-in arm produces.
+      .catch(() => 'no-modal' as const)
+
+    const outcome = await Promise.race([signedInPromise, modalPromise])
+    if (outcome === 'modal') {
+      // Dispatch the click via page.evaluate — the click fires the
+      // moment the button is found in the DOM, with no Playwright
+      // locator-resolution retries that would burn cycles against a
+      // tile that detaches mid-animation. Equivalent to a no-
+      // actionability-check, no-scroll, no-wait-after click.
+      await page.evaluate(() => {
+        const dialog = document.querySelector<HTMLElement>('[role="dialog"]')
+        if (!dialog) return
+        for (const btn of Array.from(dialog.querySelectorAll<HTMLButtonElement>('button'))) {
+          if (btn.textContent?.trim() === 'MetaMask') {
+            btn.click()
+            return
+          }
+        }
+      })
+    }
+
+    // Whichever path we took, auth must complete here. signedInPromise
+    // is still pending if the modal arm won the race — awaiting it
+    // here is the single point that gates the rest of the test on
+    // the authenticated state.
+    await signedInPromise
 
     await openChatAndUnlock(page)
 

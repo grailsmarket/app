@@ -25,10 +25,12 @@ const generateTraces = (): Trace[] => {
     for (let i = 0; i < count; i++) {
       const startX = chipLeft + ((i + 0.5) / count) * (half * 2)
       const startY = chipTop
-      const up = 20 + Math.random() * 30
-      const endX = startX
-      const endY = startY - up - 30
-      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      const up1 = 20 + Math.random() * 30
+      const side = 1
+      const up2 = 15 + Math.random() * 35
+      const endX = startX + side
+      const endY = startY - up1 - up2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${startX.toFixed(1)} ${(startY - up1).toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
       traces.push({ d, delay: i * 0.12, duration: 1.8 + Math.random() * 1.4, endX, endY })
     }
   }
@@ -38,10 +40,12 @@ const generateTraces = (): Trace[] => {
     for (let i = 0; i < count; i++) {
       const startX = chipLeft + ((i + 0.5) / count) * (half * 2)
       const startY = chipBottom
-      const down = 20 + Math.random() * 30
-      const endX = startX
-      const endY = startY + down + 30
-      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      const down1 = 20 + Math.random() * 30
+      const side = 1
+      const down2 = 15 + Math.random() * 35
+      const endX = startX + side
+      const endY = startY + down1 + down2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${startX.toFixed(1)} ${(startY + down1).toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
       traces.push({ d, delay: i * 0.12 + 0.5, duration: 1.8 + Math.random() * 1.4, endX, endY })
     }
   }
@@ -74,10 +78,12 @@ const generateTraces = (): Trace[] => {
     for (let i = 0; i < count; i++) {
       const startX = chipRight
       const startY = chipTop + ((i + 0.5) / count) * (half * 2)
-      const right = 20 + Math.random() * 30
-      const endX = startX + right
-      const endY = startY
-      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
+      const right1 = 20 + Math.random() * 30
+      const side = 0.01
+      const right2 = 15 + Math.random() * 35
+      const endY = startY + side
+      const endX = startX + right1 + right2
+      const d = `M ${startX.toFixed(1)} ${startY.toFixed(1)} L ${(startX + right1).toFixed(1)} ${startY.toFixed(1)} L ${endX.toFixed(1)} ${endY.toFixed(1)}`
       traces.push({ d, delay: i * 0.14 + 1.5, duration: 1.8 + Math.random() * 1.4, endX, endY })
     }
   }

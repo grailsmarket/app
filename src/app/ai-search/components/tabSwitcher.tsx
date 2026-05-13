@@ -2,10 +2,8 @@
 
 import { cn } from '@/utils/tailwind'
 import React, { useEffect, useRef, useState } from 'react'
-import { Cross } from 'ethereum-identity-kit'
 import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
-import MagnifyingGlass from 'public/icons/search.svg'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeAiSearchTab, selectAiSearch } from '@/state/reducers/aiSearch/aiSearch'
 import { AI_SEARCH_TABS, AiSearchTabType } from '@/constants/domains/aiSearch/tabs'
@@ -13,10 +11,6 @@ import { useNavbar } from '@/context/navbar'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import DownloadButton from '@/components/ui/downloadButton'
 import ViewSelector from '@/components/domains/viewSelector'
-import GrailsAI from 'public/icons/grails-ai.svg'
-import Tooltip from '@/components/ui/tooltip'
-
-const SEARCH_DEBOUNCE_MS = 400
 
 const AiSearchTabSwitcher: React.FC = () => {
   const [mounted, setMounted] = useState(false)
@@ -26,39 +20,6 @@ const AiSearchTabSwitcher: React.FC = () => {
   const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
-
-  // Debounced search — mirrors the sidebar input's pattern (Filters/index.tsx:82-95).
-  // Local state is the source of truth once the user types; Redux syncs after debounce.
-  const [localSearch, setLocalSearch] = useState(selectors.filters.search || '')
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
-  const userHasTyped = useRef(false)
-
-  useEffect(() => {
-    if (!userHasTyped.current) {
-      setLocalSearch(selectors.filters.search || '')
-    }
-  }, [selectors.filters.search])
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [])
-
-  const handleSearchChange = (value: string) => {
-    userHasTyped.current = true
-    setLocalSearch(value)
-
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      dispatch(actions.setSearch(value))
-    }, SEARCH_DEBOUNCE_MS)
-  }
-
-  const clearSearch = () => {
-    setLocalSearch('')
-    handleSearchChange('')
-  }
 
   const setAiSearchTab = (tab: AiSearchTabType) => {
     dispatch(changeAiSearchTab(tab))
@@ -102,7 +63,7 @@ const AiSearchTabSwitcher: React.FC = () => {
         >
           <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
         </button>
-        <div className='group hover:bg-secondary border-primary/50 hover:border-primary/80 focus-within:border-primary/80 relative flex min-h-14 w-40 items-center justify-between gap-1.5 border-[2px] bg-transparent px-3 transition-all outline-none sm:h-10 sm:w-56 md:w-64'>
+        {/* <div className='group hover:bg-secondary border-primary/50 hover:border-primary/80 focus-within:border-primary/80 relative flex min-h-14 w-40 items-center justify-between gap-1.5 border-[2px] bg-transparent px-3 transition-all outline-none sm:h-10 sm:w-56 md:w-64'>
           <div className='absolute top-1/2 left-3 z-10 h-6 w-6 -translate-y-1/2'>
             <Tooltip label='Search with AI' position='bottom'>
               <Image src={GrailsAI} alt='Grails AI' width={20} height={20} className='h-6 w-6' />
@@ -135,7 +96,7 @@ const AiSearchTabSwitcher: React.FC = () => {
               className='opacity-40 transition-opacity group-focus-within:opacity-100! group-hover:opacity-70'
             />
           )}
-        </div>
+        </div> */}
 
         <div ref={containerRef} className='pl-lg relative flex h-10 gap-4'>
           {mounted && (

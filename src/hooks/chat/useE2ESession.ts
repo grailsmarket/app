@@ -109,6 +109,13 @@ export function useE2ESession(
   useEffect(() => {
     dmKeyRef.current = dmKey
   }, [dmKey])
+  // Same shape as dmKeyRef: a wallet switch mid-publish on the same chat
+  // (dmKey unchanged) would otherwise pass the dmKey-only gate and flip
+  // wallet B's in-memory `hasPublishedForChat` from wallet A's snapshot.
+  const userAddressRef = useRef<string | null>(userAddress)
+  useEffect(() => {
+    userAddressRef.current = userAddress
+  }, [userAddress])
   // Up to TWO Olm sessions per peer device, one per direction:
   //   - outbound: created when we consume the peer's bundle. Used to
   //     encrypt our own messages on the channel WE initiated, and to
@@ -407,7 +414,10 @@ export function useE2ESession(
         // In-memory: only flip if we're still rendering the chat this
         // publish was for. Otherwise we'd set the wrong chat's flag on
         // the shared hook state.
-        if (dmKeyRef.current === snapshotDmKey) {
+        if (
+          dmKeyRef.current === snapshotDmKey &&
+          userAddressRef.current === snapshotUserAddress
+        ) {
           setHasPublishedForChat(true)
         }
         // Disk: always write against the snapshot. Reading
@@ -791,7 +801,10 @@ export function useE2ESession(
     const callForStorageKey = storageKeyRef.current
     // In-memory: only flip if we're still rendering the chat this call
     // was for. Otherwise we'd write the wrong chat's flag.
-    if (dmKeyRef.current === callForDmKey) {
+    if (
+      dmKeyRef.current === callForDmKey &&
+      userAddressRef.current === callForUserAddress
+    ) {
       setHasPublishedForChat(true)
     }
     // Disk: always write, keyed by the captured (wallet, chat, storageKey)

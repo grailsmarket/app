@@ -171,10 +171,17 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
 
     // Two paths after the Sign In click:
     //
-    //   A. RainbowKit's connect modal opens, we click the MetaMask tile,
-    //      wagmi.connect runs → eth_requestAccounts (instant via wallet-
-    //      mock) → modal closes → ethereum-identity-kit auto-fires
-    //      personal_sign → SIWE completes → authenticated.
+    //   A. RainbowKit's connect modal opens. We click the "Browser Wallet"
+    //      tile — NOT the "MetaMask" tile. RainbowKit's MetaMask tile
+    //      uses the MetaMask SDK path which expects the real browser
+    //      extension and hangs at "Opening MetaMask... Confirm
+    //      connection in the extension" forever when only window.ethereum
+    //      is injected. Browser Wallet uses wagmi's generic injected()
+    //      connector which talks to window.ethereum directly — exactly
+    //      what the wallet-mock provides. → wagmi.connect →
+    //      eth_requestAccounts (instant via wallet-mock) → modal closes
+    //      → ethereum-identity-kit auto-fires personal_sign → SIWE
+    //      completes → authenticated.
     //
     //   B. wagmi auto-reconnects from window.ethereum.eth_accounts (the
     //      wallet-mock has the account loaded by the time the modal
@@ -189,10 +196,7 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     // failures behind a confusing 120s timeout.
     //
     // Race the two outcomes — whichever resolves first decides whether
-    // we need to click the modal at all. The previous fixed-order
-    // approach (waitFor tile → scrollIntoView → click) failed when path
-    // (B) detached the tile between the waitFor and the scroll: "Element
-    // is not attached to the DOM."
+    // we need to click the modal at all.
     const messagesButton = page.getByRole('button', { name: 'Messages' })
     const signedInPromise = messagesButton
       .waitFor({ state: 'visible', timeout: 30_000 })
@@ -213,11 +217,14 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
       // locator-resolution retries that would burn cycles against a
       // tile that detaches mid-animation. Equivalent to a no-
       // actionability-check, no-scroll, no-wait-after click.
+      //
+      // Click "Browser Wallet" (injected connector) — see comment
+      // above about why we avoid the "MetaMask" tile here.
       await page.evaluate(() => {
         const dialog = document.querySelector<HTMLElement>('[role="dialog"]')
         if (!dialog) return
         for (const btn of Array.from(dialog.querySelectorAll<HTMLButtonElement>('button'))) {
-          if (btn.textContent?.trim() === 'MetaMask') {
+          if (btn.textContent?.trim() === 'Browser Wallet') {
             btn.click()
             return
           }

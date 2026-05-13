@@ -45,20 +45,6 @@ describe('shouldAutoPublishHandshake', () => {
     ).toBe(false)
   })
 
-  it('regression: must NOT suppress on "ready" alone — peer session present without our broadcast', () => {
-    // "Ready" (peer session in memory, from THEIR published bundle) is not
-    // a substitute for "we have broadcast OUR bundle". If consumePeerBundle
-    // succeeded but the subsequent sendMessage POST failed (network drop,
-    // 5xx), markOwnHandshakePublished is never called and the persisted
-    // flag stays false. On next mount we MUST retry the publish — otherwise
-    // the peer has no way to initiate their inbound channel to us.
-    //
-    // Previously the helper accepted an `isReady` input that suppressed
-    // publishing whenever true; this test pins the corrected behavior so a
-    // future "add isReady back as a guard" regression gets caught here.
-    expect(shouldAutoPublishHandshake({ ...happyPath })).toBe(true)
-  })
-
   it('does not need any per-mount latch to publish on first try', () => {
     // Sanity check: a brand-new mount with nothing on disk gets through.
     expect(

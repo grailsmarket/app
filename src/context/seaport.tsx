@@ -3,9 +3,10 @@
 import { useSeaportClient } from '@/hooks/useSeaportClient'
 import { OrderStatus, OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import React, { createContext, useContext, ReactNode } from 'react'
-import { ContractTransaction } from 'ethers'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+
+type FulfillOrderFn = ReturnType<typeof useSeaportClient>['fulfillOrder']
 
 type SeaportContextValue = {
   isInitialized: boolean
@@ -39,7 +40,7 @@ type SeaportContextValue = {
     currentOwner?: string
     marketplace: ('opensea' | 'grails')[]
   }) => Promise<any>
-  fulfillOrder: (order: OrderWithCounter) => Promise<ContractTransaction>
+  fulfillOrder: FulfillOrderFn
   isLoading: boolean
 }
 

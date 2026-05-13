@@ -52,7 +52,7 @@ const ProHero = () => {
         className='background-radial-primary absolute top-[35vh] left-1/2 h-[600px] w-screen -translate-x-1/2 -translate-y-1/2 md:h-[800px] md:w-[800px]'
       />
 
-      <div className='p<-16> z-10 flex h-full items-center justify-center px-4 sm:pt-32 sm:pb-24 md:pb-32'>
+      <div className='p<-16> relative z-10 flex h-full items-center justify-center px-4 sm:pt-32 sm:pb-24 md:pb-32'>
         <motion.div
           variants={containerVariants}
           initial='hidden'

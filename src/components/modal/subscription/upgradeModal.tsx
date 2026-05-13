@@ -1,190 +1,209 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useAccount, useBalance } from 'wagmi'
+import { useAccount, useBalance, useGasPrice } from 'wagmi'
 import { Check } from 'ethereum-identity-kit'
+import { mainnet } from 'viem/chains'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectUpgradeModal, setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
 import useSubscriptionContract from '@/hooks/useSubscriptionContract'
 import useETHPrice from '@/hooks/useETHPrice'
-import { SUBSCRIBABLE_TIERS, getTierDisplayName, TIER_MAP } from '@/constants/subscriptions'
-import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { getTierDisplayName } from '@/constants/subscriptions'
+import { GrailsSubscriptionAbi } from '@/constants/abi/GrailsSubscriptionAbi'
+import { GRAILS_SUBSCRIPTION_ADDRESS } from '@/constants/web3/contracts'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { useQueryClient } from '@tanstack/react-query'
-import { mainnet } from 'viem/chains'
-import { cn } from '@/utils/tailwind'
+import { MODAL_TIERS } from './tierMetadata'
+import PlanStep from './components/PlanStep'
+import DurationStep, { DAYS_PER_UNIT, MIN_DURATION_DAYS, type DurationUnit } from './components/DurationStep'
+import ReviewStep from './components/ReviewStep'
 
 interface UpgradeModalProps {
   onClose: () => void
 }
 
-type Step = 'review' | 'confirming' | 'processing' | 'success' | 'error'
+type WizardStep = 'plan' | 'duration' | 'review'
+type TxStep = 'confirming' | 'processing' | 'success' | 'error'
+type Step = WizardStep | TxStep
 
-const DURATION_PRESETS = [
-  { label: '30 days', value: 30 },
-  { label: '90 days', value: 90 },
-  { label: '365 days', value: 365 },
-]
+const WIZARD_STEPS: WizardStep[] = ['plan', 'duration', 'review']
+const GAS_FALLBACK = BigInt(150_000)
+const GAS_BUFFER_PCT = BigInt(120) // 20% safety buffer
+const PRICE_DEBOUNCE_MS = 300
+
+const priceKey = (tierId: number, days: number) => `${tierId}-${days}`
+
+const getMinCountForUnit = (unit: DurationUnit): number => Math.ceil(MIN_DURATION_DAYS / DAYS_PER_UNIT[unit])
 
 const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
   const dispatch = useAppDispatch()
   const { address } = useAccount()
   const { subscription } = useAppSelector(selectUserProfile)
-  const { getPrice, previewUpgrade, subscribe, upgrade, publicClient } = useSubscriptionContract()
+  const { preselectedTierId } = useAppSelector(selectUpgradeModal)
+  const { getPrice, subscribe, upgrade, publicClient } = useSubscriptionContract()
   const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
 
-  const { preselectedTierId } = useAppSelector(selectUpgradeModal)
+  const { data: ethBalance } = useBalance({ address, chainId: mainnet.id })
+  const { data: liveGasPrice } = useGasPrice({ chainId: mainnet.id })
 
+  // ---------- Tier resolution ----------
   const currentTierId = subscription?.tierId ?? 0
-  const isUpgrade =
-    currentTierId > 0 && subscription?.tierExpiresAt && new Date(subscription.tierExpiresAt) > new Date()
+  const hasActiveSub =
+    currentTierId > 0 && !!subscription?.tierExpiresAt && new Date(subscription.tierExpiresAt) > new Date()
 
-  // Available tiers (higher than current)
-  const availableTiers = useMemo(() => SUBSCRIBABLE_TIERS.filter((id) => id > currentTierId), [currentTierId])
-
-  const isMaxTier = availableTiers.length === 0 && currentTierId > 0
-  const isExtend = isMaxTier && !!isUpgrade
-
-  const defaultTier =
-    preselectedTierId && availableTiers.includes(preselectedTierId)
-      ? preselectedTierId
-      : (availableTiers[0] ?? (currentTierId || 1))
-  const [selectedTierId, setSelectedTierId] = useState<number>(defaultTier)
-  const [durationDays, setDurationDays] = useState<number>(30)
-  const [step, setStep] = useState<Step>('review')
-  const [txHash, setTxHash] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  // Price cache: key = "tierId-days", value = bigint wei
-  const [priceCache, setPriceCache] = useState<Record<string, bigint>>({})
-  const [pricesLoaded, setPricesLoaded] = useState(false)
-  const fetchedRef = useRef(false)
-
-  // Upgrade preview cache: key = tierId
-  const [upgradePreviewCache, setUpgradePreviewCache] = useState<
-    Record<number, { newExpiry: bigint; convertedSeconds: bigint }>
-  >({})
-
-  const { data: ethBalance } = useBalance({
-    address,
-    chainId: mainnet.id,
-  })
-
-  const priceCacheKey = (tierId: number, days: number) => `${tierId}-${days}`
-
-  // Pre-fetch all prices on mount (every tier x preset duration)
-  useEffect(() => {
-    if (fetchedRef.current) return
-    fetchedRef.current = true
-
-    const fetchAllPrices = async () => {
-      const allDurations = [...DURATION_PRESETS.map((p) => p.value)]
-      const results: Record<string, bigint> = {}
-
-      const tiersToPrice = isExtend ? [currentTierId] : availableTiers
-
-      await Promise.all(
-        tiersToPrice.flatMap((tierId) =>
-          allDurations.map(async (days) => {
-            try {
-              const p = await getPrice(tierId, days)
-              results[priceCacheKey(tierId, days)] = p
-            } catch {
-              // skip failed lookups
-            }
-          })
-        )
-      )
-
-      setPriceCache(results)
-      setPricesLoaded(true)
-    }
-
-    fetchAllPrices()
-  }, [])
-
-  // Fetch price for custom duration (not in presets) on demand
-  const fetchCustomPrice = useCallback(
-    async (tierId: number, days: number) => {
-      const key = priceCacheKey(tierId, days)
-      if (priceCache[key] !== undefined) return
-      try {
-        const p = await getPrice(tierId, days)
-        setPriceCache((prev) => ({ ...prev, [key]: p }))
-      } catch {
-        // ignore
-      }
-    },
-    [priceCache, getPrice]
+  // All tiers in the modal are visible. Lower tiers (already included in user's
+  // current plan) are shown as locked. Selectable = current or higher.
+  const selectableTierIds = useMemo(
+    () => MODAL_TIERS.filter((id) => id >= currentTierId),
+    [currentTierId]
   )
 
-  // When duration changes to a non-preset value, fetch it
-  useEffect(() => {
-    if (!selectedTierId || !durationDays || durationDays <= 0) return
-    const key = priceCacheKey(selectedTierId, durationDays)
-    if (priceCache[key] === undefined && pricesLoaded) {
-      fetchCustomPrice(selectedTierId, durationDays)
-    }
-  }, [selectedTierId, durationDays, pricesLoaded, priceCache, fetchCustomPrice])
+  const initialTierId = useMemo(() => {
+    if (preselectedTierId !== null && selectableTierIds.includes(preselectedTierId)) return preselectedTierId
+    if (hasActiveSub && selectableTierIds.includes(currentTierId)) return currentTierId
+    return selectableTierIds[0] ?? MODAL_TIERS[0]
+  }, [preselectedTierId, selectableTierIds, hasActiveSub, currentTierId])
 
-  // Fetch upgrade previews for all available tiers
-  useEffect(() => {
-    if (!isUpgrade || !address) return
+  const [selectedTierId, setSelectedTierId] = useState<number>(initialTierId)
 
-    const fetchPreviews = async () => {
-      const results: Record<number, { newExpiry: bigint; convertedSeconds: bigint }> = {}
-      await Promise.all(
-        availableTiers.map(async (tierId) => {
+  const isExtending = hasActiveSub && selectedTierId === currentTierId
+  const isUpgrading = hasActiveSub && selectedTierId > currentTierId
+
+  // ---------- Duration state ----------
+  const [unit, setUnit] = useState<DurationUnit>('days')
+  const [count, setCount] = useState<number>(MIN_DURATION_DAYS)
+  const durationDays = useMemo(() => count * DAYS_PER_UNIT[unit], [count, unit])
+  const isDurationValid = durationDays >= MIN_DURATION_DAYS
+
+  const handleUnitChange = useCallback(
+    (newUnit: DurationUnit) => {
+      if (newUnit === unit) return
+      const currentDays = count * DAYS_PER_UNIT[unit]
+      const minCount = getMinCountForUnit(newUnit)
+      const nextCount = Math.max(minCount, Math.round(currentDays / DAYS_PER_UNIT[newUnit]))
+      setUnit(newUnit)
+      setCount(nextCount)
+    },
+    [unit, count]
+  )
+
+  const handleDateSelect = useCallback((timestampSeconds: number) => {
+    const nowMs = Date.now()
+    const targetMs = timestampSeconds * 1000
+    const days = Math.max(MIN_DURATION_DAYS, Math.ceil((targetMs - nowMs) / 86_400_000))
+    setUnit('days')
+    setCount(days)
+  }, [])
+
+  // ---------- Wizard step state ----------
+  const [step, setStep] = useState<Step>('plan')
+  const [txHash, setTxHash] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const isWizardStep = step === 'plan' || step === 'duration' || step === 'review'
+  const wizardIndex = isWizardStep ? WIZARD_STEPS.indexOf(step) : -1
+
+  // ---------- Price cache & fetching ----------
+  const [priceCache, setPriceCache] = useState<Record<string, bigint>>({})
+  const prefetchedRef = useRef(false)
+
+  // Prefetch monthly + yearly prices for the selectable plans
+  useEffect(() => {
+    if (prefetchedRef.current) return
+    prefetchedRef.current = true
+
+    const durationsToPrice = [30, 365]
+
+    void Promise.all(
+      selectableTierIds.flatMap((tierId) =>
+        durationsToPrice.map(async (days) => {
           try {
-            results[tierId] = await previewUpgrade(address, tierId)
+            const wei = await getPrice(tierId, days)
+            setPriceCache((prev) => ({ ...prev, [priceKey(tierId, days)]: wei }))
           } catch {
             // skip
           }
         })
       )
-      setUpgradePreviewCache(results)
+    )
+  }, [selectableTierIds, getPrice])
+
+  // Fetch price for the selected (tier, durationDays) with debounce
+  useEffect(() => {
+    if (!selectedTierId || durationDays <= 0) return
+    const key = priceKey(selectedTierId, durationDays)
+    if (priceCache[key] !== undefined) return
+
+    let cancelled = false
+    const handle = window.setTimeout(async () => {
+      try {
+        const wei = await getPrice(selectedTierId, durationDays)
+        if (!cancelled) setPriceCache((prev) => ({ ...prev, [key]: wei }))
+      } catch {
+        // ignore — UI will continue to show "—" until valid
+      }
+    }, PRICE_DEBOUNCE_MS)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(handle)
+    }
+  }, [selectedTierId, durationDays, priceCache, getPrice])
+
+  const price = priceCache[priceKey(selectedTierId, durationDays)] ?? null
+  const isPriceLoading = price === null && isDurationValid
+
+  // ---------- Gas estimation (review step) ----------
+  const [gasEstimate, setGasEstimate] = useState<bigint | null>(null)
+
+  useEffect(() => {
+    if (step !== 'review' || !publicClient || !address || price === null) return
+
+    let cancelled = false
+    const estimate = async () => {
+      try {
+        const functionName = isUpgrading ? 'upgrade' : 'subscribe'
+        const args = [BigInt(selectedTierId), BigInt(durationDays)] as const
+        const raw = await publicClient.estimateContractGas({
+          address: GRAILS_SUBSCRIPTION_ADDRESS,
+          abi: GrailsSubscriptionAbi,
+          functionName,
+          args,
+          value: price,
+          account: address,
+        })
+        if (!cancelled) setGasEstimate((raw * GAS_BUFFER_PCT) / BigInt(100))
+      } catch (err) {
+        console.warn('Gas estimation failed, using fallback:', err)
+        if (!cancelled) setGasEstimate(GAS_FALLBACK)
+      }
     }
 
-    fetchPreviews()
-  }, [isUpgrade, address])
+    void estimate()
+    return () => {
+      cancelled = true
+    }
+  }, [step, publicClient, address, price, selectedTierId, durationDays, isUpgrading])
 
-  // Derive current price from cache
-  const price = priceCache[priceCacheKey(selectedTierId, durationDays)] ?? null
-  const upgradePreview = upgradePreviewCache[selectedTierId] ?? null
-
-  const priceETH = useMemo(() => {
-    if (price === null) return null
-    return Number(price) / 10 ** TOKEN_DECIMALS.ETH
-  }, [price])
-
-  const priceUSD = useMemo(() => {
-    if (priceETH === null) return null
-    return priceETH * ethPrice
-  }, [priceETH, ethPrice])
-
+  // ---------- Balance check ----------
   const hasSufficientBalance = useMemo(() => {
     if (!ethBalance || price === null) return false
-    return ethBalance.value >= price
-  }, [ethBalance, price])
+    const gasCost = gasEstimate && liveGasPrice ? gasEstimate * liveGasPrice : BigInt(0)
+    return ethBalance.value >= price + gasCost
+  }, [ethBalance, price, gasEstimate, liveGasPrice])
 
+  // ---------- Submission ----------
   const handleSubmit = async () => {
     if (price === null) return
     setError(null)
     setStep('confirming')
 
     try {
-      let tx: string | null
-
-      if (isExtend) {
-        tx = await subscribe(selectedTierId, durationDays, price)
-      } else if (isUpgrade) {
-        tx = await upgrade(selectedTierId, durationDays, price)
-      } else {
-        tx = await subscribe(selectedTierId, durationDays, price)
-      }
+      const tx = isUpgrading
+        ? await upgrade(selectedTierId, durationDays, price)
+        : await subscribe(selectedTierId, durationDays, price)
 
       if (!tx) {
         setError('Transaction was rejected')
@@ -207,53 +226,154 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
       }
 
       setStep('success')
-
-      // Refetch auth to pick up new subscription data
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['auth', 'status'] })
       }, 2500)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Subscription transaction failed:', err)
-      setError(err?.message || 'Transaction failed')
+      setError(err instanceof Error ? err.message : 'Transaction failed')
       setStep('error')
     }
   }
 
+  // ---------- Close ----------
   const handleClose = () => {
     if (step === 'confirming' || step === 'processing') return
     dispatch(setUpgradeModalOpen(false))
     onClose()
   }
 
+  // ---------- Navigation helpers ----------
+  const goNext = () => {
+    if (step === 'plan') setStep('duration')
+    else if (step === 'duration') setStep('review')
+    else if (step === 'review') void handleSubmit()
+  }
+
+  const goBack = () => {
+    if (step === 'duration') setStep('plan')
+    else if (step === 'review') setStep('duration')
+  }
+
+  const canGoBack = step === 'duration' || step === 'review'
+
+  // ---------- Header & button labels ----------
+  const headerText = isExtending ? 'Extend Subscription' : isUpgrading ? 'Upgrade Subscription' : 'Subscribe'
+
+  const confirmLabel = (() => {
+    if (!hasSufficientBalance && price !== null) return 'Insufficient ETH Balance'
+    if (isExtending) return `Extend ${getTierDisplayName(selectedTierId)}`
+    if (isUpgrading) return `Upgrade to ${getTierDisplayName(selectedTierId)}`
+    return `Subscribe to ${getTierDisplayName(selectedTierId)}`
+  })()
+
+  const nextLabel = step === 'review' ? confirmLabel : 'Next'
+
+  const nextDisabled = (() => {
+    if (step === 'plan') return !selectableTierIds.includes(selectedTierId)
+    if (step === 'duration') return !isDurationValid || isPriceLoading
+    if (step === 'review') return price === null || !hasSufficientBalance
+    return false
+  })()
+
   return (
     <div
       onClick={(e) => {
         e.stopPropagation()
         e.preventDefault()
-        if (step === 'confirming' || step === 'processing') return
         handleClose()
       }}
       className='fixed inset-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-3 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2'
       >
         {/* Header */}
-        <div className='flex min-h-6 items-center justify-center pb-2'>
-          <h2 className='font-sedan-sc text-center text-3xl'>
-            {isExtend ? 'Extend Subscription' : isUpgrade ? 'Upgrade Subscription' : 'Subscribe'}
-          </h2>
+        <div className='flex flex-col items-center gap-1 pb-1'>
+          <h2 className='font-sedan-sc text-center text-3xl'>{headerText}</h2>
+          {isWizardStep && (
+            <p className='text-neutral text-sm'>
+              Step {wizardIndex + 1} of {WIZARD_STEPS.length}
+            </p>
+          )}
         </div>
 
-        {step === 'success' ? (
+        {/* Body */}
+        {step === 'plan' && (
+          <PlanStep
+            currentTierId={currentTierId}
+            hasActiveSub={hasActiveSub}
+            selectedTierId={selectedTierId}
+            onSelectTier={setSelectedTierId}
+            priceCache={priceCache}
+            ethPrice={ethPrice}
+          />
+        )}
+
+        {step === 'duration' && (
+          <DurationStep
+            selectedTierId={selectedTierId}
+            unit={unit}
+            count={count}
+            durationDays={durationDays}
+            onUnitChange={handleUnitChange}
+            onCountChange={setCount}
+            onDateSelect={handleDateSelect}
+            price={price}
+            isPriceLoading={isPriceLoading}
+            ethPrice={ethPrice}
+          />
+        )}
+
+        {step === 'review' && (
+          <ReviewStep
+            selectedTierId={selectedTierId}
+            durationDays={durationDays}
+            price={price}
+            gasEstimate={gasEstimate}
+            gasPrice={liveGasPrice ?? null}
+            hasSufficientBalance={hasSufficientBalance}
+            ethPrice={ethPrice}
+          />
+        )}
+
+        {(step === 'confirming' || step === 'processing') && (
+          <div className='flex w-full flex-col items-center gap-4 py-4 text-center'>
+            <h3 className='text-xl font-bold'>
+              {step === 'confirming' ? 'Confirm in Wallet' : 'Processing Transaction'}
+            </h3>
+            <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2' />
+            <p className='text-neutral text-lg'>
+              {step === 'confirming'
+                ? 'Please confirm the transaction in your wallet...'
+                : 'Waiting for confirmation...'}
+            </p>
+            {txHash && (
+              <a
+                href={`https://etherscan.io/tx/${txHash}`}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-primary hover:text-primary/80 text-lg underline transition-colors'
+              >
+                View on Etherscan
+              </a>
+            )}
+          </div>
+        )}
+
+        {step === 'success' && (
           <div className='flex flex-col items-center gap-4 py-2'>
             <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-3'>
               <Check className='text-background h-8 w-8' />
             </div>
             <div className='flex flex-col items-center gap-2 text-center'>
               <h3 className='mb-2 text-xl font-bold'>
-                {isExtend ? 'Subscription Extended!' : isUpgrade ? 'Subscription Upgraded!' : 'Subscription Active!'}
+                {isExtending
+                  ? 'Subscription Extended!'
+                  : isUpgrading
+                    ? 'Subscription Upgraded!'
+                    : 'Subscription Active!'}
               </h3>
               <p className='text-neutral text-md'>You now have {getTierDisplayName(selectedTierId)} access.</p>
               {txHash && (
@@ -268,191 +388,50 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
               )}
             </div>
           </div>
-        ) : step === 'confirming' || step === 'processing' ? (
-          <div className='flex w-full flex-col gap-4'>
-            <h2 className='mt-4 text-center text-xl font-bold'>
-              {step === 'confirming' ? 'Confirm in Wallet' : 'Processing Transaction'}
-            </h2>
-            <div className='flex flex-col items-center justify-center gap-4 pt-4 pb-4 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>
-                {step === 'confirming'
-                  ? 'Please confirm the transaction in your wallet...'
-                  : 'Waiting for confirmation...'}
-              </p>
-              {txHash && (
-                <a
-                  href={`https://etherscan.io/tx/${txHash}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                >
-                  View on Etherscan
-                </a>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className='flex w-full flex-col gap-2 sm:gap-3'>
-            {/* Tier Selector */}
-            {isExtend ? (
-              <div className='border-primary bg-primary/10 rounded-md border p-3 text-center'>
-                <p className='text-md font-semibold'>{getTierDisplayName(currentTierId)}</p>
-                <p className='text-neutral text-sm'>{TIER_MAP[currentTierId]?.label}</p>
-              </div>
-            ) : (
-              <div className='flex flex-col gap-2'>
-                <p className='text-md text-neutral font-medium'>Select Plan</p>
-                <div className='flex flex-row gap-2'>
-                  {availableTiers.map((tierId) => {
-                    const tierPrice = priceCache[priceCacheKey(tierId, durationDays)]
-                    const tierPriceETH = tierPrice !== undefined ? Number(tierPrice) / 10 ** TOKEN_DECIMALS.ETH : null
-                    const tierPriceUSD = tierPriceETH !== null ? tierPriceETH * ethPrice : null
-                    return (
-                      <button
-                        key={tierId}
-                        onClick={() => setSelectedTierId(tierId)}
-                        className={cn(
-                          'border-tertiary flex-1 rounded-md border p-3 text-center transition-colors',
-                          selectedTierId === tierId ? 'border-primary bg-primary/10' : 'hover:bg-secondary'
-                        )}
-                      >
-                        <p className='text-md font-semibold'>{TIER_MAP[tierId]?.name}</p>
-                        {tierPriceETH !== null ? (
-                          <>
-                            <p className='text-neutral text-sm'>{tierPriceETH.toFixed(4)} ETH</p>
-                            <p className='text-neutral text-xs'>(${tierPriceUSD!.toFixed(2)})</p>
-                          </>
-                        ) : (
-                          <p className='text-neutral text-sm'>{TIER_MAP[tierId]?.label}</p>
-                        )}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+        )}
 
-            {/* Duration Input */}
-            <div className='flex flex-col gap-2'>
-              <p className='text-md text-neutral font-medium'>Duration</p>
-              <div className='flex flex-row gap-2'>
-                {DURATION_PRESETS.map((preset) => {
-                  const presetPrice = priceCache[priceCacheKey(selectedTierId, preset.value)]
-                  const presetPriceETH =
-                    presetPrice !== undefined ? Number(presetPrice) / 10 ** TOKEN_DECIMALS.ETH : null
-                  const presetPriceUSD = presetPriceETH !== null ? presetPriceETH * ethPrice : null
-                  return (
-                    <button
-                      key={preset.value}
-                      onClick={() => setDurationDays(preset.value)}
-                      className={cn(
-                        'border-tertiary flex-1 rounded-md border px-3 py-2 text-center transition-colors',
-                        durationDays === preset.value ? 'border-primary bg-primary/10' : 'hover:bg-secondary'
-                      )}
-                    >
-                      <p className='text-sm font-medium'>{preset.label}</p>
-                      {presetPriceETH !== null && (
-                        <>
-                          <p className='text-neutral text-xs'>{presetPriceETH.toFixed(4)} ETH</p>
-                          <p className='text-neutral text-xs'>(${presetPriceUSD!.toFixed(2)})</p>
-                        </>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-              <div className='flex items-center gap-2'>
-                <input
-                  type='number'
-                  min={1}
-                  value={durationDays}
-                  onChange={(e) => setDurationDays(Math.max(1, Number(e.target.value)))}
-                  className='border-tertiary bg-secondary text-md w-full rounded-md border px-3 py-2'
-                  placeholder='Custom days'
-                />
-                <span className='text-neutral text-sm whitespace-nowrap'>days</span>
-              </div>
-            </div>
-
-            {/* Price Display */}
-            <div
-              className={cn(
-                'bg-secondary border-tertiary rounded-lg border p-3 transition-opacity',
-                price === null ? 'opacity-50' : 'opacity-100'
-              )}
-            >
-              <div className='text-md flex items-center justify-between'>
-                <p>Total Cost:</p>
-                <div className='flex flex-col items-end'>
-                  <p className='font-medium'>{priceETH !== null ? `${priceETH.toFixed(6)} ETH` : '--'}</p>
-                  {priceUSD !== null && <p className='text-neutral text-xs'>(${priceUSD.toFixed(2)})</p>}
-                </div>
-              </div>
-            </div>
-
-            {/* Upgrade Preview */}
-            {isUpgrade && !isExtend && upgradePreview && (
-              <div className='bg-secondary border-tertiary rounded-lg border p-3'>
-                <p className='text-md mb-1 font-medium'>Upgrade Preview</p>
-                <div className='text-md space-y-1'>
-                  <div className='flex justify-between'>
-                    <span className='text-neutral'>New expiry:</span>
-                    <span className='font-medium text-green-500'>
-                      {new Date(Number(upgradePreview.newExpiry) * 1000).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className='flex justify-between'>
-                    <span className='text-neutral'>Converted time:</span>
-                    <span className='font-medium'>
-                      {Math.floor(Number(upgradePreview.convertedSeconds) / 86400)} days
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-                <p className='text-sm text-red-400'>{error}</p>
-              </div>
-            )}
-
-            {/* Insufficient balance warning */}
-            {price !== null && !hasSufficientBalance && (
-              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
-                <p className='text-md text-red-400'>Insufficient ETH balance.</p>
-              </div>
-            )}
+        {step === 'error' && error && (
+          <div className='rounded-lg border border-red-500/30 bg-red-900/20 p-3'>
+            <p className='text-sm text-red-400'>{error}</p>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className='flex flex-col gap-2'>
-          {step === 'review' && (
-            <PrimaryButton onClick={handleSubmit} disabled={price === null || !hasSufficientBalance} className='w-full'>
-              {!hasSufficientBalance && price !== null
-                ? 'Insufficient ETH Balance'
-                : isExtend
-                  ? `Extend ${getTierDisplayName(selectedTierId)} Subscription`
-                  : isUpgrade
-                    ? `Upgrade to ${getTierDisplayName(selectedTierId)}`
-                    : `Subscribe to ${getTierDisplayName(selectedTierId)}`}
+        {/* Footer */}
+        <div className='flex w-full flex-col gap-2'>
+          {isWizardStep && (
+            <div className='flex w-full gap-2'>
+              {canGoBack && (
+                <SecondaryButton onClick={goBack} className='flex-1'>
+                  Back
+                </SecondaryButton>
+              )}
+              <PrimaryButton
+                onClick={goNext}
+                disabled={nextDisabled}
+                className={canGoBack ? 'flex-1' : 'w-full'}
+              >
+                {nextLabel}
+              </PrimaryButton>
+            </div>
+          )}
+
+          {step === 'success' && (
+            <PrimaryButton onClick={handleClose} className='w-full'>
+              Done
             </PrimaryButton>
           )}
+
           {step === 'error' && (
             <PrimaryButton onClick={() => setStep('review')} className='w-full'>
               Try Again
             </PrimaryButton>
           )}
-          <SecondaryButton
-            onClick={handleClose}
-            className='w-full'
-            disabled={step === 'confirming' || step === 'processing'}
-          >
-            Close
-          </SecondaryButton>
+
+          {step !== 'success' && step !== 'confirming' && step !== 'processing' && (
+            <SecondaryButton onClick={handleClose} className='w-full'>
+              Close
+            </SecondaryButton>
+          )}
         </div>
       </div>
     </div>

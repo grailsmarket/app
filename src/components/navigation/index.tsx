@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import Cart from './cart'
 import Pages from './pages'
 import Link from 'next/link'
@@ -10,8 +10,16 @@ import Watchlist from './watchlist'
 import SearchIcon from './searchIcon'
 import { cn } from '@/utils/tailwind'
 import Searchbar from '../ui/searchbar'
-import logoMobile from 'public/logo.svg'
-import logo from 'public/logo-w-text.svg'
+import logoMobileDefault from 'public/logo.svg'
+import logoDefault from 'public/logo-w-text.svg'
+import logoMobilePlus from 'public/subscription-assets/plus/logo.svg'
+import logoPlus from 'public/subscription-assets/plus/logo-w-text.svg'
+import logoMobilePro from 'public/subscription-assets/pro/logo.svg'
+import logoPro from 'public/subscription-assets/pro/logo-w-text.svg'
+import logoMobileGold from 'public/subscription-assets/gold/logo.svg'
+import logoGold from 'public/subscription-assets/gold/logo-w-text.svg'
+import logoMobilePatron from 'public/subscription-assets/patreon/logo.svg'
+import logoPatron from 'public/subscription-assets/patreon/logo-w-text.svg'
 import Notifications from './notifications'
 import Chats from './chats'
 import { useNavbar } from '@/context/navbar'
@@ -20,6 +28,7 @@ import SignInButton from '../ui/buttons/signInButton/index'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
 import { selectProfileListingsFilters } from '@/state/reducers/filters/profileListingsFilter'
 import { selectCategoryDomainsFilters } from '@/state/reducers/filters/categoryDomainsFilters'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import Explore from './dropdowns/explore'
 import Categories from './dropdowns/categories'
 import CrossIcon from 'public/icons/cross.svg'
@@ -28,6 +37,13 @@ import Premium from './dropdowns/premium'
 import { useUserContext } from '@/context/user'
 import Pro from './dropdowns/pro'
 
+const TIER_LOGOS: Record<number, { mobile: typeof logoMobileDefault; full: typeof logoDefault }> = {
+  1: { mobile: logoMobilePlus, full: logoPlus },
+  2: { mobile: logoMobilePro, full: logoPro },
+  3: { mobile: logoMobileGold, full: logoGold },
+  4: { mobile: logoMobilePatron, full: logoPatron },
+}
+
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [dropdownOption, setDropdownOption] = useState<string | null>(null)
   const [previousDropdownOption, setPreviousDropdownOption] = useState<string | null>(null)
@@ -35,11 +51,23 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [lastScrollY, setLastScrollY] = useState(0)
   const { setNavbarVisible } = useNavbar()
   const { userAddress } = useUserContext()
+  const { subscription } = useAppSelector(selectUserProfile)
   // Check if any filter panel is open
   const marketplaceFilters = useAppSelector(selectMarketplaceFilters)
   const profileFilters = useAppSelector(selectProfileListingsFilters)
   const categoryFilters = useAppSelector(selectCategoryDomainsFilters)
   const isAnyFilterOpen = marketplaceFilters.open || profileFilters.open || categoryFilters.open
+
+  const { mobileLogo, fullLogo } = useMemo(() => {
+    const isActiveSubscriber =
+      subscription?.tierId > 0 &&
+      (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+    const tierLogo = isActiveSubscriber ? TIER_LOGOS[subscription.tierId] : undefined
+    return {
+      mobileLogo: tierLogo?.mobile ?? logoMobileDefault,
+      fullLogo: tierLogo?.full ?? logoDefault,
+    }
+  }, [subscription?.tierId, subscription?.tierExpiresAt])
 
   // Compute effective visibility (visible if scrolled up OR filters are open)
   const effectiveVisibility = isVisible || isAnyFilterOpen || !!dropdownOption
@@ -114,14 +142,14 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             }}
           >
             <Image
-              src={logoMobile}
+              src={mobileLogo}
               alt='Grails Market'
               width={32}
               height={32}
               className='h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
             />
             <Image
-              src={logo}
+              src={fullLogo}
               alt='Grails Market'
               width={130}
               height={40}

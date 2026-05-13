@@ -16,7 +16,7 @@ import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
 import { getTierDisplayName, SUBSCRIBABLE_TIERS } from '@/constants/subscriptions'
 import { useAppDispatch } from '@/state/hooks'
-import { setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
+import { openUpgradeModalWithTier } from '@/state/reducers/modals/upgradeModal'
 import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT } from '@/constants/web3/contracts'
 
 interface SettingsModalProps {
@@ -129,7 +129,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             <button
               onClick={() => {
                 onClose()
-                dispatch(setUpgradeModalOpen(true))
+                dispatch(openUpgradeModalWithTier(subscription?.tierId ?? 0))
               }}
               className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
             >
@@ -142,7 +142,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             <button
               onClick={() => {
                 onClose()
-                dispatch(setUpgradeModalOpen(true))
+                dispatch(openUpgradeModalWithTier(subscription?.tierId ?? 0))
               }}
               className='text-primary text-sm font-medium whitespace-nowrap transition-opacity hover:opacity-80'
             >

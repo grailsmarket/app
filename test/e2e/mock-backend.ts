@@ -265,7 +265,10 @@ export async function installMockBackend(
   // browser-side /api/users/me route which we intercept above, not via a
   // direct api.grails.app call.)
 
-  // Inbox list.
+  // Inbox list. The real backend includes participants on inbox rows so
+  // chatRow can render the peer's avatar + name without a separate
+  // chat-detail roundtrip. Match the shape — ChatRow renders fine without
+  // participants but the loading lifecycle takes one extra fetch.
   await page.route(new RegExp(`${apiBase.source}/chats(\\?.*)?$`), async (route) => {
     await route.fulfill({
       status: 200,
@@ -286,6 +289,26 @@ export async function installMockBackend(
               muted: false,
               unread_count: 0,
               is_blocked_by_me: false,
+              participants: [
+                {
+                  user_id: USER_USER_ID,
+                  address: opts.userAddress,
+                  role: 'member',
+                  joined_at: isoNow(),
+                  left_at: null,
+                  last_read_message_id: null,
+                  muted: false,
+                },
+                {
+                  user_id: peerUserId,
+                  address: peerAddress,
+                  role: 'member',
+                  joined_at: isoNow(),
+                  left_at: null,
+                  last_read_message_id: null,
+                  muted: false,
+                },
+              ],
             },
           ],
           pagination: { page: 1, limit: 50, total: 1, totalPages: 1, hasNext: false, hasPrev: false },

@@ -95,17 +95,45 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
    * slice isn't in the redux-persist whitelist, so a reload lands on the
    * inbox-closed root view and the unlock button isn't mounted until we
    * re-navigate.
+   *
+   * Each step has an explicit visibility wait with a tight timeout so a
+   * failure surfaces at the exact step that broke. Without the explicit
+   * waits, Playwright's auto-wait would burn the full test budget before
+   * giving up — and the resulting error message points at the click call
+   * rather than the underlying "sidebar never opened" / "inbox never
+   * populated" / "unlock button never mounted" cause.
    */
   async function openChatAndUnlock(page: import('@playwright/test').Page): Promise<void> {
-    await page.waitForLoadState('networkidle')
     // The navbar Messages icon — only stable selector is its aria-label
     // (the icon-only button has no visible text).
+    await page
+      .getByRole('button', { name: 'Messages' })
+      .waitFor({ state: 'visible', timeout: 15_000 })
     await page.getByRole('button', { name: 'Messages' }).click()
-    const chatRow = page.locator('[data-testid="chat-inbox-row"]').first()
+
+    // Chat sidebar slides in from the right (250ms animation). It carries
+    // aria-label='Chat sidebar' on the <aside>. Wait for it to be visible
+    // before reaching into its contents.
+    const sidebar = page.getByLabel('Chat sidebar')
+    await sidebar.waitFor({ state: 'visible', timeout: 10_000 })
+
+    // ListView fetches /chats while the sidebar animates in. Wait for at
+    // least one chat-inbox-row to render — useChatsInbox is gated on
+    // authStatus === 'authenticated', so if no row appears the failure is
+    // either the /chats mock or the auth state.
+    const chatRow = sidebar.locator('[data-testid="chat-inbox-row"]').first()
+    await chatRow.waitFor({ state: 'visible', timeout: 15_000 })
     await chatRow.click()
-    // Click "Unlock encryption". The mock wallet auto-signs the
-    // HANDSHAKE_MSG personal_sign request — no popup confirmation needed.
-    await page.getByRole('button', { name: /unlock encryption/i }).click()
+
+    // Thread view replaces the list view in the sidebar. Wait for the
+    // 'Unlock encryption' button to mount — gated on isEligibleChat
+    // (direct chat, not blocked) AND !e2e.isUnlocked. If the button
+    // never appears, either the chat detail mock is broken or e2e is
+    // disabled (PostHog flag — the ?e2e=1 query string should force it on).
+    const unlockButton = page.getByRole('button', { name: /unlock encryption/i })
+    await unlockButton.waitFor({ state: 'visible', timeout: 15_000 })
+    await unlockButton.click()
+    // Wallet-mock auto-signs HANDSHAKE_MSG — no popup confirmation needed.
   }
 
   /**

@@ -66,20 +66,30 @@ const E2EHandshakeBannerInner: React.FC<Props> = ({ chatId }) => {
     publishingRef.current = true
     setPublishing(true)
     try {
-      const myBundle = await e2e.buildHandshakeBundle()
+      // begin/commit pair: beginHandshakePublish snapshots the (wallet,
+      // dmKey, storageKey) triple AT bundle-build time and bakes them
+      // into the returned commit closure. If the user switches wallets
+      // or chats between sendMessage starting and resolving, commit()
+      // still writes the flag for the wallet/chat that actually sent
+      // this bundle — reading storageKeyRef.current LIVE in commit
+      // would otherwise encrypt the old wallet's namespace with the new
+      // wallet's key and brick the old wallet's restore with
+      // "wrong wallet?" from storage.ts:41.
+      const handle = await e2e.beginHandshakePublish()
+      if (!handle) return // wallet locked or no dmKey — nothing to publish
       await sendMessage({
         chatId,
-        body: encodeHandshake({ v: 1, kind: 'hs', bundle: myBundle }),
+        body: encodeHandshake({ v: 1, kind: 'hs', bundle: handle.bundle }),
       })
       // Persist the per-chat "I've published" flag AFTER the POST succeeds,
       // not before. If sendMessage rejects (network drop, 5xx) we leave the
       // flag unset so the next mount will retry — marking it eagerly would
       // suppress the retry and strand the peer without our bundle. Errors
-      // from this call are swallowed: a successful send + failed flag write
-      // is a degraded but recoverable state (next mount re-publishes, peer
+      // from commit() are swallowed: a successful send + failed flag write
+      // is a degraded but recoverable state (next mount re-publishes; peer
       // ignores the duplicate via their own outboundSessionsRef cache).
       try {
-        await e2e.markOwnHandshakePublished()
+        await handle.commit()
       } catch (err) {
         console.error(err)
       }

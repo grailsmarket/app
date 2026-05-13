@@ -354,29 +354,70 @@ export function useE2ESession(
     }
   }, [])
 
-  const buildHandshakeBundle = useCallback((): Promise<string> => {
+  // Begin a handshake-publish flow. Returns { bundle, commit } where:
+  //   - bundle: the base64-encoded handshake to POST to the chat.
+  //   - commit: a function that records the "we have published" flag for
+  //     THIS publish — the (wallet, dmKey, storageKey) triple is snapshotted
+  //     at bundle-build time and held in the closure. Call commit() after
+  //     the sendMessage POST resolves.
+  //
+  // Snapshotting at bundle-build time (not at commit time) is the only way
+  // to make the flow race-safe against a wallet switch that happens between
+  // the sendMessage POST starting and resolving. By the time the await on
+  // sendMessage returns, storageKeyRef.current may already be the NEW
+  // wallet's key — using it to encrypt the publish flag for the OLD
+  // wallet's address would write a blob the old wallet can never decrypt
+  // ("wrong wallet?" from storage.ts on the next restore). The triple
+  // captured here belongs to the wallet that actually sent the bundle, so
+  // the flag lands consistently with what the peer received.
+  //
+  // The in-memory state flip is gated separately on dmKeyRef.current
+  // matching the snapshot — if the user switched chats mid-flow, the
+  // shared React state for the hook instance is now for a different chat
+  // and flipping its flag would corrupt that chat's published-state.
+  const beginHandshakePublish = useCallback((): Promise<{
+    bundle: string
+    commit: () => Promise<void>
+  } | null> => {
     // Serialize mark+persist on the 'account' queue. exportBundle internally
     // calls mark_keys_as_published(), which mutates the in-memory account;
-    // two concurrent callers (cache-scan banner path + WS handshakeBus) would
-    // otherwise interleave their mark/persist pairs and the later in-memory
-    // mutation could be overwritten on disk by the earlier persist completing
-    // last. Same race shape as the per-DID session-pickle bug in
-    // consumePeerBundle. Check inside the queued function so a wallet switch
-    // that races us into the queue fails closed instead of dereferencing a
-    // freed account.
+    // two concurrent callers would otherwise interleave their mark/persist
+    // pairs and the later in-memory mutation could be overwritten on disk
+    // by the earlier persist completing last. Same race shape as the
+    // per-DID session-pickle bug in consumePeerBundle. Check inside the
+    // queued function so a wallet switch that races us into the queue fails
+    // closed instead of dereferencing a freed account.
     return enqueue('account', async () => {
-      if (!accountRef.current || !storageKeyRef.current || !userAddress) {
-        throw new Error('Account not loaded')
+      if (!accountRef.current || !storageKeyRef.current || !userAddress || !dmKey) {
+        return null
       }
+      // Snapshot the triple BEFORE the await. These values define the
+      // publish for the rest of its lifetime — wallet switches and chat
+      // switches after this point can't corrupt them.
+      const snapshotUserAddress = userAddress
+      const snapshotDmKey = dmKey
+      const snapshotStorageKey = storageKeyRef.current
       const bundle = exportBundle(accountRef.current)
-      // Must persist BEFORE returning. If the caller broadcasts the bundle
-      // and the page is closed before the persist completes, the next session
-      // would reload the prior pickle and could republish the same fallback
-      // key with a stale "unpublished" pool state.
-      await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
-      return bundle
+      // Persist account state BEFORE returning. If the caller broadcasts
+      // the bundle and the page is closed before the persist completes,
+      // the next session would reload the prior pickle and could republish
+      // the same fallback key with a stale "unpublished" pool state.
+      await persistAccount(snapshotUserAddress, accountRef.current, snapshotStorageKey)
+      const commit = async (): Promise<void> => {
+        // In-memory: only flip if we're still rendering the chat this
+        // publish was for. Otherwise we'd set the wrong chat's flag on
+        // the shared hook state.
+        if (dmKeyRef.current === snapshotDmKey) {
+          setHasPublishedForChat(true)
+        }
+        // Disk: always write against the snapshot. Reading
+        // storageKeyRef.current LIVE here would be wrong if a wallet
+        // switch landed between begin and commit.
+        await markHandshakePublished(snapshotUserAddress, snapshotDmKey, snapshotStorageKey)
+      }
+      return { bundle, commit }
     })
-  }, [enqueue, userAddress])
+  }, [enqueue, userAddress, dmKey])
 
   // Maximum devices tracked per chat. Each known device costs one ciphertext
   // per send (fanout grows linearly), so the cap bounds wire size and memory.
@@ -797,7 +838,11 @@ export function useE2ESession(
   return {
     state,
     unlock,
-    buildHandshakeBundle,
+    // Publish-flow API. The two-phase begin/commit shape lets the banner
+    // capture wallet identity at bundle-build time and survive
+    // wallet/chat switches that land between sendMessage starting and
+    // resolving — see beginHandshakePublish's comment for the race detail.
+    beginHandshakePublish,
     consumePeerBundle,
     encrypt,
     decrypt,
@@ -808,10 +853,15 @@ export function useE2ESession(
     // address but each device has a distinct Olm identity. Null until unlock.
     ownDid: ownDidRef.current,
     // Have we broadcast our handshake bundle into this chat at least once?
-    // Loaded from IndexedDB on chat enter, set after a successful republish.
+    // Loaded from IndexedDB on chat enter, set after a successful publish.
     // Banner reads this to suppress its auto-publish fallback when our own
     // handshake row is paginated outside the visible message window.
     hasPublishedForChat,
+    // Backfill helper for the cache-scan path: when the scan sees an own
+    // handshake row in the visible window but hasPublishedForChat is
+    // false, this writes the flag. Safe against wallet/chat switches
+    // because the cache-scan effect's cleanup runs synchronously on dep
+    // change and the post-call cancelled-check skips it.
     markOwnHandshakePublished,
     // The dmKey value we last successfully completed a disk load for, or
     // null if we haven't loaded yet (or the most recent attempt errored).

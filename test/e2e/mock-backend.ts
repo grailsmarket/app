@@ -156,6 +156,43 @@ export async function installMockBackend(
     })
   })
 
+  // useAuthStatus → checkAuthentication() reads document.cookie for the
+  // token, then fetches /api/users/me (a Next.js route that server-side
+  // proxies to api.grails.app/auth/me with Bearer auth). We don't get to
+  // see the server-side fetch, so we intercept at the BROWSER level —
+  // page.route catches /api/users/me before Next.js's route handler runs.
+  //
+  // Without this, the verify-cookie lands but the next refetch hits the
+  // real upstream, authStatus stays 'unauthenticated', and the Messages
+  // button (gated on authStatus === 'authenticated') never mounts.
+  //
+  // The client wraps the response in APIResponseType<ProfileResponseType>
+  // and returns the FULL response (not .data), checking `.success`.
+  await page.route(/\/api\/users\/me$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: {
+          id: USER_USER_ID,
+          address: opts.userAddress,
+          email: null,
+          emailVerified: false,
+          telegram: null,
+          discord: null,
+          createdAt: isoNow(),
+          lastSignIn: isoNow(),
+          updatedAt: isoNow(),
+          minOfferThreshold: null,
+          notifyOnListingSold: true,
+          notifyOnOfferReceived: true,
+          notifyOnCommentReceived: true,
+        },
+      }),
+    })
+  })
+
   await page.route(/\/api\/auth\/verify$/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -224,20 +261,9 @@ export async function installMockBackend(
     })
   })
 
-  // Auth status check.
-  await page.route(new RegExp(`${apiBase.source}/auth/check$`), async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        success: true,
-        data: {
-          authenticated: true,
-          user: { id: USER_USER_ID, address: opts.userAddress },
-        },
-      }),
-    })
-  })
+  // (No /auth/check mock — the dApp's auth restoration goes through the
+  // browser-side /api/users/me route which we intercept above, not via a
+  // direct api.grails.app call.)
 
   // Inbox list.
   await page.route(new RegExp(`${apiBase.source}/chats(\\?.*)?$`), async (route) => {

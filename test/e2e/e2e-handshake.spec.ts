@@ -109,13 +109,26 @@ test.describe('E2E handshake: refresh + unlock must not republish', () => {
     const connectModal = page.getByRole('dialog')
     await connectModal.getByRole('button', { name: 'MetaMask' }).click()
 
-    // Wagmi now requests eth_requestAccounts → wallet-mock returns the
-    // mocked account → RainbowKit closes the modal →
-    // ethereum-identity-kit's autoSignInAfterConnection fires
-    // personal_sign → wallet-mock auto-signs → /api/auth/verify (mocked)
-    // returns the JWT cookie → app authenticated. networkidle is the
-    // cleanest signal that all of this has settled.
-    await page.waitForLoadState('networkidle')
+    // Sequence after the modal click:
+    //   eth_requestAccounts (wallet-mock) → RainbowKit closes modal →
+    //   ethereum-identity-kit auto-fires personal_sign → wallet-mock
+    //   auto-signs → POST /api/auth/verify (mocked, sets token cookie) →
+    //   useAuthStatus refetches → GET /api/users/me (mocked) → authStatus
+    //   flips to 'authenticated' → the navbar's Messages button mounts.
+    //
+    // The Messages button is the canonical authenticated-state signal
+    // (it renders only when authStatus === 'authenticated' AND
+    // userAddress is set — see src/components/navigation/chats.tsx).
+    // Wait for it EXPLICITLY here rather than leaning on networkidle:
+    // networkidle resolves after 500ms of request silence, which fires
+    // long before /api/users/me has run when verify is mocked — and if
+    // /api/users/me ever fails, networkidle would resolve and the test
+    // would push on into openChatAndUnlock, only failing 120s later
+    // with a confusing "couldn't find Messages" message. Waiting on
+    // Messages directly makes the failure mode obvious.
+    await page
+      .getByRole('button', { name: 'Messages' })
+      .waitFor({ state: 'visible', timeout: 30_000 })
 
     await openChatAndUnlock(page)
 

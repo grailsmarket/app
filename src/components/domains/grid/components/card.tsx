@@ -27,7 +27,6 @@ import {
 import Link from 'next/link'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { convertWeiPrice } from '@/utils/convertWeiPrice'
 import useETHPrice from '@/hooks/useETHPrice'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
@@ -347,28 +346,6 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
               </div>
             </div>
           )}
-          {filterType !== 'category' &&
-            domain.last_sale_price &&
-            domain.last_sale_currency &&
-            domain.last_sale_date && (
-              <div className='text-neutral flex items-center gap-[4px]'>
-                {/* <p className='text-light-400 truncate text-sm leading-[18px] font-medium'>Last sale:</p> */}
-                <div className='flex items-center gap-1'>
-                  <Price
-                    price={convertWeiPrice(domain.last_sale_price, domain.last_sale_currency, ethPrice)}
-                    currencyAddress={domain.last_sale_currency as Address}
-                    iconSize='14px'
-                    fontSize='text-md font-semibold text-neutral'
-                  />
-                </div>
-                <p>-</p>
-                <div>
-                  <p className='text-md truncate font-semibold'>
-                    {formatExpiryDate(domain.last_sale_date, { includeTime: false, dateDivider: '/' })}
-                  </p>
-                </div>
-              </div>
-            )}
           {(((profileTab.value === 'domains' ||
             profileTab.value === 'watchlist' ||
             profileTab.value === 'grace' ||
@@ -395,7 +372,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
             (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
               <User
                 address={domain.owner as Address}
-                className='max-w-full'
+                className='max-w-full bg-transparent'
                 wrapperClassName='justify-start! max-w-full'
                 disableLink
               />

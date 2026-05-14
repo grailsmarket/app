@@ -27,6 +27,7 @@ interface UserProps {
   alignTooltip?: 'left' | 'right'
   disableTooltip?: boolean
   disableLink?: boolean
+  hideHeaderImage?: boolean
 }
 
 const User: React.FC<UserProps> = ({
@@ -39,6 +40,7 @@ const User: React.FC<UserProps> = ({
   alignTooltip = 'right',
   disableTooltip = false,
   disableLink = false,
+  hideHeaderImage = false,
 }) => {
   const router = useRouter()
   const { userAddress } = useUserContext()
@@ -76,7 +78,7 @@ const User: React.FC<UserProps> = ({
               router.push(`/profile/${address}`)
             }}
           >
-            {headerImageSrc && (
+            {(!hideHeaderImage && headerImageSrc) && (
               <Image
                 src={headerImageSrc}
                 alt='Header'
@@ -108,7 +110,7 @@ const User: React.FC<UserProps> = ({
               disableTooltip && 'pointer-events-none'
             )}
           >
-            {headerImageSrc && (
+            {(!hideHeaderImage && headerImageSrc) && (
               <Image
                 src={headerImageSrc}
                 alt='Header'

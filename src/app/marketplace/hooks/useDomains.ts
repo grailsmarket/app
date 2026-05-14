@@ -8,9 +8,11 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 export const useDomains = () => {
-  const { authStatus } = useUserContext()
+  const { authStatus, userAddress } = useUserContext()
   const filters = useFilterRouter().selectors.filters
   const debouncedSearch = useDebounce(filters.search, 500)
+  const isAuthenticated = authStatus === 'authenticated'
+  const authedUser = isAuthenticated ? userAddress : null
 
   const {
     data: domains,
@@ -37,6 +39,7 @@ export const useDomains = () => {
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      authedUser,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
@@ -45,7 +48,7 @@ export const useDomains = () => {
         filters,
         searchTerm: debouncedSearch,
         enableBulkSearch: true,
-        isAuthenticated: authStatus === 'authenticated',
+        isAuthenticated: isAuthenticated,
       })
 
       return {

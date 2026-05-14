@@ -229,7 +229,7 @@ export const fetchDomains = async ({
       'filters[uniqueSeller]': showUniqueSeller ? 'true' : undefined,
     })
 
-    const fetchFunction = isAuthenticated ? fetch : authFetch
+    const fetchFunction = isAuthenticated ? authFetch : fetch
 
     const res = await fetchFunction(`${API_URL}/search?${paramString}`, {
       method: 'GET',

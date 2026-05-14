@@ -113,6 +113,9 @@ const Actions: React.FC<ActionsProps> = ({
     handler()
   }
 
+  const primaryButtonClassName = 'border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-0.5'
+  const secondaryButtonClassName = 'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-0.5 text-lg font-bold'
+
   if (isBulkSelecting) {
     return (
       <div className='flex flex-row justify-end gap-4 opacity-100'>
@@ -156,13 +159,13 @@ const Actions: React.FC<ActionsProps> = ({
         return (
           <div className='flex flex-row justify-end gap-1 opacity-100'>
             <button
-              className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+              className={secondaryButtonClassName}
               onClick={(e) => clickHandler(e, openMakeListingModal)}
             >
               Edit
             </button>
             <p
-              className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+              className={secondaryButtonClassName}
               onClick={(e) => clickHandler(e, openCancelListingModal)}
             >
               Cancel
@@ -174,7 +177,7 @@ const Actions: React.FC<ActionsProps> = ({
       return (
         <div className='flex flex-row justify-end opacity-100'>
           <p
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2.5 py-1.5 text-lg font-bold'
+            className={primaryButtonClassName}
             onClick={(e) => clickHandler(e, openMakeListingModal)}
           >
             List
@@ -192,7 +195,7 @@ const Actions: React.FC<ActionsProps> = ({
         {registrationStatus === GRACE_PERIOD ? (
           <button
             onClick={(e) => clickHandler(e, openExtendModal)}
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
+            className={primaryButtonClassName}
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
           </button>
@@ -200,7 +203,7 @@ const Actions: React.FC<ActionsProps> = ({
           <button
             onClick={(e) => clickHandler(e, handleOpenRegistrationModal)}
             className={cn(
-              'border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1',
+              primaryButtonClassName,
               registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
             )}
           >
@@ -208,7 +211,7 @@ const Actions: React.FC<ActionsProps> = ({
           </button>
         ) : domainListing?.price ? (
           <button
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
+            className={primaryButtonClassName}
             onClick={(e) => clickHandler(e, openBuyNowModal)}
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Buy Now</p>
@@ -216,7 +219,7 @@ const Actions: React.FC<ActionsProps> = ({
         ) : (
           <button
             onClick={(e) => clickHandler(e, openMakeOfferModal)}
-            className='border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-1'
+            className={primaryButtonClassName}
           >
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Offer</p>
           </button>

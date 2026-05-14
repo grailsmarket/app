@@ -7,7 +7,20 @@ import pluginReactHooks from 'eslint-plugin-react-hooks'
 
 const eslintConfig = [
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
-  { ignores: ['public/*', 'node_modules/*', '.next/*', '.next-env.d.ts'] },
+  {
+    ignores: [
+      'public/*',
+      'node_modules/*',
+      '.next/*',
+      '.next-env.d.ts',
+      // Defensive: dev machines that ran an earlier Synpress-based test
+      // setup may still have a .cache-synpress directory holding MetaMask's
+      // bundled JS. Linting those would flood the report with errors that
+      // aren't ours to fix.
+      '.cache-synpress/**',
+      '**/.cache-synpress/**',
+    ],
+  },
   { languageOptions: { globals: globals.browser } },
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,

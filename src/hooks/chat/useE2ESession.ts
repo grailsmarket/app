@@ -8,11 +8,14 @@ import {
   loadOrCreateAccount,
   persistAccount,
   loadAllSessionsForChat,
+  loadSession,
   persistSession,
   loadRoster,
   saveRoster,
   persistOwnPlaintext,
   loadOwnPlaintext,
+  loadHandshakePublished,
+  markHandshakePublished,
   exportBundle,
   parseBundle,
   type RosterEntry,
@@ -64,6 +67,55 @@ export function useE2ESession(
   const storageKeyRef = useRef<Uint8Array | null>(null)
   const accountRef = useRef<Olm.Account | null>(null)
   const ownDidRef = useRef<string | null>(null)
+  // Per-chat "we've broadcast our handshake at least once" flag, loaded from
+  // IndexedDB on chat enter. Exposed via state (not just a ref) so the banner
+  // re-renders when it flips — the cache-scan auto-publish fallback reads it
+  // to suppress republish when our own handshake row is paginated out of the
+  // visible message window. Resets on chat/wallet switch.
+  const [hasPublishedForChat, setHasPublishedForChat] = useState(false)
+  // "We have finished reading what's on disk for THIS chat" signal — encoded
+  // as the dmKey we last completed a load for (or null if we haven't loaded
+  // anything yet). Banner-side gates compare it against the dmKey they're
+  // rendering: a match means hasPublishedForChat / isReady reflect what's on
+  // disk for the current chat. A mismatch — null (never loaded) or some
+  // previous chat's dmKey — means a load is either pending or stale.
+  //
+  // Encoding the chat identity (not just a boolean) closes two races at once:
+  //
+  //   1. Refresh + unlock. A naive `restoredFromDisk: boolean` set true in
+  //      the locked branch leaves the FIRST render after `setUnlocked(true)`
+  //      exposing `restoredFromDisk=true` while the dmKey effect's
+  //      `setRestoredFromDisk(false)` is still scheduled, not committed.
+  //      The banner's cache-scan effect runs with the stale `true` and can
+  //      republish on a paginated-own-handshake chat before the IndexedDB
+  //      load completes.
+  //   2. Chat switch. Even if the locked-branch eager-flip is removed, on a
+  //      switch from chat A (loaded) to chat B (not yet loaded), the first
+  //      render after dmKey changes still carries restoredFromDisk=true from
+  //      A. The cache-scan effect runs against B's empty refs.
+  //
+  // Both go away if the gate is "does the loaded dmKey match the dmKey I'm
+  // rendering" — stale values literally cannot pass.
+  const [restoredForDmKey, setRestoredForDmKey] = useState<string | null>(null)
+  // Live mirror of the dmKey prop. Async callbacks (markOwnHandshakePublished
+  // notably) capture the dmKey from their closure at creation time, but the
+  // hook instance can be re-rendered for a different chat before the
+  // callback's IDB write resolves. Comparing the captured dmKey against
+  // dmKeyRef.current at state-setting time tells us whether the user is
+  // still on the chat we started for — if not, we skip the in-memory
+  // setState (the disk write still uses the captured dmKey, so the right
+  // chat's flag lands on disk; only the in-memory mirror needs the guard).
+  const dmKeyRef = useRef<string | null>(dmKey)
+  useEffect(() => {
+    dmKeyRef.current = dmKey
+  }, [dmKey])
+  // Same shape as dmKeyRef: a wallet switch mid-publish on the same chat
+  // (dmKey unchanged) would otherwise pass the dmKey-only gate and flip
+  // wallet B's in-memory `hasPublishedForChat` from wallet A's snapshot.
+  const userAddressRef = useRef<string | null>(userAddress)
+  useEffect(() => {
+    userAddressRef.current = userAddress
+  }, [userAddress])
   // Up to TWO Olm sessions per peer device, one per direction:
   //   - outbound: created when we consume the peer's bundle. Used to
   //     encrypt our own messages on the channel WE initiated, and to
@@ -155,6 +207,8 @@ export function useE2ESession(
     storageKeyRef.current = null
     ownDidRef.current = null
     rosterRef.current = []
+    setHasPublishedForChat(false)
+    setRestoredForDmKey(null)
     setUnlocked(false)
     setState({ kind: 'locked' })
   }, [userAddress])
@@ -184,44 +238,76 @@ export function useE2ESession(
     inboundSessionsRef.current = new Map()
     activeDirectionRef.current = new Map()
     rosterRef.current = []
+    // Reset per-chat flags while we re-load. hasPublishedForChat is restored
+    // from disk on the success path below; restoredForDmKey resets to null
+    // and ONLY gets set to a chat identity at the end of a successful load,
+    // so a banner closure-captured stale value (from a prior chat or a prior
+    // unlock window) can never match the current dmKey.
+    setHasPublishedForChat(false)
+    setRestoredForDmKey(null)
     if (!unlocked || !storageKeyRef.current) {
       setState({ kind: 'locked' })
+      // Locked or unauthed — nothing on disk to restore. Leave restoredForDmKey
+      // as null; the banner gates its cache-scan effect on isUnlocked anyway,
+      // so this path doesn't need a "restore complete" signal.
       return
     }
     if (!dmKey || !userAddress) {
       setState({ kind: 'no_session' })
+      // No dmKey (e.g. group chat). Same as above: nothing to restore, and
+      // the banner's isEligibleChat / dmKey-match gate keeps the cache-scan
+      // effect from running.
       return
     }
     let cancelled = false
+    // Capture the dmKey we're loading FOR so the success-path setter can
+    // record exactly that — not whatever `dmKey` happens to be after a
+    // potential mid-flight effect re-run. With React 18 strict mode this is
+    // belt-and-suspenders; the cancelled guard already prevents stale writes,
+    // but pinning the identity here makes the intent obvious.
+    const loadingForDmKey = dmKey
     ;(async () => {
       try {
-        const roster = await loadRoster(userAddress, dmKey, storageKeyRef.current!)
-        if (cancelled) return
-        rosterRef.current = roster
-
-        // Load every persisted session for this chat by IndexedDB key scan,
-        // not by iterating the roster. `decryptCt` can persist an inbound
-        // session without ever calling upsertRoster (peer's pre-key arrives
-        // before we observe their handshake), so a refresh that only walks
-        // the roster would leave those inbound sessions on disk and the
-        // peer's old messages permanently undecryptable.
-        const sessions = await loadAllSessionsForChat(
-          userAddress,
-          dmKey,
-          storageKeyRef.current!,
-        )
+        // Roster + published-flag + sessions all come off the same encrypted
+        // IndexedDB store. Run them in parallel rather than serially — saves
+        // two round-trips in the unlock-to-ready window, which is exactly the
+        // window the cache-scan gate is keeping the banner waiting on.
+        const [roster, publishedFlag, sessions] = await Promise.all([
+          loadRoster(userAddress, dmKey, storageKeyRef.current!),
+          loadHandshakePublished(userAddress, dmKey, storageKeyRef.current!),
+          // loadAllSessionsForChat iterates IndexedDB keys, not the roster,
+          // because decryptCt can persist an inbound session without ever
+          // upserting the roster — walking the roster alone would leave
+          // those orphaned inbound sessions on disk and the peer's old
+          // messages permanently undecryptable.
+          loadAllSessionsForChat(userAddress, dmKey, storageKeyRef.current!),
+        ])
         if (cancelled) {
           for (const { session } of sessions) session.free()
           return
         }
+        rosterRef.current = roster
+        if (publishedFlag) setHasPublishedForChat(true)
         let anySessionLoaded = false
         for (const { did, direction, session } of sessions) {
           if (did === ownDidRef.current) {
             session.free()
             continue
           }
-          if (direction === 'out') outboundSessionsRef.current.set(did, session)
-          else inboundSessionsRef.current.set(did, session)
+          // Dedupe on insert: consumePeerBundle's cache-miss path can install
+          // a disk-loaded session into the ref while this load is in flight.
+          // Without this check, the .set() here would overwrite that session
+          // and leak the original Olm.Session (Wasm heap allocation never
+          // freed). The first-installed session wins; we free the duplicate
+          // we just unpickled.
+          const targetMap =
+            direction === 'out' ? outboundSessionsRef.current : inboundSessionsRef.current
+          if (targetMap.has(did)) {
+            session.free()
+            anySessionLoaded = true
+            continue
+          }
+          targetMap.set(did, session)
           anySessionLoaded = true
         }
         if (anySessionLoaded) {
@@ -229,9 +315,19 @@ export function useE2ESession(
         } else {
           setState({ kind: 'no_session' })
         }
+        // Mark restoration complete LAST so a banner render that observes
+        // restoredForDmKey === loadingForDmKey is guaranteed to also see the
+        // restored hasPublishedForChat / sessions / state from the same React
+        // commit. Using the captured dmKey (not the closure variable) means a
+        // mid-flight chat switch can't write the new chat's identity here.
+        setRestoredForDmKey(loadingForDmKey)
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'load failed'
         setState({ kind: 'error', message: msg })
+        // On error we INTENTIONALLY don't set restoredForDmKey. The banner's
+        // gate stays closed and the cache-scan effect never runs against a
+        // partially-loaded session map. The banner's state.kind === 'error'
+        // branch will surface the failure to the user separately.
       }
     })()
     return () => {
@@ -265,19 +361,73 @@ export function useE2ESession(
     }
   }, [])
 
-  const buildHandshakeBundle = useCallback(async (): Promise<string> => {
-    if (!accountRef.current || !storageKeyRef.current || !userAddress) {
-      throw new Error('Account not loaded')
-    }
-    const bundle = exportBundle(accountRef.current)
-    // Must persist BEFORE returning. exportBundle calls
-    // mark_keys_as_published() which mutates the in-memory account; if the
-    // caller broadcasts the bundle and the page is closed before the persist
-    // completes, the next session would reload the prior pickle and could
-    // republish the same fallback key with a stale "unpublished" pool state.
-    await persistAccount(userAddress, accountRef.current, storageKeyRef.current)
-    return bundle
-  }, [userAddress])
+  // Begin a handshake-publish flow. Returns { bundle, commit } where:
+  //   - bundle: the base64-encoded handshake to POST to the chat.
+  //   - commit: a function that records the "we have published" flag for
+  //     THIS publish — the (wallet, dmKey, storageKey) triple is snapshotted
+  //     at bundle-build time and held in the closure. Call commit() after
+  //     the sendMessage POST resolves.
+  //
+  // Snapshotting at bundle-build time (not at commit time) is the only way
+  // to make the flow race-safe against a wallet switch that happens between
+  // the sendMessage POST starting and resolving. By the time the await on
+  // sendMessage returns, storageKeyRef.current may already be the NEW
+  // wallet's key — using it to encrypt the publish flag for the OLD
+  // wallet's address would write a blob the old wallet can never decrypt
+  // ("wrong wallet?" from storage.ts on the next restore). The triple
+  // captured here belongs to the wallet that actually sent the bundle, so
+  // the flag lands consistently with what the peer received.
+  //
+  // The in-memory state flip is gated separately on dmKeyRef.current
+  // matching the snapshot — if the user switched chats mid-flow, the
+  // shared React state for the hook instance is now for a different chat
+  // and flipping its flag would corrupt that chat's published-state.
+  const beginHandshakePublish = useCallback((): Promise<{
+    bundle: string
+    commit: () => Promise<void>
+  } | null> => {
+    // Serialize mark+persist on the 'account' queue. exportBundle internally
+    // calls mark_keys_as_published(), which mutates the in-memory account;
+    // two concurrent callers would otherwise interleave their mark/persist
+    // pairs and the later in-memory mutation could be overwritten on disk
+    // by the earlier persist completing last. Same race shape as the
+    // per-DID session-pickle bug in consumePeerBundle. Check inside the
+    // queued function so a wallet switch that races us into the queue fails
+    // closed instead of dereferencing a freed account.
+    return enqueue('account', async () => {
+      if (!accountRef.current || !storageKeyRef.current || !userAddress || !dmKey) {
+        return null
+      }
+      // Snapshot the triple BEFORE the await. These values define the
+      // publish for the rest of its lifetime — wallet switches and chat
+      // switches after this point can't corrupt them.
+      const snapshotUserAddress = userAddress
+      const snapshotDmKey = dmKey
+      const snapshotStorageKey = storageKeyRef.current
+      const bundle = exportBundle(accountRef.current)
+      // Persist account state BEFORE returning. If the caller broadcasts
+      // the bundle and the page is closed before the persist completes,
+      // the next session would reload the prior pickle and could republish
+      // the same fallback key with a stale "unpublished" pool state.
+      await persistAccount(snapshotUserAddress, accountRef.current, snapshotStorageKey)
+      const commit = async (): Promise<void> => {
+        // In-memory: only flip if we're still rendering the chat this
+        // publish was for. Otherwise we'd set the wrong chat's flag on
+        // the shared hook state.
+        if (
+          dmKeyRef.current === snapshotDmKey &&
+          userAddressRef.current === snapshotUserAddress
+        ) {
+          setHasPublishedForChat(true)
+        }
+        // Disk: always write against the snapshot. Reading
+        // storageKeyRef.current LIVE here would be wrong if a wallet
+        // switch landed between begin and commit.
+        await markHandshakePublished(snapshotUserAddress, snapshotDmKey, snapshotStorageKey)
+      }
+      return { bundle, commit }
+    })
+  }, [enqueue, userAddress, dmKey])
 
   // Maximum devices tracked per chat. Each known device costs one ciphertext
   // per send (fanout grows linearly), so the cap bounds wire size and memory.
@@ -338,11 +488,12 @@ export function useE2ESession(
     [dmKey, enqueue, userAddress],
   )
 
-  // Consume a peer (or own-other-device) bundle: parse, create outbound
-  // session, persist, and add to the roster. Idempotent on did. Returns
-  // whether the bundle introduced a previously-unknown device — callers use
-  // this to decide whether to auto-republish their own handshake (so the new
-  // device can derive an inbound session to us from a pre-key fanout).
+  // Consume a peer (or own-other-device) bundle: parse, create (or restore)
+  // outbound session, persist, and add to the roster. Idempotent on did.
+  // Returns whether the bundle introduced a previously-unknown device —
+  // callers use this to decide whether to auto-republish their own handshake
+  // (so the new device can derive an inbound session to us from a pre-key
+  // fanout).
   const consumePeerBundle = useCallback(
     (encoded: string, senderUserId: number): Promise<{ isNew: boolean }> => {
       const peer = parseBundle(encoded)
@@ -359,11 +510,57 @@ export function useE2ESession(
           // Self-bundle echo — never consume our own keys.
           return { isNew: false }
         }
-        // "New" means we haven't established our outbound to this device yet.
-        // The peer might already have sent us a pre-key (giving us an inbound
-        // session) without us ever creating outbound — in which case we still
-        // want to create the outbound now so future encrypts to them work.
-        const isNew = !outboundSessionsRef.current.has(peer.identity)
+        // Cache miss in memory is NOT the same as "we've never met this
+        // peer" — the dmKey-load effect's roster + session load may still be
+        // in flight (concurrent with this banner-side cache scan, which
+        // fires the moment isUnlocked + restoredForDmKey gates pass for the
+        // initial unlock load). Fall through to IndexedDB before declaring
+        // `isNew`: if a session pickle from a prior handshake exists on
+        // disk, we restore it instead of building a fresh outbound.
+        // Without this, the freshly-created session would overwrite the
+        // stored pickle via persistSession() below, and any already-sent
+        // ciphertexts on the original session would become permanently
+        // undecryptable.
+        //
+        // Two races here, both handled:
+        //
+        //   A. Two concurrent consumePeerBundle calls for the same peer:
+        //      handled by the surrounding enqueue('bundle/<did>') queue.
+        //      The second call will see the first's ref install on its own
+        //      ref.get() check.
+        //
+        //   B. The dmKey-load effect installing the same session into the
+        //      ref while we're awaiting loadSession (this code runs INSIDE
+        //      enqueue, the dmKey load runs OUTSIDE). After the await, the
+        //      ref MAY have been populated by the loader. We re-check and
+        //      free the duplicate we just unpickled rather than .set()
+        //      overwriting and leaking the loader's Olm.Session in the
+        //      Wasm heap.
+        let outbound = outboundSessionsRef.current.get(peer.identity)
+        if (!outbound) {
+          const fromDisk = await loadSession(
+            userAddress,
+            dmKey,
+            peer.identity,
+            'out',
+            storageKeyRef.current,
+          )
+          if (fromDisk) {
+            const winner = outboundSessionsRef.current.get(peer.identity)
+            if (winner) {
+              // dmKey-load effect raced ahead and installed first. Keep its
+              // copy (same pickle, byte-equivalent session) and free ours.
+              fromDisk.free()
+              outbound = winner
+            } else {
+              outboundSessionsRef.current.set(peer.identity, fromDisk)
+              outbound = fromDisk
+            }
+          }
+        }
+        // "New" now correctly means: no session for this peer in memory AND
+        // none on disk. Only then do we create + persist a fresh outbound.
+        const isNew = !outbound
         if (isNew) {
           const session = await createOutboundSession(accountRef.current, peer)
           outboundSessionsRef.current.set(peer.identity, session)
@@ -558,6 +755,64 @@ export function useE2ESession(
     return dids.size
   }, [])
 
+  // Persist that we've broadcast our handshake into this chat at least once,
+  // and reflect it in state for the banner. Called by republishOurHandshake's
+  // success path — AFTER the sendMessage POST has succeeded, so we know the
+  // peer has the bundle for the (wallet, dmKey) captured here.
+  //
+  // Capture EVERYTHING that namespaces the IDB write at call time:
+  // userAddress + dmKey come from the useCallback closure; storageKey we
+  // grab explicitly. The ref dereference is critical — `storageKeyRef.current`
+  // is rebound by the wallet-change effect, so reading it inside the
+  // `await` would give us the NEW wallet's key. Writing wallet A's
+  // namespace path with wallet B's encryption key produces a blob the
+  // next wallet-A restore can't decrypt ("wrong wallet?" from
+  // storage.ts:41), permanently breaking handshake-flag restoration for
+  // that chat under wallet A.
+  //
+  // The two writes have different scope requirements:
+  //
+  //   - Disk write: always runs against the captured triple. The peer
+  //     has our bundle for that (wallet, dmKey); the on-disk flag for
+  //     that pair must reflect it, regardless of whether the user has
+  //     since switched chats OR wallets. Skipping the write would leave
+  //     the flag false and the next visit — once the handshake row is
+  //     paginated past the visible 50 — would auto-publish a duplicate
+  //     via the sawOwnHandshake-false fallback.
+  //
+  //   - In-memory setState: gated on `dmKeyRef.current === callForDmKey`.
+  //     setHasPublishedForChat operates on the hook's current React
+  //     state, which is shared across chat switches (same banner
+  //     instance, dmKey prop changes). If the user switched chats
+  //     between the call starting and now, flipping the in-memory flag
+  //     would corrupt the new chat's published-state and suppress its
+  //     legitimate first publish.
+  //
+  // In-memory flip happens BEFORE the disk write so the running mount
+  // correctly suppresses republish even if the IDB persist throws (quota,
+  // private-window, transient). On persist failure the running session's
+  // memory still reads true; only the next refresh would see the missing
+  // on-disk flag and retry — observably a no-op on the peer side
+  // (consumePeerBundle is idempotent on peer.identity).
+  const markOwnHandshakePublished = useCallback(async (): Promise<void> => {
+    if (!storageKeyRef.current || !dmKey || !userAddress) return
+    const callForDmKey = dmKey
+    const callForUserAddress = userAddress
+    const callForStorageKey = storageKeyRef.current
+    // In-memory: only flip if we're still rendering the chat this call
+    // was for. Otherwise we'd write the wrong chat's flag.
+    if (
+      dmKeyRef.current === callForDmKey &&
+      userAddressRef.current === callForUserAddress
+    ) {
+      setHasPublishedForChat(true)
+    }
+    // Disk: always write, keyed by the captured (wallet, chat, storageKey)
+    // triple. Reading storageKeyRef.current LIVE here would be wrong if
+    // the user has switched wallets — see the comment above.
+    await markHandshakePublished(callForUserAddress, callForDmKey, callForStorageKey)
+  }, [dmKey, userAddress])
+
   // Expose to non-React callers via the module-level registry.
   useEffect(() => {
     if (!chatId || state.kind === 'locked') return
@@ -596,7 +851,11 @@ export function useE2ESession(
   return {
     state,
     unlock,
-    buildHandshakeBundle,
+    // Publish-flow API. The two-phase begin/commit shape lets the banner
+    // capture wallet identity at bundle-build time and survive
+    // wallet/chat switches that land between sendMessage starting and
+    // resolving — see beginHandshakePublish's comment for the race detail.
+    beginHandshakePublish,
     consumePeerBundle,
     encrypt,
     decrypt,
@@ -606,6 +865,26 @@ export function useE2ESession(
     // OUR handshake from a sibling-device handshake — both share the wallet
     // address but each device has a distinct Olm identity. Null until unlock.
     ownDid: ownDidRef.current,
+    // Have we broadcast our handshake bundle into this chat at least once?
+    // Loaded from IndexedDB on chat enter, set after a successful publish.
+    // Banner reads this to suppress its auto-publish fallback when our own
+    // handshake row is paginated outside the visible message window.
+    hasPublishedForChat,
+    // Backfill helper for the cache-scan path: when the scan sees an own
+    // handshake row in the visible window but hasPublishedForChat is
+    // false, this writes the flag. Safe against wallet/chat switches
+    // because the cache-scan effect's cleanup runs synchronously on dep
+    // change and the post-call cancelled-check skips it.
+    markOwnHandshakePublished,
+    // The dmKey value we last successfully completed a disk load for, or
+    // null if we haven't loaded yet (or the most recent attempt errored).
+    // Banner-side gates compare it against the dmKey they're rendering —
+    // a match means hasPublishedForChat / isReady reflect what's on disk
+    // for the current chat; anything else means stale or pending. Encoding
+    // the chat identity (rather than a boolean) closes both the refresh-
+    // unlock and chat-switch races by construction: a stale value literally
+    // cannot match the current dmKey.
+    restoredForDmKey,
   }
 }
 

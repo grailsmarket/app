@@ -1,0 +1,6 @@
+[test]
+# fake-indexeddb supplies a Node-compatible IDB global so storage.ts's
+# `idb` calls work outside the browser. Loaded once per test process before
+# any test files import. setup.ts also installs a Node-side Olm runtime for
+# the olm-restoration tests that need real Olm crypto.
+preload = ["./test/setup.ts"]

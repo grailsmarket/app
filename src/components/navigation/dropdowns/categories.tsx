@@ -17,11 +17,12 @@ import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 
 interface CategoriesProps {
+  dropdownOption: string | null
   setDropdownOption: (option: string | null) => void
   previousDropdownOption: string | null
 }
 
-const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDropdownOption }) => {
+const Categories: React.FC<CategoriesProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
   const { width } = useWindowSize()
@@ -61,6 +62,7 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
       })
       return results
     },
+    enabled: dropdownOption === 'categories',
   })
 
   const cardCount = useMemo(() => {

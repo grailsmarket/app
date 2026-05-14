@@ -29,7 +29,8 @@ interface PremiumProps {
 const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
-  const { categories } = useCategories()
+  const isActive = dropdownOption === 'premium'
+  const { categories } = useCategories({ enabled: isActive })
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
@@ -54,6 +55,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
         isAuthenticated: authStatus === 'authenticated',
         inAnyCategory: true,
       }),
+    enabled: isActive,
   })
 
   const cardCount = useMemo(() => {

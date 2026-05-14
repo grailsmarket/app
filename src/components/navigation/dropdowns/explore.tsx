@@ -56,6 +56,7 @@ const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, pr
         inAnyCategory: true,
         excludeCategories: ['prepunks'],
       }),
+    enabled: dropdownOption === 'explore',
   })
 
   const cardCount = useMemo(() => {

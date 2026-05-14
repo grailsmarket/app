@@ -28,6 +28,7 @@ interface UserProps {
   disableTooltip?: boolean
   disableLink?: boolean
   hideHeaderImage?: boolean
+  skipProfileFetch?: boolean
 }
 
 const User: React.FC<UserProps> = ({
@@ -41,6 +42,7 @@ const User: React.FC<UserProps> = ({
   disableTooltip = false,
   disableLink = false,
   hideHeaderImage = false,
+  skipProfileFetch = false,
 }) => {
   const router = useRouter()
   const { userAddress } = useUserContext()
@@ -52,11 +54,12 @@ const User: React.FC<UserProps> = ({
       const profile = await fetchAccount(address)
       return profile
     },
+    enabled: !skipProfileFetch,
   })
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
-  const avatarSrc = `${ENS_METADATA_URL}/mainnet/avatar/${profile?.ens?.name}`
-  const headerImageSrc = `${ENS_METADATA_URL}/mainnet/header/${profile?.ens?.name}`
+  const avatarSrc = profile?.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${profile.ens.name}` : undefined
+  const headerImageSrc = profile?.ens?.name ? `${ENS_METADATA_URL}/mainnet/header/${profile.ens.name}` : undefined
 
   return (
     <TooltipWrapper

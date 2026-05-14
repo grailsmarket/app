@@ -37,8 +37,14 @@ import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useCategories } from '@/components/filters/hooks/useCategories'
 import { localizeNumber } from '@/utils/localizeNumber'
+
+const formatCategoryName = (category: string) =>
+  category
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
 interface CardProps {
   domain: MarketplaceDomainType
@@ -53,7 +59,6 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { ethPrice } = useETHPrice()
-  const { categories } = useCategories()
   const { filterType } = useFilterContext()
   const { selectedTab: profileTab } = useAppSelector(selectUserProfile)
   const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
@@ -65,7 +70,6 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
   const isSelected = isBulkSelecting && selectedDomains.some((d) => d.name === domain.name)
-  const category = categories?.find((c) => c.name === domain.clubs?.[0])
   const isRankClub = domain.clubs?.[0]?.includes('prepunk') || domain.clubs?.[0]?.includes('short_name_auction')
   const clubRank = isRankClub ? domain.club_ranks?.find((rank) => rank.club === domain.clubs?.[0])?.rank : null
 
@@ -338,7 +342,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                   height={16}
                   className='rounded-full'
                 />
-                <p className='truncate'>{category?.display_name}</p>
+                <p className='truncate'>{formatCategoryName(domain.clubs[0])}</p>
                 {clubRank ? <p>#{localizeNumber(clubRank)}</p> : null}
                 {domain.clubs.length > 1 && (
                   <p className='text-md text-neutral truncate font-bold'>+{domain.clubs.length - 1}</p>
@@ -375,6 +379,8 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                 className='max-w-full bg-transparent'
                 wrapperClassName='justify-start! max-w-full'
                 disableLink
+                disableTooltip
+                skipProfileFetch
               />
             )}
           <div className='flex justify-between'>

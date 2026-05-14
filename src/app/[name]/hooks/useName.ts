@@ -1,5 +1,5 @@
 import { fetchNameDetails } from '@/api/name/details'
-import { fetchNameMetadata } from '@/api/name/metadata'
+import { fetchNameMetadata, formatNameMetadata } from '@/api/name/metadata'
 import { fetchNameOffers } from '@/api/name/offers'
 import { fetchNameRoles } from '@/api/name/roles'
 import { useAppDispatch } from '@/state/hooks'
@@ -8,7 +8,6 @@ import {
   setEditRecordsModalName,
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
-import { MetadataType } from '@/types/api'
 import { useQuery } from '@tanstack/react-query'
 
 export const useName = (name: string) => {
@@ -37,33 +36,7 @@ export const useName = (name: string) => {
     queryKey: ['name', 'metadata', name],
     queryFn: async () => {
       const result = await fetchNameMetadata(name)
-      const metadata = Object.entries(result || {})
-        .flatMap(([key, value]) => {
-          if (key === 'chains') {
-            return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
-              label: chainName,
-              value: address,
-              canCopy: true,
-            }))
-          }
-
-          if (key === 'contenthash') {
-            return {
-              label: key,
-              value: `${value.protocol}://${value.value}`,
-              canCopy: true,
-            }
-          }
-
-          return {
-            label: key,
-            value: value,
-            canCopy: true,
-          }
-        })
-        .filter((row) => typeof row.value === 'string' && row.value.length > 0 && row.label !== 'resolverAddress')
-
-      return metadata as MetadataType[]
+      return formatNameMetadata(result)
     },
     enabled: !!name,
   })

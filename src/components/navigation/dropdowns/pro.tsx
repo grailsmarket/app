@@ -104,7 +104,7 @@ const Pro: React.FC<ProProps> = ({ setDropdownOption, previousDropdownOption }) 
         )}
       </Link>
       <div className='px-md flex w-full flex-row flex-wrap gap-4 md:px-0'>
-        <Link href='/pro' className='text-2xl font-semibold text-neutral px-md'>
+        <Link href='/pro' className='text-2xl font-semibold text-neutral px-md md:hidden'>
           Go to Pro Page
         </Link>
         {isSubscriber &&

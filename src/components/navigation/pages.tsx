@@ -154,7 +154,13 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
           pathname === '/pro' ? 'text-primary active font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
           dropdownOption === 'pro' && 'active text-primary opacity-100'
         )}
-        onMouseEnter={() => isSubscriber && handleMouseEnter('pro')}
+        onMouseEnter={() => {
+          if (isSubscriber) {
+            handleMouseEnter('pro')
+          } else {
+            setDropdownOption?.(null)
+          }
+        }}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
       >

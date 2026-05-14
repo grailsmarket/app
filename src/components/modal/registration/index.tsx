@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
@@ -18,11 +18,15 @@ import RegistrationToast from './components/registration-toast'
 import SuccessToast, { type SuccessSummary } from './components/success-toast'
 import { useAppDispatch } from '@/state/hooks'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
+import { track } from '@/lib/analytics'
 
 const RegistrationModal: React.FC = () => {
   const dispatch = useAppDispatch()
   const modal = useRegistrationModal()
   const [successSummary, setSuccessSummary] = useState<SuccessSummary | null>(null)
+  const hasTrackedSuccess = useRef(false)
+  const hasTrackedStart = useRef(false)
+  const hasTrackedFailure = useRef(false)
 
   const {
     isClient,
@@ -46,10 +50,76 @@ const RegistrationModal: React.FC = () => {
 
   // Clear stale success summary when a new registration opens
   useEffect(() => {
-    if (registrationState.isOpen) {
+    if (registrationState.isOpen && registrationState.flowState === 'review') {
       setSuccessSummary(null)
+      hasTrackedSuccess.current = false
+      hasTrackedStart.current = false
+      hasTrackedFailure.current = false
     }
-  }, [registrationState.isOpen])
+  }, [registrationState.isOpen, registrationState.flowState])
+
+  useEffect(() => {
+    if (registrationState.flowState === 'committing' && !hasTrackedStart.current) {
+      hasTrackedStart.current = true
+      track('bulk_register_started', {
+        domain_count: modal.availableEntries.length,
+        is_bulk: modal.isBulk,
+        total_batches: modal.totalBatches,
+        total_eth: modal.calculationResults?.priceETH ?? null,
+        total_usd: modal.calculationResults?.priceUSD ?? null,
+      })
+    }
+
+    if (registrationState.flowState === 'success' && !hasTrackedSuccess.current) {
+      hasTrackedSuccess.current = true
+      const firstBatch = registrationState.batches[0]
+      const entryDurations = modal.availableEntries.map(
+        (entry) => modal.entryDurations[modal.entries.indexOf(entry)] ?? 0
+      )
+      const nameLengths = modal.availableEntries.map((entry) => entry.name.replace(/\.eth$/, '').length)
+      const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+      track('bulk_register_completed', {
+        domain_count: modal.availableEntries.length,
+        is_bulk: modal.isBulk,
+        total_batches: modal.totalBatches,
+        total_eth: modal.calculationResults?.priceETH ?? null,
+        total_usd: modal.calculationResults?.priceUSD ?? null,
+        commit_tx_hash: firstBatch?.commitTxHash ?? null,
+        register_tx_hash: firstBatch?.registerTxHash ?? null,
+        entry_durations: entryDurations,
+        name_lengths: nameLengths,
+        avg_duration_seconds: entryDurations.length ? sum(entryDurations) / entryDurations.length : 0,
+        avg_name_length: nameLengths.length ? sum(nameLengths) / nameLengths.length : 0,
+        min_name_length: nameLengths.length ? Math.min(...nameLengths) : 0,
+        max_name_length: nameLengths.length ? Math.max(...nameLengths) : 0,
+      })
+    }
+
+    if (registrationState.flowState === 'error' && !hasTrackedFailure.current) {
+      hasTrackedFailure.current = true
+      const lastAttemptedBatch = registrationState.batches[registrationState.currentBatchIndex]
+      track('bulk_register_failed', {
+        domain_count: modal.availableEntries.length,
+        is_bulk: modal.isBulk,
+        error_message: registrationState.errorMessage ?? null,
+        current_batch_index: registrationState.currentBatchIndex,
+        total_batches: modal.totalBatches,
+        commit_tx_hash: lastAttemptedBatch?.commitTxHash ?? null,
+        register_tx_hash: lastAttemptedBatch?.registerTxHash ?? null,
+      })
+    }
+  }, [
+    registrationState.flowState,
+    registrationState.batches,
+    registrationState.currentBatchIndex,
+    registrationState.errorMessage,
+    modal.availableEntries,
+    modal.entries,
+    modal.entryDurations,
+    modal.isBulk,
+    modal.totalBatches,
+    modal.calculationResults,
+  ])
 
   // Detect success while minimized → snapshot data into toast, then reset
   useEffect(() => {

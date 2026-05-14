@@ -1,10 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
+import { createPostHogServerClient } from '@/lib/posthog-server'
 import { API_URL } from '@/constants/api'
 
+async function captureAuthVerified(properties: {
+  address: string | null
+  success: boolean
+  status?: number
+  failure_reason?: string
+}) {
+  const posthog = createPostHogServerClient()
+  if (!posthog) return
+  try {
+    posthog.capture({
+      distinctId: properties.address?.toLowerCase() ?? 'anonymous',
+      event: 'auth_verified',
+      properties: {
+        success: properties.success,
+        status: properties.status,
+        failure_reason: properties.failure_reason,
+        $process_person_profile: false,
+      },
+    })
+    await posthog.shutdown(2000)
+  } catch (err) {
+    console.error('analytics failed:', err)
+  }
+}
+
 export async function POST(request: NextRequest) {
+  let address: string | null = null
   try {
     const body = await request.json()
     const { message, signature } = body
+
+    const addressMatch = typeof message === 'string' ? message.match(/0x[a-fA-F0-9]{40}/) : null
+    address = addressMatch?.[0] ?? null
 
     const response = await fetch(`${API_URL}/auth/verify`, {
       method: 'POST',
@@ -27,12 +58,22 @@ export async function POST(request: NextRequest) {
           maxAge: 60 * 60 * 24 * 7, // 1 week
         })
       }
+      after(() => captureAuthVerified({ address, success: true, status: response.status }))
       return res
     }
 
+    after(() =>
+      captureAuthVerified({
+        address,
+        success: false,
+        status: response.status,
+        failure_reason: typeof data?.error === 'string' ? data.error : 'upstream_error',
+      })
+    )
     return NextResponse.json(data, { status: response.status })
   } catch (error) {
     console.error('Error verifying signature:', error)
+    after(() => captureAuthVerified({ address, success: false, failure_reason: 'exception' }))
     return NextResponse.json({ error: 'Failed to verify signature' }, { status: 500 })
   }
 }

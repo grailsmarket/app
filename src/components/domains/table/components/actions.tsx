@@ -286,7 +286,7 @@ const Actions: React.FC<ActionsProps> = ({
   // }
 
   return (
-    <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
+    <div className={cn('z-10 flex flex-row items-center justify-end opacity-100', width)}>
       <div className='flex h-7 items-center gap-1'>
         {canAddToCart && !isMyDomain && !watchlistId && (
           <button className={`cursor-pointer rounded-sm p-0 pr-0.5`}>

@@ -12,6 +12,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import Price from '@/components/ui/price'
 import { formatPrice } from '@/utils/formatPrice'
 import { TOKENS } from '@/constants/web3/tokens'
+import { track } from '@/lib/analytics'
 
 interface CancelOfferModalProps {
   onClose: () => void
@@ -36,6 +37,13 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
     try {
       await cancelOffer(offer)
       setStatus('success')
+      track('offer_cancelled', {
+        name,
+        offer_id: offer.id,
+        source: offer.source ?? null,
+        currency_address: offer.currency_address ?? null,
+        amount_wei: offer.offer_amount_wei ?? null,
+      })
     } catch (err) {
       console.error('Failed to cancel listing:', err)
       setStatus('error')

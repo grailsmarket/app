@@ -7,15 +7,18 @@ import { useQuery } from '@tanstack/react-query'
 import { Avatar, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { beautifyName } from '@/lib/ens'
 import type { Comment } from '@/types/comment'
+import { cn } from '@/utils/tailwind'
+import { getMetadataAssetUrl } from '@/utils/web3/ens'
 
 interface Props {
   comment: Comment
   /** Render the trash icon when this is the caller's own comment. */
   canDelete?: boolean
+  isLast?: boolean
   onRequestDelete?: (comment: Comment) => void
 }
 
-const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) => {
+const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDelete }) => {
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
 
   const { data: account } = useQuery({
@@ -29,19 +32,19 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) =>
   const displayName = ensName ? beautifyName(ensName) : truncateAddress(comment.author_address as `0x${string}`)
 
   return (
-    <div className='border-tertiary flex w-full gap-2 border-b py-3 last:border-b-0'>
+    <div className={cn('border-tertiary flex w-full gap-2.5 border-b py-3', isLast ? 'border-b-0' : '')}>
       <Link href={`/profile/${comment.author_address}`} className='shrink-0' aria-label={displayName}>
         <Avatar
           name={ensName || comment.author_address}
-          src={account?.ens?.avatar}
-          style={{ height: '36px', width: '36px' }}
+          src={getMetadataAssetUrl(ensName || comment.author_address, 'avatar')}
+          style={{ height: '40px', width: '40px' }}
         />
       </Link>
       <div className='flex min-w-0 flex-1 flex-col gap-1'>
         <div className='flex items-center justify-between gap-2'>
           <Link
             href={`/profile/${comment.author_address}`}
-            className='hover:text-primary text-foreground text-md truncate font-semibold'
+            className='hover:text-primary text-foreground truncate text-lg font-semibold'
           >
             {displayName}
           </Link>
@@ -76,7 +79,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, onRequestDelete }) =>
             )}
           </div>
         </div>
-        <p className='text-foreground text-md break-words whitespace-pre-wrap'>{comment.body}</p>
+        <p className='text-foreground text-md font-medium break-words whitespace-pre-wrap'>{comment.body}</p>
       </div>
     </div>
   )

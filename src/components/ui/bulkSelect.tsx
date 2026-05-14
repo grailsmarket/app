@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Cross, useWindowSize } from 'ethereum-identity-kit'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useMemo, useState } from 'react'
+import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -51,6 +51,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   // Delayed state for content switch - keeps expanded content visible during close animation
   const [showExpandedContent, setShowExpandedContent] = useState(false)
 
+  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const {
     isSelecting,
@@ -115,26 +116,26 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   )
   const namesList = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          getRegistrationStatus(domain.expiry_date) === REGISTERED
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        getRegistrationStatus(domain.expiry_date) === REGISTERED
+    )
     : []
   const namesTransfer = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          getRegistrationStatus(domain.expiry_date) === REGISTERED
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        getRegistrationStatus(domain.expiry_date) === REGISTERED
+    )
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-        (domain) =>
-          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          domain.listings?.some(
-            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-          )
-      )
+      (domain) =>
+        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+        domain.listings?.some(
+          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+        )
+    )
     : []
   const namesRegister = selectedDomains.filter((domain) =>
     REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))
@@ -402,6 +403,13 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const bulkSelectWidth =
     isSelecting && measuredWidth > 0 ? `${Math.min(measuredWidth, maxVw)}px` : `${collapsedWidth}px`
 
+  const componentWidth = useMemo(() => {
+    if (!isClient) return '136px'
+    if (isSelecting) return bulkSelectWidth
+    if (windowWidth && windowWidth < 640) return '130px'
+    return '136px'
+  }, [isSelecting, windowWidth, bulkSelectWidth, isClient])
+
   if (!isBulkSelectSupportedTab) return null
 
   return (
@@ -469,10 +477,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       <div
-        className={cn(
-          'shadow-bulk bg-background flex justify-end overflow-hidden rounded-md transition-[width] duration-200'
-          // isSelecting ? bulkSelectWidth : 'w-34'
-        )}
+        className='shadow-bulk bg-background flex justify-end overflow-hidden rounded-md transition-[width] duration-200'
         style={{
           width: bulkSelectWidth,
         }}

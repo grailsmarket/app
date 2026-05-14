@@ -3,11 +3,12 @@
 import { useSeaportClient } from '@/hooks/useSeaportClient'
 import { OrderStatus, OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import React, { createContext, useContext, ReactNode } from 'react'
-import { ContractTransaction } from 'ethers'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
 import type { BulkOfferResponse } from '@/api/offers/createBulk'
 import type { NOfManyOfferResponse } from '@/lib/seaport/bulkTypes'
+
+type FulfillOrderFn = ReturnType<typeof useSeaportClient>['fulfillOrder']
 
 type SeaportContextValue = {
   isInitialized: boolean
@@ -55,7 +56,7 @@ type SeaportContextValue = {
     currency: 'WETH' | 'USDC'
     expiryDate: number
   }) => Promise<NOfManyOfferResponse>
-  fulfillOrder: (order: OrderWithCounter) => Promise<ContractTransaction>
+  fulfillOrder: FulfillOrderFn
   isLoading: boolean
 }
 
@@ -105,20 +106,20 @@ export const useSeaportContext = (): SeaportContextValue => {
     // Default to marketplace if no context is provided (backwards compatibility)
     return {
       isInitialized: false,
-      reinitializeSeaport: async () => {},
-      cancelListings: async () => {},
-      cancelOffer: async () => {},
+      reinitializeSeaport: async () => { },
+      cancelListings: async () => { },
+      cancelOffer: async () => { },
       validateOrder: async () => false,
       getOrderStatus: async () => null,
       conduitConfig: null,
       createListing: async () => {
         return { success: false, error: 'Not implemented' }
       },
-      createOffer: async () => {},
+      createOffer: async () => { },
       createBulkOffer: async () => ({ groupId: '', totalOffers: 0, created: 0, failed: 0, results: [] }),
       createNOfManyOffer: async () => ({ groupId: 0, targetCount: 0, totalItems: 0, created: 0, results: [] }),
       // @ts-expect-error - fulfillOrder is not implemented
-      fulfillOrder: async () => {},
+      fulfillOrder: async () => { },
       error: null,
       isLoading: false,
     }

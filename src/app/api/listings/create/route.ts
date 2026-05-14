@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
+import { captureListingCreated } from '@/lib/posthog-server'
 
 const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
@@ -29,6 +31,8 @@ export async function POST(request: NextRequest) {
     // Determine marketplace from order_data metadata
     const marketplace = orders[0].marketplace || 'grails'
 
+    const numericPrices: number[] = Array.isArray(prices) ? prices.map((p: unknown) => parseFloat(String(p))) : []
+
     // If posting to OpenSea, submit the order to OpenSea API
     let openSeaSubmissionError = null
     if (marketplace === 'opensea') {
@@ -37,6 +41,17 @@ export async function POST(request: NextRequest) {
           orders.map(async (order: SeaportStoredOrder) => await submitOrderToOpenSea(order))
         )
         console.log('Successfully submitted order to OpenSea')
+        if (type === 'listing') {
+          after(() =>
+            captureListingCreated({
+              seller_address: sellerAddress,
+              marketplace,
+              domain_count: domains.length,
+              currencies: currencies ?? [],
+              prices: numericPrices,
+            })
+          )
+        }
         return NextResponse.json({ openSea: openSeaResponses })
       } catch (openSeaError: any) {
         console.error('Failed to submit to OpenSea:', openSeaError)
@@ -130,6 +145,34 @@ export async function POST(request: NextRequest) {
         })
       )
 
+      if (type === 'listing') {
+        const succeededPrices: number[] = []
+        const succeededCurrencies: (string | undefined)[] = []
+        for (let batchIdx = 0; batchIdx < responses.length; batchIdx++) {
+          const r = responses[batchIdx]
+          if (r instanceof Response) continue
+          const results = r?.data?.results ?? []
+          for (const item of results) {
+            if (item?.status !== 'success') continue
+            const localIdx = typeof item.index === 'number' ? item.index : 0
+            const globalIdx = batchIdx * CREATE_BATCH_SIZE + localIdx
+            succeededPrices.push(numericPrices[globalIdx] ?? NaN)
+            const currency = currencies?.[globalIdx]
+            succeededCurrencies.push(typeof currency === 'string' ? currency : undefined)
+          }
+        }
+        if (succeededPrices.length > 0) {
+          after(() =>
+            captureListingCreated({
+              seller_address: sellerAddress,
+              marketplace,
+              domain_count: succeededPrices.length,
+              currencies: succeededCurrencies,
+              prices: succeededPrices,
+            })
+          )
+        }
+      }
       return NextResponse.json({ grails: responses })
     } catch (error: any) {
       console.error('Error creating orders on Grails marketplace:', error)

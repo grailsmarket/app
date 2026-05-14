@@ -195,8 +195,8 @@ const NamePage: React.FC<Props> = ({ name, isWidget = false, containerWidth = 0,
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />
+          <CommentsPanel name={name} nameDetails={nameDetails} />
           <SimilarNames name={name} />
-          <CommentsPanel name={name} />
         </div>
       </div>
     </div>

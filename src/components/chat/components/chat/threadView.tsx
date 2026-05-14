@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef } from 'react'
 import Image from 'next/image'
+import { isSameDay } from 'date-fns'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
@@ -19,6 +20,7 @@ import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
 import Composer from './composer'
 import TypingDots from './typingDots'
+import DayDivider from './dayDivider'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
@@ -67,7 +69,47 @@ const ThreadView: React.FC = () => {
     lastSeenCount.current = messages.length
   }, [messages.length])
 
-  // Mark-read: when the thread is open and there are messages, mark the newest as read.
+  // Adjust for the virtual keyboard along with keeping the latest message visible
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+    const vv = window.visualViewport
+    let previousHeight = vv.height
+    let pinning = false
+
+    const KEYBOARD_REVEAL_THRESHOLD = 80
+    const PIN_DURATION_MS = 350
+
+    const pinToBottom = () => {
+      if (pinning) return
+      pinning = true
+      const start = performance.now()
+      const tick = () => {
+        const el = scrollRef.current
+        if (el) el.scrollTop = el.scrollHeight
+        if (performance.now() - start < PIN_DURATION_MS) {
+          requestAnimationFrame(tick)
+        } else {
+          pinning = false
+        }
+      }
+      requestAnimationFrame(tick)
+    }
+
+    const onResize = () => {
+      const nextHeight = vv.height
+      if (nextHeight < previousHeight - KEYBOARD_REVEAL_THRESHOLD) {
+        pinToBottom()
+      }
+      previousHeight = nextHeight
+    }
+
+    vv.addEventListener('resize', onResize)
+    return () => {
+      vv.removeEventListener('resize', onResize)
+    }
+  }, [])
+
+  // when the thread is open and there are messages, mark the newest as read.
   useEffect(() => {
     if (!activeChatId || messages.length === 0) return
     const newest: ChatMessage | undefined = messages[messages.length - 1]
@@ -180,14 +222,21 @@ const ThreadView: React.FC = () => {
                 <span className='text-neutral text-sm'>Loading older messages…</span>
               </div>
             )}
-            {messages.map((m) => (
-              <MessageRow
-                key={m.id}
-                message={m}
-                isOwn={m.sender_address?.toLowerCase() === myAddress}
-                isRead={m.id === peer?.last_read_message_id}
-              />
-            ))}
+            {messages.map((m, i) => {
+              const current = new Date(m.created_at)
+              const previous = i > 0 ? new Date(messages[i - 1].created_at) : null
+              const startsNewDay = !previous || !isSameDay(current, previous)
+              return (
+                <React.Fragment key={m.id}>
+                  {startsNewDay && <DayDivider date={current} />}
+                  <MessageRow
+                    message={m}
+                    isOwn={m.sender_address?.toLowerCase() === myAddress}
+                    isRead={m.id === peer?.last_read_message_id}
+                  />
+                </React.Fragment>
+              )
+            })}
             {otherTypingIds.length > 0 && (
               <div className={cn('flex items-center gap-2 pt-1')}>
                 <div className='bg-secondary rounded-2xl rounded-bl-sm px-4 py-2'>

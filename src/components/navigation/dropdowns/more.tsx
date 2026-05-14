@@ -8,7 +8,7 @@ import analyticsIcon from 'public/icons/analytics-primary.svg'
 import trophyIcon from 'public/icons/trophy-primary.svg'
 import activityIcon from 'public/icons/activity-primary.svg'
 import searchIcon from 'public/icons/search-primary.svg'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -24,6 +24,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
+  const isClient = useIsClient()
 
   const defaultAnimationDelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
   const activityTab = MARKETPLACE_TABS.find((tab) => tab.value === 'activity')!
@@ -68,7 +69,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
     }
   }, [previousDropdownOption])
 
-  const isMobile = useMemo(() => (width ? width < 768 : false), [width])
+  const isMobile = useMemo(() => (isClient && width ? width < 768 : false), [width, isClient])
 
   return (
     <div
@@ -88,7 +89,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
           className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
         />
       </div>
-      <div className='px-md md:pt-xl flex w-full flex-row flex-wrap gap-4 md:px-0'>
+      <div className='px-md flex w-full flex-row flex-wrap gap-4 md:px-0'>
         {cards.map((card, index) => (
           <Link
             key={card.title}

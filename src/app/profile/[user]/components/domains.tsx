@@ -17,6 +17,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useUserContext } from '@/context/user'
 import BulkSelect from '@/components/ui/bulkSelect'
 import WatchlistListSelector from '@/components/ui/watchlistListSelector'
+import SetEmailReminder from '@/components/ui/setEmailReminder'
 
 interface Props {
   user: Address | undefined
@@ -81,6 +82,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false, isWidget = fa
   const content = (
     <div className='z-0 flex w-full flex-col'>
       {isWatchlistTab && isMyProfile && <WatchlistListSelector />}
+      {selectedTab.value === 'watchlist' && <SetEmailReminder className='rounded-none' />}
       <Domains
         domains={domains}
         loadingRowCount={30}

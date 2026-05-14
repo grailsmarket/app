@@ -436,7 +436,7 @@ export function useSeaportClient() {
           }
         })
 
-        return createdOffers
+        return await Promise.all(createdOffers)
       } catch (err: any) {
         setError(err.message || 'Failed to create offer')
         throw err

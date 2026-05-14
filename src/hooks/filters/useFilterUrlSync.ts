@@ -200,7 +200,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       }
 
       // Apply sort
-      if (urlFilters.sort !== undefined) {
+      if (urlFilters.sort !== undefined && actions.setSort) {
         dispatch(actions.setSort(urlFilters.sort))
       }
 

@@ -10,6 +10,7 @@ import { useNotifications } from './hooks/useNotifications'
 import { AnimatePresence } from 'framer-motion'
 import { motion } from 'motion/react'
 import Image from 'next/image'
+import SetEmailReminder from '@/components/ui/setEmailReminder'
 
 interface NotificationModalProps {
   isOpen: boolean
@@ -86,11 +87,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className='p-lg flex items-center justify-between md:p-6'>
-          <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
-          <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
-            <Cross className='text-foreground h-4 w-4 cursor-pointer' />
-          </button>
+        <div className='p-lg flex flex-col gap-4 md:p-6'>
+          <div className='flex items-center justify-between'>
+            <h2 className='font-sedan-sc text-foreground text-2xl'>Notifications</h2>
+            <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors'>
+              <Cross className='text-foreground h-4 w-4 cursor-pointer' />
+            </button>
+          </div>
+          <SetEmailReminder onClick={onClose} />
         </div>
 
         {/* Notifications list */}

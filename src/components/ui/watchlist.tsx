@@ -16,6 +16,7 @@ import FilterSelector from '../filters/components/FilterSelector'
 import { WatchlistSettingsType } from '@/api/watchlist/update'
 import { useClickAway } from '@/hooks/useClickAway'
 import { Cross, ShortArrow } from 'ethereum-identity-kit'
+import { track } from '@/lib/analytics'
 
 interface WatchlistProps {
   domain: MarketplaceDomainType
@@ -109,6 +110,12 @@ const Watchlist: React.FC<WatchlistProps> = ({
       if (!userAddress) openConnectModal?.()
       else handleSignIn()
       return
+    } else {
+      track('watchlist_toggled', {
+        name: domain.name,
+        action: isWatching ? 'remove' : 'add',
+      })
+      toggleWatchlist(domain)
     }
 
     if (hasMultipleLists) {

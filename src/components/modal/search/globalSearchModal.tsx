@@ -20,6 +20,7 @@ import { searchProfiles } from '@/api/search-profiles'
 import { cn } from '@/utils/tailwind'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
+import { track } from '@/lib/analytics'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -93,6 +94,12 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
         .map((query) => normalizeName(query.toLowerCase().trim()))
         .filter((query) => query.length > 2)
 
+      track('search_submitted', {
+        search_type: 'bulk',
+        term_count: queries.length,
+        result_count: fetchedDomains?.domains.length ?? 0,
+      })
+
       if (query.length < 10000) {
         router.push(`/marketplace?search=${queries.join(',')}`)
       } else {
@@ -105,6 +112,11 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
     }
 
     const normalizedQuery = normalizeName(query)
+    track('search_submitted', {
+      search_type: 'view_all',
+      term: normalizedQuery,
+      result_count: fetchedDomains?.domains.length ?? 0,
+    })
     dispatch(setMarketplaceSearch(normalizedQuery))
     if (normalizedQuery.length < 10000) {
       router.push(`/marketplace?search=${normalizedQuery}`)
@@ -168,6 +180,10 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                   handleViewAllDomains()
                 } else {
                   const lookupQuery = query.replace('.eth', '').trim() + '.eth'
+                  track('search_submitted', {
+                    search_type: 'name_lookup',
+                    term: normalizeName(lookupQuery),
+                  })
                   handleClose()
                   router.push(`/${normalizeName(lookupQuery)}`)
                 }

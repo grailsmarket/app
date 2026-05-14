@@ -67,7 +67,6 @@ export default function Testemonials() {
   }, [maxIndex, resetTimer])
 
   const translateX = -(activeIndex * (100 / visibleCount))
-  console.log(activeIndex)
 
   return (
     <div className='flex w-full flex-col items-center justify-center gap-4 sm:gap-6 md:gap-8 lg:items-start'>
@@ -85,7 +84,7 @@ export default function Testemonials() {
             {TESTEMONIAL_QUOTES.map((testimonial, i) => (
               <div
                 key={testimonial.address}
-                className='shrink-0 px-2 transition-all duration-400 lg:px-2'
+                className='shrink-0 px-2 transition-all duration-600 lg:px-2'
                 style={{
                   width: `${100 / visibleCount}%`,
                   maxWidth: '100%',

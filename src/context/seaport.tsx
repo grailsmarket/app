@@ -106,20 +106,20 @@ export const useSeaportContext = (): SeaportContextValue => {
     // Default to marketplace if no context is provided (backwards compatibility)
     return {
       isInitialized: false,
-      reinitializeSeaport: async () => { },
-      cancelListings: async () => { },
-      cancelOffer: async () => { },
+      reinitializeSeaport: async () => {},
+      cancelListings: async () => {},
+      cancelOffer: async () => {},
       validateOrder: async () => false,
       getOrderStatus: async () => null,
       conduitConfig: null,
       createListing: async () => {
         return { success: false, error: 'Not implemented' }
       },
-      createOffer: async () => { },
+      createOffer: async () => {},
       createBulkOffer: async () => ({ groupId: '', totalOffers: 0, created: 0, failed: 0, results: [] }),
       createNOfManyOffer: async () => ({ groupId: 0, targetCount: 0, totalItems: 0, created: 0, results: [] }),
       // @ts-expect-error - fulfillOrder is not implemented
-      fulfillOrder: async () => { },
+      fulfillOrder: async () => {},
       error: null,
       isLoading: false,
     }

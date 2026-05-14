@@ -42,11 +42,7 @@ const PlanStep: React.FC<PlanStepProps> = ({
 
           const monthlyUSDDisplay = meta.monthlyUSD ?? (monthlyETH !== null ? monthlyETH * ethPrice : null)
           const yearlyUSDDisplay =
-            meta.monthlyUSD !== null
-              ? getYearlyUSD(meta.monthlyUSD)
-              : yearlyETH !== null
-                ? yearlyETH * ethPrice
-                : null
+            meta.monthlyUSD !== null ? getYearlyUSD(meta.monthlyUSD) : yearlyETH !== null ? yearlyETH * ethPrice : null
 
           return (
             <button

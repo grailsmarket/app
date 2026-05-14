@@ -93,6 +93,7 @@ const DashboardSidebar = () => {
 
   const sidebarContent = (
     <div
+      onClick={(e) => e.stopPropagation()}
       className={cn(
         'border-tertiary bg-background absolute top-0 left-0 z-40 h-full max-h-[calc(100dvh-56px)] w-72 flex-col overflow-y-scroll border-r pb-20 transition-all starting:-translate-x-full',
         isOpen ? 'flex translate-x-0' : 'hidden -translate-x-full'
@@ -139,8 +140,17 @@ const DashboardSidebar = () => {
       </div>
 
       {/* Mobile (<1024px): fixed overlay */}
-      <div className={cn('fixed inset-0 z-30 transition-all lg:hidden', isNavbarVisible ? 'top-[116px]' : 'top-14.5')}>
-        <div className='absolute inset-0 top-0 left-0 bg-black/40' onClick={closeSidebar} />
+      <div
+        ref={clickAwayRef}
+        className={cn(
+          'fixed inset-0 z-30 transition-all lg:hidden',
+          isNavbarVisible ? 'top-[114px] sm:top-[130px]' : 'top-14.5'
+        )}
+      >
+        <div
+          className={cn('absolute inset-0 top-0 left-0 bg-black/40', isOpen ? 'block' : 'hidden')}
+          onClick={closeSidebar}
+        />
         <div className='relative z-40 h-full w-fit pt-14'>{sidebarContent}</div>
       </div>
     </>

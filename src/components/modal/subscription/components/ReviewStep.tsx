@@ -50,11 +50,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       <p className='text-md text-neutral font-medium'>Review & confirm</p>
 
       <div
-        className={cn(
-          'flex items-center gap-4 rounded-lg border-2 p-4',
-          meta.colors.border,
-          meta.colors.selectedBg
-        )}
+        className={cn('flex items-center gap-4 rounded-lg border-2 p-4', meta.colors.border, meta.colors.selectedBg)}
       >
         <Image src={meta.logo} alt={meta.name} width={44} height={44} className='h-11 w-11 shrink-0' />
         <div className='flex min-w-0 flex-1 flex-col leading-tight'>
@@ -95,9 +91,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 
       {price !== null && !hasSufficientBalance && (
         <div className='rounded-lg border border-red-500/30 bg-red-900/20 p-3'>
-          <p className='text-md text-red-400'>
-            Insufficient ETH balance to cover the subscription and gas costs.
-          </p>
+          <p className='text-md text-red-400'>Insufficient ETH balance to cover the subscription and gas costs.</p>
         </div>
       )}
     </div>

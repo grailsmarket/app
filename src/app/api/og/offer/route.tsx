@@ -286,154 +286,156 @@ export async function GET(req: NextRequest) {
     )
 
     return new ImageResponse(
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          background: 'radial-gradient(circle, #444444, #222222)',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 80,
-          padding: 70,
-          fontFamily: 'Inter, sans-serif',
-          color: '#f4f4f4',
-        }}
-      >
+      (
         <div
           style={{
+            width: '100%',
+            height: '100%',
+            background: 'radial-gradient(circle, #444444, #222222)',
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
+            gap: 80,
+            padding: 70,
+            fontFamily: 'Inter, sans-serif',
+            color: '#f4f4f4',
           }}
         >
           <div
             style={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 560,
-              height: 96,
-              fontSize: 60,
-              fontWeight: 700,
-              color: '#ffffff',
-              backgroundColor: '#ED34E7',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              borderRadius: '20px 20px 0px 0px',
             }}
           >
-            OFFER
-          </div>
-          {ensImage && (
-            <img
-              src={ensImage}
-              alt='ens'
-              width={560}
-              height={560}
-              style={{
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: imageBottomRadius,
-                borderBottomRightRadius: imageBottomRadius,
-                objectFit: 'cover',
-              }}
-            />
-          )}
-          {categories.length > 0 && (
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: 560,
-                gap: 24,
-                overflow: 'hidden',
-                backgroundColor: '#444444',
-                borderRadius: '0px 0px 20px 20px',
-                padding: categories.length === 1 ? '16px' : '10px',
+                height: 96,
+                fontSize: 60,
+                fontWeight: 700,
+                color: '#ffffff',
+                backgroundColor: '#ED34E7',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                borderRadius: '20px 20px 0px 0px',
               }}
             >
-              {categories.length === 1 ? (
-                <div
-                  key={categories[0]}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 16,
-                  }}
-                >
-                  {categoryAvatars[categories[0]] && (
-                    <img
-                      src={categoryAvatars[categories[0]]}
-                      alt='category'
-                      width={64}
-                      height={64}
-                      style={{ borderRadius: 32, objectFit: 'cover' }}
-                    />
-                  )}
+              OFFER
+            </div>
+            {ensImage && (
+              <img
+                src={ensImage}
+                alt='ens'
+                width={560}
+                height={560}
+                style={{
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  borderBottomLeftRadius: imageBottomRadius,
+                  borderBottomRightRadius: imageBottomRadius,
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+            {categories.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 560,
+                  gap: 24,
+                  overflow: 'hidden',
+                  backgroundColor: '#444444',
+                  borderRadius: '0px 0px 20px 20px',
+                  padding: categories.length === 1 ? '16px' : '10px',
+                }}
+              >
+                {categories.length === 1 ? (
                   <div
+                    key={categories[0]}
                     style={{
-                      fontSize: 44,
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 16,
                     }}
                   >
-                    {CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}
+                    {categoryAvatars[categories[0]] && (
+                      <img
+                        src={categoryAvatars[categories[0]]}
+                        alt='category'
+                        width={64}
+                        height={64}
+                        style={{ borderRadius: 32, objectFit: 'cover' }}
+                      />
+                    )}
+                    <div
+                      style={{
+                        fontSize: 44,
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {CATEGORY_LABELS[categories[0] as keyof typeof CATEGORY_LABELS] || categories[0]}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <p style={{ fontSize: 44, color: '#ffffff', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                  {`${categories.length} Categories`}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-        <div style={{ height: 480, width: 3, backgroundColor: '#cccccc', borderRadius: 8 }} />
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: 24,
-            maxWidth: 720,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-            <div style={{ fontSize: 96, fontWeight: 700, color: '#ffdfc0' }}>{`${amount} ${currency}`}</div>
-            <img src={sourceLogo} alt='source' width={72} height={72} />
+                ) : (
+                  <p style={{ fontSize: 44, color: '#ffffff', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {`${categories.length} Categories`}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
-          <div style={{ fontSize: 48, color: '#cccccc', paddingBottom: 8 }}>{`Ends: ${expiresFormatted}`}</div>
-          {offerrerProfile?.displayName && renderPartyRow('Bidder:', offerrerAvatar, offerrerProfile.displayName)}
-          {ownerProfile.displayName && renderPartyRow('Owner:', ownerAvatar, ownerProfile.displayName)}
+          <div style={{ height: 480, width: 3, backgroundColor: '#cccccc', borderRadius: 8 }} />
           <div
             style={{
-              fontSize: 44,
-              color: '#ffdfc0',
-              maxWidth: 700,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: 24,
+              maxWidth: 720,
             }}
           >
-            {`grails.app/${beautifyName(name)}`}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+              <div style={{ fontSize: 96, fontWeight: 700, color: '#ffdfc0' }}>{`${amount} ${currency}`}</div>
+              <img src={sourceLogo} alt='source' width={72} height={72} />
+            </div>
+            <div style={{ fontSize: 48, color: '#cccccc', paddingBottom: 8 }}>{`Ends: ${expiresFormatted}`}</div>
+            {offerrerProfile?.displayName && renderPartyRow('Bidder:', offerrerAvatar, offerrerProfile.displayName)}
+            {ownerProfile.displayName && renderPartyRow('Owner:', ownerAvatar, ownerProfile.displayName)}
+            <div
+              style={{
+                fontSize: 44,
+                color: '#ffdfc0',
+                maxWidth: 700,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {`grails.app/${beautifyName(name)}`}
+            </div>
+            <img
+              src='https://grails.app/your-ens-market-logo.svg'
+              alt='Grails'
+              width={380}
+              height={116}
+              style={{ marginTop: 24 }}
+            />
           </div>
-          <img
-            src='https://grails.app/your-ens-market-logo.svg'
-            alt='Grails'
-            width={380}
-            height={116}
-            style={{ marginTop: 24 }}
-          />
         </div>
-      </div>,
+      ),
       {
         ...size,
         emoji: 'twemoji',

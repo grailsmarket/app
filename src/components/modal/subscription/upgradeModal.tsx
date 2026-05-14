@@ -56,10 +56,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
 
   // All tiers in the modal are visible. Lower tiers (already included in user's
   // current plan) are shown as locked. Selectable = current or higher.
-  const selectableTierIds = useMemo(
-    () => MODAL_TIERS.filter((id) => id >= currentTierId),
-    [currentTierId]
-  )
+  const selectableTierIds = useMemo(() => MODAL_TIERS.filter((id) => id >= currentTierId), [currentTierId])
 
   const initialTierId = useMemo(() => {
     if (preselectedTierId !== null && selectableTierIds.includes(preselectedTierId)) return preselectedTierId
@@ -405,11 +402,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
                   Back
                 </SecondaryButton>
               )}
-              <PrimaryButton
-                onClick={goNext}
-                disabled={nextDisabled}
-                className={canGoBack ? 'flex-1' : 'w-full'}
-              >
+              <PrimaryButton onClick={goNext} disabled={nextDisabled} className={canGoBack ? 'flex-1' : 'w-full'}>
                 {nextLabel}
               </PrimaryButton>
             </div>

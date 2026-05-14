@@ -29,7 +29,7 @@ const ProSubscriberHero = ({ tierId, tierExpiresAt }: ProSubscriberHeroProps) =>
         className='background-radial-primary absolute top-[50vh] left-1/2 h-[600px] w-screen -translate-x-1/2 -translate-y-1/2 sm:w-[600px]'
       />
 
-      <div className='z-10 relative flex h-full items-center justify-center px-4 py-16 sm:pt-32 sm:pb-24 md:pb-32'>
+      <div className='relative z-10 flex h-full items-center justify-center px-4 py-16 sm:pt-32 sm:pb-24 md:pb-32'>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

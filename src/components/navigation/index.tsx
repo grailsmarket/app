@@ -60,8 +60,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
 
   const { mobileLogo, fullLogo } = useMemo(() => {
     const isActiveSubscriber =
-      subscription?.tierId > 0 &&
-      (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
+      subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
     const tierLogo = isActiveSubscriber ? TIER_LOGOS[subscription.tierId] : undefined
     return {
       mobileLogo: tierLogo?.mobile ?? logoMobileDefault,

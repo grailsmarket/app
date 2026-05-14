@@ -479,7 +479,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       <div
         className='shadow-bulk bg-background flex justify-end overflow-hidden rounded-md transition-[width] duration-200'
         style={{
-          width: bulkSelectWidth,
+          width: componentWidth,
         }}
       >
         {showExpandedContent ? (

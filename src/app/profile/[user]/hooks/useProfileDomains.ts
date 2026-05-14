@@ -7,7 +7,7 @@ import { selectProfileDomainsFilters } from '@/state/reducers/filters/profileDom
 import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 
-export const useProfileDomains = (user: Address | undefined) => {
+export const useProfileDomains = (user: Address | undefined, enabled = true) => {
   const { authStatus } = useUserContext()
   const filters = useAppSelector(selectProfileDomainsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
@@ -66,7 +66,7 @@ export const useProfileDomains = (user: Address | undefined) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!user,
+    enabled: enabled && !!user,
   })
 
   const domainsLoading = isLoading || isFetchingNextPage

@@ -1,5 +1,5 @@
 import { API_URL } from '@/constants/api'
-import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { authFetch } from '../authFetch'
 
@@ -26,7 +26,9 @@ export const createOffer = async ({
 }: CreateOfferParams) => {
   console.log(expiryDate)
   const currencyAddress = TOKEN_ADDRESSES[currency]
-  const fullPrice = price * Math.pow(10, TOKEN_DECIMALS[currency])
+  const offerAmountWei =
+    orderData.protocol_data?.parameters?.offer?.[0]?.startAmount ??
+    orderData.parameters?.offer?.[0]?.startAmount
 
   // Call Next.js API route which handles OpenSea submission and then forwards to backend
   const response = await authFetch(`${API_URL}/offers`, {
@@ -38,7 +40,7 @@ export const createOffer = async ({
       marketplace,
       ensNameId,
       buyerAddress: buyerAddress.toLowerCase(),
-      offerAmountWei: fullPrice.toString(),
+      offerAmountWei,
       currencyAddress: currencyAddress.toLowerCase(),
       orderData,
       expiresAt: new Date(expiryDate * 1000).toISOString(),

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import CreateListingModal from '@/components/modal/listing/createListingModal'
 import BuyNowModal from '@/components/modal/purchase/buyNowModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -40,10 +40,14 @@ import ChatSidebar from '@/components/chat'
 import ChatSocketMount from '@/components/chat/socketMount'
 import { selectChatSidebar } from '@/state/reducers/chat/sidebar'
 
+const OpenSettingsFromUrl: React.FC = () => {
+  useOpenSettingsFromUrl()
+  return null
+}
+
 const Modals: React.FC = () => {
   // Global keyboard shortcut: "/" to open search modal
   useGlobalSearchShortcut()
-  useOpenSettingsFromUrl()
   const dispatch = useAppDispatch()
   const {
     open: acceptOfferModalOpen,
@@ -129,6 +133,9 @@ const Modals: React.FC = () => {
 
   return (
     <div>
+      <Suspense fallback={null}>
+        <OpenSettingsFromUrl />
+      </Suspense>
       {makeOfferModalOpen && (
         <CreateOfferModal onClose={() => dispatch(setMakeOfferModalOpen(false))} domain={makeOfferModalDomain} />
       )}

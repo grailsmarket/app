@@ -105,7 +105,7 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
                 <p className='text-neutral text-lg font-medium'>Resolver</p>
               </div>
             )}
-            { }
+            {}
           </div>
         ))}
     </div>

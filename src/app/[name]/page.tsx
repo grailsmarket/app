@@ -72,26 +72,26 @@ const Name = async (props: Props) => {
       queryFn: () => fetchNameDetails(normalizedName),
       staleTime: PREFETCH_STALE_TIME,
     }),
-    queryClient.prefetchQuery({
-      queryKey: ['name', 'offers', normalizedName],
-      queryFn: () => fetchNameOffers(normalizedName),
-      staleTime: PREFETCH_STALE_TIME,
-    }),
-    queryClient.prefetchQuery({
-      queryKey: ['name', 'roles', normalizedName],
-      queryFn: () => fetchNameRoles(normalizedName),
-      staleTime: PREFETCH_STALE_TIME,
-    }),
+    // queryClient.prefetchQuery({
+    //   queryKey: ['name', 'offers', normalizedName],
+    //   queryFn: () => fetchNameOffers(normalizedName),
+    //   staleTime: PREFETCH_STALE_TIME,
+    // }),
+    // queryClient.prefetchQuery({
+    //   queryKey: ['name', 'roles', normalizedName],
+    //   queryFn: () => fetchNameRoles(normalizedName),
+    //   staleTime: PREFETCH_STALE_TIME,
+    // }),
   ])
 
   const nameDetails = queryClient.getQueryData<MarketplaceDomainType>(['name', 'details', normalizedName])
-  const nameOffers = queryClient.getQueryData<DomainOfferType[]>(['name', 'offers', normalizedName])
-  const roles = queryClient.getQueryData<RolesType | null>(['name', 'roles', normalizedName])
+  // const nameOffers = queryClient.getQueryData<DomainOfferType[]>(['name', 'offers', normalizedName])
+  // const roles = queryClient.getQueryData<RolesType | null>(['name', 'roles', normalizedName])
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
       <HideOnClient>
-        <ServerPanels name={normalizedName} nameDetails={nameDetails} offers={nameOffers} metadata={[]} roles={roles} />
+        <ServerPanels name={normalizedName} nameDetails={nameDetails} offers={[]} metadata={[]} roles={null} />
       </HideOnClient>
       <ClientOnly>
         <HydrationBoundary state={dehydrate(queryClient)}>

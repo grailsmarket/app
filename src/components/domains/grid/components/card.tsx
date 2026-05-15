@@ -184,7 +184,6 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   return (
     <Link
       href={`/${normalizeName(domain.name)}`}
-      prefetch={true}
       onClick={(e) => {
         if (isBulkSelecting) {
           handleBulkSelectClick(e)

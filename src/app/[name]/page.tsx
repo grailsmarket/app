@@ -8,12 +8,11 @@ import ServerPanels from './components/serverPanels'
 import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
 import { fetchNameDetails } from '@/api/name/details'
-import { fetchNameMetadata, formatNameMetadata } from '@/api/name/metadata'
 import { fetchNameOffers } from '@/api/name/offers'
 import { fetchNameRoles } from '@/api/name/roles'
 import { ONE_MINUTE } from '@/constants/time'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
-import { MetadataType, RolesType } from '@/types/api'
+import { RolesType } from '@/types/api'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -79,11 +78,6 @@ const Name = async (props: Props) => {
       staleTime: PREFETCH_STALE_TIME,
     }),
     queryClient.prefetchQuery({
-      queryKey: ['name', 'metadata', normalizedName],
-      queryFn: async () => formatNameMetadata(await fetchNameMetadata(normalizedName)),
-      staleTime: PREFETCH_STALE_TIME,
-    }),
-    queryClient.prefetchQuery({
       queryKey: ['name', 'roles', normalizedName],
       queryFn: () => fetchNameRoles(normalizedName),
       staleTime: PREFETCH_STALE_TIME,
@@ -92,19 +86,12 @@ const Name = async (props: Props) => {
 
   const nameDetails = queryClient.getQueryData<MarketplaceDomainType>(['name', 'details', normalizedName])
   const nameOffers = queryClient.getQueryData<DomainOfferType[]>(['name', 'offers', normalizedName])
-  const metadata = queryClient.getQueryData<MetadataType[]>(['name', 'metadata', normalizedName])
   const roles = queryClient.getQueryData<RolesType | null>(['name', 'roles', normalizedName])
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
       <HideOnClient>
-        <ServerPanels
-          name={normalizedName}
-          nameDetails={nameDetails}
-          offers={nameOffers}
-          metadata={metadata}
-          roles={roles}
-        />
+        <ServerPanels name={normalizedName} nameDetails={nameDetails} offers={nameOffers} metadata={[]} roles={roles} />
       </HideOnClient>
       <ClientOnly>
         <HydrationBoundary state={dehydrate(queryClient)}>

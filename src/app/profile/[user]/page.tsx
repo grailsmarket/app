@@ -1,13 +1,7 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
-import {
-  fetchAccount,
-  fetchProfileDetails,
-  fetchProfileStats,
-  isLinkValid,
-  truncateAddress,
-} from 'ethereum-identity-kit/utils'
+import { fetchAccount, fetchProfileDetails, isLinkValid, truncateAddress } from 'ethereum-identity-kit/utils'
 import { isAddress, isHex } from 'viem'
 import { ONE_MINUTE } from '@/constants/time'
 import Profile from './components/profile'
@@ -21,38 +15,12 @@ interface Props {
 
 const PREFETCH_STALE_TIME = 3 * ONE_MINUTE * 1000
 
-const fetchPublicAccount = async (user: string) => {
-  const account = await fetchAccount(user)
-
-  if (!account?.address) {
-    if (isAddress(user)) {
-      return {
-        address: user,
-        ens: null,
-        primary_list: null,
-      }
-    }
-
-    return null
-  }
-
-  return account
-}
-
-const ProfileSemanticSummary = ({
-  user,
-  profile,
-  account,
-}: {
-  user: string
-  profile?: ProfileDetails
-  account?: Awaited<ReturnType<typeof fetchPublicAccount>>
-}) => {
-  const ens = profile?.ens || account?.ens
-  const address = profile?.address || account?.address
+const ProfileSemanticSummary = ({ user, profile }: { user: string; profile?: ProfileDetails }) => {
+  const ens = profile?.ens
+  const address = profile?.address
   const displayName = ens?.name || (address ? truncateAddress(address) : user)
   const description = ens?.records?.description
-  const primaryList = profile?.primary_list || account?.primary_list
+  const primaryList = profile?.primary_list
 
   return (
     <section
@@ -173,31 +141,18 @@ const UserPage = async (props: Props) => {
 
   // Skip prefetching if ssr is false
   if (ssr) {
-    await Promise.all([
-      queryClient.prefetchQuery({
-        queryKey: ['profile', user, undefined, false, undefined],
-        queryFn: () => (user ? fetchProfileDetails(user, listNum) : null),
-        staleTime: PREFETCH_STALE_TIME,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: ['stats', user, undefined, false, undefined],
-        queryFn: () => (user ? fetchProfileStats(user, listNum) : null),
-        staleTime: PREFETCH_STALE_TIME,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: ['account', user],
-        queryFn: () => fetchPublicAccount(user),
-        staleTime: PREFETCH_STALE_TIME,
-      }),
-    ])
+    await queryClient.prefetchQuery({
+      queryKey: ['profile', user, undefined, false, undefined],
+      queryFn: () => (user ? fetchProfileDetails(user, listNum) : null),
+      staleTime: PREFETCH_STALE_TIME,
+    })
   }
 
   const profile = queryClient.getQueryData<ProfileDetails>(['profile', user, undefined, false, undefined])
-  const account = queryClient.getQueryData<Awaited<ReturnType<typeof fetchPublicAccount>>>(['account', user])
 
   return (
     <main className='min-h-screen w-full'>
-      <ProfileSemanticSummary user={user} profile={profile} account={account} />
+      <ProfileSemanticSummary user={user} profile={profile} />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Profile user={user} />
       </HydrationBoundary>

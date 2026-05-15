@@ -129,7 +129,7 @@ const NewChatView: React.FC = () => {
               disabled={createChat.isPending}
               className='bg-secondary border-tertiary hover:bg-tertiary relative flex h-fit cursor-pointer items-center gap-3 rounded-md border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50'
             >
-              {account.ens?.records['header'] && (
+              {account.ens?.records?.['header'] && (
                 <HeaderImage
                   name={displayName}
                   src={`${ENS_METADATA_URL}/mainnet/header/${accountENSName}`}

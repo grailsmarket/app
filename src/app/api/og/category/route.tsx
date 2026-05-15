@@ -26,109 +26,107 @@ export async function GET(req: NextRequest) {
   console.log(categoryImageUrl, categoryAvatarUrl)
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        display: 'flex',
+        height: '100%',
+        width: '100%',
+        gap: 58,
+        color: '#f4f4f4',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        background: '#222222',
+        textAlign: 'center',
+        fontWeight: 700,
+        fontFamily: 'Inter',
+      }}
+    >
+      <img
+        alt='header'
+        width='800'
+        height='418'
+        src={categoryImageUrl}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          borderRadius: 4,
+          margin: 0,
+          opacity: 0.2,
+          objectFit: 'cover',
+          objectPosition: 'center',
+        }}
+      />
       <div
         style={{
           display: 'flex',
-          height: '100%',
-          width: '100%',
-          gap: 58,
-          color: '#f4f4f4',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          background: '#222222',
-          textAlign: 'center',
-          fontWeight: 700,
-          fontFamily: 'Inter',
+          width: 'auto',
+          position: 'relative',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          borderRadius: 4,
+          gap: 16,
+          maxWidth: 700,
+          margin: '0 auto',
+          boxShadow: '2px 2px 7px 0px rgba(0, 0, 0, 0.1)',
         }}
       >
         <img
-          alt='header'
-          width='800'
-          height='418'
-          src={categoryImageUrl}
+          alt='avatar'
+          width='120'
+          height='120'
+          src={categoryAvatarUrl}
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            borderRadius: 4,
-            margin: 0,
-            opacity: 0.2,
-            objectFit: 'cover',
-            objectPosition: 'center',
+            borderRadius: 60,
+            marginTop: 12,
           }}
         />
-        <div
-          style={{
-            display: 'flex',
-            width: 'auto',
-            position: 'relative',
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            borderRadius: 4,
-            gap: 16,
-            maxWidth: 700,
-            margin: '0 auto',
-            boxShadow: '2px 2px 7px 0px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <img
-            alt='avatar'
-            width='120'
-            height='120'
-            src={categoryAvatarUrl}
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+          <p
             style={{
-              borderRadius: 60,
-              marginTop: 12,
+              whiteSpace: 'nowrap',
+              fontSize: 64,
+              fontWeight: 700,
+              margin: 0,
+              padding: 0,
+              textShadow: '1px 0 1px #ffffff',
+              paddingBottom: 8,
             }}
-          />
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-            <p
-              style={{
-                whiteSpace: 'nowrap',
-                fontSize: 64,
-                fontWeight: 700,
-                margin: 0,
-                padding: 0,
-                textShadow: '1px 0 1px #ffffff',
-                paddingBottom: 8,
-              }}
-            >
-              {categoryName}
-            </p>
-            <p
-              style={{
-                fontSize: 24,
-                fontWeight: 400,
-                margin: 0,
-                padding: 0,
-                maxWidth: 540,
-                textAlign: 'left',
-                color: '#cccccc',
-                textShadow: '1px 0 1px #cccccc',
-              }}
-            >
-              {categoryDescription}
-            </p>
-          </div>
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 24,
-            left: 0,
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-          }}
-        >
-          <img alt='avatar' width='190' height='60' src='https://grails.app/your-ens-market-logo.svg' />
+          >
+            {categoryName}
+          </p>
+          <p
+            style={{
+              fontSize: 24,
+              fontWeight: 400,
+              margin: 0,
+              padding: 0,
+              maxWidth: 540,
+              textAlign: 'left',
+              color: '#cccccc',
+              textShadow: '1px 0 1px #cccccc',
+            }}
+          >
+            {categoryDescription}
+          </p>
         </div>
       </div>
-    ),
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 24,
+          left: 0,
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+        }}
+      >
+        <img alt='avatar' width='190' height='60' src='https://grails.app/your-ens-market-logo.svg' />
+      </div>
+    </div>,
     {
       width: 800,
       height: 418,

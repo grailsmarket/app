@@ -52,38 +52,36 @@ export async function GET(req: NextRequest) {
 
   try {
     return new ImageResponse(
-      (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, #444444, #222222)',
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 40,
-            fontFamily: 'Inter, sans-serif',
-            color: '#f4f4f4',
-            fontWeight: 700,
-          }}
-        >
-          {ensImage && (
-            <img
-              src={ensImage}
-              alt='ens'
-              width={281}
-              height={281}
-              style={{
-                borderRadius: 16,
-                marginRight: 16,
-              }}
-            />
-          )}
-          <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />
-          <img src='https://grails.app/your-ens-market-logo.svg' alt='Grails Logo' width={232} height={71} />
-        </div>
-      ),
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #444444, #222222)',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 40,
+          fontFamily: 'Inter, sans-serif',
+          color: '#f4f4f4',
+          fontWeight: 700,
+        }}
+      >
+        {ensImage && (
+          <img
+            src={ensImage}
+            alt='ens'
+            width={281}
+            height={281}
+            style={{
+              borderRadius: 16,
+              marginRight: 16,
+            }}
+          />
+        )}
+        <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />
+        <img src='https://grails.app/your-ens-market-logo.svg' alt='Grails Logo' width={232} height={71} />
+      </div>,
       {
         ...size,
         emoji: 'twemoji',

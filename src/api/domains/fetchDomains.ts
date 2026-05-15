@@ -8,6 +8,8 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { authFetch } from '../authFetch'
 import { generateEmptyName } from '@/utils/generateEmptyName'
 import { NameFilters } from '@/types/filters/name'
+import { fetchNameDetails } from '@/api/name/details'
+import { ETH_NODE, parseNameIdentifierSearch } from '@/utils/searchIdentifiers'
 
 interface FetchDomainsOptions {
   limit: number
@@ -22,6 +24,7 @@ interface FetchDomainsOptions {
   excludeCategories?: string[]
   signal?: AbortSignal
   showUniqueSeller?: boolean
+  resolveIdentifiers?: boolean
 }
 
 export const API_STATUS_FILTER_OPTIONS = {
@@ -29,6 +32,51 @@ export const API_STATUS_FILTER_OPTIONS = {
   Grace: 'grace',
   Available: 'available',
   Premium: 'premium',
+}
+
+const identifierSearchQuery = /* GraphQL */ `
+  query ResolveDomainIdentifier($hash: String!, $parent: String!) {
+    domain(id: $hash) {
+      name
+    }
+    domains(where: { labelhash: $hash, parent: $parent }, first: 5) {
+      name
+    }
+  }
+`
+
+type IdentifierSearchResponse = {
+  data?: {
+    domain?: { name?: string | null } | null
+    domains?: { name?: string | null }[]
+  }
+}
+
+const fetchDomainsByIdentifier = async (searchTerm: string) => {
+  const identifier = parseNameIdentifierSearch(searchTerm)
+  if (!identifier) return null
+
+  const hash = identifier.kind === 'tokenId' ? identifier.bytes32 : identifier.value
+  const response = await fetch(`${API_URL}/subgraph`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: identifierSearchQuery,
+      variables: { hash, parent: ETH_NODE },
+      operationName: 'ResolveDomainIdentifier',
+    }),
+  })
+
+  if (!response.ok) return { kind: identifier.kind, domains: [] }
+
+  const json = (await response.json()) as IdentifierSearchResponse
+  const names = [json.data?.domain?.name, ...(json.data?.domains?.map((domain) => domain.name) ?? [])]
+    .filter((name): name is string => !!name)
+    .filter((name, index, allNames) => allNames.indexOf(name) === index)
+
+  const domains = await Promise.all(names.map((name) => fetchNameDetails(name)))
+
+  return { kind: identifier.kind, domains }
 }
 
 export const fetchDomains = async ({
@@ -44,9 +92,22 @@ export const fetchDomains = async ({
   excludeCategories = [],
   signal,
   showUniqueSeller = false,
+  resolveIdentifiers = false,
 }: FetchDomainsOptions) => {
   try {
     const isBulkSearching = searchTerm.replaceAll(' ', ',').split(',').length > 1
+
+    if (resolveIdentifiers && !isBulkSearching) {
+      const identifierResult = await fetchDomainsByIdentifier(searchTerm).catch(() => null)
+      if (identifierResult && (identifierResult.domains.length > 0 || identifierResult.kind === 'bytes32')) {
+        return {
+          domains: identifierResult.domains,
+          total: identifierResult.domains.length,
+          nextPageParam: pageParam + 1,
+          hasNextPage: false,
+        }
+      }
+    }
 
     if (isBulkSearching && enableBulkSearch) {
       const search = searchTerm

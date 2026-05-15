@@ -69,7 +69,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
       default:
         return 0
     }
-  }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains, totalWatchlistDomains])
+  }, [selectedTab.value, profileTotalDomains, totalListings, totalGraceDomains, totalWatchlistDomains, totalExpiredDomains])
 
   const content = (
     <div className='z-0 flex w-full flex-col'>

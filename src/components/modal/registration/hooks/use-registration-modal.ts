@@ -44,6 +44,7 @@ import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -82,7 +83,7 @@ const useRegistrationModal = () => {
   const debouncedCustomOwner = useDebounce(customOwner, 500)
 
   const { data: account, isLoading: isResolving } = useQuery({
-    queryKey: ['account', debouncedCustomOwner],
+    queryKey: accountQueryKey(debouncedCustomOwner),
     queryFn: async () => {
       if (!isAddress(debouncedCustomOwner) && !debouncedCustomOwner.includes('.')) return null
       const response = await fetchAccount(debouncedCustomOwner)

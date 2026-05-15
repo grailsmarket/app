@@ -16,6 +16,7 @@ import LoadingCell from './loadingCell'
 import { useUserContext } from '@/context/user'
 import { beautifyName } from '@/lib/ens'
 import { ENS_METADATA_URL } from '@/constants/ens'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface UserProps {
   address: Address
@@ -47,7 +48,7 @@ const User: React.FC<UserProps> = ({
   const router = useRouter()
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
-    queryKey: ['profile', address],
+    queryKey: accountQueryKey(address),
     queryFn: async () => {
       if (!address) return null
 

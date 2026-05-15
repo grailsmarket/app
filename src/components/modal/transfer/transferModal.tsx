@@ -23,6 +23,7 @@ import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { beautifyName, normalizeName } from '@/lib/ens'
+import { accountQueryKey } from '@/utils/queryKeys'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -70,10 +71,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   }
 
   const { data: account, isLoading: isResolving } = useQuery({
-    queryKey: ['account', debouncedRecipientInput],
+    queryKey: accountQueryKey(debouncedRecipientInput),
     queryFn: async () => {
-      if (!isAddress(recipientInput) && !recipientInput.includes('.')) return null
-      const response = await fetchAccount(recipientInput)
+      if (!isAddress(debouncedRecipientInput) && !debouncedRecipientInput.includes('.')) return null
+      const response = await fetchAccount(debouncedRecipientInput)
 
       if (!isAddress(response?.address ?? '')) return null
       // if (!response?.address) {

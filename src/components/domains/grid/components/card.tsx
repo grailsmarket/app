@@ -28,6 +28,7 @@ import Link from 'next/link'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import useETHPrice from '@/hooks/useETHPrice'
+import { accountQueryKey } from '@/utils/queryKeys'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
 import Watchlist from '@/components/ui/watchlist'
@@ -91,7 +92,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   const regPrice = calculateRegistrationPrice(domain.name, ethPrice)
 
   const { data: brokerAccount } = useQuery({
-    queryKey: ['brokerAccount', domainListing?.broker_address],
+    queryKey: accountQueryKey(domainListing?.broker_address),
     queryFn: async () => {
       if (!domainListing?.broker_address) return null
       const response = await fetchAccount(domainListing.broker_address)

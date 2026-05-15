@@ -4,21 +4,24 @@ import { cn } from '@/utils/tailwind'
 import { useQuery } from '@tanstack/react-query'
 import { Avatar, fetchAccount } from 'ethereum-identity-kit'
 import { Address, isAddress } from 'viem'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 const InputWithResolution: React.FC<{
   value: string
   resolvedAddress: string | null
   isResolving: boolean
 }> = ({ value, resolvedAddress, isResolving }) => {
-  const { data: resolvedProfile, isLoading: isProfileLoading } = useQuery({
-    queryKey: ['ens metadata', isAddress(value) ? value : resolvedAddress],
+  const accountLookupTarget = isAddress(value) ? value : resolvedAddress
+
+  const { data: resolvedAccount, isLoading: isProfileLoading } = useQuery({
+    queryKey: accountQueryKey(accountLookupTarget),
     queryFn: async () => {
-      const addr = (isAddress(value) ? value : resolvedAddress) as Address
-      const account = await fetchAccount(addr)
-      return account?.ens || { name: null, avatar: null }
+      return await fetchAccount(accountLookupTarget as Address)
     },
-    enabled: !!(isAddress(value) || (resolvedAddress && isAddress(resolvedAddress))),
+    enabled: !!accountLookupTarget && isAddress(accountLookupTarget),
   })
+
+  const resolvedProfile = resolvedAccount?.ens || { name: null, avatar: null }
 
   const showResolution = value.includes('.') || (isAddress(value) && resolvedProfile?.name)
 

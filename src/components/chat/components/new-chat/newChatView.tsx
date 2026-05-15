@@ -17,6 +17,7 @@ import { useCreateChat } from '@/hooks/chat/useCreateChat'
 import Input from '@/components/ui/input'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { formatAddress } from '@/utils/formatAddress'
+import { accountQueryKey } from '@/utils/queryKeys'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import Image from 'next/image'
 import { ENS_METADATA_URL } from '@/constants/ens'
@@ -56,7 +57,7 @@ const NewChatView: React.FC = () => {
   }, [presetRecipient, dispatch])
 
   const { data: account, isLoading: isResolving } = useQuery({
-    queryKey: ['account', debouncedSearch],
+    queryKey: accountQueryKey(debouncedSearch),
     queryFn: async () => {
       if (!debouncedSearch) return null
       if (!isAddress(debouncedSearch) && !debouncedSearch.includes('.')) return null

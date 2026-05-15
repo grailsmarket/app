@@ -23,6 +23,7 @@ import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { track } from '@/lib/analytics'
 import { getAddress, isAddress } from 'viem'
 import { parseNameIdentifierSearch } from '@/utils/searchIdentifiers'
+import { setBulkSearchTerms } from '@/state/reducers/bulkSearch/bulkSearch'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -107,12 +108,12 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
       })
 
       if (query.length < 10000) {
-        router.push(`/marketplace?search=${queries.join(',')}`)
+        router.push(`/bulk-search?terms=${queries.join(',')}`)
       } else {
-        router.push(`/marketplace`)
+        router.push(`/bulk-search`)
       }
 
-      dispatch(setMarketplaceSearch(queries.join(', ')))
+      dispatch(setBulkSearchTerms(queries.join(', ')))
       handleClose()
       return
     }

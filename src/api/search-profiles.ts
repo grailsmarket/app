@@ -1,6 +1,8 @@
 import { SearchENSProfilesResults } from '@/types/profile'
 import { normalizeName } from '@/lib/ens'
 import { API_URL } from '@/constants/api'
+import { fetchAccount } from 'ethereum-identity-kit'
+import { getAddress, isAddress } from 'viem'
 
 const searchQuery = /*GraphQL*/ `
   query SearchQuery($search: String) {
@@ -15,7 +17,9 @@ const searchQuery = /*GraphQL*/ `
   }
 `
 
-export const searchProfiles = async ({ search }: { search: string }) => {
+const MAX_PROFILE_SEARCH_TERMS = 50
+
+export const searchProfiles = async ({ search, includeAddresses = false }: { search: string; includeAddresses?: boolean }) => {
   try {
     const isBulkSearching = search.replaceAll(' ', ',').split(',').length > 1
     const searchTerms = isBulkSearching
@@ -23,12 +27,28 @@ export const searchProfiles = async ({ search }: { search: string }) => {
           .replaceAll(' ', ',')
           .split(',')
           .filter((term) => term.length > 2)
+          .slice(0, MAX_PROFILE_SEARCH_TERMS)
       : [search]
     const maxResultsPerTerm = searchTerms.length > 1 ? 1 : 5
 
     const results = await Promise.all(
       searchTerms.map(async (term) => {
-        const sanitizedSearch = normalizeName(term.trim())
+        const trimmedTerm = term.trim()
+
+        if (includeAddresses && isAddress(trimmedTerm)) {
+          const address = getAddress(trimmedTerm)
+          const account = await fetchAccount(address).catch(() => null)
+          const accountAddress = account?.address && isAddress(account.address) ? getAddress(account.address) : address
+
+          return [
+            {
+              name: account?.ens?.name || accountAddress,
+              resolvedAddress: { id: accountAddress },
+            },
+          ]
+        }
+
+        const sanitizedSearch = normalizeName(trimmedTerm)
         const response = await fetch(`${API_URL}/subgraph`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

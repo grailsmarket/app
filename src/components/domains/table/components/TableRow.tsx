@@ -230,6 +230,7 @@ const TableRow: React.FC<TableRowProps> = ({
   return (
     <Link
       href={`/${normalizeName(domain.name)}`}
+      prefetch={true}
       onClick={(e) => {
         if (isBulkSelecting) {
           handleBulkSelectClick(e)

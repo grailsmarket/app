@@ -64,6 +64,6 @@
     "typescript-eslint": "^8.31.0"
   },
   "overrides": {
-    "qr": "0.5.5"
+    "qr": "0.5.2"
   }
 }

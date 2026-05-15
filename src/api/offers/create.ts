@@ -18,7 +18,6 @@ interface CreateOfferParams {
 export const createOffer = async ({
   marketplace,
   ensNameId,
-  price,
   currency,
   orderData,
   buyerAddress,
@@ -29,6 +28,10 @@ export const createOffer = async ({
   const offerAmountWei =
     orderData.protocol_data?.parameters?.offer?.[0]?.startAmount ??
     orderData.parameters?.offer?.[0]?.startAmount
+
+  if (!offerAmountWei) {
+    throw new Error('Could not extract offer amount from order data')
+  }
 
   // Call Next.js API route which handles OpenSea submission and then forwards to backend
   const response = await authFetch(`${API_URL}/offers`, {

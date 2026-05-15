@@ -10,10 +10,19 @@ import { SelectAllProvider } from '@/context/selectAll'
 import { useUserContext } from '@/context/user'
 import BulkSelect from '@/components/ui/bulkSelect'
 
-const DomainPanel = () => {
+type BulkSearchDomainsResult = ReturnType<typeof useBulkSearchDomains>
+
+type DomainPanelProps = BulkSearchDomainsResult
+
+const DomainPanel = ({
+  domains,
+  domainsLoading,
+  fetchMoreDomains,
+  hasMoreDomains,
+  total: totalDomains,
+}: DomainPanelProps) => {
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, total: totalDomains } = useBulkSearchDomains()
   const { selectedTab, searchTerms } = useAppSelector(selectBulkSearch)
   const { authStatus } = useUserContext()
 
@@ -28,7 +37,7 @@ const DomainPanel = () => {
   return (
     <SelectAllProvider
       loadedDomains={domains}
-      totalCount={totalDomains}
+      totalCount={totalDomains ?? 0}
       filters={selectors.filters}
       searchTerm={searchTerms}
       isAuthenticated={authStatus === 'authenticated'}

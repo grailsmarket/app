@@ -20,7 +20,7 @@ import {
   setListSettingsModalUser,
 } from '@/state/reducers/modals/listSettingsModal'
 import { useAppDispatch } from '@/state/hooks'
-import { fetchNameMetadata } from '@/api/name/metadata'
+import { fetchNameMetadata, formatNameMetadataRecord } from '@/api/name/metadata'
 import {
   setEditRecordsModalMetadata,
   setEditRecordsModalName,
@@ -70,32 +70,7 @@ const Profile: React.FC<Props> = ({ user }) => {
       if (!userProfile?.ens?.name) return null
 
       const result = await fetchNameMetadata(userProfile?.ens?.name)
-      const metadata = Object.entries(result || {})
-        .flatMap(([key, value]) => {
-          if (key === 'chains') {
-            return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
-              label: chainName,
-              value: address,
-              canCopy: true,
-            }))
-          }
-
-          return {
-            label: key,
-            value: value,
-            canCopy: true,
-          }
-        })
-        .filter((row) => row.label !== 'resolverAddress')
-        .reduce(
-          (acc, row) => {
-            acc[row.label] = row.value
-            return acc
-          },
-          {} as Record<string, string>
-        )
-
-      return metadata
+      return formatNameMetadataRecord(result)
     },
     enabled: !!userProfile?.ens?.name,
   })

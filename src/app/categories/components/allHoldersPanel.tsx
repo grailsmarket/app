@@ -11,6 +11,8 @@ import type { Holder } from '@/api/holders'
 import { cn } from '@/utils/tailwind'
 import { useNavbar } from '@/context/navbar'
 
+type AllHoldersResult = ReturnType<typeof useAllHolders>
+
 const LoadingRow = () => (
   <div className='border-tertiary flex h-[60px] w-full items-center gap-3 border-b px-4'>
     <LoadingCell width='40px' height='40px' radius='50%' />
@@ -21,10 +23,15 @@ const LoadingRow = () => (
   </div>
 )
 
-const AllHoldersPanel: React.FC = () => {
+const AllHoldersPanel: React.FC<AllHoldersResult> = ({
+  holders,
+  isLoading,
+  isFetchingNextPage,
+  fetchNextPage,
+  hasNextPage,
+}) => {
   const { height } = useWindowSize()
   const { isNavbarVisible } = useNavbar()
-  const { holders, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useAllHolders()
 
   const noResults = !isLoading && holders.length === 0
 

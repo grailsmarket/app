@@ -79,7 +79,7 @@ export const useCategoriesPageDomains = () => {
     )
   }, [domains])
   const domainsLoading = isLoading || isFetchingNextPage
-  const totalDomains = domains?.pages[0]?.total || 0
+  const totalDomains = domains?.pages[0]?.total
 
   return {
     domains: domainsData,

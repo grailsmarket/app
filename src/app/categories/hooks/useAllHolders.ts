@@ -5,7 +5,7 @@ import { useBatchButtonStateQuery } from '@/hooks/useBatchButtonStateQuery'
 
 const DEFAULT_LIMIT = 20
 
-export const useAllHolders = () => {
+export const useAllHolders = (enabled = true) => {
   const {
     data: holdersData,
     isLoading,
@@ -25,6 +25,7 @@ export const useAllHolders = () => {
     },
     getNextPageParam: (lastPage) => lastPage.nextPageParam,
     initialPageParam: 1,
+    enabled,
   })
 
   const addresses = useMemo(() => {
@@ -62,15 +63,24 @@ export const useAllHolders = () => {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
+    totalHolders: holdersData?.pages[0]?.unique_holders,
   }
 }
 
-export const useAllHoldersCount = () => {
-  return useQuery({
+export const useAllHoldersCount = (activeTabValue?: string, activeHoldersTotal?: number) => {
+  const isActiveHoldersTab = activeTabValue === 'holders'
+
+  const query = useQuery({
     queryKey: ['allHoldersCount'],
     queryFn: async () => {
       const response = await fetchAllHolders({ page: 1, limit: 1 })
       return response.data.unique_holders
     },
+    enabled: !isActiveHoldersTab,
   })
+
+  return {
+    ...query,
+    data: isActiveHoldersTab ? activeHoldersTotal : query.data,
+  }
 }

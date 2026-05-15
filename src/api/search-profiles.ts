@@ -19,7 +19,13 @@ const searchQuery = /*GraphQL*/ `
 
 const MAX_PROFILE_SEARCH_TERMS = 50
 
-export const searchProfiles = async ({ search, includeAddresses = false }: { search: string; includeAddresses?: boolean }) => {
+export const searchProfiles = async ({
+  search,
+  includeAddresses = false,
+}: {
+  search: string
+  includeAddresses?: boolean
+}) => {
   try {
     const isBulkSearching = search.replaceAll(' ', ',').split(',').length > 1
     const searchTerms = isBulkSearching

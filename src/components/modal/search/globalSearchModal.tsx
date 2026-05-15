@@ -226,7 +226,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
             <Cross className='text-foreground/90 h-4 w-4 md:h-5 md:w-5' />
           </button>
         </div>
-        <p className='text-md text-neutral px-5 pt-3 lg:px-7'>
+        <p className='text-md text-neutral px-5 pt-3 pb-3 lg:px-7'>
           <strong>Bulk Search</strong>: Input up to 10k terms separated by commas or spaces, then press ENTER
         </p>
 
@@ -236,7 +236,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
             <>
               {/* Names */}
               {(isFetchedDomainsLoading || (fetchedDomains?.domains && fetchedDomains.domains.length > 0)) && (
-                <div className='p-md pt-lg md:p-lg flex flex-col gap-1'>
+                <div className='p-md md:p-lg flex flex-col gap-1'>
                   <div className='flex items-center'>
                     <h3 className='text-foreground px-3 font-bold md:text-2xl'>Names</h3>
                   </div>

@@ -13,6 +13,7 @@ import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { beautifyName } from '@/lib/ens'
 import { DAY_IN_SECONDS } from '@/constants/time'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface PriceProps {
   name: string
@@ -41,7 +42,7 @@ const Price: React.FC<PriceProps> = ({
   const regPrice = calculateRegistrationPrice(name, ethPrice)
 
   const { data: brokerAccount } = useQuery({
-    queryKey: ['brokerAccount', listing?.broker_address],
+    queryKey: accountQueryKey(listing?.broker_address),
     queryFn: async () => {
       if (!listing?.broker_address) return null
       const response = await fetchAccount(listing.broker_address)

@@ -28,6 +28,7 @@ import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { beautifyName } from '@/lib/ens'
 import Link from 'next/link'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface ListingsProps {
   domain?: MarketplaceDomainType
@@ -103,7 +104,7 @@ interface DisplayedListingProps {
 
 const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain, domain }) => {
   const { data: brokerAccount } = useQuery({
-    queryKey: ['brokerAccount', listing.broker_address],
+    queryKey: accountQueryKey(listing.broker_address),
     queryFn: async () => {
       if (!listing.broker_address) return null
       const response = await fetchAccount(listing.broker_address)

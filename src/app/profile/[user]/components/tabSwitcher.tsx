@@ -31,8 +31,8 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const dispatch = useAppDispatch()
   const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains, totalExpiredDomains } =
     useDomains(user)
-  const { totalReceivedOffers, totalSentOffers } = useOffers(user)
-  const { totalActiveBrokeredListings, totalBrokeredListings } = useBrokeredListings(user)
+  const { totalReceivedOffers, totalSentOffers } = useOffers(user, { limit: 1 })
+  const { totalActiveBrokeredListings } = useBrokeredListings(user, { listingsEnabled: false })
   const { isNavbarVisible } = useNavbar()
   const { actions, selectors } = useFilterRouter()
 
@@ -77,7 +77,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       }
       // Only show broker tab if there are brokered listings
       if (tab.value === 'broker') {
-        return totalBrokeredListings > 0
+        return (totalActiveBrokeredListings || 0) > 0
       }
       // Hide grace tab if no domains in grace period
       if (tab.value === 'grace') {
@@ -106,7 +106,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     authStatus,
     user,
     userAddress,
-    totalBrokeredListings,
+    totalActiveBrokeredListings,
     totalGraceDomains,
     totalListings,
     totalExpiredDomains,

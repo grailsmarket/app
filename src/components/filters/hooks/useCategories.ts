@@ -3,7 +3,11 @@ import { fetchUserCategories } from '@/api/domains/fetchUserCategories'
 import { useFilterContext } from '@/context/filters'
 import { useQuery } from '@tanstack/react-query'
 
-export const useCategories = () => {
+interface UseCategoriesOptions {
+  enabled?: boolean
+}
+
+export const useCategories = ({ enabled = true }: UseCategoriesOptions = {}) => {
   const { profileAddress } = useFilterContext()
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
@@ -11,6 +15,7 @@ export const useCategories = () => {
       const results = await fetchCategories()
       return results
     },
+    enabled,
   })
 
   const { data: userCategories } = useQuery({
@@ -21,7 +26,7 @@ export const useCategories = () => {
       const results = await fetchUserCategories(profileAddress)
       return results
     },
-    enabled: !!profileAddress,
+    enabled: enabled && !!profileAddress,
   })
 
   return {

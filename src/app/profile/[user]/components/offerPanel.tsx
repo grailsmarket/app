@@ -15,7 +15,7 @@ interface OfferPanelProps {
 const OfferPanel: React.FC<OfferPanelProps> = ({ user }) => {
   const { authStatus } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
-  const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers(user)
+  const { offers, offersLoading, fetchMoreOffers, hasMoreOffers, displayedDetails } = useOffers(user, { activeOnly: true })
   // const { isNavbarVisible } = useNavbar()
   const disconnectMessage = {
     sent_offers: 'Sign in to view your offers.',

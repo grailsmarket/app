@@ -221,7 +221,11 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
                 : 'block md:hidden'
             )}
           >
-            <Categories setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
+            <Categories
+              dropdownOption={dropdownOption}
+              setDropdownOption={handleDropdownOption}
+              previousDropdownOption={previousDropdownOption}
+            />
           </div>
           {/* <div
             className={cn(

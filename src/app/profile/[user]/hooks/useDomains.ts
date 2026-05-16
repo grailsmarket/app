@@ -17,6 +17,7 @@ import { useExpiredDomains } from './useExpiredDomains'
 // This is done to prevent refetching data when switching tabs
 export const useDomains = (user: Address | undefined) => {
   const { selectedTab } = useAppSelector(selectUserProfile)
+  const activeTab = selectedTab.value
 
   const {
     domains: profileDomains,
@@ -24,7 +25,7 @@ export const useDomains = (user: Address | undefined) => {
     fetchMoreDomains: profileFetchMoreDomains,
     hasMoreDomains: profileHasMoreDomains,
     totalDomains: profileTotalDomains,
-  } = useProfileDomains(user)
+  } = useProfileDomains(user, activeTab === 'domains')
 
   const {
     watchlistDomains,
@@ -33,15 +34,18 @@ export const useDomains = (user: Address | undefined) => {
     isWatchlistDomainsFetchingNextPage,
     fetchMoreWatchlistDomains,
     hasMoreWatchlistDomains,
-  } = useWatchlistDomains(user)
+  } = useWatchlistDomains(user, activeTab === 'watchlist')
 
-  const { listings, totalListings, listingsLoading, fetchMoreListings, hasMoreListings } = useListings(user)
+  const { listings, totalListings, listingsLoading, fetchMoreListings, hasMoreListings } = useListings(
+    user,
+    activeTab === 'listings'
+  )
 
   const { graceDomains, graceDomainsLoading, fetchMoreGraceDomains, hasMoreGraceDomains, totalGraceDomains } =
-    useGraceDomains(user)
+    useGraceDomains(user, activeTab === 'grace')
 
   const { expiredDomains, expiredDomainsLoading, fetchMoreExpiredDomains, hasMoreExpiredDomains, totalExpiredDomains } =
-    useExpiredDomains(user)
+    useExpiredDomains(user, activeTab === 'expired')
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {

@@ -44,6 +44,7 @@ import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -82,7 +83,7 @@ const useRegistrationModal = () => {
   const debouncedCustomOwner = useDebounce(customOwner, 500)
 
   const { data: account, isLoading: isResolving } = useQuery({
-    queryKey: ['account', debouncedCustomOwner],
+    queryKey: accountQueryKey(debouncedCustomOwner),
     queryFn: async () => {
       if (!isAddress(debouncedCustomOwner) && !debouncedCustomOwner.includes('.')) return null
       const response = await fetchAccount(debouncedCustomOwner)
@@ -140,6 +141,7 @@ const useRegistrationModal = () => {
   }, [availableEntries, entries, entryDurations])
 
   const allDurationsValid = availableDurations.length === availableEntries.length
+  const shouldFetchRegistrationPrices = registrationState.isOpen && registrationState.flowState === 'review'
 
   const { data: totalPriceData, isLoading: isLoadingPrice } = useQuery({
     queryKey: ['bulkTotalPrice', availableLabels.join(','), availableDurations.map(String).join(',')],
@@ -147,9 +149,9 @@ const useRegistrationModal = () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
       return getBulkTotalPrice(availableLabels, availableDurations)
     },
-    enabled: availableLabels.length > 0 && allDurationsValid,
-    refetchInterval: 10000,
-    refetchOnWindowFocus: true,
+    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
+    refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
+    refetchOnWindowFocus: false,
     staleTime: 5000,
   })
 
@@ -159,8 +161,9 @@ const useRegistrationModal = () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
       return getBulkRentPrices(availableLabels, availableDurations)
     },
-    enabled: availableLabels.length > 0 && allDurationsValid && isBulk,
-    refetchInterval: 10000,
+    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid && isBulk,
+    refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
+    refetchOnWindowFocus: false,
     staleTime: 5000,
   })
 
@@ -241,20 +244,31 @@ const useRegistrationModal = () => {
     const lastCommittedBatch = [...batches].reverse().find((b) => b.committed && b.commitmentTimestamp)
     if (!lastCommittedBatch?.commitmentTimestamp) return
 
-    const interval = setInterval(async () => {
-      const ages = await getCommitmentAges()
+    let interval: ReturnType<typeof setInterval> | undefined
+    let cancelled = false
+
+    const updateRemainingTime = (minCommitmentAge: number) => {
       const currentTime = Math.floor(Date.now() / 1000)
       const timePassed = currentTime - (lastCommittedBatch.commitmentTimestamp || 0)
-      const timeRemaining = Math.max(0, ages.min - timePassed)
+      const timeRemaining = Math.max(0, minCommitmentAge - timePassed)
 
       setWaitTimeRemaining(timeRemaining)
 
-      if (timeRemaining === 0) {
+      if (timeRemaining === 0 && interval) {
         clearInterval(interval)
       }
-    }, 1000)
+    }
 
-    return () => clearInterval(interval)
+    getCommitmentAges().then((ages) => {
+      if (cancelled) return
+      updateRemainingTime(ages.min)
+      interval = setInterval(() => updateRemainingTime(ages.min), 1000)
+    })
+
+    return () => {
+      cancelled = true
+      if (interval) clearInterval(interval)
+    }
   }, [registrationState.flowState, batches, getCommitmentAges])
 
   // Auto-reopen removed: when the user minimizes an active registration,
@@ -368,12 +382,11 @@ const useRegistrationModal = () => {
 
   const refetchQueries = useCallback(() => {
     setTimeout(() => {
-      queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey.some((k) => typeof k === 'string' && k.includes('domain')),
-      })
-      queryClient.refetchQueries({
-        predicate: (query) => query.queryKey.some((k) => typeof k === 'string' && k.includes('domain')),
-      })
+      queryClient.invalidateQueries({ queryKey: ['marketplace', 'domains'] })
+      queryClient.invalidateQueries({ queryKey: ['marketplace', 'listings', 'count'] })
+      queryClient.invalidateQueries({ queryKey: ['bulkSearch'] })
+      queryClient.invalidateQueries({ queryKey: ['categoriesPage', 'domains'] })
+      queryClient.invalidateQueries({ queryKey: ['categoriesPage', 'listings', 'count'] })
       queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
       queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
       entries.forEach((entry) => {

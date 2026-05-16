@@ -9,6 +9,7 @@ import { beautifyName } from '@/lib/ens'
 import type { Comment } from '@/types/comment'
 import { cn } from '@/utils/tailwind'
 import { getMetadataAssetUrl } from '@/utils/web3/ens'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface Props {
   comment: Comment
@@ -22,7 +23,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDele
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
 
   const { data: account } = useQuery({
-    queryKey: ['account', comment.author_address],
+    queryKey: accountQueryKey(comment.author_address),
     queryFn: () => fetchAccount(comment.author_address),
     enabled: !!comment.author_address,
     staleTime: 60_000,

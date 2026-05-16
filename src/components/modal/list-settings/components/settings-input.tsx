@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Avatar, fetchAccount, LoadingCell } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import Input from '@/components/ui/input'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface SettingsInputProps {
   option: string
@@ -31,18 +32,17 @@ const SettingsInput: React.FC<SettingsInputProps> = ({
 }) => {
   const { address: connectedAddress } = useAccount()
 
-  const { data: resolvedProfile, isLoading: isNameLoading } = useQuery({
-    queryKey: ['ens metadata', isAddress(value) ? value : resolvedAddress],
+  const accountLookupTarget = isAddress(value) ? value : resolvedAddress
+
+  const { data: resolvedAccount, isLoading: isNameLoading } = useQuery({
+    queryKey: accountQueryKey(accountLookupTarget),
     queryFn: async () => {
-      const account = await fetchAccount((isAddress(value) ? value : resolvedAddress) as Address)
-      return (
-        account?.ens || {
-          name: null,
-          avatar: null,
-        }
-      )
+      return await fetchAccount(accountLookupTarget as Address)
     },
+    enabled: !!accountLookupTarget && isAddress(accountLookupTarget),
   })
+
+  const resolvedProfile = resolvedAccount?.ens || { name: null, avatar: null }
 
   return (
     <div className='flex flex-col gap-1'>

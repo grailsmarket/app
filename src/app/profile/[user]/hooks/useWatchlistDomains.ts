@@ -8,7 +8,7 @@ import { getWatchlist } from '@/api/watchlist/getWatchlist'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 
-export const useWatchlistDomains = (user: Address | undefined) => {
+export const useWatchlistDomains = (user: Address | undefined, enabled = true) => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus } = useUserContext()
   const filters = useAppSelector(selectWatchlistFilters)
@@ -68,7 +68,11 @@ export const useWatchlistDomains = (user: Address | undefined) => {
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
     enabled:
-      !!user && !!userAddress && user.toLowerCase() === userAddress.toLowerCase() && authStatus === 'authenticated',
+      enabled &&
+      !!user &&
+      !!userAddress &&
+      user.toLowerCase() === userAddress.toLowerCase() &&
+      authStatus === 'authenticated',
   })
 
   const totalWatchlistDomains = watchlistDomains?.pages[0]?.total || 0

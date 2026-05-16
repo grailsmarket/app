@@ -10,10 +10,19 @@ import { SelectAllProvider } from '@/context/selectAll'
 import { useUserContext } from '@/context/user'
 import BulkSelect from '@/components/ui/bulkSelect'
 
-const CategoriesPageDomainsPanel = () => {
+type CategoriesPageDomainsResult = ReturnType<typeof useCategoriesPageDomains>
+
+type CategoriesPageDomainsPanelProps = CategoriesPageDomainsResult
+
+const CategoriesPageDomainsPanel = ({
+  domains,
+  domainsLoading,
+  fetchMoreDomains,
+  hasMoreDomains,
+  totalDomains,
+}: CategoriesPageDomainsPanelProps) => {
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
-  const { domains, domainsLoading, fetchMoreDomains, hasMoreDomains, totalDomains } = useCategoriesPageDomains()
   const { categoriesPage } = useAppSelector(selectCategoriesPage)
   const { selectedTab } = categoriesPage
   const { authStatus } = useUserContext()
@@ -21,7 +30,7 @@ const CategoriesPageDomainsPanel = () => {
   return (
     <SelectAllProvider
       loadedDomains={domains}
-      totalCount={totalDomains}
+      totalCount={totalDomains ?? 0}
       filters={selectors.filters}
       searchTerm={selectors.filters.search}
       isAuthenticated={authStatus === 'authenticated'}

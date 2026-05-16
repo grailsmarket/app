@@ -8,7 +8,7 @@ import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { MarketplaceDomainType } from '@/types/domains'
 
-export const useExpiredDomains = (user: Address | undefined) => {
+export const useExpiredDomains = (user: Address | undefined, enabled = true) => {
   const { authStatus } = useUserContext()
   const filters = useAppSelector(selectProfileExpiredFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
@@ -91,7 +91,7 @@ export const useExpiredDomains = (user: Address | undefined) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!user,
+    enabled: enabled && !!user,
   })
 
   const expiredDomainsLoading = isLoading || isFetchingNextPage

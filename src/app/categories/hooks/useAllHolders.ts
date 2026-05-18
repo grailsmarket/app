@@ -67,20 +67,14 @@ export const useAllHolders = (enabled = true) => {
   }
 }
 
-export const useAllHoldersCount = (activeTabValue?: string, activeHoldersTotal?: number) => {
-  const isActiveHoldersTab = activeTabValue === 'holders'
-
+export const useAllHoldersCount = () => {
   const query = useQuery({
     queryKey: ['allHoldersCount'],
     queryFn: async () => {
       const response = await fetchAllHolders({ page: 1, limit: 1 })
       return response.data.unique_holders
     },
-    enabled: !isActiveHoldersTab,
   })
 
-  return {
-    ...query,
-    data: isActiveHoldersTab ? activeHoldersTotal : query.data,
-  }
+  return query
 }

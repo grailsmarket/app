@@ -20,15 +20,7 @@ import ViewSelector from '@/components/domains/viewSelector'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
-type CategoriesPageTabSwitcherProps = {
-  activeListingsTotal?: number
-  activeHoldersTotal?: number
-}
-
-const CategoriesPageTabSwitcher: React.FC<CategoriesPageTabSwitcherProps> = ({
-  activeListingsTotal,
-  activeHoldersTotal,
-}) => {
+const CategoriesPageTabSwitcher = () => {
   const [mounted, setMounted] = useState(false)
   const { categoriesPage } = useAppSelector(selectCategoriesPage)
   const { selectedTab } = categoriesPage
@@ -36,8 +28,8 @@ const CategoriesPageTabSwitcher: React.FC<CategoriesPageTabSwitcherProps> = ({
   const { isNavbarVisible } = useNavbar()
   const router = useRouter()
   const { categories } = useCategories()
-  const { data: holdersCount } = useAllHoldersCount(selectedTab.value, activeHoldersTotal)
-  const { data: listingsCount } = useCategoriesListingsCount(selectedTab.value, activeListingsTotal)
+  const { data: holdersCount } = useAllHoldersCount()
+  const { data: listingsCount } = useCategoriesListingsCount()
   const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })

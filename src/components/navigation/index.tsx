@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Cart from './cart'
 import Pages from './pages'
 import Link from 'next/link'
@@ -26,6 +26,13 @@ import CrossIcon from 'public/icons/cross.svg'
 import More from './dropdowns/more'
 import Premium from './dropdowns/premium'
 import { useUserContext } from '@/context/user'
+import { useQueryClient } from '@tanstack/react-query'
+import { useIsTouchDevice } from '@/hooks/useDevice'
+import {
+  categoriesDropdownQueryOptions,
+  exploreDropdownQueryOptions,
+  premiumDropdownQueryOptions,
+} from './dropdowns/queries'
 
 const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [dropdownOption, setDropdownOption] = useState<string | null>(null)
@@ -33,7 +40,19 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const { setNavbarVisible } = useNavbar()
-  const { userAddress } = useUserContext()
+  const { userAddress, authStatus } = useUserContext()
+  const queryClient = useQueryClient()
+  const isTouchDevice = useIsTouchDevice()
+  const hasPrefetchedRef = useRef(false)
+
+  const prefetchDropdownData = useCallback(() => {
+    if (isTouchDevice || hasPrefetchedRef.current) return
+    hasPrefetchedRef.current = true
+    const isAuthenticated = authStatus === 'authenticated'
+    void queryClient.prefetchQuery(categoriesDropdownQueryOptions())
+    void queryClient.prefetchQuery(exploreDropdownQueryOptions(isAuthenticated))
+    void queryClient.prefetchQuery(premiumDropdownQueryOptions(isAuthenticated))
+  }, [isTouchDevice, authStatus, queryClient])
   // Check if any filter panel is open
   const marketplaceFilters = useAppSelector(selectMarketplaceFilters)
   const profileFilters = useAppSelector(selectProfileListingsFilters)
@@ -104,7 +123,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       )}
     >
       <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app relative z-20 mx-auto flex h-full items-center justify-between'>
-        <div className='flex items-center gap-4'>
+        <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
           <Link
             href='/'
             onMouseEnter={() => {

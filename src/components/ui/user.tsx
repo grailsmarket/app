@@ -82,7 +82,7 @@ const User: React.FC<UserProps> = ({
               router.push(`/profile/${address}`)
             }}
           >
-            {(!hideHeaderImage && headerImageSrc) && (
+            {!hideHeaderImage && headerImageSrc && (
               <Image
                 src={headerImageSrc}
                 alt='Header'
@@ -114,7 +114,7 @@ const User: React.FC<UserProps> = ({
               disableTooltip && 'pointer-events-none'
             )}
           >
-            {(!hideHeaderImage && headerImageSrc) && (
+            {!hideHeaderImage && headerImageSrc && (
               <Image
                 src={headerImageSrc}
                 alt='Header'

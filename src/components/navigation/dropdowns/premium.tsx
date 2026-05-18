@@ -1,10 +1,9 @@
 'use client'
 
-import { fetchDomains } from '@/api/domains/fetchDomains'
 import Card from '@/components/domains/grid/components/card'
 import LoadingCard from '@/components/domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
-import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
+import { premiumDropdownQueryOptions } from '@/components/navigation/dropdowns/queries'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -35,26 +34,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { data: premium, isLoading } = useQuery({
-    queryKey: ['navigation', 'premium'],
-    queryFn: () =>
-      fetchDomains({
-        limit: 42,
-        pageParam: 1,
-        filters: {
-          ...emptyFilterState,
-          status: ['Premium'],
-          sort: 'watchers_count_desc',
-          type: {
-            Digits: 'exclude',
-            Emojis: 'exclude',
-            Repeating: 'include',
-            Letters: 'include',
-          },
-        },
-        searchTerm: '',
-        isAuthenticated: authStatus === 'authenticated',
-        inAnyCategory: true,
-      }),
+    ...premiumDropdownQueryOptions(authStatus === 'authenticated'),
     enabled: isActive,
   })
 

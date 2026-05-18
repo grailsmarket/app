@@ -1,10 +1,9 @@
 'use client'
 
-import { fetchDomains } from '@/api/domains/fetchDomains'
 import Card from '@/components/domains/grid/components/card'
 import LoadingCard from '@/components/domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
-import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
+import { exploreDropdownQueryOptions } from '@/components/navigation/dropdowns/queries'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -33,29 +32,7 @@ const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, pr
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { data: listings, isLoading } = useQuery({
-    queryKey: ['explore', 'listings'],
-    queryFn: () =>
-      fetchDomains({
-        limit: 36,
-        pageParam: 2,
-        filters: {
-          ...emptyFilterState,
-          market: {
-            ...emptyFilterState.market,
-            Listed: 'yes',
-          },
-          type: {
-            Digits: 'exclude',
-            Emojis: 'exclude',
-            Repeating: 'include',
-            Letters: 'include',
-          },
-        },
-        searchTerm: '',
-        isAuthenticated: authStatus === 'authenticated',
-        inAnyCategory: true,
-        excludeCategories: ['prepunks'],
-      }),
+    ...exploreDropdownQueryOptions(authStatus === 'authenticated'),
     enabled: dropdownOption === 'explore',
   })
 

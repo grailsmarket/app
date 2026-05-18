@@ -57,10 +57,7 @@ const MainPanel: React.FC = () => {
 
   return (
     <div className='flex w-full flex-col gap-0'>
-      <CategoriesPageTabSwitcher
-        activeListingsTotal={categoriesPageDomains.totalDomains}
-        activeHoldersTotal={allHolders.totalHolders}
-      />
+      <CategoriesPageTabSwitcher />
       <div className='flex w-full flex-row gap-0'>
         {showCategoriesPanel && <CategoriesFilterPanel />}
         {(showDomainsPanel || showActivityPanel) && <FilterPanel />}

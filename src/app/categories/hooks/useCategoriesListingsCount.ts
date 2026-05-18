@@ -2,9 +2,7 @@ import { fetchDomains } from '@/api/domains/fetchDomains'
 import { emptyFilterState } from '@/state/reducers/filters/categoriesListingsFilters'
 import { useQuery } from '@tanstack/react-query'
 
-export const useCategoriesListingsCount = (activeTabValue?: string, activeListingsTotal?: number) => {
-  const isActiveListingsTab = activeTabValue === 'listings'
-
+export const useCategoriesListingsCount = () => {
   const query = useQuery({
     queryKey: ['categoriesPage', 'listings', 'count'],
     queryFn: async () => {
@@ -21,11 +19,7 @@ export const useCategoriesListingsCount = (activeTabValue?: string, activeListin
       return result.total || 0
     },
     staleTime: 60000, // 1 minute
-    enabled: !isActiveListingsTab,
   })
 
-  return {
-    ...query,
-    data: isActiveListingsTab ? activeListingsTotal : query.data,
-  }
+  return query
 }

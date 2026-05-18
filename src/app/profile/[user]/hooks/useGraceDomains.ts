@@ -7,7 +7,7 @@ import { selectProfileGraceFilters } from '@/state/reducers/filters/profileGrace
 import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 
-export const useGraceDomains = (user: Address | undefined, enabled = true) => {
+export const useGraceDomains = (user: Address | undefined, enabled = true, limit = DEFAULT_FETCH_LIMIT) => {
   const { authStatus } = useUserContext()
   const filters = useAppSelector(selectProfileGraceFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
@@ -38,6 +38,7 @@ export const useGraceDomains = (user: Address | undefined, enabled = true) => {
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      limit,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)
@@ -49,7 +50,7 @@ export const useGraceDomains = (user: Address | undefined, enabled = true) => {
         }
 
       const domains = await fetchDomains({
-        limit: DEFAULT_FETCH_LIMIT,
+        limit,
         pageParam,
         filters,
         searchTerm: debouncedSearch,

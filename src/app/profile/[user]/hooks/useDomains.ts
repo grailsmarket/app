@@ -13,11 +13,17 @@ import { useListings } from './useListings'
 import { useGraceDomains } from './useGraceDomains'
 import { useExpiredDomains } from './useExpiredDomains'
 
+type UseDomainsOptions = {
+  activeOnly?: boolean
+  limit?: number
+}
+
 // Router for the portfolio tab content
 // This is done to prevent refetching data when switching tabs
-export const useDomains = (user: Address | undefined) => {
+export const useDomains = (user: Address | undefined, options: UseDomainsOptions = {}) => {
   const { selectedTab } = useAppSelector(selectUserProfile)
   const activeTab = selectedTab.value
+  const { activeOnly = false, limit } = options
 
   const {
     domains: profileDomains,
@@ -25,7 +31,7 @@ export const useDomains = (user: Address | undefined) => {
     fetchMoreDomains: profileFetchMoreDomains,
     hasMoreDomains: profileHasMoreDomains,
     totalDomains: profileTotalDomains,
-  } = useProfileDomains(user, activeTab === 'domains')
+  } = useProfileDomains(user, !activeOnly || activeTab === 'domains', limit)
 
   const {
     watchlistDomains,
@@ -34,18 +40,19 @@ export const useDomains = (user: Address | undefined) => {
     isWatchlistDomainsFetchingNextPage,
     fetchMoreWatchlistDomains,
     hasMoreWatchlistDomains,
-  } = useWatchlistDomains(user, activeTab === 'watchlist')
+  } = useWatchlistDomains(user, !activeOnly || activeTab === 'watchlist')
 
   const { listings, totalListings, listingsLoading, fetchMoreListings, hasMoreListings } = useListings(
     user,
-    activeTab === 'listings'
+    !activeOnly || activeTab === 'listings',
+    limit
   )
 
   const { graceDomains, graceDomainsLoading, fetchMoreGraceDomains, hasMoreGraceDomains, totalGraceDomains } =
-    useGraceDomains(user, activeTab === 'grace')
+    useGraceDomains(user, !activeOnly || activeTab === 'grace', limit)
 
   const { expiredDomains, expiredDomainsLoading, fetchMoreExpiredDomains, hasMoreExpiredDomains, totalExpiredDomains } =
-    useExpiredDomains(user, activeTab === 'expired')
+    useExpiredDomains(user, !activeOnly || activeTab === 'expired', limit)
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {

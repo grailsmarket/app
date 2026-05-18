@@ -8,7 +8,7 @@ import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 import { MarketplaceDomainType } from '@/types/domains'
 
-export const useExpiredDomains = (user: Address | undefined, enabled = true) => {
+export const useExpiredDomains = (user: Address | undefined, enabled = true, limit = DEFAULT_FETCH_LIMIT) => {
   const { authStatus } = useUserContext()
   const filters = useAppSelector(selectProfileExpiredFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
@@ -38,6 +38,7 @@ export const useExpiredDomains = (user: Address | undefined, enabled = true) => 
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      limit,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)
@@ -52,7 +53,7 @@ export const useExpiredDomains = (user: Address | undefined, enabled = true) => 
       // Cast filters to PortfolioFiltersState for API compatibility
       const [premiumResult, availableResult] = await Promise.all([
         fetchDomains({
-          limit: DEFAULT_FETCH_LIMIT,
+          limit,
           pageParam,
           filters: { ...filters, status: ['Premium'] },
           searchTerm: debouncedSearch,
@@ -60,7 +61,7 @@ export const useExpiredDomains = (user: Address | undefined, enabled = true) => 
           isAuthenticated: authStatus === 'authenticated',
         }),
         fetchDomains({
-          limit: DEFAULT_FETCH_LIMIT,
+          limit,
           pageParam,
           filters: { ...filters, status: ['Available'] },
           searchTerm: debouncedSearch,

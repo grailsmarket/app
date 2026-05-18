@@ -30,7 +30,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
   const { selectedTab } = useAppSelector(selectUserProfile)
   const dispatch = useAppDispatch()
   const { profileTotalDomains, totalWatchlistDomains, totalListings, totalGraceDomains, totalExpiredDomains } =
-    useDomains(user)
+    useDomains(user, { limit: 1 })
   const { totalReceivedOffers, totalSentOffers } = useOffers(user, { limit: 1 })
   const { totalActiveBrokeredListings } = useBrokeredListings(user, { listingsEnabled: false })
   const { isNavbarVisible } = useNavbar()

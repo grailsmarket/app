@@ -35,7 +35,7 @@ const DomainPanel: React.FC<Props> = ({ user, isMyProfile = false }) => {
     totalGraceDomains,
     totalWatchlistDomains,
     totalExpiredDomains,
-  } = useDomains(user)
+  } = useDomains(user, { activeOnly: true })
   const { selectedTab } = useAppSelector(selectUserProfile)
   const { authStatus } = useUserContext()
   const debouncedSearch = useDebounce(selectors.filters.search, 500)

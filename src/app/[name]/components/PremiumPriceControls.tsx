@@ -35,7 +35,7 @@ interface PremiumPriceControlsProps {
 interface CalendarOption {
   id: string
   label: string
-  icon: StaticImageData
+  icon: StaticImageData | string
   action: (event: CalendarEvent) => void
 }
 

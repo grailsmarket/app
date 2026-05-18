@@ -26,8 +26,7 @@ export const createOffer = async ({
   console.log(expiryDate)
   const currencyAddress = TOKEN_ADDRESSES[currency]
   const offerAmountWei =
-    orderData.protocol_data?.parameters?.offer?.[0]?.startAmount ??
-    orderData.parameters?.offer?.[0]?.startAmount
+    orderData.protocol_data?.parameters?.offer?.[0]?.startAmount ?? orderData.parameters?.offer?.[0]?.startAmount
 
   if (!offerAmountWei) {
     throw new Error('Could not extract offer amount from order data')

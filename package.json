@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "checks": "bun run format && bun run lint && bun run typecheck"
+    "checks": "bun run format:check && bun run lint && bun run typecheck"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",

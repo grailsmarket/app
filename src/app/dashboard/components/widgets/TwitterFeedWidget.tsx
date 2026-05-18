@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'motion/react'
 import { LoadingCell } from 'ethereum-identity-kit'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import useIntersectionObserver from '@/hooks/useIntersectionObserver'
@@ -108,12 +110,20 @@ const formatMetric = (value: number) =>
 
 const sliceByCodePoints = (text: string, start: number, end: number) => Array.from(text).slice(start, end).join('')
 
+type ExpandedMedia = {
+  postId: string
+  media: TwitterPostMedia
+}
+
+const buildMediaLayoutId = (postId: string, mediaKey: string) => `twitter-media-${postId}-${mediaKey}`
+
 const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => {
   const dispatch = useAppDispatch()
   const config = useAppSelector((state) => selectTwitterFeedConfig(state, instanceId))
   const handle = config?.handle || DEFAULT_HANDLE
   const [inputValue, setInputValue] = useState(handle)
   const [inputError, setInputError] = useState<string | null>(null)
+  const [expandedMedia, setExpandedMedia] = useState<ExpandedMedia | null>(null)
   const { ref: loadMoreRef, isIntersecting } = useIntersectionObserver({ rootMargin: '600px 0px 600px 0px' })
 
   const canFetch = Boolean(config && HANDLE_REGEX.test(handle))
@@ -160,7 +170,7 @@ const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => 
 
   return (
     <div className='flex h-full flex-col overflow-hidden bg-black text-[#e7e9ea]'>
-      <form onSubmit={handleSubmit} className='flex shrink-0 items-center border-b border-[#2f3336] bg-black/95'>
+      <form onSubmit={handleSubmit} className='flex shrink-0 py-0.5 items-center border-b border-[#2f3336] bg-black/95'>
         <div className='flex h-10 shrink-0 items-center pl-3 text-lg font-semibold text-[#e7e9ea]'>@</div>
         <input
           type='text'
@@ -170,17 +180,19 @@ const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => 
           spellCheck={false}
           autoCapitalize='none'
           autoCorrect='off'
-          className='h-10 min-w-0 flex-1 bg-transparent px-1 text-[15px] outline-none placeholder:text-[#71767b]'
+          className='h-10 min-w-0 flex-1 bg-transparent px-1 text-[15px] font-medium outline-none placeholder:text-[#71767b]'
         />
         <button
           type='submit'
-          className='mr-2 h-7 shrink-0 cursor-pointer rounded-full bg-[#eff3f4] px-4 text-[13px] font-bold text-[#0f1419] transition-colors hover:bg-[#d7dbdc]'
+          className='mr-2 h-7 shrink-0 cursor-pointer rounded-sm bg-[#eff3f4] px-4 text-[13px] font-bold text-[#0f1419] transition-colors hover:bg-[#d7dbdc]'
         >
           Load
         </button>
       </form>
 
       {inputError && <div className='border-b border-[#2f3336] px-4 py-2 text-sm text-[#f4212e]'>{inputError}</div>}
+
+      <MediaLightbox expanded={expandedMedia} onClose={() => setExpandedMedia(null)} />
 
       <div className='min-h-0 flex-1 overflow-y-auto'>
         {query.isLoading ? (
@@ -192,7 +204,11 @@ const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => 
         ) : (
           <>
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                onExpandMedia={(media) => setExpandedMedia({ postId: post.id, media })}
+              />
             ))}
 
             <div ref={loadMoreRef} className='min-h-8'>
@@ -208,7 +224,10 @@ const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => 
   )
 }
 
-const PostCard: React.FC<{ post: TwitterPost }> = ({ post }) => (
+const PostCard: React.FC<{ post: TwitterPost; onExpandMedia: (media: TwitterPostMedia) => void }> = ({
+  post,
+  onExpandMedia,
+}) => (
   <article className='border-b border-[#2f3336] px-4 py-3 transition-colors hover:bg-[#080808]'>
     <div className='flex gap-3'>
       <a href={`https://x.com/${post.author.username}`} target='_blank' rel='noreferrer' className='shrink-0'>
@@ -248,7 +267,7 @@ const PostCard: React.FC<{ post: TwitterPost }> = ({ post }) => (
           <PostText post={post} />
         </div>
 
-        {post.media.length > 0 && <PostMedia media={post.media} />}
+        {post.media.length > 0 && <PostMedia postId={post.id} media={post.media} onExpand={onExpandMedia} />}
 
         <div className='mt-3 grid max-w-[425px] grid-cols-4 text-[#71767b]'>
           <Metric
@@ -317,9 +336,9 @@ const PostText: React.FC<{ post: TwitterPost }> = ({ post }) => {
 
 const EntityLink: React.FC<{
   entity:
-    | (TwitterUrlEntity & { kind: 'url' })
-    | (TwitterMentionEntity & { kind: 'mention' })
-    | (TwitterTagEntity & { kind: 'hashtag' | 'cashtag' })
+  | (TwitterUrlEntity & { kind: 'url' })
+  | (TwitterMentionEntity & { kind: 'mention' })
+  | (TwitterTagEntity & { kind: 'hashtag' | 'cashtag' })
   text: string
 }> = ({ entity, text }) => {
   if (entity.kind === 'url') {
@@ -361,32 +380,43 @@ const EntityLink: React.FC<{
   )
 }
 
-const PostMedia: React.FC<{ media: TwitterPostMedia[] }> = ({ media }) => {
+const PostMedia: React.FC<{
+  postId: string
+  media: TwitterPostMedia[]
+  onExpand: (media: TwitterPostMedia) => void
+}> = ({ postId, media, onExpand }) => {
   const [activeIndex, setActiveIndex] = useState(0)
   const activeMedia = media[Math.min(activeIndex, media.length - 1)]
   const showCarouselControls = media.length > 1
 
   if (!activeMedia) return null
 
+  const isVideo = activeMedia.type === 'video' || activeMedia.type === 'animated_gif'
+  const previewSrc = activeMedia.type === 'photo' ? activeMedia.url : activeMedia.previewImageUrl
+  const canExpand = Boolean(activeMedia.url || activeMedia.previewImageUrl)
+  const layoutId = buildMediaLayoutId(postId, activeMedia.key)
+
   return (
     <div className='relative mt-3 overflow-hidden rounded-2xl border border-[#2f3336] bg-[#16181c]'>
       <div className='relative flex aspect-[16/10] items-center justify-center overflow-hidden'>
-        {activeMedia.type === 'photo' ? (
-          activeMedia.url ? (
-            <img src={activeMedia.url} alt='' className='h-full w-full object-cover' loading='lazy' />
-          ) : (
-            <MediaFallback />
-          )
-        ) : activeMedia.url ? (
-          <video
-            controls
-            poster={activeMedia.previewImageUrl}
-            src={activeMedia.url}
-            className='h-full w-full bg-black object-contain'
-            playsInline
-          />
-        ) : activeMedia.previewImageUrl ? (
-          <img src={activeMedia.previewImageUrl} alt='' className='h-full w-full object-cover' loading='lazy' />
+        {canExpand && previewSrc ? (
+          <button
+            type='button'
+            onClick={() => onExpand(activeMedia)}
+            aria-label={isVideo ? 'Play video' : 'Expand image'}
+            className='group block h-full w-full cursor-zoom-in'
+          >
+            <motion.div layoutId={layoutId} className='h-full w-full'>
+              <img src={previewSrc} alt='' className='h-full w-full object-cover' loading='lazy' />
+            </motion.div>
+            {isVideo && (
+              <span className='pointer-events-none absolute inset-0 flex items-center justify-center'>
+                <span className='flex h-14 w-14 items-center justify-center rounded-full bg-black/60 ring-1 ring-white/20 transition-transform duration-200 group-hover:scale-110'>
+                  <PlayIcon />
+                </span>
+              </span>
+            )}
+          </button>
         ) : (
           <MediaFallback />
         )}
@@ -414,7 +444,10 @@ const PostMedia: React.FC<{ media: TwitterPostMedia[] }> = ({ media }) => {
               key={item.key}
               type='button'
               aria-label={`Show media ${index + 1}`}
-              onClick={() => setActiveIndex(index)}
+              onClick={(e) => {
+                e.stopPropagation()
+                setActiveIndex(index)
+              }}
               className={cn(
                 'h-1.5 w-1.5 cursor-pointer rounded-full',
                 index === activeIndex ? 'bg-white' : 'bg-white/40'
@@ -436,9 +469,12 @@ const CarouselButton: React.FC<{
     type='button'
     aria-label={direction === 'previous' ? 'Previous media' : 'Next media'}
     disabled={disabled}
-    onClick={onClick}
+    onClick={(e) => {
+      e.stopPropagation()
+      onClick()
+    }}
     className={cn(
-      'absolute top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#0f1419]/80 text-white transition-colors hover:bg-[#272c30] disabled:pointer-events-none disabled:opacity-0',
+      'absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-[#0f1419]/80 text-white transition-colors hover:bg-[#272c30] disabled:pointer-events-none disabled:opacity-0',
       direction === 'previous' ? 'left-3' : 'right-3'
     )}
   >
@@ -514,6 +550,106 @@ const EmptyState: React.FC<{ handle: string }> = ({ handle }) => (
 
 const MediaFallback: React.FC = () => (
   <div className='flex h-full w-full items-center justify-center text-sm text-[#71767b]'>Media unavailable</div>
+)
+
+const MediaLightbox: React.FC<{ expanded: ExpandedMedia | null; onClose: () => void }> = ({ expanded, onClose }) => {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!expanded) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKey)
+    }
+  }, [expanded, onClose])
+
+  if (!mounted) return null
+
+  return createPortal(
+    <AnimatePresence>
+      {expanded && (
+        <motion.div
+          key='twitter-media-lightbox'
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className='fixed inset-0 z-200 flex h-dvh w-screen items-center justify-center bg-black/80 backdrop-blur-sm'
+          onClick={onClose}
+        >
+          <button
+            type='button'
+            aria-label='Close'
+            onClick={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
+            className='absolute top-4 right-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80'
+          >
+            <CloseIcon />
+          </button>
+          <motion.div
+            layoutId={buildMediaLayoutId(expanded.postId, expanded.media.key)}
+            className='flex max-h-[90dvh] max-w-[92dvw] items-center justify-center'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExpandedMediaContent media={expanded.media} />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  )
+}
+
+const ExpandedMediaContent: React.FC<{ media: TwitterPostMedia }> = ({ media }) => {
+  const className = 'max-h-[90dvh] max-w-[92dvw] object-contain'
+  const isVideo = media.type === 'video' || media.type === 'animated_gif'
+
+  if (isVideo && media.url) {
+    return (
+      <video
+        src={media.url}
+        poster={media.previewImageUrl}
+        controls
+        autoPlay
+        playsInline
+        loop={media.type === 'animated_gif'}
+        muted={media.type === 'animated_gif'}
+        className={className}
+      />
+    )
+  }
+
+  const imageSrc = media.url ?? media.previewImageUrl
+  if (!imageSrc) return null
+
+  return <img src={imageSrc} alt='' className={className} />
+}
+
+const PlayIcon: React.FC = () => (
+  <svg viewBox='0 0 24 24' className='h-6 w-6 text-white' aria-hidden='true'>
+    <path fill='currentColor' d='M8 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 8 5.5Z' />
+  </svg>
+)
+
+const CloseIcon: React.FC = () => (
+  <svg viewBox='0 0 24 24' className='h-5 w-5' aria-hidden='true'>
+    <path
+      fill='currentColor'
+      d='M18.3 5.71 12 12.01l-6.29-6.3-1.42 1.42L10.59 13.43l-6.3 6.29 1.42 1.42L12 14.84l6.3 6.3 1.41-1.42-6.29-6.29 6.29-6.3z'
+    />
+  </svg>
 )
 
 const ReplyIcon: React.FC = () => (

@@ -139,7 +139,6 @@ export async function GET(request: NextRequest) {
 
     const postsParams = new URLSearchParams({
       max_results: String(limit),
-      exclude: 'retweets',
       'tweet.fields': 'attachments,author_id,created_at,entities,public_metrics',
       expansions: 'attachments.media_keys,author_id',
       'media.fields': 'height,media_key,preview_image_url,type,url,variants,width',

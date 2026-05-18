@@ -11,6 +11,12 @@ import { CreateDashboardLayoutPayload, DashboardLayoutResponse, Layout } from '@
 import type { DashboardLayouts } from '@/state/reducers/dashboard/types'
 // import { deleteDashboardLayout } from '@/api/dashboard/deleteDashboardLayout'
 
+const withFallbackPositions = (layouts: DashboardLayoutResponse[]): DashboardLayoutResponse[] =>
+  layouts.map((layout, index) => ({
+    ...layout,
+    position: layout.position ?? index,
+  }))
+
 export const useDashboardSync = () => {
   const dispatch = useAppDispatch()
   const { address: userAddress } = useAccount()
@@ -37,7 +43,7 @@ export const useDashboardSync = () => {
     queryKey: ['dashboard-layouts', userAddress, subscription?.tierId],
     queryFn: async () => {
       if (!userAddress) return null
-      const layoutResponse = await getDashboardLayouts()
+      const layoutResponse = withFallbackPositions(await getDashboardLayouts())
 
       if (!!layoutResponse) {
         // Only load a layout from the response if the one persisted in the redux store is not in the response array
@@ -87,7 +93,7 @@ export const useDashboardSync = () => {
             }
           }
 
-          const newQueryData = layouts?.map((l) => (l.id === layoutId ? updated : l))
+          const newQueryData = layouts?.map((l) => (l.id === layoutId ? { ...updated, position: l.position } : l))
           if (newQueryData) {
             queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
           }
@@ -112,10 +118,13 @@ export const useDashboardSync = () => {
           dispatch(setDashboardLayoutId(created.id))
 
           if (created.isDefault) {
-            const newQueryData = [...(layouts || []).map((l) => ({ ...l, isDefault: false })), created]
+            const newQueryData = [
+              ...(layouts || []).map((l) => ({ ...l, isDefault: false })),
+              { ...created, position: layouts?.length ?? 0 },
+            ]
             queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
           } else {
-            const newQueryData = [...(layouts || []), created]
+            const newQueryData = [...(layouts || []), { ...created, position: layouts?.length ?? 0 }]
             queryClient.setQueryData(['dashboard-layouts', userAddress, subscription?.tierId], newQueryData)
           }
 
@@ -205,7 +214,7 @@ export const useDashboardSync = () => {
 
         queryClient.setQueryData<DashboardLayoutResponse[]>(
           ['dashboard-layouts', userAddress, subscription?.tierId],
-          (old) => [...(old ?? []), created]
+          (old) => [...(old ?? []), { ...created, position: old?.length ?? 0 }]
         )
 
         if (!options?.preserveLocalState) {

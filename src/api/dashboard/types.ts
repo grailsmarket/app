@@ -3,6 +3,7 @@ import type { DashboardLayouts, DashboardComponentConfig } from '@/state/reducer
 export type Layout = {
   id: number
   name: string
+  position: number
   colOverride: number | null
   layouts: DashboardLayouts
   components: Record<string, DashboardComponentConfig>
@@ -12,6 +13,7 @@ export type Layout = {
 export type DashboardLayoutResponse = {
   id: number
   name: string
+  position: number
   colOverride: number | null
   layouts: DashboardLayouts
   components: Record<string, DashboardComponentConfig>

@@ -35,6 +35,7 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
   {
     id: 1,
     name: 'Overview',
+    position: 0,
     colOverride: 3,
     nextId: 6,
     isDefault: true,
@@ -82,6 +83,7 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
   {
     id: 2,
     name: 'Analytics strip',
+    position: 1,
     colOverride: null,
     isDefault: false,
     nextId: 5,
@@ -123,6 +125,7 @@ export const DASHBOARD_LAYOUT_PRESETS: DashboardLayoutResponse[] = [
   {
     id: 3,
     name: 'Leaderboard & regs',
+    position: 2,
     colOverride: null,
     nextId: 5,
     isDefault: false,

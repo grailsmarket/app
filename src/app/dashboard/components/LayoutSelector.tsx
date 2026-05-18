@@ -16,6 +16,46 @@ type ConfirmationType = 'delete' | 'edit' | 'new'
 
 const TRANSIENT_TAB_KEY = '__transient_new__'
 const NEW_LAYOUT_BASE_NAME = 'New Layout'
+const MOBILE_EDIT_HOLD_MS = 1000
+const MOBILE_QUERY = '(max-width: 767px)'
+const DRAG_START_DISTANCE = 3
+
+type LayoutOrder = number[]
+
+type PointerPress = {
+  id: number
+  pointerId: number
+  startX: number
+  startY: number
+  dragging: boolean
+  waitingForMobileEdit: boolean
+}
+
+const sortLayoutsByPosition = (layouts: DashboardLayoutResponse[]): DashboardLayoutResponse[] =>
+  [...layouts].sort((a, b) => a.position - b.position || a.id - b.id)
+
+const moveArrayItem = <T,>(items: T[], fromIndex: number, toIndex: number): T[] => {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return items
+
+  const next = [...items]
+  const [item] = next.splice(fromIndex, 1)
+  next.splice(toIndex, 0, item)
+  return next
+}
+
+const createMergedLayoutOrder = (
+  currentOrder: LayoutOrder,
+  layouts: DashboardLayoutResponse[] | null | undefined
+): LayoutOrder => {
+  const sortedIds = sortLayoutsByPosition(layouts ?? []).map((layout) => layout.id)
+  if (sortedIds.length === 0) return []
+
+  const availableIds = new Set(sortedIds)
+  const preservedIds = currentOrder.filter((id) => availableIds.has(id))
+  const newIds = sortedIds.filter((id) => !preservedIds.includes(id))
+
+  return [...preservedIds, ...newIds]
+}
 
 const generateNewLayoutName = (existingLayouts: DashboardLayoutResponse[] | null | undefined): string => {
   const taken = new Set(existingLayouts?.map((l) => l.name) ?? [])
@@ -49,13 +89,73 @@ const LayoutSelector = () => {
 
   const [isCreatingLayout, setIsCreatingLayout] = useState(false)
 
+  const selectorRootRef = useRef<HTMLDivElement>(null)
   const tabsContainerRef = useRef<HTMLDivElement>(null)
+  const holdTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const pointerPressRef = useRef<PointerPress | null>(null)
+  const suppressNextClickRef = useRef(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isMobileEditing, setIsMobileEditing] = useState(false)
+  const [draggingLayoutId, setDraggingLayoutId] = useState<number | null>(null)
+  const [layoutOrder, setLayoutOrder] = useState<LayoutOrder>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
   const selectedLayout = useMemo(
     () => layouts?.find((layout) => layout.id === selectedLayoutId) ?? null,
     [layouts, selectedLayoutId]
   )
+
+  const orderedLayouts = useMemo(() => {
+    if (!layouts) return []
+
+    const sortedLayouts = sortLayoutsByPosition(layouts)
+    const layoutById = new Map(sortedLayouts.map((layout) => [layout.id, layout]))
+    const ordered = layoutOrder.flatMap((id) => {
+      const layout = layoutById.get(id)
+      return layout ? [layout] : []
+    })
+    const orderedIds = new Set(ordered.map((layout) => layout.id))
+    const missingLayouts = sortedLayouts.filter((layout) => !orderedIds.has(layout.id))
+
+    return [...ordered, ...missingLayouts]
+  }, [layoutOrder, layouts])
+
+  const orderedLayoutIds = useMemo(() => orderedLayouts.map((layout) => layout.id), [orderedLayouts])
+  const orderedLayoutKey = orderedLayoutIds.join(',')
+
+  useEffect(() => {
+    setLayoutOrder((currentOrder) => createMergedLayoutOrder(currentOrder, layouts))
+  }, [layouts])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_QUERY)
+    const updateIsMobile = () => setIsMobile(mediaQuery.matches)
+
+    updateIsMobile()
+    mediaQuery.addEventListener('change', updateIsMobile)
+
+    return () => mediaQuery.removeEventListener('change', updateIsMobile)
+  }, [])
+
+  useEffect(() => {
+    if (isMobile) return
+
+    setIsMobileEditing(false)
+  }, [isMobile])
+
+  useEffect(() => {
+    if (!isMobile || !isMobileEditing) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const selectorRoot = selectorRootRef.current
+      if (selectorRoot?.contains(event.target as Node)) return
+
+      setIsMobileEditing(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true)
+  }, [isMobile, isMobileEditing])
 
   // ── Confirmation dialog wiring (preserved verbatim from the previous UI) ──
   const handleConfirmationDialogOpen = useCallback(
@@ -109,12 +209,142 @@ const LayoutSelector = () => {
 
   // ── Tab interactions ──────────────────────────────────────────────────────
 
+  const clearHoldTimer = useCallback(() => {
+    if (!holdTimerRef.current) return
+
+    window.clearTimeout(holdTimerRef.current)
+    holdTimerRef.current = null
+  }, [])
+
+  const finishPointerInteraction = useCallback(() => {
+    const wasDragging = pointerPressRef.current?.dragging
+
+    clearHoldTimer()
+    pointerPressRef.current = null
+    setDraggingLayoutId(null)
+
+    if (wasDragging) {
+      window.setTimeout(() => {
+        suppressNextClickRef.current = false
+      }, 0)
+    }
+  }, [clearHoldTimer])
+
+  useEffect(() => () => clearHoldTimer(), [clearHoldTimer])
+
+  const beginDrag = useCallback(
+    (layoutId: number) => {
+      clearHoldTimer()
+      pointerPressRef.current = pointerPressRef.current ? { ...pointerPressRef.current, dragging: true } : null
+      suppressNextClickRef.current = true
+      setDraggingLayoutId(layoutId)
+    },
+    [clearHoldTimer]
+  )
+
+  const reorderDraggedLayout = useCallback((layoutId: number, pointerX: number) => {
+    const container = tabsContainerRef.current
+    if (!container) return
+
+    const tabElements = Array.from(container.querySelectorAll<HTMLElement>('[data-layout-id]')).filter(
+      (tabElement) => tabElement.dataset.layoutId !== String(layoutId)
+    )
+    const targetIndex = tabElements.reduce((nextIndex, tabElement, index) => {
+      const rect = tabElement.getBoundingClientRect()
+      return pointerX > rect.left + rect.width / 2 ? index + 1 : nextIndex
+    }, 0)
+
+    setLayoutOrder((currentOrder) => {
+      const fromIndex = currentOrder.indexOf(layoutId)
+      if (fromIndex === -1) return currentOrder
+
+      const boundedTargetIndex = Math.max(0, Math.min(targetIndex, currentOrder.length - 1))
+      return moveArrayItem(currentOrder, fromIndex, boundedTargetIndex)
+    })
+  }, [])
+
+  const handleTabPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>, layoutId: number) => {
+      if (isCreatingLayout || event.button !== 0) return
+
+      event.currentTarget.setPointerCapture(event.pointerId)
+
+      const waitingForMobileEdit = isMobile && !isMobileEditing
+      pointerPressRef.current = {
+        id: layoutId,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        dragging: false,
+        waitingForMobileEdit,
+      }
+
+      if (waitingForMobileEdit) {
+        holdTimerRef.current = window.setTimeout(() => {
+          setIsMobileEditing(true)
+          beginDrag(layoutId)
+        }, MOBILE_EDIT_HOLD_MS)
+        return
+      }
+    },
+    [beginDrag, isCreatingLayout, isMobile, isMobileEditing]
+  )
+
+  const handleTabPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      const press = pointerPressRef.current
+      if (!press || press.pointerId !== event.pointerId) return
+
+      const deltaX = event.clientX - press.startX
+      const deltaY = event.clientY - press.startY
+      const movedDistance = Math.hypot(deltaX, deltaY)
+
+      if (press.waitingForMobileEdit && !press.dragging) {
+        if (movedDistance > 8) finishPointerInteraction()
+        return
+      }
+
+      if (!press.dragging) {
+        if (movedDistance < DRAG_START_DISTANCE) return
+        beginDrag(press.id)
+      }
+
+      event.preventDefault()
+      reorderDraggedLayout(press.id, event.clientX)
+    },
+    [beginDrag, finishPointerInteraction, reorderDraggedLayout]
+  )
+
+  const handleTabPointerUp = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (pointerPressRef.current?.pointerId !== event.pointerId) return
+
+      finishPointerInteraction()
+    },
+    [finishPointerInteraction]
+  )
+
+  const handleTabPointerCancel = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (pointerPressRef.current?.pointerId !== event.pointerId) return
+
+      finishPointerInteraction()
+    },
+    [finishPointerInteraction]
+  )
+
   const handleSelectTab = useCallback(
     (layout: DashboardLayoutResponse) => {
+      if (suppressNextClickRef.current) {
+        suppressNextClickRef.current = false
+        return
+      }
+
+      if (isMobileEditing) return
       if (layout.id === selectedLayoutId || isCreatingLayout) return
       loadLayout(layout)
     },
-    [isCreatingLayout, loadLayout, selectedLayoutId]
+    [isCreatingLayout, isMobileEditing, loadLayout, selectedLayoutId]
   )
 
   const handleCreateNewLayout = useCallback(async () => {
@@ -165,13 +395,19 @@ const LayoutSelector = () => {
     recompute()
     window.addEventListener('resize', recompute)
     return () => window.removeEventListener('resize', recompute)
-  }, [layouts, selectedLayoutId, isCreatingLayout])
+  }, [orderedLayoutKey, selectedLayoutId, isCreatingLayout])
 
   const showActions = selectedLayout != null && !isCreatingLayout
 
   return (
     <>
-      <div className='flex min-w-0 flex-1 items-center gap-2'>
+      <style>{`
+        @keyframes dashboard-tab-jiggle {
+          0%, 100% { transform: rotate(-1deg); }
+          50% { transform: rotate(1deg); }
+        }
+      `}</style>
+      <div ref={selectorRootRef} className='flex min-w-0 flex-1 items-center gap-2'>
         <div className='flex min-w-0 flex-1 items-center'>
           {isLoadingLayouts ? (
             <div className='px-3 py-2'>
@@ -182,20 +418,28 @@ const LayoutSelector = () => {
               ref={tabsContainerRef}
               className='relative flex h-10 items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
             >
-              {layouts?.map((layout) => (
+              {orderedLayouts.map((layout) => (
                 <LayoutTab
                   key={layout.id}
                   tabKey={String(layout.id)}
+                  layoutId={layout.id}
                   name={layout.name}
                   isDefault={layout.isDefault}
                   isSelected={selectedLayoutId === layout.id}
+                  isDragging={draggingLayoutId === layout.id}
+                  isMobileEditing={isMobileEditing}
                   disabled={isCreatingLayout}
                   onClick={() => handleSelectTab(layout)}
+                  onPointerDown={(event) => handleTabPointerDown(event, layout.id)}
+                  onPointerMove={handleTabPointerMove}
+                  onPointerUp={handleTabPointerUp}
+                  onPointerCancel={handleTabPointerCancel}
                 />
               ))}
               {isCreatingLayout && (
                 <LayoutTab
                   tabKey={TRANSIENT_TAB_KEY}
+                  layoutId={null}
                   name={dashboard.name}
                   isDefault={false}
                   isSelected
@@ -317,23 +561,52 @@ const LayoutSelector = () => {
 
 interface LayoutTabProps {
   tabKey: string
+  layoutId: number | null
   name: string
   isDefault: boolean
   isSelected: boolean
+  isDragging?: boolean
+  isMobileEditing?: boolean
   isPending?: boolean
   disabled?: boolean
   onClick: () => void
+  onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void
+  onPointerMove?: (event: React.PointerEvent<HTMLButtonElement>) => void
+  onPointerUp?: (event: React.PointerEvent<HTMLButtonElement>) => void
+  onPointerCancel?: (event: React.PointerEvent<HTMLButtonElement>) => void
 }
 
-const LayoutTab: React.FC<LayoutTabProps> = ({ tabKey, name, isDefault, isSelected, isPending, disabled, onClick }) => (
+const LayoutTab: React.FC<LayoutTabProps> = ({
+  tabKey,
+  layoutId,
+  name,
+  isDefault,
+  isSelected,
+  isDragging,
+  isMobileEditing,
+  isPending,
+  disabled,
+  onClick,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
+}) => (
   <button
     type='button'
     data-layout-tab={tabKey}
+    data-layout-id={layoutId ?? undefined}
     onClick={onClick}
+    onPointerDown={onPointerDown}
+    onPointerMove={onPointerMove}
+    onPointerUp={onPointerUp}
+    onPointerCancel={onPointerCancel}
     disabled={disabled || isPending}
     className={cn(
-      'flex h-10 shrink-0 cursor-pointer items-center gap-1.5 px-3 text-lg whitespace-nowrap transition-opacity',
+      'flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-3 text-lg whitespace-nowrap transition-[opacity,transform,background-color,box-shadow]',
       isSelected ? 'text-primary font-bold opacity-100' : 'font-semibold opacity-50 hover:opacity-80',
+      isMobileEditing && !isPending && 'animate-[dashboard-tab-jiggle_180ms_ease-in-out_infinite] touch-none',
+      isDragging && 'bg-secondary z-10 scale-105 opacity-100 shadow-lg',
       isPending && 'cursor-wait',
       disabled && !isSelected && 'cursor-not-allowed'
     )}

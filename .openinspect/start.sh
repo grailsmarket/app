@@ -7,12 +7,27 @@ PORT="${PORT:-3000}"
 
 echo "Starting Grails app for OPENINSPECT_BOOT_MODE=${OPENINSPECT_BOOT_MODE:-unknown}"
 
-if [ -f "$PID_FILE" ]; then
-  EXISTING_PID="$(cat "$PID_FILE")"
-  if [ -n "$EXISTING_PID" ] && kill -0 "$EXISTING_PID" 2>/dev/null; then
-    echo "Grails app is already running with PID $EXISTING_PID"
-    exit 0
+port_in_use() {
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltn "sport = :$PORT" 2>/dev/null | grep -q LISTEN
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -iTCP:"$PORT" -sTCP:LISTEN -t >/dev/null 2>&1
+  elif command -v netstat >/dev/null 2>&1; then
+    netstat -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$PORT$"
+  else
+    # Last resort: try to bind via bash's /dev/tcp (checks if something accepts)
+    (exec 3<>/dev/tcp/127.0.0.1/"$PORT") 2>/dev/null && { exec 3<&-; exec 3>&-; return 0; } || return 1
   fi
+}
+
+if port_in_use; then
+  echo "Grails app is already running on port $PORT"
+  exit 0
+fi
+
+# Stale pid file (e.g. after snapshot/resume) — clean it up
+if [ -f "$PID_FILE" ]; then
+  rm -f "$PID_FILE"
 fi
 
 if [ ! -f ".env.local" ] && [ -f ".env.example" ]; then

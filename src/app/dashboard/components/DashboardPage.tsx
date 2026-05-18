@@ -84,7 +84,7 @@ const AuthenticatedDashboard = () => {
       <main className='relative flex min-h-screen flex-col'>
         <div
           className={cn(
-            'px-md py-md sm:px-lg border-tertiary bg-background sticky top-0 z-10 flex items-center justify-between gap-3 border-b-2 transition-all duration-300',
+            'border-tertiary bg-background sticky top-0 z-10 flex min-h-12 items-stretch justify-between gap-3 overflow-x-hidden border-b-2 transition-all duration-300 md:min-h-14',
             isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
           )}
         >
@@ -95,7 +95,7 @@ const AuthenticatedDashboard = () => {
               dispatch(setSidebarOpen(!sidebarOpen))
             }}
             className={cn(
-              'border-tertiary hover:bg-secondary text-md flex h-10 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 font-medium transition-colors',
+              'border-tertiary bg-background hover:bg-secondary text-md flex min-h-12 w-12 shrink-0 cursor-pointer items-center justify-center gap-1.5 border-r-2 font-medium transition-all md:min-h-14 md:w-auto md:px-3',
               sidebarOpen && 'bg-primary/10 border-primary/40 text-primary pointer-events-none'
             )}
           >
@@ -106,7 +106,7 @@ const AuthenticatedDashboard = () => {
               width={16}
               className={cn('transition-transform', sidebarOpen && 'rotate-45')}
             />
-            <p>Widgets</p>
+            <p className='hidden md:block'>Widgets</p>
           </button>
           <LayoutSelector />
         </div>

@@ -407,8 +407,8 @@ const LayoutSelector = () => {
           50% { transform: rotate(1deg); }
         }
       `}</style>
-      <div ref={selectorRootRef} className='flex min-w-0 flex-1 items-center gap-2'>
-        <div className='flex min-w-0 flex-1 items-center'>
+      <div ref={selectorRootRef} className='flex min-w-0 flex-1 items-stretch justify-between'>
+        <div className='flex min-w-0 flex-1 items-center px-3 sm:px-4'>
           {isLoadingLayouts ? (
             <div className='px-3 py-2'>
               <LoadingCell width='120px' height='24px' radius='4px' />
@@ -469,13 +469,13 @@ const LayoutSelector = () => {
         </div>
 
         {showActions && (
-          <div className='flex shrink-0 items-center gap-1'>
+          <div className='flex shrink-0 items-stretch'>
             <button
               type='button'
               onClick={() => handleConfirmationDialogOpen('edit')}
               aria-label='Rename dashboard'
               title='Rename dashboard'
-              className='border-tertiary hover:border-foreground/50 hover:bg-secondary flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border transition-colors'
+              className='border-tertiary hover:bg-secondary flex min-h-12 w-12 cursor-pointer items-center justify-center border-l-2 transition-all md:min-h-14'
             >
               <Pencil className='h-4 w-4' />
             </button>
@@ -484,7 +484,7 @@ const LayoutSelector = () => {
               onClick={() => handleConfirmationDialogOpen('delete')}
               aria-label='Delete dashboard'
               title='Delete dashboard'
-              className='border-tertiary hover:border-red-400/60 hover:bg-red-400/10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-md border text-red-400 transition-colors'
+              className='border-tertiary hover:bg-red-400/10 flex min-h-12 w-12 cursor-pointer items-center justify-center border-l-2 text-red-400 transition-all md:min-h-14'
             >
               <Trash className='h-4 w-4' />
             </button>
@@ -603,7 +603,7 @@ const LayoutTab: React.FC<LayoutTabProps> = ({
     onPointerCancel={onPointerCancel}
     disabled={disabled || isPending}
     className={cn(
-      'flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-3 text-lg whitespace-nowrap transition-[opacity,transform,background-color,box-shadow]',
+      'flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-3 text-lg whitespace-nowrap transition-[opacity,transform,background-color,box-shadow] duration-200 ease-out',
       isSelected ? 'text-primary font-bold opacity-100' : 'font-semibold opacity-50 hover:opacity-80',
       isMobileEditing && !isPending && 'animate-[dashboard-tab-jiggle_180ms_ease-in-out_infinite] touch-none',
       isDragging && 'bg-secondary z-10 scale-105 opacity-100 shadow-lg',

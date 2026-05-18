@@ -1,25 +1,24 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useUserContext } from '@/context/user'
 
 export const useOpenSettingsFromUrl = () => {
   const { setIsSettingsOpen } = useUserContext()
-  const hasHandledRef = useRef(false)
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
-    if (hasHandledRef.current) return
-    if (typeof window === 'undefined') return
+    if (searchParams.get('modal') !== 'settings') return
 
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('modal') !== 'settings') return
-
-    hasHandledRef.current = true
     setIsSettingsOpen(true)
 
+    const params = new URLSearchParams(searchParams.toString())
     params.delete('modal')
     const rest = params.toString()
-    const newUrl = `${window.location.pathname}${rest ? `?${rest}` : ''}${window.location.hash}`
-    window.history.replaceState(null, '', newUrl)
-  }, [setIsSettingsOpen])
+    const hash = typeof window !== 'undefined' ? window.location.hash : ''
+    router.replace(`${pathname}${rest ? `?${rest}` : ''}${hash}`, { scroll: false })
+  }, [searchParams, pathname, router, setIsSettingsOpen])
 }

@@ -19,14 +19,19 @@ const getVisibleCount = (width: number | null): number => {
 }
 
 export default function Testemonials() {
+  const [isMounted, setIsMounted] = useState(false)
   const { width } = useWindowSize()
-  const visibleCount = getVisibleCount(width)
+  const visibleCount = getVisibleCount(isMounted ? width : null)
   const total = TESTEMONIAL_QUOTES.length
   const needsCarousel = total > visibleCount
   const maxIndex = needsCarousel ? total - visibleCount : 0
 
   const [activeIndex, setActiveIndex] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     setActiveIndex((prev) => Math.min(prev, maxIndex))

@@ -21,6 +21,9 @@ import { cn } from '@/utils/tailwind'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { track } from '@/lib/analytics'
+import { getAddress, isAddress } from 'viem'
+import { parseNameIdentifierSearch } from '@/utils/searchIdentifiers'
+import { setBulkSearchTerms } from '@/state/reducers/bulkSearch/bulkSearch'
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -47,17 +50,21 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
 
   const { categories } = useCategories()
   const debouncedQuery = useDebounce(query, 400)
+  const isDebouncedAddressSearch = isAddress(debouncedQuery.trim())
+  const isDebouncedIdentifierSearch = parseNameIdentifierSearch(debouncedQuery) !== null
 
   const { data: fetchedDomains, isLoading: isFetchedDomainsLoading } = useQuery({
     queryKey: ['globalSearch', 'domains', debouncedQuery],
     queryFn: async () => {
       if (debouncedQuery.length === 0) return { domains: [], nextPageParam: 0, hasNextPage: false }
+      if (isDebouncedAddressSearch) return { domains: [], nextPageParam: 0, hasNextPage: false }
       const domains = await fetchDomains({
         limit: 5,
         pageParam: 1,
-        filters: emptyFilterState as any,
+        filters: emptyFilterState,
         searchTerm: debouncedQuery,
         enableBulkSearch: true,
+        resolveIdentifiers: true,
       })
       return domains
     },
@@ -65,7 +72,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   })
 
   const displayedCategories = useMemo(() => {
-    if (debouncedQuery.length === 0) return []
+    if (debouncedQuery.length === 0 || isDebouncedAddressSearch || isDebouncedIdentifierSearch) return []
     return (
       categories?.filter(
         (category) =>
@@ -73,13 +80,13 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
           category.description.toLowerCase().includes(debouncedQuery.toLowerCase())
       ) || [].slice(0, 5)
     )
-  }, [categories, debouncedQuery])
+  }, [categories, debouncedQuery, isDebouncedAddressSearch, isDebouncedIdentifierSearch])
 
   const { data: fetchedProfiles, isLoading: isFetchedProfilesLoading } = useQuery({
     queryKey: ['globalSearch', 'profiles', debouncedQuery],
     queryFn: async () => {
-      if (debouncedQuery.length === 0) return []
-      const profiles = await searchProfiles({ search: debouncedQuery })
+      if (debouncedQuery.length === 0 || isDebouncedIdentifierSearch) return []
+      const profiles = await searchProfiles({ search: debouncedQuery, includeAddresses: true })
       return profiles
     },
     enabled: debouncedQuery.length >= 1,
@@ -101,12 +108,12 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
       })
 
       if (query.length < 10000) {
-        router.push(`/marketplace?search=${queries.join(',')}`)
+        router.push(`/bulk-search?terms=${queries.join(',')}`)
       } else {
-        router.push(`/marketplace`)
+        router.push(`/bulk-search`)
       }
 
-      dispatch(setMarketplaceSearch(queries.join(', ')))
+      dispatch(setBulkSearchTerms(queries.join(', ')))
       handleClose()
       return
     }
@@ -175,6 +182,32 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
               }
 
               if (e.key === 'Enter') {
+                const trimmedQuery = query.trim()
+                if (isAddress(trimmedQuery)) {
+                  const address = getAddress(trimmedQuery)
+                  track('search_submitted', {
+                    search_type: 'profile_address_lookup',
+                    term: address,
+                  })
+                  handleClose()
+                  router.push(`/profile/${address}`)
+                  return
+                }
+
+                if (parseNameIdentifierSearch(trimmedQuery)) {
+                  const domain = fetchedDomains?.domains[0]
+                  if (!domain) return
+
+                  track('search_submitted', {
+                    search_type: 'name_identifier_lookup',
+                    term: trimmedQuery,
+                    result: normalizeName(domain.name),
+                  })
+                  handleClose()
+                  router.push(`/${encodeURIComponent(normalizeName(domain.name))}`)
+                  return
+                }
+
                 const isBulkSearching = query.replaceAll(' ', ',').split(',').length > 1
                 if (isBulkSearching) {
                   handleViewAllDomains()
@@ -194,7 +227,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
             <Cross className='text-foreground/90 h-4 w-4 md:h-5 md:w-5' />
           </button>
         </div>
-        <p className='text-md text-neutral px-5 pt-3 lg:px-7'>
+        <p className='text-md text-neutral px-5 pt-3 pb-3 lg:px-7'>
           <strong>Bulk Search</strong>: Input up to 10k terms separated by commas or spaces, then press ENTER
         </p>
 
@@ -204,7 +237,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
             <>
               {/* Names */}
               {(isFetchedDomainsLoading || (fetchedDomains?.domains && fetchedDomains.domains.length > 0)) && (
-                <div className='p-md pt-lg md:p-lg flex flex-col gap-1'>
+                <div className='p-md md:p-lg flex flex-col gap-1'>
                   <div className='flex items-center'>
                     <h3 className='text-foreground px-3 font-bold md:text-2xl'>Names</h3>
                   </div>
@@ -300,7 +333,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                       : fetchedProfiles?.map((profile) => (
                           <Link
                             prefetch={true}
-                            key={profile.name}
+                            key={profile.resolvedAddress?.id || profile.name}
                             href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
                             onClick={handleClose}
                             className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
@@ -313,7 +346,9 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                               className='text-foreground flex flex-col gap-px truncate font-semibold'
                               style={{ maxWidth: 'calc(100% - 48px)' }}
                             >
-                              <p className='max-w-full truncate text-lg'>{beautifyName(profile.name)}</p>
+                              <p className='max-w-full truncate text-lg'>
+                                {isAddress(profile.name) ? profile.name : beautifyName(profile.name)}
+                              </p>
                               {profile.resolvedAddress?.id && (
                                 <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
                                   {profile.resolvedAddress?.id}

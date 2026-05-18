@@ -456,7 +456,7 @@ const LayoutSelector = () => {
                 </button>
 
                 {mobileDropdownOpen && (
-                  <div className='bg-background border-tertiary absolute top-full left-0 mt-1 w-full overflow-hidden rounded-md border shadow-md'>
+                  <div className='bg-background border-tertiary absolute z-40 top-full left-0 mt-2 w-full overflow-hidden rounded-md border shadow-md'>
                     {orderedLayouts.map((layout) => (
                       <button
                         type='button'

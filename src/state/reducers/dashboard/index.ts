@@ -246,6 +246,10 @@ export const dashboardSlice = createSlice({
       if (existing) existing.name = name
     },
 
+    renameDashboard(state, action: PayloadAction<string>) {
+      state.name = action.payload
+    },
+
     updateComponentConfig(state, action: PayloadAction<{ id: string; patch: Partial<DashboardComponentConfig> }>) {
       const { id, patch } = action.payload
       const existing = state.components[id]
@@ -318,6 +322,7 @@ export const {
   dropComponent,
   removeComponent,
   renameComponent,
+  renameDashboard,
   updateLayouts,
   updateComponentConfig,
   setDashboardLayoutId,

@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/nextjs-vite'
 
+import { StorybookProviders } from '../src/stories/storybook-providers'
 import '../src/app/globals.css'
 
 const preview: Preview = {
@@ -26,19 +27,21 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
-      <main
-        style={
-          {
-            '--font-inter': 'Inter, Arial, sans-serif',
-            '--font-sedan-sc': 'Georgia, serif',
-            minHeight: '100vh',
-            minWidth: '320px',
-            padding: '24px',
-          } as React.CSSProperties
-        }
-      >
-        <Story />
-      </main>
+      <StorybookProviders>
+        <main
+          style={
+            {
+              '--font-inter': 'Inter, Arial, sans-serif',
+              '--font-sedan-sc': 'Georgia, serif',
+              minHeight: '100vh',
+              minWidth: '320px',
+              padding: '24px',
+            } as React.CSSProperties
+          }
+        >
+          <Story />
+        </main>
+      </StorybookProviders>
     ),
   ],
 }

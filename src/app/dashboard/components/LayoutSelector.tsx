@@ -10,6 +10,9 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import Input from '@/components/ui/input'
 import { cn } from '@/utils/tailwind'
 import Star from 'public/icons/star.svg'
+import ArrowDown from 'public/icons/arrow-down.svg'
+import Tooltip from '@/components/ui/tooltip'
+import { useClickAway } from '@/hooks/useClickAway'
 import type { DashboardLayoutResponse } from '@/api/dashboard/types'
 
 type ConfirmationType = 'delete' | 'edit' | 'new'
@@ -96,9 +99,12 @@ const LayoutSelector = () => {
   const suppressNextClickRef = useRef(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isMobileEditing, setIsMobileEditing] = useState(false)
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false)
   const [draggingLayoutId, setDraggingLayoutId] = useState<number | null>(null)
   const [layoutOrder, setLayoutOrder] = useState<LayoutOrder>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
+
+  const mobileDropdownRef = useClickAway<HTMLDivElement>(() => setMobileDropdownOpen(false))
 
   const selectedLayout = useMemo(
     () => layouts?.find((layout) => layout.id === selectedLayoutId) ?? null,
@@ -348,14 +354,13 @@ const LayoutSelector = () => {
   )
 
   const handleSelectLayoutFromDropdown = useCallback(
-    (event: React.ChangeEvent<HTMLSelectElement>) => {
-      const layoutId = Number(event.target.value)
-      const layout = orderedLayouts.find((item) => item.id === layoutId)
+    (layout: DashboardLayoutResponse) => {
+      setMobileDropdownOpen(false)
 
-      if (!layout || layout.id === selectedLayoutId || isCreatingLayout) return
+      if (layout.id === selectedLayoutId || isCreatingLayout) return
       loadLayout(layout)
     },
-    [isCreatingLayout, loadLayout, orderedLayouts, selectedLayoutId]
+    [isCreatingLayout, loadLayout, selectedLayoutId]
   )
 
   const handleCreateNewLayout = useCallback(async () => {
@@ -426,26 +431,52 @@ const LayoutSelector = () => {
             </div>
           ) : (
             <>
-              <div className='relative flex min-w-0 flex-1 items-stretch md:hidden'>
-                <select
-                  value={isCreatingLayout ? TRANSIENT_TAB_KEY : (selectedLayoutId ?? '')}
-                  onChange={handleSelectLayoutFromDropdown}
+              <div ref={mobileDropdownRef} className='relative z-30 flex min-w-0 flex-1 items-stretch md:hidden'>
+                <button
+                  type='button'
+                  onClick={() => setMobileDropdownOpen((open) => !open)}
                   disabled={isCreatingLayout}
                   aria-label='Select dashboard layout'
+                  aria-expanded={mobileDropdownOpen}
                   className={cn(
-                    'text-primary bg-background h-full min-h-12 w-full cursor-pointer appearance-none truncate px-2 pr-8 text-lg font-bold outline-none transition-opacity',
+                    'hover:bg-secondary flex min-h-12 min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 px-2 transition-colors',
                     isCreatingLayout && 'cursor-wait opacity-70'
                   )}
                 >
-                  {orderedLayouts.map((layout) => (
-                    <option key={layout.id} value={layout.id}>
-                      {layout.isDefault ? 'Default: ' : ''}
-                      {layout.name}
-                    </option>
-                  ))}
-                  {isCreatingLayout && <option value={TRANSIENT_TAB_KEY}>{dashboard.name}</option>}
-                </select>
-                <span className='text-primary pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-sm'>▾</span>
+                  <span className='text-primary min-w-0 truncate text-lg font-bold'>
+                    {isCreatingLayout ? dashboard.name : (selectedLayout?.name ?? 'Select Layout')}
+                  </span>
+                  <Image
+                    src={ArrowDown}
+                    alt='Dropdown arrow'
+                    height={12}
+                    width={12}
+                    className={cn('shrink-0 transition-transform', mobileDropdownOpen && 'rotate-180')}
+                  />
+                </button>
+
+                {mobileDropdownOpen && (
+                  <div className='bg-background border-tertiary absolute top-full left-0 mt-1 w-full overflow-hidden rounded-md border shadow-md'>
+                    {orderedLayouts.map((layout) => (
+                      <button
+                        type='button'
+                        key={layout.id}
+                        className={cn(
+                          'hover:bg-secondary flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left transition-colors',
+                          selectedLayoutId === layout.id && 'text-primary font-bold'
+                        )}
+                        onClick={() => handleSelectLayoutFromDropdown(layout)}
+                      >
+                        <span className='min-w-0 wrap-anywhere'>{layout.name}</span>
+                        {layout.isDefault && (
+                          <Tooltip label='Default layout' position='top' align='right'>
+                            <Image src={Star} alt='Default layout' className='h-4 w-4 shrink-0' height={16} width={16} />
+                          </Tooltip>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <button
                 type='button'

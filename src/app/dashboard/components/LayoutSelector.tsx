@@ -347,6 +347,17 @@ const LayoutSelector = () => {
     [isCreatingLayout, isMobileEditing, loadLayout, selectedLayoutId]
   )
 
+  const handleSelectLayoutFromDropdown = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const layoutId = Number(event.target.value)
+      const layout = orderedLayouts.find((item) => item.id === layoutId)
+
+      if (!layout || layout.id === selectedLayoutId || isCreatingLayout) return
+      loadLayout(layout)
+    },
+    [isCreatingLayout, loadLayout, orderedLayouts, selectedLayoutId]
+  )
+
   const handleCreateNewLayout = useCallback(async () => {
     if (isCreatingLayout) return
     const previousSelectedLayout = selectedLayout
@@ -408,45 +419,34 @@ const LayoutSelector = () => {
         }
       `}</style>
       <div ref={selectorRootRef} className='flex min-w-0 flex-1 items-stretch justify-between'>
-        <div className='flex min-w-0 flex-1 items-center px-3 sm:px-4'>
+        <div className='flex min-w-0 flex-1 items-stretch px-2 md:items-center md:px-4'>
           {isLoadingLayouts ? (
-            <div className='px-3 py-2'>
+            <div className='flex items-center px-3 py-2'>
               <LoadingCell width='120px' height='24px' radius='4px' />
             </div>
           ) : (
-            <div
-              ref={tabsContainerRef}
-              className='relative flex h-10 items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden'
-            >
-              {orderedLayouts.map((layout) => (
-                <LayoutTab
-                  key={layout.id}
-                  tabKey={String(layout.id)}
-                  layoutId={layout.id}
-                  name={layout.name}
-                  isDefault={layout.isDefault}
-                  isSelected={selectedLayoutId === layout.id}
-                  isDragging={draggingLayoutId === layout.id}
-                  isMobileEditing={isMobileEditing}
+            <>
+              <div className='relative flex min-w-0 flex-1 items-stretch md:hidden'>
+                <select
+                  value={isCreatingLayout ? TRANSIENT_TAB_KEY : (selectedLayoutId ?? '')}
+                  onChange={handleSelectLayoutFromDropdown}
                   disabled={isCreatingLayout}
-                  onClick={() => handleSelectTab(layout)}
-                  onPointerDown={(event) => handleTabPointerDown(event, layout.id)}
-                  onPointerMove={handleTabPointerMove}
-                  onPointerUp={handleTabPointerUp}
-                  onPointerCancel={handleTabPointerCancel}
-                />
-              ))}
-              {isCreatingLayout && (
-                <LayoutTab
-                  tabKey={TRANSIENT_TAB_KEY}
-                  layoutId={null}
-                  name={dashboard.name}
-                  isDefault={false}
-                  isSelected
-                  isPending
-                  onClick={() => undefined}
-                />
-              )}
+                  aria-label='Select dashboard layout'
+                  className={cn(
+                    'text-primary bg-background h-full min-h-12 w-full cursor-pointer appearance-none truncate px-2 pr-8 text-lg font-bold outline-none transition-opacity',
+                    isCreatingLayout && 'cursor-wait opacity-70'
+                  )}
+                >
+                  {orderedLayouts.map((layout) => (
+                    <option key={layout.id} value={layout.id}>
+                      {layout.isDefault ? 'Default: ' : ''}
+                      {layout.name}
+                    </option>
+                  ))}
+                  {isCreatingLayout && <option value={TRANSIENT_TAB_KEY}>{dashboard.name}</option>}
+                </select>
+                <span className='text-primary pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-sm'>▾</span>
+              </div>
               <button
                 type='button'
                 onClick={handleCreateNewLayout}
@@ -454,17 +454,65 @@ const LayoutSelector = () => {
                 aria-label='Create new layout'
                 title='Create new layout'
                 className={cn(
-                  'hover:bg-secondary text-foreground/80 hover:text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-2xl leading-none font-light transition-colors',
+                  'hover:bg-secondary text-foreground/80 hover:text-foreground flex min-h-12 w-10 shrink-0 items-center justify-center text-2xl leading-none font-light transition-colors md:hidden',
                   isCreatingLayout ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
                 )}
               >
                 +
               </button>
+
               <div
-                className='bg-primary pointer-events-none absolute bottom-0 h-0.5 rounded-full z-10 transition-all duration-300 ease-out'
-                style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-              />
-            </div>
+                ref={tabsContainerRef}
+                className='relative hidden h-10 items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] scrollbar-none md:flex [&::-webkit-scrollbar]:hidden'
+              >
+                {orderedLayouts.map((layout) => (
+                  <LayoutTab
+                    key={layout.id}
+                    tabKey={String(layout.id)}
+                    layoutId={layout.id}
+                    name={layout.name}
+                    isDefault={layout.isDefault}
+                    isSelected={selectedLayoutId === layout.id}
+                    isDragging={draggingLayoutId === layout.id}
+                    isMobileEditing={isMobileEditing}
+                    disabled={isCreatingLayout}
+                    onClick={() => handleSelectTab(layout)}
+                    onPointerDown={(event) => handleTabPointerDown(event, layout.id)}
+                    onPointerMove={handleTabPointerMove}
+                    onPointerUp={handleTabPointerUp}
+                    onPointerCancel={handleTabPointerCancel}
+                  />
+                ))}
+                {isCreatingLayout && (
+                  <LayoutTab
+                    tabKey={TRANSIENT_TAB_KEY}
+                    layoutId={null}
+                    name={dashboard.name}
+                    isDefault={false}
+                    isSelected
+                    isPending
+                    onClick={() => undefined}
+                  />
+                )}
+                <button
+                  type='button'
+                  onClick={handleCreateNewLayout}
+                  disabled={isCreatingLayout}
+                  aria-label='Create new layout'
+                  title='Create new layout'
+                  className={cn(
+                    'hover:bg-secondary text-foreground/80 hover:text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-2xl leading-none font-light transition-colors',
+                    isCreatingLayout ? 'cursor-not-allowed opacity-40' : 'cursor-pointer'
+                  )}
+                >
+                  +
+                </button>
+                <div
+                  className='bg-primary pointer-events-none absolute bottom-0 z-10 h-0.5 rounded-full transition-all duration-300 ease-out'
+                  style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+                />
+              </div>
+            </>
           )}
         </div>
 

@@ -27,6 +27,7 @@ const DisplayedCards: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
   const { width } = useWindowSize()
+  const [isMounted, setIsMounted] = useState(false)
   const [trackPos, setTrackPos] = useState(0)
   const [enableTransition, setEnableTransition] = useState(true)
   const [isPausedByUser, setIsPausedByUser] = useState(false)
@@ -61,6 +62,10 @@ const DisplayedCards: React.FC = () => {
       return domains.domains
     },
   })
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Measure container width
   useEffect(() => {
@@ -214,7 +219,8 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const smallMobileOffset = width && width < 440 ? (width - cardWidth) / 2 - step : 0
+  const hydratedWidth = isMounted ? width : null
+  const smallMobileOffset = hydratedWidth && hydratedWidth < 440 ? (hydratedWidth - cardWidth) / 2 - step : 0
   const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
@@ -265,7 +271,7 @@ const DisplayedCards: React.FC = () => {
               onTransitionEnd={handleTransitionEnd}
             >
               {isLoading
-                ? Array.from({ length: width && width < 440 ? 3 : visibleCount }).map((_, index) => (
+                ? Array.from({ length: hydratedWidth && hydratedWidth < 440 ? 3 : visibleCount }).map((_, index) => (
                     <div
                       key={index}
                       className='shadow-homeCard bg-secondary shrink-0 rounded-xl'

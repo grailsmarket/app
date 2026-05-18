@@ -283,7 +283,7 @@ const LayoutSelector = () => {
         holdTimerRef.current = window.setTimeout(() => {
           setIsMobileEditing(true)
           beginDrag(layoutId)
-        }, MOBILE_EDIT_HOLD_MS)
+        }, MOBILE_EDIT_HOLD_MS) as unknown as NodeJS.Timeout
         return
       }
     },
@@ -416,7 +416,7 @@ const LayoutSelector = () => {
           ) : (
             <div
               ref={tabsContainerRef}
-              className='relative flex h-10 items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+              className='relative flex h-10 items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden'
             >
               {orderedLayouts.map((layout) => (
                 <LayoutTab
@@ -461,7 +461,7 @@ const LayoutSelector = () => {
                 +
               </button>
               <div
-                className='bg-primary pointer-events-none absolute bottom-0 h-0.5 rounded-full transition-all duration-300 ease-out'
+                className='bg-primary pointer-events-none absolute bottom-0 h-0.5 rounded-full z-10 transition-all duration-300 ease-out'
                 style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
               />
             </div>

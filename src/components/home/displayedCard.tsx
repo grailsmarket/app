@@ -10,7 +10,6 @@ import { useUserContext } from '@/context/user'
 import Image from 'next/image'
 import ArrowIcon from 'public/icons/arrow-back.svg'
 import AnimateIn from '../ui/animateIn'
-import { useWindowSize } from 'ethereum-identity-kit'
 
 const CARD_WIDTH_MOBILE = 180
 const CARD_HEIGHT_MOBILE = 360
@@ -26,7 +25,6 @@ const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
-  const { width } = useWindowSize()
   const [trackPos, setTrackPos] = useState(0)
   const [enableTransition, setEnableTransition] = useState(true)
   const [isPausedByUser, setIsPausedByUser] = useState(false)
@@ -214,7 +212,8 @@ const DisplayedCards: React.FC = () => {
     }
   }, [])
 
-  const smallMobileOffset = width && width < 440 ? (width - cardWidth) / 2 - step : 0
+  const hasMeasuredContainer = containerWidth > 0
+  const smallMobileOffset = hasMeasuredContainer && containerWidth < 440 ? (containerWidth - cardWidth) / 2 - step : 0
   const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
@@ -265,15 +264,17 @@ const DisplayedCards: React.FC = () => {
               onTransitionEnd={handleTransitionEnd}
             >
               {isLoading
-                ? Array.from({ length: width && width < 440 ? 3 : visibleCount }).map((_, index) => (
-                    <div
-                      key={index}
-                      className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
-                      style={{ width: cardWidth, height: cardHeight }}
-                    >
-                      <LoadingCard />
-                    </div>
-                  ))
+                ? Array.from({ length: hasMeasuredContainer && containerWidth < 440 ? 3 : visibleCount }).map(
+                    (_, index) => (
+                      <div
+                        key={index}
+                        className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                        style={{ width: cardWidth, height: cardHeight }}
+                      >
+                        <LoadingCard />
+                      </div>
+                    )
+                  )
                 : trackItems.map((domain, index) => (
                     <div
                       key={`${domain.name}-${index}`}

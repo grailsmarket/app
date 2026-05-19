@@ -603,6 +603,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
   useEffect(() => {
     if (!debouncedNameInput || domains.length === 0) return
     const normalizedInput = debouncedNameInput.endsWith('.eth') ? normalizeName(debouncedNameInput) : null
+    if (selectedName && normalizedInput && normalizeName(selectedName.name) === normalizedInput) return
     const exactDomain = normalizedInput
       ? domains.find((domain) => normalizeName(domain.name) === normalizedInput)
       : null
@@ -611,7 +612,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
       return
     }
     if (identifierSearch && domains[0]) onSelectedNameChange(domains[0])
-  }, [debouncedNameInput, domains, identifierSearch, onSelectedNameChange])
+  }, [debouncedNameInput, domains, identifierSearch, onSelectedNameChange, selectedName])
 
   useEffect(() => {
     if (!selectedName) return

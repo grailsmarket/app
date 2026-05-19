@@ -227,7 +227,6 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   return (
     <div className='border-tertiary flex flex-col gap-2 border-b-2 px-3 py-3 sm:px-5'>
       <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
-        <h1 className='text-2xl font-bold'>Comments Feed</h1>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
           <div className='relative'>
             <input
@@ -615,28 +614,6 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
           className='border-tertiary text-md placeholder:text-neutral focus:border-foreground/50 h-10 w-full rounded-md border-2 bg-transparent px-3 font-medium transition-colors outline-none'
         />
       </div>
-
-      {selectedName && (
-        <div className='bg-secondary border-tertiary flex items-center justify-between gap-2 rounded-md border px-3 py-2'>
-          <div className='flex min-w-0 items-center gap-2'>
-            <NameImage
-              name={selectedName.name}
-              tokenId={selectedName.token_id}
-              expiryDate={selectedName.expiry_date}
-              className='h-7 w-7 rounded-sm'
-            />
-            <span className='truncate text-sm font-semibold'>Replying on {beautifyName(selectedName.name)}</span>
-          </div>
-          <button
-            type='button'
-            onClick={() => onSelectedNameChange(null)}
-            className='text-neutral hover:text-foreground text-sm font-bold'
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
       <div className='bg-secondary border-tertiary flex items-end gap-2 rounded-md border p-2'>
         <textarea
           ref={textareaRef}

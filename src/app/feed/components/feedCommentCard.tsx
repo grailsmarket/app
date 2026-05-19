@@ -15,7 +15,7 @@ import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface FeedCommentCardProps {
   comment: CommentFeedItem
-  onReply: (context: ReplyContext) => void
+  onReply?: (context: ReplyContext) => void
 }
 
 const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) => {
@@ -82,13 +82,17 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
         <p className='text-foreground text-lg font-medium wrap-break-word whitespace-pre-wrap'>{comment.body}</p>
 
         <div className='flex items-center justify-between'>
-          <button
-            type='button'
-            onClick={() => onReply({ comment, name: normalizedName })}
-            className='text-primary text-md inline-flex cursor-pointer items-center gap-1 font-bold transition-opacity hover:opacity-80'
-          >
-            Reply <ReplyArrowIcon />
-          </button>
+          {onReply ? (
+            <button
+              type='button'
+              onClick={() => onReply({ comment, name: normalizedName })}
+              className='text-primary text-md inline-flex cursor-pointer items-center gap-1 font-bold transition-opacity hover:opacity-80'
+            >
+              Reply <ReplyArrowIcon />
+            </button>
+          ) : (
+            <span />
+          )}
           <span className='text-neutral text-xs font-medium whitespace-nowrap md:hidden'>{time}</span>
         </div>
       </div>

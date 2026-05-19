@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { after } from 'next/server'
-import { USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { USDC_ADDRESS } from '@/constants/web3/tokens'
 import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
@@ -82,21 +82,20 @@ export async function POST(request: NextRequest) {
         ordersToCreate.map(async (orders: SeaportStoredOrder[], index: number) => {
           const formattedOrders = orders.map((order, orderIndex) => {
             let currencyAddress = ZERO_ADDRESS // Default to native ETH
-            let decimals: number = TOKEN_DECIMALS.ETH
             const currency = currencies?.[index * CREATE_BATCH_SIZE + orderIndex]
-            const price = prices?.[index * CREATE_BATCH_SIZE + orderIndex]
 
             if (currency === 'USDC') {
               currencyAddress = USDC_ADDRESS
-              decimals = TOKEN_DECIMALS.USDC
             } else if (currency === 'ETH') {
               currencyAddress = ZERO_ADDRESS
-              decimals = TOKEN_DECIMALS.ETH
             }
 
-            // Calculate price_wei with correct decimals
-            const priceInSmallestUnit = price
-              ? BigInt(Math.floor(parseFloat(price) * Math.pow(10, decimals))).toString()
+            // Extract exact wei amount from the order data (avoids JS float precision loss)
+            const considerationItems = order.parameters?.consideration || order.protocol_data?.parameters?.consideration
+            const priceInSmallestUnit = considerationItems
+              ? (considerationItems as any[])
+                  .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount || '0'), BigInt(0))
+                  .toString()
               : '0'
 
             return {

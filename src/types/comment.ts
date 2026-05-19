@@ -14,6 +14,29 @@ export interface CommentsResponse {
   nextCursor: string | null
 }
 
+export interface CommentFeedItem {
+  id: string
+  ens_name_id: number
+  name: string
+  body: string
+  created_at: string
+  author_address: string
+  owner_address: string
+  clubs: string[]
+}
+
+export interface CommentFeedResponse {
+  comments: CommentFeedItem[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
 export interface CommentQuota {
   used: number
   max: number

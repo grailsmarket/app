@@ -37,6 +37,8 @@ interface ViewportState {
   offsetTop: number
 }
 
+const getNavOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 70 : 54)
+
 const CommentsFeed: React.FC = () => {
   const [ownerInput, setOwnerInput] = useState('')
   const [selectedClubs, setSelectedClubs] = useState<string[]>([])
@@ -67,9 +69,24 @@ const CommentsFeed: React.FC = () => {
   })
 
   useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow
+    const previousHtmlOverflow = document.documentElement.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.documentElement.style.overflow = previousHtmlOverflow
+    }
+  }, [])
+
+  useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return
     const vv = window.visualViewport
-    const update = () => setViewport({ height: vv.height, offsetTop: vv.offsetTop })
+    const update = () => {
+      setViewport({ height: vv.height, offsetTop: vv.offsetTop })
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
     update()
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
@@ -134,17 +151,20 @@ const CommentsFeed: React.FC = () => {
     if (e.currentTarget.scrollTop < 200) loadOlder()
   }
 
-  const navOffset = viewport ? (window.matchMedia('(min-width: 768px)').matches ? 70 : 54) : 0
+  const navOffset = viewport ? getNavOffset() : 0
   const viewportStyle = viewport
-    ? { height: `${Math.max(360, viewport.height - navOffset)}px`, top: `${viewport.offsetTop}px` }
+    ? {
+        height: `${Math.max(360, viewport.height - navOffset)}px`,
+        top: `${viewport.offsetTop + navOffset}px`,
+      }
     : undefined
 
   return (
     <div
       style={viewportStyle}
       className={cn(
-        'mx-auto flex h-[calc(100dvh-54px)] w-full max-w-5xl flex-col transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:h-[calc(100dvh-70px)]',
-        viewport && 'relative'
+        'fixed right-0 left-0 mx-auto flex h-[calc(100dvh-54px)] w-full max-w-5xl flex-col transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:h-[calc(100dvh-70px)]',
+        viewport ? '' : 'top-[54px] md:top-[70px]'
       )}
     >
       <FeedFilters

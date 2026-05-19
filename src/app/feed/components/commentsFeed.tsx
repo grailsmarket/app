@@ -37,12 +37,18 @@ interface ViewportState {
   offsetTop: number
 }
 
+interface ReplyContext {
+  comment: CommentFeedItem
+  name: MarketplaceDomainType
+}
+
 const getNavOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 70 : 54)
 
 const CommentsFeed: React.FC = () => {
   const [ownerInput, setOwnerInput] = useState('')
   const [selectedClubs, setSelectedClubs] = useState<string[]>([])
-  const [replyTarget, setReplyTarget] = useState<MarketplaceDomainType | null>(null)
+  const [selectedName, setSelectedName] = useState<MarketplaceDomainType | null>(null)
+  const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
   const [viewport, setViewport] = useState<ViewportState | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastSeenNewestId = useRef<string | null>(null)
@@ -176,33 +182,63 @@ const CommentsFeed: React.FC = () => {
         onSelectedClubsChange={setSelectedClubs}
       />
 
-      <div ref={scrollRef} onScroll={handleScroll} className='min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-5'>
-        {isLoading ? (
-          <FeedLoading />
-        ) : comments.length === 0 ? (
-          <div className='flex h-full min-h-[280px] items-center justify-center text-center'>
-            <p className='text-neutral text-lg'>No comments found for these filters.</p>
-          </div>
-        ) : (
-          <div className='flex flex-col gap-3'>
-            {isFetchingNextPage && (
-              <div className='py-2 text-center'>
-                <span className='text-neutral text-sm'>Loading older comments...</span>
-              </div>
-            )}
-            {hasNextPage && !isFetchingNextPage && (
-              <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>
-                Load older comments
-              </button>
-            )}
-            {comments.map((comment) => (
-              <FeedCommentCard key={comment.id} comment={comment} onReply={setReplyTarget} />
-            ))}
-          </div>
+      <div className='relative min-h-0 flex-1'>
+        <div ref={scrollRef} onScroll={handleScroll} className='h-full overflow-y-auto px-3 py-4 sm:px-5'>
+          {isLoading ? (
+            <FeedLoading />
+          ) : comments.length === 0 ? (
+            <div className='flex h-full min-h-[280px] items-center justify-center text-center'>
+              <p className='text-neutral text-lg'>No comments found for these filters.</p>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                'flex flex-col gap-3 transition-all duration-200',
+                replyContext && 'pointer-events-none opacity-40 blur-[2px]'
+              )}
+            >
+              {isFetchingNextPage && (
+                <div className='py-2 text-center'>
+                  <span className='text-neutral text-sm'>Loading older comments...</span>
+                </div>
+              )}
+              {hasNextPage && !isFetchingNextPage && (
+                <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>
+                  Load older comments
+                </button>
+              )}
+              {comments.map((comment) => (
+                <FeedCommentCard
+                  key={comment.id}
+                  comment={comment}
+                  onReply={(context) => {
+                    setSelectedName(context.name)
+                    setReplyContext(context)
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {replyContext && (
+          <ReplyPreview
+            context={replyContext}
+            onClear={() => {
+              setReplyContext(null)
+              setSelectedName(null)
+            }}
+          />
         )}
       </div>
 
-      <FeedComposer selectedName={replyTarget} onSelectedNameChange={setReplyTarget} />
+      <FeedComposer
+        selectedName={selectedName}
+        onSelectedNameChange={(name) => {
+          setSelectedName(name)
+          setReplyContext(null)
+        }}
+      />
     </div>
   )
 }
@@ -348,7 +384,7 @@ const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs
 
 interface FeedCommentCardProps {
   comment: CommentFeedItem
-  onReply: (name: MarketplaceDomainType) => void
+  onReply: (context: ReplyContext) => void
 }
 
 const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) => {
@@ -450,7 +486,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
 
           <button
             type='button'
-            onClick={() => onReply(replyDomain)}
+            onClick={() => onReply({ comment, name: replyDomain })}
             className='text-primary mt-3 inline-flex cursor-pointer items-center gap-1 text-sm font-bold transition-opacity hover:opacity-80'
           >
             Reply <ReplyArrowIcon />
@@ -458,6 +494,70 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
         </div>
       </div>
     </article>
+  )
+}
+
+interface ReplyPreviewProps {
+  context: ReplyContext
+  onClear: () => void
+}
+
+const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
+  const normalizedName = normalizeName(context.comment.name)
+  const { data: account } = useQuery({
+    queryKey: ['account', context.comment.author_address],
+    queryFn: () => fetchAccount(context.comment.author_address),
+    enabled: !!context.comment.author_address,
+    staleTime: 60_000,
+  })
+
+  const ensName = account?.ens?.name
+  const displayName = ensName ? beautifyName(ensName) : truncateAddress(context.comment.author_address as `0x${string}`)
+
+  return (
+    <div className='pointer-events-none absolute right-3 bottom-3 left-3 z-30 sm:right-5 sm:left-5'>
+      <article className='bg-background border-primary pointer-events-auto rounded-lg border-2 p-3 shadow-2xl sm:p-4'>
+        <div className='mb-2 flex items-center justify-between gap-3'>
+          <p className='text-primary text-sm font-bold'>Replying to</p>
+          <button type='button' onClick={onClear} className='text-neutral hover:text-foreground text-sm font-bold'>
+            Clear
+          </button>
+        </div>
+        <div className='flex gap-3'>
+          <Link
+            href={`/${encodeURIComponent(normalizedName)}`}
+            className='shrink-0 transition-opacity hover:opacity-80'
+          >
+            <NameImage
+              name={normalizedName}
+              tokenId={context.name.token_id}
+              expiryDate={context.name.expiry_date}
+              className='h-12 w-12 rounded-md'
+            />
+          </Link>
+          <div className='min-w-0 flex-1'>
+            <div className='flex min-w-0 items-center gap-2'>
+              <Link
+                href={`/${encodeURIComponent(normalizedName)}`}
+                className='hover:text-primary truncate text-lg font-bold transition-colors'
+              >
+                {beautifyName(normalizedName)}
+              </Link>
+              <span className='text-neutral text-sm'>by</span>
+              <Link
+                href={`/profile/${context.comment.author_address}`}
+                className='hover:text-primary truncate text-sm font-semibold transition-colors'
+              >
+                {displayName}
+              </Link>
+            </div>
+            <p className='text-foreground text-md mt-2 line-clamp-3 font-medium break-words whitespace-pre-wrap'>
+              {context.comment.body}
+            </p>
+          </div>
+        </div>
+      </article>
+    </div>
   )
 }
 

@@ -198,9 +198,7 @@ const CommentsFeed: React.FC = () => {
               )}
             >
               {isFetchingNextPage && (
-                <div className='py-2 text-center'>
-                  <span className='text-neutral text-sm'>Loading older comments...</span>
-                </div>
+                <FeedLoading count={3} />
               )}
               {hasNextPage && !isFetchingNextPage && (
                 <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>
@@ -234,6 +232,7 @@ const CommentsFeed: React.FC = () => {
 
       <FeedComposer
         selectedName={selectedName}
+        onSubmitSuccess={() => setReplyContext(null)}
         onSelectedNameChange={(name) => {
           setSelectedName(name)
           setReplyContext(null)
@@ -571,9 +570,10 @@ const ReplyArrowIcon = () => (
 interface FeedComposerProps {
   selectedName: MarketplaceDomainType | null
   onSelectedNameChange: (name: MarketplaceDomainType | null) => void
+  onSubmitSuccess: () => void
 }
 
-const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNameChange }) => {
+const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNameChange, onSubmitSuccess }) => {
   const { authStatus } = useUserContext()
   const queryClient = useQueryClient()
   const [nameInput, setNameInput] = useState('')
@@ -627,6 +627,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
       setBody('')
       setError(null)
       if (textareaRef.current) textareaRef.current.style.height = 'auto'
+      onSubmitSuccess()
       queryClient.invalidateQueries({ queryKey: ['comments', 'feed'] })
       queryClient.invalidateQueries({ queryKey: ['comments', 'quota'] })
     },
@@ -769,9 +770,13 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
   )
 }
 
-const FeedLoading = () => (
+interface FeedLoadingProps {
+  count?: number
+}
+
+const FeedLoading: React.FC<FeedLoadingProps> = ({ count = 6 }) => (
   <div className='flex flex-col gap-3'>
-    {Array.from({ length: 6 }).map((_, index) => (
+    {Array.from({ length: count }).map((_, index) => (
       <div key={index} className='bg-secondary border-tertiary rounded-lg border-2 p-4'>
         <div className='flex gap-3'>
           <LoadingCell height='56px' width='56px' radius='8px' />

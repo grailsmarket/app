@@ -143,15 +143,15 @@ const DashboardSidebar = () => {
       <div
         ref={clickAwayRef}
         className={cn(
-          'fixed z-30 transition-all h-dvh duration-300 lg:flex',
+          'fixed z-30 h-dvh transition-all duration-300 lg:flex',
           isNavbarVisible ? 'top-[114px] sm:top-[130px]' : 'top-14.5'
         )}
       >
         <div
-          className={cn('absolute lg:hidden inset-0 top-0 left-0 bg-black/40', isOpen ? 'block' : 'hidden')}
+          className={cn('absolute inset-0 top-0 left-0 bg-black/40 lg:hidden', isOpen ? 'block' : 'hidden')}
           onClick={closeSidebar}
         />
-        <div className='relative z-40 h-full w-fit lg:w-fit pt-14 lg:pt-0'>{sidebarContent}</div>
+        <div className='relative z-40 h-full w-fit pt-14 lg:w-fit lg:pt-0'>{sidebarContent}</div>
       </div>
     </>
   )

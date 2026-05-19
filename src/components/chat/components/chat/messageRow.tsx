@@ -33,7 +33,7 @@ const MessageRow: React.FC<Props> = ({ message, isOwn, isRead }) => {
       <div className={cn('flex max-w-[80%] flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'w-fit break-before-all rounded-2xl px-4 py-2 text-lg whitespace-pre-wrap wrap-anywhere',
+            'w-fit break-before-all rounded-2xl px-4 py-2 text-lg wrap-anywhere whitespace-pre-wrap',
             isOwn ? 'bg-primary text-background rounded-br-sm' : 'bg-secondary text-foreground rounded-bl-sm',
             isDeleted && 'italic opacity-60'
           )}

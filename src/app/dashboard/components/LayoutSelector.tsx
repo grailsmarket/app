@@ -456,7 +456,7 @@ const LayoutSelector = () => {
                 </button>
 
                 {mobileDropdownOpen && (
-                  <div className='bg-background border-tertiary absolute z-40 top-full left-0 mt-2 w-full overflow-hidden rounded-md border shadow-md'>
+                  <div className='bg-background border-tertiary absolute top-full left-0 z-40 mt-2 w-full overflow-hidden rounded-md border shadow-md'>
                     {orderedLayouts.map((layout) => (
                       <button
                         type='button'
@@ -470,7 +470,13 @@ const LayoutSelector = () => {
                         <span className='min-w-0 wrap-anywhere'>{layout.name}</span>
                         {layout.isDefault && (
                           <Tooltip label='Default layout' position='top' align='right'>
-                            <Image src={Star} alt='Default layout' className='h-4 w-4 shrink-0' height={16} width={16} />
+                            <Image
+                              src={Star}
+                              alt='Default layout'
+                              className='h-4 w-4 shrink-0'
+                              height={16}
+                              width={16}
+                            />
                           </Tooltip>
                         )}
                       </button>
@@ -494,7 +500,7 @@ const LayoutSelector = () => {
 
               <div
                 ref={tabsContainerRef}
-                className='relative hidden h-10 items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] scrollbar-none md:flex [&::-webkit-scrollbar]:hidden'
+                className='relative hidden h-10 scrollbar-none items-center overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] md:flex [&::-webkit-scrollbar]:hidden'
               >
                 {orderedLayouts.map((layout) => (
                   <LayoutTab
@@ -563,7 +569,7 @@ const LayoutSelector = () => {
               onClick={() => handleConfirmationDialogOpen('delete')}
               aria-label='Delete dashboard'
               title='Delete dashboard'
-              className='border-tertiary hover:bg-red-400/10 flex min-h-12 w-12 cursor-pointer items-center justify-center border-l-2 text-red-400 transition-all md:min-h-14'
+              className='border-tertiary flex min-h-12 w-12 cursor-pointer items-center justify-center border-l-2 text-red-400 transition-all hover:bg-red-400/10 md:min-h-14'
             >
               <Trash className='h-4 w-4' />
             </button>

@@ -117,6 +117,8 @@ type ExpandedMedia = {
 
 const buildMediaLayoutId = (postId: string, mediaKey: string) => `twitter-media-${postId}-${mediaKey}`
 
+const buildVideoProxyUrl = (url: string) => `/api/twitter/video?url=${encodeURIComponent(url)}`
+
 const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => {
   const dispatch = useAppDispatch()
   const config = useAppSelector((state) => selectTwitterFeedConfig(state, instanceId))
@@ -170,7 +172,7 @@ const TwitterFeedWidget: React.FC<TwitterFeedWidgetProps> = ({ instanceId }) => 
 
   return (
     <div className='flex h-full flex-col overflow-hidden bg-black text-[#e7e9ea]'>
-      <form onSubmit={handleSubmit} className='flex shrink-0 py-0.5 items-center border-b border-[#2f3336] bg-black/95'>
+      <form onSubmit={handleSubmit} className='flex shrink-0 items-center border-b border-[#2f3336] bg-black/95 py-0.5'>
         <div className='flex h-10 shrink-0 items-center pl-3 text-lg font-semibold text-[#e7e9ea]'>@</div>
         <input
           type='text'
@@ -336,9 +338,9 @@ const PostText: React.FC<{ post: TwitterPost }> = ({ post }) => {
 
 const EntityLink: React.FC<{
   entity:
-  | (TwitterUrlEntity & { kind: 'url' })
-  | (TwitterMentionEntity & { kind: 'mention' })
-  | (TwitterTagEntity & { kind: 'hashtag' | 'cashtag' })
+    | (TwitterUrlEntity & { kind: 'url' })
+    | (TwitterMentionEntity & { kind: 'mention' })
+    | (TwitterTagEntity & { kind: 'hashtag' | 'cashtag' })
   text: string
 }> = ({ entity, text }) => {
   if (entity.kind === 'url') {
@@ -598,13 +600,10 @@ const MediaLightbox: React.FC<{ expanded: ExpandedMedia | null; onClose: () => v
           >
             <CloseIcon />
           </button>
-          <motion.div
+          <ExpandedMediaContent
+            media={expanded.media}
             layoutId={buildMediaLayoutId(expanded.postId, expanded.media.key)}
-            className='flex max-h-[90dvh] max-w-[92dvw] items-center justify-center'
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ExpandedMediaContent media={expanded.media} />
-          </motion.div>
+          />
         </motion.div>
       )}
     </AnimatePresence>,
@@ -612,29 +611,46 @@ const MediaLightbox: React.FC<{ expanded: ExpandedMedia | null; onClose: () => v
   )
 }
 
-const ExpandedMediaContent: React.FC<{ media: TwitterPostMedia }> = ({ media }) => {
-  const className = 'max-h-[90dvh] max-w-[92dvw] object-contain'
+const ExpandedMediaContent: React.FC<{ media: TwitterPostMedia; layoutId: string }> = ({ media, layoutId }) => {
+  const mediaClassName = 'max-h-[90dvh] max-w-[92dvw] object-contain'
+  const wrapperClassName = 'flex max-h-[90dvh] max-w-[92dvw] items-center justify-center'
+  const stopPropagation = (e: React.MouseEvent) => e.stopPropagation()
   const isVideo = media.type === 'video' || media.type === 'animated_gif'
 
   if (isVideo && media.url) {
     return (
-      <video
-        src={media.url}
-        poster={media.previewImageUrl}
-        controls
-        autoPlay
-        playsInline
-        loop={media.type === 'animated_gif'}
-        muted={media.type === 'animated_gif'}
-        className={className}
-      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className={wrapperClassName}
+        onClick={stopPropagation}
+      >
+        <video
+          key={media.key}
+          src={buildVideoProxyUrl(media.url)}
+          poster={media.previewImageUrl}
+          controls
+          autoPlay
+          muted
+          playsInline
+          loop={media.type === 'animated_gif'}
+          preload='auto'
+          className={mediaClassName}
+        />
+      </motion.div>
     )
   }
 
   const imageSrc = media.url ?? media.previewImageUrl
   if (!imageSrc) return null
 
-  return <img src={imageSrc} alt='' className={className} />
+  return (
+    <motion.div layoutId={layoutId} className={wrapperClassName} onClick={stopPropagation}>
+      <img src={imageSrc} alt='' className={mediaClassName} />
+    </motion.div>
+  )
 }
 
 const PlayIcon: React.FC = () => (

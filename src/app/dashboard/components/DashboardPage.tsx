@@ -84,7 +84,7 @@ const AuthenticatedDashboard = () => {
       <main className='relative flex min-h-screen flex-col'>
         <div
           className={cn(
-            'border-tertiary bg-background sticky top-0 z-10 flex min-h-12 items-stretch md:overflow-x-hidden justify-between gap-0 border-b-2 transition-all duration-300 md:min-h-14',
+            'border-tertiary bg-background sticky top-0 z-10 flex min-h-12 items-stretch justify-between gap-0 border-b-2 transition-all duration-300 md:min-h-14 md:overflow-x-hidden',
             isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
           )}
         >

@@ -116,26 +116,26 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   )
   const namesList = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        getRegistrationStatus(domain.expiry_date) === REGISTERED
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          getRegistrationStatus(domain.expiry_date) === REGISTERED
+      )
     : []
   const namesTransfer = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        getRegistrationStatus(domain.expiry_date) === REGISTERED
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          getRegistrationStatus(domain.expiry_date) === REGISTERED
+      )
     : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
-      (domain) =>
-        domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-        domain.listings?.some(
-          (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
-        )
-    )
+        (domain) =>
+          domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
+          domain.listings?.some(
+            (listing) => listing.order_data.protocol_data.parameters.offer[0].identifierOrCriteria === domain.token_id
+          )
+      )
     : []
   const namesRegister = selectedDomains.filter((domain) =>
     REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))

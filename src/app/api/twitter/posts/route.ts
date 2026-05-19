@@ -37,6 +37,11 @@ type XTagEntity = {
 
 type XTweet = {
   id: string
+  note_tweet?: {
+    id: string
+    text: string
+    created_at: string
+  }
   text: string
   author_id?: string
   created_at?: string
@@ -139,7 +144,8 @@ export async function GET(request: NextRequest) {
 
     const postsParams = new URLSearchParams({
       max_results: String(limit),
-      'tweet.fields': 'attachments,author_id,created_at,entities,public_metrics',
+      'tweet.fields': 'attachments,author_id,created_at,entities,public_metrics,note_tweet',
+      exclude: 'retweets,replies',
       expansions: 'attachments.media_keys,author_id',
       'media.fields': 'height,media_key,preview_image_url,type,url,variants,width',
       'user.fields': 'profile_image_url,verified,verified_type',
@@ -171,9 +177,11 @@ export async function GET(request: NextRequest) {
             height: item.height,
           })) ?? []
 
+      const text = post.note_tweet?.text ?? post.text
+
       return {
         id: post.id,
-        text: post.text,
+        text,
         createdAt: post.created_at ?? null,
         url: `https://x.com/${author.username}/status/${post.id}`,
         author: {

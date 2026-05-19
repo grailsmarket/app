@@ -22,7 +22,7 @@ export interface CommentFeedItem {
   created_at: string
   author_address: string
   owner_address: string
-  clubs: string[]
+  clubs: string[] | null
 }
 
 export interface CommentFeedResponse {

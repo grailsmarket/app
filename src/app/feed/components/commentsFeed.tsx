@@ -335,6 +335,7 @@ interface FeedCommentCardProps {
 const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) => {
   const { categories } = useCategories()
   const normalizedName = normalizeName(comment.name)
+  const clubs = comment.clubs ?? []
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
   const { data: account } = useQuery({
     queryKey: ['account', comment.author_address],
@@ -359,7 +360,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
         metadata: {},
         has_numbers: false,
         has_emoji: false,
-        clubs: comment.clubs ?? [],
+        clubs,
         club_ranks: null,
         listings: [],
         highest_offer_wei: null,
@@ -376,7 +377,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
         upvotes: 0,
         watchlist_record_id: null,
       }) satisfies MarketplaceDomainType,
-    [comment, normalizedName]
+    [clubs, comment, normalizedName]
   )
 
   return (
@@ -399,9 +400,9 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
               >
                 {beautifyName(normalizedName)}
               </Link>
-              {comment.clubs.length > 0 && (
+              {clubs.length > 0 && (
                 <p className='text-neutral text-sm font-medium'>
-                  {comment.clubs
+                  {clubs
                     .map((club) => categories?.find((category) => category.name === club)?.display_name || club)
                     .join(', ')}
                 </p>
@@ -555,27 +556,31 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                 ))}
               </div>
             ) : (
-              domains.map((domain) => (
-                <button
-                  key={domain.id}
-                  type='button'
-                  onClick={() => onSelectedNameChange(domain)}
-                  className='hover:bg-primary/10 flex w-full items-center gap-2 p-3 text-left transition-colors'
-                >
-                  <NameImage
-                    name={domain.name}
-                    tokenId={domain.token_id}
-                    expiryDate={domain.expiry_date}
-                    className='h-9 w-9 rounded-sm'
-                  />
-                  <div className='min-w-0'>
-                    <p className='truncate font-semibold'>{beautifyName(domain.name)}</p>
-                    {domain.clubs.length > 0 && (
-                      <p className='text-neutral truncate text-sm'>{domain.clubs.join(', ')}</p>
-                    )}
-                  </div>
-                </button>
-              ))
+              domains.map((domain) => {
+                const domainClubs = domain.clubs ?? []
+
+                return (
+                  <button
+                    key={domain.id}
+                    type='button'
+                    onClick={() => onSelectedNameChange(domain)}
+                    className='hover:bg-primary/10 flex w-full items-center gap-2 p-3 text-left transition-colors'
+                  >
+                    <NameImage
+                      name={domain.name}
+                      tokenId={domain.token_id}
+                      expiryDate={domain.expiry_date}
+                      className='h-9 w-9 rounded-sm'
+                    />
+                    <div className='min-w-0'>
+                      <p className='truncate font-semibold'>{beautifyName(domain.name)}</p>
+                      {domainClubs.length > 0 && (
+                        <p className='text-neutral truncate text-sm'>{domainClubs.join(', ')}</p>
+                      )}
+                    </div>
+                  </button>
+                )
+              })
             )}
           </div>
         )}

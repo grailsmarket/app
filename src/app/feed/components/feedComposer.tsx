@@ -173,7 +173,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                 expiryDate={
                   domainsQuery.data?.domains.find((domain) => domain.name === selectedName)?.expiry_date ?? null
                 }
-                className='h-8 w-8 rounded-sm'
+                className='h-8 min-h-8 w-8 min-w-8 rounded-sm'
               />
             )}
             <input
@@ -182,6 +182,17 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                 const value = e.target.value
                 setNameInput(value)
                 if (selectedName !== normalizeName(value)) onSelectedNameChange(null)
+
+                if (error) setError(null)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  const inputValue = e.currentTarget.value
+                  if (inputValue.endsWith('.eth')) {
+                    onSelectedNameChange(normalizeName(inputValue))
+                  }
+                }
               }}
               onFocus={() => setIsDomainDropdownOpen(true)}
               placeholder='ENS name, namehash, tokenId, or labelhash'
@@ -201,6 +212,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
             onChange={(e) => {
               setBody(e.target.value)
               autoSize()
+              if (error) setError(null)
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {

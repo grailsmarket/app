@@ -69,10 +69,13 @@ const CommentsFeed: React.FC = () => {
             </div>
           ) : (
             <div
-              className={cn(
-                'flex flex-col gap-3 transition-all duration-200',
-                replyContext && 'pointer-events-none opacity-40 blur-[2px]'
-              )}
+              className={cn('flex flex-col gap-3 transition-all duration-200', replyContext && 'opacity-40 blur-[2px]')}
+              onClick={() => {
+                if (replyContext) {
+                  setReplyContext(null)
+                  setSelectedName(null)
+                }
+              }}
             >
               {isFetchingNextPage && <FeedLoading count={3} />}
               {hasNextPage && !isFetchingNextPage && (

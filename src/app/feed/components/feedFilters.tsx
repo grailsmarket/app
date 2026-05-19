@@ -4,9 +4,9 @@ import React from 'react'
 import { cn } from '@/utils/tailwind'
 import CategoryMultiSelect from './categoryMultiSelect'
 import Image from 'next/image'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { isAddress } from 'viem'
 import { truncateAddress } from 'ethereum-identity-kit'
+import { getMetadataAssetUrl } from '@/utils/web3/ens'
 
 interface FeedFiltersProps {
   ownerInput: string
@@ -43,13 +43,15 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
             </div>
             {oppositeIdentifier && (
               <div className='px-md hidden items-center gap-1.5 md:flex md:px-0'>
-                <Image
-                  src={`${ENS_METADATA_URL}/mainnet/avatar/${ownerName}`}
-                  alt={ownerName ?? ''}
-                  width={26}
-                  height={26}
-                  className='h-5 w-5 rounded-full md:h-6.5 md:w-6.5'
-                />
+                {ownerName && (
+                  <Image
+                    src={getMetadataAssetUrl(ownerName, 'avatar')}
+                    alt={ownerName ?? ''}
+                    width={26}
+                    height={26}
+                    className='h-5 w-5 rounded-full md:h-6.5 md:w-6.5'
+                  />
+                )}
                 <p className={cn('text-md font-medium md:text-lg', ownerError && 'text-red-400')}>
                   {isAddress(oppositeIdentifier) ? truncateAddress(oppositeIdentifier) : ownerName || ownerError}
                 </p>

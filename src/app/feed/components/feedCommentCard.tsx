@@ -11,6 +11,7 @@ import { getMetadataAssetUrl, getNameTokenId } from '@/utils/web3/ens'
 import type { CommentFeedItem } from '@/types/comment'
 import ReplyArrowIcon from './replyArrowIcon'
 import type { ReplyContext } from './types'
+import { REGISTERED } from '@/constants/domains/registrationStatuses'
 
 interface FeedCommentCardProps {
   comment: CommentFeedItem
@@ -37,35 +38,40 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
 
   return (
     <article className='bg-secondary border-tertiary rounded-lg border-2 p-3 shadow-sm sm:px-4'>
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col gap-3 sm:gap-4'>
         <div className='flex w-full flex-wrap items-center justify-between'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <Link
-              href={`/profile/${comment.author_address}`}
-              className='cursor-pointer transition-opacity hover:opacity-80'
-            >
-              <Avatar
-                name={ensName || comment.author_address}
-                src={getMetadataAssetUrl(ensName || comment.author_address, 'avatar')}
-                style={{ width: '32px', height: '32px' }}
-              />
-            </Link>
-            <Link
-              href={`/profile/${comment.author_address}`}
-              className='min-w-0 truncate text-lg font-semibold transition-opacity hover:opacity-80'
-            >
-              {displayName}
-            </Link>
-            <p className='text-neutral text-md px-1 font-medium'>commented on</p>
+          <div className='flex flex-wrap items-center gap-1.5 gap-y-2 sm:gap-2'>
+            <div className='flex items-center gap-1.5'>
+              <Link
+                href={`/profile/${comment.author_address}`}
+                className='h-6 w-6 cursor-pointer transition-opacity hover:opacity-80 md:h-8.5 md:w-8.5'
+              >
+                <Avatar
+                  name={ensName || comment.author_address}
+                  src={getMetadataAssetUrl(ensName || comment.author_address, 'avatar')}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              </Link>
+              <Link
+                href={`/profile/${comment.author_address}`}
+                className='min-w-0 truncate text-lg font-semibold transition-opacity hover:opacity-80'
+              >
+                {displayName}
+              </Link>
+            </div>
+            <p className='text-neutral text-md px-0.5 pt-0.5 font-medium sm:px-1'>
+              <span className='hidden sm:inline'>commented</span> on
+            </p>
             <Link
               href={`/${encodeURIComponent(normalizedName)}`}
-              className='flex min-w-0 items-center gap-2 transition-opacity hover:opacity-80'
+              className='flex min-w-0 items-center gap-1.5 transition-opacity hover:opacity-80 sm:gap-2'
             >
               <NameImage
                 name={normalizedName}
                 tokenId={tokenId}
                 expiryDate={null}
-                className='h-8 w-8 rounded-sm sm:h-8.5 sm:w-8.5'
+                forceRegStatus={REGISTERED}
+                className='h-6 w-6 rounded-sm sm:h-8.5 sm:w-8.5'
               />
               <div className='block truncate text-xl font-bold'>{beautifyName(normalizedName)}</div>
             </Link>

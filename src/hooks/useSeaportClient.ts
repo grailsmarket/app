@@ -169,7 +169,7 @@ export function useSeaportClient() {
               const responses = await Promise.all(
                 params.domains.map(async (domain, index) => {
                   const order = grailsOrders[index]
-                  const priceWei = (order.parameters?.consideration as any[] || [])
+                  const priceWei = ((order.parameters?.consideration as any[]) || [])
                     .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount || '0'), BigInt(0))
                     .toString()
                   const currency = params.currencies?.[index] || 'ETH'
@@ -269,7 +269,7 @@ export function useSeaportClient() {
           const responses = await Promise.all(
             params.domains.map(async (domain, index) => {
               const order = formattedOrders[index]
-              const priceWei = (order.parameters?.consideration as any[] || [])
+              const priceWei = ((order.parameters?.consideration as any[]) || [])
                 .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount || '0'), BigInt(0))
                 .toString()
               const currency = params.currencies?.[index] || 'ETH'

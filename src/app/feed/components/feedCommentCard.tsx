@@ -12,6 +12,8 @@ import type { CommentFeedItem } from '@/types/comment'
 import ReplyArrowIcon from './replyArrowIcon'
 import type { ReplyContext } from './types'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
+import { useUserContext } from '@/context/user'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 
 interface FeedCommentCardProps {
   comment: CommentFeedItem
@@ -20,6 +22,8 @@ interface FeedCommentCardProps {
 
 const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) => {
   // const { categories } = useCategories()
+  const { authStatus } = useUserContext()
+  const { openConnectModal } = useConnectModal()
 
   const normalizedName = normalizeName(comment.name)
   const tokenId = getNameTokenId(normalizedName)
@@ -85,7 +89,13 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
           {onReply ? (
             <button
               type='button'
-              onClick={() => onReply({ comment, name: normalizedName })}
+              onClick={() => {
+                if (authStatus !== 'authenticated') {
+                  openConnectModal?.()
+                } else {
+                  onReply({ comment, name: normalizedName })
+                }
+              }}
               className='text-primary text-md inline-flex cursor-pointer items-center gap-1 font-bold transition-opacity hover:opacity-80'
             >
               Reply <ReplyArrowIcon />

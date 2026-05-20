@@ -59,42 +59,47 @@ const CommentsFeed: React.FC = () => {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className='mx-auto h-full w-full max-w-5xl overflow-y-auto px-3 py-4 sm:px-5'
+          className='h-full w-full overflow-y-auto py-4'
+          onClick={() => {
+            if (replyContext) {
+              setReplyContext(null)
+              setSelectedName(null)
+            }
+          }}
         >
-          {isLoading ? (
-            <FeedLoading />
-          ) : comments.length === 0 ? (
-            <div className='flex h-full min-h-[280px] items-center justify-center text-center'>
-              <p className='text-neutral text-lg'>No comments found for these filters.</p>
-            </div>
-          ) : (
-            <div
-              className={cn('flex flex-col gap-3 transition-all duration-200', replyContext && 'opacity-40 blur-[2px]')}
-              onClick={() => {
-                if (replyContext) {
-                  setReplyContext(null)
-                  setSelectedName(null)
-                }
-              }}
-            >
-              {isFetchingNextPage && <FeedLoading count={3} />}
-              {hasNextPage && !isFetchingNextPage && (
-                <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>
-                  Load older comments
-                </button>
-              )}
-              {comments.map((comment) => (
-                <FeedCommentCard
-                  key={comment.id}
-                  comment={comment}
-                  onReply={(context) => {
-                    setSelectedName(context.name)
-                    setReplyContext(context)
-                  }}
-                />
-              ))}
-            </div>
-          )}
+          <div className='mx-auto max-w-5xl px-3 sm:px-5'>
+            {isLoading ? (
+              <FeedLoading />
+            ) : comments.length === 0 ? (
+              <div className='flex h-full min-h-[280px] items-center justify-center text-center'>
+                <p className='text-neutral text-lg'>No comments found for these filters.</p>
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  'flex flex-col gap-3 transition-all duration-200',
+                  replyContext && 'pointer-events-none opacity-40 blur-[2px] select-none'
+                )}
+              >
+                {isFetchingNextPage && <FeedLoading count={3} />}
+                {hasNextPage && !isFetchingNextPage && (
+                  <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>
+                    Load older comments
+                  </button>
+                )}
+                {comments.map((comment) => (
+                  <FeedCommentCard
+                    key={comment.id}
+                    comment={comment}
+                    onReply={(context) => {
+                      setSelectedName(context.name)
+                      setReplyContext(context)
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {replyContext && (

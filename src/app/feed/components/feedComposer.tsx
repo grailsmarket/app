@@ -11,6 +11,7 @@ import { fetchDomains } from '@/api/domains/fetchDomains'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useUserContext } from '@/context/user'
 import { beautifyName, normalizeName } from '@/lib/ens'
+import { parseNameIdentifierSearch } from '@/utils/searchIdentifiers'
 import { cn } from '@/utils/tailwind'
 import ReplyArrowIcon from './replyArrowIcon'
 import { useClickAway } from '@/hooks/useClickAway'
@@ -41,6 +42,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const dropdownItemRefs = useRef<Array<HTMLButtonElement | null>>([])
   const debouncedNameInput = useDebounce(nameInput.trim(), 300)
+  const identifierSearch = parseNameIdentifierSearch(debouncedNameInput)
   const quota = useCommentQuota()
 
   const domainsQuery = useQuery({
@@ -64,10 +66,11 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
     if (debouncedNameInput !== nameInput.trim()) return
 
     const normalizedInput = debouncedNameInput.endsWith('.eth') ? normalizeName(debouncedNameInput) : null
+    console.log(normalizedInput, selectedName)
     if (selectedName === normalizedInput) return
 
     onSelectedNameChange(normalizedInput)
-  }, [debouncedNameInput, domains.length, nameInput, onSelectedNameChange, selectedName])
+  }, [debouncedNameInput, identifierSearch])
 
   useEffect(() => {
     setNameInput(selectedName ?? '')

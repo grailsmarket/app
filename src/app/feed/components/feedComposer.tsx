@@ -31,6 +31,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
   const [body, setBody] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isDomainDropdownOpen, setIsDomainDropdownOpen] = useState(false)
+  const [highlightedIndex, setHighlightedIndex] = useState(0)
 
   const { authStatus } = useUserContext()
   const queryClient = useQueryClient()
@@ -39,6 +40,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
     setIsDomainDropdownOpen(false)
   })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const dropdownItemRefs = useRef<Array<HTMLButtonElement | null>>([])
   const debouncedNameInput = useDebounce(nameInput.trim(), 300)
   const identifierSearch = parseNameIdentifierSearch(debouncedNameInput)
   const quota = useCommentQuota()
@@ -74,6 +76,21 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
     setNameInput(selectedName ?? '')
     if (selectedName) requestAnimationFrame(() => textareaRef.current?.focus())
   }, [selectedName])
+
+  useEffect(() => {
+    setHighlightedIndex(0)
+  }, [debouncedNameInput, domains.length])
+
+  useEffect(() => {
+    if (!isDomainDropdownOpen) return
+    const el = dropdownItemRefs.current[highlightedIndex]
+    if (el) el.scrollIntoView({ block: 'nearest' })
+  }, [highlightedIndex, isDomainDropdownOpen])
+
+  const selectDomain = (name: string) => {
+    onSelectedNameChange(normalizeName(name))
+    setIsDomainDropdownOpen(false)
+  }
 
   const post = useMutation({
     mutationFn: ({ name, value }: { name: string; value: string }) => postComment({ name, body: value }),
@@ -132,15 +149,23 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                   ))}
                 </div>
               ) : (
-                domains.map((domain) => {
+                domains.map((domain, index) => {
                   const domainClubs = domain.clubs ?? []
+                  const isHighlighted = index === highlightedIndex
 
                   return (
                     <button
                       key={domain.id}
+                      ref={(el) => {
+                        dropdownItemRefs.current[index] = el
+                      }}
                       type='button'
-                      onClick={() => onSelectedNameChange(normalizeName(domain.name))}
-                      className='hover:bg-primary/10 flex w-full items-center gap-2 p-3 text-left transition-colors'
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      onClick={() => selectDomain(domain.name)}
+                      className={cn(
+                        'flex w-full items-center gap-2 p-3 text-left transition-colors',
+                        isHighlighted ? 'bg-primary/10' : 'hover:bg-primary/10'
+                      )}
                     >
                       <NameImage
                         name={domain.name}
@@ -182,12 +207,33 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                 const value = e.target.value
                 setNameInput(value)
                 if (selectedName !== normalizeName(value)) onSelectedNameChange(null)
-
+                setIsDomainDropdownOpen(true)
                 if (error) setError(null)
               }}
               onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  if (!isDomainDropdownOpen) setIsDomainDropdownOpen(true)
+                  if (domains.length > 0) setHighlightedIndex((i) => Math.min(domains.length - 1, i + 1))
+                  return
+                }
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  if (!isDomainDropdownOpen) setIsDomainDropdownOpen(true)
+                  if (domains.length > 0) setHighlightedIndex((i) => Math.max(0, i - 1))
+                  return
+                }
+                if (e.key === 'Escape') {
+                  e.preventDefault()
+                  setIsDomainDropdownOpen(false)
+                  return
+                }
                 if (e.key === 'Enter') {
                   e.preventDefault()
+                  if (isDomainDropdownOpen && domains[highlightedIndex]) {
+                    selectDomain(domains[highlightedIndex].name)
+                    return
+                  }
                   const inputValue = e.currentTarget.value
                   if (inputValue.endsWith('.eth')) {
                     onSelectedNameChange(normalizeName(inputValue))

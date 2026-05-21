@@ -171,7 +171,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                         name={domain.name}
                         tokenId={domain.token_id}
                         expiryDate={domain.expiry_date}
-                        className='h-9 w-9 rounded-sm'
+                        className='min-h-9 min-w-9 h-9 w-9 rounded-sm'
                       />
                       <div className='min-w-0'>
                         <p className='truncate font-semibold'>{beautifyName(domain.name)}</p>

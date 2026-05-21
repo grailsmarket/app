@@ -31,7 +31,7 @@ export const useFeedViewport = () => {
   const navOffset = viewport ? getNavOffset() : 0
   const viewportStyle = viewport
     ? {
-        height: `${Math.max(360, viewport.height - navOffset)}px`,
+        height: `${Math.max(0, viewport.height - navOffset)}px`,
         top: `${viewport.offsetTop + navOffset}px`,
       }
     : undefined

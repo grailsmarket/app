@@ -40,7 +40,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const categoryFilters = useAppSelector(selectCategoryDomainsFilters)
   const isAnyFilterOpen = marketplaceFilters.open || profileFilters.open || categoryFilters.open
 
-  // Compute effective visibility (visible if scrolled up OR filters are open). 
+  // Compute effective visibility (visible if scrolled up OR filters are open).
   const effectiveVisibility = (isVisible || isAnyFilterOpen || !!dropdownOption) && !hideWhenKeyboardOpen
 
   // Update context whenever effective visibility changes
@@ -129,7 +129,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
             />
           </Link>
           <div className='hidden lg:block'>
-            <Searchbar onSearch={() => { }} className='h-10 w-48' placeholder='Search (type /)' />
+            <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
             className='hidden md:flex'

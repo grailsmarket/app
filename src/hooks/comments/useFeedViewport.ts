@@ -12,7 +12,7 @@ const getNavOffset = () => (window.matchMedia('(min-width: 768px)').matches ? 70
 
 export const useFeedViewport = () => {
   const [viewport, setViewport] = useState<ViewportState | null>(null)
-  const { isKeyboardOpen } = useNavbar()
+  const { hideWhenKeyboardOpen } = useNavbar()
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return
@@ -30,7 +30,7 @@ export const useFeedViewport = () => {
     }
   }, [])
 
-  const navOffset = viewport ? (isKeyboardOpen ? 0 : getNavOffset()) : 0
+  const navOffset = viewport ? (hideWhenKeyboardOpen ? 0 : getNavOffset()) : 0
   const viewportStyle = viewport
     ? {
         height: `${Math.max(0, viewport.height - navOffset)}px`,

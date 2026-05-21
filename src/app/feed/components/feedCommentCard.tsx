@@ -46,7 +46,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
   return (
     <article
       onClick={() => router.push(namePagePath)}
-      className='bg-secondary border-tertiary cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors hover:border-foreground/30 sm:px-4'
+      className='bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors sm:px-4'
     >
       <div className='flex flex-col gap-3 sm:gap-4'>
         <div className='flex w-full flex-wrap items-center justify-between'>

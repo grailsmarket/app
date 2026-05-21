@@ -100,7 +100,7 @@ const Composer: React.FC<Props> = ({ name }) => {
   return (
     <div className='border-tertiary flex flex-col gap-2 border-t-2 p-3'>
       {error && <p className='text-md text-red-400'>{error}</p>}
-      <div className='bg-secondary border-tertiary flex items-start gap-2 rounded-md border p-md pl-3'>
+      <div className='bg-secondary border-tertiary p-md flex items-start gap-2 rounded-md border pl-3'>
         <textarea
           ref={ref}
           value={value}
@@ -118,7 +118,7 @@ const Composer: React.FC<Props> = ({ name }) => {
           maxLength={MAX_LEN}
           placeholder={quotaExhausted ? 'Daily limit reached' : 'Add a comment…'}
           className={cn(
-            'text-foreground placeholder:text-neutral pt-0.5 text-lg font-medium max-h-32 flex-1 resize-none bg-transparent leading-6 outline-none',
+            'text-foreground placeholder:text-neutral max-h-32 flex-1 resize-none bg-transparent pt-0.5 text-lg leading-6 font-medium outline-none',
             (quotaExhausted || post.isPending) && 'cursor-not-allowed opacity-50'
           )}
         />

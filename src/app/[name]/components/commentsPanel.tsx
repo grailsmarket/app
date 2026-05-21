@@ -61,7 +61,7 @@ const CommentsPanel: React.FC<Props> = ({ name, nameDetails }) => {
     <div
       ref={panelRef}
       id='comments'
-      className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 scroll-mt-20 sm:rounded-lg sm:border-2 lg:gap-2'
+      className='sm:border-tertiary bg-secondary pt-lg flex w-full scroll-mt-20 flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'
     >
       <div className='px-lg xl:px-xl flex items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Comments</h2>

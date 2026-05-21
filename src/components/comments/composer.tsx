@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/utils/tailwind'
 import { usePostComment } from '@/hooks/comments/usePostComment'
@@ -12,6 +12,12 @@ interface Props {
 }
 
 const MAX_LEN = 500
+
+const scrollElementIntoView = (el: HTMLElement | null) => {
+  if (!el) return
+
+  el.scrollIntoView({ block: 'center', inline: 'nearest' })
+}
 
 const Composer: React.FC<Props> = ({ name }) => {
   const [value, setValue] = useState('')
@@ -31,6 +37,27 @@ const Composer: React.FC<Props> = ({ name }) => {
     el.style.height = 'auto'
     el.style.height = Math.min(el.scrollHeight, 120) + 'px'
   }
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+
+    let animationFrame: number | null = null
+    const keepFocusedComposerVisible = () => {
+      if (document.activeElement !== ref.current) return
+
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
+      animationFrame = window.requestAnimationFrame(() => scrollElementIntoView(ref.current))
+    }
+
+    window.visualViewport.addEventListener('resize', keepFocusedComposerVisible)
+    window.visualViewport.addEventListener('scroll', keepFocusedComposerVisible)
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
+      window.visualViewport?.removeEventListener('resize', keepFocusedComposerVisible)
+      window.visualViewport?.removeEventListener('scroll', keepFocusedComposerVisible)
+    }
+  }, [])
 
   const submit = () => {
     const trimmed = value.trim()
@@ -82,6 +109,10 @@ const Composer: React.FC<Props> = ({ name }) => {
             autoSize()
           }}
           onKeyDown={onKeyDown}
+          onFocus={() => {
+            scrollElementIntoView(ref.current)
+            window.setTimeout(() => scrollElementIntoView(ref.current), 300)
+          }}
           disabled={quotaExhausted || post.isPending}
           rows={1}
           maxLength={MAX_LEN}

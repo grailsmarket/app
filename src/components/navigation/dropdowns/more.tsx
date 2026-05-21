@@ -82,7 +82,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'
-      style={{ height: isMobile ? (isDropdownOpen ? '620px' : '40px') : 'auto' }}
+      style={{ height: isMobile ? (isDropdownOpen ? '580px' : '40px') : 'auto' }}
     >
       <div
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'

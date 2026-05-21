@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+.opencode
+.playwright-mcp
 
 # debug
 npm-debug.log*

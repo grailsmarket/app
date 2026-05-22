@@ -4,6 +4,7 @@ import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query
 import { fetchAccount, fetchProfileDetails, isLinkValid, truncateAddress } from 'ethereum-identity-kit/utils'
 import { isAddress, isHex } from 'viem'
 import { ONE_MINUTE } from '@/constants/time'
+import HideOnClient from './components/hide-on-client'
 import Profile from './components/profile'
 
 type ProfileDetails = Awaited<ReturnType<typeof fetchProfileDetails>>
@@ -152,7 +153,9 @@ const UserPage = async (props: Props) => {
 
   return (
     <main className='min-h-screen w-full'>
-      <ProfileSemanticSummary user={user} profile={profile} />
+      <HideOnClient>
+        <ProfileSemanticSummary user={user} profile={profile} />
+      </HideOnClient>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Profile user={user} />
       </HydrationBoundary>

@@ -6,6 +6,7 @@ import { isAddress, isHex } from 'viem'
 import { ONE_MINUTE } from '@/constants/time'
 import HideOnClient from './components/hide-on-client'
 import Profile from './components/profile'
+import { headers } from 'next/headers'
 
 type ProfileDetails = Awaited<ReturnType<typeof fetchProfileDetails>>
 
@@ -62,7 +63,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const user = isAddress(params.user) ? params.user : params.user
   const searchParams = await props.searchParams
-  const ssr = searchParams.ssr === 'false' ? false : true
+  const requestHeaders = await headers()
+  const ssr = searchParams.ssr === 'false' || requestHeaders.get('rsc') === '1' ? false : true
   const truncatedUser = isAddress(params.user) ? (truncateAddress(params.user) as string) : params.user
 
   const getAccount = async () => {
@@ -133,7 +135,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 const UserPage = async (props: Props) => {
   const { user } = await props.params
   const searchParams = await props.searchParams
-  const ssr = searchParams.ssr === 'false' ? false : true
+  const requestHeaders = await headers()
+  const ssr = searchParams.ssr === 'false' || requestHeaders.get('rsc') === '1' ? false : true
 
   const isList = Number.isInteger(Number(user)) && !(isAddress(user) || isHex(user))
   const listNum = isList ? Number(user) : undefined

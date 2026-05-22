@@ -9,6 +9,7 @@ import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
 import { fetchNameBundle } from '@/api/name/bundle'
 import { formatNameMetadata } from '@/api/name/metadata'
+import { headers } from 'next/headers'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -53,12 +54,26 @@ const Name = async (props: Props) => {
   const { name } = await props.params
   const decodedName = decodeURIComponent(name)
   const normalizedName = beautifyName(decodedName)
+  const requestHeaders = await headers()
+  const isInAppNavigation = requestHeaders.get('rsc') === '1'
 
   if (!normalizedName.includes('.eth')) {
     return notFound()
   }
 
   const queryClient = new QueryClient()
+
+  if (isInAppNavigation) {
+    return (
+      <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+        <ClientOnly>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <NamePage name={normalizedName} />
+          </HydrationBoundary>
+        </ClientOnly>
+      </main>
+    )
+  }
 
   const bundle = await fetchNameBundle(normalizedName)
   const metadata = formatNameMetadata(bundle.details.metadata)

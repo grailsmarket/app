@@ -7,16 +7,13 @@ import HideOnClient from './components/HideOnClient'
 import ServerPanels from './components/serverPanels'
 import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
-import { fetchNameDetails } from '@/api/name/details'
-import { ONE_MINUTE } from '@/constants/time'
-import { MarketplaceDomainType } from '@/types/domains'
+import { fetchNameBundle } from '@/api/name/bundle'
+import { formatNameMetadata } from '@/api/name/metadata'
 
 interface Props {
   params: Promise<{ name: string }>
   searchParams: Promise<SearchParams>
 }
-
-const PREFETCH_STALE_TIME = 3 * ONE_MINUTE * 1000
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
@@ -63,20 +60,24 @@ const Name = async (props: Props) => {
 
   const queryClient = new QueryClient()
 
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: ['name', 'details', normalizedName],
-      queryFn: () => fetchNameDetails(normalizedName),
-      staleTime: PREFETCH_STALE_TIME,
-    }),
-  ])
+  const bundle = await fetchNameBundle(normalizedName)
+  const metadata = formatNameMetadata(bundle.details.metadata)
 
-  const nameDetails = queryClient.getQueryData<MarketplaceDomainType>(['name', 'details', normalizedName])
+  queryClient.setQueryData(['name', 'details', normalizedName], bundle.details)
+  queryClient.setQueryData(['name', 'offers', normalizedName], bundle.offers)
+  queryClient.setQueryData(['name', 'roles', normalizedName], bundle.roles)
+  queryClient.setQueryData(['name', 'metadata', normalizedName], metadata)
 
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
       <HideOnClient>
-        <ServerPanels name={normalizedName} nameDetails={nameDetails} offers={[]} metadata={[]} roles={null} />
+        <ServerPanels
+          name={normalizedName}
+          nameDetails={bundle.details}
+          offers={bundle.offers}
+          metadata={metadata}
+          roles={bundle.roles}
+        />
       </HideOnClient>
       <ClientOnly>
         <HydrationBoundary state={dehydrate(queryClient)}>

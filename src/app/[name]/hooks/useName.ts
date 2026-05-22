@@ -2,6 +2,7 @@ import { fetchNameDetails } from '@/api/name/details'
 import { fetchNameMetadata, formatNameMetadata } from '@/api/name/metadata'
 import { fetchNameOffers } from '@/api/name/offers'
 import { fetchNameRoles } from '@/api/name/roles'
+import { ONE_MINUTE } from '@/constants/time'
 import { useAppDispatch } from '@/state/hooks'
 import {
   setEditRecordsModalMetadata,
@@ -9,6 +10,8 @@ import {
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
 import { useQuery } from '@tanstack/react-query'
+
+const HYDRATED_STALE_TIME = 3 * ONE_MINUTE * 1000
 
 export const useName = (name: string) => {
   const { data: nameDetails, isLoading: nameDetailsIsLoading } = useQuery({
@@ -18,6 +21,7 @@ export const useName = (name: string) => {
       return details
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
     refetchOnWindowFocus: true,
     refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
@@ -29,6 +33,7 @@ export const useName = (name: string) => {
       return offers
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
     refetchOnWindowFocus: true,
   })
 
@@ -39,6 +44,7 @@ export const useName = (name: string) => {
       return formatNameMetadata(result)
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
   })
 
   const { data: roles, isLoading: isRolesLoading } = useQuery({
@@ -48,6 +54,7 @@ export const useName = (name: string) => {
       return details
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
   })
 
   const dispatch = useAppDispatch()

@@ -13,14 +13,19 @@ import { cn } from '@/utils/tailwind'
 import { useQuery } from '@tanstack/react-query'
 import { Arrow, useWindowSize } from 'ethereum-identity-kit'
 import Link from 'next/link'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import LoadingCell from '../ui/loadingCell'
 import { DEFAULT_CATEGORIES_PAGE_SORT } from '@/constants/filters/categories'
 
 const TopCategories = () => {
   const { width } = useWindowSize()
+  const [isMounted, setIsMounted] = useState(false)
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories', filters.sort, filters.sortDirection],
@@ -40,10 +45,11 @@ const TopCategories = () => {
   }, [])
 
   const categoryCount = useMemo(() => {
+    if (!isMounted) return 6
     if (width && width < 640) return 3
     if (width && width < 768) return 4
     return 6
-  }, [width])
+  }, [width, isMounted])
 
   return (
     <div className='w-full'>

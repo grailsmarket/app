@@ -39,7 +39,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
   const [previousDropdownOption, setPreviousDropdownOption] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const { setNavbarVisible } = useNavbar()
+  const { setNavbarVisible, hideWhenKeyboardOpen } = useNavbar()
   const { userAddress, authStatus } = useUserContext()
   const queryClient = useQueryClient()
   const isTouchDevice = useIsTouchDevice()
@@ -53,14 +53,15 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
     void queryClient.prefetchQuery(exploreDropdownQueryOptions(isAuthenticated))
     void queryClient.prefetchQuery(premiumDropdownQueryOptions(isAuthenticated))
   }, [isTouchDevice, authStatus, queryClient])
+
   // Check if any filter panel is open
   const marketplaceFilters = useAppSelector(selectMarketplaceFilters)
   const profileFilters = useAppSelector(selectProfileListingsFilters)
   const categoryFilters = useAppSelector(selectCategoryDomainsFilters)
   const isAnyFilterOpen = marketplaceFilters.open || profileFilters.open || categoryFilters.open
 
-  // Compute effective visibility (visible if scrolled up OR filters are open)
-  const effectiveVisibility = isVisible || isAnyFilterOpen || !!dropdownOption
+  // Compute effective visibility (visible if scrolled up OR filters are open).
+  const effectiveVisibility = (isVisible || isAnyFilterOpen || !!dropdownOption) && !hideWhenKeyboardOpen
 
   // Update context whenever effective visibility changes
   useEffect(() => {
@@ -122,7 +123,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
-      <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app relative z-20 mx-auto flex h-full items-center justify-between'>
+      <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app relative z-30 mx-auto flex h-full items-center justify-between'>
         <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
           <Link
             href='/'
@@ -186,7 +187,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       </nav>
       <div
         className={cn(
-          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 absolute top-14 left-0 z-0 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350',
+          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 absolute top-14 left-0 -z-10 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350',
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >

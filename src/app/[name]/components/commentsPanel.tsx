@@ -23,6 +23,7 @@ const CommentsPanel: React.FC<Props> = ({ name, nameDetails }) => {
 
   const nameId = nameDetails?.id
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
   const deleteMutation = useDeleteComment(name)
 
@@ -43,10 +44,25 @@ const CommentsPanel: React.FC<Props> = ({ name, nameDetails }) => {
     return () => observer.disconnect()
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
+  // Scroll the panel into view when arriving via a `#comments` hash (e.g. from the feed).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.hash !== '#comments') return
+    const el = panelRef.current
+    if (!el) return
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [])
+
   const lowerAddr = userAddress?.toLowerCase()
 
   return (
-    <div className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'>
+    <div
+      ref={panelRef}
+      id='comments'
+      className='sm:border-tertiary bg-secondary pt-lg flex w-full scroll-mt-20 flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'
+    >
       <div className='px-lg xl:px-xl flex items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Comments</h2>
         <span className='text-neutral text-lg'>{comments.length}</span>

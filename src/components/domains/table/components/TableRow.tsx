@@ -250,6 +250,7 @@ const TableRow: React.FC<TableRowProps> = ({
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
         backgroundColor
       )}
+      prefetch={hoveredIndex === index}
     >
       <div
         className={cn(

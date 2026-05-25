@@ -153,7 +153,7 @@ const AdvancedTools = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className='flex flex-col items-start gap-4 overflow-auto pb-6 text-xs text-neutral-600 [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] [scrollbar-width:none] md:h-fit md:text-sm lg:text-base dark:text-neutral-400'
+                    className='flex [scrollbar-width:none] flex-col items-start gap-4 overflow-auto pb-6 text-xs text-neutral-600 [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch] md:h-fit md:text-sm lg:text-base dark:text-neutral-400'
                   >
                     {active.longDescription || active.description}
                   </motion.div>

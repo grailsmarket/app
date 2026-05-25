@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { isAddress } from 'viem'
 import { cn } from '@/utils/tailwind'
@@ -15,6 +17,31 @@ interface Options {
 }
 
 const LINK_BASE_CLASSES = 'underline underline-offset-2 font-semibold transition-opacity hover:opacity-70'
+
+interface EnsLinkProps {
+  ens: string
+  className: string
+  onClick: () => void
+}
+
+const EnsLink: React.FC<EnsLinkProps> = ({ ens, className, onClick }) => {
+  const [prefetch, setPrefetch] = useState(false)
+
+  return (
+    <Link
+      href={`/${ens}`}
+      className={className}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
+    >
+      {ens}
+    </Link>
+  )
+}
 
 export const linkifyMessage = (text: string, options: Options = { onClick: () => {} }): React.ReactNode => {
   if (!text) return text
@@ -61,19 +88,7 @@ export const linkifyMessage = (text: string, options: Options = { onClick: () =>
         </Link>
       )
     } else if (ens) {
-      nodes.push(
-        <Link
-          key={`e-${key++}`}
-          href={`/${ens}`}
-          className={linkClass}
-          onClick={(e) => {
-            e.stopPropagation()
-            options.onClick()
-          }}
-        >
-          {ens}
-        </Link>
-      )
+      nodes.push(<EnsLink key={`e-${key++}`} ens={ens} className={linkClass} onClick={options.onClick} />)
     } else if (address && isAddress(address)) {
       nodes.push(
         <Link

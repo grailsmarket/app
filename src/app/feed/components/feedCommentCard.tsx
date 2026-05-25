@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
@@ -30,6 +30,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
   const normalizedName = normalizeName(comment.name)
   const tokenId = getNameTokenId(normalizedName)
   const namePagePath = `/${encodeURIComponent(normalizedName)}#comments`
+  const [prefetch, setPrefetch] = useState(false)
 
   // const clubs = comment.clubs ?? []
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
@@ -78,6 +79,8 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
               href={`/${encodeURIComponent(normalizedName)}`}
               onClick={(e) => e.stopPropagation()}
               className='flex min-w-0 items-center gap-1.5 transition-opacity hover:opacity-80 sm:gap-2'
+              prefetch={prefetch}
+              onMouseEnter={() => setPrefetch(true)}
             >
               <NameImage
                 name={normalizedName}

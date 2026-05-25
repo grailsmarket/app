@@ -396,261 +396,259 @@ export async function GET(req: NextRequest) {
     const imageWidth = hasCategories ? 480 : 548
 
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #444444, #222222)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 20,
+          padding: 60,
+          fontFamily: 'Inter, sans-serif',
+          color: '#f4f4f4',
+        }}
+      >
         <div
           style={{
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, #444444, #222222)',
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 20,
-            padding: 60,
-            fontFamily: 'Inter, sans-serif',
-            color: '#f4f4f4',
+            justifyContent: 'flex-start',
+            width: detailsContainerWidth,
+            height: 568,
+            gap: 36,
+            borderRadius: 20,
+            overflow: 'hidden',
+            backgroundColor: '#444444',
           }}
         >
           <div
             style={{
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: 'column',
               alignItems: 'center',
-              justifyContent: 'flex-start',
-              width: detailsContainerWidth,
-              height: 568,
-              gap: 36,
-              borderRadius: 20,
-              overflow: 'hidden',
-              backgroundColor: '#444444',
+              justifyContent: 'center',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {ensImage && (
-                <img
-                  src={ensImage}
-                  alt='ENS Image'
-                  width={imageWidth}
-                  height={imageHeight}
-                  style={{
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 0,
-                    borderBottomLeftRadius: imageBottomLeftRadius,
-                    borderBottomRightRadius: 0,
-                    objectFit: 'cover',
-                  }}
-                />
-              )}
-              {categories.length > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 480,
-                    gap: 16,
-                    overflow: 'hidden',
-                    backgroundColor: '#333333',
-                    borderRadius: '0px 0px 0px 20px',
-                    padding: categories.length === 1 ? 16 : 10,
-                  }}
-                >
-                  {categories.length === 1 ? (
-                    <div
-                      key={categories[0]}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 16,
-                      }}
-                    >
-                      {categoryAvatarDataUri && (
-                        <img
-                          src={categoryAvatarDataUri}
-                          alt='category'
-                          width={64}
-                          height={64}
-                          style={{ borderRadius: 32, objectFit: 'cover' }}
-                        />
-                      )}
-                      <div
-                        style={{
-                          fontSize: 42,
-                          color: '#ffffff',
-                          fontWeight: 600,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {firstCategoryLabel}
-                      </div>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 42, color: '#ffffff', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                      {`${categories.length} Categories`}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 860,
-              }}
-            >
-              {hasData ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    justifyContent: 'center',
-                    gap: 24,
-                    width: '100%',
-                  }}
-                >
+            {ensImage && (
+              <img
+                src={ensImage}
+                alt='ENS Image'
+                width={imageWidth}
+                height={imageHeight}
+                style={{
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 0,
+                  borderBottomLeftRadius: imageBottomLeftRadius,
+                  borderBottomRightRadius: 0,
+                  objectFit: 'cover',
+                }}
+              />
+            )}
+            {categories.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 480,
+                  gap: 16,
+                  overflow: 'hidden',
+                  backgroundColor: '#333333',
+                  borderRadius: '0px 0px 0px 20px',
+                  padding: categories.length === 1 ? 16 : 10,
+                }}
+              >
+                {categories.length === 1 ? (
                   <div
+                    key={categories[0]}
                     style={{
-                      fontSize: 56,
-                      fontWeight: 600,
-                      color: '#ffffff',
-                      marginBottom: 12,
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 16,
                     }}
                   >
-                    Google Metrics
+                    {categoryAvatarDataUri && (
+                      <img
+                        src={categoryAvatarDataUri}
+                        alt='category'
+                        width={64}
+                        height={64}
+                        style={{ borderRadius: 32, objectFit: 'cover' }}
+                      />
+                    )}
+                    <div
+                      style={{
+                        fontSize: 42,
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {firstCategoryLabel}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'row', gap: 32, width: 910 }}>
-                    <StatCard
-                      value={avgSearchesDisplay}
-                      label='Monthly Searches'
-                      fillPercent={monthlyFillPercent}
-                      fillOpacity={monthlyFillOpacity}
-                    />
-                    <StatCard
-                      value={yearlyDisplay}
-                      label='Yearly Average'
-                      fillPercent={yearlyFillPercent}
-                      fillOpacity={yearlyFillOpacity}
-                    />
-                    <StatCard
-                      value={avgCpcDisplay}
-                      label='Avg CPC'
-                      fillPercent={cpcFillPercent}
-                      fillOpacity={cpcFillOpacity}
-                    />
-                  </div>
-                  {hasChart && (
-                    <TrendChart
-                      monthlyTrend={googleAnalyticsData!.monthlyTrend}
-                      avgMonthlySearches={googleAnalyticsData!.avgMonthlySearches}
-                    />
-                  )}
-                </div>
-              ) : (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    fontSize: 48,
-                    color: '#999',
-                    fontWeight: 500,
-                    padding: '80px 0',
-                  }}
-                >
-                  No search data available
-                </div>
-              )}
-            </div>
+                ) : (
+                  <p style={{ fontSize: 42, color: '#ffffff', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    {`${categories.length} Categories`}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <div
             style={{
               display: 'flex',
-              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              width: detailsContainerWidth - 20,
-              gap: 24,
+              justifyContent: 'center',
+              width: 860,
             }}
           >
-            {ownerProfile.displayName ? (
+            {hasData ? (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'center',
+                  gap: 24,
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 56,
+                    fontWeight: 600,
+                    color: '#ffffff',
+                    marginBottom: 12,
+                  }}
+                >
+                  Google Metrics
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 32, width: 910 }}>
+                  <StatCard
+                    value={avgSearchesDisplay}
+                    label='Monthly Searches'
+                    fillPercent={monthlyFillPercent}
+                    fillOpacity={monthlyFillOpacity}
+                  />
+                  <StatCard
+                    value={yearlyDisplay}
+                    label='Yearly Average'
+                    fillPercent={yearlyFillPercent}
+                    fillOpacity={yearlyFillOpacity}
+                  />
+                  <StatCard
+                    value={avgCpcDisplay}
+                    label='Avg CPC'
+                    fillPercent={cpcFillPercent}
+                    fillOpacity={cpcFillOpacity}
+                  />
+                </div>
+                {hasChart && (
+                  <TrendChart
+                    monthlyTrend={googleAnalyticsData!.monthlyTrend}
+                    avgMonthlySearches={googleAnalyticsData!.avgMonthlySearches}
+                  />
+                )}
+              </div>
+            ) : (
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 24,
-                  width: 530,
-                  padding: '8px 0px',
+                  justifyContent: 'center',
+                  width: '100%',
+                  fontSize: 48,
+                  color: '#999',
+                  fontWeight: 500,
+                  padding: '80px 0',
                 }}
               >
-                {ownerAvatar && (
-                  <img
-                    src={ownerAvatar}
-                    alt='owner'
-                    width={80}
-                    height={80}
-                    style={{ borderRadius: 40, objectFit: 'cover' }}
-                  />
-                )}
-                <div
-                  style={{
-                    fontSize: 48,
-                    width: 430,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {ownerProfile.displayName}
-                </div>
+                No search data available
               </div>
-            ) : (
-              <div style={{ display: 'flex', width: 530 }} />
             )}
-            <img
-              src='https://grails.app/logo-w-text.svg'
-              alt='Grails'
-              width={320}
-              height={98}
-              style={{ marginTop: 16 }}
-            />
-            <div
-              style={{
-                fontSize: 44,
-                color: '#ffdfc0',
-                width: 530,
-                display: 'flex',
-                textAlign: 'right',
-                justifyContent: 'flex-end',
-              }}
-            >
-              <p
-                style={{
-                  width: 530,
-                  textAlign: 'right',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                }}
-              >{`grails.app/${beautifyName(name)}`}</p>
-            </div>
           </div>
         </div>
-      ),
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: detailsContainerWidth - 20,
+            gap: 24,
+          }}
+        >
+          {ownerProfile.displayName ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 24,
+                width: 530,
+                padding: '8px 0px',
+              }}
+            >
+              {ownerAvatar && (
+                <img
+                  src={ownerAvatar}
+                  alt='owner'
+                  width={80}
+                  height={80}
+                  style={{ borderRadius: 40, objectFit: 'cover' }}
+                />
+              )}
+              <div
+                style={{
+                  fontSize: 48,
+                  width: 430,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {ownerProfile.displayName}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', width: 530 }} />
+          )}
+          <img
+            src='https://grails.app/logo-w-text.svg'
+            alt='Grails'
+            width={320}
+            height={98}
+            style={{ marginTop: 16 }}
+          />
+          <div
+            style={{
+              fontSize: 44,
+              color: '#ffdfc0',
+              width: 530,
+              display: 'flex',
+              textAlign: 'right',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <p
+              style={{
+                width: 530,
+                textAlign: 'right',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
+            >{`grails.app/${beautifyName(name)}`}</p>
+          </div>
+        </div>
+      </div>,
       {
         ...size,
         emoji: 'twemoji',

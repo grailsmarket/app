@@ -491,7 +491,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                                   ? new Date(
                                       extensionMode === 'extend_for'
                                         ? new Date(domain.expiry_date).getTime() +
-                                          quantity * getSecondsPerUnit(timeUnit) * 1000
+                                            quantity * getSecondsPerUnit(timeUnit) * 1000
                                         : customDate * 1000
                                     ).toLocaleDateString()
                                   : 'Unknown'}

@@ -18,7 +18,7 @@ export const exploreDropdownQueryOptions = (isAuthenticated: boolean) =>
     queryKey: ['explore', 'listings'],
     queryFn: () =>
       fetchDomains({
-        limit: 36,
+        limit: 7,
         pageParam: 2,
         filters: {
           ...emptyFilterState,
@@ -45,7 +45,7 @@ export const premiumDropdownQueryOptions = (isAuthenticated: boolean) =>
     queryKey: ['navigation', 'premium'],
     queryFn: () =>
       fetchDomains({
-        limit: 42,
+        limit: 7,
         pageParam: 1,
         filters: {
           ...emptyFilterState,

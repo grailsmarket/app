@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { useQuery } from '@tanstack/react-query'
 import { Avatar, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import NameImage from '@/components/ui/nameImage'
@@ -17,7 +18,6 @@ interface ReplyPreviewProps {
 
 const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
   const normalizedName = normalizeName(context.comment.name)
-  const [prefetch, setPrefetch] = useState(false)
   const { data: account } = useQuery({
     queryKey: ['account', context.comment.author_address],
     queryFn: () => fetchAccount(context.comment.author_address),
@@ -41,11 +41,9 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
           </button>
         </div>
         <div className='flex gap-3'>
-          <Link
+          <HoverPrefetchLink
             href={`/${encodeURIComponent(normalizedName)}`}
             className='shrink-0 transition-opacity hover:opacity-80'
-            prefetch={prefetch}
-            onMouseEnter={() => setPrefetch(true)}
           >
             <NameImage
               name={normalizedName}
@@ -54,17 +52,15 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
               forceRegStatus={REGISTERED}
               className='mt-1.5 h-10.5 w-10.5 rounded-md'
             />
-          </Link>
+          </HoverPrefetchLink>
           <div className='min-w-0 flex-1'>
             <div className='flex min-w-0 items-center gap-2'>
-              <Link
+              <HoverPrefetchLink
                 href={`/${encodeURIComponent(normalizedName)}`}
                 className='hover:text-primary truncate text-lg font-bold transition-colors'
-                prefetch={prefetch}
-                onMouseEnter={() => setPrefetch(true)}
               >
                 {beautifyName(normalizedName)}
-              </Link>
+              </HoverPrefetchLink>
               <span className='text-neutral pt-1 text-sm'>by</span>
               <div className='flex items-center gap-1.5'>
                 <Avatar

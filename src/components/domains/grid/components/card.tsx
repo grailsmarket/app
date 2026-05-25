@@ -24,7 +24,7 @@ import {
   addBulkSelectWatchlistId,
   removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
-import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import useETHPrice from '@/hooks/useETHPrice'
@@ -186,7 +186,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
   }
 
   return (
-    <Link
+    <HoverPrefetchLink
       href={`/${normalizeName(domain.name)}`}
       onClick={(e) => {
         if (isBulkSelecting) {
@@ -209,7 +209,6 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
         backgroundColor,
         className
       )}
-      prefetch={hoveredIndex === index}
     >
       <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between'>
         <NameImage
@@ -397,7 +396,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
           </div>
         </div>
       </div>
-    </Link>
+    </HoverPrefetchLink>
   )
 }
 

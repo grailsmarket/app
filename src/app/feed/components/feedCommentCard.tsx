@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
@@ -30,7 +31,6 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
   const normalizedName = normalizeName(comment.name)
   const tokenId = getNameTokenId(normalizedName)
   const namePagePath = `/${encodeURIComponent(normalizedName)}#comments`
-  const [prefetch, setPrefetch] = useState(false)
 
   // const clubs = comment.clubs ?? []
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
@@ -75,12 +75,10 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
             <p className='text-neutral text-md px-0.5 pt-0.5 font-medium sm:px-1'>
               <span className='hidden sm:inline'>commented</span> on
             </p>
-            <Link
+            <HoverPrefetchLink
               href={`/${encodeURIComponent(normalizedName)}`}
               onClick={(e) => e.stopPropagation()}
               className='flex min-w-0 items-center gap-1.5 transition-opacity hover:opacity-80 sm:gap-2'
-              prefetch={prefetch}
-              onMouseEnter={() => setPrefetch(true)}
             >
               <NameImage
                 name={normalizedName}
@@ -90,7 +88,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
                 className='h-6 w-6 rounded-sm sm:h-8.5 sm:w-8.5'
               />
               <div className='block truncate text-xl font-bold'>{beautifyName(normalizedName)}</div>
-            </Link>
+            </HoverPrefetchLink>
           </div>
           <span className='text-neutral hidden text-xs font-medium whitespace-nowrap md:block'>{time}</span>
         </div>

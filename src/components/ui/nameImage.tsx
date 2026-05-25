@@ -102,11 +102,12 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   }, [refreshKey])
 
   useEffect(() => {
-    if (attempt >= 2) return
-    const url = attempt === 0 ? wrappedSrc : unwrappedSrc
+    if (attempt >= 1) return
+    // reverse for now to only use unwrapped because the graph subgraph returns correct reccord no matter what
+    const url = attempt === 1 ? wrappedSrc : unwrappedSrc
 
     let cancelled = false
-    const maxRetries = 3
+    const maxRetries = 2
 
     // `/explore` fires dozens of parallel fetches; a share of them transiently
     // fail under worker / HTTP-2 stream pressure, so retry with backoff before
@@ -273,7 +274,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
             onLoad={() => markLayerLoaded(layer.url)}
             className={cn(
               'absolute top-0 left-0 block h-full w-full object-cover',
-              isTop && 'transition-opacity duration-[500ms]',
+              isTop && 'transition-opacity duration-500',
               isTop && !layer.loaded && 'opacity-0'
             )}
           />

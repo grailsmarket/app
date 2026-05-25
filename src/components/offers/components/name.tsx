@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import { DomainOfferType } from '@/types/domains'
 import NameImage from '@/components/ui/nameImage'
 import Link from 'next/link'
@@ -11,9 +13,15 @@ interface NameProps {
 const Name: React.FC<NameProps> = ({ offer }) => {
   // Extract name from the offer data
   const name = offer.name || 'Unknown'
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
-    <Link href={`/${normalizeName(name)}`} className='flex items-center gap-2 transition-opacity hover:opacity-80'>
+    <Link
+      href={`/${normalizeName(name)}`}
+      className='flex items-center gap-2 transition-opacity hover:opacity-80'
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
+    >
       <NameImage
         name={name}
         tokenId={offer.token_id}

@@ -1,6 +1,6 @@
 import Price from '@/components/ui/price'
 import { MarketplaceDomainType } from '@/types/domains'
-import React from 'react'
+import React, { useState } from 'react'
 import ActionButtons from './actionButtons'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { beautifyName } from '@/lib/ens'
@@ -23,6 +23,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isRegistered = registrationStatus === REGISTERED
   const hasListing = isRegistered && domain.listings[0]
+  const [prefetch, setPrefetch] = useState(false)
 
   if (modifyingCartTokenIds.includes(domain.token_id)) return null
 
@@ -34,6 +35,8 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
           'flex flex-row items-center gap-2 transition-all duration-300 hover:opacity-70',
           hasListing ? 'w-[40%]' : 'w-[70%]'
         )}
+        prefetch={prefetch}
+        onMouseEnter={() => setPrefetch(true)}
       >
         <NameImage
           name={domain.name}

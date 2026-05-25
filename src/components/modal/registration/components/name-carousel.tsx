@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import NameImage from '@/components/ui/nameImage'
 import { beautifyName } from '@/lib/ens'
@@ -19,12 +22,44 @@ function getExpiryDate(entry: NameRegistrationEntry, fallbackDurationSeconds: bi
   return new Date(duration * 1000 + Date.now()).toISOString()
 }
 
+interface CarouselItemProps {
+  entry: NameRegistrationEntry
+  expiryDate: string
+  onClose: () => void
+}
+
+const CarouselItem: React.FC<CarouselItemProps> = ({ entry, expiryDate, onClose }) => {
+  const [prefetch, setPrefetch] = useState(false)
+
+  return (
+    <Link
+      href={`/${entry.name}`}
+      onClick={onClose}
+      className='flex shrink-0 flex-col items-center gap-1.5 transition-opacity hover:opacity-70'
+      style={{ width: `${IMAGE_SIZE}px` }}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
+    >
+      <NameImage
+        name={entry.name}
+        tokenId={entry.domain?.token_id}
+        expiryDate={expiryDate}
+        className='h-36 w-36 rounded-lg'
+        height={IMAGE_SIZE}
+        width={IMAGE_SIZE}
+      />
+      <p className='w-full truncate text-center text-sm font-medium'>{beautifyName(entry.name)}</p>
+    </Link>
+  )
+}
+
 const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults, onClose }) => {
   const setWidth = entries.length * (IMAGE_SIZE + GAP)
   const duration = entries.length * SECONDS_PER_ITEM
 
   // Duplicate entries for seamless infinite loop
   const items = [...entries, ...entries, ...entries]
+  const fallbackDuration = calculationResults?.durationSeconds ?? BigInt(YEAR_IN_SECONDS)
 
   return (
     <div className='-mx-lg sm:-mx-xl w-[calc(100%+var(--padding-lg)*2)] overflow-hidden py-2 sm:w-[calc(100%+var(--padding-xl)*2)]'>
@@ -37,23 +72,12 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
         }}
       >
         {items.concat(items).map((entry, i) => (
-          <Link
+          <CarouselItem
             key={`${entry.name}-${i}`}
-            href={`/${entry.name}`}
-            onClick={onClose}
-            className='flex shrink-0 flex-col items-center gap-1.5 transition-opacity hover:opacity-70'
-            style={{ width: `${IMAGE_SIZE}px` }}
-          >
-            <NameImage
-              name={entry.name}
-              tokenId={entry.domain?.token_id}
-              expiryDate={getExpiryDate(entry, calculationResults?.durationSeconds ?? BigInt(YEAR_IN_SECONDS))}
-              className='h-36 w-36 rounded-lg'
-              height={IMAGE_SIZE}
-              width={IMAGE_SIZE}
-            />
-            <p className='w-full truncate text-center text-sm font-medium'>{beautifyName(entry.name)}</p>
-          </Link>
+            entry={entry}
+            expiryDate={getExpiryDate(entry, fallbackDuration)}
+            onClose={onClose}
+          />
         ))}
       </div>
     </div>

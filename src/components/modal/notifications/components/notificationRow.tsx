@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import { Notification, NotificationType } from '@/types/notifications'
@@ -32,6 +32,7 @@ interface NotificationRowProps {
 
 const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick, index, setExpandedImage }) => {
   const { processLinkUrl } = useNotificationRow()
+  const [prefetch, setPrefetch] = useState(false)
   // Get icon based on notification type
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -204,6 +205,8 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
         'p-md sm:p-lg flex h-16 w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
       )}
       onClick={onClick}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-2/5 items-center gap-2 sm:gap-3'>
         {!notification.isRead && <div className='bg-primary h-2 w-2 rounded-full' />}

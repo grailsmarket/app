@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { Avatar, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
@@ -17,6 +17,7 @@ interface ReplyPreviewProps {
 
 const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
   const normalizedName = normalizeName(context.comment.name)
+  const [prefetch, setPrefetch] = useState(false)
   const { data: account } = useQuery({
     queryKey: ['account', context.comment.author_address],
     queryFn: () => fetchAccount(context.comment.author_address),
@@ -43,6 +44,8 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
           <Link
             href={`/${encodeURIComponent(normalizedName)}`}
             className='shrink-0 transition-opacity hover:opacity-80'
+            prefetch={prefetch}
+            onMouseEnter={() => setPrefetch(true)}
           >
             <NameImage
               name={normalizedName}
@@ -57,6 +60,8 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
               <Link
                 href={`/${encodeURIComponent(normalizedName)}`}
                 className='hover:text-primary truncate text-lg font-bold transition-colors'
+                prefetch={prefetch}
+                onMouseEnter={() => setPrefetch(true)}
               >
                 {beautifyName(normalizedName)}
               </Link>

@@ -43,7 +43,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
   const dropdownItemRefs = useRef<Array<HTMLButtonElement | null>>([])
   const debouncedNameInput = useDebounce(nameInput.trim(), 300)
   const identifierSearch = parseNameIdentifierSearch(debouncedNameInput)
-  const quota = useCommentQuota()
+  const quota = useCommentQuota({ enabled: !!selectedName })
 
   const domainsQuery = useQuery({
     queryKey: ['comments', 'feed', 'target-search', debouncedNameInput],
@@ -66,7 +66,6 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
     if (debouncedNameInput !== nameInput.trim()) return
 
     const normalizedInput = debouncedNameInput.endsWith('.eth') ? normalizeName(debouncedNameInput) : null
-    console.log(normalizedInput, selectedName)
     if (selectedName === normalizedInput) return
 
     onSelectedNameChange(normalizedInput)

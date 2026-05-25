@@ -28,7 +28,7 @@ import {
   addBulkSelectWatchlistId,
   removeBulkSelectWatchlistId,
 } from '@/state/reducers/modals/bulkSelectModal'
-import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { normalizeName } from '@/lib/ens'
 import Price from './Price'
 import User from '@/components/ui/user'
@@ -230,7 +230,7 @@ const TableRow: React.FC<TableRowProps> = ({
   }
 
   return (
-    <Link
+    <HoverPrefetchLink
       href={`/${normalizeName(domain.name)}`}
       onClick={(e) => {
         if (isBulkSelecting) {
@@ -252,7 +252,6 @@ const TableRow: React.FC<TableRowProps> = ({
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
         backgroundColor
       )}
-      prefetch={hoveredIndex === index}
     >
       <div
         className={cn(
@@ -262,7 +261,7 @@ const TableRow: React.FC<TableRowProps> = ({
       >
         {displayedColumns.map((column) => columns[column])}
       </div>
-    </Link>
+    </HoverPrefetchLink>
   )
 }
 

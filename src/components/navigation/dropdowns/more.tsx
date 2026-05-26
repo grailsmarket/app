@@ -8,6 +8,7 @@ import analyticsIcon from 'public/icons/analytics-primary.svg'
 import trophyIcon from 'public/icons/trophy-primary.svg'
 import activityIcon from 'public/icons/activity-primary.svg'
 import searchIcon from 'public/icons/search-primary.svg'
+import chatIcon from 'public/icons/chat-primary.svg'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
@@ -61,6 +62,13 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
       href: '/bulk-search',
       onClick: () => setDropdownOption(null),
     },
+    {
+      title: 'Feed',
+      description: 'Live ENS comments across Grails.',
+      icon: <Image src={chatIcon} alt='Feed' width={24} height={24} />,
+      href: '/feed',
+      onClick: () => setDropdownOption(null),
+    },
   ]
 
   useEffect(() => {
@@ -74,7 +82,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
   return (
     <div
       className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'
-      style={{ height: isMobile ? (isDropdownOpen ? '480px' : '40px') : 'auto' }}
+      style={{ height: isMobile ? (isDropdownOpen ? '580px' : '40px') : 'auto' }}
     >
       <div
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'

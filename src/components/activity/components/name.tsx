@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import NameImage from '@/components/ui/nameImage'
 import { beautifyName } from '@/lib/ens'
 import Link from 'next/link'
@@ -18,11 +18,14 @@ const Name: React.FC<NameProps> = ({ name, tokenId, clubs }) => {
   const { categories } = useCategories()
   const category = clubs && clubs.length > 0 ? categories?.find((c) => c.name === clubs?.[0]) : null
   const categoryDetails = clubs && clubs.length > 0 ? getCategoryDetails(clubs?.[0]) : null
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
     <Link
       href={`/${normalizeName(name)}`}
       className='flex h-[36px] max-w-full flex-col justify-center hover:opacity-70'
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-full max-w-full flex-row items-center justify-start gap-2'>
         <NameImage

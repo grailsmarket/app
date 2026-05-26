@@ -86,9 +86,15 @@ const Name: React.FC<NameProps> = ({ offer }) => {
 
   // Standard single-name offer
   const name = offer.name || 'Unknown'
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
-    <Link href={`/${normalizeName(name)}`} className='flex items-center gap-2 transition-opacity hover:opacity-80'>
+    <Link
+      href={`/${normalizeName(name)}`}
+      className='flex items-center gap-2 transition-opacity hover:opacity-80'
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
+    >
       <NameImage
         name={name}
         tokenId={offer.token_id}

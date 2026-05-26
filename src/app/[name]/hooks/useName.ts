@@ -1,15 +1,17 @@
 import { fetchNameDetails } from '@/api/name/details'
-import { fetchNameMetadata } from '@/api/name/metadata'
+import { fetchNameMetadata, formatNameMetadata } from '@/api/name/metadata'
 import { fetchNameOffers } from '@/api/name/offers'
 import { fetchNameRoles } from '@/api/name/roles'
+import { ONE_MINUTE } from '@/constants/time'
 import { useAppDispatch } from '@/state/hooks'
 import {
   setEditRecordsModalMetadata,
   setEditRecordsModalName,
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
-import { MetadataType } from '@/types/api'
 import { useQuery } from '@tanstack/react-query'
+
+const HYDRATED_STALE_TIME = 3 * ONE_MINUTE * 1000
 
 export const useName = (name: string) => {
   const { data: nameDetails, isLoading: nameDetailsIsLoading } = useQuery({
@@ -19,6 +21,7 @@ export const useName = (name: string) => {
       return details
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
     refetchOnWindowFocus: true,
     refetchInterval: 1000 * 60 * 5, // 5 minutes
   })
@@ -30,6 +33,7 @@ export const useName = (name: string) => {
       return offers
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
     refetchOnWindowFocus: true,
   })
 
@@ -37,35 +41,10 @@ export const useName = (name: string) => {
     queryKey: ['name', 'metadata', name],
     queryFn: async () => {
       const result = await fetchNameMetadata(name)
-      const metadata = Object.entries(result || {})
-        .flatMap(([key, value]) => {
-          if (key === 'chains') {
-            return value.map(({ chainName, address }: { chainName: string; address: string }) => ({
-              label: chainName,
-              value: address,
-              canCopy: true,
-            }))
-          }
-
-          if (key === 'contenthash') {
-            return {
-              label: key,
-              value: `${value.protocol}://${value.value}`,
-              canCopy: true,
-            }
-          }
-
-          return {
-            label: key,
-            value: value,
-            canCopy: true,
-          }
-        })
-        .filter((row) => typeof row.value === 'string' && row.value.length > 0 && row.label !== 'resolverAddress')
-
-      return metadata as MetadataType[]
+      return formatNameMetadata(result)
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
   })
 
   const { data: roles, isLoading: isRolesLoading } = useQuery({
@@ -75,6 +54,7 @@ export const useName = (name: string) => {
       return details
     },
     enabled: !!name,
+    staleTime: HYDRATED_STALE_TIME,
   })
 
   const dispatch = useAppDispatch()

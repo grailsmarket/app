@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Address } from 'viem'
@@ -44,6 +44,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
   const category =
     listing.clubs && listing.clubs.length > 0 ? categories?.find((c) => c.name === listing.clubs?.[0]) : null
   const categoryDetails = category ? getCategoryDetails(category.name) : null
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
     <Link
@@ -52,6 +53,8 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
         'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
         index === 0 && 'border-t'
       )}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-[45%] max-w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={listing.source} />
@@ -108,6 +111,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
   const { categories } = useCategories()
   const category = offer.clubs && offer.clubs.length > 0 ? categories?.find((c) => c.name === offer.clubs?.[0]) : null
   const categoryDetails = category ? getCategoryDetails(category.name) : null
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
     <Link
@@ -116,6 +120,8 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
         'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
         index === 0 && 'border-t'
       )}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={offer.source} />
@@ -174,6 +180,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
   const { categories } = useCategories()
   const category = sale.clubs && sale.clubs.length > 0 ? categories?.find((c) => c.name === sale.clubs?.[0]) : null
   const categoryDetails = category ? getCategoryDetails(category.name) : null
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
     <Link
@@ -183,6 +190,8 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
         className,
         index === 0 && 'border-t'
       )}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
     >
       <div className={cn('flex flex-row items-center gap-2', hideSeller ? 'w-[50%]' : 'w-[40%]')}>
         <SourceIcon source={sale.source} />
@@ -253,6 +262,7 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
       ? categories?.find((c) => c.name === registration.clubs?.[0])
       : null
   const categoryDetails = category ? getCategoryDetails(category.name) : null
+  const [prefetch, setPrefetch] = useState(false)
 
   return (
     <Link
@@ -262,6 +272,8 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
         className,
         index === 0 && 'border-t'
       )}
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-[45%] flex-row items-center gap-2'>
         <SourceIcon source={registration.source} />

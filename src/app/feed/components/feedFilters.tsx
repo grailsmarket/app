@@ -16,6 +16,7 @@ interface FeedFiltersProps {
   ownerError: string | null
   selectedClubs: string[]
   onSelectedClubsChange: (clubs: string[]) => void
+  ownerPlaceholder?: string
 }
 
 const FeedFilters: React.FC<FeedFiltersProps> = ({
@@ -26,6 +27,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   ownerError,
   selectedClubs,
   onSelectedClubsChange,
+  ownerPlaceholder = 'Filter owner by ENS or address',
 }) => {
   return (
     <div className='border-tertiary border-b-2'>
@@ -37,7 +39,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
               <input
                 value={ownerInput}
                 onChange={(e) => onOwnerInputChange(e.target.value)}
-                placeholder='Filter owner by ENS or address'
+                placeholder={ownerPlaceholder}
                 className='border-tertiary text-md placeholder:text-neutral focus:border-foreground/50 h-10 w-full rounded-sm border-2 bg-transparent px-3 font-medium transition-colors outline-none sm:w-[300px]'
               />
             </div>

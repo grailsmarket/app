@@ -1,8 +1,15 @@
 import type { Metadata } from 'next'
 import type { SearchParams } from 'next/dist/server/request/search-params'
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import NamePage from './components/name'
+import ClientOnly from './components/ClientOnly'
+import HideOnClient from './components/HideOnClient'
+import ServerPanels from './components/serverPanels'
 import { beautifyName } from '@/lib/ens'
 import { notFound } from 'next/navigation'
+import { fetchNameBundle } from '@/api/name/bundle'
+import { formatNameMetadata } from '@/api/name/metadata'
+import { headers } from 'next/headers'
 
 interface Props {
   params: Promise<{ name: string }>
@@ -47,14 +54,51 @@ const Name = async (props: Props) => {
   const { name } = await props.params
   const decodedName = decodeURIComponent(name)
   const normalizedName = beautifyName(decodedName)
+  const requestHeaders = await headers()
+  const isInAppNavigation = requestHeaders.get('rsc') === '1'
 
   if (!normalizedName.includes('.eth')) {
     return notFound()
   }
 
+  const queryClient = new QueryClient()
+
+  if (isInAppNavigation) {
+    return (
+      <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+        <ClientOnly>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <NamePage name={normalizedName} />
+          </HydrationBoundary>
+        </ClientOnly>
+      </main>
+    )
+  }
+
+  const bundle = await fetchNameBundle(normalizedName)
+  const metadata = formatNameMetadata(bundle.details.metadata)
+
+  queryClient.setQueryData(['name', 'details', normalizedName], bundle.details)
+  queryClient.setQueryData(['name', 'offers', normalizedName], bundle.offers)
+  queryClient.setQueryData(['name', 'roles', normalizedName], bundle.roles)
+  queryClient.setQueryData(['name', 'metadata', normalizedName], metadata)
+
   return (
     <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
-      <NamePage name={normalizedName} />
+      <HideOnClient>
+        <ServerPanels
+          name={normalizedName}
+          nameDetails={bundle.details}
+          offers={bundle.offers}
+          metadata={metadata}
+          roles={bundle.roles}
+        />
+      </HideOnClient>
+      <ClientOnly>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <NamePage name={normalizedName} />
+        </HydrationBoundary>
+      </ClientOnly>
     </main>
   )
 }

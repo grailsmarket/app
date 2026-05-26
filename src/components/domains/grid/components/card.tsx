@@ -204,6 +204,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
         backgroundColor,
         className
       )}
+      prefetch={hoveredIndex === index}
     >
       <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between'>
         <NameImage

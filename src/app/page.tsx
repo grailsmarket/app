@@ -1,5 +1,6 @@
 import Footer from '@/components/footer'
 import BulkTools from '@/components/home/bulkTools'
+import CommentFeed from '@/components/home/commentFeed'
 import DisplayedCards from '@/components/home/displayedCard'
 import FrequentlyAskedQuestions from '@/components/home/frequentlyAskedQuestions'
 import HeroSearch from '@/components/home/heroSearch'
@@ -28,6 +29,7 @@ const Home = () => {
           <RecentContainer />
           <BulkTools />
           <PricingTiers />
+          <CommentFeed />
           <Testemonials />
           <BulkTools />
           <TopCategories />

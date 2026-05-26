@@ -24,6 +24,44 @@ import { track } from '@/lib/analytics'
 import { getAddress, isAddress } from 'viem'
 import { parseNameIdentifierSearch } from '@/utils/searchIdentifiers'
 import { setBulkSearchTerms } from '@/state/reducers/bulkSearch/bulkSearch'
+import { CategoryType, MarketplaceDomainType } from '@/types/domains'
+
+interface DomainSearchResultProps {
+  domain: MarketplaceDomainType
+  categories: CategoryType[] | undefined
+  onClose: () => void
+}
+
+const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categories, onClose }) => {
+  const [prefetch, setPrefetch] = useState(false)
+
+  return (
+    <Link
+      href={`/${normalizeName(domain.name)}`}
+      onClick={onClose}
+      className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
+      prefetch={prefetch}
+      onMouseEnter={() => setPrefetch(true)}
+    >
+      <div className='flex w-full flex-row items-center gap-2'>
+        <NameImage
+          name={domain.name}
+          tokenId={domain.token_id}
+          expiryDate={domain.expiry_date}
+          className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
+        />
+        <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
+          <div className='text-foreground truncate font-semibold'>{beautifyName(domain.name)}</div>
+          {domain.clubs && domain.clubs.length > 0 && (
+            <div className='text-md text-foreground/60 font-semibold'>
+              {domain.clubs.map((club) => categories?.find((c) => c.name === club)?.display_name).join(', ')}
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 interface GlobalSearchModalProps {
   isOpen: boolean
@@ -245,33 +283,12 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 5 }).map((_, index) => <NameLoadingRow key={index} />)
                       : fetchedDomains?.domains.map((domain) => (
-                          <Link
-                            href={`/${normalizeName(domain.name)}`}
+                          <DomainSearchResult
                             key={domain.id}
-                            onClick={handleClose}
-                            className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-                          >
-                            <div className='flex w-full flex-row items-center gap-2'>
-                              <NameImage
-                                name={domain.name}
-                                tokenId={domain.token_id}
-                                expiryDate={domain.expiry_date}
-                                className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
-                              />
-                              <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>
-                                <div className='text-foreground truncate font-semibold'>
-                                  {beautifyName(domain.name)}
-                                </div>
-                                {domain.clubs && domain.clubs.length > 0 && (
-                                  <div className='text-md text-foreground/60 font-semibold'>
-                                    {domain.clubs
-                                      .map((club) => categories?.find((c) => c.name === club)?.display_name)
-                                      .join(', ')}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </Link>
+                            domain={domain}
+                            categories={categories}
+                            onClose={handleClose}
+                          />
                         ))}
                     <button
                       onClick={handleViewAllDomains}

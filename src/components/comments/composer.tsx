@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/utils/tailwind'
 import { usePostComment } from '@/hooks/comments/usePostComment'
@@ -12,6 +12,12 @@ interface Props {
 }
 
 const MAX_LEN = 500
+
+const scrollElementIntoView = (el: HTMLElement | null) => {
+  if (!el) return
+
+  el.scrollIntoView({ block: 'center', inline: 'nearest' })
+}
 
 const Composer: React.FC<Props> = ({ name }) => {
   const [value, setValue] = useState('')
@@ -31,6 +37,27 @@ const Composer: React.FC<Props> = ({ name }) => {
     el.style.height = 'auto'
     el.style.height = Math.min(el.scrollHeight, 120) + 'px'
   }
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return
+
+    let animationFrame: number | null = null
+    const keepFocusedComposerVisible = () => {
+      if (document.activeElement !== ref.current) return
+
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
+      animationFrame = window.requestAnimationFrame(() => scrollElementIntoView(ref.current))
+    }
+
+    window.visualViewport.addEventListener('resize', keepFocusedComposerVisible)
+    window.visualViewport.addEventListener('scroll', keepFocusedComposerVisible)
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
+      window.visualViewport?.removeEventListener('resize', keepFocusedComposerVisible)
+      window.visualViewport?.removeEventListener('scroll', keepFocusedComposerVisible)
+    }
+  }, [])
 
   const submit = () => {
     const trimmed = value.trim()
@@ -73,7 +100,7 @@ const Composer: React.FC<Props> = ({ name }) => {
   return (
     <div className='border-tertiary flex flex-col gap-2 border-t-2 p-3'>
       {error && <p className='text-md text-red-400'>{error}</p>}
-      <div className='bg-secondary border-tertiary flex items-end gap-2 rounded-md border p-2'>
+      <div className='bg-secondary border-tertiary p-md flex items-start gap-2 rounded-md border pl-3'>
         <textarea
           ref={ref}
           value={value}
@@ -82,12 +109,16 @@ const Composer: React.FC<Props> = ({ name }) => {
             autoSize()
           }}
           onKeyDown={onKeyDown}
+          onFocus={() => {
+            scrollElementIntoView(ref.current)
+            window.setTimeout(() => scrollElementIntoView(ref.current), 300)
+          }}
           disabled={quotaExhausted || post.isPending}
           rows={1}
           maxLength={MAX_LEN}
           placeholder={quotaExhausted ? 'Daily limit reached' : 'Add a comment…'}
           className={cn(
-            'text-foreground placeholder:text-neutral text-md max-h-32 flex-1 resize-none bg-transparent leading-6 outline-none',
+            'text-foreground placeholder:text-neutral max-h-32 flex-1 resize-none bg-transparent pt-0.5 text-lg leading-6 font-medium outline-none',
             (quotaExhausted || post.isPending) && 'cursor-not-allowed opacity-50'
           )}
         />
@@ -103,7 +134,7 @@ const Composer: React.FC<Props> = ({ name }) => {
           <Image src={ArrowBack} alt='' width={12} height={12} className='invert' />
         </button>
       </div>
-      <div className='text-neutral flex items-center justify-between text-xs'>
+      <div className='text-neutral flex items-center justify-between text-sm font-medium'>
         <span>
           {value.length}/{MAX_LEN}
         </span>

@@ -1,7 +1,4 @@
-'use client'
-
-import { useState } from 'react'
-import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameImage from '@/components/ui/nameImage'
 import { beautifyName } from '@/lib/ens'
 import { YEAR_IN_SECONDS } from '@/constants/time'
@@ -20,37 +17,6 @@ interface NameCarouselProps {
 function getExpiryDate(entry: NameRegistrationEntry, fallbackDurationSeconds: bigint): string {
   const duration = entry.calculatedDuration ? Number(entry.calculatedDuration) : Number(fallbackDurationSeconds)
   return new Date(duration * 1000 + Date.now()).toISOString()
-}
-
-interface CarouselItemProps {
-  entry: NameRegistrationEntry
-  expiryDate: string
-  onClose: () => void
-}
-
-const CarouselItem: React.FC<CarouselItemProps> = ({ entry, expiryDate, onClose }) => {
-  const [prefetch, setPrefetch] = useState(false)
-
-  return (
-    <Link
-      href={`/${entry.name}`}
-      onClick={onClose}
-      className='flex shrink-0 flex-col items-center gap-1.5 transition-opacity hover:opacity-70'
-      style={{ width: `${IMAGE_SIZE}px` }}
-      prefetch={prefetch}
-      onMouseEnter={() => setPrefetch(true)}
-    >
-      <NameImage
-        name={entry.name}
-        tokenId={entry.domain?.token_id}
-        expiryDate={expiryDate}
-        className='h-36 w-36 rounded-lg'
-        height={IMAGE_SIZE}
-        width={IMAGE_SIZE}
-      />
-      <p className='w-full truncate text-center text-sm font-medium'>{beautifyName(entry.name)}</p>
-    </Link>
-  )
 }
 
 const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults, onClose }) => {
@@ -72,12 +38,23 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
         }}
       >
         {items.concat(items).map((entry, i) => (
-          <CarouselItem
+          <HoverPrefetchLink
             key={`${entry.name}-${i}`}
-            entry={entry}
-            expiryDate={getExpiryDate(entry, fallbackDuration)}
-            onClose={onClose}
-          />
+            href={`/${entry.name}`}
+            onClick={onClose}
+            className='flex shrink-0 flex-col items-center gap-1.5 transition-opacity hover:opacity-70'
+            style={{ width: `${IMAGE_SIZE}px` }}
+          >
+            <NameImage
+              name={entry.name}
+              tokenId={entry.domain?.token_id}
+              expiryDate={getExpiryDate(entry, fallbackDuration)}
+              className='h-36 w-36 rounded-lg'
+              height={IMAGE_SIZE}
+              width={IMAGE_SIZE}
+            />
+            <p className='w-full truncate text-center text-sm font-medium'>{beautifyName(entry.name)}</p>
+          </HoverPrefetchLink>
         ))}
       </div>
     </div>

@@ -7,6 +7,7 @@ import { Avatar, Cross, MagnifyingGlass } from 'ethereum-identity-kit'
 import { emptyFilterState, setSearch as setMarketplaceSearch } from '@/state/reducers/filters/marketplaceFilters'
 import { useAppDispatch } from '@/state/hooks'
 import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameImage from '@/components/ui/nameImage'
 import NoResults from '@/components/ui/noResults'
 import { useCategories } from '@/components/filters/hooks/useCategories'
@@ -33,15 +34,11 @@ interface DomainSearchResultProps {
 }
 
 const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categories, onClose }) => {
-  const [prefetch, setPrefetch] = useState(false)
-
   return (
-    <Link
+    <HoverPrefetchLink
       href={`/${normalizeName(domain.name)}`}
       onClick={onClose}
       className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-      prefetch={prefetch}
-      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-full flex-row items-center gap-2'>
         <NameImage
@@ -59,7 +56,7 @@ const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categor
           )}
         </div>
       </div>
-    </Link>
+    </HoverPrefetchLink>
   )
 }
 

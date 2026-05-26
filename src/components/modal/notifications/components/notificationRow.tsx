@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import { Notification, NotificationType } from '@/types/notifications'
 import { cn } from '@/utils/tailwind'
 import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import Price from '@/components/ui/price'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
 // Icons
@@ -32,7 +33,6 @@ interface NotificationRowProps {
 
 const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick, index, setExpandedImage }) => {
   const { processLinkUrl } = useNotificationRow()
-  const [prefetch, setPrefetch] = useState(false)
   // Get icon based on notification type
   const getIcon = (type: NotificationType) => {
     switch (type) {
@@ -199,14 +199,12 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
   }
 
   return (
-    <Link
+    <HoverPrefetchLink
       href={`/${notification.ensName}`}
       className={cn(
         'p-md sm:p-lg flex h-16 w-full cursor-pointer items-center justify-between gap-4 transition-colors hover:bg-white/5'
       )}
       onClick={onClick}
-      prefetch={prefetch}
-      onMouseEnter={() => setPrefetch(true)}
     >
       <div className='flex w-2/5 items-center gap-2 sm:gap-3'>
         {!notification.isRead && <div className='bg-primary h-2 w-2 rounded-full' />}
@@ -237,7 +235,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
       {/* {!notification.isRead && (
         <div className="w-2 h-2 absolute top-[26px] left-2 rounded-full bg-primary" />
       )} */}
-    </Link>
+    </HoverPrefetchLink>
   )
 }
 

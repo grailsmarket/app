@@ -1,22 +1,35 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useCommentFeed } from '@/hooks/comments/useCommentFeed'
 import { useFeedScrollLock } from '@/hooks/comments/useFeedScrollLock'
 import { useFeedViewport } from '@/hooks/comments/useFeedViewport'
-import { useFeedScroll } from '@/hooks/comments/useFeedScroll'
 import { useOwnerAddressLookup } from '@/hooks/comments/useOwnerAddressLookup'
+import { useFeedActivity } from '@/hooks/activity/useFeedActivity'
 import { cn } from '@/utils/tailwind'
 import FeedFilters from './feedFilters'
 import FeedCommentCard from './feedCommentCard'
+import FeedActivityCard from './feedActivityCard'
+import ActivityTypeSidebar from './activityTypeSidebar'
 import ReplyPreview from './replyPreview'
 import FeedComposer from './feedComposer'
 import FeedLoading from './feedLoading'
 import type { ReplyContext } from './types'
+import type { ActivityTypeFilterType } from '@/types/filters/activity'
+
+type FeedItem =
+  | {
+      type: 'comment'
+      id: string
+      timestamp: string
+      data: NonNullable<ReturnType<typeof useCommentFeed>['comments'][number]>
+    }
+  | { type: 'activity'; id: string; timestamp: string; data: ReturnType<typeof useFeedActivity>['activities'][number] }
 
 const CommentsFeed: React.FC = () => {
   const [ownerInput, setOwnerInput] = useState('')
   const [selectedClubs, setSelectedClubs] = useState<string[]>([])
+  const [selectedActivityTypes, setSelectedActivityTypes] = useState<ActivityTypeFilterType[]>([])
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -26,16 +39,53 @@ const CommentsFeed: React.FC = () => {
     owner: ownerAddress,
     clubs: selectedClubs,
   })
+  const {
+    activities,
+    isLoading: isActivityLoading,
+    isFetchingNextPage: isFetchingNextActivityPage,
+    hasNextPage: hasNextActivityPage,
+    fetchNextPage: fetchNextActivityPage,
+  } = useFeedActivity({ eventTypes: selectedActivityTypes })
+
+  const feedItems = useMemo<FeedItem[]>(() => {
+    return [
+      ...comments.map((comment) => ({
+        type: 'comment' as const,
+        id: comment.id,
+        timestamp: comment.created_at,
+        data: comment,
+      })),
+      ...activities.map((activity) => ({
+        type: 'activity' as const,
+        id: String(activity.id),
+        timestamp: activity.created_at,
+        data: activity,
+      })),
+    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  }, [activities, comments])
 
   useFeedScrollLock()
   const { viewport, viewportStyle } = useFeedViewport()
-  const { loadOlder, handleScroll } = useFeedScroll({
-    scrollRef,
-    comments,
-    hasNextPage: !!hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  })
+  const isInitialLoading = isLoading || isActivityLoading
+  const isFetchingMore = isFetchingNextPage || isFetchingNextActivityPage
+  const hasMore = !!hasNextPage || !!hasNextActivityPage
+
+  const loadMore = () => {
+    if (isFetchingMore) return
+    if (hasNextPage) fetchNextPage()
+    if (hasNextActivityPage) fetchNextActivityPage()
+  }
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 500) loadMore()
+  }
+
+  const toggleActivityType = (type: ActivityTypeFilterType) => {
+    setSelectedActivityTypes((current) =>
+      current.includes(type) ? current.filter((selectedType) => selectedType !== type) : [...current, type]
+    )
+  }
 
   return (
     <div
@@ -55,11 +105,16 @@ const CommentsFeed: React.FC = () => {
         onSelectedClubsChange={setSelectedClubs}
       />
 
-      <div className='relative min-h-0 flex-1'>
+      <div className='relative flex min-h-0 flex-1 flex-col lg:flex-row'>
+        <ActivityTypeSidebar
+          selectedTypes={selectedActivityTypes}
+          onToggleType={toggleActivityType}
+          onClear={() => setSelectedActivityTypes([])}
+        />
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className='h-full w-full overflow-y-auto py-4'
+          className='h-full min-h-0 w-full flex-1 overflow-y-auto py-4'
           onClick={() => {
             if (replyContext) {
               setReplyContext(null)
@@ -68,11 +123,11 @@ const CommentsFeed: React.FC = () => {
           }}
         >
           <div className='mx-auto max-w-5xl px-3 sm:px-5'>
-            {isLoading ? (
+            {isInitialLoading ? (
               <FeedLoading />
-            ) : comments.length === 0 ? (
+            ) : feedItems.length === 0 ? (
               <div className='flex h-full min-h-[280px] items-center justify-center text-center'>
-                <p className='text-neutral text-lg'>No comments found for these filters.</p>
+                <p className='text-neutral text-lg'>No feed events found for these filters.</p>
               </div>
             ) : (
               <div
@@ -81,22 +136,33 @@ const CommentsFeed: React.FC = () => {
                   replyContext && 'pointer-events-none opacity-40 blur-[2px] select-none'
                 )}
               >
-                {isFetchingNextPage && <FeedLoading count={3} />}
-                {hasNextPage && !isFetchingNextPage && (
-                  <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>
-                    Load older comments
+                {feedItems.map((item) =>
+                  item.type === 'comment' ? (
+                    <FeedCommentCard
+                      key={`comment-${item.id}`}
+                      comment={item.data}
+                      onReply={(context) => {
+                        setSelectedName(context.name)
+                        setReplyContext(context)
+                      }}
+                    />
+                  ) : (
+                    <FeedActivityCard
+                      key={`activity-${item.id}`}
+                      activity={item.data}
+                      onReply={(name) => {
+                        setSelectedName(name)
+                        setReplyContext(null)
+                      }}
+                    />
+                  )
+                )}
+                {isFetchingMore && <FeedLoading count={3} />}
+                {hasMore && !isFetchingMore && (
+                  <button type='button' onClick={loadMore} className='text-primary py-2 text-sm font-semibold'>
+                    Load older feed events
                   </button>
                 )}
-                {comments.map((comment) => (
-                  <FeedCommentCard
-                    key={comment.id}
-                    comment={comment}
-                    onReply={(context) => {
-                      setSelectedName(context.name)
-                      setReplyContext(context)
-                    }}
-                  />
-                ))}
               </div>
             )}
           </div>

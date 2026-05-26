@@ -1,0 +1,106 @@
+'use client'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { fetchAllActivity } from '@/api/activity/all'
+import { API_URL } from '@/constants/api'
+import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
+import type { ActivityTypeFilterType } from '@/types/filters/activity'
+import type { ActivityType } from '@/types/profile'
+
+const PAGE_SIZE = 20
+const ALL_ACTIVITY_TYPES = ACTIVITY_TYPE_FILTERS.map((filter) => filter.value)
+
+interface UseFeedActivityParams {
+  eventTypes: ActivityTypeFilterType[]
+}
+
+export const useFeedActivity = ({ eventTypes }: UseFeedActivityParams) => {
+  const [liveActivities, setLiveActivities] = useState<ActivityType[]>([])
+  const wsRef = useRef<WebSocket | null>(null)
+
+  useEffect(() => {
+    setLiveActivities([])
+  }, [eventTypes])
+
+  useEffect(() => {
+    const baseUrl = API_URL.replace(/\/api\/v1$/, '')
+    const wsUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://')
+    const ws = new WebSocket(`${wsUrl}/ws/activity`)
+    wsRef.current = ws
+
+    const sendFilter = () => {
+      ws.send(
+        JSON.stringify({
+          type: 'set_event_filter',
+          filter_type: 'include',
+          event_types: eventTypes.length > 0 ? eventTypes : ALL_ACTIVITY_TYPES,
+        })
+      )
+    }
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'subscribe_all' }))
+      sendFilter()
+    }
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data)
+        if (message.type !== 'activity_event') return
+
+        const activity = message.data as ActivityType
+        if (eventTypes.length > 0 && !eventTypes.includes(activity.event_type as ActivityTypeFilterType)) return
+
+        setLiveActivities((prev) => {
+          const next = [activity, ...prev.filter((item) => item.id !== activity.id)]
+          return next.slice(0, 50)
+        })
+      } catch (error) {
+        console.error('Error parsing activity websocket message:', error)
+      }
+    }
+
+    ws.onerror = (error) => {
+      console.log('Activity WebSocket error:', error)
+    }
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'unsubscribe_all' }))
+      }
+      ws.close()
+    }
+  }, [eventTypes])
+
+  const query = useInfiniteQuery({
+    queryKey: ['feed', 'activity', eventTypes],
+    queryFn: ({ pageParam }) =>
+      fetchAllActivity({
+        limit: PAGE_SIZE,
+        pageParam,
+        eventTypes,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
+    staleTime: 15_000,
+  })
+
+  const historicalActivities = useMemo(() => {
+    return query.data?.pages.flatMap((page) => page.activity) ?? []
+  }, [query.data])
+
+  const activities = useMemo(() => {
+    const seen = new Set<number>()
+    return [...liveActivities, ...historicalActivities].filter((activity) => {
+      if (seen.has(activity.id)) return false
+      seen.add(activity.id)
+      return true
+    })
+  }, [liveActivities, historicalActivities])
+
+  return {
+    ...query,
+    activities,
+  }
+}

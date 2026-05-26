@@ -30,6 +30,7 @@ const CommentsFeed: React.FC = () => {
   const [ownerInput, setOwnerInput] = useState('')
   const [selectedClubs, setSelectedClubs] = useState<string[]>([])
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<ActivityTypeFilterType[]>([])
+  const [isActivityFiltersOpen, setIsActivityFiltersOpen] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -127,14 +128,26 @@ const CommentsFeed: React.FC = () => {
         ownerError={ownerError}
         selectedClubs={selectedClubs}
         onSelectedClubsChange={setSelectedClubs}
+        selectedActivityTypeCount={selectedActivityTypes.length}
+        onToggleActivityFilters={() => setIsActivityFiltersOpen((isOpen) => !isOpen)}
       />
 
       <div className='relative flex min-h-0 flex-1 flex-col lg:flex-row'>
         <ActivityTypeSidebar
+          isOpen={isActivityFiltersOpen}
           selectedTypes={selectedActivityTypes}
           onToggleType={toggleActivityType}
           onClear={() => setSelectedActivityTypes([])}
+          onClose={() => setIsActivityFiltersOpen(false)}
         />
+        {isActivityFiltersOpen && (
+          <button
+            type='button'
+            aria-label='Close activity filters'
+            onClick={() => setIsActivityFiltersOpen(false)}
+            className='absolute inset-0 z-30 cursor-default bg-black/20 md:hidden'
+          />
+        )}
         <div
           ref={scrollRef}
           onScroll={handleScroll}

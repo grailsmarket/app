@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { isAddress } from 'viem'
 import { truncateAddress } from 'ethereum-identity-kit'
 import { getMetadataAssetUrl } from '@/utils/web3/ens'
+import FilterIcon from 'public/icons/filter.svg'
 
 interface FeedFiltersProps {
   ownerInput: string
@@ -16,6 +17,8 @@ interface FeedFiltersProps {
   ownerError: string | null
   selectedClubs: string[]
   onSelectedClubsChange: (clubs: string[]) => void
+  selectedActivityTypeCount: number
+  onToggleActivityFilters: () => void
 }
 
 const FeedFilters: React.FC<FeedFiltersProps> = ({
@@ -26,12 +29,27 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   ownerError,
   selectedClubs,
   onSelectedClubsChange,
+  selectedActivityTypeCount,
+  onToggleActivityFilters,
 }) => {
   return (
     <div className='border-tertiary border-b-2'>
       <div className='mx-auto flex max-w-5xl gap-2 px-3 py-3 sm:px-5'>
         <div className='flex flex-nowrap gap-2 sm:items-center sm:justify-between'>
           <div className='flex gap-2 sm:flex-row sm:items-center'>
+            <button
+              type='button'
+              onClick={onToggleActivityFilters}
+              className='border-foreground relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border opacity-80 transition-opacity hover:opacity-100'
+              aria-label='Toggle activity filters'
+            >
+              <Image src={FilterIcon} alt='Filter' width={16} height={16} />
+              {selectedActivityTypeCount > 0 && (
+                <span className='bg-primary text-background absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold'>
+                  {selectedActivityTypeCount}
+                </span>
+              )}
+            </button>
             <CategoryMultiSelect selectedClubs={selectedClubs} onSelectedClubsChange={onSelectedClubsChange} />
             <div className='relative'>
               <input

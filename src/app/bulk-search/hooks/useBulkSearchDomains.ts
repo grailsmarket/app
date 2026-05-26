@@ -90,7 +90,7 @@ export const useBulkSearchDomains = () => {
   }, [domains])
 
   const total = useMemo(() => {
-    return domains?.pages?.[0]?.total || 0
+    return domains?.pages?.[0]?.total
   }, [domains])
 
   const domainsLoading = isLoading || isFetchingNextPage

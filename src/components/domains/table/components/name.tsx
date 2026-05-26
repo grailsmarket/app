@@ -10,8 +10,14 @@ import NameImage from '@/components/ui/nameImage'
 import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { useWindowSize } from 'ethereum-identity-kit'
-import { useCategories } from '@/components/filters/hooks/useCategories'
 import { localizeNumber } from '@/utils/localizeNumber'
+
+const formatCategoryName = (category: string) =>
+  category
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 
 interface NameProps {
   domain: MarketplaceDomainType
@@ -22,7 +28,6 @@ interface NameProps {
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
   const { width } = useWindowSize()
-  const { categories } = useCategories()
   const maxShownCategories = width && width < 640 ? 1 : 2
   const displayedCategories = domain.clubs?.slice(0, maxShownCategories)
   const remainingCategories =
@@ -65,7 +70,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
                       height={16}
                       className='rounded-full'
                     />
-                    <p>{categories?.find((c) => c.name === club)?.display_name}</p>
+                    <p>{formatCategoryName(club)}</p>
                     {clubRank ? <p>#{localizeNumber(clubRank)}</p> : null}
                   </div>
                 )

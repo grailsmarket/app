@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { getWatchlist } from '@/api/watchlist/getWatchlist'
 import { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { DEFAULT_FETCH_LIMIT } from '@/constants/api'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface UseUserProfileProps {
   address?: Address | null
@@ -20,7 +21,7 @@ export const useUserProfile = ({ address, authStatus }: UseUserProfileProps) => 
     isLoading: profileIsLoading,
     refetch: refetchProfile,
   } = useQuery({
-    queryKey: ['profile', address],
+    queryKey: accountQueryKey(address),
     queryFn: async () => {
       if (!address) return null
 

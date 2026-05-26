@@ -5,7 +5,13 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
-export const useReceivedOffers = (user: Address | undefined) => {
+type UseReceivedOffersOptions = {
+  enabled?: boolean
+  limit?: number
+}
+
+export const useReceivedOffers = (user: Address | undefined, options: UseReceivedOffersOptions = {}) => {
+  const { enabled = true, limit = DEFAULT_FETCH_LIMIT } = options
   const {
     selectors: { filters },
   } = useFilterRouter()
@@ -28,6 +34,7 @@ export const useReceivedOffers = (user: Address | undefined) => {
       filters.type,
       filters.status,
       filters.sort,
+      limit,
       filters.length,
       filters.textMatch,
       filters.market,
@@ -42,7 +49,7 @@ export const useReceivedOffers = (user: Address | undefined) => {
         }
 
       const response = await fetchReceivedOffers({
-        limit: DEFAULT_FETCH_LIMIT,
+        limit,
         pageParam,
         filters,
         searchTerm: debouncedSearch,
@@ -58,7 +65,7 @@ export const useReceivedOffers = (user: Address | undefined) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!user,
+    enabled: enabled && !!user,
   })
 
   const totalReceivedOffers = receivedOffers?.pages[0]?.total || 0

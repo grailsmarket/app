@@ -20,7 +20,7 @@ import ViewSelector from '@/components/domains/viewSelector'
 import { useCategories } from '@/components/filters/hooks/useCategories'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
-const CategoriesPageTabSwitcher: React.FC = () => {
+const CategoriesPageTabSwitcher = () => {
   const [mounted, setMounted] = useState(false)
   const { categoriesPage } = useAppSelector(selectCategoriesPage)
   const { selectedTab } = categoriesPage

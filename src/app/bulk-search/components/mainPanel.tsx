@@ -9,11 +9,13 @@ import DomainPanel from './domainPanel'
 import TextareaSection from './textareaSection'
 import FilterPanel from '@/components/filters'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
+import { useBulkSearchDomains } from '../hooks/useBulkSearchDomains'
 
 const MainPanel: React.FC = () => {
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
   const { open: filtersOpen } = useAppSelector(selectBulkSearchFilters)
+  const bulkSearchDomains = useBulkSearchDomains()
 
   // On mobile: always 100%, on desktop: adjust based on filter open state
   const getContentWidth = () => {
@@ -25,11 +27,11 @@ const MainPanel: React.FC = () => {
   return (
     <div className='flex w-full flex-col gap-0'>
       <TextareaSection />
-      <TabSwitcher />
+      <TabSwitcher activeTabTotal={bulkSearchDomains.total} />
       <div className='flex w-full flex-row gap-0'>
         <FilterPanel />
         <div className='flex w-full flex-col transition-all duration-300' style={{ width: getContentWidth() }}>
-          <DomainPanel />
+          <DomainPanel {...bulkSearchDomains} />
         </div>
       </div>
       <ActionButtons hideDomainActions={false} />

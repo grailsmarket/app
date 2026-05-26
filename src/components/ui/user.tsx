@@ -16,6 +16,7 @@ import LoadingCell from './loadingCell'
 import { useUserContext } from '@/context/user'
 import { beautifyName } from '@/lib/ens'
 import { ENS_METADATA_URL } from '@/constants/ens'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface UserProps {
   address: Address
@@ -28,6 +29,7 @@ interface UserProps {
   disableTooltip?: boolean
   disableLink?: boolean
   hideHeaderImage?: boolean
+  skipProfileFetch?: boolean
 }
 
 const User: React.FC<UserProps> = ({
@@ -41,22 +43,24 @@ const User: React.FC<UserProps> = ({
   disableTooltip = false,
   disableLink = false,
   hideHeaderImage = false,
+  skipProfileFetch = false,
 }) => {
   const router = useRouter()
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
-    queryKey: ['profile', address],
+    queryKey: accountQueryKey(address),
     queryFn: async () => {
       if (!address) return null
 
       const profile = await fetchAccount(address)
       return profile
     },
+    enabled: !skipProfileFetch,
   })
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
-  const avatarSrc = `${ENS_METADATA_URL}/mainnet/avatar/${profile?.ens?.name}`
-  const headerImageSrc = `${ENS_METADATA_URL}/mainnet/header/${profile?.ens?.name}`
+  const avatarSrc = profile?.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${profile.ens.name}` : undefined
+  const headerImageSrc = profile?.ens?.name ? `${ENS_METADATA_URL}/mainnet/header/${profile.ens.name}` : undefined
 
   return (
     <TooltipWrapper

@@ -18,13 +18,15 @@ interface CategoryMultiSelectProps {
 
 const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs, onSelectedClubsChange }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const { categories } = useCategories()
+  const [prefetch, setPrefetch] = useState(false)
+  const needsCategoriesData = isOpen || prefetch || selectedClubs.length === 1
+  const { categories } = useCategories({ enabled: needsCategoriesData })
   const dropdownRef = useClickAway(() => setIsOpen(false))
 
   const label = useMemo(() => {
     if (selectedClubs.length === 0) return 'All Categories'
     if (selectedClubs.length === 1)
-      return categories?.find((category) => category.name === selectedClubs[0])?.display_name
+      return categories?.find((category) => category.name === selectedClubs[0])?.display_name ?? selectedClubs[0]
     return `${selectedClubs.length} Categories`
   }, [categories, selectedClubs])
 
@@ -42,6 +44,8 @@ const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs
       <button
         type='button'
         onClick={() => setIsOpen((open) => !open)}
+        onMouseEnter={() => setPrefetch(true)}
+        onFocus={() => setPrefetch(true)}
         className='border-tertiary hover:border-foreground/50 px-md flex h-10 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent transition-all sm:w-[210px] md:px-3'
       >
         <div className='flex min-w-0 items-center gap-2'>

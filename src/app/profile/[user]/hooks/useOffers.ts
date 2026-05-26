@@ -12,8 +12,14 @@ import {
 
 // Router for the portfolio tab content
 // This is done to prevent refetching data when switching tabs
-export const useOffers = (user: Address | undefined) => {
+type UseOffersOptions = {
+  activeOnly?: boolean
+  limit?: number
+}
+
+export const useOffers = (user: Address | undefined, options: UseOffersOptions = {}) => {
   const { selectedTab } = useAppSelector(selectUserProfile)
+  const { activeOnly = false, limit } = options
   const {
     receivedOffers,
     totalReceivedOffers,
@@ -21,7 +27,10 @@ export const useOffers = (user: Address | undefined) => {
     isReceivedOffersFetchingNextPage,
     fetchMoreReceivedOffers,
     hasMoreReceivedOffers,
-  } = useReceivedOffers(user)
+  } = useReceivedOffers(user, {
+    enabled: !activeOnly || selectedTab.value === 'received_offers',
+    limit,
+  })
   const {
     sentOffers,
     totalSentOffers,
@@ -29,7 +38,10 @@ export const useOffers = (user: Address | undefined) => {
     isSentOffersFetchingNextPage,
     fetchMoreSentOffers,
     hasMoreSentOffers,
-  } = useSentOffers(user)
+  } = useSentOffers(user, {
+    enabled: !activeOnly || selectedTab.value === 'sent_offers',
+    limit,
+  })
 
   const displayedDetails = useMemo(() => {
     switch (selectedTab.value) {

@@ -5,6 +5,7 @@ import { fetchAccount } from 'ethereum-identity-kit'
 import { Address, isAddress } from 'viem'
 import { formatAddress } from '@/utils/formatAddress'
 import { beautifyName } from '@/lib/ens'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface PeerProfile {
   address: Address
@@ -18,7 +19,7 @@ export const usePeerProfile = (address: Address | null | undefined): PeerProfile
   const lower = address ? address.toLowerCase() : null
 
   const query = useQuery({
-    queryKey: ['account', lower],
+    queryKey: accountQueryKey(lower),
     queryFn: async () => {
       if (!lower || !isAddress(lower)) return null
       return await fetchAccount(lower)

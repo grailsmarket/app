@@ -5,7 +5,13 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { Address } from 'viem'
 
-export const useSentOffers = (user: Address | undefined) => {
+type UseSentOffersOptions = {
+  enabled?: boolean
+  limit?: number
+}
+
+export const useSentOffers = (user: Address | undefined, options: UseSentOffersOptions = {}) => {
+  const { enabled = true, limit = DEFAULT_FETCH_LIMIT } = options
   const {
     selectors: { filters },
   } = useFilterRouter()
@@ -29,6 +35,7 @@ export const useSentOffers = (user: Address | undefined) => {
       filters.type,
       filters.status,
       filters.sort,
+      limit,
       filters.textMatch,
       filters.market,
     ],
@@ -42,7 +49,7 @@ export const useSentOffers = (user: Address | undefined) => {
         }
 
       const response = await fetchSentOffers({
-        limit: DEFAULT_FETCH_LIMIT,
+        limit,
         pageParam,
         filters,
         ownerAddress: user,
@@ -58,7 +65,7 @@ export const useSentOffers = (user: Address | undefined) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!user,
+    enabled: enabled && !!user,
   })
 
   const totalSentOffers = sentOffers?.pages[0]?.total || 0

@@ -8,7 +8,7 @@ import { fetchProfileActivity } from '@/api/activity/profile'
 import { ActivityType } from '@/types/profile'
 import { ActivityTypeFilterType } from '@/types/filters/activity'
 
-export const useProfileActivity = (user: Address | undefined) => {
+export const useProfileActivity = (user: Address | undefined, enabled = true) => {
   const { selectors } = useFilterRouter()
   const filters = selectors.filters
   const debouncedSearch = useDebounce(selectors.filters.search, 500)
@@ -44,6 +44,7 @@ export const useProfileActivity = (user: Address | undefined) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
+    enabled: enabled && !!user,
   })
 
   const activityData = useMemo(() => {

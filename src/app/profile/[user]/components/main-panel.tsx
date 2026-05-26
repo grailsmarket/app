@@ -51,6 +51,7 @@ import {
 } from '@/state/reducers/filters/profileDomainsFilters'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { accountQueryKey } from '@/utils/queryKeys'
 
 interface Props {
   user: Address | string
@@ -61,25 +62,23 @@ const MainPanel: React.FC<Props> = ({ user }) => {
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab, lastVisitedProfile } = useAppSelector(selectUserProfile)
   const profileTab = selectedTab.value
-  const { data: userAccount } = useQuery({
-    queryKey: ['account', user],
+  const { data: fetchedUserAccount } = useQuery({
+    queryKey: accountQueryKey(user),
     queryFn: async () => {
       const account = await fetchAccount(user)
-      if (!account?.address) {
-        if (isAddress(user)) {
-          return {
-            address: user,
-            ens: null,
-            primary_list: null,
-          }
-        }
-
-        return null
-      }
-      return account
+      return account?.address ? account : null
     },
     enabled: !!user,
   })
+  const userAccount =
+    fetchedUserAccount ||
+    (isAddress(user)
+      ? {
+          address: user,
+          ens: null,
+          primary_list: null,
+        }
+      : null)
 
   const isMyProfile = useMemo(
     () =>

@@ -21,6 +21,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { useUserContext } from '@/context/user'
+import { accountQueryKey } from '@/utils/queryKeys'
 import { MAX_ETH_SUPPLY, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
 import {
   setMakeListingModalCanAddDomains,
@@ -87,7 +88,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
   const debouncedBrokerAddress = useDebounce(brokerAddress, 500)
 
   const { data: brokerAccount, isLoading: isBrokerAccountLoading } = useQuery({
-    queryKey: ['account', debouncedBrokerAddress],
+    queryKey: accountQueryKey(debouncedBrokerAddress),
     queryFn: async () => {
       if (!isAddress(debouncedBrokerAddress) && !debouncedBrokerAddress.includes('.')) return null
 

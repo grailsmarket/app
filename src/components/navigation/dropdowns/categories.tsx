@@ -8,8 +8,8 @@ import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
-import { fetchFilteredCategories } from '@/api/categories/fetchFilteredCategories'
 import LoadingCell from '@/components/ui/loadingCell'
+import { categoriesDropdownQueryOptions } from '@/components/navigation/dropdowns/queries'
 import { useAppDispatch } from '@/state/hooks'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import { CATEGORIES_PAGE_TABS } from '@/constants/categories/categoriesPageTabs'
@@ -17,11 +17,12 @@ import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 
 interface CategoriesProps {
+  dropdownOption: string | null
   setDropdownOption: (option: string | null) => void
   previousDropdownOption: string | null
 }
 
-const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDropdownOption }) => {
+const Categories: React.FC<CategoriesProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
   const { width } = useWindowSize()
@@ -53,14 +54,8 @@ const Categories: React.FC<CategoriesProps> = ({ setDropdownOption, previousDrop
   // })
 
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['navigation', 'categories'],
-    queryFn: async () => {
-      const results = await fetchFilteredCategories({
-        sort: 'sales_volume_wei_1w',
-        sortDirection: 'desc',
-      })
-      return results
-    },
+    ...categoriesDropdownQueryOptions(),
+    enabled: dropdownOption === 'categories',
   })
 
   const cardCount = useMemo(() => {

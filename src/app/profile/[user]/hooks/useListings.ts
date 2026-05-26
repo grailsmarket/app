@@ -7,7 +7,7 @@ import { selectProfileListingsFilters } from '@/state/reducers/filters/profileLi
 import { useAppSelector } from '@/state/hooks'
 import { useUserContext } from '@/context/user'
 
-export const useListings = (user: Address | undefined) => {
+export const useListings = (user: Address | undefined, enabled = true, limit = DEFAULT_FETCH_LIMIT) => {
   const { authStatus } = useUserContext()
   const filters = useAppSelector(selectProfileListingsFilters)
   const debouncedSearch = useDebounce(filters.search, 500)
@@ -38,6 +38,7 @@ export const useListings = (user: Address | undefined) => {
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      limit,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       if (!user)
@@ -49,7 +50,7 @@ export const useListings = (user: Address | undefined) => {
         }
 
       const domains = await fetchDomains({
-        limit: DEFAULT_FETCH_LIMIT,
+        limit,
         pageParam,
         filters: {
           ...filters,
@@ -72,7 +73,7 @@ export const useListings = (user: Address | undefined) => {
     },
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     initialPageParam: 1,
-    enabled: !!user,
+    enabled: enabled && !!user,
   })
 
   const listingsLoading = isLoading || isFetchingNextPage

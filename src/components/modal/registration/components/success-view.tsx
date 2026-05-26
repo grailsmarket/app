@@ -1,11 +1,8 @@
-'use client'
-
-import { useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import NameImage from '@/components/ui/nameImage'
 import { YEAR_IN_SECONDS } from '@/constants/time'
 import { BatchState, CalculationResults, NameRegistrationEntry } from '@/types/registration'
-import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameCarousel from './name-carousel'
 
 interface SuccessViewProps {
@@ -29,19 +26,15 @@ const SuccessView: React.FC<SuccessViewProps> = ({
   calculationResults,
   onClose,
 }) => {
-  const [prefetch, setPrefetch] = useState(false)
-
   return (
     <div className='flex flex-col items-center gap-4'>
       <div className='flex flex-col items-center gap-4 text-center'>
         <h3 className='text-2xl font-bold'>Registration Successful!</h3>
         {!isBulk && firstName ? (
-          <Link
+          <HoverPrefetchLink
             href={`/${firstName}`}
             className='py-1 transition-opacity hover:opacity-70'
             onClick={onClose}
-            prefetch={prefetch}
-            onMouseEnter={() => setPrefetch(true)}
           >
             <NameImage
               name={firstName}
@@ -53,7 +46,7 @@ const SuccessView: React.FC<SuccessViewProps> = ({
               height={192}
               width={192}
             />
-          </Link>
+          </HoverPrefetchLink>
         ) : (
           <NameCarousel entries={availableEntries} calculationResults={calculationResults} onClose={onClose} />
         )}

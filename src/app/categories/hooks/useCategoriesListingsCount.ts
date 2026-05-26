@@ -3,7 +3,7 @@ import { emptyFilterState } from '@/state/reducers/filters/categoriesListingsFil
 import { useQuery } from '@tanstack/react-query'
 
 export const useCategoriesListingsCount = () => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['categoriesPage', 'listings', 'count'],
     queryFn: async () => {
       const result = await fetchDomains({
@@ -20,4 +20,6 @@ export const useCategoriesListingsCount = () => {
     },
     staleTime: 60000, // 1 minute
   })
+
+  return query
 }

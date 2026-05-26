@@ -13,10 +13,11 @@ import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 //   { key: 'available', status: ['Available'] },
 // ] as const
 
-function useBulkSearchCount(tabKey: string, forcedStatus: string[]) {
+function useBulkSearchCount(tabKey: string, forcedStatus: string[], activeTabValue?: string, activeTabTotal?: number) {
   const { authStatus } = useUserContext()
   const filters = useFilterRouter().selectors.filters
   const { searchTerms } = useAppSelector(selectBulkSearch)
+  const hasActiveTabTotal = activeTabValue === tabKey && activeTabTotal !== undefined
 
   const { data } = useQuery({
     queryKey: [
@@ -56,18 +57,18 @@ function useBulkSearchCount(tabKey: string, forcedStatus: string[]) {
 
       return result.total || 0
     },
-    enabled: !!searchTerms,
+    enabled: !!searchTerms && !hasActiveTabTotal,
   })
 
-  return data
+  return hasActiveTabTotal ? activeTabTotal : data
 }
 
-export function useBulkSearchCounts() {
-  const namesCount = useBulkSearchCount('names', [])
-  const registeredCount = useBulkSearchCount('registered', ['Registered'])
-  const graceCount = useBulkSearchCount('grace', ['Grace'])
-  const premiumCount = useBulkSearchCount('premium', ['Premium'])
-  const availableCount = useBulkSearchCount('available', ['Available'])
+export function useBulkSearchCounts(activeTabValue?: string, activeTabTotal?: number) {
+  const namesCount = useBulkSearchCount('names', [], activeTabValue, activeTabTotal)
+  const registeredCount = useBulkSearchCount('registered', ['Registered'], activeTabValue, activeTabTotal)
+  const graceCount = useBulkSearchCount('grace', ['Grace'], activeTabValue, activeTabTotal)
+  const premiumCount = useBulkSearchCount('premium', ['Premium'], activeTabValue, activeTabTotal)
+  const availableCount = useBulkSearchCount('available', ['Available'], activeTabValue, activeTabTotal)
 
   return {
     namesCount,

@@ -17,10 +17,13 @@ interface BrokeredListingsResponse {
 
 interface UseBrokeredListingsOptions {
   status?: 'active' | 'sold' | 'cancelled' | 'expired'
+  enabled?: boolean
+  listingsEnabled?: boolean
+  activeCountEnabled?: boolean
 }
 
 export const useBrokeredListings = (brokerAddress: Address | undefined, options: UseBrokeredListingsOptions = {}) => {
-  const { status } = options
+  const { status, enabled = true, listingsEnabled = true, activeCountEnabled = true } = options
 
   const fetchBrokeredListings = async ({
     pageParam = 1,
@@ -62,17 +65,17 @@ export const useBrokeredListings = (brokerAddress: Address | undefined, options:
     queryFn: fetchBrokeredListings,
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 1,
-    enabled: !!brokerAddress,
+    enabled: enabled && listingsEnabled && !!brokerAddress,
   })
 
   const { data: totalBrokeredListings } = useQuery({
-    queryKey: ['totalBrokeredListings', brokerAddress, status],
+    queryKey: ['totalBrokeredListings', brokerAddress],
     queryFn: async () => {
       const response = await fetch(`/api/brokered-listings/broker/${brokerAddress}?page=1&limit=1&status=active`)
       const data: BrokeredListingsResponse = await response.json()
       return data.data.pagination.total
     },
-    enabled: !!brokerAddress,
+    enabled: enabled && activeCountEnabled && !!brokerAddress,
   })
 
   const domains = data?.pages?.flatMap((page) => page.domains) ?? []

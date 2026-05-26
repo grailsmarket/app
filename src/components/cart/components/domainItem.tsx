@@ -1,13 +1,13 @@
 import Price from '@/components/ui/price'
 import { MarketplaceDomainType } from '@/types/domains'
-import React, { useState } from 'react'
+import React from 'react'
 import ActionButtons from './actionButtons'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { beautifyName } from '@/lib/ens'
 import { Trash } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
-import Link from 'next/link'
+import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameImage from '@/components/ui/nameImage'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
@@ -23,20 +23,17 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
   const isRegistered = registrationStatus === REGISTERED
   const hasListing = isRegistered && domain.listings[0]
-  const [prefetch, setPrefetch] = useState(false)
 
   if (modifyingCartTokenIds.includes(domain.token_id)) return null
 
   return (
     <div className='flex w-full flex-row items-center justify-between gap-1'>
-      <Link
+      <HoverPrefetchLink
         href={`/${domain.name}`}
         className={cn(
           'flex flex-row items-center gap-2 transition-all duration-300 hover:opacity-70',
           hasListing ? 'w-[40%]' : 'w-[70%]'
         )}
-        prefetch={prefetch}
-        onMouseEnter={() => setPrefetch(true)}
       >
         <NameImage
           name={domain.name}
@@ -47,7 +44,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
         <p className='text-md line-clamp-2 truncate font-bold sm:text-lg' style={{ maxWidth: 'calc(100% - 40px)' }}>
           {beautifyName(domain.name)}
         </p>
-      </Link>
+      </HoverPrefetchLink>
       <div
         className={cn(
           'w-[20%] min-w-16 flex-row items-center justify-end gap-2',

@@ -15,7 +15,11 @@ import { localizeNumber } from '@/utils/localizeNumber'
 import { useBulkSearchCounts } from '../hooks/useBulkSearchCounts'
 import Label from '@/components/ui/label'
 
-const BulkSearchTabSwitcher: React.FC = () => {
+type BulkSearchTabSwitcherProps = {
+  activeTabTotal?: number
+}
+
+const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTabTotal }) => {
   const [mounted, setMounted] = useState(false)
   const { selectedTab, searchTerms } = useAppSelector(selectBulkSearch)
   const dispatch = useAppDispatch()
@@ -23,7 +27,7 @@ const BulkSearchTabSwitcher: React.FC = () => {
   const { selectors, actions } = useFilterRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
-  const counts = useBulkSearchCounts()
+  const counts = useBulkSearchCounts(selectedTab.value, activeTabTotal)
 
   const setBulkSearchTab = (tab: BulkSearchTabType) => {
     dispatch(changeBulkSearchTab(tab))

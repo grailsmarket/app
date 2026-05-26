@@ -1,10 +1,9 @@
 'use client'
 
-import { fetchDomains } from '@/api/domains/fetchDomains'
 import Card from '@/components/domains/grid/components/card'
 import LoadingCard from '@/components/domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
-import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
+import { premiumDropdownQueryOptions } from '@/components/navigation/dropdowns/queries'
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -29,40 +28,22 @@ interface PremiumProps {
 const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
-  const { categories } = useCategories()
+  const isActive = dropdownOption === 'premium'
+  const { categories } = useCategories({ enabled: isActive })
   const { width } = useWindowSize()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { data: premium, isLoading } = useQuery({
-    queryKey: ['navigation', 'premium'],
-    queryFn: () =>
-      fetchDomains({
-        limit: 42,
-        pageParam: 1,
-        filters: {
-          ...emptyFilterState,
-          status: ['Premium'],
-          sort: 'watchers_count_desc',
-          type: {
-            Digits: 'exclude',
-            Emojis: 'exclude',
-            Repeating: 'include',
-            Letters: 'include',
-          },
-        },
-        searchTerm: '',
-        isAuthenticated: authStatus === 'authenticated',
-        inAnyCategory: true,
-      }),
+    ...premiumDropdownQueryOptions(authStatus === 'authenticated'),
+    enabled: isActive,
   })
 
   const cardCount = useMemo(() => {
     if (!isClient || !width) return 7
-    if (width < 640) return 2
-    if (width < 780) return 3
-    if (width < 1024) return 3
-    if (width < 1210) return 4
-    if (width < 1460) return 5
+    // when width is lower than 768px we switch to navbar with no dropdown
+    if (width < 1070) return 3
+    if (width < 1280) return 4
+    if (width < 1500) return 5
     if (width < 1658) return 6
     return 7
   }, [isClient, width])
@@ -240,7 +221,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
       </div>
       <div
         ref={cardContainerRef}
-        className='hidden max-h-[370px] max-w-[1480px] flex-row flex-wrap gap-2 overflow-y-auto md:flex xl:gap-4'
+        className='hidden max-h-[370px] max-w-[1480px] flex-row gap-2 overflow-hidden md:flex xl:gap-4'
         style={{
           width: isClient ? `${width && width < 768 ? '100%' : cardCount * (180 + 16)}px` : undefined,
           maxWidth: '1560px',
@@ -250,7 +231,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
           ? Array.from({ length: cardCount }).map((_, index) => (
               <div
                 key={index}
-                className='fadeIn h-[370px] w-[180px]'
+                className='fadeIn h-[370px] w-[190px]'
                 style={{
                   animationDelay: `${defaultAnimationdelay + Math.min(index, cardCount) * ANIMATION_DELAY_INCREMENT}s`,
                 }}
@@ -258,10 +239,10 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
                 <LoadingCard />
               </div>
             ))
-          : premium?.domains.map((domain, index) => (
+          : premium?.domains.slice(0, cardCount).map((domain, index) => (
               <div
                 key={domain.name}
-                className='bg-secondary fadeIn h-[370px] w-[180px]'
+                className='bg-secondary fadeIn h-[370px] w-[190px]'
                 onClick={() => {
                   setDropdownOption(null)
                 }}

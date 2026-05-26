@@ -23,6 +23,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { useUserContext } from '@/context/user'
+import { accountQueryKey } from '@/utils/queryKeys'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
@@ -79,7 +80,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   })
 
   const { data: ownerAccount } = useQuery({
-    queryKey: ['profile', nameDetails?.owner], // use the same key as User component to not fetch the same profile twice
+    queryKey: accountQueryKey(nameDetails?.owner),
     queryFn: () => fetchAccount(nameDetails?.owner as `0x${string}`),
     enabled: !!nameDetails?.owner,
   })

@@ -69,6 +69,8 @@ const createDefaultConfig = (type: DashboardComponentType): DashboardComponentCo
       return { type, name }
     case 'twitter-feed':
       return { type, name, handle: DEFAULT_TWITTER_HANDLE }
+    case 'comment-feed':
+      return { type, name, categories: [], authorAddress: '' }
   }
 }
 

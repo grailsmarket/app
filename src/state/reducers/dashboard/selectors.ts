@@ -16,6 +16,7 @@ import type {
   ExpiringDomainsInstanceConfig,
   RecentInstanceConfig,
   TwitterFeedInstanceConfig,
+  CommentFeedInstanceConfig,
 } from './types'
 
 // ── Root selectors ──────────────────────────────────────────────
@@ -123,4 +124,9 @@ export const selectRecentConfig = (state: RootState, id: string): RecentInstance
 export const selectTwitterFeedConfig = (state: RootState, id: string): TwitterFeedInstanceConfig | undefined => {
   const config = state.dashboard.components[id]
   return config?.type === 'twitter-feed' ? config : undefined
+}
+
+export const selectCommentFeedConfig = (state: RootState, id: string): CommentFeedInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'comment-feed' ? config : undefined
 }

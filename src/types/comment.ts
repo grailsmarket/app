@@ -14,6 +14,18 @@ export interface CommentsResponse {
   nextCursor: string | null
 }
 
+export interface CommentFeedItem extends Comment {
+  ens_name?: string | null
+  name?: string | null
+  clubs?: string[] | null
+  categories?: string[] | null
+}
+
+export interface CommentFeedResponse {
+  comments: CommentFeedItem[]
+  nextCursor: string | null
+}
+
 export interface CommentQuota {
   used: number
   max: number

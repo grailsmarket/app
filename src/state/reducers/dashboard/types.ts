@@ -27,6 +27,7 @@ export type DashboardComponentType =
   | 'recent-premium'
   | 'recent-registrations'
   | 'twitter-feed'
+  | 'comment-feed'
 
 // ── Per-instance configs ────────────────────────────────────────
 // `domains` and `ai-search` share an instance shape — they differ only in
@@ -135,6 +136,13 @@ export type TwitterFeedInstanceConfig = {
   handle: string
 }
 
+export type CommentFeedInstanceConfig = {
+  type: 'comment-feed'
+  name: string
+  categories: string[]
+  authorAddress: string
+}
+
 export type DashboardComponentConfig =
   | DomainsInstanceConfig
   | AnalyticsListInstanceConfig
@@ -151,6 +159,7 @@ export type DashboardComponentConfig =
   | ExpiringDomainsInstanceConfig
   | RecentInstanceConfig
   | TwitterFeedInstanceConfig
+  | CommentFeedInstanceConfig
 
 // ── Layout types ────────────────────────────────────────────────
 export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
@@ -221,6 +230,7 @@ export const DEFAULT_WIDGET_SIZES: Record<
   'recent-premium': { w: 1, h: 4, minW: 1, minH: 3 },
   'recent-registrations': { w: 1, h: 4, minW: 1, minH: 3 },
   'twitter-feed': { w: 1, h: 6, minW: 1, minH: 3 },
+  'comment-feed': { w: 1, h: 5, minW: 1, minH: 3 },
 }
 
 // Human-readable labels
@@ -247,4 +257,5 @@ export const WIDGET_LABELS: Record<DashboardComponentType, string> = {
   'recent-premium': 'Recent Premium',
   'recent-registrations': 'Recent Registrations',
   'twitter-feed': 'X Feed',
+  'comment-feed': 'Comments',
 }

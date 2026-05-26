@@ -40,6 +40,7 @@ import RecentSalesWidget from './widgets/RecentSalesWidget'
 import RecentPremiumWidget from './widgets/RecentPremiumWidget'
 import RecentRegistrationsWidget from './widgets/RecentRegistrationsWidget'
 import TwitterFeedWidget from './widgets/TwitterFeedWidget'
+import CommentFeedWidget from './widgets/CommentFeedWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -82,6 +83,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <RecentRegistrationsWidget />
     case 'twitter-feed':
       return <TwitterFeedWidget instanceId={id} />
+    case 'comment-feed':
+      return <CommentFeedWidget instanceId={id} />
     default:
       return null
   }

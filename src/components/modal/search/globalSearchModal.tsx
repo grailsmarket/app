@@ -37,6 +37,7 @@ const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categor
   return (
     <HoverPrefetchLink
       href={`/${normalizeName(domain.name)}`}
+      viewportPrefetch
       onClick={onClose}
       className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
     >

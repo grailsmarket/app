@@ -232,6 +232,7 @@ const TableRow: React.FC<TableRowProps> = ({
   return (
     <HoverPrefetchLink
       href={`/${normalizeName(domain.name)}`}
+      viewportPrefetch
       onClick={(e) => {
         if (isBulkSelecting) {
           handleBulkSelectClick(e)

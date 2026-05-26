@@ -36,13 +36,24 @@ const EVENT_COPY: Record<ProfileActivityEventType, { verb: string; actorLabel: s
   renewal: { verb: 'was extended', actorLabel: 'Extended by' },
 }
 
+const formatEventType = (eventType: string) => {
+  return eventType
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }) => {
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const router = useRouter()
   const normalizedName = normalizeName(activity.name)
   const tokenId = activity.token_id || getNameTokenId(normalizedName)
-  const copy = EVENT_COPY[activity.event_type]
+  const copy = EVENT_COPY[activity.event_type] ?? {
+    verb: `had a ${formatEventType(activity.event_type).toLowerCase()} event`,
+    actorLabel: 'User',
+    counterpartyLabel: activity.counterparty_address ? 'Counterparty' : undefined,
+  }
   const time = activity.created_at ? formatDistanceToNow(new Date(activity.created_at), { addSuffix: true }) : ''
   const hasPrice = activity.price_wei && activity.price_wei !== '0'
   const namePagePath = `/${encodeURIComponent(normalizedName)}`

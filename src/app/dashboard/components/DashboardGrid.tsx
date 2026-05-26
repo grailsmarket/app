@@ -40,6 +40,7 @@ import RecentSalesWidget from './widgets/RecentSalesWidget'
 import RecentPremiumWidget from './widgets/RecentPremiumWidget'
 import RecentRegistrationsWidget from './widgets/RecentRegistrationsWidget'
 import TwitterFeedWidget from './widgets/TwitterFeedWidget'
+import CommentFeedWidget from '@/components/comments/commentFeedWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {
@@ -82,6 +83,8 @@ const renderWidget = (id: string, type: DashboardComponentType) => {
       return <RecentRegistrationsWidget />
     case 'twitter-feed':
       return <TwitterFeedWidget instanceId={id} />
+    case 'comment-feed':
+      return <CommentFeedWidget className='min-h-0 rounded-none border-0' />
     default:
       return null
   }
@@ -270,6 +273,7 @@ const DashboardGrid = () => {
             if (!config) return null
 
             const sizes = DEFAULT_WIDGET_SIZES[config.type]
+            if (!sizes) return null
 
             return (
               <div key={id} data-grid={{ minW: sizes.minW, minH: sizes.minH }}>

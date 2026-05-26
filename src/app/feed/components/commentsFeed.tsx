@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useCommentFeed } from '@/hooks/comments/useCommentFeed'
 import { useFeedScrollLock } from '@/hooks/comments/useFeedScrollLock'
 import { useFeedViewport } from '@/hooks/comments/useFeedViewport'
@@ -33,6 +33,8 @@ const CommentsFeed: React.FC = () => {
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const lastSeenNewestId = useRef<string | null>(null)
+  const isLoadingOlder = useRef(false)
 
   const { ownerAddress, ownerEnsName, oppositeIdentifier, ownerError } = useOwnerAddressLookup(ownerInput)
   const { comments, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useCommentFeed({
@@ -61,7 +63,7 @@ const CommentsFeed: React.FC = () => {
         timestamp: activity.created_at,
         data: activity,
       })),
-    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    ].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
   }, [activities, comments])
 
   useFeedScrollLock()
@@ -70,15 +72,37 @@ const CommentsFeed: React.FC = () => {
   const isFetchingMore = isFetchingNextPage || isFetchingNextActivityPage
   const hasMore = !!hasNextPage || !!hasNextActivityPage
 
-  const loadMore = () => {
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el || feedItems.length === 0 || isLoadingOlder.current) return
+
+    const newest = feedItems[feedItems.length - 1]
+    if (lastSeenNewestId.current !== newest.id) {
+      el.scrollTop = el.scrollHeight
+      lastSeenNewestId.current = newest.id
+    }
+  }, [feedItems])
+
+  const loadMore = async () => {
+    const el = scrollRef.current
     if (isFetchingMore) return
-    if (hasNextPage) fetchNextPage()
-    if (hasNextActivityPage) fetchNextActivityPage()
+    const previousHeight = el?.scrollHeight ?? 0
+    isLoadingOlder.current = true
+
+    await Promise.all([
+      hasNextPage ? fetchNextPage() : Promise.resolve(),
+      hasNextActivityPage ? fetchNextActivityPage() : Promise.resolve(),
+    ])
+
+    requestAnimationFrame(() => {
+      const nextEl = scrollRef.current
+      if (nextEl) nextEl.scrollTop = nextEl.scrollHeight - previousHeight + nextEl.scrollTop
+      isLoadingOlder.current = false
+    })
   }
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget
-    if (target.scrollHeight - target.scrollTop - target.clientHeight < 500) loadMore()
+    if (e.currentTarget.scrollTop < 200) loadMore()
   }
 
   const toggleActivityType = (type: ActivityTypeFilterType) => {
@@ -136,6 +160,12 @@ const CommentsFeed: React.FC = () => {
                   replyContext && 'pointer-events-none opacity-40 blur-[2px] select-none'
                 )}
               >
+                {isFetchingMore && <FeedLoading count={3} />}
+                {hasMore && !isFetchingMore && (
+                  <button type='button' onClick={loadMore} className='text-primary py-2 text-sm font-semibold'>
+                    Load older feed events
+                  </button>
+                )}
                 {feedItems.map((item) =>
                   item.type === 'comment' ? (
                     <FeedCommentCard
@@ -156,12 +186,6 @@ const CommentsFeed: React.FC = () => {
                       }}
                     />
                   )
-                )}
-                {isFetchingMore && <FeedLoading count={3} />}
-                {hasMore && !isFetchingMore && (
-                  <button type='button' onClick={loadMore} className='text-primary py-2 text-sm font-semibold'>
-                    Load older feed events
-                  </button>
                 )}
               </div>
             )}

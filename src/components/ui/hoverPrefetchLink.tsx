@@ -4,8 +4,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Link, { LinkProps } from 'next/link'
 import { useRouter } from 'next/navigation'
 
-const DEFAULT_VIEWPORT_PREFETCH_DELAY = 450
-const DEFAULT_VIEWPORT_PREFETCH_LIMIT = 8
+const DEFAULT_VIEWPORT_PREFETCH_DELAY = 250
+const DEFAULT_VIEWPORT_PREFETCH_LIMIT = 12
 const prefetchedHrefs = new Set<string>()
 let viewportPrefetchCount = 0
 

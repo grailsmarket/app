@@ -36,6 +36,12 @@ import { useOpenSettingsFromUrl } from '@/hooks/useOpenSettingsFromUrl'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
 import { selectRegistration } from '@/state/reducers/registration'
+import BulkOfferModal from '@/components/modal/offer/bulkOfferModal'
+import { selectBulkOfferModal, setBulkOfferModalOpen } from '@/state/reducers/modals/bulkOfferModal'
+import UpgradeModal from '@/components/modal/subscription/upgradeModal'
+import { selectUpgradeModal, setUpgradeModalOpen } from '@/state/reducers/modals/upgradeModal'
+import SavedSearchesModal from '@/components/modal/saved-searches/savedSearchesModal'
+import { selectSavedSearchesModal } from '@/state/reducers/modals/savedSearchesModal'
 import ChatSidebar from '@/components/chat'
 import ChatSocketMount from '@/components/chat/socketMount'
 import { selectChatSidebar } from '@/state/reducers/chat/sidebar'
@@ -99,8 +105,11 @@ const Modals: React.FC = () => {
     user: listSettingsModalUser,
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
+  const { open: bulkOfferModalOpen, domains: bulkOfferModalDomains } = useAppSelector(selectBulkOfferModal)
+  const { open: upgradeModalOpen } = useAppSelector(selectUpgradeModal)
   const { isOpen: registrationModalOpen } = useAppSelector(selectRegistration)
   const { open: chatSidebarOpen } = useAppSelector(selectChatSidebar)
+  const { open: savedSearchesModalOpen } = useAppSelector(selectSavedSearchesModal)
 
   const anyModalOpen =
     makeOfferModalOpen ||
@@ -118,7 +127,8 @@ const Modals: React.FC = () => {
     isSettingsOpen ||
     listSettingsModalOpen ||
     registrationModalOpen ||
-    chatSidebarOpen
+    chatSidebarOpen ||
+    savedSearchesModalOpen
 
   useEffect(() => {
     if (anyModalOpen) {
@@ -224,6 +234,11 @@ const Modals: React.FC = () => {
       )}
       <ChatSocketMount />
       <ChatSidebar />
+      {bulkOfferModalOpen && bulkOfferModalDomains.length > 0 && (
+        <BulkOfferModal onClose={() => dispatch(setBulkOfferModalOpen(false))} domains={bulkOfferModalDomains} />
+      )}
+      {upgradeModalOpen && <UpgradeModal onClose={() => dispatch(setUpgradeModalOpen(false))} />}
+      <SavedSearchesModal />
     </div>
   )
 }

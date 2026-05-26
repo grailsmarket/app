@@ -8,19 +8,27 @@ export type NotificationType =
   | 'listing-cancelled-ownership-change'
   | 'comment-received'
   | 'admin-broadcast'
+  | 'support-ticket-update'
 
 export interface NotificationMetadata {
   title?: string
-  body?: string
-  linkUrl?: string
-  imageUrl?: string
-  broadcastId?: number
   priceWei?: string
   sellerAddress?: string
   buyerAddress?: string
   listingId?: number
   offerId?: number
   offerAmountWei?: string
+  // admin-broadcast fields
+  body?: string
+  linkUrl?: string
+  broadcastId?: number
+  imageUrl?: string
+  // support-ticket-update fields
+  kind?: 'admin_reply' | 'status_changed' | 'reopened'
+  ticketId?: number
+  subject?: string
+  status?: 'open' | 'closed' | 'fixed'
+  newStatus?: 'open' | 'closed' | 'fixed'
 }
 
 export interface Notification {

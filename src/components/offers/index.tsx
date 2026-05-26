@@ -77,6 +77,17 @@ const Offers: React.FC<OffersProps> = ({
     return Math.floor(height / 60)
   }, [height])
 
+  // Deduplicate n-of-many offers: show one row per group instead of N identical rows
+  const deduplicatedOffers = useMemo(() => {
+    const seen = new Set<number>()
+    return offers.filter((offer) => {
+      if (offer.offer_type !== 'n_of_many' || !offer.n_of_many_group_id) return true
+      if (seen.has(offer.n_of_many_group_id)) return false
+      seen.add(offer.n_of_many_group_id)
+      return true
+    })
+  }, [offers])
+
   const isClient = useIsClient()
   if (!isClient) return null
 
@@ -123,7 +134,7 @@ const Offers: React.FC<OffersProps> = ({
           <VirtualList<DomainOfferType>
             ref={listRef}
             paddingBottom={paddingBottom}
-            items={[...offers, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
+            items={[...deduplicatedOffers, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
             rowHeight={60}
             overscanCount={visibleCount}
             gap={0}

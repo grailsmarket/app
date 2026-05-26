@@ -12,6 +12,8 @@ import ExternalLink from 'public/icons/external-link.svg'
 import GrailsPoap2025 from 'public/art/grails-poap-2025.webp'
 import GrailsPoap2026 from 'public/art/grails-poap-2026.webp'
 import Link from 'next/link'
+import { useAppSelector } from '@/state/hooks'
+import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 
 const SignInButton = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -33,6 +35,12 @@ const SignInButton = () => {
     handleSignInSuccess,
     handleSignInError,
   } = useUserContext()
+
+  const { subscription } = useAppSelector(selectUserProfile)
+  const tierActive =
+    !!subscription?.tier &&
+    subscription.tier !== 'free' &&
+    (!subscription.tierExpiresAt || new Date(subscription.tierExpiresAt) > new Date())
 
   return (
     <div
@@ -83,6 +91,13 @@ const SignInButton = () => {
           <p className='text-lg text-nowrap sm:text-xl'>My Approvals</p>
           <Image src={ExternalLink} alt='External Link' width={20} height={20} className='h-5 w-auto' />
         </button>
+        {tierActive && (
+          <Link href='/support' onClick={() => setIsDropdownOpen(false)}>
+            <button className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'>
+              <p>Support</p>
+            </button>
+          </Link>
+        )}
         {isPoapClaimed && claimedPoapLink ? (
           <Link
             href={claimedPoapLink}

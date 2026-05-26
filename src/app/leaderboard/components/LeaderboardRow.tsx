@@ -50,17 +50,17 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
     <Link
       href={`/profile/${user.address}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg hidden h-[60px] w-full flex-row items-center border-b transition md:flex',
+        'group border-tertiary hover:bg-foreground/10 px-sm @[640px]:px-md @[1024px]:px-lg hidden h-[60px] w-full flex-row items-center border-b transition @[768px]:flex',
         className
       )}
     >
       {/* Rank */}
-      <div className='text-neutral xs:min-w-[36px] w-[5%] min-w-[30px] text-center text-base font-medium sm:min-w-[40px]'>
+      <div className='text-neutral xs:min-w-[36px] w-[5%] min-w-[30px] text-center text-base font-medium @[640px]:min-w-[40px]'>
         {rank}
       </div>
 
       {/* User */}
-      <div className='flex w-[25%] flex-row items-center gap-3 lg:w-[20%]'>
+      <div className='flex w-[25%] flex-row items-center gap-3 @[1024px]:w-[20%]'>
         <User
           address={user.address}
           alignTooltip='left'
@@ -74,32 +74,32 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
       </div>
 
       {/* Names Owned */}
-      <div className='flex w-[12.5%] items-center lg:w-[8%]'>
+      <div className='flex w-[12.5%] items-center @[1024px]:w-[8%]'>
         <span className='text-base font-medium'>{user.names_owned.toLocaleString()}</span>
       </div>
 
       {/* Category Names */}
-      <div className='flex w-[12.5%] items-center lg:w-[8%]'>
+      <div className='flex w-[12.5%] items-center @[1024px]:w-[8%]'>
         <span className='text-base font-medium'>{user.names_in_clubs.toLocaleString()}</span>
       </div>
 
       {/* Listed Names */}
-      <div className='flex w-[12.5%] items-center lg:w-[8%]'>
+      <div className='flex w-[12.5%] items-center @[1024px]:w-[8%]'>
         <span className='text-base font-medium'>{user.names_listed.toLocaleString()}</span>
       </div>
 
       {/* Sold Names */}
-      <div className='hidden w-[8%] items-center lg:flex'>
+      <div className='hidden w-[8%] items-center @[1024px]:flex'>
         <span className='text-base font-medium'>{user.names_sold.toLocaleString()}</span>
       </div>
 
       {/* Expired */}
-      <div className='hidden w-[8%] items-center lg:flex'>
+      <div className='hidden w-[8%] items-center @[1024px]:flex'>
         <span className='text-base font-medium'>{user.expired_names.toLocaleString()}</span>
       </div>
 
       {/* Sales Vol */}
-      <div className='hidden w-[10%] items-center lg:flex'>
+      <div className='hidden w-[10%] items-center @[1024px]:flex'>
         <Price
           price={user.sales_volume}
           currencyAddress={ETH_ADDRESS}
@@ -109,7 +109,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
       </div>
 
       {/* Categories */}
-      <div className='flex w-[20%] items-center gap-0.5 lg:w-[17%] lg:gap-1'>
+      <div className='flex w-[20%] items-center gap-0.5 @[1024px]:w-[17%] @[1024px]:gap-1'>
         <div className='flex items-center -space-x-1.5'>
           {visibleCategories.map((club) => {
             const categoryDetails = getCategoryDetails(club)
@@ -136,7 +136,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
 
       {/* Follow Button */}
       <div
-        className='hidden w-[5%] min-w-[120px] justify-end sm:flex'
+        className='hidden w-[5%] min-w-[120px] justify-end @[640px]:flex'
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()
@@ -173,11 +173,11 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
 
   // Mobile row (< md)
   const mobileRow = (
-    <div ref={clickawayMobileRef} className={cn('relative w-full md:hidden', className)}>
+    <div ref={clickawayMobileRef} className={cn('relative w-full @[768px]:hidden', className)}>
       {/* Compact row */}
       <div
         className={cn(
-          'border-tertiary px-sm sm:px-md active:bg-foreground/5 flex h-[60px] w-full cursor-pointer flex-row items-center border-b transition',
+          'border-tertiary px-sm @[640px]:px-md active:bg-foreground/5 flex h-[60px] w-full cursor-pointer flex-row items-center border-b transition',
           isExpanded && 'border-b-0'
         )}
         onClick={() => setIsExpanded(!isExpanded)}

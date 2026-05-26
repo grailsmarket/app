@@ -12,9 +12,10 @@ interface GetWatchlistOptions {
   pageParam: number
   filters: NameFilters
   searchTerm: string
+  listId?: number | null
 }
 
-export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: GetWatchlistOptions) => {
+export const getWatchlist = async ({ limit, pageParam, filters, searchTerm, listId }: GetWatchlistOptions) => {
   const API_STATUS_FILTER_OPTIONS = {
     Registered: 'registered',
     Grace: 'grace',
@@ -47,6 +48,7 @@ export const getWatchlist = async ({ limit, pageParam, filters, searchTerm }: Ge
   const paramString = buildQueryParamString({
     limit,
     page: pageParam,
+    listId: listId ?? undefined,
     q: search?.length > 0 ? search : undefined,
     'filters[listed]': getMarketFilterValue(marketFilters?.Listed),
     'filters[maxLength]': filters.length.max || null,

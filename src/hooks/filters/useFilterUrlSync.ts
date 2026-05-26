@@ -23,6 +23,7 @@ import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
 import { CATEGORIES_PAGE_TABS } from '@/constants/categories/categoriesPageTabs'
 import { BULK_SEARCH_TABS } from '@/constants/domains/bulkSearch/tabs'
+import { AI_SEARCH_TABS } from '@/constants/domains/aiSearch/tabs'
 
 // Import empty filter states for comparison
 import { emptyFilterState as marketplaceEmptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
@@ -34,6 +35,7 @@ import { emptyFilterState as categoriesPremiumEmptyFilterState } from '@/state/r
 import { emptyFilterState as categoriesAvailableEmptyFilterState } from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
 import { emptyFilterState as categoriesActivityEmptyFilterState } from '@/state/reducers/filters/categoriesActivityFilters'
 import { emptyFilterState as bulkSearchEmptyFilterState } from '@/state/reducers/filters/bulkSearchFilters'
+import { emptyFilterState as aiSearchEmptyFilterState } from '@/state/reducers/filters/aiSearchFilters'
 
 // Import tab change actions
 import { changeTab } from '@/state/reducers/portfolio/profile'
@@ -41,6 +43,7 @@ import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { changeCategoryTab } from '@/state/reducers/category/category'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
+import { changeAiSearchTab } from '@/state/reducers/aiSearch/aiSearch'
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType
@@ -59,6 +62,8 @@ function getDefaultTab(filterType: FilterContextType): string {
       return CATEGORIES_PAGE_TABS[0].value
     case 'bulkSearch':
       return BULK_SEARCH_TABS[0].value
+    case 'aiSearch':
+      return AI_SEARCH_TABS[0].value
     default:
       return 'names'
   }
@@ -77,6 +82,8 @@ function getTabChangeAction(filterType: FilterContextType): ActionCreatorWithPay
       return changeCategoriesPageTab
     case 'bulkSearch':
       return changeBulkSearchTab
+    case 'aiSearch':
+      return changeAiSearchTab
     default:
       return changeMarketplaceTab
   }
@@ -95,6 +102,8 @@ function findTabByValue(filterType: FilterContextType, value: string) {
       return CATEGORIES_PAGE_TABS.find((t) => t.value === value) || CATEGORIES_PAGE_TABS[0]
     case 'bulkSearch':
       return BULK_SEARCH_TABS.find((t) => t.value === value) || BULK_SEARCH_TABS[0]
+    case 'aiSearch':
+      return AI_SEARCH_TABS.find((t) => t.value === value) || AI_SEARCH_TABS[0]
     default:
       return { label: 'Names', value: 'names' }
   }
@@ -113,6 +122,8 @@ function getEmptyFilterState(filterType: FilterContextType): BaseFilterState | C
       return categoriesPageEmptyFilterState as CategoriesPageFilterState
     case 'bulkSearch':
       return bulkSearchEmptyFilterState as BaseFilterState
+    case 'aiSearch':
+      return aiSearchEmptyFilterState as BaseFilterState
     default:
       return marketplaceEmptyFilterState as BaseFilterState
   }
@@ -131,7 +142,9 @@ function isValidTab(filterType: FilterContextType, tabValue: string): boolean {
             ? CATEGORIES_PAGE_TABS
             : filterType === 'bulkSearch'
               ? BULK_SEARCH_TABS
-              : MARKETPLACE_TABS
+              : filterType === 'aiSearch'
+                ? AI_SEARCH_TABS
+                : MARKETPLACE_TABS
 
   return tabs.some((t) => t.value === tabValue)
 }
@@ -143,7 +156,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { actions, selectors, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab } =
+  const { actions, selectors, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, aiSearchTab } =
     useFilterRouter()
 
   // Refs to prevent infinite loops
@@ -169,10 +182,12 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         return categoriesPageTab?.value || defaultTab
       case 'bulkSearch':
         return bulkSearchTab?.value || defaultTab
+      case 'aiSearch':
+        return aiSearchTab?.value || defaultTab
       default:
         return defaultTab
     }
-  }, [filterType, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, defaultTab])
+  }, [filterType, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, aiSearchTab, defaultTab])
 
   // Apply filters from URL to Redux
   const applyFiltersFromUrl = useCallback(

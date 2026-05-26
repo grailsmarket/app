@@ -46,6 +46,7 @@ export const useCategoriesPageDomains = () => {
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      filters.aiSearch,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const domains = await fetchDomains({
@@ -53,10 +54,10 @@ export const useCategoriesPageDomains = () => {
         pageParam,
         filters,
         searchTerm: debouncedSearch,
-        enableBulkSearch: true,
         isAuthenticated: authStatus === 'authenticated',
         // For all domain tabs on categories page, filter to only domains in a category
         inAnyCategory: true,
+        AISearchEnabled: filters.aiSearch,
       })
 
       return {

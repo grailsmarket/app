@@ -67,6 +67,14 @@ export type DomainOfferType = {
   token_id: string
   order_data: DomainOfferOrderDataType
   order_hash: Hex
+  offer_type?: string
+  n_of_many_group_id?: number | null
+  n_of_many_target_count?: number | null
+  n_of_many_total_items?: number | null
+  n_of_many_fulfilled_count?: number | null
+  n_of_many_token_ids?: string[] | null
+  n_of_many_names?: string[] | null
+  n_of_many_group_status?: string | null
 }
 
 export type DomainOfferOrderDataType = {
@@ -268,10 +276,33 @@ export type WatchlistEntryType = {
   ensName: string
   ensNameId: number
   id: number
+  listId?: number
+  listName?: string
   notifyOnListing: boolean
   notifyOnOffer: boolean
   notifyOnPriceChange: boolean
   notifyOnSale: boolean
+  notifyOnComment: boolean
+}
+
+export type WatchlistListType = {
+  id: number
+  name: string
+  isDefault: boolean
+  itemCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type WatchlistCheckListEntry = {
+  listId: number
+  listName: string
+  listIsDefault: boolean
+  watchlistEntryId: number
+  notifyOnSale: boolean
+  notifyOnOffer: boolean
+  notifyOnListing: boolean
+  notifyOnPriceChange: boolean
   notifyOnComment: boolean
 }
 

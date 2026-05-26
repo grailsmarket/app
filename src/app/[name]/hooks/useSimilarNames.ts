@@ -42,7 +42,6 @@ export const useSimilarNames = (name: string) => {
         limit: suggestions.length,
         pageParam: 1,
         filters: emptyFilterState,
-        enableBulkSearch: true,
         isAuthenticated: authStatus === 'authenticated',
       })
 

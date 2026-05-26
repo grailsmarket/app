@@ -6,8 +6,6 @@ import { FilterRouter } from '@/types/filters/name'
 import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useMemo } from 'react'
-import { selectCategory } from '@/state/reducers/category/category'
-import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 
 import {
   emptyFilterState as emptyFilterStateMarketplaceFilters,
@@ -119,6 +117,12 @@ import {
   categoryActivityFiltersActions,
 } from '@/state/reducers/filters/categoryActivityFilters'
 
+// Import category state selector
+import { selectCategory } from '@/state/reducers/category/category'
+
+// Import categoriesPage state selector
+import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
+
 // Import bulkSearch state selector and filter actions
 import { selectBulkSearch } from '@/state/reducers/bulkSearch/bulkSearch'
 import {
@@ -126,6 +130,14 @@ import {
   selectBulkSearchFilters,
   BulkSearchFilterActions,
 } from '@/state/reducers/filters/bulkSearchFilters'
+
+// Import aiSearch state selector and filter actions
+import { selectAiSearch } from '@/state/reducers/aiSearch/aiSearch'
+import {
+  emptyFilterState as emptyFilterStateAiSearchFilters,
+  selectAiSearchFilters,
+  aiSearchFiltersActions,
+} from '@/state/reducers/filters/aiSearchFilters'
 
 // Import categoriesNamesFilters selectors and actions
 import {
@@ -171,6 +183,7 @@ export function useFilterRouter(): FilterRouter {
   const categoryState = useAppSelector(selectCategory)
   const categoriesPageState = useAppSelector(selectCategoriesPage)
   const bulkSearchState = useAppSelector(selectBulkSearch)
+  const aiSearchState = useAppSelector(selectAiSearch)
   const filterPanelState = useAppSelector(selectFilterPanel)
 
   // Determine which tab is active for each page
@@ -180,9 +193,15 @@ export function useFilterRouter(): FilterRouter {
   const activeCategoriesPageTab = categoriesPageState.categoriesPage.selectedTab?.value || 'categories'
   // Determine which tab is active in bulkSearch
   const activeBulkSearchTab = bulkSearchState.selectedTab?.value || 'names'
+  // Determine which tab is active in aiSearch
+  const activeAiSearchTab = aiSearchState.selectedTab?.value || 'names'
 
   const activeTab = useMemo(() => {
     switch (filterType) {
+      case 'aiSearch':
+        return activeAiSearchTab
+      case 'bulkSearch':
+        return activeBulkSearchTab
       case 'categoriesPage':
         return activeCategoriesPageTab
       case 'category':
@@ -192,10 +211,21 @@ export function useFilterRouter(): FilterRouter {
       default:
         return 'names'
     }
-  }, [filterType, activeBulkSearchTab, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab])
+  }, [
+    filterType,
+    activeAiSearchTab,
+    activeBulkSearchTab,
+    activeCategoriesPageTab,
+    activeCategoryTab,
+    activeMarketplaceTab,
+  ])
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
+    if (filterType === 'aiSearch') {
+      return selectAiSearchFilters(state)
+    }
+
     if (filterType === 'bulkSearch') {
       return selectBulkSearchFilters(state)
     }
@@ -281,6 +311,10 @@ export function useFilterRouter(): FilterRouter {
 
   // Return the appropriate actions based on context
   const actions = useMemo(() => {
+    if (filterType === 'aiSearch') {
+      return aiSearchFiltersActions
+    }
+
     if (filterType === 'bulkSearch') {
       return BulkSearchFilterActions
     }
@@ -372,6 +406,10 @@ export function useFilterRouter(): FilterRouter {
   ])
 
   const emptyFilterState = useMemo(() => {
+    if (filterType === 'aiSearch') {
+      return emptyFilterStateAiSearchFilters
+    }
+
     if (filterType === 'bulkSearch') {
       return emptyFilterStateBulkSearchFilters
     }
@@ -460,6 +498,7 @@ export function useFilterRouter(): FilterRouter {
     activeCategoryTab,
     activeCategoriesPageTab,
     activeBulkSearchTab,
+    activeAiSearchTab,
   ])
 
   const isFiltersClear = useMemo(() => {
@@ -488,6 +527,7 @@ export function useFilterRouter(): FilterRouter {
     categoryTab: categoryState.selectedTab,
     categoriesPageTab: categoriesPageState.categoriesPage.selectedTab,
     bulkSearchTab: bulkSearchState.selectedTab,
+    aiSearchTab: aiSearchState.selectedTab,
     activeTab,
     isFiltersClear,
   }

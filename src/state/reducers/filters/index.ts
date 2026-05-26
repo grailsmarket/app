@@ -24,6 +24,7 @@ import categoriesPremiumDomainsFiltersReducer from './categoriesPremiumDomainsFi
 import categoriesAvailableDomainsFiltersReducer from './categoriesAvailableDomainsFilters'
 import categoriesActivityFiltersReducer from './categoriesActivityFilters'
 import bulkSearchFiltersReducer from './bulkSearchFilters'
+import aiSearchFiltersReducer from './aiSearchFilters'
 
 const filtersReducer = combineReducers({
   myOffersFilters: myOffersFiltersReducer,
@@ -51,6 +52,7 @@ const filtersReducer = combineReducers({
   categoriesAvailableDomainsFilters: categoriesAvailableDomainsFiltersReducer,
   categoriesActivityFilters: categoriesActivityFiltersReducer,
   bulkSearchFilters: bulkSearchFiltersReducer,
+  aiSearchFilters: aiSearchFiltersReducer,
 })
 
 export default filtersReducer

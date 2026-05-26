@@ -24,12 +24,14 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
   const dispatch = useAppDispatch()
   const isTouchDevice = useIsTouchDevice()
   const { userAddress } = useUserContext()
-  const { ensProfile } = useAppSelector(selectUserProfile)
   const { openConnectModal } = useConnectModal()
-
+  const { ensProfile, subscription } = useAppSelector(selectUserProfile)
   const { selectedTab } = useAppSelector(selectMarketplace)
   const containerRef = useRef<HTMLDivElement>(null)
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const isSubscriber =
+    subscription?.tierId > 0 && (!subscription?.tierExpiresAt || new Date(subscription?.tierExpiresAt) > new Date())
 
   const handleMouseEnter = useCallback(
     (option: string | null) => {
@@ -145,6 +147,25 @@ const Pages = ({ className, onClick, setDropdownOption, dropdownOption }: PagesP
       >
         More
       </button>
+      <Link
+        href='/pro'
+        className={cn(
+          'hover-underline font-medium transition-all',
+          pathname === '/pro' ? 'text-primary active font-bold!' : 'text-foreground opacity-80 hover:opacity-100',
+          dropdownOption === 'pro' && 'active text-primary opacity-100'
+        )}
+        onMouseEnter={() => {
+          if (isSubscriber) {
+            handleMouseEnter('pro')
+          } else {
+            setDropdownOption?.(null)
+          }
+        }}
+        onMouseLeave={handleMouseLeave}
+        onClick={onClick}
+      >
+        Pro
+      </Link>
 
       {userAddress && (
         <Link

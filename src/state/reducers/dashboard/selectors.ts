@@ -1,0 +1,126 @@
+import type { RootState } from '@/state'
+import type {
+  DashboardComponentConfig,
+  DomainsInstanceConfig,
+  AnalyticsListInstanceConfig,
+  AnalyticsChartInstanceConfig,
+  HoldersInstanceConfig,
+  LeaderboardInstanceConfig,
+  ActivityInstanceConfig,
+  NameViewInstanceConfig,
+  ProfileViewInstanceConfig,
+  WatchlistInstanceConfig,
+  CategoryHoldersInstanceConfig,
+  CategoryStatsInstanceConfig,
+  PortfolioSummaryInstanceConfig,
+  ExpiringDomainsInstanceConfig,
+  RecentInstanceConfig,
+  TwitterFeedInstanceConfig,
+} from './types'
+
+// ── Root selectors ──────────────────────────────────────────────
+export const selectDashboard = (state: RootState) => state.dashboard
+export const selectDashboardLayouts = (state: RootState) => state.dashboard.layouts
+export const selectDashboardComponents = (state: RootState) => state.dashboard.components
+export const selectDashboardSidebarOpen = (state: RootState) => state.dashboard.sidebarOpen
+export const selectDashboardColOverride = (state: RootState) => state.dashboard.colOverride
+
+// ── Per-instance selectors ──────────────────────────────────────
+export const selectDashboardComponent = (state: RootState, id: string): DashboardComponentConfig | undefined =>
+  state.dashboard.components[id]
+
+export const selectDomainsConfig = (state: RootState, id: string): DomainsInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  if (!config) return undefined
+  return config.type === 'domains' || config.type === 'ai-search' ? config : undefined
+}
+
+export const selectAnalyticsListConfig = (state: RootState, id: string): AnalyticsListInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  if (!config) return undefined
+  if (config.type === 'top-sales' || config.type === 'top-offers' || config.type === 'top-registrations') {
+    return config
+  }
+  return undefined
+}
+
+export const selectAnalyticsChartConfig = (state: RootState, id: string): AnalyticsChartInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  if (!config) return undefined
+  if (config.type === 'sales-chart' || config.type === 'offers-chart' || config.type === 'registrations-chart') {
+    return config
+  }
+  return undefined
+}
+
+export const selectHoldersConfig = (state: RootState, id: string): HoldersInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'holders' ? config : undefined
+}
+
+export const selectLeaderboardConfig = (state: RootState, id: string): LeaderboardInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'leaderboard' ? config : undefined
+}
+
+export const selectActivityConfig = (state: RootState, id: string): ActivityInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'activity' ? config : undefined
+}
+
+export const selectNameViewConfig = (state: RootState, id: string): NameViewInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'name-view' ? config : undefined
+}
+
+export const selectProfileViewConfig = (state: RootState, id: string): ProfileViewInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'profile-view' ? config : undefined
+}
+
+export const selectWatchlistConfig = (state: RootState, id: string): WatchlistInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'watchlist' ? config : undefined
+}
+
+export const selectCategoryHoldersConfig = (
+  state: RootState,
+  id: string
+): CategoryHoldersInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'category-holders' ? config : undefined
+}
+
+export const selectCategoryStatsConfig = (state: RootState, id: string): CategoryStatsInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'category-stats' ? config : undefined
+}
+
+export const selectPortfolioSummaryConfig = (
+  state: RootState,
+  id: string
+): PortfolioSummaryInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'portfolio-summary' ? config : undefined
+}
+
+export const selectExpiringDomainsConfig = (
+  state: RootState,
+  id: string
+): ExpiringDomainsInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'expiring-domains' ? config : undefined
+}
+
+export const selectRecentConfig = (state: RootState, id: string): RecentInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  if (!config) return undefined
+  return config.type === 'recent-sales' || config.type === 'recent-premium' || config.type === 'recent-registrations'
+    ? config
+    : undefined
+}
+
+export const selectTwitterFeedConfig = (state: RootState, id: string): TwitterFeedInstanceConfig | undefined => {
+  const config = state.dashboard.components[id]
+  return config?.type === 'twitter-feed' ? config : undefined
+}

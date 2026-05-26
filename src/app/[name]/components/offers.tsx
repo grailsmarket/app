@@ -42,17 +42,24 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   const { address: userAddress } = useAccount()
   const { openConnectModal } = useConnectModal()
   const [viewAll, setViewAll] = useState(false)
-  const sortedOffers = useMemo(
-    () =>
-      [...offers].sort((a, b) => {
-        const priceDiff = Number(b.offer_amount_wei) - Number(a.offer_amount_wei)
-        if (priceDiff !== 0) return priceDiff
-        if (a.source === 'grails' && b.source !== 'grails') return -1
-        if (b.source === 'grails' && a.source !== 'grails') return 1
-        return 0
-      }),
-    [offers]
-  )
+  const sortedOffers = useMemo(() => {
+    // Deduplicate n-of-many offers: show one per group
+    const seen = new Set<number>()
+    const deduped = offers.filter((offer) => {
+      if (offer.offer_type !== 'n_of_many' || !offer.n_of_many_group_id) return true
+      if (seen.has(offer.n_of_many_group_id)) return false
+      seen.add(offer.n_of_many_group_id)
+      return true
+    })
+
+    return deduped.sort((a, b) => {
+      const priceDiff = Number(b.offer_amount_wei) - Number(a.offer_amount_wei)
+      if (priceDiff !== 0) return priceDiff
+      if (a.source === 'grails' && b.source !== 'grails') return -1
+      if (b.source === 'grails' && a.source !== 'grails') return 1
+      return 0
+    })
+  }, [offers])
   const showViewAllButton = sortedOffers.length > 2
   const displayedOffers = viewAll ? sortedOffers : sortedOffers.slice(0, 2)
   const isMyDomain = useMemo(
@@ -90,6 +97,8 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
           }
           const fee = getFee()
 
+          const isNOfMany = offer.offer_type === 'n_of_many' && offer.n_of_many_target_count
+
           return (
             <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
               <div className='flex flex-row items-center gap-2 sm:gap-4'>
@@ -113,6 +122,11 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
                     <p className={cn('text-neutral text-md', fee > 0 ? 'text-red-400' : 'text-green-500')}>
                       ({fee * 100}% fee)
                     </p>
+                    {isNOfMany && (
+                      <span className='bg-primary/20 text-primary rounded px-1.5 py-0.5 text-xs font-medium'>
+                        {offer.n_of_many_target_count} of {offer.n_of_many_total_items}
+                      </span>
+                    )}
                   </div>
                   <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
                 </div>

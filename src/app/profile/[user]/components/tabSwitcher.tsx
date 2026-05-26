@@ -22,9 +22,11 @@ import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModa
 
 interface TabSwitcherProps {
   user: Address | undefined
+  isWidget?: boolean
+  containerWidth?: number
 }
 
-const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
+const TabSwitcher: React.FC<TabSwitcherProps> = ({ user, isWidget = false, containerWidth = 0 }) => {
   const [mounted, setMounted] = useState(false)
   const { userAddress, authStatus } = useUserContext()
   const { selectedTab } = useAppSelector(selectUserProfile)
@@ -174,7 +176,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     updateIndicator()
     window.addEventListener('resize', updateIndicator)
     return () => window.removeEventListener('resize', updateIndicator)
-  }, [selectedTab, mounted, displayedTabs, getTotalItems])
+  }, [selectedTab, mounted, displayedTabs, getTotalItems, containerWidth])
 
   // During SSR and initial mount, render all tabs without active state
   if (!mounted) {
@@ -182,7 +184,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
       <div
         className={cn(
           'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-20 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
-          isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
+          isWidget ? 'top-0' : isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
         <button
@@ -246,7 +248,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({ user }) => {
     <div
       className={cn(
         'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 md:overflow-x-visible lg:gap-8',
-        isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
+        isWidget ? 'top-0' : isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
       <div className='flex items-center justify-between gap-3 md:gap-4'>

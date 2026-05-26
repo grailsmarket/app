@@ -3,7 +3,7 @@ import { authFetch } from '../authFetch'
 import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 
-export const addToWatchlist = async (domain: MarketplaceDomainType) => {
+export const addToWatchlist = async ({ domain, listId }: { domain: MarketplaceDomainType; listId?: number }) => {
   const response = await authFetch(`${API_URL}/watchlist`, {
     method: 'POST',
     mode: 'cors',
@@ -17,15 +17,17 @@ export const addToWatchlist = async (domain: MarketplaceDomainType) => {
       notifyOnListing: true,
       notifyOnPriceChange: false,
       notifyOnComment: false,
+      ...(listId ? { listId } : {}),
     }),
   })
 
-  const data = (await response.json()) as APIResponseType<WatchlistItemType>
+  const data = (await response.json()) as APIResponseType<WatchlistItemType & { listId?: number }>
   return {
     domain: {
       ...domain,
       watchlist_record_id: data.data.id,
     },
+    listId: data.data.listId,
     response: data.data,
   }
 }

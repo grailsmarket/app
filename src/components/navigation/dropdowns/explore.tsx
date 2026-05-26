@@ -19,6 +19,8 @@ import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { ANIMATION_DELAY_INCREMENT, DEFAULT_ANIMATION_DELAY } from '@/constants/ui/navigation'
 import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
 import { BULK_SEARCH_TABS } from '@/constants/domains/bulkSearch/tabs'
+import { changeAiSearchTab } from '@/state/reducers/aiSearch/aiSearch'
+import { AI_SEARCH_TABS } from '@/constants/domains/aiSearch/tabs'
 
 interface ExploreProps {
   dropdownOption: string | null
@@ -189,10 +191,25 @@ const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, pr
               Bulk Search
             </Link>
           </div>
+          <div
+            className='fadeIn w-fit'
+            style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 5}s` }}
+          >
+            <Link
+              href='/ai-search'
+              className='hover:text-primary hover-underline transition-all duration-200'
+              onClick={() => {
+                dispatch(changeAiSearchTab(AI_SEARCH_TABS[0]))
+                setDropdownOption(null)
+              }}
+            >
+              AI Search
+            </Link>
+          </div>
         </div>
         <div
           className='md:py-md border-neutral slideInLeft hidden w-full md:block md:border-t'
-          style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 5}s` }}
+          style={{ animationDelay: `${defaultAnimationdelay + ANIMATION_DELAY_INCREMENT * 6}s` }}
         >
           <Link
             href='/marketplace?tab=names'

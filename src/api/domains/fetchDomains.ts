@@ -24,6 +24,7 @@ interface FetchDomainsOptions {
   excludeCategories?: string[]
   signal?: AbortSignal
   showUniqueSeller?: boolean
+  AISearchEnabled?: boolean
   resolveIdentifiers?: boolean
 }
 
@@ -92,6 +93,7 @@ export const fetchDomains = async ({
   excludeCategories = [],
   signal,
   showUniqueSeller = false,
+  AISearchEnabled = false,
   resolveIdentifiers = false,
 }: FetchDomainsOptions) => {
   try {
@@ -117,7 +119,7 @@ export const fetchDomains = async ({
         .filter((name) => name.length > 2)
         .join(',')
 
-      const res = await fetch(`${API_URL}/search/bulk-filters`, {
+      const res = await fetch(`${API_URL}/search/bulk-search`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -291,8 +293,9 @@ export const fetchDomains = async ({
     })
 
     const fetchFunction = isAuthenticated ? authFetch : fetch
+    const endpoint = AISearchEnabled && search.length > 2 ? 'ai/search/related' : 'search'
 
-    const res = await fetchFunction(`${API_URL}/search?${paramString}`, {
+    const res = await fetchFunction(`${API_URL}/${endpoint}?${paramString}`, {
       method: 'GET',
       mode: 'cors',
       headers: {
@@ -349,7 +352,7 @@ export const fetchDomains = async ({
       filters.status.length > 0 ||
       filters.sort !== null
 
-    if (pageParam === 1) {
+    if (pageParam === 1 && !AISearchEnabled) {
       if (isBulkSearching) {
         const names = search.split(',')
         for (const name of names) {

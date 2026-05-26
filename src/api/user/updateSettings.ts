@@ -29,9 +29,9 @@ export const updateSettings = async ({
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      email: email || '',
-      discord: discord || '',
-      telegram: telegram || '',
+      ...(email ? { email } : {}),
+      ...(discord ? { discord } : {}),
+      ...(telegram ? { telegram } : {}),
       minOfferThreshold: Number(offerNotificationThreshold) || null,
       notifyOnListingSold: notifyOnListingSold || false,
       notifyOnOfferReceived: notifyOnOfferReceived || false,

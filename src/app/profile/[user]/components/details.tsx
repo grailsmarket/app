@@ -17,13 +17,16 @@ import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { getDetails } from '@/api/user/getDetails'
 import EthereumLogo from 'public/icons/eth-gray.svg'
 import GrailsIcon from 'public/logo.svg'
+import { cn } from '@/utils/tailwind'
 import SendMessageButton from '@/components/chat/components/sendMessageButton'
 
 interface Props {
   user?: Address | string | null
+  isWidget?: boolean
+  useWideWidgetLayout?: boolean
 }
 
-const Details: React.FC<Props> = ({ user }) => {
+const Details: React.FC<Props> = ({ user, isWidget = false, useWideWidgetLayout = false }) => {
   const { data: details, isLoading: detailsLoading } = useQuery({
     queryKey: ['profile', 'details', user],
     queryFn: () => (user && isAddress(user) ? getDetails(user) : null),
@@ -51,11 +54,18 @@ const Details: React.FC<Props> = ({ user }) => {
   })
 
   return (
-    <div className='border-tertiary bg-secondary flex w-full flex-col justify-between gap-2 p-2 sm:gap-4 md:p-4 lg:w-[380px] lg:border-l-2'>
+    <div
+      className={cn(
+        'border-tertiary bg-secondary flex w-full flex-col justify-between gap-2 p-2 sm:gap-4 md:p-4',
+        isWidget ? useWideWidgetLayout && 'w-[280px] shrink-0 border-l-2' : 'lg:w-[380px] lg:border-l-2'
+      )}
+    >
       <div className='flex flex-col gap-3'>
         {user && isAddress(user as string) && <SendMessageButton recipient={user as string} className='w-full' />}
         {/* <h3 className='font-sedan-sc hidden text-3xl lg:block'>Account</h3> */}
-        <div className='grid grid-cols-4 gap-y-2 lg:grid-cols-2'>
+        <div
+          className={cn('grid grid-cols-4 gap-y-2', isWidget ? useWideWidgetLayout && 'grid-cols-2' : 'lg:grid-cols-2')}
+        >
           <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
             {balancesLoading ? (
               <LoadingCell height='22px' width='64px' />
@@ -127,7 +137,12 @@ const Details: React.FC<Props> = ({ user }) => {
         </div>
       </div>
       <div className='flex flex-col gap-2'>
-        <div className='grid grid-cols-2 gap-y-2 sm:grid-cols-4 lg:grid-cols-2'>
+        <div
+          className={cn(
+            'grid grid-cols-2 gap-y-2 sm:grid-cols-4',
+            isWidget ? useWideWidgetLayout && 'grid-cols-2' : 'lg:grid-cols-2'
+          )}
+        >
           <div className='border-neutral flex h-fit flex-col items-start border-l-2 pl-2'>
             {detailsLoading ? (
               <LoadingCell height='18px' width='64px' />

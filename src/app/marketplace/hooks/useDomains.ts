@@ -39,6 +39,7 @@ export const useDomains = () => {
       filters.viewCount,
       filters.clubsCount,
       filters.creationDate,
+      filters.aiSearch,
       authedUser,
     ],
     queryFn: async ({ pageParam = 1 }) => {
@@ -47,8 +48,8 @@ export const useDomains = () => {
         pageParam,
         filters,
         searchTerm: debouncedSearch,
-        enableBulkSearch: true,
         isAuthenticated: isAuthenticated,
+        AISearchEnabled: filters.aiSearch,
       })
 
       return {

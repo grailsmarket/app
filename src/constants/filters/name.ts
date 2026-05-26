@@ -277,6 +277,7 @@ export const DEFAULT_NAME_FILTERS_STATE: NameFilters = {
   },
   categories: [],
   sort: null,
+  aiSearch: false,
 }
 
 // Slice States
@@ -287,6 +288,13 @@ export const DEFAULT_NAME_FILTERS_OPENED_STATE: NamefiltersOpened = {
 }
 
 // Reducer Actions
+export const setFilters = (state: NamefiltersOpened, { payload }: PayloadAction<Partial<NameFilters>>) => {
+  return {
+    ...state,
+    ...payload,
+  }
+}
+
 export const setFiltersOpen = (state: NamefiltersOpened, { payload }: PayloadAction<boolean>) => {
   state.open = payload
 }
@@ -419,6 +427,10 @@ export const setSearch = (state: NamefiltersOpened, { payload }: PayloadAction<s
   state.search = payload
 }
 
+export const setAiSearch = (state: NamefiltersOpened, { payload }: PayloadAction<boolean>) => {
+  state.aiSearch = payload
+}
+
 export const setScrollTop = (state: NamefiltersOpened, { payload }: PayloadAction<number>) => {
   state.scrollTop = payload
 }
@@ -432,6 +444,7 @@ export const clearFilters = (state: NamefiltersOpened) => {
 }
 
 export const NAME_FILTERS_ACTIONS = {
+  setFilters,
   setFiltersOpen,
   toggleFiltersStatus,
   setFiltersStatus,
@@ -455,6 +468,7 @@ export const NAME_FILTERS_ACTIONS = {
   setClubsCount,
   setSort,
   setSearch,
+  setAiSearch,
   setScrollTop,
   clearFilters,
 } as const

@@ -74,7 +74,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
   }
 
   return (
-    <div className='group px-md lg:px-lg border-tertiary flex h-[86px] w-full max-w-full flex-row flex-wrap items-center justify-start border-b bg-transparent py-1 transition hover:bg-white/10 sm:h-[60px] sm:flex-nowrap sm:py-0'>
+    <div className='group px-md @[1024px]:px-lg border-tertiary flex h-[88px] w-full max-w-full flex-row flex-wrap items-center justify-start border-b bg-transparent py-1 transition hover:bg-white/10 @[640px]:h-[60px] @[640px]:flex-nowrap @[640px]:py-0'>
       {displayedColumns.map((column, index) => (
         <div
           key={column}
@@ -94,7 +94,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
         </div>
       ))}
       {displayedColumns.includes('name') ? (
-        <div className='pr-md flex w-full flex-row justify-between sm:hidden'>
+        <div className='pr-md flex w-full flex-row justify-between @[640px]:hidden'>
           {addressToShow && (
             <User
               address={addressToShow}
@@ -126,7 +126,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           </div>
         </div>
       ) : (
-        <div className='flex w-full flex-row justify-between sm:hidden'>
+        <div className='flex w-full flex-row justify-between @[640px]:hidden'>
           {activity.actor_address && (
             <User
               address={activity.actor_address}
@@ -161,7 +161,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           </div>
         </div>
       )}
-      <div className='hidden min-h-4! max-w-6 min-w-6! items-center justify-end gap-1 sm:flex'>
+      <div className='hidden min-h-4! max-w-6 min-w-6! items-center justify-end gap-1 @[640px]:flex'>
         {activity.transaction_hash && (
           <Link
             href={`https://etherscan.io/tx/${activity.transaction_hash}`}

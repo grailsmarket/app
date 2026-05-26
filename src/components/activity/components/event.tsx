@@ -72,7 +72,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
           alt='Opensea'
           width={platformIcon ? 32 : 24}
           height={platformIcon ? 32 : 24}
-          className='h-auto w-7'
+          className='h-7 w-auto'
         />
       </div>
       <div className='flex flex-col items-start'>
@@ -85,7 +85,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
             </span>
           </p>
         </div>
-        <p className='sm:text-md text-neutral mt-px text-sm font-medium'>{formatTimeAgo(timestamp)}</p>
+        <p className='sm:text-md text-neutral text-sm font-medium'>{formatTimeAgo(timestamp)}</p>
       </div>
     </div>
   )

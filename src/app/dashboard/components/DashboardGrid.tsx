@@ -40,7 +40,7 @@ import RecentSalesWidget from './widgets/RecentSalesWidget'
 import RecentPremiumWidget from './widgets/RecentPremiumWidget'
 import RecentRegistrationsWidget from './widgets/RecentRegistrationsWidget'
 import TwitterFeedWidget from './widgets/TwitterFeedWidget'
-import CommentFeedWidget from '@/components/comments/commentFeedWidget'
+import CommentFeedWidget from '@/app/dashboard/components/widgets/commentFeedWidget'
 
 const renderWidget = (id: string, type: DashboardComponentType) => {
   switch (type) {

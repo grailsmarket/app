@@ -15,13 +15,15 @@ import type { ReplyContext } from './types'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { cn } from '@/utils/tailwind'
 
 interface FeedCommentCardProps {
   comment: CommentFeedItem
   onReply?: (context: ReplyContext) => void
+  compact?: boolean
 }
 
-const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) => {
+const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply, compact }) => {
   // const { categories } = useCategories()
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
@@ -47,16 +49,22 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
   return (
     <article
       onClick={() => router.push(namePagePath)}
-      className='bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors sm:px-4'
+      className={cn(
+        'bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 shadow-sm transition-colors',
+        compact ? 'p-2' : 'p-3 sm:px-4'
+      )}
     >
-      <div className='flex flex-col gap-3 sm:gap-4'>
+      <div className={cn('flex flex-col', compact ? 'gap-2' : 'gap-3 sm:gap-4')}>
         <div className='flex w-full flex-wrap items-center justify-between'>
-          <div className='flex flex-wrap items-center gap-1.5 gap-y-2 sm:gap-2'>
+          <div className={cn('flex flex-wrap items-center gap-1.5 gap-y-2', !compact && 'sm:gap-2')}>
             <div className='flex items-center gap-1.5'>
               <Link
                 href={`/profile/${comment.author_address}`}
                 onClick={(e) => e.stopPropagation()}
-                className='h-6 w-6 cursor-pointer transition-opacity hover:opacity-80 md:h-8.5 md:w-8.5'
+                className={cn(
+                  'h-6 w-6 cursor-pointer transition-opacity hover:opacity-80',
+                  !compact && 'md:h-8.5 md:w-8.5'
+                )}
               >
                 <Avatar
                   name={ensName || comment.author_address}
@@ -67,18 +75,24 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
               <Link
                 href={`/profile/${comment.author_address}`}
                 onClick={(e) => e.stopPropagation()}
-                className='min-w-0 truncate text-lg font-semibold transition-opacity hover:opacity-80'
+                className={cn(
+                  'min-w-0 truncate font-semibold transition-opacity hover:opacity-80',
+                  compact ? 'text-base' : 'text-lg'
+                )}
               >
                 {displayName}
               </Link>
             </div>
-            <p className='text-neutral text-md px-0.5 pt-0.5 font-medium sm:px-1'>
-              <span className='hidden sm:inline'>commented</span> on
+            <p className={cn('text-neutral px-0.5 pt-0.5 font-medium', compact ? 'text-sm' : 'text-md sm:px-1')}>
+              <span className={compact ? 'hidden' : 'hidden sm:inline'}>commented</span> on
             </p>
             <Link
               href={`/${encodeURIComponent(normalizedName)}`}
               onClick={(e) => e.stopPropagation()}
-              className='flex min-w-0 items-center gap-1.5 transition-opacity hover:opacity-80 sm:gap-2'
+              className={cn(
+                'flex min-w-0 items-center gap-1.5 transition-opacity hover:opacity-80',
+                !compact && 'sm:gap-2'
+              )}
               prefetch={prefetch}
               onMouseEnter={() => setPrefetch(true)}
             >
@@ -87,15 +101,28 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
-                className='h-6 w-6 rounded-sm sm:h-8.5 sm:w-8.5'
+                className={cn('h-6 w-6 rounded-sm', !compact && 'sm:h-8.5 sm:w-8.5')}
               />
-              <div className='block truncate text-xl font-bold'>{beautifyName(normalizedName)}</div>
+              <div className={cn('block truncate font-bold', compact ? 'text-lg' : 'text-xl')}>
+                {beautifyName(normalizedName)}
+              </div>
             </Link>
           </div>
-          <span className='text-neutral hidden text-xs font-medium whitespace-nowrap md:block'>{time}</span>
+          <span
+            className={cn('text-neutral text-xs font-medium whitespace-nowrap', compact ? 'hidden' : 'hidden md:block')}
+          >
+            {time}
+          </span>
         </div>
 
-        <p className='text-foreground text-lg font-medium wrap-break-word whitespace-pre-wrap'>{comment.body}</p>
+        <p
+          className={cn(
+            'text-foreground font-medium wrap-break-word whitespace-pre-wrap',
+            compact ? 'text-base' : 'text-lg'
+          )}
+        >
+          {comment.body}
+        </p>
 
         <div className='flex items-center justify-between'>
           {onReply ? (
@@ -109,14 +136,19 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
                   onReply({ comment, name: normalizedName })
                 }
               }}
-              className='text-primary text-md inline-flex cursor-pointer items-center gap-1 font-bold transition-opacity hover:opacity-80'
+              className={cn(
+                'text-primary inline-flex cursor-pointer items-center gap-1 font-bold transition-opacity hover:opacity-80',
+                compact ? 'text-sm' : 'text-md'
+              )}
             >
               Reply <ReplyArrowIcon />
             </button>
           ) : (
             <span />
           )}
-          <span className='text-neutral text-xs font-medium whitespace-nowrap md:hidden'>{time}</span>
+          <span className={cn('text-neutral text-xs font-medium whitespace-nowrap', compact ? 'block' : 'md:hidden')}>
+            {time}
+          </span>
         </div>
       </div>
     </article>

@@ -5,16 +5,18 @@ import { authFetch } from '../authFetch'
 
 interface GetCommentFeedParams {
   owner?: string
+  author?: string
   clubs?: string[]
   page?: number
   limit?: number
 }
 
-export const getCommentFeed = async ({ owner, clubs = [], page = 1, limit = 20 }: GetCommentFeedParams) => {
+export const getCommentFeed = async ({ owner, author, clubs = [], page = 1, limit = 20 }: GetCommentFeedParams) => {
   const params = new URLSearchParams()
   params.set('page', String(page))
   params.set('limit', String(limit))
   if (owner) params.set('owner', owner)
+  if (author) params.set('author', author)
   if (clubs.length > 0) params.set('clubs', clubs.join(','))
 
   const response = await authFetch(`${API_URL}/comments/feed?${params.toString()}`, {

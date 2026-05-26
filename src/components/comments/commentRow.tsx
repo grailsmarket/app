@@ -16,10 +16,9 @@ interface Props {
   canDelete?: boolean
   isLast?: boolean
   onRequestDelete?: (comment: Comment) => void
-  showTargetName?: boolean
 }
 
-const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDelete, showTargetName }) => {
+const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDelete }) => {
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
 
   const { data: account } = useQuery({
@@ -31,7 +30,6 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDele
 
   const ensName = account?.ens?.name
   const displayName = ensName ? beautifyName(ensName) : truncateAddress(comment.author_address as `0x${string}`)
-  const targetName = comment.name || comment.ens_name
 
   return (
     <div className={cn('border-tertiary flex w-full gap-2.5 border-b py-3', isLast ? 'border-b-0' : '')}>
@@ -81,11 +79,6 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDele
             )}
           </div>
         </div>
-        {showTargetName && targetName && (
-          <Link href={`/${targetName}`} className='text-primary w-fit text-sm font-medium hover:underline'>
-            {beautifyName(targetName)}
-          </Link>
-        )}
         <p className='text-foreground text-md font-medium break-words whitespace-pre-wrap'>{comment.body}</p>
       </div>
     </div>

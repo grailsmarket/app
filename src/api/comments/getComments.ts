@@ -4,26 +4,16 @@ import type { CommentsResponse } from '@/types/comment'
 import { authFetch } from '../authFetch'
 
 interface GetCommentsParams {
-  name?: string | null
+  name: string
   cursor?: string
   limit?: number
-  categories?: string[]
-  authorAddress?: string | null
 }
 
-export const getComments = async ({
-  name,
-  cursor,
-  limit = 50,
-  categories = [],
-  authorAddress,
-}: GetCommentsParams): Promise<CommentsResponse> => {
+export const getComments = async ({ name, cursor, limit = 50 }: GetCommentsParams): Promise<CommentsResponse> => {
   const params = new URLSearchParams()
-  if (name) params.set('name', name)
+  params.set('name', name)
   params.set('limit', String(limit))
   if (cursor) params.set('cursor', cursor)
-  if (authorAddress) params.set('author_address', authorAddress)
-  categories.forEach((category) => params.append('clubs[]', category))
 
   const response = await authFetch(`${API_URL}/comments?${params.toString()}`, {
     method: 'GET',

@@ -1,8 +1,6 @@
 export interface Comment {
   id: string
   ens_name_id: number
-  name?: string
-  ens_name?: string
   user_id: number
   body: string
   created_at: string

@@ -14,9 +14,10 @@ const MAX_SELECTED_CLUBS = 10
 interface CategoryMultiSelectProps {
   selectedClubs: string[]
   onSelectedClubsChange: (clubs: string[]) => void
+  compact?: boolean
 }
 
-const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs, onSelectedClubsChange }) => {
+const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs, onSelectedClubsChange, compact }) => {
   const [isOpen, setIsOpen] = useState(false)
   const { categories } = useCategories()
   const dropdownRef = useClickAway(() => setIsOpen(false))
@@ -38,11 +39,17 @@ const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs
   }
 
   return (
-    <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className='relative max-w-1/2'>
+    <div
+      ref={dropdownRef as React.RefObject<HTMLDivElement>}
+      className={cn('relative', compact ? 'w-full' : 'max-w-1/2')}
+    >
       <button
         type='button'
         onClick={() => setIsOpen((open) => !open)}
-        className='border-tertiary hover:border-foreground/50 px-md flex h-10 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent transition-all sm:w-[210px] md:px-3'
+        className={cn(
+          'border-tertiary hover:border-foreground/50 px-md flex h-10 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent transition-all md:px-3',
+          compact ? 'text-sm' : 'sm:w-[210px]'
+        )}
       >
         <div className='flex min-w-0 items-center gap-2'>
           {selectedClubs.length > 0 && (
@@ -59,7 +66,9 @@ const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs
               ))}
             </div>
           )}
-          <p className='text-md truncate font-medium whitespace-nowrap md:text-lg'>{label}</p>
+          <p className={cn('truncate font-medium whitespace-nowrap', compact ? 'text-sm' : 'text-md md:text-lg')}>
+            {label}
+          </p>
         </div>
         <ShortArrow className={cn('h-3 w-3 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
       </button>

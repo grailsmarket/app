@@ -17,6 +17,7 @@ interface FeedFiltersProps {
   selectedClubs: string[]
   onSelectedClubsChange: (clubs: string[]) => void
   ownerPlaceholder?: string
+  compact?: boolean
 }
 
 const FeedFilters: React.FC<FeedFiltersProps> = ({
@@ -28,23 +29,33 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   selectedClubs,
   onSelectedClubsChange,
   ownerPlaceholder = 'Filter owner by ENS or address',
+  compact,
 }) => {
   return (
     <div className='border-tertiary border-b-2'>
-      <div className='mx-auto flex max-w-5xl gap-2 px-3 py-3 sm:px-5'>
-        <div className='flex flex-nowrap gap-2 sm:items-center sm:justify-between'>
-          <div className='flex gap-2 sm:flex-row sm:items-center'>
-            <CategoryMultiSelect selectedClubs={selectedClubs} onSelectedClubsChange={onSelectedClubsChange} />
-            <div className='relative'>
+      <div className={cn('mx-auto flex max-w-5xl gap-2 px-3 py-3 sm:px-5', compact && 'px-2 py-2 sm:px-2')}>
+        <div
+          className={cn('flex gap-2 sm:items-center sm:justify-between', compact ? 'w-full flex-col' : 'flex-nowrap')}
+        >
+          <div className={cn('flex gap-2 sm:flex-row sm:items-center', compact && 'w-full flex-col')}>
+            <CategoryMultiSelect
+              selectedClubs={selectedClubs}
+              onSelectedClubsChange={onSelectedClubsChange}
+              compact={compact}
+            />
+            <div className={cn('relative', compact && 'w-full')}>
               <input
                 value={ownerInput}
                 onChange={(e) => onOwnerInputChange(e.target.value)}
                 placeholder={ownerPlaceholder}
-                className='border-tertiary text-md placeholder:text-neutral focus:border-foreground/50 h-10 w-full rounded-sm border-2 bg-transparent px-3 font-medium transition-colors outline-none sm:w-[300px]'
+                className={cn(
+                  'border-tertiary placeholder:text-neutral focus:border-foreground/50 h-10 w-full rounded-sm border-2 bg-transparent px-3 font-medium transition-colors outline-none',
+                  compact ? 'text-sm' : 'text-md sm:w-[300px]'
+                )}
               />
             </div>
             {oppositeIdentifier && (
-              <div className='px-md hidden items-center gap-1.5 md:flex md:px-0'>
+              <div className={cn('px-md items-center gap-1.5 md:px-0', compact ? 'flex px-0' : 'hidden md:flex')}>
                 {ownerName && (
                   <Image
                     src={getMetadataAssetUrl(ownerName, 'avatar')}
@@ -54,7 +65,13 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
                     className='h-5 w-5 rounded-full md:h-6.5 md:w-6.5'
                   />
                 )}
-                <p className={cn('text-md font-medium md:text-lg', ownerError && 'text-red-400')}>
+                <p
+                  className={cn(
+                    'font-medium',
+                    compact ? 'text-sm' : 'text-md md:text-lg',
+                    ownerError && 'text-red-400'
+                  )}
+                >
                   {isAddress(oppositeIdentifier) ? truncateAddress(oppositeIdentifier) : ownerName || ownerError}
                 </p>
               </div>

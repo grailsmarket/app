@@ -95,7 +95,7 @@ const useWatchlist = (name: string, tokenId: string, fetchWatchSettings = true, 
           result.watchlistEntry.ensName,
           labelhash(result.watchlistEntry.ensName.replace('.eth', ''))
         )
-        dispatch(addUserWatchlistDomain(domain))
+        dispatch(addUserWatchlistDomain({ ...domain, watchlist_record_id: result.watchlistEntry.id }))
       } else {
         if (hasWatchlistedBefore === undefined) setHasWatchlistedBefore(false)
         dispatch(removeUserWatchlistDomain(result.watchlistEntry?.id))

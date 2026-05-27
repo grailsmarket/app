@@ -8,16 +8,23 @@ interface GetCommentFeedParams {
   clubs?: string[]
   page?: number
   limit?: number
+  watchlist?: boolean
 }
 
-export const getCommentFeed = async ({ owner, clubs = [], page = 1, limit = 20 }: GetCommentFeedParams) => {
+export const getCommentFeed = async ({
+  owner,
+  clubs = [],
+  page = 1,
+  limit = 20,
+  watchlist = false,
+}: GetCommentFeedParams) => {
   const params = new URLSearchParams()
   params.set('page', String(page))
   params.set('limit', String(limit))
   if (owner) params.set('owner', owner)
   if (clubs.length > 0) params.set('clubs', clubs.join(','))
 
-  const response = await authFetch(`${API_URL}/comments/feed?${params.toString()}`, {
+  const response = await authFetch(`${API_URL}/comments/feed${watchlist ? '/watchlist' : ''}?${params.toString()}`, {
     method: 'GET',
     headers: { Accept: 'application/json' },
   })

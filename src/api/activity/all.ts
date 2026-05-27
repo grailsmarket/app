@@ -8,16 +8,29 @@ interface FetchAllActivityOptions {
   pageParam: number
   eventTypes: ActivityTypeFilterType[]
   categories?: string
+  platform?: string
+  weiAmount?: string
+  watchlist?: boolean
 }
 
-export const fetchAllActivity = async ({ limit, pageParam, eventTypes, categories }: FetchAllActivityOptions) => {
+export const fetchAllActivity = async ({
+  limit,
+  pageParam,
+  eventTypes,
+  categories,
+  platform,
+  weiAmount,
+  watchlist = false,
+}: FetchAllActivityOptions) => {
   const params = new URLSearchParams()
   params.set('limit', String(limit))
   params.set('page', String(pageParam))
   eventTypes.forEach((eventType) => params.append('event_type', eventType))
   if (categories) params.set('club', categories)
+  if (platform) params.set('platform', platform)
+  if (weiAmount) params.set('wei_amount', weiAmount)
 
-  const response = await fetch(`${API_URL}/activity?${params.toString()}`)
+  const response = await fetch(`${API_URL}/activity${watchlist ? '/watchlist' : ''}?${params.toString()}`)
   const data = (await response.json()) as APIResponseType<{
     results: ActivityType[]
     pagination: PaginationType

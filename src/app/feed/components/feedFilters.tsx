@@ -1,82 +1,95 @@
 'use client'
 
-import React from 'react'
-import { cn } from '@/utils/tailwind'
-import CategoryMultiSelect from './categoryMultiSelect'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { isAddress } from 'viem'
-import { truncateAddress } from 'ethereum-identity-kit'
-import { getMetadataAssetUrl } from '@/utils/web3/ens'
+import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
 
+export type FeedTab = 'all' | 'trending' | 'comments' | 'activity' | 'watchlist'
+
+export const FEED_TABS: { label: string; value: FeedTab }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Trending', value: 'trending' },
+  { label: 'Comments', value: 'comments' },
+  { label: 'Activity', value: 'activity' },
+  { label: 'Watchlist', value: 'watchlist' },
+]
+
 interface FeedFiltersProps {
-  ownerInput: string
-  onOwnerInputChange: (value: string) => void
-  ownerName?: string | null
-  oppositeIdentifier?: string | null
-  ownerError: string | null
-  selectedClubs: string[]
-  onSelectedClubsChange: (clubs: string[]) => void
-  selectedActivityTypeCount: number
-  onToggleActivityFilters: () => void
+  selectedTab: FeedTab
+  onTabChange: (tab: FeedTab) => void
+  selectedFilterCount: number
+  onToggleFilters: () => void
 }
 
 const FeedFilters: React.FC<FeedFiltersProps> = ({
-  ownerInput,
-  onOwnerInputChange,
-  ownerName,
-  oppositeIdentifier,
-  ownerError,
-  selectedClubs,
-  onSelectedClubsChange,
-  selectedActivityTypeCount,
-  onToggleActivityFilters,
+  selectedTab,
+  onTabChange,
+  selectedFilterCount,
+  onToggleFilters,
 }) => {
+  const [mounted, setMounted] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      const container = containerRef.current
+      if (!container || !mounted) return
+
+      const activeIndex = FEED_TABS.findIndex((tab) => tab.value === selectedTab)
+      const activeButton = container.querySelectorAll('button')[activeIndex] as HTMLElement | undefined
+      if (!activeButton) return
+
+      setIndicatorStyle({ left: activeButton.offsetLeft, width: activeButton.offsetWidth })
+    }
+
+    updateIndicator()
+    window.addEventListener('resize', updateIndicator)
+    return () => window.removeEventListener('resize', updateIndicator)
+  }, [selectedTab, mounted])
+
   return (
-    <div className='border-tertiary border-b-2'>
-      <div className='mx-auto flex max-w-5xl gap-2 px-3 py-3 sm:px-5'>
-        <div className='flex flex-nowrap gap-2 sm:items-center sm:justify-between'>
-          <div className='flex gap-2 sm:flex-row sm:items-center'>
-            <button
-              type='button'
-              onClick={onToggleActivityFilters}
-              className='border-foreground relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border opacity-80 transition-opacity hover:opacity-100'
-              aria-label='Toggle activity filters'
-            >
-              <Image src={FilterIcon} alt='Filter' width={16} height={16} />
-              {selectedActivityTypeCount > 0 && (
-                <span className='bg-primary text-background absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold'>
-                  {selectedActivityTypeCount}
-                </span>
-              )}
-            </button>
-            <CategoryMultiSelect selectedClubs={selectedClubs} onSelectedClubsChange={onSelectedClubsChange} />
-            <div className='relative'>
-              <input
-                value={ownerInput}
-                onChange={(e) => onOwnerInputChange(e.target.value)}
-                placeholder='Filter owner by ENS or address'
-                className='border-tertiary text-md placeholder:text-neutral focus:border-foreground/50 h-10 w-full rounded-sm border-2 bg-transparent px-3 font-medium transition-colors outline-none sm:w-[300px]'
-              />
-            </div>
-            {oppositeIdentifier && (
-              <div className='px-md hidden items-center gap-1.5 md:flex md:px-0'>
-                {ownerName && (
-                  <Image
-                    src={getMetadataAssetUrl(ownerName, 'avatar')}
-                    alt={ownerName ?? ''}
-                    width={26}
-                    height={26}
-                    className='h-5 w-5 rounded-full md:h-6.5 md:w-6.5'
-                  />
-                )}
-                <p className={cn('text-md font-medium md:text-lg', ownerError && 'text-red-400')}>
-                  {isAddress(oppositeIdentifier) ? truncateAddress(oppositeIdentifier) : ownerName || ownerError}
-                </p>
-              </div>
+    <div className='bg-background border-tertiary xs:text-lg text-md xs:gap-2 sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 sm:text-xl md:min-h-14 lg:gap-4'>
+      <button
+        type='button'
+        onClick={onToggleFilters}
+        className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
+        aria-label='Toggle filters'
+      >
+        <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
+        {selectedFilterCount > 0 && (
+          <span className='bg-primary text-background absolute top-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold'>
+            {selectedFilterCount}
+          </span>
+        )}
+      </button>
+      <div ref={containerRef} className='relative flex h-10 gap-4'>
+        {mounted && (
+          <div
+            className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
+            style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+          />
+        )}
+        {FEED_TABS.map((tab) => (
+          <button
+            key={tab.value}
+            type='button'
+            onClick={() => onTabChange(tab.value)}
+            className={cn(
+              'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+              selectedTab === tab.value
+                ? 'text-primary font-bold opacity-100'
+                : 'font-semibold opacity-50 transition-colors hover:opacity-80'
             )}
-          </div>
-        </div>
+          >
+            <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+          </button>
+        ))}
       </div>
     </div>
   )

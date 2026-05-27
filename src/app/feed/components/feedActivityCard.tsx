@@ -23,6 +23,9 @@ interface FeedActivityCardProps {
 }
 
 const EVENT_COPY: Record<ProfileActivityEventType, { verb: string; actorLabel: string; counterpartyLabel?: string }> = {
+  registration: { verb: 'was registered', actorLabel: 'Registered by' },
+  sale: { verb: 'was sold', actorLabel: 'Seller', counterpartyLabel: 'Buyer' },
+  offer: { verb: 'received an offer', actorLabel: 'Offer from', counterpartyLabel: 'Owner' },
   listed: { verb: 'listed', actorLabel: 'Listed by' },
   offer_made: { verb: 'received an offer', actorLabel: 'Offer from', counterpartyLabel: 'Owner' },
   bought: { verb: 'was bought', actorLabel: 'Buyer', counterpartyLabel: 'Seller' },

@@ -8,14 +8,23 @@ import { useOwnerAddressLookup } from '@/hooks/comments/useOwnerAddressLookup'
 import { useFeedActivity } from '@/hooks/activity/useFeedActivity'
 import { cn } from '@/utils/tailwind'
 import FeedFilters from './feedFilters'
+import type { FeedTab } from './feedFilters'
 import FeedCommentCard from './feedCommentCard'
 import FeedActivityCard from './feedActivityCard'
 import ActivityTypeSidebar from './activityTypeSidebar'
+import type { FeedPlatformFilter } from './activityTypeSidebar'
 import ReplyPreview from './replyPreview'
 import FeedComposer from './feedComposer'
 import FeedLoading from './feedLoading'
 import type { ReplyContext } from './types'
 import type { ActivityTypeFilterType } from '@/types/filters/activity'
+import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
+
+const TRENDING_ACTIVITY_TYPES = ['registration', 'sale', 'offer'] as ActivityTypeFilterType[]
+const TRENDING_ACTIVITY_FILTERS = ACTIVITY_TYPE_FILTERS.filter((filter) =>
+  TRENDING_ACTIVITY_TYPES.includes(filter.value)
+)
+const TRENDING_MIN_WEI = '100000000000000000'
 
 type FeedItem =
   | {
@@ -27,10 +36,12 @@ type FeedItem =
   | { type: 'activity'; id: string; timestamp: string; data: ReturnType<typeof useFeedActivity>['activities'][number] }
 
 const CommentsFeed: React.FC = () => {
+  const [selectedTab, setSelectedTab] = useState<FeedTab>('all')
   const [ownerInput, setOwnerInput] = useState('')
   const [selectedClubs, setSelectedClubs] = useState<string[]>([])
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<ActivityTypeFilterType[]>([])
-  const [isActivityFiltersOpen, setIsActivityFiltersOpen] = useState(false)
+  const [selectedPlatform, setSelectedPlatform] = useState<FeedPlatformFilter>('all')
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -38,9 +49,29 @@ const CommentsFeed: React.FC = () => {
   const isLoadingOlder = useRef(false)
 
   const { ownerAddress, ownerEnsName, oppositeIdentifier, ownerError } = useOwnerAddressLookup(ownerInput)
+  const showComments = selectedTab !== 'activity'
+  const showActivity = selectedTab !== 'comments'
+  const showCommentFilters = selectedTab !== 'activity'
+  const showActivityFilters = selectedTab !== 'comments'
+  const isTrending = selectedTab === 'trending'
+  const isWatchlist = selectedTab === 'watchlist'
+  const visibleActivityTypeFilters = isTrending ? TRENDING_ACTIVITY_FILTERS : ACTIVITY_TYPE_FILTERS
+  const activityEventTypes = useMemo(
+    () =>
+      isTrending
+        ? selectedActivityTypes.length > 0
+          ? selectedActivityTypes.filter((type) => TRENDING_ACTIVITY_TYPES.includes(type))
+          : TRENDING_ACTIVITY_TYPES
+        : selectedActivityTypes,
+    [isTrending, selectedActivityTypes]
+  )
+  const activityPlatform = selectedPlatform === 'all' ? undefined : selectedPlatform
+
   const { comments, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useCommentFeed({
     owner: ownerAddress,
     clubs: selectedClubs,
+    watchlist: isWatchlist,
+    enabled: showComments,
   })
   const {
     activities,
@@ -48,30 +79,49 @@ const CommentsFeed: React.FC = () => {
     isFetchingNextPage: isFetchingNextActivityPage,
     hasNextPage: hasNextActivityPage,
     fetchNextPage: fetchNextActivityPage,
-  } = useFeedActivity({ eventTypes: selectedActivityTypes })
+  } = useFeedActivity({
+    eventTypes: activityEventTypes,
+    clubs: selectedClubs,
+    platform: activityPlatform,
+    weiAmount: isTrending ? TRENDING_MIN_WEI : undefined,
+    watchlist: isWatchlist,
+    enabled: showActivity,
+  })
 
   const feedItems = useMemo<FeedItem[]>(() => {
     return [
-      ...comments.map((comment) => ({
+      ...(showComments ? comments : []).map((comment) => ({
         type: 'comment' as const,
         id: comment.id,
         timestamp: comment.created_at,
         data: comment,
       })),
-      ...activities.map((activity) => ({
+      ...(showActivity ? activities : []).map((activity) => ({
         type: 'activity' as const,
         id: String(activity.id),
         timestamp: activity.created_at,
         data: activity,
       })),
     ].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-  }, [activities, comments])
+  }, [activities, comments, showActivity, showComments])
 
   useFeedScrollLock()
   const { viewport, viewportStyle } = useFeedViewport()
   const isInitialLoading = isLoading || isActivityLoading
   const isFetchingMore = isFetchingNextPage || isFetchingNextActivityPage
   const hasMore = !!hasNextPage || !!hasNextActivityPage
+
+  const selectedFilterCount =
+    selectedClubs.length +
+    (ownerInput && showCommentFilters ? 1 : 0) +
+    (selectedPlatform !== 'all' && showActivityFilters ? 1 : 0) +
+    (showActivityFilters ? selectedActivityTypes.length : 0)
+  const canClearFilters = selectedFilterCount > 0
+
+  useEffect(() => {
+    if (!isTrending) return
+    setSelectedActivityTypes((current) => current.filter((type) => TRENDING_ACTIVITY_TYPES.includes(type)))
+  }, [isTrending])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -121,30 +171,43 @@ const CommentsFeed: React.FC = () => {
       )}
     >
       <FeedFilters
-        ownerInput={ownerInput}
-        onOwnerInputChange={setOwnerInput}
-        ownerName={ownerEnsName}
-        oppositeIdentifier={oppositeIdentifier}
-        ownerError={ownerError}
-        selectedClubs={selectedClubs}
-        onSelectedClubsChange={setSelectedClubs}
-        selectedActivityTypeCount={selectedActivityTypes.length}
-        onToggleActivityFilters={() => setIsActivityFiltersOpen((isOpen) => !isOpen)}
+        selectedTab={selectedTab}
+        onTabChange={setSelectedTab}
+        selectedFilterCount={selectedFilterCount}
+        onToggleFilters={() => setIsFiltersOpen((isOpen) => !isOpen)}
       />
 
       <div className='relative flex min-h-0 flex-1 flex-col lg:flex-row'>
         <ActivityTypeSidebar
-          isOpen={isActivityFiltersOpen}
+          isOpen={isFiltersOpen}
           selectedTypes={selectedActivityTypes}
           onToggleType={toggleActivityType}
-          onClear={() => setSelectedActivityTypes([])}
-          onClose={() => setIsActivityFiltersOpen(false)}
+          activityTypeFilters={visibleActivityTypeFilters}
+          showCommentFilters={showCommentFilters}
+          showActivityFilters={showActivityFilters}
+          ownerInput={ownerInput}
+          onOwnerInputChange={setOwnerInput}
+          ownerName={ownerEnsName}
+          oppositeIdentifier={oppositeIdentifier}
+          ownerError={ownerError}
+          selectedClubs={selectedClubs}
+          onSelectedClubsChange={setSelectedClubs}
+          platform={selectedPlatform}
+          onPlatformChange={setSelectedPlatform}
+          canClear={canClearFilters}
+          onClear={() => {
+            setOwnerInput('')
+            setSelectedClubs([])
+            setSelectedActivityTypes([])
+            setSelectedPlatform('all')
+          }}
+          onClose={() => setIsFiltersOpen(false)}
         />
-        {isActivityFiltersOpen && (
+        {isFiltersOpen && (
           <button
             type='button'
-            aria-label='Close activity filters'
-            onClick={() => setIsActivityFiltersOpen(false)}
+            aria-label='Close filters'
+            onClick={() => setIsFiltersOpen(false)}
             className='absolute inset-0 z-30 cursor-default bg-black/20 md:hidden'
           />
         )}

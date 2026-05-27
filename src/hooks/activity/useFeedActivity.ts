@@ -13,17 +13,31 @@ const ALL_ACTIVITY_TYPES = ACTIVITY_TYPE_FILTERS.map((filter) => filter.value)
 
 interface UseFeedActivityParams {
   eventTypes: ActivityTypeFilterType[]
+  clubs?: string[]
+  platform?: string
+  weiAmount?: string
+  watchlist?: boolean
+  enabled?: boolean
 }
 
-export const useFeedActivity = ({ eventTypes }: UseFeedActivityParams) => {
+export const useFeedActivity = ({
+  eventTypes,
+  clubs = [],
+  platform,
+  weiAmount,
+  watchlist = false,
+  enabled = true,
+}: UseFeedActivityParams) => {
   const [liveActivities, setLiveActivities] = useState<ActivityType[]>([])
   const wsRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
     setLiveActivities([])
-  }, [eventTypes])
+  }, [eventTypes, clubs, platform, weiAmount, watchlist, enabled])
 
   useEffect(() => {
+    if (!enabled || watchlist) return
+
     const baseUrl = API_URL.replace(/\/api\/v1$/, '')
     const wsUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://')
     const ws = new WebSocket(`${wsUrl}/ws/activity`)
@@ -51,6 +65,9 @@ export const useFeedActivity = ({ eventTypes }: UseFeedActivityParams) => {
 
         const activity = message.data as ActivityType
         if (eventTypes.length > 0 && !eventTypes.includes(activity.event_type as ActivityTypeFilterType)) return
+        if (platform && activity.platform?.toLowerCase() !== platform) return
+        if (clubs.length > 0 && !clubs.some((club) => activity.clubs?.includes(club))) return
+        if (weiAmount && BigInt(activity.price_wei || '0') < BigInt(weiAmount)) return
 
         setLiveActivities((prev) => {
           const next = [activity, ...prev.filter((item) => item.id !== activity.id)]
@@ -71,19 +88,24 @@ export const useFeedActivity = ({ eventTypes }: UseFeedActivityParams) => {
       }
       ws.close()
     }
-  }, [eventTypes])
+  }, [eventTypes, clubs, platform, weiAmount, watchlist, enabled])
 
   const query = useInfiniteQuery({
-    queryKey: ['feed', 'activity', eventTypes],
+    queryKey: ['feed', 'activity', eventTypes, clubs, platform ?? null, weiAmount ?? null, watchlist],
     queryFn: ({ pageParam }) =>
       fetchAllActivity({
         limit: PAGE_SIZE,
         pageParam,
         eventTypes,
+        categories: clubs.length > 0 ? clubs.join(',') : undefined,
+        platform,
+        weiAmount,
+        watchlist,
       }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     staleTime: 15_000,
+    enabled,
   })
 
   const historicalActivities = useMemo(() => {

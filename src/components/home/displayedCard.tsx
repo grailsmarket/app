@@ -28,6 +28,7 @@ const DisplayedCards: React.FC = () => {
   const [containerWidth, setContainerWidth] = useState(0)
   const { width } = useWindowSize()
   const [isMounted, setIsMounted] = useState(false)
+  const [isPositioned, setIsPositioned] = useState(false)
   const [trackPos, setTrackPos] = useState(0)
   const [enableTransition, setEnableTransition] = useState(true)
   const [isPausedByUser, setIsPausedByUser] = useState(false)
@@ -100,15 +101,19 @@ const DisplayedCards: React.FC = () => {
     return [...domains.slice(-c), ...domains, ...domains.slice(0, c)]
   }, [domains, cloneCount])
 
-  // Initialize trackPos to cloneCount (first real card) once domains load
+  // Initialize trackPos to the first real card once domains load AND the
+  // container has been measured. Waiting for containerWidth guarantees
+  // visibleCount/cloneCount/step are final, so the carousel is revealed in its
+  // final position with the correct number of cards (no post-load reshuffle).
   const initializedRef = useRef(false)
   useEffect(() => {
-    if (domains && domains.length > 0 && !initializedRef.current) {
+    if (domains && domains.length > 0 && containerWidth > 0 && !initializedRef.current) {
       initializedRef.current = true
       setEnableTransition(false)
       setTrackPos(Math.min(cloneCount, domains.length))
+      setIsPositioned(true)
     }
-  }, [domains, cloneCount])
+  }, [domains, cloneCount, containerWidth])
 
   // Re-enable transition after initialization snap
   useEffect(() => {
@@ -223,6 +228,13 @@ const DisplayedCards: React.FC = () => {
   const smallMobileOffset = hydratedWidth && hydratedWidth < 440 ? (hydratedWidth - cardWidth) / 2 - step : 0
   const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
+  const hasDomains = !!domains && domains.length > 0
+  const showEmpty = !isLoading && !hasDomains
+  // Only reveal the carousel once everything that affects what's shown and
+  // where it sits has settled: mount/hydration, container + window
+  // measurement, the loaded domains, and the initial track position.
+  const isReady = isMounted && !isLoading && containerWidth > 0 && (width ?? 0) > 0 && hasDomains && isPositioned
+
   // Adjusts the width to adapt to how many cards are visible, but not wider than the container width
   // which will help show more than 1 card on mobile
   const viewportWidth = Math.min(containerWidth, visibleCount * cardWidth + (visibleCount - 1) * CARD_GAP)
@@ -234,7 +246,7 @@ const DisplayedCards: React.FC = () => {
           className='relative mx-auto'
           style={{ width: containerWidth && containerWidth > 440 ? viewportWidth : '100%' }}
         >
-          {!isLoading && totalCards > visibleCount && (
+          {isReady && totalCards > visibleCount && (
             <>
               <button
                 onClick={() => handleManualNav(-1)}
@@ -270,34 +282,34 @@ const DisplayedCards: React.FC = () => {
               }}
               onTransitionEnd={handleTransitionEnd}
             >
-              {isLoading
-                ? Array.from({ length: hydratedWidth && hydratedWidth < 440 ? 3 : visibleCount }).map((_, index) => (
-                  <div
-                    key={index}
-                    className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
-                    style={{ width: cardWidth, height: cardHeight }}
-                  >
-                    <LoadingCard />
-                  </div>
-                ))
-                : trackItems.map((domain, index) => (
-                  <div
-                    key={`${domain.name}-${index}`}
-                    className='shadow-homeCard shrink-0 rounded-xl'
-                    style={{ width: cardWidth, height: cardHeight }}
-                  >
-                    <Card
-                      domain={domain}
-                      className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
-                      isHomeCarousel={true}
-                    />
-                  </div>
-                ))}
+              {isReady
+                ? trackItems.map((domain, index) => (
+                    <div
+                      key={`${domain.name}-${index}`}
+                      className='shadow-homeCard shrink-0 rounded-xl'
+                      style={{ width: cardWidth, height: cardHeight }}
+                    >
+                      <Card
+                        domain={domain}
+                        className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+                        isHomeCarousel={true}
+                      />
+                    </div>
+                  ))
+                : showEmpty
+                  ? null
+                  : Array.from({ length: hydratedWidth && hydratedWidth < 440 ? 3 : visibleCount }).map((_, index) => (
+                      <div
+                        key={index}
+                        className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                        style={{ width: cardWidth, height: cardHeight }}
+                      >
+                        <LoadingCard />
+                      </div>
+                    ))}
             </div>
 
-            {!isLoading && (!domains || domains.length === 0) && (
-              <div className='flex h-full items-center justify-center'>No domains found</div>
-            )}
+            {showEmpty && <div className='flex h-full items-center justify-center'>No domains found</div>}
           </div>
         </div>
       </div>

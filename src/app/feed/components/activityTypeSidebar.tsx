@@ -37,6 +37,10 @@ interface ActivityTypeSidebarProps {
   onSelectedClubsChange: (clubs: string[]) => void
   platform: FeedPlatformFilter
   onPlatformChange: (platform: FeedPlatformFilter) => void
+  minPriceEth: string
+  maxPriceEth: string
+  onMinPriceEthChange: (value: string) => void
+  onMaxPriceEthChange: (value: string) => void
   canClear: boolean
   onClear: () => void
   onClose: () => void
@@ -58,10 +62,18 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   onSelectedClubsChange,
   platform,
   onPlatformChange,
+  minPriceEth,
+  maxPriceEth,
+  onMinPriceEthChange,
+  onMaxPriceEthChange,
   canClear,
   onClear,
   onClose,
 }) => {
+  const handlePriceChange = (value: string, onChange: (value: string) => void) => {
+    if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) onChange(value)
+  }
+
   return (
     <aside
       className={cn(
@@ -149,6 +161,27 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
                     </div>
                   )
                 })}
+              </div>
+            </div>
+            <div className='flex flex-col gap-2 p-3'>
+              <p className='text-lg leading-[18px] font-medium'>Price</p>
+              <div className='flex gap-2'>
+                <input
+                  type='text'
+                  inputMode='decimal'
+                  value={minPriceEth}
+                  onChange={(e) => handlePriceChange(e.target.value, onMinPriceEthChange)}
+                  placeholder='Min ETH'
+                  className='border-tertiary text-md placeholder:text-neutral focus:border-foreground/50 h-10 w-1/2 rounded-sm border-2 bg-transparent px-3 font-medium transition-colors outline-none'
+                />
+                <input
+                  type='text'
+                  inputMode='decimal'
+                  value={maxPriceEth}
+                  onChange={(e) => handlePriceChange(e.target.value, onMaxPriceEthChange)}
+                  placeholder='Max ETH'
+                  className='border-tertiary text-md placeholder:text-neutral focus:border-foreground/50 h-10 w-1/2 rounded-sm border-2 bg-transparent px-3 font-medium transition-colors outline-none'
+                />
               </div>
             </div>
             <div className='w-full p-3 pb-0'>

@@ -2,6 +2,7 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { ActivityType } from '@/types/profile'
+import { authFetch } from '../authFetch'
 
 interface FetchAllActivityOptions {
   limit: number
@@ -9,7 +10,8 @@ interface FetchAllActivityOptions {
   eventTypes: ActivityTypeFilterType[]
   categories?: string
   platform?: string
-  weiAmount?: string
+  minPriceWei?: string
+  maxPriceWei?: string
   watchlist?: boolean
 }
 
@@ -19,7 +21,8 @@ export const fetchAllActivity = async ({
   eventTypes,
   categories,
   platform,
-  weiAmount,
+  minPriceWei,
+  maxPriceWei,
   watchlist = false,
 }: FetchAllActivityOptions) => {
   const params = new URLSearchParams()
@@ -28,9 +31,12 @@ export const fetchAllActivity = async ({
   eventTypes.forEach((eventType) => params.append('event_type', eventType))
   if (categories) params.set('club', categories)
   if (platform) params.set('platform', platform)
-  if (weiAmount) params.set('wei_amount', weiAmount)
+  if (minPriceWei) params.set('min_price_wei', minPriceWei)
+  if (maxPriceWei) params.set('max_price_wei', maxPriceWei)
+  if (watchlist) params.set('watchlist', 'true')
 
-  const response = await fetch(`${API_URL}/activity${watchlist ? '/watchlist' : ''}?${params.toString()}`)
+  const fetchActivity = watchlist ? authFetch : fetch
+  const response = await fetchActivity(`${API_URL}/activity?${params.toString()}`)
   const data = (await response.json()) as APIResponseType<{
     results: ActivityType[]
     pagination: PaginationType

@@ -15,7 +15,8 @@ interface UseFeedActivityParams {
   eventTypes: ActivityTypeFilterType[]
   clubs?: string[]
   platform?: string
-  weiAmount?: string
+  minPriceWei?: string
+  maxPriceWei?: string
   watchlist?: boolean
   enabled?: boolean
 }
@@ -24,7 +25,8 @@ export const useFeedActivity = ({
   eventTypes,
   clubs = [],
   platform,
-  weiAmount,
+  minPriceWei,
+  maxPriceWei,
   watchlist = false,
   enabled = true,
 }: UseFeedActivityParams) => {
@@ -33,7 +35,7 @@ export const useFeedActivity = ({
 
   useEffect(() => {
     setLiveActivities([])
-  }, [eventTypes, clubs, platform, weiAmount, watchlist, enabled])
+  }, [eventTypes, clubs, platform, minPriceWei, maxPriceWei, watchlist, enabled])
 
   useEffect(() => {
     if (!enabled || watchlist) return
@@ -51,6 +53,16 @@ export const useFeedActivity = ({
           event_types: eventTypes.length > 0 ? eventTypes : ALL_ACTIVITY_TYPES,
         })
       )
+
+      if (minPriceWei || maxPriceWei) {
+        ws.send(
+          JSON.stringify({
+            type: 'set_price_filter',
+            min_price_wei: minPriceWei,
+            max_price_wei: maxPriceWei,
+          })
+        )
+      }
     }
 
     ws.onopen = () => {
@@ -67,7 +79,6 @@ export const useFeedActivity = ({
         if (eventTypes.length > 0 && !eventTypes.includes(activity.event_type as ActivityTypeFilterType)) return
         if (platform && activity.platform?.toLowerCase() !== platform) return
         if (clubs.length > 0 && !clubs.some((club) => activity.clubs?.includes(club))) return
-        if (weiAmount && BigInt(activity.price_wei || '0') < BigInt(weiAmount)) return
 
         setLiveActivities((prev) => {
           const next = [activity, ...prev.filter((item) => item.id !== activity.id)]
@@ -88,10 +99,19 @@ export const useFeedActivity = ({
       }
       ws.close()
     }
-  }, [eventTypes, clubs, platform, weiAmount, watchlist, enabled])
+  }, [eventTypes, clubs, platform, minPriceWei, maxPriceWei, watchlist, enabled])
 
   const query = useInfiniteQuery({
-    queryKey: ['feed', 'activity', eventTypes, clubs, platform ?? null, weiAmount ?? null, watchlist],
+    queryKey: [
+      'feed',
+      'activity',
+      eventTypes,
+      clubs,
+      platform ?? null,
+      minPriceWei ?? null,
+      maxPriceWei ?? null,
+      watchlist,
+    ],
     queryFn: ({ pageParam }) =>
       fetchAllActivity({
         limit: PAGE_SIZE,
@@ -99,7 +119,8 @@ export const useFeedActivity = ({
         eventTypes,
         categories: clubs.length > 0 ? clubs.join(',') : undefined,
         platform,
-        weiAmount,
+        minPriceWei,
+        maxPriceWei,
         watchlist,
       }),
     initialPageParam: 1,

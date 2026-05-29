@@ -19,12 +19,23 @@ import FeedLoading from './feedLoading'
 import type { ReplyContext } from './types'
 import type { ActivityTypeFilterType } from '@/types/filters/activity'
 import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
+import { parseEther } from 'viem'
 
 const TRENDING_ACTIVITY_TYPES = ['registration', 'sale', 'offer'] as ActivityTypeFilterType[]
 const TRENDING_ACTIVITY_FILTERS = ACTIVITY_TYPE_FILTERS.filter((filter) =>
   TRENDING_ACTIVITY_TYPES.includes(filter.value)
 )
 const TRENDING_MIN_WEI = '100000000000000000'
+
+const ethToWei = (value: string) => {
+  if (!value) return undefined
+
+  try {
+    return parseEther(value).toString()
+  } catch {
+    return undefined
+  }
+}
 
 type FeedItem =
   | {
@@ -41,6 +52,8 @@ const CommentsFeed: React.FC = () => {
   const [selectedClubs, setSelectedClubs] = useState<string[]>([])
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<ActivityTypeFilterType[]>([])
   const [selectedPlatform, setSelectedPlatform] = useState<FeedPlatformFilter>('all')
+  const [minPriceEth, setMinPriceEth] = useState('')
+  const [maxPriceEth, setMaxPriceEth] = useState('')
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
@@ -66,6 +79,9 @@ const CommentsFeed: React.FC = () => {
     [isTrending, selectedActivityTypes]
   )
   const activityPlatform = selectedPlatform === 'all' ? undefined : selectedPlatform
+  const selectedMinPriceWei = ethToWei(minPriceEth)
+  const selectedMaxPriceWei = ethToWei(maxPriceEth)
+  const minPriceWei = selectedMinPriceWei ?? (isTrending ? TRENDING_MIN_WEI : undefined)
 
   const { comments, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useCommentFeed({
     owner: ownerAddress,
@@ -83,7 +99,8 @@ const CommentsFeed: React.FC = () => {
     eventTypes: activityEventTypes,
     clubs: selectedClubs,
     platform: activityPlatform,
-    weiAmount: isTrending ? TRENDING_MIN_WEI : undefined,
+    minPriceWei,
+    maxPriceWei: selectedMaxPriceWei,
     watchlist: isWatchlist,
     enabled: showActivity,
   })
@@ -115,6 +132,8 @@ const CommentsFeed: React.FC = () => {
     selectedClubs.length +
     (ownerInput && showCommentFilters ? 1 : 0) +
     (selectedPlatform !== 'all' && showActivityFilters ? 1 : 0) +
+    (minPriceEth && showActivityFilters ? 1 : 0) +
+    (maxPriceEth && showActivityFilters ? 1 : 0) +
     (showActivityFilters ? selectedActivityTypes.length : 0)
   const canClearFilters = selectedFilterCount > 0
 
@@ -194,12 +213,18 @@ const CommentsFeed: React.FC = () => {
           onSelectedClubsChange={setSelectedClubs}
           platform={selectedPlatform}
           onPlatformChange={setSelectedPlatform}
+          minPriceEth={minPriceEth}
+          maxPriceEth={maxPriceEth}
+          onMinPriceEthChange={setMinPriceEth}
+          onMaxPriceEthChange={setMaxPriceEth}
           canClear={canClearFilters}
           onClear={() => {
             setOwnerInput('')
             setSelectedClubs([])
             setSelectedActivityTypes([])
             setSelectedPlatform('all')
+            setMinPriceEth('')
+            setMaxPriceEth('')
           }}
           onClose={() => setIsFiltersOpen(false)}
         />

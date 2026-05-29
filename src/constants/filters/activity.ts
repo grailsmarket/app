@@ -20,9 +20,6 @@ export const ACTIVITY_TYPE_FILTERS_LABELS = [
 ] as const
 
 export const ACTIVITY_TYPE_FILTERS = [
-  { label: 'Registration', value: 'registration' },
-  { label: 'Sale', value: 'sale' },
-  { label: 'Offer', value: 'offer' },
   { label: 'Listing', value: 'listed' },
   { label: 'Bought', value: 'bought' },
   { label: 'Sold', value: 'sold' },

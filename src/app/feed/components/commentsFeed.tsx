@@ -26,7 +26,7 @@ import type { FeedTabValue } from '@/types/filters/feed'
 import { useUserContext } from '@/context/user'
 import SignInButton from '@/components/ui/buttons/signInButton'
 
-const TRENDING_ACTIVITY_TYPES = ['registration', 'sale', 'offer'] as ActivityTypeFilterType[]
+const TRENDING_ACTIVITY_TYPES = ['mint', 'sold', 'offer_made'] as ActivityTypeFilterType[]
 const TRENDING_ACTIVITY_FILTERS = ACTIVITY_TYPE_FILTERS.filter((filter) =>
   TRENDING_ACTIVITY_TYPES.includes(filter.value)
 )

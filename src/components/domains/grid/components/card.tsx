@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useAccount } from 'wagmi'
-import { Address } from 'viem'
+import { Address, hexToBigInt, labelhash } from 'viem'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
@@ -39,6 +39,8 @@ import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
+import { ENS_METADATA_URL } from '@/constants/ens'
+import { APP_ENS_ADDRESS } from '@/constants'
 
 const formatCategoryName = (category: string) =>
   category
@@ -54,9 +56,18 @@ interface CardProps {
   className?: string
   isFirstInRow?: boolean
   watchlistId?: number | undefined
+  isHomeCarousel?: boolean // using this because some people are not happy about images on carousel cards being dynamically rendered
 }
 
-const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFirstInRow, watchlistId }) => {
+const Card: React.FC<CardProps> = ({
+  domain,
+  index,
+  allDomains,
+  className,
+  isFirstInRow,
+  watchlistId,
+  isHomeCarousel,
+}) => {
   const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { ethPrice } = useETHPrice()
@@ -211,13 +222,24 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
         className
       )}
     >
-      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between'>
-        <NameImage
-          name={domain.name}
-          tokenId={domain.token_id}
-          expiryDate={domain.expiry_date}
-          className='h-full w-full rounded-t-sm object-cover'
-        />
+      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between overflow-hidden rounded-t-md'>
+        {isHomeCarousel ? (
+          <Image
+            src={`${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
+            alt={domain.name}
+            unoptimized
+            width={500}
+            height={500}
+            className='aspect-square w-full object-cover'
+          />
+        ) : (
+          <NameImage
+            name={domain.name}
+            tokenId={domain.token_id}
+            expiryDate={domain.expiry_date}
+            className='h-full w-full rounded-t-sm object-cover'
+          />
+        )}
         {!domainIsValid && (
           <div className='absolute top-4 right-4 z-10'>
             <Tooltip

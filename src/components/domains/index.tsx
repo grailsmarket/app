@@ -52,6 +52,7 @@ interface DomainsProps {
   showWatchlist?: boolean
   useLocalScrollTop?: boolean
   showPreviousOwner?: boolean
+  isHomeCarousel?: boolean
 }
 
 const Domains: React.FC<DomainsProps> = ({
@@ -71,6 +72,7 @@ const Domains: React.FC<DomainsProps> = ({
   showWatchlist = false,
   useLocalScrollTop = false,
   showPreviousOwner = false,
+  isHomeCarousel = false,
 }) => {
   const dispatch = useAppDispatch()
   const { selectors, actions, activeTab } = useFilterRouter()
@@ -246,6 +248,7 @@ const Domains: React.FC<DomainsProps> = ({
                     isFirstInRow={index % columnsCount === 0}
                     // @ts-expect-error - watchlist_id is not defined in the type
                     watchlistId={showWatchlist ? item.watchlist_id : undefined}
+                    isHomeCarousel={isHomeCarousel}
                   />
                 )
               }}

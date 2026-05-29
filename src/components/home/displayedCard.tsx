@@ -42,7 +42,7 @@ const DisplayedCards: React.FC = () => {
     queryKey: ['domains-carousel'],
     queryFn: async () => {
       const domains = await fetchDomains({
-        limit: 50,
+        limit: 25,
         pageParam: 1,
         filters: {
           ...emptyFilterState,
@@ -272,27 +272,27 @@ const DisplayedCards: React.FC = () => {
             >
               {isLoading
                 ? Array.from({ length: hydratedWidth && hydratedWidth < 440 ? 3 : visibleCount }).map((_, index) => (
-                    <div
-                      key={index}
-                      className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
-                      style={{ width: cardWidth, height: cardHeight }}
-                    >
-                      <LoadingCard />
-                    </div>
-                  ))
+                  <div
+                    key={index}
+                    className='shadow-homeCard bg-secondary shrink-0 rounded-xl'
+                    style={{ width: cardWidth, height: cardHeight }}
+                  >
+                    <LoadingCard />
+                  </div>
+                ))
                 : trackItems.map((domain, index) => (
-                    <div
-                      key={`${domain.name}-${index}`}
-                      className='shadow-homeCard shrink-0 rounded-xl'
-                      style={{ width: cardWidth, height: cardHeight }}
-                    >
-                      <Card
-                        domain={domain}
-                        className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
-                        isHomeCarousel={true}
-                      />
-                    </div>
-                  ))}
+                  <div
+                    key={`${domain.name}-${index}`}
+                    className='shadow-homeCard shrink-0 rounded-xl'
+                    style={{ width: cardWidth, height: cardHeight }}
+                  >
+                    <Card
+                      domain={domain}
+                      className='bg-secondary! hover:bg-tertiary! rounded-xl! opacity-100! hover:opacity-100!'
+                      isHomeCarousel={true}
+                    />
+                  </div>
+                ))}
             </div>
 
             {!isLoading && (!domains || domains.length === 0) && (

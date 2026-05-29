@@ -17,6 +17,7 @@ import {
 } from '@/types/filters/name'
 import { SortDirection } from '@/types/filters'
 import { CategoriesPageSortOption, CategoriesPageTypeOption } from '@/types/filters/categories'
+import type { FeedFiltersState } from '@/types/filters/feed'
 
 // Maximum search length to include in URL (characters)
 // Above this limit, search will work in the app but won't be reflected in URL
@@ -130,6 +131,41 @@ export interface ParsedUrlFilters {
   catType?: CategoriesPageTypeOption | null
   catSort?: CategoriesPageSortOption
   catDir?: SortDirection
+}
+
+export function serializeFeedFiltersToUrl(filters: FeedFiltersState, emptyFilterState: FeedFiltersState): string {
+  const params = new URLSearchParams()
+  const tab = filters.selectedTab.value
+
+  if (tab !== emptyFilterState.selectedTab.value) {
+    params.set(URL_PARAMS.tab, tab)
+  }
+
+  if (filters.search && filters.search !== emptyFilterState.search && filters.search.length <= MAX_SEARCH_URL_LENGTH) {
+    params.set(URL_PARAMS.search, filters.search)
+  }
+
+  if ((filters.categories?.length ?? 0) > 0) {
+    params.set(URL_PARAMS.categories, filters.categories.join(','))
+  }
+
+  if (filters.market.marketplace !== emptyFilterState.market.marketplace) {
+    params.set(URL_PARAMS.marketplace, filters.market.marketplace)
+  }
+
+  if ((filters.type?.length ?? 0) > 0) {
+    params.set(URL_PARAMS.activityType, filters.type.join(','))
+  }
+
+  if (filters.price.min !== null) {
+    params.set(URL_PARAMS.priceMin, String(filters.price.min))
+  }
+
+  if (filters.price.max !== null) {
+    params.set(URL_PARAMS.priceMax, String(filters.price.max))
+  }
+
+  return params.toString()
 }
 
 // Default empty filter state for comparison
@@ -586,11 +622,10 @@ export function deserializeFiltersFromUrl(searchParams: URLSearchParams): Parsed
     if (notEndsWith) result.textNonMatch['Does not end with'] = notEndsWith
   }
 
-  // Activity type URL param is disabled for now - uncomment to re-enable
-  // const activityType = searchParams.get(URL_PARAMS.activityType)
-  // if (activityType) {
-  //   result.activityType = activityType.split(',').filter(Boolean)
-  // }
+  const activityType = searchParams.get(URL_PARAMS.activityType)
+  if (activityType) {
+    result.activityType = activityType.split(',').filter(Boolean)
+  }
 
   // Categories page filters
   const catType = searchParams.get(URL_PARAMS.catType) as CategoriesPageTypeOption | null

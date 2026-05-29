@@ -8,7 +8,6 @@ import { useOwnerAddressLookup } from '@/hooks/comments/useOwnerAddressLookup'
 import { useFeedActivity } from '@/hooks/activity/useFeedActivity'
 import { cn } from '@/utils/tailwind'
 import FeedFilters from './feedFilters'
-import type { FeedTab } from './feedFilters'
 import FeedCommentCard from './feedCommentCard'
 import FeedActivityCard from './feedActivityCard'
 import ActivityTypeSidebar from './activityTypeSidebar'
@@ -20,6 +19,12 @@ import type { ReplyContext } from './types'
 import type { ActivityTypeFilterType } from '@/types/filters/activity'
 import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
 import { parseEther } from 'viem'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import { useAppDispatch } from '@/state/hooks'
+import { FEED_TABS } from '@/constants/filters/feed'
+import type { FeedTabValue } from '@/types/filters/feed'
+import { useUserContext } from '@/context/user'
+import SignInButton from '@/components/ui/buttons/signInButton'
 
 const TRENDING_ACTIVITY_TYPES = ['registration', 'sale', 'offer'] as ActivityTypeFilterType[]
 const TRENDING_ACTIVITY_FILTERS = ACTIVITY_TYPE_FILTERS.filter((filter) =>
@@ -27,11 +32,11 @@ const TRENDING_ACTIVITY_FILTERS = ACTIVITY_TYPE_FILTERS.filter((filter) =>
 )
 const TRENDING_MIN_WEI = '100000000000000000'
 
-const ethToWei = (value: string) => {
-  if (!value) return undefined
+const ethNumberToWei = (value: number | null) => {
+  if (value === null) return undefined
 
   try {
-    return parseEther(value).toString()
+    return parseEther(String(value)).toString()
   } catch {
     return undefined
   }
@@ -47,13 +52,19 @@ type FeedItem =
   | { type: 'activity'; id: string; timestamp: string; data: ReturnType<typeof useFeedActivity>['activities'][number] }
 
 const CommentsFeed: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState<FeedTab>('all')
-  const [ownerInput, setOwnerInput] = useState('')
-  const [selectedClubs, setSelectedClubs] = useState<string[]>([])
-  const [selectedActivityTypes, setSelectedActivityTypes] = useState<ActivityTypeFilterType[]>([])
-  const [selectedPlatform, setSelectedPlatform] = useState<FeedPlatformFilter>('all')
-  const [minPriceEth, setMinPriceEth] = useState('')
-  const [maxPriceEth, setMaxPriceEth] = useState('')
+  const dispatch = useAppDispatch()
+  const { selectors, actions } = useFilterRouter()
+  const { userAddress, authStatus } = useUserContext()
+  const filters = selectors.filters as any
+  const selectedTab = filters.selectedTab.value as FeedTabValue
+  const ownerInput = filters.search as string
+  const selectedClubs = filters.categories as string[]
+  const selectedActivityTypes = filters.type as ActivityTypeFilterType[]
+  const selectedPlatform = (
+    filters.market.marketplace === 'none' ? 'all' : filters.market.marketplace
+  ) as FeedPlatformFilter
+  const minPriceEth = filters.price.min === null ? '' : String(filters.price.min)
+  const maxPriceEth = filters.price.max === null ? '' : String(filters.price.max)
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
@@ -68,6 +79,7 @@ const CommentsFeed: React.FC = () => {
   const showActivityFilters = selectedTab !== 'comments'
   const isTrending = selectedTab === 'trending'
   const isWatchlist = selectedTab === 'watchlist'
+  const canFetchWatchlist = !isWatchlist || authStatus === 'authenticated'
   const visibleActivityTypeFilters = isTrending ? TRENDING_ACTIVITY_FILTERS : ACTIVITY_TYPE_FILTERS
   const activityEventTypes = useMemo(
     () =>
@@ -79,15 +91,17 @@ const CommentsFeed: React.FC = () => {
     [isTrending, selectedActivityTypes]
   )
   const activityPlatform = selectedPlatform === 'all' ? undefined : selectedPlatform
-  const selectedMinPriceWei = ethToWei(minPriceEth)
-  const selectedMaxPriceWei = ethToWei(maxPriceEth)
+  const selectedMinPriceWei = ethNumberToWei(filters.price.min)
+  const selectedMaxPriceWei = ethNumberToWei(filters.price.max)
   const minPriceWei = selectedMinPriceWei ?? (isTrending ? TRENDING_MIN_WEI : undefined)
 
   const { comments, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useCommentFeed({
     owner: ownerAddress,
     clubs: selectedClubs,
     watchlist: isWatchlist,
-    enabled: showComments,
+    userAddress,
+    authStatus,
+    enabled: showComments && canFetchWatchlist,
   })
   const {
     activities,
@@ -102,7 +116,9 @@ const CommentsFeed: React.FC = () => {
     minPriceWei,
     maxPriceWei: selectedMaxPriceWei,
     watchlist: isWatchlist,
-    enabled: showActivity,
+    userAddress,
+    authStatus,
+    enabled: showActivity && canFetchWatchlist,
   })
 
   const feedItems = useMemo<FeedItem[]>(() => {
@@ -139,8 +155,9 @@ const CommentsFeed: React.FC = () => {
 
   useEffect(() => {
     if (!isTrending) return
-    setSelectedActivityTypes((current) => current.filter((type) => TRENDING_ACTIVITY_TYPES.includes(type)))
-  }, [isTrending])
+    const nextTypes = selectedActivityTypes.filter((type) => TRENDING_ACTIVITY_TYPES.includes(type))
+    if (nextTypes.length !== selectedActivityTypes.length) dispatch(actions.setFiltersType(nextTypes))
+  }, [actions, dispatch, isTrending, selectedActivityTypes])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -176,9 +193,36 @@ const CommentsFeed: React.FC = () => {
   }
 
   const toggleActivityType = (type: ActivityTypeFilterType) => {
-    setSelectedActivityTypes((current) =>
-      current.includes(type) ? current.filter((selectedType) => selectedType !== type) : [...current, type]
+    dispatch(actions.toggleFiltersType(type))
+  }
+
+  const setSelectedTab = (tab: FeedTabValue) => {
+    const tabObject = FEED_TABS.find((item) => item.value === tab) ?? FEED_TABS[0]
+    dispatch((actions as any).setSelectedTab(tabObject))
+  }
+
+  const setOwnerInput = (value: string) => dispatch(actions.setSearch(value))
+
+  const setSelectedClubs = (clubs: string[]) => {
+    dispatch((actions as any).removeCategories(selectedClubs.filter((club) => !clubs.includes(club))))
+    dispatch((actions as any).addCategories(clubs.filter((club) => !selectedClubs.includes(club))))
+  }
+
+  const setSelectedPlatform = (platform: FeedPlatformFilter) => {
+    dispatch(
+      actions.setMarketFilters({
+        ...filters.market,
+        marketplace: platform === 'all' ? 'none' : platform,
+      })
     )
+  }
+
+  const setMinPriceEth = (value: string) => {
+    dispatch(actions.setPriceRange({ ...filters.price, min: value ? Number(value) : null }))
+  }
+
+  const setMaxPriceEth = (value: string) => {
+    dispatch(actions.setPriceRange({ ...filters.price, max: value ? Number(value) : null }))
   }
 
   return (
@@ -221,7 +265,7 @@ const CommentsFeed: React.FC = () => {
           onClear={() => {
             setOwnerInput('')
             setSelectedClubs([])
-            setSelectedActivityTypes([])
+            dispatch(actions.setFiltersType([]))
             setSelectedPlatform('all')
             setMinPriceEth('')
             setMaxPriceEth('')
@@ -250,6 +294,11 @@ const CommentsFeed: React.FC = () => {
           <div className='mx-auto max-w-5xl px-3 sm:px-5'>
             {isInitialLoading ? (
               <FeedLoading />
+            ) : isWatchlist && authStatus !== 'authenticated' ? (
+              <div className='flex h-full min-h-[280px] flex-col items-center justify-center gap-4 text-center'>
+                <p className='text-neutral text-lg'>Sign in to view your watchlist feed</p>
+                <SignInButton />
+              </div>
             ) : feedItems.length === 0 ? (
               <div className='flex h-full min-h-[280px] items-center justify-center text-center'>
                 <p className='text-neutral text-lg'>No feed events found for these filters.</p>

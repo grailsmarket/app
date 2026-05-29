@@ -4,6 +4,7 @@ import React, { createContext, useContext, ReactNode, useEffect, useRef } from '
 import { FilterContextType } from '@/types/filters/name'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { CategoryTabType } from '@/state/reducers/category/category'
+import type { FeedTab } from '@/types/filters/feed'
 import { useAppDispatch } from '@/state/hooks'
 import { usePathname } from 'next/navigation'
 import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
@@ -15,6 +16,7 @@ interface FilterContextValue {
   filterType: FilterContextType
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
+  feedTab?: FeedTab
   profileAddress?: Address | string
 }
 
@@ -25,6 +27,7 @@ interface FilterProviderProps {
   filterType: FilterContextType
   profileTab?: ProfileTabType
   categoryTab?: CategoryTabType
+  feedTab?: FeedTab
   profileAddress?: Address | string
 }
 
@@ -33,6 +36,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
   filterType,
   profileTab,
   categoryTab,
+  feedTab,
   profileAddress,
 }) => {
   const dispatch = useAppDispatch()
@@ -66,7 +70,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
   }, [windowWidth, dispatch])
 
   return (
-    <FilterContext.Provider value={{ filterType, profileTab, categoryTab, profileAddress }}>
+    <FilterContext.Provider value={{ filterType, profileTab, categoryTab, feedTab, profileAddress }}>
       <FilterUrlSyncWrapper filterType={filterType}>{children}</FilterUrlSyncWrapper>
     </FilterContext.Provider>
   )

@@ -7,6 +7,7 @@ import { useFilterRouter } from './useFilterRouter'
 import { FilterContextType } from '@/types/filters/name'
 import {
   serializeFiltersToUrl,
+  serializeFeedFiltersToUrl,
   serializeCategoriesPageFiltersToUrl,
   deserializeFiltersFromUrl,
   getTabFromParams,
@@ -14,6 +15,7 @@ import {
   ParsedUrlFilters,
   CategoriesPageFilterState,
 } from '@/utils/filterUrlParams'
+import type { FeedFiltersState } from '@/types/filters/feed'
 import { ActionCreatorWithPayload } from '@reduxjs/toolkit'
 import { debounce } from 'lodash'
 
@@ -23,6 +25,7 @@ import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
 import { CATEGORY_TABS } from '@/constants/domains/category/tabs'
 import { CATEGORIES_PAGE_TABS } from '@/constants/categories/categoriesPageTabs'
 import { BULK_SEARCH_TABS } from '@/constants/domains/bulkSearch/tabs'
+import { FEED_TABS } from '@/constants/filters/feed'
 
 // Import empty filter states for comparison
 import { emptyFilterState as marketplaceEmptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
@@ -34,6 +37,7 @@ import { emptyFilterState as categoriesPremiumEmptyFilterState } from '@/state/r
 import { emptyFilterState as categoriesAvailableEmptyFilterState } from '@/state/reducers/filters/categoriesAvailableDomainsFilters'
 import { emptyFilterState as categoriesActivityEmptyFilterState } from '@/state/reducers/filters/categoriesActivityFilters'
 import { emptyFilterState as bulkSearchEmptyFilterState } from '@/state/reducers/filters/bulkSearchFilters'
+import { emptyFilterState as feedEmptyFilterState } from '@/state/reducers/filters/feedFilters'
 
 // Import tab change actions
 import { changeTab } from '@/state/reducers/portfolio/profile'
@@ -41,6 +45,7 @@ import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { changeCategoryTab } from '@/state/reducers/category/category'
 import { changeCategoriesPageTab } from '@/state/reducers/categoriesPage/categoriesPage'
 import { changeBulkSearchTab } from '@/state/reducers/bulkSearch/bulkSearch'
+import { FeedFilterActions } from '@/state/reducers/filters/feedFilters'
 
 interface UseFilterUrlSyncOptions {
   filterType: FilterContextType
@@ -59,6 +64,8 @@ function getDefaultTab(filterType: FilterContextType): string {
       return CATEGORIES_PAGE_TABS[0].value
     case 'bulkSearch':
       return BULK_SEARCH_TABS[0].value
+    case 'feed':
+      return FEED_TABS[0].value
     default:
       return 'names'
   }
@@ -77,6 +84,8 @@ function getTabChangeAction(filterType: FilterContextType): ActionCreatorWithPay
       return changeCategoriesPageTab
     case 'bulkSearch':
       return changeBulkSearchTab
+    case 'feed':
+      return FeedFilterActions.setSelectedTab
     default:
       return changeMarketplaceTab
   }
@@ -95,6 +104,8 @@ function findTabByValue(filterType: FilterContextType, value: string) {
       return CATEGORIES_PAGE_TABS.find((t) => t.value === value) || CATEGORIES_PAGE_TABS[0]
     case 'bulkSearch':
       return BULK_SEARCH_TABS.find((t) => t.value === value) || BULK_SEARCH_TABS[0]
+    case 'feed':
+      return FEED_TABS.find((t) => t.value === value) || FEED_TABS[0]
     default:
       return { label: 'Names', value: 'names' }
   }
@@ -113,6 +124,8 @@ function getEmptyFilterState(filterType: FilterContextType): BaseFilterState | C
       return categoriesPageEmptyFilterState as CategoriesPageFilterState
     case 'bulkSearch':
       return bulkSearchEmptyFilterState as BaseFilterState
+    case 'feed':
+      return feedEmptyFilterState as unknown as BaseFilterState
     default:
       return marketplaceEmptyFilterState as BaseFilterState
   }
@@ -131,7 +144,9 @@ function isValidTab(filterType: FilterContextType, tabValue: string): boolean {
             ? CATEGORIES_PAGE_TABS
             : filterType === 'bulkSearch'
               ? BULK_SEARCH_TABS
-              : MARKETPLACE_TABS
+              : filterType === 'feed'
+                ? FEED_TABS
+                : MARKETPLACE_TABS
 
   return tabs.some((t) => t.value === tabValue)
 }
@@ -143,7 +158,7 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { actions, selectors, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab } =
+  const { actions, selectors, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, feedTab } =
     useFilterRouter()
 
   // Refs to prevent infinite loops
@@ -169,10 +184,12 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         return categoriesPageTab?.value || defaultTab
       case 'bulkSearch':
         return bulkSearchTab?.value || defaultTab
+      case 'feed':
+        return feedTab?.value || defaultTab
       default:
         return defaultTab
     }
-  }, [filterType, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, defaultTab])
+  }, [filterType, profileTab, marketplaceTab, categoryTab, categoriesPageTab, bulkSearchTab, feedTab, defaultTab])
 
   // Apply filters from URL to Redux
   const applyFiltersFromUrl = useCallback(
@@ -182,6 +199,27 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
       // Apply search
       if (urlFilters.search !== undefined) {
         dispatch(actions.setSearch(urlFilters.search))
+      }
+
+      if (filterType === 'feed') {
+        if (urlFilters.categories !== undefined) {
+          dispatch((actions as any).addCategories(urlFilters.categories))
+        }
+
+        if (urlFilters.market !== undefined && actions.setMarketFilters) {
+          const currentMarket = (selectors.filters as any).market || {}
+          dispatch(actions.setMarketFilters({ ...currentMarket, ...urlFilters.market }))
+        }
+
+        if (urlFilters.activityType !== undefined && actions.setFiltersType) {
+          dispatch(actions.setFiltersType(urlFilters.activityType))
+        }
+
+        if (urlFilters.priceRange !== undefined && actions.setPriceRange) {
+          dispatch(actions.setPriceRange(urlFilters.priceRange))
+        }
+
+        return
       }
 
       // Apply sort
@@ -330,7 +368,9 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
     // If tab was invalid (e.g., unauthorized watchlist), update URL
     if (urlTab !== validTab) {
       let newUrl: string
-      if (filterType === 'categoriesPage' && validTab === 'categories') {
+      if (filterType === 'feed') {
+        newUrl = serializeFeedFiltersToUrl(selectors.filters as unknown as FeedFiltersState, feedEmptyFilterState)
+      } else if (filterType === 'categoriesPage' && validTab === 'categories') {
         newUrl = serializeCategoriesPageFiltersToUrl(
           selectors.filters as unknown as CategoriesPageFilterState,
           categoriesPageEmptyFilterState as CategoriesPageFilterState,
@@ -385,7 +425,9 @@ export function useFilterUrlSync(options: UseFilterUrlSyncOptions) {
         if (isSyncingFromUrl.current) return
 
         let newUrl: string
-        if (filterType === 'categoriesPage') {
+        if (filterType === 'feed') {
+          newUrl = serializeFeedFiltersToUrl(filters as unknown as FeedFiltersState, feedEmptyFilterState)
+        } else if (filterType === 'categoriesPage') {
           // Categories page has different filter types per tab
           if (tab === 'categories') {
             // Categories tab uses special categories page filters

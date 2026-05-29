@@ -4,20 +4,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
-
-export type FeedTab = 'all' | 'trending' | 'comments' | 'activity' | 'watchlist'
-
-export const FEED_TABS: { label: string; value: FeedTab }[] = [
-  { label: 'All', value: 'all' },
-  { label: 'Trending', value: 'trending' },
-  { label: 'Comments', value: 'comments' },
-  { label: 'Activity', value: 'activity' },
-  { label: 'Watchlist', value: 'watchlist' },
-]
+import { FEED_TABS } from '@/constants/filters/feed'
+import type { FeedTabValue } from '@/types/filters/feed'
 
 interface FeedFiltersProps {
-  selectedTab: FeedTab
-  onTabChange: (tab: FeedTab) => void
+  selectedTab: FeedTabValue
+  onTabChange: (tab: FeedTabValue) => void
   selectedFilterCount: number
   onToggleFilters: () => void
 }

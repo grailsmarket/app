@@ -18,6 +18,8 @@ interface UseFeedActivityParams {
   minPriceWei?: string
   maxPriceWei?: string
   watchlist?: boolean
+  userAddress?: string
+  authStatus?: string
   enabled?: boolean
 }
 
@@ -28,6 +30,8 @@ export const useFeedActivity = ({
   minPriceWei,
   maxPriceWei,
   watchlist = false,
+  userAddress,
+  authStatus,
   enabled = true,
 }: UseFeedActivityParams) => {
   const [liveActivities, setLiveActivities] = useState<ActivityType[]>([])
@@ -111,6 +115,8 @@ export const useFeedActivity = ({
       minPriceWei ?? null,
       maxPriceWei ?? null,
       watchlist,
+      userAddress ?? null,
+      authStatus ?? null,
     ],
     queryFn: ({ pageParam }) =>
       fetchAllActivity({
@@ -126,7 +132,7 @@ export const useFeedActivity = ({
     initialPageParam: 1,
     getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextPageParam : undefined),
     staleTime: 15_000,
-    enabled,
+    enabled: enabled && (!watchlist || authStatus === 'authenticated'),
   })
 
   const historicalActivities = useMemo(() => {

@@ -75,10 +75,11 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
 
   // Stack of in-flight SVG layers we render simultaneously to crossfade
   // between gradients (e.g. when registration status flips into Premium).
-  // The newest layer mounts on top with opacity 0 and fades to 1 once it
-  // loads; older layers stay visible underneath until the fade completes,
-  // then are pruned and their blob URLs revoked.
-  type SvgLayer = { url: string; loaded: boolean }
+  // The first layer (nothing beneath it) appears instantly; every later
+  // layer mounts on top with opacity 0 and fades to 1 once it loads, while
+  // older layers stay visible underneath until the fade completes, then are
+  // pruned and their blob URLs revoked.
+  type SvgLayer = { url: string; loaded: boolean; animate: boolean }
   const [layers, setLayers] = useState<SvgLayer[]>([])
   const layersRef = useRef<SvgLayer[]>([])
   useEffect(() => {
@@ -165,7 +166,10 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     }
     const blob = new Blob([svg], { type: 'image/svg+xml' })
     const url = URL.createObjectURL(blob)
-    setLayers((prev) => [...prev, { url, loaded: false }])
+    // Only crossfade when there's already a layer underneath to fade over.
+    // The very first layer renders instantly so the initial image isn't
+    // gated behind a 500ms fade; subsequent layers animate status changes.
+    setLayers((prev) => [...prev, { url, loaded: false, animate: prev.length > 0 }])
   }, [svg])
 
   // Once the topmost (newest) layer has rendered, wait for its opacity
@@ -274,8 +278,8 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
             onLoad={() => markLayerLoaded(layer.url)}
             className={cn(
               'absolute top-0 left-0 block h-full w-full object-cover',
-              isTop && 'transition-opacity duration-500',
-              isTop && !layer.loaded && 'opacity-0'
+              isTop && layer.animate && 'transition-opacity duration-500',
+              isTop && layer.animate && !layer.loaded && 'opacity-0'
             )}
           />
         )

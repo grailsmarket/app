@@ -25,8 +25,10 @@ export const getCommentFeed = async ({
   if (clubs.length > 0) params.set('clubs', clubs.join(','))
   if (watchlist) params.set('watchlist', 'true')
 
-  const fetchComments = watchlist ? authFetch : fetch
-  const response = await fetchComments(`${API_URL}/comments/feed?${params.toString()}`, {
+  // Always send auth credentials: the /comments/feed endpoint is identity-aware
+  // (e.g. filtering blocked users, surfacing own comments), so logged-in users
+  // must get the authenticated experience across all tabs, not just watchlist.
+  const response = await authFetch(`${API_URL}/comments/feed?${params.toString()}`, {
     method: 'GET',
     headers: { Accept: 'application/json' },
   })

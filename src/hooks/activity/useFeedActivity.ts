@@ -9,6 +9,9 @@ import type { ActivityTypeFilterType } from '@/types/filters/activity'
 import type { ActivityType } from '@/types/profile'
 
 const PAGE_SIZE = 20
+// Live buffer holds only events matching every active filter (see onmessage),
+// so this caps matching events, never unfiltered noise.
+const MAX_LIVE_ACTIVITIES = 50
 const ALL_ACTIVITY_TYPES = ACTIVITY_TYPE_FILTERS.map((filter) => filter.value)
 
 interface UseFeedActivityParams {
@@ -50,6 +53,9 @@ export const useFeedActivity = ({
     wsRef.current = ws
 
     const sendFilter = () => {
+      // The activity socket only supports event-type and price filters server-side.
+      // platform and clubs have no socket message type, so they are applied
+      // client-side in onmessage below (before the buffer cap).
       ws.send(
         JSON.stringify({
           type: 'set_event_filter',
@@ -80,13 +86,15 @@ export const useFeedActivity = ({
         if (message.type !== 'activity_event') return
 
         const activity = message.data as ActivityType
+        // Filter before the buffer cap so non-matching events never take a slot and
+        // starve out a minority platform/club the socket can't filter server-side.
         if (eventTypes.length > 0 && !eventTypes.includes(activity.event_type as ActivityTypeFilterType)) return
         if (platform && activity.platform?.toLowerCase() !== platform) return
         if (clubs.length > 0 && !clubs.some((club) => activity.clubs?.includes(club))) return
 
         setLiveActivities((prev) => {
           const next = [activity, ...prev.filter((item) => item.id !== activity.id)]
-          return next.slice(0, 50)
+          return next.slice(0, MAX_LIVE_ACTIVITIES)
         })
       } catch (error) {
         console.error('Error parsing activity websocket message:', error)

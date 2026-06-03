@@ -16,6 +16,7 @@ import { getNameTokenId } from '@/utils/web3/ens'
 import type { ActivityType, ProfileActivityEventType } from '@/types/profile'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useWindowSize } from 'ethereum-identity-kit'
 
 interface FeedActivityCardProps {
   activity: ActivityType
@@ -23,20 +24,20 @@ interface FeedActivityCardProps {
 }
 
 const EVENT_COPY: Record<ProfileActivityEventType, { verb: string; actorLabel: string; counterpartyLabel?: string }> = {
-  registration: { verb: 'was registered', actorLabel: 'Registered by' },
-  sale: { verb: 'was sold', actorLabel: 'Seller', counterpartyLabel: 'Buyer' },
-  offer: { verb: 'received an offer', actorLabel: 'Offer from', counterpartyLabel: 'Owner' },
+  registration: { verb: 'registered', actorLabel: 'Registered by' },
+  sale: { verb: 'sold', actorLabel: 'Seller', counterpartyLabel: 'Buyer' },
+  offer: { verb: 'received an offer', actorLabel: 'Offer from', counterpartyLabel: 'Offerer' },
   listed: { verb: 'listed', actorLabel: 'Listed by' },
-  offer_made: { verb: 'received an offer', actorLabel: 'Offer from', counterpartyLabel: 'Owner' },
-  bought: { verb: 'was bought', actorLabel: 'Buyer', counterpartyLabel: 'Seller' },
-  sold: { verb: 'was sold', actorLabel: 'Seller', counterpartyLabel: 'Buyer' },
-  offer_accepted: { verb: 'had an offer accepted', actorLabel: 'Accepted by', counterpartyLabel: 'Buyer' },
-  offer_cancelled: { verb: 'had an offer cancelled', actorLabel: 'Cancelled by' },
-  listing_cancelled: { verb: 'had its listing cancelled', actorLabel: 'Cancelled by' },
-  mint: { verb: 'was minted', actorLabel: 'Minted by' },
-  sent: { verb: 'was sent', actorLabel: 'From', counterpartyLabel: 'To' },
-  received: { verb: 'was received', actorLabel: 'From', counterpartyLabel: 'To' },
-  renewal: { verb: 'was extended', actorLabel: 'Extended by' },
+  offer_made: { verb: 'made an offer', actorLabel: 'Offerer', counterpartyLabel: 'Owner' },
+  bought: { verb: 'bought', actorLabel: 'Buyer', counterpartyLabel: 'Seller' },
+  sold: { verb: 'sold', actorLabel: 'Seller', counterpartyLabel: 'Buyer' },
+  offer_accepted: { verb: 'accepted offer', actorLabel: 'Offerer', counterpartyLabel: 'Offerer' },
+  offer_cancelled: { verb: 'cancelled offer', actorLabel: 'Cancelled by' },
+  listing_cancelled: { verb: 'cancelled listing', actorLabel: 'Cancelled by' },
+  mint: { verb: 'minted', actorLabel: 'Minted by' },
+  sent: { verb: 'sent', actorLabel: 'From', counterpartyLabel: 'To' },
+  received: { verb: 'received', actorLabel: 'From', counterpartyLabel: 'To' },
+  renewal: { verb: 'extended', actorLabel: 'Extended by' },
 }
 
 const formatEventType = (eventType: string) => {
@@ -50,6 +51,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const router = useRouter()
+  const { width } = useWindowSize()
   const normalizedName = normalizeName(activity.name)
   const tokenId = activity.token_id || getNameTokenId(normalizedName)
   const copy = EVENT_COPY[activity.event_type] ?? {
@@ -68,46 +70,40 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
     >
       <div className='flex flex-col gap-3'>
         <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-          <div className='flex min-w-0 items-start gap-3'>
+          <div className='flex min-w-0 flex-wrap items-center gap-2'>
+            {/* <p className='text-neutral text-sm font-bold tracking-wide uppercase'>
+                {activity.platform || 'ENS'} Activity
+                </p> */}
+            <div className='flex'>
+              {activity.actor_address && (
+                <User
+                  address={activity.actor_address}
+                  wrapperClassName='justify-start'
+                  className='max-w-full py-1'
+                  avatarSize={width && width < 768 ? '22px' : '26px'}
+                />
+              )}
+            </div>
+            <p className='text-foreground/80 text-lg font-semibold'>{copy.verb}</p>
             <HoverPrefetchLink
               href={namePagePath}
               onClick={(e) => e.stopPropagation()}
-              className='shrink-0 transition-opacity hover:opacity-80'
+              className='hover:text-primary flex items-center gap-1.5 font-bold transition-colors'
             >
               <NameImage
                 name={normalizedName}
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
-                className='h-10 w-10 rounded-md sm:h-12 sm:w-12'
+                className='h-7 w-7 rounded-sm sm:h-9 sm:w-9 md:rounded-md'
               />
+              {beautifyName(normalizedName)}
             </HoverPrefetchLink>
-            <div className='min-w-0'>
-              <p className='text-neutral text-sm font-bold tracking-wide uppercase'>
-                {activity.platform || 'ENS'} Activity
-              </p>
-              <p className='text-xl font-bold wrap-break-word sm:text-2xl'>
-                <HoverPrefetchLink
-                  href={namePagePath}
-                  onClick={(e) => e.stopPropagation()}
-                  className='hover:text-primary transition-colors'
-                >
-                  {beautifyName(normalizedName)}
-                </HoverPrefetchLink>{' '}
-                <span className='text-foreground/80 font-semibold'>{copy.verb}</span>
-              </p>
-            </div>
           </div>
           <span className='text-neutral shrink-0 text-xs font-medium whitespace-nowrap'>{time}</span>
         </div>
 
         <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-          {activity.actor_address && (
-            <div className='bg-background/50 rounded-md p-2'>
-              <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>{copy.actorLabel}</p>
-              <User address={activity.actor_address} wrapperClassName='justify-start' className='max-w-full' />
-            </div>
-          )}
           {copy.counterpartyLabel && activity.counterparty_address && (
             <div className='bg-background/50 rounded-md p-2'>
               <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>{copy.counterpartyLabel}</p>

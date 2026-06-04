@@ -199,13 +199,13 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 md:opacity-80',
+        'group bg-secondary border-tertiary/60 hover:bg-tertiary/70 flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-md border opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 md:opacity-85',
         !domainIsValid && 'pointer-events-none opacity-40',
         backgroundColor,
         className
       )}
     >
-      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between'>
+      <div className='border-tertiary/60 relative flex h-[38%] min-h-[116px] w-full flex-col justify-between overflow-hidden border-b'>
         <NameImage
           name={domain.name}
           tokenId={domain.token_id}
@@ -230,7 +230,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
             e.stopPropagation()
           }}
           className={cn(
-            'bg-secondary absolute top-3 right-3 z-10 flex flex-row items-center gap-0 rounded-sm',
+            'bg-secondary/95 border-tertiary/70 absolute top-2 right-2 z-10 flex flex-row items-center gap-0 rounded-sm border backdrop-blur-sm',
             watchlistId ? 'pl-2' : 'justify-center p-1'
           )}
         >
@@ -248,29 +248,29 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
       </div>
       <div
         className={cn(
-          'flex w-full flex-1 flex-col justify-between gap-[3px] p-3.5 text-lg',
+          'flex min-h-0 w-full flex-1 flex-col justify-between gap-3 p-3 text-sm',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
-        <div className='flex w-full flex-col gap-1'>
+        <div className='flex min-h-0 w-full flex-col gap-1.5'>
           {registrationStatus === GRACE_PERIOD ? (
             <Tooltip
               label={`Ends ${formatExpiryDate(new Date(new Date(domain.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
               align='left'
               position='top'
             >
-              <p className='text-grace truncate font-semibold tabular-nums'>
+              <p className='text-grace bg-grace/10 border-grace/20 w-fit max-w-full truncate rounded-sm border px-1.5 py-0.5 font-semibold tabular-nums'>
                 Grace {timeLeftString ? `(${timeLeftString})` : ''}
               </p>
             </Tooltip>
           ) : registrationStatus === REGISTERED ? (
             domainListing ? (
-              <div className='flex items-center gap-1'>
+              <div className='flex min-w-0 flex-wrap items-center gap-1.5'>
                 <Price
                   price={domainListing.price || domainListing.price_wei}
                   currencyAddress={domainListing.currency_address}
                   iconSize='17px'
-                  fontSize='text-xl font-semibold'
+                  fontSize='text-lg font-semibold leading-tight'
                 />
                 {domainListing.broker_address && domainListing.broker_fee_bps && (
                   <Tooltip
@@ -285,13 +285,15 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                 )}
               </div>
             ) : (
-              <p className='leading-[18px] font-bold'>Unlisted</p>
+              <p className='text-foreground/85 bg-foreground/10 border-foreground/10 w-fit rounded-sm border px-1.5 py-0.5 leading-tight font-bold'>
+                Unlisted
+              </p>
             )
           ) : (
-            <div className='flex flex-col gap-px'>
+            <div className='flex flex-col gap-1'>
               <div
                 className={cn(
-                  'flex items-center gap-px font-semibold',
+                  'flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5 leading-tight font-semibold',
                   registrationStatus === PREMIUM ? 'text-premium' : 'text-available'
                 )}
               >
@@ -304,7 +306,7 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                         minimumFractionDigits: 2,
                       })}
                     </p>
-                    <p className='text-md text-neutral font-medium'>
+                    <p className='text-neutral text-xs font-medium'>
                       &nbsp;+&nbsp;${regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}/yr
                     </p>
                   </>
@@ -313,35 +315,37 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
                     <p>$</p>
                     <p>
                       {regPrice.usd.toLocaleString(navigator.language, { maximumFractionDigits: 0 })}&nbsp;
-                      <span className='text-neutral font-medium'>/&nbsp;yr</span>
+                      <span className='text-neutral text-xs font-medium'>/&nbsp;yr</span>
                     </p>
                   </>
                 )}
               </div>
               {registrationStatus === PREMIUM && timeLeftString && (
-                <div className='text-md text-premium/70 flex items-center gap-px font-medium tabular-nums'>
+                <div className='text-premium/75 bg-premium/10 flex w-fit items-center gap-px rounded-sm px-1.5 py-0.5 text-xs font-medium tabular-nums'>
                   Premium ({timeLeftString})
                 </div>
               )}
               {registrationStatus === UNREGISTERED && (
-                <p className='text-md text-available flex items-center gap-px font-medium'>Available</p>
+                <p className='text-available bg-available/10 flex w-fit items-center gap-px rounded-sm px-1.5 py-0.5 text-xs font-semibold'>
+                  Available
+                </p>
               )}
             </div>
           )}
           {domain.clubs && domain.clubs.length > 0 && (
-            <div className='flex max-w-full flex-row items-center gap-1 truncate'>
-              <div className='text-md text-neutral flex max-w-fit min-w-fit items-center gap-1 font-semibold'>
+            <div className='border-tertiary/60 flex max-w-full flex-row items-center gap-1 rounded-sm border px-1.5 py-1'>
+              <div className='text-neutral flex min-w-0 items-center gap-1 text-xs font-semibold'>
                 <Image
                   src={getCategoryDetails(domain.clubs[0]).avatar}
                   alt={domain.clubs[0] as string}
                   width={16}
                   height={16}
-                  className='rounded-full'
+                  className='size-4 rounded-full'
                 />
-                <p className='truncate'>{category?.display_name}</p>
-                {clubRank ? <p>#{localizeNumber(clubRank)}</p> : null}
+                <p className='truncate'>{category?.display_name || domain.clubs[0]}</p>
+                {clubRank ? <p className='shrink-0'>#{localizeNumber(clubRank)}</p> : null}
                 {domain.clubs.length > 1 && (
-                  <p className='text-md text-neutral truncate font-bold'>+{domain.clubs.length - 1}</p>
+                  <p className='text-neutral shrink-0 truncate text-xs font-bold'>+{domain.clubs.length - 1}</p>
                 )}
               </div>
             </div>
@@ -354,20 +358,20 @@ const Card: React.FC<CardProps> = ({ domain, index, allDomains, className, isFir
             filterType === 'category') &&
             domain.expiry_date && (
               <div className='flex items-center gap-1'>
-                <p className='text-md text-neutral truncate font-semibold'>
+                <p className='text-neutral truncate text-xs font-semibold'>
                   Expiry: {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}
                 </p>
               </div>
             )}
           {profileTab.value === 'listings' && filterType === 'profile' && domain.listings[0]?.expires_at && (
             <div className='flex items-center gap-1'>
-              <p className='text-md text-neutral truncate font-semibold'>
+              <p className='text-neutral truncate text-xs font-semibold'>
                 Ends: {formatExpiryDate(domain.listings[0]?.expires_at, { includeTime: false, dateDivider: '/' })}
               </p>
             </div>
           )}
         </div>
-        <div className='flex flex-col gap-2'>
+        <div className='border-tertiary/60 flex flex-col gap-2 border-t pt-2'>
           {domain.owner &&
             (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
               <User

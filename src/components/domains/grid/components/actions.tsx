@@ -114,9 +114,9 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const primaryButtonClassName =
-    'border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-0.5'
+    'border-primary/70 hover:bg-primary text-primary/80 hover:text-background cursor-pointer rounded-sm border px-2 py-1 text-sm leading-none whitespace-nowrap transition-colors'
   const secondaryButtonClassName =
-    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-0.5 text-lg font-bold'
+    'border-foreground/20 hover:bg-foreground/20 text-foreground/70 hover:text-foreground cursor-pointer rounded-sm border px-2 py-1 text-sm leading-none font-bold whitespace-nowrap transition-colors'
 
   if (isBulkSelecting) {
     return (
@@ -187,7 +187,7 @@ const Actions: React.FC<ActionsProps> = ({
       <div>
         {registrationStatus === GRACE_PERIOD ? (
           <button onClick={(e) => clickHandler(e, openExtendModal)} className={primaryButtonClassName}>
-            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
+            <p className='cursor-pointer font-bold'>Extend</p>
           </button>
         ) : REGISTERABLE_STATUSES.includes(registrationStatus) ? (
           <button
@@ -197,15 +197,15 @@ const Actions: React.FC<ActionsProps> = ({
               registrationState.flowState !== 'review' && 'cursor-not-allowed opacity-50'
             )}
           >
-            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Register</p>
+            <p className='cursor-pointer font-bold'>Register</p>
           </button>
         ) : domainListing?.price ? (
           <button className={primaryButtonClassName} onClick={(e) => clickHandler(e, openBuyNowModal)}>
-            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Buy Now</p>
+            <p className='cursor-pointer font-bold'>Buy Now</p>
           </button>
         ) : (
           <button onClick={(e) => clickHandler(e, openMakeOfferModal)} className={primaryButtonClassName}>
-            <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Offer</p>
+            <p className='cursor-pointer font-bold'>Offer</p>
           </button>
         )}
       </div>

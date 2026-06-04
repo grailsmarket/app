@@ -332,8 +332,15 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const receipt = await waitForTransaction(publicClient, tx)
 
       if (receipt.status === 'success') {
-        // Call API to mark offer as accepted
-        await acceptOfferApi(offer.id)
+        // Mark the offer accepted for instant UI feedback. This is best-effort: the
+        // on-chain fill already succeeded, and the indexer authoritatively marks the
+        // offer accepted when it processes the OrderFulfilled event. A failure here
+        // (e.g. ownership already transferred) must NOT surface as a failed transaction.
+        try {
+          await acceptOfferApi(offer.id)
+        } catch (bookkeepingError) {
+          console.warn('Post-accept bookkeeping failed; indexer will reconcile:', bookkeepingError)
+        }
 
         setStep('success')
         track('offer_accepted', {

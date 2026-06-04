@@ -140,7 +140,13 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
 
       console.log('Parameters:', offer)
-      const conduitKey = offer.order_data.protocol_data.parameters.conduitKey
+      // Read the conduitKey from the normalized order rather than the raw order_data.
+      // Grails offers nest under `protocol_data`, but Vision offers store the bare
+      // `{ parameters, signature }` shape; parseStoredOrder handles both and defaults
+      // a missing conduitKey to zero (which routes to the Seaport contract below).
+      const parsedOrder = orderBuilder.parseStoredOrder(offer)
+      const conduitKey =
+        parsedOrder?.parameters.conduitKey ?? '0x0000000000000000000000000000000000000000000000000000000000000000'
       const conduitAddress =
         conduitKey === OPENSEA_CONDUIT_KEY
           ? OPENSEA_CONDUIT_ADDRESS
@@ -181,7 +187,13 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       // Determine which NFT contract to approve based on if the name is wrapped
       const isWrapped = await checkIfWrapped(ensName)
       const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-      const conduitKey = offer.order_data.protocol_data.parameters.conduitKey
+      // Read the conduitKey from the normalized order rather than the raw order_data.
+      // Grails offers nest under `protocol_data`, but Vision offers store the bare
+      // `{ parameters, signature }` shape; parseStoredOrder handles both and defaults
+      // a missing conduitKey to zero (which routes to the Seaport contract below).
+      const parsedOrder = orderBuilder.parseStoredOrder(offer)
+      const conduitKey =
+        parsedOrder?.parameters.conduitKey ?? '0x0000000000000000000000000000000000000000000000000000000000000000'
       const conduitAddress =
         conduitKey === OPENSEA_CONDUIT_KEY
           ? OPENSEA_CONDUIT_ADDRESS

@@ -29,7 +29,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
-    "ethereum-identity-kit": "^0.2.74",
+    "ethereum-identity-kit": "^0.2.78",
     "motion": "^12.38.0",
     "next": "15.5.9",
     "posthog-js": "^1.372.8",

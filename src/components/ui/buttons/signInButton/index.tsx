@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useUserContext } from '@/context/user'
-import { SignInButton as SignInButtonComponent } from 'ethereum-identity-kit'
+import { SignInButton as SignInButtonComponent, useWindowSize } from 'ethereum-identity-kit'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
@@ -33,6 +33,7 @@ const SignInButton = () => {
     handleSignInSuccess,
     handleSignInError,
   } = useUserContext()
+  const { width } = useWindowSize()
 
   return (
     <div
@@ -58,6 +59,7 @@ const SignInButton = () => {
           setIsDropdownOpen(!isDropdownOpen)
         }}
         expirationTime={DAY_IN_SECONDS * 1000}
+        hideName={!!width && width < 768}
       />
       <div
         className={cn(

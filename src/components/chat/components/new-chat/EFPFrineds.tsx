@@ -48,7 +48,7 @@ const EFPFriends: React.FC<EFPFriendsProps> = ({ submit, createChatIsPending, se
         Array(10)
           .fill(0)
           .map((_, index) => (
-            <div key={`loading-${index}`} className='border-tertiary border-y'>
+            <div key={`loading-${index}`} className='border-tertiary border-y rounded-none'>
               <LoadingCell className='h-10 w-full' width='100%' height='64px' radius='0px' />
             </div>
           ))}

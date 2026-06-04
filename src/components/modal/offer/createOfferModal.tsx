@@ -166,13 +166,13 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         if (success || isLoading) return
         onClose()
       }}
-      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm md:items-start md:overflow-y-auto md:p-4 md:py-[5vh]'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-h-none md:max-w-md md:rounded-md md:border-2 md:p-6'
+        className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-h-none md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
       >
         {success && CAN_CLAIM_POAP && !poapClaimed ? (
           <ClaimPoap />

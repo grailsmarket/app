@@ -189,7 +189,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   return (
     <div
       className={cn(
-        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:py-12 xl:items-center starting:translate-y-[100vh] md:starting:translate-y-0',
+        'fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm md:items-start md:py-12 xl:items-center',
         isOpen && !isClosing ? 'translate-y-0' : 'translate-y-[100vh] md:translate-y-0'
       )}
       onClick={(e) => {
@@ -198,7 +198,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
       }}
     >
       <div
-        className='bg-background border-tertiary relative flex h-[calc(100dvh-80px)] w-full flex-col border-t shadow-lg md:h-fit md:max-w-2xl md:rounded-md md:border-2'
+        className='bg-background border-tertiary relative flex h-[calc(100dvh-80px)] w-full flex-col border-t shadow-lg md:h-fit md:max-w-2xl md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
@@ -281,13 +281,13 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 5 }).map((_, index) => <NameLoadingRow key={index} />)
                       : fetchedDomains?.domains.map((domain) => (
-                          <DomainSearchResult
-                            key={domain.id}
-                            domain={domain}
-                            categories={categories}
-                            onClose={handleClose}
-                          />
-                        ))}
+                        <DomainSearchResult
+                          key={domain.id}
+                          domain={domain}
+                          categories={categories}
+                          onClose={handleClose}
+                        />
+                      ))}
                     <button
                       onClick={handleViewAllDomains}
                       className='text-primary hover:bg-primary/10 w-full cursor-pointer rounded-md p-3 text-left text-lg font-semibold transition-colors'
@@ -308,30 +308,30 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedDomainsLoading
                       ? Array.from({ length: 3 }).map((_, index) => <CategoryLoadingRow key={index} />)
                       : displayedCategories.map((category) => (
-                          <Link
-                            key={category.name}
-                            href={`/categories/${category.name}`}
-                            onClick={handleClose}
-                            className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
-                          >
-                            <div className='flex flex-row items-center gap-3'>
-                              <Image
-                                src={getCategoryDetails(category.name).avatar}
-                                alt={`${category.name} avatar`}
-                                width={100}
-                                height={100}
-                                className='h-9 w-9 rounded-full object-cover'
-                              />
-                              <div className='flex flex-col gap-px'>
-                                <div className='text-foreground font-semibold'>{category.display_name}</div>
-                                <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
-                                  {category.description}
-                                </div>
+                        <Link
+                          key={category.name}
+                          href={`/categories/${category.name}`}
+                          onClick={handleClose}
+                          className='hover:bg-primary/10 flex w-full items-center justify-between rounded-md p-3 text-left transition-colors'
+                        >
+                          <div className='flex flex-row items-center gap-3'>
+                            <Image
+                              src={getCategoryDetails(category.name).avatar}
+                              alt={`${category.name} avatar`}
+                              width={100}
+                              height={100}
+                              className='h-9 w-9 rounded-full object-cover'
+                            />
+                            <div className='flex flex-col gap-px'>
+                              <div className='text-foreground font-semibold'>{category.display_name}</div>
+                              <div className='text-md text-foreground/60 line-clamp-1 font-medium'>
+                                {category.description}
                               </div>
                             </div>
-                            <div className='text-md text-neutral font-semibold'>{category.member_count} names</div>
-                          </Link>
-                        ))}
+                          </div>
+                          <div className='text-md text-neutral font-semibold'>{category.member_count} names</div>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               )}
@@ -346,32 +346,32 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
                     {isFetchedProfilesLoading
                       ? Array.from({ length: 3 }).map((_, index) => <UserLoadingRow key={index} />)
                       : fetchedProfiles?.map((profile) => (
-                          <Link
-                            prefetch={true}
-                            key={profile.resolvedAddress?.id || profile.name}
-                            href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
-                            onClick={handleClose}
-                            className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
+                        <Link
+                          prefetch={true}
+                          key={profile.resolvedAddress?.id || profile.name}
+                          href={`/profile/${profile.resolvedAddress?.id || profile.name}`}
+                          onClick={handleClose}
+                          className='hover:bg-primary/10 flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors'
+                        >
+                          <Avatar
+                            name={profile.name}
+                            style={{ width: '36px', height: '36px', borderRadius: '50%' }}
+                          />
+                          <div
+                            className='text-foreground flex flex-col gap-px truncate font-semibold'
+                            style={{ maxWidth: 'calc(100% - 48px)' }}
                           >
-                            <Avatar
-                              name={profile.name}
-                              style={{ width: '36px', height: '36px', borderRadius: '50%' }}
-                            />
-                            <div
-                              className='text-foreground flex flex-col gap-px truncate font-semibold'
-                              style={{ maxWidth: 'calc(100% - 48px)' }}
-                            >
-                              <p className='max-w-full truncate text-lg'>
-                                {isAddress(profile.name) ? profile.name : beautifyName(profile.name)}
+                            <p className='max-w-full truncate text-lg'>
+                              {isAddress(profile.name) ? profile.name : beautifyName(profile.name)}
+                            </p>
+                            {profile.resolvedAddress?.id && (
+                              <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
+                                {profile.resolvedAddress?.id}
                               </p>
-                              {profile.resolvedAddress?.id && (
-                                <p className='text-md text-foreground/60 max-w-full truncate pt-0.5'>
-                                  {profile.resolvedAddress?.id}
-                                </p>
-                              )}
-                            </div>
-                          </Link>
-                        ))}
+                            )}
+                          </div>
+                        </Link>
+                      ))}
                   </div>
                 </div>
               )}

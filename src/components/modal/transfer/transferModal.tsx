@@ -476,13 +476,13 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
           handleClose()
         }
       }}
-      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/50 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex h-dvh w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:p-4'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-4 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2 md:p-6'
+        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-4 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
       >
         <h2 className='font-sedan-sc min-h-6 text-center text-3xl'>Transfer Name{domains.length > 1 ? 's' : ''}</h2>
         {renderContent()}

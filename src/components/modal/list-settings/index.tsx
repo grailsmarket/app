@@ -83,13 +83,13 @@ const ListSettings: React.FC<ListSettingsProps> = ({ selectedList, onClose, prof
   return (
     <div
       onClick={onClose}
-      className='fixed inset-0 z-50 flex min-h-[100dvh] w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm md:items-start md:overflow-y-auto md:p-4 md:py-[5vh]'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-h-none md:max-w-md md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-h-none md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
       >
         <div className='flex w-full items-center justify-between px-3'>
           <div className='flex cursor-pointer items-center gap-2'>

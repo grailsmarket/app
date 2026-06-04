@@ -362,14 +362,14 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         if (success || isLoading) return
         onClose()
       }}
-      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm md:items-center md:justify-center md:p-4'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
         className={cn(
-          'border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2',
+          'border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300',
           showDatePicker && 'min-h-[480px]'
         )}
       >
@@ -489,11 +489,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                               <p className='text-right font-medium text-green-500'>
                                 {domain.expiry_date
                                   ? new Date(
-                                      extensionMode === 'extend_for'
-                                        ? new Date(domain.expiry_date).getTime() +
-                                            quantity * getSecondsPerUnit(timeUnit) * 1000
-                                        : customDate * 1000
-                                    ).toLocaleDateString()
+                                    extensionMode === 'extend_for'
+                                      ? new Date(domain.expiry_date).getTime() +
+                                      quantity * getSecondsPerUnit(timeUnit) * 1000
+                                      : customDate * 1000
+                                  ).toLocaleDateString()
                                   : 'Unknown'}
                               </p>
                             </div>
@@ -531,9 +531,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       >
                         {customDate
                           ? new Date(customDate * 1000).toLocaleDateString(navigator.language || 'en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : 'Select Date'}
                       </PrimaryButton>
                     ) : (

@@ -83,7 +83,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         ) : null}
       </AnimatePresence>
       <div
-        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2'
+        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -94,11 +94,13 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
               <Cross className='text-foreground h-4 w-4 cursor-pointer' />
             </button>
           </div>
-          <SetEmailReminder onClick={onClose} />
         </div>
 
         {/* Notifications list */}
         <div ref={scrollContainerRef} onScroll={handleScroll} className='flex-1 overflow-y-auto'>
+          <div>
+            <SetEmailReminder onClick={onClose} className='rounded-none' />
+          </div>
           {notifications.length === 0 && !isNotificationsLoading ? (
             <NoResults label='No notifications' height='400px' />
           ) : (

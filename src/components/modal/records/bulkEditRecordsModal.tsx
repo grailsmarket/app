@@ -111,14 +111,14 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
   return (
     <>
       <div
-        className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12'
+        className='fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
         onClick={(e) => {
           e.stopPropagation()
           handleClose()
         }}
       >
         <div
-          className='bg-background border-tertiary relative flex max-h-[calc(100dvh-56px)] w-full flex-col rounded-md border-t shadow-lg md:max-w-xl md:border-2'
+          className='bg-background border-tertiary relative flex max-h-[calc(100dvh-56px)] w-full flex-col rounded-md border-t shadow-lg md:max-w-xl md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
           onClick={(e) => e.stopPropagation()}
         >
           {/* Loading roles state */}
@@ -452,7 +452,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                               labelClassName='w-[128px] max-w-[128px] break-all block py-3'
                             />
                             <button
-                              className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
+                              className='hover:bg-tertiary flex h-12 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
                               onClick={() => removeCustomRecordKey(key)}
                             >
                               <Image src={CrossIcon} alt='Remove' width={14} height={14} />
@@ -775,14 +775,14 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                                           />
                                           {(perNameValue ?? sharedValue) ? (
                                             <button
-                                              className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
+                                              className='hover:bg-tertiary flex h-12 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
                                               onClick={() => setPerNameCustomRecord(name, key, '')}
                                               title='Remove for this name'
                                             >
                                               <Image src={CrossIcon} alt='Remove' width={14} height={14} />
                                             </button>
                                           ) : (
-                                            <div className='w-8 flex-shrink-0' />
+                                            <div className='w-8 shrink-0' />
                                           )}
                                         </div>
                                       )
@@ -800,7 +800,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                                           labelClassName='w-[128px] max-w-[128px] break-all block py-3'
                                         />
                                         <button
-                                          className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
+                                          className='hover:bg-tertiary flex h-12 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors'
                                           onClick={() => removePerNameCustomKey(name, key)}
                                           title='Remove custom record'
                                         >

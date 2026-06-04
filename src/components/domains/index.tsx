@@ -228,7 +228,7 @@ const Domains: React.FC<DomainsProps> = ({
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
               cardWidth={width && width < 400 ? 150 : 180}
-              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 386}
+              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 370}
               gap={4}
               containerPadding={width && width < 768 ? 8 : 0}
               containerWidth={containerWidth}
@@ -257,7 +257,7 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualList<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              rowHeight={60}
+              rowHeight={54}
               overscanCount={visibleCount}
               gap={0}
               paddingBottom={paddingBottom ? paddingBottom : '40px'}
@@ -267,7 +267,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
+                    <div className='border-tertiary flex h-[54px] w-full items-center justify-between border-b'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

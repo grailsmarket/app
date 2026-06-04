@@ -35,7 +35,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
 
   return (
     <div className={cn(ALL_MARKETPLACE_COLUMNS['domain'].getWidth(columnCount))}>
-      <div className='flex h-[36px] w-full max-w-full flex-row items-center'>
+      <div className='flex h-[54px] w-full max-w-full flex-row items-center'>
         <div
           className='flex flex-row items-center justify-start gap-2 truncate'
           style={{ maxWidth: domainIsValid ? 'calc(100% - 8px)' : 'calc(100% - 12px)' }}
@@ -44,7 +44,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             name={domain.name}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
-            className='pointer-events-none h-8 max-h-8 max-w-8 min-w-8 rounded-sm sm:h-[34px] sm:max-h-[34px] sm:max-w-[34px] sm:min-w-[34px]'
+            className='pointer-events-none aspect-square h-[52px] min-h-[52px] w-[52px] min-w-[52px] rounded-none!'
           />
           <div className='flex max-w-full flex-col gap-px truncate'>
             <p

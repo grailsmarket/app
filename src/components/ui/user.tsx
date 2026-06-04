@@ -7,6 +7,7 @@ import {
   Address,
   Avatar,
   DEFAULT_FALLBACK_AVATAR,
+  DEFAULT_FALLBACK_HEADER,
   fetchAccount,
   ProfileTooltip,
   truncateAddress,
@@ -82,9 +83,9 @@ const User: React.FC<UserProps> = ({
               router.push(`/profile/${address}`)
             }}
           >
-            {!hideHeaderImage && headerImageSrc && (
+            {!hideHeaderImage && (
               <Image
-                src={headerImageSrc}
+                src={headerImageSrc || DEFAULT_FALLBACK_HEADER}
                 alt='Header'
                 width={400}
                 height={80}

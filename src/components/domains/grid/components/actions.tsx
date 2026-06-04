@@ -1,5 +1,4 @@
 import React from 'react'
-import CartIcon from '../../table/components/CartIcon'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
@@ -27,23 +26,24 @@ import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import ActionsDropdown from '@/components/domains/actionsDropdown'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import Watchlist from '@/components/ui/watchlist'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
   registrationStatus: RegistrationStatus
-  canAddToCart: boolean
   isFirstInRow?: boolean
   watchlistId?: number | undefined
   isBulkSelecting?: boolean
+  index?: number
 }
 
 const Actions: React.FC<ActionsProps> = ({
   domain,
   registrationStatus,
-  canAddToCart,
   watchlistId,
   isBulkSelecting,
   isFirstInRow,
+  index,
 }) => {
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
@@ -114,9 +114,9 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const primaryButtonClassName =
-    'border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-0.5'
+    'border-primary/60 hover:bg-primary w-full text-primary/90 hover:text-background rounded-none rounded-bl-sm! cursor-pointer border-y-2 border-l-2 px-2 h-10'
   const secondaryButtonClassName =
-    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-0.5 text-lg font-bold'
+    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-none border-t-2 px-2.5 py-0.5 text-lg font-bold'
 
   if (isBulkSelecting) {
     return (
@@ -184,7 +184,7 @@ const Actions: React.FC<ActionsProps> = ({
     <div
       className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
     >
-      <div>
+      <div className='w-full'>
         {registrationStatus === GRACE_PERIOD ? (
           <button onClick={(e) => clickHandler(e, openExtendModal)} className={primaryButtonClassName}>
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
@@ -210,17 +210,29 @@ const Actions: React.FC<ActionsProps> = ({
         )}
       </div>
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
-        {canAddToCart && (
-          <button className='cursor-pointer rounded-sm' disabled={!canAddToCart}>
-            <CartIcon domain={domain} className='p-0' />
-          </button>
-        )}
+        <div
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y-2 border-l-2'
+        >
+          <Watchlist
+            domain={domain}
+            showSettings={watchlistId ? true : false}
+            tooltipPosition={index === 0 ? 'bottom' : 'top'}
+            dropdownPosition='left'
+            watchlistId={watchlistId || domain.watchlist_record_id}
+            fetchWatchSettings={false}
+          />
+        </div>
         {!isBulkSelecting && (
           <ActionsDropdown
             domain={domain}
             isOwner={isMyDomain}
             registrationStatus={registrationStatus}
             dropdownPosition={isFirstInRow ? 'right' : 'left'}
+            buttonClassName='rounded-none border-y-2 border-x-2 h-10 w-10 rounded-br-sm hover:bg-tertiary '
           />
         )}
       </div>

@@ -65,6 +65,8 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   const hasPrice = activity.price_wei && activity.price_wei !== '0'
   const namePagePath = `/${encodeURIComponent(normalizedName)}`
 
+  console.log(activity.platform)
+
   return (
     <article
       onClick={() => router.push(namePagePath)}
@@ -113,8 +115,8 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 <Image
                   src={SOURCE_ICONS[activity.platform as keyof typeof SOURCE_ICONS]}
                   alt={activity.platform}
-                  width={16}
-                  height={16}
+                  width={activity.platform === 'blockchain' ? 12 : 16}
+                  height={activity.platform === 'blockchain' ? 12 : 16}
                 />
                 <p className='text-foreground/80 text-xl font-semibold capitalize'>{activity.platform}</p>
               </div>

@@ -17,6 +17,8 @@ import type { ActivityType, ProfileActivityEventType } from '@/types/profile'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useWindowSize } from 'ethereum-identity-kit'
+import { SOURCE_ICONS } from '@/constants/domains/sources'
+import Image from 'next/image'
 
 interface FeedActivityCardProps {
   activity: ActivityType
@@ -104,6 +106,20 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
         </div>
 
         <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
+          {activity.platform && (
+            <div className='bg-background/50 rounded-md p-2'>
+              <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Source</p>
+              <div className='flex flex-row items-center gap-1'>
+                <Image
+                  src={SOURCE_ICONS[activity.platform as keyof typeof SOURCE_ICONS]}
+                  alt={activity.platform}
+                  width={16}
+                  height={16}
+                />
+                <p className='text-foreground/80 text-xl font-semibold capitalize'>{activity.platform}</p>
+              </div>
+            </div>
+          )}
           {copy.counterpartyLabel && activity.counterparty_address && (
             <div className='bg-background/50 rounded-md p-2'>
               <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>{copy.counterpartyLabel}</p>

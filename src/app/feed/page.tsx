@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Metadata } from 'next'
-import CommentsFeed from './components/commentsFeed'
+import Feed from './components/feed'
 import { FilterProvider } from '@/context/filters'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +30,7 @@ const FeedPage = () => {
         <div className='relative z-10 mx-auto flex w-full flex-col'>
           <div className='bg-background relative flex min-h-[calc(100dvh-54px)] w-full flex-col md:min-h-[calc(100dvh-70px)]'>
             <FilterProvider filterType='feed'>
-              <CommentsFeed />
+              <Feed />
             </FilterProvider>
           </div>
         </div>

@@ -6,7 +6,6 @@ import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
 import type { ActivityTypeFilterType } from '@/types/filters/activity'
 import FilterSelector from '@/components/filters/components/FilterSelector'
 import { cn } from '@/utils/tailwind'
-import CloseIcon from 'public/icons/cross.svg'
 import FilterIcon from 'public/icons/filter.svg'
 import CategoryMultiSelect from './categoryMultiSelect'
 import { isAddress } from 'viem'
@@ -43,7 +42,6 @@ interface ActivityTypeSidebarProps {
   onMaxPriceEthChange: (value: string) => void
   canClear: boolean
   onClear: () => void
-  onClose: () => void
 }
 
 const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
@@ -68,7 +66,6 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   onMaxPriceEthChange,
   canClear,
   onClear,
-  onClose,
 }) => {
   const handlePriceChange = (value: string, onChange: (value: string) => void) => {
     if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) onChange(value)
@@ -78,19 +75,19 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
     <aside
       className={cn(
         'bg-background border-tertiary absolute top-0 bottom-0 left-0 z-40 flex w-full max-w-full flex-col overflow-hidden border-r-2 shadow-md transition-transform duration-300 md:w-[292px] md:min-w-[292px] lg:duration-100',
-        isOpen ? 'translate-x-0' : '-translate-x-[110%]'
+        isOpen ? 'translate-x-0' : 'translate-x-[-110%]'
       )}
     >
       <div className='pt-md relative flex items-center justify-between'>
         <div className='px-lg py-md flex w-full min-w-full justify-between transition-transform lg:min-w-[292px]'>
           <div className='flex items-center gap-2'>
-            <button
+            {/* <button
               type='button'
               onClick={onClose}
               className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
-            </button>
+            </button> */}
             <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
               <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
               <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
@@ -106,7 +103,7 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
           </button>
         </div>
       </div>
-      <div className='bg-dark-700 flex min-h-0 flex-1 flex-col overflow-y-auto'>
+      <div className='bg-dark-700 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto'>
         {(showCommentFilters || showActivityFilters) && (
           <div className='flex flex-col gap-4 p-3'>
             <div className='flex flex-col gap-2'>
@@ -144,8 +141,8 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
         )}
         {showActivityFilters && (
           <>
-            <div className='flex flex-col gap-2 p-3'>
-              <p className='text-lg leading-[18px] font-medium'>Platform</p>
+            <div className='flex flex-col gap-2'>
+              <p className='px-3 text-lg leading-[18px] font-medium'>Platform</p>
               <div className='flex flex-col overflow-x-hidden'>
                 {PLATFORM_FILTERS.map((item) => {
                   const isSelected = platform === item.value
@@ -184,7 +181,7 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
                 />
               </div>
             </div>
-            <div className='w-full p-3 pb-0'>
+            <div className='w-full p-3 pb-2'>
               <div className='flex w-full flex-col gap-3'>
                 <p className='text-lg leading-[18px] font-medium'>Type</p>
               </div>

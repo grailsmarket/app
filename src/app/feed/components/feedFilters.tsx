@@ -6,11 +6,13 @@ import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
 import { FEED_TABS } from '@/constants/filters/feed'
 import type { FeedTabValue } from '@/types/filters/feed'
+import CloseIcon from 'public/icons/cross.svg'
 
 interface FeedFiltersProps {
   selectedTab: FeedTabValue
   onTabChange: (tab: FeedTabValue) => void
   selectedFilterCount: number
+  filtersOpen: boolean
   onToggleFilters: () => void
 }
 
@@ -18,6 +20,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   selectedTab,
   onTabChange,
   selectedFilterCount,
+  filtersOpen,
   onToggleFilters,
 }) => {
   const [mounted, setMounted] = useState(false)
@@ -53,7 +56,13 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
         className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
         aria-label='Toggle filters'
       >
-        <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
+        <Image
+          src={filtersOpen ? CloseIcon : FilterIcon}
+          alt='Filter'
+          width={20}
+          height={20}
+          className={cn('transition-transform duration-200', filtersOpen ? 'rotate-90 opacity-40' : 'opacity-40')}
+        />
         {selectedFilterCount > 0 && (
           <span className='bg-primary text-background absolute top-1 right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold'>
             {selectedFilterCount}

@@ -2,6 +2,8 @@ import type { FEED_TABS } from '@/constants/filters/feed'
 import type { ActivityTypeFilterType } from './activity'
 import type { MarketFiltersState, MarketplaceOption, PriceType } from './name'
 
+export type FeedKind = 'activity' | 'comment'
+
 export type FeedTab = (typeof FEED_TABS)[number]
 export type FeedTabValue = FeedTab['value']
 

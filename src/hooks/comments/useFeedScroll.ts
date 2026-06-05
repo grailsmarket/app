@@ -18,7 +18,7 @@ export const useFeedScroll = ({
   isFetchingNextPage,
   fetchNextPage,
 }: UseFeedScrollParams) => {
-  const lastSeenNewestId = useRef<string | null>(null)
+  const lastSeenNewestId = useRef<number | null>(null)
 
   useEffect(() => {
     const el = scrollRef.current

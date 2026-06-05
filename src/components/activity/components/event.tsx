@@ -37,6 +37,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
     sent: Transfer,
     received: Transfer,
     renewal: Renewal,
+    offer: OfferMade,
     registration: Mint,
     sale: Sold,
     transfer: Transfer,
@@ -54,6 +55,9 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
     sent: 'Sent',
     received: 'Received',
     renewal: 'Extended',
+    offer: 'Offer',
+    registration: 'Registration',
+    sale: 'Sale',
   }[event]
 
   const platformIcon = {

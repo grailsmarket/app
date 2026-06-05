@@ -4,12 +4,12 @@ import { API_URL, DEFAULT_FETCH_LIMIT } from '@/constants/api'
 import { APIResponseType, PaginationType } from '@/types/api'
 import { buildQueryParamString } from '@/utils/api/buildQueryParamString'
 import { normalizeName } from '@/lib/ens'
-import { BigNumber } from '@ethersproject/bignumber'
 import { authFetch } from '../authFetch'
 import { generateEmptyName } from '@/utils/generateEmptyName'
 import { NameFilters } from '@/types/filters/name'
 import { fetchNameDetails } from '@/api/name/details'
 import { ETH_NODE, parseNameIdentifierSearch } from '@/utils/searchIdentifiers'
+import { ethNumberToWei } from '@/utils/priceConvert'
 
 interface FetchDomainsOptions {
   limit: number
@@ -134,24 +134,16 @@ export const fetchDomains = async ({
             maxLength: filters.length.max || undefined,
             minLength: filters.length.min || undefined,
             maxPrice: filters.priceRange.max
-              ? BigNumber.from(Math.floor(filters.priceRange.max * 10 ** 6))
-                  .mul(BigNumber.from(10).pow(12))
-                  .toString()
+              ? ethNumberToWei(filters.priceRange.max)
               : filters.priceRange.max || undefined,
             minPrice: filters.priceRange.min
-              ? BigNumber.from(Math.floor(filters.priceRange.min * 10 ** 6))
-                  .mul(BigNumber.from(10).pow(12))
-                  .toString()
+              ? ethNumberToWei(filters.priceRange.min)
               : filters.priceRange.min || undefined,
             maxOffer: filters.offerRange?.max
-              ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
-                  .mul(BigNumber.from(10).pow(12))
-                  .toString()
+              ? ethNumberToWei(filters.offerRange.max)
               : filters.offerRange?.max || undefined,
             minOffer: filters.offerRange?.min
-              ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
-                  .mul(BigNumber.from(10).pow(12))
-                  .toString()
+              ? ethNumberToWei(filters.offerRange.min)
               : filters.offerRange?.min || undefined,
             minWatchersCount: filters.watchersCount?.min || undefined,
             maxWatchersCount: filters.watchersCount?.max || undefined,
@@ -238,24 +230,16 @@ export const fetchDomains = async ({
       'filters[maxLength]': filters.length.max || null,
       'filters[minLength]': filters.length.min || null,
       'filters[maxPrice]': filters.priceRange.max
-        ? BigNumber.from(Math.floor(filters.priceRange.max * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+        ? ethNumberToWei(filters.priceRange.max)
         : filters.priceRange.max || null,
       'filters[minPrice]': filters.priceRange.min
-        ? BigNumber.from(Math.floor(filters.priceRange.min * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+        ? ethNumberToWei(filters.priceRange.min)
         : filters.priceRange.min || null,
       'filters[maxOffer]': filters.offerRange?.max
-        ? BigNumber.from(Math.floor(filters.offerRange.max * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+        ? ethNumberToWei(filters.offerRange.max)
         : filters.offerRange?.max || null,
       'filters[minOffer]': filters.offerRange?.min
-        ? BigNumber.from(Math.floor(filters.offerRange.min * 10 ** 6))
-            .mul(BigNumber.from(10).pow(12))
-            .toString()
+        ? ethNumberToWei(filters.offerRange.min)
         : filters.offerRange?.min || null,
       'filters[minWatchersCount]': filters.watchersCount?.min || null,
       'filters[maxWatchersCount]': filters.watchersCount?.max || null,

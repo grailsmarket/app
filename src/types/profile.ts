@@ -1,6 +1,9 @@
 import { Address } from 'viem'
 
 export type ProfileActivityEventType =
+  | 'registration'
+  | 'sale'
+  | 'offer'
   | 'listed'
   | 'offer_made'
   | 'bought'

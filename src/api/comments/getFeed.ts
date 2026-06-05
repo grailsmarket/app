@@ -8,15 +8,26 @@ interface GetCommentFeedParams {
   clubs?: string[]
   page?: number
   limit?: number
+  watchlist?: boolean
 }
 
-export const getCommentFeed = async ({ owner, clubs = [], page = 1, limit = 20 }: GetCommentFeedParams) => {
+export const getCommentFeed = async ({
+  owner,
+  clubs = [],
+  page = 1,
+  limit = 20,
+  watchlist = false,
+}: GetCommentFeedParams) => {
   const params = new URLSearchParams()
   params.set('page', String(page))
   params.set('limit', String(limit))
   if (owner) params.set('owner', owner)
   if (clubs.length > 0) params.set('clubs', clubs.join(','))
+  if (watchlist) params.set('watchlist', 'true')
 
+  // Always send auth credentials: the /comments/feed endpoint is identity-aware
+  // (e.g. filtering blocked users, surfacing own comments), so logged-in users
+  // must get the authenticated experience across all tabs, not just watchlist.
   const response = await authFetch(`${API_URL}/comments/feed?${params.toString()}`, {
     method: 'GET',
     headers: { Accept: 'application/json' },

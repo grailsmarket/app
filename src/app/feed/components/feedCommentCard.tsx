@@ -1,21 +1,21 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
-import { Avatar, fetchAccount, truncateAddress } from 'ethereum-identity-kit'
+import { useWindowSize } from 'ethereum-identity-kit'
 import NameImage from '@/components/ui/nameImage'
 import { beautifyName, normalizeName } from '@/lib/ens'
-import { getMetadataAssetUrl, getNameTokenId } from '@/utils/web3/ens'
+import { getNameTokenId } from '@/utils/web3/ens'
 import type { CommentFeedItem } from '@/types/comment'
 import ReplyArrowIcon from './replyArrowIcon'
 import type { ReplyContext } from './types'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
+import User from '@/components/ui/user'
+import { Address } from 'viem'
 
 interface FeedCommentCardProps {
   comment: CommentFeedItem
@@ -27,6 +27,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const router = useRouter()
+  const { width } = useWindowSize()
 
   const normalizedName = normalizeName(comment.name)
   const tokenId = getNameTokenId(normalizedName)
@@ -34,15 +35,6 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
 
   // const clubs = comment.clubs ?? []
   const time = comment.created_at ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }) : ''
-  const { data: account } = useQuery({
-    queryKey: ['account', comment.author_address],
-    queryFn: () => fetchAccount(comment.author_address),
-    enabled: !!comment.author_address,
-    staleTime: 60_000,
-  })
-
-  const ensName = account?.ens?.name
-  const displayName = ensName ? beautifyName(ensName) : truncateAddress(comment.author_address as `0x${string}`)
 
   return (
     <article
@@ -52,8 +44,8 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
       <div className='flex flex-col gap-3 sm:gap-4'>
         <div className='flex w-full flex-wrap items-center justify-between'>
           <div className='flex flex-wrap items-center gap-1.5 gap-y-2 sm:gap-2'>
-            <div className='flex items-center gap-1.5'>
-              <Link
+            <div className='flex'>
+              {/* <Link
                 href={`/profile/${comment.author_address}`}
                 onClick={(e) => e.stopPropagation()}
                 className='h-6 w-6 cursor-pointer transition-opacity hover:opacity-80 md:h-8.5 md:w-8.5'
@@ -70,9 +62,15 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
                 className='min-w-0 truncate text-lg font-semibold transition-opacity hover:opacity-80'
               >
                 {displayName}
-              </Link>
+              </Link> */}
+              <User
+                address={comment.author_address as Address}
+                wrapperClassName='justify-start'
+                className='max-w-full py-1'
+                avatarSize={width && width < 768 ? '22px' : '26px'}
+              />
             </div>
-            <p className='text-neutral text-md px-0.5 pt-0.5 font-medium sm:px-1'>
+            <p className='text-neutral pt-0.5 text-lg font-semibold'>
               <span className='hidden sm:inline'>commented</span> on
             </p>
             <HoverPrefetchLink
@@ -85,7 +83,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
-                className='h-6 w-6 rounded-sm sm:h-8.5 sm:w-8.5'
+                className='h-7 w-7 rounded-sm sm:h-8.5 sm:w-8.5'
               />
               <div className='block truncate text-xl font-bold'>{beautifyName(normalizedName)}</div>
             </HoverPrefetchLink>

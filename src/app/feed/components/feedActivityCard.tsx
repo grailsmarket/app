@@ -65,8 +65,6 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   const hasPrice = activity.price_wei && activity.price_wei !== '0'
   const namePagePath = `/${encodeURIComponent(normalizedName)}`
 
-  console.log(activity.platform)
-
   return (
     <article
       onClick={() => router.push(namePagePath)}

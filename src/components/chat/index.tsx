@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, selectChatSidebar } from '@/state/reducers/chat/sidebar'
+import { useNavbar } from '@/context/navbar'
+import { cn } from '@/utils/tailwind'
 import NewChatView from './components/new-chat/newChatView'
 import ThreadView from './components/chat/threadView'
 import ListView from './components/listView'
@@ -14,6 +16,7 @@ const DEFAULT_WIDTH = 448
 const ChatSidebar: React.FC = () => {
   const dispatch = useAppDispatch()
   const { open, view } = useAppSelector(selectChatSidebar)
+  const { isNavbarVisible } = useNavbar()
   const [viewport, setViewport] = useState<{ height: number; offsetTop: number } | null>(null)
   const [isDesktop, setIsDesktop] = useState(false)
   const [width, setWidth] = useState<number | null>(null)
@@ -116,7 +119,11 @@ const ChatSidebar: React.FC = () => {
             ...(!isDesktop && viewport ? { height: `${viewport.height}px`, top: `${viewport.offsetTop}px` } : {}),
             ...widthStyle,
           }}
-          className={`bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:sticky md:top-[72px] md:right-auto md:z-40 md:h-[calc(100dvh-72px)] md:w-auto md:shrink-0 ${!isDesktop && viewport ? '' : 'max-md:top-0 max-md:h-dvh'}`}
+          className={cn(
+            'bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:sticky md:right-auto md:z-40 md:w-auto md:shrink-0',
+            isNavbarVisible ? 'md:top-[72px] md:h-[calc(100dvh-72px)]' : 'md:top-0 md:h-dvh',
+            !isDesktop && viewport ? '' : 'max-md:top-0 max-md:h-dvh'
+          )}
           aria-label='Chat sidebar'
         >
           <div

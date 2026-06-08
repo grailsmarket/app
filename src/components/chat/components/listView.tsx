@@ -25,25 +25,24 @@ const ListView: React.FC = () => {
 
   return (
     <>
-      <div className='border-tertiary flex items-center justify-between border-b-2 p-4'>
+      <div className='border-tertiary flex items-center justify-between gap-3 border-b-2 p-4'>
         <h2 className='font-sedan-sc text-foreground text-2xl'>Grails Chat</h2>
-        <button
-          onClick={() => dispatch(closeChatSidebar())}
-          className='hover:bg-primary/10 rounded-md p-1 transition-colors'
-          aria-label='Close'
-        >
-          <Cross className='text-foreground h-4 w-4 cursor-pointer' />
-        </button>
-      </div>
-
-      <div className='border-tertiary border-b-2 p-3'>
-        <PrimaryButton
-          onClick={() => dispatch(openSidebarToNew())}
-          className='flex w-full items-center justify-center gap-1.5'
-        >
-          <Image src={PlusIcon} alt='' width={14} height={14} />
-          New chat
-        </PrimaryButton>
+        <div className='flex shrink-0 items-center gap-2'>
+          <PrimaryButton
+            onClick={() => dispatch(openSidebarToNew())}
+            className='flex h-9 items-center justify-center gap-1.5 px-3 text-sm'
+          >
+            <Image src={PlusIcon} alt='' width={13} height={13} />
+            New chat
+          </PrimaryButton>
+          <button
+            onClick={() => dispatch(closeChatSidebar())}
+            className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+            aria-label='Close'
+          >
+            <Cross className='text-foreground h-4 w-4 cursor-pointer' />
+          </button>
+        </div>
       </div>
 
       <div onScroll={handleScroll} className='flex-1 overflow-y-auto'>

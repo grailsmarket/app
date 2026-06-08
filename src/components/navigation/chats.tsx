@@ -3,8 +3,8 @@
 import React from 'react'
 import Image from 'next/image'
 import { useUserContext } from '@/context/user'
-import { useAppDispatch } from '@/state/hooks'
-import { openSidebarToList } from '@/state/reducers/chat/sidebar'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
 import { cn } from '@/utils/tailwind'
 import chatIcon from 'public/icons/chat.svg'
@@ -12,6 +12,7 @@ import chatIcon from 'public/icons/chat.svg'
 const Chats: React.FC = () => {
   const { userAddress, authStatus } = useUserContext()
   const dispatch = useAppDispatch()
+  const { open } = useAppSelector(selectChatSidebar)
   const { totalUnread } = useChatsInbox()
 
   // Chat is an authenticated-only feature; hide entirely when signed out.
@@ -19,9 +20,10 @@ const Chats: React.FC = () => {
 
   return (
     <button
-      onClick={() => dispatch(openSidebarToList())}
+      onClick={() => dispatch(open ? closeChatSidebar() : openSidebarToList())}
       className='hover:bg-primary/10 relative rounded-md p-1 transition-colors'
       aria-label='Messages'
+      aria-pressed={open}
     >
       <Image src={chatIcon} alt='Messages' width={24} height={24} className='h-5 w-5 md:h-6 md:w-6' />
       {totalUnread > 0 && (

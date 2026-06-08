@@ -25,14 +25,14 @@ const ListView: React.FC = () => {
 
   return (
     <>
-      <div className='border-tertiary flex items-center justify-between gap-3 border-b-2 p-4'>
+      <div className='border-tertiary flex h-14.5 items-center justify-between gap-3 border-b-2 pr-3 pl-4'>
         <h2 className='font-sedan-sc text-foreground text-2xl'>Grails Chat</h2>
         <div className='flex shrink-0 items-center gap-2'>
           <PrimaryButton
             onClick={() => dispatch(openSidebarToNew())}
-            className='flex h-9 items-center justify-center gap-1.5 px-3 text-sm'
+            className='px-md text-md flex h-7.5! items-center justify-center gap-1'
           >
-            <Image src={PlusIcon} alt='' width={13} height={13} />
+            <Image src={PlusIcon} alt='add new chat' width={14} height={14} />
             New chat
           </PrimaryButton>
           <button

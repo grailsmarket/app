@@ -11,7 +11,7 @@ import ThreadView from './components/chat/threadView'
 import ListView from './components/listView'
 
 const MIN_WIDTH = 360
-const DEFAULT_WIDTH = 448
+const DEFAULT_WIDTH = 380
 
 const ChatSidebar: React.FC = () => {
   const dispatch = useAppDispatch()

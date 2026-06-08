@@ -7,7 +7,7 @@ import quotes from 'public/icons/quotes.svg'
 import arrow from 'public/icons/arrow-back.svg'
 import User from '../ui/user'
 import { Address } from 'viem'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 import { cn } from '@/utils/tailwind'
 
 const AUTO_ROTATE_MS = 8500
@@ -20,7 +20,7 @@ const getVisibleCount = (width: number | null): number => {
 
 export default function Testemonials() {
   const [isMounted, setIsMounted] = useState(false)
-  const { width } = useResponsiveSize()
+  const width = useAppContainerWidth()
   const visibleCount = getVisibleCount(isMounted ? width : null)
   const total = TESTEMONIAL_QUOTES.length
   const needsCarousel = total > visibleCount
@@ -74,14 +74,14 @@ export default function Testemonials() {
   const translateX = -(activeIndex * (100 / visibleCount))
 
   return (
-    <div className='flex w-full flex-col items-center justify-center gap-4 sm:gap-6 md:gap-8 lg:items-start'>
-      <h2 className='font-sedan-sc px-2 text-center text-4xl sm:text-5xl md:text-6xl lg:text-left'>
+    <div className='flex w-full flex-col items-center justify-center gap-4 @[40rem]/app:gap-6 @[48rem]/app:gap-8 @[64rem]/app:items-start'>
+      <h2 className='font-sedan-sc px-2 text-center text-4xl @[40rem]/app:text-5xl @[48rem]/app:text-6xl @[64rem]/app:text-left'>
         What <span className='text-primary'>users</span> say about Grails
       </h2>
 
       {/* Carousel container */}
       <div className='relative w-full'>
-        <div className='w-full overflow-hidden sm:overflow-visible'>
+        <div className='w-full overflow-hidden @[40rem]/app:overflow-visible'>
           <div
             className='flex min-w-full items-stretch transition-transform duration-500 ease-in-out'
             style={{ transform: `translateX(${translateX}%)` }}
@@ -89,7 +89,7 @@ export default function Testemonials() {
             {TESTEMONIAL_QUOTES.map((testimonial, i) => (
               <div
                 key={testimonial.address}
-                className='shrink-0 px-2 transition-all duration-600 lg:px-2'
+                className='shrink-0 px-2 transition-all duration-600 @[64rem]/app:px-2'
                 style={{
                   width: `${100 / visibleCount}%`,
                   maxWidth: '100%',
@@ -120,7 +120,7 @@ export default function Testemonials() {
               type='button'
               onClick={goPrev}
               aria-label='Previous testimonial'
-              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -left-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors sm:-left-8 sm:h-10 sm:w-10 lg:-left-7 lg:h-12 lg:w-12 xl:-left-[min(calc(100vw-1286px),3rem)]'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -left-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors @[40rem]/app:-left-8 @[40rem]/app:h-10 @[40rem]/app:w-10 @[64rem]/app:-left-7 @[64rem]/app:h-12 @[64rem]/app:w-12 @[80rem]/app:-left-[min(calc(100vw-1286px),3rem)]'
             >
               <Image src={arrow} alt='' width={18} height={16} className='rotate-180' />
             </button>
@@ -128,7 +128,7 @@ export default function Testemonials() {
               type='button'
               onClick={goNext}
               aria-label='Next testimonial'
-              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -right-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors sm:-right-8 sm:h-10 sm:w-10 lg:-right-7 lg:h-12 lg:w-12 xl:-right-[min(calc(100vw-1286px),3rem)]'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -right-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors @[40rem]/app:-right-8 @[40rem]/app:h-10 @[40rem]/app:w-10 @[64rem]/app:-right-7 @[64rem]/app:h-12 @[64rem]/app:w-12 @[80rem]/app:-right-[min(calc(100vw-1286px),3rem)]'
             >
               <Image src={arrow} alt='' width={18} height={16} />
             </button>

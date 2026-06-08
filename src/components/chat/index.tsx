@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
+import { AnimatePresence, motion, type Variants } from 'motion/react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { closeChatSidebar, selectChatSidebar } from '@/state/reducers/chat/sidebar'
+import { closeChatSidebar, selectChatSidebar, type ChatSidebarView } from '@/state/reducers/chat/sidebar'
 import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import NewChatView from './components/new-chat/newChatView'
@@ -13,6 +13,29 @@ import ListView from './components/listView'
 const MIN_WIDTH = 360
 const DEFAULT_WIDTH = 380
 
+const VIEW_DEPTH: Record<ChatSidebarView, number> = {
+  list: 0,
+  new: 1,
+  thread: 2,
+}
+
+const viewVariants: Variants = {
+  initial: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? 16 : -16,
+  }),
+  animate: {
+    opacity: 1,
+    x: 0,
+    transition: { type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] },
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? -16 : 16,
+    transition: { type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] },
+  }),
+}
+
 const ChatSidebar: React.FC = () => {
   const dispatch = useAppDispatch()
   const { open, view } = useAppSelector(selectChatSidebar)
@@ -21,6 +44,13 @@ const ChatSidebar: React.FC = () => {
   const [isDesktop, setIsDesktop] = useState(false)
   const [width, setWidth] = useState<number | null>(null)
   const [isResizing, setIsResizing] = useState(false)
+
+  const prevViewRef = useRef<ChatSidebarView>(view)
+  const direction = VIEW_DEPTH[view] > VIEW_DEPTH[prevViewRef.current] ? 1 : -1
+
+  useEffect(() => {
+    prevViewRef.current = view
+  }, [view])
 
   useEffect(() => {
     if (!open) return
@@ -148,9 +178,21 @@ const ChatSidebar: React.FC = () => {
             onPointerDown={onResizeStart}
             className={`absolute top-0 -left-1 z-20 hidden h-full w-2 cursor-ew-resize touch-none md:block ${isResizing ? 'bg-primary/40' : 'hover:bg-primary/30'} transition-colors`}
           />
-          {view === 'list' && <ListView />}
-          {view === 'new' && <NewChatView />}
-          {view === 'thread' && <ThreadView />}
+          <AnimatePresence initial={false} mode='wait' custom={direction}>
+            <motion.div
+              key={view}
+              custom={direction}
+              variants={viewVariants}
+              initial='initial'
+              animate='animate'
+              exit='exit'
+              className='flex h-full w-full flex-col overflow-hidden'
+            >
+              {view === 'list' && <ListView />}
+              {view === 'new' && <NewChatView />}
+              {view === 'thread' && <ThreadView />}
+            </motion.div>
+          </AnimatePresence>
         </motion.aside>
       )}
     </AnimatePresence>

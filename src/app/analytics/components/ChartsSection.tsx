@@ -21,7 +21,7 @@ const ChartsSection: React.FC<ChartsSectionProps> = ({ category }) => {
   return (
     <section>
       <div className='border-tertiary overflow-hidden border-b-2'>
-        <div className='grid grid-cols-1 xl:grid-cols-3'>
+        <div className='grid grid-cols-1 @[80rem]/app:grid-cols-3'>
           <AnalyticsChart title='Sales' data={salesData?.data?.points} source={source} isLoading={salesLoading} />
           <AnalyticsChart title='Offers' data={offersData?.data?.points} source={source} isLoading={offersLoading} />
           {/* <AnalyticsChart

@@ -63,8 +63,8 @@ const Feed: React.FC = () => {
     <div
       style={viewportStyle}
       className={cn(
-        'fixed right-0 left-0 mx-auto flex h-[calc(100dvh-54px)] w-full flex-col transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:h-[calc(100dvh-70px)]',
-        viewport ? '' : 'top-[54px] md:top-[70px]'
+        'fixed right-0 left-0 mx-auto flex h-[calc(100dvh-54px)] w-full flex-col transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:absolute md:inset-0 md:h-full',
+        viewport ? '' : 'top-[54px] md:top-0'
       )}
     >
       <FeedFilters
@@ -75,7 +75,7 @@ const Feed: React.FC = () => {
         onToggleFilters={() => setIsFiltersOpen((isOpen) => !isOpen)}
       />
 
-      <div className='relative flex min-h-0 flex-1 flex-col lg:flex-row'>
+      <div className='relative flex min-h-0 flex-1 flex-col @[64rem]/app:flex-row'>
         <ActivityTypeSidebar
           isOpen={isFiltersOpen}
           selectedTypes={selectedActivityTypes}
@@ -111,7 +111,7 @@ const Feed: React.FC = () => {
             type='button'
             aria-label='Close filters'
             onClick={() => setIsFiltersOpen(false)}
-            className='absolute inset-0 z-30 cursor-default bg-black/20 md:hidden'
+            className='absolute inset-0 z-30 cursor-default bg-black/20 @[48rem]/app:hidden'
           />
         )}
         <div
@@ -125,7 +125,7 @@ const Feed: React.FC = () => {
             }
           }}
         >
-          <div className='mx-auto max-w-5xl px-3 sm:px-5'>
+          <div className='mx-auto max-w-5xl px-3 @[40rem]/app:px-5'>
             {isInitialLoading ? (
               <FeedLoading />
             ) : isWatchlist && authStatus !== 'authenticated' ? (

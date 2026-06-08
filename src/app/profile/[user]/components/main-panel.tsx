@@ -197,13 +197,13 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   isMyProfile,
 }) => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useResponsiveSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
 
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 

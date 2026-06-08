@@ -17,7 +17,7 @@ export const TRENDING_ACTIVITY_TYPES = ['mint', 'sold', 'offer_made'] as Activit
 export const TRENDING_ACTIVITY_FILTERS = ACTIVITY_TYPE_FILTERS.filter((filter) =>
   TRENDING_ACTIVITY_TYPES.includes(filter.value)
 )
-export const TRENDING_MIN_WEI = '100000000000000000'
+export const TRENDING_MIN_WEI = '1000000000000000000'
 
 export const DEFAULT_FEED_FILTERS_STATE: FeedFiltersState = {
   selectedTab: FEED_TABS[0],

@@ -22,7 +22,7 @@ import ViewSelector from '@/components/domains/viewSelector'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useResponsiveSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
   const filterPanel = useAppSelector(selectFilterPanel)
@@ -30,9 +30,9 @@ const CategoriesFilterPanel: React.FC = () => {
   const isFiltersClear = filters.type === null
   const { isNavbarVisible } = useNavbar()
 
-  if (!isClient || !windowWidth) return null
+  if (!isClient || !responsiveWidth) return null
 
-  const isMobile = windowWidth < 1024
+  const isMobile = responsiveWidth < 1024
   const isOpen = filtersOpen
 
   const handleClose = () => {
@@ -55,32 +55,32 @@ const CategoriesFilterPanel: React.FC = () => {
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
-        isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
+        isMobile && 'fixed left-0 w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
-        isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
+        isMobile && '@[48rem]/app:top-[70px] @[48rem]/app:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[100%]'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
           (isNavbarVisible
-            ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
-            : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
+            ? 'top-26 h-[calc(100dvh-104px)] @[48rem]/app:top-[130px] @[48rem]/app:h-[calc(100dvh-130px)]'
+            : 'top-[50px] h-[calc(100dvh-50px)] @[48rem]/app:top-[58px] @[48rem]/app:h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
-        isOpen ? 'md:border-r-2' : 'w-0'
+        isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}
     >
       <div
         className={cn(
-          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
-          isOpen ? 'w-full overflow-x-hidden lg:w-[292px]' : 'w-0 lg:z-0 lg:w-[56px]'
+          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 @[64rem]/app:relative @[64rem]/app:duration-100',
+          isOpen ? 'w-full overflow-x-hidden @[64rem]/app:w-[292px]' : 'w-0 @[64rem]/app:z-0 @[64rem]/app:w-[56px]'
         )}
       >
         {/* Header */}
         <div className='pt-md relative flex items-center justify-between'>
-          <div className='px-md sm:px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
+          <div className='px-md sm:px-lg py-md flex w-full min-w-full justify-between @[64rem]/app:min-w-[292px]'>
             <button
               onClick={handleClose}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10 lg:hidden'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @max-[64rem]/app:flex @[48rem]/app:h-10 @[48rem]/app:w-10 @[64rem]/app:hidden'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button>
@@ -92,7 +92,7 @@ const CategoriesFilterPanel: React.FC = () => {
               <SecondaryButton onClick={handleClearFilters} disabled={isFiltersClear}>
                 Clear
               </SecondaryButton>
-              <span className='flex items-center gap-2 md:hidden'>
+              <span className='flex items-center gap-2 @[48rem]/app:hidden'>
                 <ViewSelector />
               </span>
             </div>

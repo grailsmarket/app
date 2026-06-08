@@ -67,30 +67,30 @@ const FilterPanel: React.FC = () => {
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
-        isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
+        isMobile && 'fixed left-0 w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
-        isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
+        isMobile && '@[48rem]/app:top-[70px] @[48rem]/app:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile && (isNavbarVisible ? 'top-[130px] h-[calc(100dvh-130px)]' : 'top-[58px] h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
-        isOpen ? 'md:border-r-2' : 'w-0'
+        isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}
     >
       <div
         className={cn(
-          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
-          isOpen ? 'w-full overflow-x-hidden lg:w-[292px]' : 'w-0 lg:z-0 lg:w-[56px]'
+          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 @[64rem]/app:relative @[64rem]/app:duration-100',
+          isOpen ? 'w-full overflow-x-hidden @[64rem]/app:w-[292px]' : 'w-0 @[64rem]/app:z-0 @[64rem]/app:w-[56px]'
         )}
       >
         {/* Top div */}
         <div className='pt-md relative flex items-center justify-between'>
           <div
             className={cn(
-              'px-lg py-md flex w-full min-w-full justify-between transition-transform lg:min-w-[292px]',
-              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
+              'px-lg py-md flex w-full min-w-full justify-between transition-transform @[64rem]/app:min-w-[292px]',
+              isPanelCategories && '-translate-x-[100%] @[64rem]/app:-translate-x-[292px]'
             )}
           >
             <div className='flex items-center gap-2'>
@@ -98,7 +98,7 @@ const FilterPanel: React.FC = () => {
                 onClick={() => {
                   dispatch(actions.setFiltersOpen(false))
                 }}
-                className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10 lg:hidden'
+                className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @max-[64rem]/app:flex @[48rem]/app:h-10 @[48rem]/app:w-10 @[64rem]/app:hidden'
               >
                 <Image src={CloseIcon} alt='Close' width={16} height={16} />
               </button>
@@ -117,7 +117,7 @@ const FilterPanel: React.FC = () => {
               >
                 Clear
               </SecondaryButton>
-              <span className='flex items-center gap-2 md:hidden'>
+              <span className='flex items-center gap-2 @[48rem]/app:hidden'>
                 <ViewSelector />
                 <DownloadButton />
               </span>
@@ -126,8 +126,8 @@ const FilterPanel: React.FC = () => {
           <button
             onClick={setPanelAll}
             className={cn(
-              'p-lg hover:bg-secondary flex min-w-full cursor-pointer items-center gap-2 rounded-sm transition-transform md:min-w-[284px] lg:min-w-[284px]',
-              isPanelCategories && '-translate-x-[100%] lg:-translate-x-[289px]'
+              'p-lg hover:bg-secondary flex min-w-full cursor-pointer items-center gap-2 rounded-sm transition-transform @[48rem]/app:min-w-[284px] @[64rem]/app:min-w-[284px]',
+              isPanelCategories && '-translate-x-[100%] @[64rem]/app:-translate-x-[289px]'
             )}
           >
             <Image src={backArrow} alt='back arrow' height={12} width={12} className='rotate-180' />

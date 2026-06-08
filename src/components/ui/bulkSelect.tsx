@@ -77,7 +77,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     }
   }, [isSelecting])
 
-  const { width: windowWidth } = useResponsiveSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
@@ -398,16 +398,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         ? canExtendDomains
           ? 'min(550px,95vw)'
           : 'min(430px,95vw)'
-        : windowWidth && windowWidth < 640
+        : responsiveWidth && responsiveWidth < 640
           ? 'min(130px,95vw)'
           : 'min(420px,95vw)'
 
   const componentWidth = useMemo(() => {
     if (!isClient) return '136px'
     if (isSelecting) return bulkSelectWidth
-    if (windowWidth && windowWidth < 640) return '130px'
+    if (responsiveWidth && responsiveWidth < 640) return '130px'
     return '136px'
-  }, [isSelecting, windowWidth, bulkSelectWidth, isClient])
+  }, [isSelecting, responsiveWidth, bulkSelectWidth, isClient])
 
   if (!isBulkSelectSupportedTab) return null
 
@@ -415,7 +415,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     <div
       className={cn(
         'bulk-select-container fixed z-10 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all sm:right-2 sm:bottom-2 sm:gap-1.5',
-        isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
+        isActionButtonsVisible
+          ? 'right-1 bottom-15 @[48rem]/app:right-4 @[48rem]/app:bottom-18'
+          : 'right-1 bottom-1 @[48rem]/app:right-4 @[48rem]/app:bottom-4'
       )}
     >
       {isSelecting && selectAllError && (
@@ -442,7 +444,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
               Loading names... {selectAllProgress.loaded}/{selectAllProgress.total}
             </p>
           </div>
-          <SecondaryButton onClick={handleCancelSelectAll} className='h-9 md:h-10'>
+          <SecondaryButton onClick={handleCancelSelectAll} className='h-9 @[48rem]/app:h-10'>
             Cancel
           </SecondaryButton>
         </div>
@@ -460,7 +462,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
       {isSelecting && !isSelectAllLoading && (
         <div className='bg-background shadow-bulk flex flex-row gap-1.5 rounded-md p-2 sm:hidden'>
-          <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
+          <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap @[48rem]/app:h-10 @[48rem]/app:min-w-10'>
             {selectedDomains.length}
           </SecondaryButton>
           <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
@@ -468,7 +470,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           </SecondaryButton>
           <SecondaryButton
             onClick={handleCancelBulkSelect}
-            className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
+            className='flex w-9 min-w-9 items-center justify-center p-0! @[48rem]/app:w-10'
           >
             <Cross className='h-3 w-3' />
           </SecondaryButton>
@@ -568,7 +570,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
               <div className='flex flex-row gap-1.5'>
                 <SecondaryButton
                   className={cn(
-                    'hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-nowrap md:h-10 md:min-w-10',
+                    'hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-nowrap @[48rem]/app:h-10 @[48rem]/app:min-w-10',
                     selectedDomains.length > 999 ? 'text-xl' : 'text-2xl'
                   )}
                 >

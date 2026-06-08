@@ -175,8 +175,8 @@ const Domains: React.FC<DomainsProps> = ({
         showHeaders && (
           <div
             className={cn(
-              'px-md pt-sm bg-background transition-top border-tertiary lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
-              isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
+              'px-md pt-sm bg-background transition-top border-tertiary @[64rem]/app:px-lg @[48rem]/app:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
+              isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
             )}
           >
             {displayedColumns.map((header, index) => {
@@ -220,7 +220,10 @@ const Domains: React.FC<DomainsProps> = ({
         )
       )}
       <div
-        className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg px-0' : 'px-0')}
+        className={cn(
+          'h-full w-full rounded-sm',
+          viewTypeToUse === 'grid' ? '@[48rem]/app:px-md @[64rem]/app:px-lg px-0' : 'px-0'
+        )}
         ref={listRef}
       >
         {!noResults ? (
@@ -268,7 +271,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
+                    <div className='px-md @[48rem]/app:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

@@ -61,16 +61,16 @@ const CommentsPanel: React.FC<Props> = ({ name, nameDetails }) => {
     <div
       ref={panelRef}
       id='comments'
-      className='sm:border-tertiary bg-secondary pt-lg flex w-full scroll-mt-20 flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'
+      className='@[40rem]/app:border-tertiary bg-secondary pt-lg flex w-full scroll-mt-20 flex-col gap-1 @[40rem]/app:rounded-lg @[40rem]/app:border-2 @[64rem]/app:gap-2'
     >
-      <div className='px-lg xl:px-xl flex items-center justify-between'>
+      <div className='px-lg @[80rem]/app:px-xl flex items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Comments</h2>
         <span className='text-neutral text-lg'>{comments.length}</span>
       </div>
 
       {nameId ? (
         <>
-          <div className='px-lg xl:px-xl max-h-[480px] w-full overflow-y-auto'>
+          <div className='px-lg @[80rem]/app:px-xl max-h-[480px] w-full overflow-y-auto'>
             {isLoading ? (
               <div className='flex h-[200px] w-full animate-pulse flex-col items-center justify-center gap-3'>
                 <LoadingCell height='20px' width='140px' radius='4px' />

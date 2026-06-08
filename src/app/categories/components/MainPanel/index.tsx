@@ -22,7 +22,7 @@ import { useAllHolders } from '../../hooks/useAllHolders'
 const MainPanel: React.FC = () => {
   const dispatch = useAppDispatch()
   const isClient = useIsClient()
-  const { width: windowWidth } = useResponsiveSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const filterPanel = useAppSelector(selectFilterPanel)
   const filtersOpen = filterPanel.open
   const { categoriesPage } = useAppSelector(selectCategoriesPage)
@@ -49,8 +49,8 @@ const MainPanel: React.FC = () => {
 
   // On mobile: always 100%, on desktop: adjust based on filter open state
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     // Holders panel has no filter panel, always full width
     if (showHoldersPanel) return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'

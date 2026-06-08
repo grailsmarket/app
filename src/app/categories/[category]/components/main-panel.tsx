@@ -65,14 +65,14 @@ interface CategoryContentProps {
 
 const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useResponsiveSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { selectors, categoryTab } = useFilterRouter()
   const filtersOpen = selectors.filters.open
   const activeTab = categoryTab?.value || 'names'
 
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     // These tabs should always be full width (no filter panel)
     if (activeTab === 'analytics' || activeTab === 'activity' || activeTab === 'holders') return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'

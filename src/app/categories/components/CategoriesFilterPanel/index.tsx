@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectCategoriesPageFilters,
@@ -8,7 +9,6 @@ import {
   setCategoriesPageSearch,
 } from '@/state/reducers/filters/categoriesPageFilters'
 import { Cross, useIsClient } from 'ethereum-identity-kit'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
 import { useNavbar } from '@/context/navbar'
@@ -20,9 +20,11 @@ import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
 import ViewSelector from '@/components/domains/viewSelector'
 
+const FILTER_PANEL_DESKTOP_QUERY = '(min-width: 1024px)'
+
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
-  const { width: responsiveWidth } = useResponsiveSize()
+  const [isDesktopViewport, setIsDesktopViewport] = useState<boolean | null>(null)
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
   const filterPanel = useAppSelector(selectFilterPanel)
@@ -30,9 +32,21 @@ const CategoriesFilterPanel: React.FC = () => {
   const isFiltersClear = filters.type === null
   const { isNavbarVisible } = useNavbar()
 
-  if (!isClient || !responsiveWidth) return null
+  useEffect(() => {
+    if (typeof window === 'undefined') return
 
-  const isMobile = responsiveWidth < 1024
+    const mediaQuery = window.matchMedia(FILTER_PANEL_DESKTOP_QUERY)
+    const updateViewportMode = () => setIsDesktopViewport(mediaQuery.matches)
+
+    updateViewportMode()
+    mediaQuery.addEventListener('change', updateViewportMode)
+
+    return () => mediaQuery.removeEventListener('change', updateViewportMode)
+  }, [])
+
+  if (!isClient || isDesktopViewport === null) return null
+
+  const isMobile = !isDesktopViewport
   const isOpen = filtersOpen
 
   const handleClose = () => {
@@ -57,14 +71,14 @@ const CategoriesFilterPanel: React.FC = () => {
         // Mobile styles
         isMobile && 'fixed left-0 w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
-        isMobile && '@[48rem]/app:top-[70px] @[48rem]/app:h-[calc(100dvh-70px)]',
+        isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[100%]'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile &&
           (isNavbarVisible
-            ? 'top-26 h-[calc(100dvh-104px)] @[48rem]/app:top-[130px] @[48rem]/app:h-[calc(100dvh-130px)]'
-            : 'top-[50px] h-[calc(100dvh-50px)] @[48rem]/app:top-[58px] @[48rem]/app:h-[calc(100dvh-58px)]'),
+            ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
+            : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}

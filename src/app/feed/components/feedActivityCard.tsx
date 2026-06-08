@@ -83,8 +83,8 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 <User
                   address={activity.actor_address}
                   wrapperClassName='justify-start'
-                  className='max-w-full py-1'
-                  avatarSize={width && width < 768 ? '22px' : '26px'}
+                  className='max-w-full py-[3px] sm:py-1'
+                  avatarSize={width && width < 768 ? '20px' : '24px'}
                   alignTooltip='left'
                 />
               )}
@@ -100,7 +100,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
-                className='h-7 w-7 rounded-sm sm:h-9 sm:w-9 md:rounded-md'
+                className='h-6.5 w-6.5 rounded-sm sm:h-8 sm:w-8 md:rounded-md'
               />
               {beautifyName(normalizedName)}
             </HoverPrefetchLink>

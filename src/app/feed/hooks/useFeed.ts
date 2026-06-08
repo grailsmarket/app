@@ -4,7 +4,7 @@ import { useAppDispatch } from '@/state/hooks'
 import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { FeedTabValue } from '@/types/filters/feed'
 import { FeedPlatformFilter } from '../components/activityTypeSidebar'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ReplyContext } from '../components/types'
 import { useOwnerAddressLookup } from '@/hooks/comments/useOwnerAddressLookup'
 import {
@@ -53,6 +53,8 @@ export const useFeed = () => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastSeenNewestId = useRef<FeedItemCommon['id'] | null>(null)
   const isLoadingOlder = useRef(false)
+  // Distance from the bottom captured before older items prepend, used to re-anchor the viewport.
+  const prependAnchorRef = useRef<number | null>(null)
 
   const { ownerAddress, ownerEnsName, oppositeIdentifier, ownerError } = useOwnerAddressLookup(ownerInput)
   const activityEventTypes = useMemo(
@@ -113,7 +115,6 @@ export const useFeed = () => {
     getNextPageParam: (lastPage) => (lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined),
   })
 
-  const currentPage = data?.pages[0]?.pagination.page
   const feedItems = useMemo<FeedItemType[]>(() => data?.pages.flatMap((page) => page.results).reverse() ?? [], [data])
 
   useFeedScrollLock()
@@ -137,14 +138,20 @@ export const useFeed = () => {
     if (nextTypes.length !== selectedActivityTypes.length) dispatch(actions.setFiltersType(nextTypes))
   }, [actions, dispatch, isTrending, selectedActivityTypes])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = scrollRef.current
-    if (!el || feedItems.length === 0 || isLoadingOlder.current) return
+    if (!el || feedItems.length === 0) return
 
-    if (scrollRef && currentPage === 1) {
-      scrollRef.current?.scrollTo({ top: scrollRef.current?.scrollHeight, behavior: 'instant' })
+    if (isLoadingOlder.current) {
+      if (prependAnchorRef.current !== null) {
+        el.scrollTop = el.scrollHeight - prependAnchorRef.current
+        prependAnchorRef.current = null
+      }
+      isLoadingOlder.current = false
+      return
     }
 
+    // scroll to botton on initial load, or newer items arriving at the bottom
     const newest = feedItems[feedItems.length - 1]
     if (lastSeenNewestId.current !== newest.id) {
       el.scrollTop = el.scrollHeight
@@ -153,19 +160,12 @@ export const useFeed = () => {
   }, [feedItems])
 
   const loadMore = async () => {
+    if (isFetchingMore || !hasNextPage) return
     const el = scrollRef.current
-    if (isFetchingMore) return
-    const previousHeight = el?.scrollHeight ?? 0
+    // capture distance from the bottom, then recalculate the distance once the items render.
+    prependAnchorRef.current = el ? el.scrollHeight - el.scrollTop : 0
     isLoadingOlder.current = true
-
-    if (!hasNextPage) return
     await fetchNextPage()
-
-    requestAnimationFrame(() => {
-      const nextEl = scrollRef.current
-      if (nextEl) nextEl.scrollTop = nextEl.scrollHeight - previousHeight + nextEl.scrollTop
-      isLoadingOlder.current = false
-    })
   }
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {

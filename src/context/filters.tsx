@@ -42,12 +42,12 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const pathname = usePathname()
-  const { width: windowWidth } = useResponsiveSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const previousPathRef = useRef<string | null>(null)
 
   // Close filters on mobile when navigating to a different page
   useEffect(() => {
-    const isMobile = windowWidth !== null && windowWidth < 1024
+    const isMobile = responsiveWidth !== null && responsiveWidth < 1024
 
     // Only close on mobile and when navigating to a different page (not on initial mount)
     if (isMobile && previousPathRef.current !== null && previousPathRef.current !== pathname) {
@@ -55,7 +55,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
     }
 
     previousPathRef.current = pathname
-  }, [pathname, windowWidth, dispatch])
+  }, [pathname, responsiveWidth, dispatch])
 
   useEffect(() => {
     dispatch(setBulkSelectIsSelecting(false))
@@ -63,12 +63,12 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
   }, [pathname, dispatch])
 
   useEffect(() => {
-    if (windowWidth !== null && windowWidth > 1024) {
+    if (responsiveWidth !== null && responsiveWidth > 1024) {
       dispatch(setFilterPanelOpen(true))
     } else {
       dispatch(setFilterPanelOpen(false))
     }
-  }, [windowWidth, dispatch])
+  }, [responsiveWidth, dispatch])
 
   return (
     <FilterContext.Provider value={{ filterType, profileTab, categoryTab, feedTab, profileAddress }}>

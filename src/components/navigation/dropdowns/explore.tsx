@@ -10,7 +10,8 @@ import Link from 'next/link'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -28,7 +29,7 @@ interface ExploreProps {
 const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { data: listings, isLoading } = useQuery({

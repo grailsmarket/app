@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useMemo } from 'react'
-import { Address, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Address, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import NoResults from '@/components/ui/noResults'
 import VirtualList from '@/components/ui/virtuallist'
 import { DomainOfferType, OfferColumnType } from '@/types/domains'
@@ -39,7 +40,7 @@ const Offers: React.FC<OffersProps> = ({
   currentUserAddress,
   useLocalScrollTop = false,
 }) => {
-  const { width, height } = useWindowSize()
+  const { width, height } = useResponsiveSize()
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreOffers && hasMoreOffers && !isLoading) {

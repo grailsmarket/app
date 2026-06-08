@@ -6,7 +6,8 @@ import { NameActivityType } from '@/types/domains'
 import { fetchAllActivity } from '@/api/activity/all'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { API_URL } from '@/constants/api'
-import { Arrow, useWindowSize } from 'ethereum-identity-kit'
+import { Arrow } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useRouter } from 'next/navigation'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
@@ -16,7 +17,7 @@ const LiveActivity = () => {
   const [liveActivities, setLiveActivities] = useState<NameActivityType[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const router = useRouter()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const wsRef = useRef<WebSocket | null>(null)
 

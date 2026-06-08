@@ -10,7 +10,7 @@ import { useUserContext } from '@/context/user'
 import Image from 'next/image'
 import ArrowIcon from 'public/icons/arrow-back.svg'
 import AnimateIn from '../ui/animateIn'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 const CARD_WIDTH_MOBILE = 180
 const CARD_HEIGHT_MOBILE = 360
@@ -26,7 +26,7 @@ const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState(0)
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const [isMounted, setIsMounted] = useState(false)
   const [isPositioned, setIsPositioned] = useState(false)
   const [trackPos, setTrackPos] = useState(0)

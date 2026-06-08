@@ -9,7 +9,7 @@ import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { localizeNumber } from '@/utils/localizeNumber'
 
 const formatCategoryName = (category: string) =>
@@ -27,7 +27,7 @@ interface NameProps {
 }
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const maxShownCategories = width && width < 640 ? 1 : 2
   const displayedCategories = domain.clubs?.slice(0, maxShownCategories)
   const remainingCategories =

@@ -1,6 +1,7 @@
 import { cn } from '@/utils/tailwind'
 import { RefObject, useCallback, useMemo } from 'react'
-import { Address, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Address, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { ActivityType } from '@/types/profile'
 import LoadingRow from './components/loadingRow'
 import NoResults from '@/components/ui/noResults'
@@ -53,7 +54,7 @@ const Activity: React.FC<ActivityProps> = ({
   noResultsHeight = '400px',
   className,
 }) => {
-  const { width, height } = useWindowSize()
+  const { width, height } = useResponsiveSize()
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreActivity && hasMoreActivity && !isLoading) {

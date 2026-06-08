@@ -5,7 +5,7 @@ import { usePanels } from './hooks/usePanels'
 import Filters from './components/Filters'
 import backArrow from 'public/icons/arrow-back.svg'
 import FilterIcon from 'public/icons/filter.svg'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
@@ -19,13 +19,12 @@ import SecondaryButton from '../ui/buttons/secondary'
 import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
-import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
-  const appContainerWidth = useAppContainerWidth()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { isPanelCategories, setPanelCategories, setPanelAll } = usePanels()
 
   useEffect(() => {
@@ -48,9 +47,8 @@ const FilterPanel: React.FC = () => {
   //   dispatch(actions.setFiltersOpen(false))
   // })
 
-  if (!isClient || !windowWidth) return null
+  if (!isClient || !responsiveWidth) return null
 
-  const responsiveWidth = appContainerWidth ?? windowWidth
   const isMobile = responsiveWidth < 1024
   const isOpen = filtersOpen
   // const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1

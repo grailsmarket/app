@@ -5,7 +5,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 import Image from 'next/image'
 import React, { useMemo } from 'react'
 import ViewIcon from 'public/icons/view.svg'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 // import UpvoteIcon from 'public/icons/upvote.svg'
 // import DownvoteIcon from 'public/icons/downvote.svg'
 
@@ -14,7 +14,7 @@ interface ActionsProps {
 }
 
 const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const tooltipAlign = useMemo(() => (width && width < 640 ? 'right' : 'left'), [width])
   const dropdownPosition = useMemo(() => (width && width < 640 ? 'left' : 'right'), [width])
 

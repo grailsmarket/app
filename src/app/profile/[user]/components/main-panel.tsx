@@ -7,7 +7,8 @@ import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
 import TabSwitcher from './tabSwitcher'
 import { fetchAccount } from 'ethereum-identity-kit'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import ActivityPanel from './activity'
 import BrokerPanel from './brokerPanel'
 import { useQuery } from '@tanstack/react-query'
@@ -196,7 +197,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   isMyProfile,
 }) => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
 

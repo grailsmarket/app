@@ -16,7 +16,8 @@ import { getNameTokenId } from '@/utils/web3/ens'
 import type { ActivityType, ProfileActivityEventType } from '@/types/profile'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { truncateAddress, useWindowSize } from 'ethereum-identity-kit'
+import { truncateAddress } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import Image from 'next/image'
 import ETHERSCAN_ICON from 'public/logos/etherscan.svg'
@@ -55,7 +56,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const router = useRouter()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const normalizedName = normalizeName(activity.name)
   const tokenId = activity.token_id || getNameTokenId(normalizedName)
   const copy = EVENT_COPY[activity.event_type] ?? {

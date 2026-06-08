@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Cross, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -76,7 +77,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     }
   }, [isSelecting])
 
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)

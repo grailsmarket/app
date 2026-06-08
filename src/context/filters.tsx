@@ -8,7 +8,8 @@ import type { FeedTab } from '@/types/filters/feed'
 import { useAppDispatch } from '@/state/hooks'
 import { usePathname } from 'next/navigation'
 import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
-import { Address, useWindowSize } from 'ethereum-identity-kit'
+import { Address } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useFilterUrlSync } from '@/hooks/filters/useFilterUrlSync'
 import { clearBulkSelect, setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
@@ -41,7 +42,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const pathname = usePathname()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const previousPathRef = useRef<string | null>(null)
 
   // Close filters on mobile when navigating to a different page

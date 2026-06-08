@@ -52,7 +52,7 @@
 }
 
 @theme inline {
-  --breakpoint-xs: 420px;
+  --breakpoint-xs: 26.25rem;
   --breakpoint-3xl: 109.375rem;
   --breakpoint-4xl: 125rem;
   --breakpoint-app: 146.25rem;

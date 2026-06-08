@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
-import { Arrow, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Arrow, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useCommentFeed } from '@/hooks/comments/useCommentFeed'
 import { useFeedScroll } from '@/hooks/comments/useFeedScroll'
 import FeedCommentCard from '@/app/feed/components/feedCommentCard'
@@ -11,7 +12,7 @@ import PrimaryButton from '../ui/buttons/primary'
 
 const HomeCommentFeed = () => {
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const scrolledDown = useRef(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const { comments, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useCommentFeed({ clubs: [] })

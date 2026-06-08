@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useMemo } from 'react'
-import { useIsClient, useWindowSize, ShortArrow } from 'ethereum-identity-kit'
+import { useIsClient, ShortArrow } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import TableRow from './table/components/TableRow'
 import NoResults from '@/components/ui/noResults'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
@@ -79,7 +80,7 @@ const Domains: React.FC<DomainsProps> = ({
   const currentSort = selectors.filters.sort
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
-  const { width, height } = useWindowSize()
+  const { width, height } = useResponsiveSize()
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {

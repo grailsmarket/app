@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
@@ -15,7 +16,7 @@ const MainPanel: React.FC = () => {
   const [isLiveActivityConnected, setIsLiveActivityConnected] = useState(false)
   const isClient = useIsClient()
   const { selectedTab } = useAppSelector(selectMarketplace)
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const { open: filtersOpen } = useAppSelector(selectMarketplaceFilters)
 
   const showDomainsPanel =

@@ -8,7 +8,8 @@ import ActivityPanel from './activity'
 import HoldersPanel from './holders'
 import TabSwitcher from './tabSwitcher'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeCategoryTab, selectCategory, setLastVisitedCategory } from '@/state/reducers/category/category'
@@ -64,7 +65,7 @@ interface CategoryContentProps {
 
 const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const { selectors, categoryTab } = useFilterRouter()
   const filtersOpen = selectors.filters.open
   const activeTab = categoryTab?.value || 'names'

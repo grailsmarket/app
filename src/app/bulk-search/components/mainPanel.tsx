@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useAppSelector } from '@/state/hooks'
 import { selectBulkSearchFilters } from '@/state/reducers/filters/bulkSearchFilters'
 import TabSwitcher from './tabSwitcher'
@@ -13,7 +14,7 @@ import { useBulkSearchDomains } from '../hooks/useBulkSearchDomains'
 
 const MainPanel: React.FC = () => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const { open: filtersOpen } = useAppSelector(selectBulkSearchFilters)
   const bulkSearchDomains = useBulkSearchDomains()
 

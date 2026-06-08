@@ -7,7 +7,7 @@ import grid from 'public/icons/grid.svg'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import Tooltip from '../ui/tooltip'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { selectViewType, setViewType } from '@/state/reducers/view'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
@@ -16,7 +16,7 @@ const ViewSelector = () => {
   const dispatch = useAppDispatch()
   const { actions, selectors } = useFilterRouter()
   const viewType = useAppSelector(selectViewType)
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const currentScrollTop = selectors.filters.scrollTop
 
   // Calculate columns for grid view based on container width

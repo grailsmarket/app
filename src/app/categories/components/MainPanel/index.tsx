@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectFilterPanel } from '@/state/reducers/filterPanel'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -21,7 +22,7 @@ import { useAllHolders } from '../../hooks/useAllHolders'
 const MainPanel: React.FC = () => {
   const dispatch = useAppDispatch()
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const filterPanel = useAppSelector(selectFilterPanel)
   const filtersOpen = filterPanel.open
   const { categoriesPage } = useAppSelector(selectCategoriesPage)

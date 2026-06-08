@@ -4,7 +4,7 @@ import React from 'react'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import { useRouter } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import NameImage from '@/components/ui/nameImage'
 import { beautifyName, normalizeName } from '@/lib/ens'
 import { getNameTokenId } from '@/utils/web3/ens'
@@ -27,7 +27,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const router = useRouter()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
 
   const normalizedName = normalizeName(comment.name)
   const tokenId = getNameTokenId(normalizedName)

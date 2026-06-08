@@ -6,7 +6,8 @@ import Link from 'next/link'
 import React, { useEffect, useMemo, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { cn } from '@/utils/tailwind'
 import LoadingCell from '@/components/ui/loadingCell'
 import { categoriesDropdownQueryOptions } from '@/components/navigation/dropdowns/queries'
@@ -25,7 +26,7 @@ interface CategoriesProps {
 const Categories: React.FC<CategoriesProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const dispatch = useAppDispatch()
   // const { data: listings, isLoading } = useQuery({
   //   queryKey: ['explore', 'listings'],

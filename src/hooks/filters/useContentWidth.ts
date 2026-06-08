@@ -1,9 +1,10 @@
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useFilterRouter } from './useFilterRouter'
 
 export const useContentWidth = () => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
 

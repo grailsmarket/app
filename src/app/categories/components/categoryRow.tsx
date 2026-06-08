@@ -13,7 +13,8 @@ import { useAppSelector } from '@/state/hooks'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { cn } from '@/utils/tailwind'
 import { useClickAway } from '@/hooks/useClickAway'
-import { ShortArrow, useWindowSize, useIsClient } from 'ethereum-identity-kit'
+import { ShortArrow, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 interface CategoryRowProps {
   category: CategoryType
@@ -112,7 +113,7 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
   const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
 
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
 
   const StatItem = ({
     label,

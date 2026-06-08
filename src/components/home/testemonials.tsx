@@ -7,7 +7,7 @@ import quotes from 'public/icons/quotes.svg'
 import arrow from 'public/icons/arrow-back.svg'
 import User from '../ui/user'
 import { Address } from 'viem'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { cn } from '@/utils/tailwind'
 
 const AUTO_ROTATE_MS = 8500
@@ -20,7 +20,7 @@ const getVisibleCount = (width: number | null): number => {
 
 export default function Testemonials() {
   const [isMounted, setIsMounted] = useState(false)
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const visibleCount = getVisibleCount(isMounted ? width : null)
   const total = TESTEMONIAL_QUOTES.length
   const needsCarousel = total > visibleCount

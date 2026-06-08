@@ -7,7 +7,8 @@ import type { LeaderboardSortBy, LeaderboardUser } from '@/types/leaderboard'
 import User from '@/components/ui/user'
 import Price from '@/components/ui/price'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useWindowSize, useIsClient, FollowButton, ShortArrow } from 'ethereum-identity-kit'
+import { useIsClient, FollowButton, ShortArrow } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { cn } from '@/utils/tailwind'
@@ -27,7 +28,7 @@ const MAX_VISIBLE_CATEGORIES = 10
 
 const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, sortBy }) => {
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const { categories } = useCategories()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()

@@ -10,7 +10,8 @@ import Link from 'next/link'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -30,7 +31,7 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
   const isClient = useIsClient()
   const isActive = dropdownOption === 'premium'
   const { categories } = useCategories({ enabled: isActive })
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const { authStatus } = useUserContext()
   const { data: premium, isLoading } = useQuery({

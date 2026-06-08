@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useMemo } from 'react'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -26,7 +26,7 @@ const LoadingRow = () => (
 )
 
 const HoldersPanel: React.FC<HoldersPanelProps> = ({ category }) => {
-  const { height } = useWindowSize()
+  const { height } = useResponsiveSize()
   const { isNavbarVisible } = useNavbar()
   const { holders, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useHolders(category)
 

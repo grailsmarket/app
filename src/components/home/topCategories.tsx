@@ -11,14 +11,15 @@ import {
 } from '@/state/reducers/filters/categoriesPageFilters'
 import { cn } from '@/utils/tailwind'
 import { useQuery } from '@tanstack/react-query'
-import { Arrow, useWindowSize } from 'ethereum-identity-kit'
+import { Arrow } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import Link from 'next/link'
 import React, { useEffect, useMemo, useState } from 'react'
 import LoadingCell from '../ui/loadingCell'
 import { DEFAULT_CATEGORIES_PAGE_SORT } from '@/constants/filters/categories'
 
 const TopCategories = () => {
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const [isMounted, setIsMounted] = useState(false)
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)

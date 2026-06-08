@@ -7,7 +7,8 @@ import {
   clearCategoriesPageFilters,
   setCategoriesPageSearch,
 } from '@/state/reducers/filters/categoriesPageFilters'
-import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Cross, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
 import { useNavbar } from '@/context/navbar'
@@ -21,7 +22,7 @@ import ViewSelector from '@/components/domains/viewSelector'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: windowWidth } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
   const filterPanel = useAppSelector(selectFilterPanel)

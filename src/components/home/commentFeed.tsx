@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { Arrow, useIsClient } from 'ethereum-identity-kit'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 import { useCommentFeed } from '@/hooks/comments/useCommentFeed'
 import { useFeedScroll } from '@/hooks/comments/useFeedScroll'
 import FeedCommentCard from '@/app/feed/components/feedCommentCard'
@@ -12,7 +12,7 @@ import PrimaryButton from '../ui/buttons/primary'
 
 const HomeCommentFeed = () => {
   const isClient = useIsClient()
-  const { width } = useResponsiveSize()
+  const width = useAppContainerWidth()
   const scrolledDown = useRef(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const { comments, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useCommentFeed({ clubs: [] })
@@ -42,10 +42,12 @@ const HomeCommentFeed = () => {
   const commentCount = isMobile ? 3 : comments.length
 
   return (
-    <div className='flex w-full flex-col gap-1 sm:gap-2 lg:flex-row lg:gap-10'>
-      <div className='p-md lg:px-lg flex w-full items-center justify-between lg:w-3/5 lg:flex-col lg:items-start lg:justify-start lg:gap-8 lg:pt-12'>
-        <h2 className='font-sedan-sc text-3xl font-medium sm:text-4xl md:text-5xl lg:text-6xl'>Comment Feed</h2>
-        <ul className='hidden list-inside list-disc space-y-2 lg:block'>
+    <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-2 @[64rem]/app:flex-row @[64rem]/app:gap-10'>
+      <div className='p-md @[64rem]/app:px-lg flex w-full items-center justify-between @[64rem]/app:w-3/5 @[64rem]/app:flex-col @[64rem]/app:items-start @[64rem]/app:justify-start @[64rem]/app:gap-8 @[64rem]/app:pt-12'>
+        <h2 className='font-sedan-sc text-3xl font-medium @[40rem]/app:text-4xl @[48rem]/app:text-5xl @[64rem]/app:text-6xl'>
+          Comment Feed
+        </h2>
+        <ul className='hidden list-inside list-disc space-y-2 @[64rem]/app:block'>
           <li className='text-xl font-medium'>See all of the latest comments from the community.</li>
           <li className='text-xl font-medium'>Comment on 3 Million+ domains in real time.</li>
           <li className='text-xl font-medium'>Engage with the domainers, discuss names and more!</li>
@@ -53,25 +55,29 @@ const HomeCommentFeed = () => {
         </ul>
         <Link
           href='/feed'
-          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold sm:text-xl lg:mt-2'
+          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold @[40rem]/app:text-xl @[64rem]/app:mt-2'
         >
-          <PrimaryButton className='hidden lg:block'>
+          <PrimaryButton className='hidden @[64rem]/app:block'>
             <p>Join the conversation</p>
           </PrimaryButton>
-          <div className='flex items-center justify-end gap-2 text-center text-lg font-semibold sm:text-xl lg:hidden'>
+          <div className='flex items-center justify-end gap-2 text-center text-lg font-semibold @[40rem]/app:text-xl @[64rem]/app:hidden'>
             <p>View Feed</p>
             <Arrow className='text-primary h-3 w-3 rotate-180 transition-all duration-300 group-hover:translate-x-1' />
           </div>
         </Link>
       </div>
 
-      <div ref={scrollRef} onScroll={handleScroll} className='h-full overflow-y-auto rounded-md lg:max-h-[400px]'>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className='h-full overflow-y-auto rounded-md @[64rem]/app:max-h-[400px]'
+      >
         {isLoading ? (
           <FeedLoading count={3} />
         ) : comments.length === 0 ? (
           <p className='text-neutral py-6 text-center text-lg'>No comments yet.</p>
         ) : (
-          <div className='flex flex-col gap-3 lg:[nth-child(>3)]:hidden'>
+          <div className='flex flex-col gap-3 @[64rem]/app:[nth-child(>3)]:hidden'>
             {isFetchingNextPage && !isMobile && <FeedLoading count={3} />}
             {hasNextPage && !isFetchingNextPage && !isMobile && (
               <button type='button' onClick={loadOlder} className='text-primary py-2 text-sm font-semibold'>

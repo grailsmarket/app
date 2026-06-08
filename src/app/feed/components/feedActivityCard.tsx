@@ -16,9 +16,11 @@ import { getNameTokenId } from '@/utils/web3/ens'
 import type { ActivityType, ProfileActivityEventType } from '@/types/profile'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { truncateAddress, useWindowSize } from 'ethereum-identity-kit'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import Image from 'next/image'
+import ETHERSCAN_ICON from 'public/logos/etherscan.svg'
+import { Address } from 'viem'
 
 interface FeedActivityCardProps {
   activity: ActivityType
@@ -83,6 +85,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                   wrapperClassName='justify-start'
                   className='max-w-full py-1'
                   avatarSize={width && width < 768 ? '22px' : '26px'}
+                  alignTooltip='left'
                 />
               )}
             </div>
@@ -102,39 +105,77 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
               {beautifyName(normalizedName)}
             </HoverPrefetchLink>
           </div>
-          <span className='text-neutral shrink-0 text-xs font-medium whitespace-nowrap'>{time}</span>
+          <span className='text-neutral hidden shrink-0 text-xs font-medium whitespace-nowrap sm:block'>{time}</span>
         </div>
 
-        <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-          {activity.platform && (
-            <div className='bg-background/50 rounded-md p-2'>
-              <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Source</p>
-              <div className='flex flex-row items-center gap-1'>
-                <Image
-                  src={SOURCE_ICONS[activity.platform as keyof typeof SOURCE_ICONS]}
-                  alt={activity.platform}
-                  width={activity.platform === 'blockchain' ? 12 : 16}
-                  height={activity.platform === 'blockchain' ? 12 : 16}
-                />
-                <p className='text-foreground/80 text-xl font-semibold capitalize'>{activity.platform}</p>
+        <div className='flex flex-row items-end justify-between'>
+          <div className='grid w-full max-w-full grid-cols-2 gap-2 sm:max-w-[calc(100%-72px)] lg:grid-cols-4'>
+            {activity.platform && (
+              <div className='bg-background/50 flex flex-col justify-between rounded-md p-2'>
+                <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Source</p>
+                <div className='flex flex-row items-center gap-1'>
+                  <Image
+                    src={SOURCE_ICONS[activity.platform as keyof typeof SOURCE_ICONS]}
+                    alt={activity.platform}
+                    width={activity.platform === 'blockchain' ? 12 : 16}
+                    height={activity.platform === 'blockchain' ? 12 : 16}
+                  />
+                  <p className='text-foreground/80 text-xl font-semibold capitalize'>{activity.platform}</p>
+                </div>
               </div>
-            </div>
-          )}
-          {copy.counterpartyLabel && activity.counterparty_address && (
-            <div className='bg-background/50 rounded-md p-2'>
-              <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>{copy.counterpartyLabel}</p>
-              <User address={activity.counterparty_address} wrapperClassName='justify-start' className='max-w-full' />
-            </div>
-          )}
-          {hasPrice && (
-            <div className='bg-background/50 rounded-md p-2'>
-              <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Price</p>
-              <Price price={activity.price_wei} currencyAddress={activity.currency_address || ETH_ADDRESS} />
-            </div>
+            )}
+            {copy.counterpartyLabel && activity.counterparty_address && (
+              <div className='bg-background/50 flex flex-col justify-between rounded-md p-2'>
+                <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>{copy.counterpartyLabel}</p>
+                <User address={activity.counterparty_address} wrapperClassName='justify-start' className='max-w-full' />
+              </div>
+            )}
+            {hasPrice && (
+              <div className='bg-background/50 flex flex-col justify-between rounded-md p-2'>
+                <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Price</p>
+                <Price price={activity.price_wei} currencyAddress={activity.currency_address || ETH_ADDRESS} />
+              </div>
+            )}
+            {activity.transaction_hash && (
+              <div className='bg-background/50 flex flex-col justify-between rounded-md p-2'>
+                <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Transaction</p>
+                <Link
+                  href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                  target='_blank'
+                  onClick={(e) => e.stopPropagation()}
+                  className='text-neutral hover:text-foreground text-md flex items-center gap-1.5 transition-opacity hover:opacity-80'
+                >
+                  <Image src={ETHERSCAN_ICON} alt='Etherscan' width={18} height={18} />
+                  <p className='text-foreground/80 text-lg font-semibold'>
+                    {truncateAddress(activity.transaction_hash as Address)}
+                  </p>
+                </Link>
+              </div>
+            )}
+          </div>
+          {onReply ? (
+            <button
+              type='button'
+              onClick={(e) => {
+                e.stopPropagation()
+                if (authStatus !== 'authenticated') {
+                  openConnectModal?.()
+                } else {
+                  onReply(normalizedName)
+                }
+              }}
+              className='text-primary text-md hidden cursor-pointer items-center gap-1 pb-1 font-bold transition-opacity hover:opacity-80 sm:inline-flex'
+            >
+              Reply <ReplyArrowIcon />
+            </button>
+          ) : (
+            <span />
           )}
         </div>
 
-        <div className='flex items-center justify-between gap-3'>
+        <div className='flex items-center justify-between sm:hidden'>
+          <span className='text-neutral text-xs font-medium whitespace-nowrap'>{time}</span>
+
           {onReply ? (
             <button
               type='button'
@@ -152,16 +193,6 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
             </button>
           ) : (
             <span />
-          )}
-          {activity.transaction_hash && (
-            <Link
-              href={`https://etherscan.io/tx/${activity.transaction_hash}`}
-              target='_blank'
-              onClick={(e) => e.stopPropagation()}
-              className='text-neutral hover:text-foreground text-sm font-bold transition-colors'
-            >
-              View transaction
-            </Link>
           )}
         </div>
       </div>

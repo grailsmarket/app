@@ -105,7 +105,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
       <div
         className={cn(
           'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
-          isNavbarVisible ? 'top-14 @[48rem]/app:top-[72px]' : 'top-0'
+          isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
         <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
@@ -148,7 +148,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
     <div
       className={cn(
         'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
-        isNavbarVisible ? 'top-14 @[48rem]/app:top-[72px]' : 'top-0'
+        isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
       <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>

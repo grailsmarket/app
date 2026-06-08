@@ -104,13 +104,13 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
     return (
       <div
         className={cn(
-          'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 lg:gap-4',
-          isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
+          'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
+          isNavbarVisible ? 'top-14 @[48rem]/app:top-[72px]' : 'top-0'
         )}
       >
-        <div className='flex items-center justify-between gap-3 md:gap-4'>
+        <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
           <button
-            className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
+            className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
@@ -136,7 +136,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
             ))}
           </div>
         </div>
-        <div className='hidden items-center md:flex'>
+        <div className='hidden items-center @[48rem]/app:flex'>
           <DownloadButton />
           <ViewSelector />
         </div>
@@ -147,13 +147,13 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
   return (
     <div
       className={cn(
-        'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 lg:gap-4',
-        isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
+        'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
+        isNavbarVisible ? 'top-14 @[48rem]/app:top-[72px]' : 'top-0'
       )}
     >
-      <div className='flex items-center justify-between gap-3 md:gap-4'>
+      <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
         <button
-          className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
+          className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14'
           onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
         >
           <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
@@ -179,7 +179,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
           ))}
         </div>
       </div>
-      <div className='hidden items-center md:flex'>
+      <div className='hidden items-center @[48rem]/app:flex'>
         <DownloadButton />
         <ViewSelector />
       </div>

@@ -235,28 +235,7 @@ const Card: React.FC<CardProps> = ({
             className='h-full w-full rounded-t-sm rounded-b-none object-cover'
           />
         )}
-        {domainIsValid ? // <div
-        //   onClick={(e) => {
-        //     e.preventDefault()
-        //     e.stopPropagation()
-        //   }}
-        //   className={cn(
-        //     'bg-secondary absolute top-0 right-0 z-10 flex flex-row items-center gap-0 rounded-tr-[3px] rounded-bl-sm',
-        //     watchlistId ? 'pl-2' : 'justify-center p-1'
-        //   )}
-        // >
-        //   <Watchlist
-        //     domain={domain}
-        //     tooltipPosition='bottom'
-        //     dropdownPosition={isFirstInRow ? 'right' : 'left'}
-        //     tooltipAlign={isFirstInRow ? 'left' : 'right'}
-        //     watchlistId={watchlistId || domain.watchlist_record_id}
-        //     showSettings={watchlistId ? true : false}
-        //     showSettingsArrow={false}
-        //     fetchWatchSettings={false}
-        //   />
-        // </div>
-        null : (
+        {domainIsValid ? null : (
           <div className='bg-secondary absolute top-0 right-0 z-10 flex flex-row items-center gap-0 rounded-tr-[3px] rounded-bl-sm'>
             <Tooltip
               position='bottom'
@@ -267,6 +246,16 @@ const Card: React.FC<CardProps> = ({
             </Tooltip>
           </div>
         )}
+      </div>
+      <div className='flex justify-between'>
+        <Actions
+          domain={domain}
+          registrationStatus={registrationStatus}
+          isFirstInRow={isFirstInRow}
+          watchlistId={watchlistId}
+          isBulkSelecting={isBulkSelecting}
+          index={index}
+        />
       </div>
       <div
         className={cn(
@@ -395,6 +384,7 @@ const Card: React.FC<CardProps> = ({
               <User
                 address={domain.owner as Address}
                 className='py-md w-full bg-transparent px-2.5!'
+                radiusClassName='rounded-b-sm'
                 wrapperClassName='w-full'
                 avatarSize='24px'
                 disableLink
@@ -402,16 +392,6 @@ const Card: React.FC<CardProps> = ({
                 skipProfileFetch
               />
             )}
-          <div className='flex justify-between'>
-            <Actions
-              domain={domain}
-              registrationStatus={registrationStatus}
-              isFirstInRow={isFirstInRow}
-              watchlistId={watchlistId}
-              isBulkSelecting={isBulkSelecting}
-              index={index}
-            />
-          </div>
         </div>
       </div>
     </HoverPrefetchLink>

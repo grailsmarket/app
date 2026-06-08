@@ -114,9 +114,9 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const primaryButtonClassName =
-    'border-primary/60 hover:bg-primary w-full text-primary/90 hover:text-background rounded-none rounded-bl-sm! cursor-pointer border-y-2 border-l-2 px-2 h-10'
+    'border-primary/50 hover:bg-primary w-full text-primary/70 hover:text-background rounded-none cursor-pointer border-y border-l px-2 h-10'
   const secondaryButtonClassName =
-    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-none border-t-2 px-2.5 py-0.5 text-lg font-bold'
+    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-none border-t px-2.5 py-0.5 text-lg font-bold'
 
   if (isBulkSelecting) {
     return (
@@ -131,7 +131,7 @@ const Actions: React.FC<ActionsProps> = ({
                 grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
               }
             }}
-            className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border-2 px-2.5! py-[5px]!'
+            className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border px-2.5! py-[5px]!'
           >
             Selected
             <Check className='h-3 w-3' />
@@ -146,7 +146,7 @@ const Actions: React.FC<ActionsProps> = ({
                 grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
               }
             }}
-            className='border-tertiary h-fit! w-fit! border-2 px-2.5! py-[5px]!'
+            className='border-tertiary h-fit! w-fit! border px-2.5! py-[5px]!'
           >
             Select
           </SecondaryButton>
@@ -215,7 +215,7 @@ const Actions: React.FC<ActionsProps> = ({
             e.preventDefault()
             e.stopPropagation()
           }}
-          className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y-2 border-l-2'
+          className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y border-l'
         >
           <Watchlist
             domain={domain}
@@ -232,7 +232,7 @@ const Actions: React.FC<ActionsProps> = ({
             isOwner={isMyDomain}
             registrationStatus={registrationStatus}
             dropdownPosition={isFirstInRow ? 'right' : 'left'}
-            buttonClassName='rounded-none border-y-2 border-x-2 h-10 w-10 rounded-br-sm hover:bg-tertiary '
+            buttonClassName='rounded-none border-y border-x h-10 w-10 hover:bg-tertiary'
           />
         )}
       </div>

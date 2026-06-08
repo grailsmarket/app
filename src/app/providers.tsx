@@ -18,6 +18,7 @@ import { NavbarProvider } from '@/context/navbar'
 import PostHogProvider from '@/components/posthog/posthog-provider'
 import PostHogIdentify from '@/components/posthog/posthog-identify'
 import PostHogProfileProperties from '@/components/posthog/posthog-profile-properties'
+import ChatSidebar from '@/components/chat'
 // import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
@@ -45,13 +46,16 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                     <PostHogProfileProperties />
                     <SeaportProvider>
                       <NavbarProvider>
-                        <div className='relative flex min-h-[100dvh]! flex-col'>
-                          {/* <InfoBar /> */}
-                          <Navigation showInfo={false} />
-                          <Cart />
-                          <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
-                            {children}
+                        <div className='relative flex min-h-[100dvh]!'>
+                          <div className='flex min-w-0 flex-1 flex-col'>
+                            {/* <InfoBar /> */}
+                            <Navigation showInfo={false} />
+                            <Cart />
+                            <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
+                              {children}
+                            </div>
                           </div>
+                          <ChatSidebar />
                         </div>
                         <TransactionModal />
                         <Modals />

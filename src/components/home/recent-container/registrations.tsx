@@ -20,14 +20,14 @@ const Registrations = () => {
 
   return (
     <div className='flex flex-col'>
-      <div className='p-md lg:px-lg flex w-full items-center justify-between'>
-        <h2 className='font-sedan-sc text-3xl font-medium sm:text-4xl'>Top Registrations</h2>
+      <div className='p-md @[64rem]/app:px-lg flex w-full items-center justify-between'>
+        <h2 className='font-sedan-sc text-3xl font-medium @[40rem]/app:text-4xl'>Top Registrations</h2>
         <Link
           href='/analytics'
           onClick={() => {
             dispatch(setFiltersType('mint'))
           }}
-          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold sm:text-xl'
+          className='text-primary hover:text-primary/80 group flex items-center justify-end gap-2 text-center text-lg font-semibold @[40rem]/app:text-xl'
         >
           <p>View All</p>
           <Arrow className='text-primary h-3 w-3 rotate-180 transition-all duration-300 group-hover:translate-x-1' />

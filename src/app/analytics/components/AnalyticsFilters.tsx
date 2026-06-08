@@ -44,7 +44,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
   const selectedSourceOption = SOURCE_OPTIONS.find((opt) => opt.value === source)
 
   return (
-    <div className='border-tertiary flex flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2.5 sm:px-4'>
+    <div className='border-tertiary flex flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2.5 @[40rem]/app:px-4'>
       {!hideTitle && <h1 className='mr-2 text-2xl font-bold'>Analytics</h1>}
 
       {/* Period Dropdown */}
@@ -53,10 +53,10 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           type='button'
           onClick={() => setIsPeriodOpen(!isPeriodOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[110px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-[110px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
-          <p className='text-md font-medium whitespace-nowrap sm:text-lg'>{selectedPeriodLabel}</p>
+          <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>{selectedPeriodLabel}</p>
           <ShortArrow className={cn('h-3 w-3 transition-transform', isPeriodOpen ? 'rotate-0' : 'rotate-180')} />
         </button>
 
@@ -70,7 +70,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   setIsPeriodOpen(false)
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   period === option.value && 'bg-secondary'
                 )}
               >
@@ -87,7 +87,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           type='button'
           onClick={() => setIsSourceOpen(!isSourceOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[130px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-[130px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
           <div className='flex items-center gap-2'>
@@ -100,7 +100,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                 className='h-auto w-5'
               />
             )}
-            <p className='text-md font-medium whitespace-nowrap sm:text-lg'>{selectedSourceOption?.label}</p>
+            <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>{selectedSourceOption?.label}</p>
           </div>
           <ShortArrow className={cn('h-3 w-3 transition-transform', isSourceOpen ? 'rotate-0' : 'rotate-180')} />
         </button>
@@ -115,7 +115,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   setIsSourceOpen(false)
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   source === option.value && 'bg-secondary'
                 )}
               >
@@ -136,7 +136,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
             type='button'
             onClick={() => setIsCategoryOpen(!isCategoryOpen)}
             className={cn(
-              'border-tertiary hover:border-foreground/50 flex h-9 w-[200px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+              'border-tertiary hover:border-foreground/50 flex h-9 w-[200px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10'
             )}
           >
             <div className='flex items-center gap-2'>
@@ -149,7 +149,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   className='h-auto w-5 rounded-full'
                 />
               ) : null}
-              <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
+              <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
                 {selectedCategory === 'none'
                   ? 'No Categories'
                   : selectedCategory === 'any'
@@ -169,7 +169,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   setIsCategoryOpen(false)
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   selectedCategory === null && 'bg-secondary'
                 )}
               >
@@ -182,7 +182,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   setIsCategoryOpen(false)
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   selectedCategory === null && 'bg-secondary'
                 )}
               >
@@ -195,7 +195,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   setIsCategoryOpen(false)
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   selectedCategory === null && 'bg-secondary'
                 )}
               >
@@ -211,7 +211,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                       setIsCategoryOpen(false)
                     }}
                     className={cn(
-                      'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                      'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                       selectedCategory === category.name && 'bg-secondary'
                     )}
                   >

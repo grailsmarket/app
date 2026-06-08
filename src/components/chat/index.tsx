@@ -8,7 +8,7 @@ import NewChatView from './components/new-chat/newChatView'
 import ThreadView from './components/chat/threadView'
 import ListView from './components/listView'
 
-const MIN_WIDTH = 448
+const MIN_WIDTH = 360
 
 const ChatSidebar: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -139,9 +139,8 @@ const ChatSidebar: React.FC = () => {
               aria-orientation='vertical'
               aria-label='Resize chat sidebar'
               onPointerDown={onResizeStart}
-              className={`absolute top-0 -left-1 z-20 hidden h-full w-2 cursor-ew-resize touch-none md:block ${
-                isResizing ? 'bg-primary/40' : 'hover:bg-primary/30'
-              } transition-colors`}
+              className={`absolute top-0 -left-1 z-20 hidden h-full w-2 cursor-ew-resize touch-none md:block ${isResizing ? 'bg-primary/40' : 'hover:bg-primary/30'
+                } transition-colors`}
             />
             {view === 'list' && <ListView />}
             {view === 'new' && <NewChatView />}

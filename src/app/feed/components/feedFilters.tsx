@@ -49,11 +49,11 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   }, [selectedTab, mounted])
 
   return (
-    <div className='bg-background border-tertiary xs:text-lg text-md sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 sm:gap-4 sm:text-xl md:min-h-14 lg:gap-4'>
+    <div className='bg-background border-tertiary xs:text-lg text-md sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 @[40rem]/app:gap-4 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4'>
       <button
         type='button'
         onClick={onToggleFilters}
-        className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14'
+        className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14'
         aria-label='Toggle filters'
       >
         <Image
@@ -82,13 +82,13 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
             type='button'
             onClick={() => onTabChange(tab.value)}
             className={cn(
-              'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+              'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:w-fit',
               selectedTab === tab.value
                 ? 'text-primary font-bold opacity-100'
                 : 'font-semibold opacity-50 transition-colors hover:opacity-80'
             )}
           >
-            <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+            <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
           </button>
         ))}
       </div>

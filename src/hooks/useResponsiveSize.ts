@@ -1,30 +1,57 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import { useAppContainerWidth } from './useAppContainerWidth'
 
-const useViewportSize = () => {
-  const [windowSize, setWindowSize] = useState({
-    width: 0,
-    height: 0,
-  })
+type ViewportSize = {
+  width: number
+  height: number
+}
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
+let viewportSize: ViewportSize = { width: 0, height: 0 }
+let isListening = false
+const viewportListeners = new Set<() => void>()
 
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-    }
+const getViewportSnapshot = () => viewportSize
+const getServerViewportSnapshot = () => ({ width: 0, height: 0 })
 
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+const notifyViewportListeners = () => {
+  viewportListeners.forEach((listener) => listener())
+}
 
-  return windowSize
+const updateViewportSize = () => {
+  const nextSize = { width: window.innerWidth, height: window.innerHeight }
+  if (viewportSize.width === nextSize.width && viewportSize.height === nextSize.height) return
+  viewportSize = nextSize
+  notifyViewportListeners()
+}
+
+const startViewportListener = () => {
+  if (typeof window === 'undefined' || isListening) return
+  updateViewportSize()
+  window.addEventListener('resize', updateViewportSize)
+  isListening = true
+}
+
+const stopViewportListener = () => {
+  if (typeof window === 'undefined' || !isListening) return
+  window.removeEventListener('resize', updateViewportSize)
+  isListening = false
+  viewportSize = { width: 0, height: 0 }
+}
+
+const subscribeToViewport = (listener: () => void) => {
+  viewportListeners.add(listener)
+  if (viewportListeners.size === 1) startViewportListener()
+
+  return () => {
+    viewportListeners.delete(listener)
+    if (viewportListeners.size === 0) stopViewportListener()
+  }
+}
+
+export const useViewportSize = () => {
+  return useSyncExternalStore(subscribeToViewport, getViewportSnapshot, getServerViewportSnapshot)
 }
 
 export const useResponsiveSize = () => {

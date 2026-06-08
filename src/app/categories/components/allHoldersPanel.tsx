@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useMemo } from 'react'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useViewportSize } from '@/hooks/useResponsiveSize'
 import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -30,7 +30,7 @@ const AllHoldersPanel: React.FC<AllHoldersResult> = ({
   fetchNextPage,
   hasNextPage,
 }) => {
-  const { height } = useResponsiveSize()
+  const { height } = useViewportSize()
   const { isNavbarVisible } = useNavbar()
 
   const noResults = !isLoading && holders.length === 0

@@ -25,6 +25,7 @@ import RegisterIcon from 'public/icons/registration-white.svg'
 import BuyNowIcon from 'public/icons/cart.svg'
 import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
+import CartIcon from './table/components/CartIcon'
 
 interface ActionsDropdownProps {
   domain: MarketplaceDomainType
@@ -154,8 +155,8 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            'bg-background border-tertiary absolute top-full z-100 mt-1 min-w-[160px] overflow-hidden rounded-md border-2 font-medium shadow-lg',
-            dropdownPosition === 'left' ? 'right-1' : 'left-0'
+            'bg-background border-tertiary absolute top-full z-100 mt-1 min-w-[180px] overflow-hidden rounded-md border-2 font-medium shadow-lg',
+            dropdownPosition === 'left' ? 'right-0' : 'left-0'
           )}
         >
           {isRegistered && hasListing && (
@@ -220,6 +221,12 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
               <Image src={CancelIcon} alt='Cancel Listing' className='h-4 w-4' width={16} height={16} />
               <p>Cancel Listing</p>
             </button>
+          )}
+
+          {!isOwner && (
+            <div>
+              <CartIcon domain={domain} className='hover:bg-tertiary gap-2 px-3! opacity-100' size='16px' />
+            </div>
           )}
         </div>
       )}

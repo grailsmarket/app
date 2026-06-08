@@ -114,13 +114,13 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const primaryButtonClassName =
-    'border-primary/50 hover:bg-primary w-full text-primary/70 hover:text-background rounded-none cursor-pointer border-y border-l px-2 h-10'
+    'border-primary/50 hover:bg-primary w-full text-primary/70 hover:text-background rounded-none cursor-pointer border-y border-l px-2 h-10 transition-all duration-300'
   const secondaryButtonClassName =
-    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-none border-t px-2.5 py-0.5 text-lg font-bold'
+    'bg-tertiary w-full text-foreground/60 border-foreground/20 hover:text-foreground h-10 cursor-pointer rounded-none px-2.5 py-0.5 text-lg font-bold'
 
   if (isBulkSelecting) {
     return (
-      <div className='flex flex-row justify-end gap-4 opacity-100'>
+      <div className='flex w-full flex-row justify-end gap-4 opacity-100'>
         {isSelected ? (
           <PrimaryButton
             onClick={(e) => {
@@ -131,7 +131,10 @@ const Actions: React.FC<ActionsProps> = ({
                 grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
               }
             }}
-            className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border px-2.5! py-[5px]!'
+            className={cn(
+              primaryButtonClassName,
+              'bg-primary! text-background! flex w-full! flex-row items-center justify-center gap-1'
+            )}
           >
             Selected
             <Check className='h-3 w-3' />
@@ -146,7 +149,7 @@ const Actions: React.FC<ActionsProps> = ({
                 grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
               }
             }}
-            className='border-tertiary h-fit! w-fit! border px-2.5! py-[5px]!'
+            className={secondaryButtonClassName}
           >
             Select
           </SecondaryButton>
@@ -159,11 +162,23 @@ const Actions: React.FC<ActionsProps> = ({
     if (registrationStatus === REGISTERED) {
       if (domainListing?.price) {
         return (
-          <div className='flex flex-row justify-end gap-1 opacity-100'>
-            <button className={secondaryButtonClassName} onClick={(e) => clickHandler(e, openMakeListingModal)}>
+          <div className='flex w-full flex-row justify-end opacity-100'>
+            <button
+              className={cn(
+                secondaryButtonClassName,
+                'flex w-full! flex-row items-center justify-center gap-1 border-r font-bold'
+              )}
+              onClick={(e) => clickHandler(e, openMakeListingModal)}
+            >
               Edit
             </button>
-            <p className={secondaryButtonClassName} onClick={(e) => clickHandler(e, openCancelListingModal)}>
+            <p
+              className={cn(
+                secondaryButtonClassName,
+                'flex w-full! flex-row items-center justify-center gap-1 font-bold'
+              )}
+              onClick={(e) => clickHandler(e, openCancelListingModal)}
+            >
               Cancel
             </p>
           </div>
@@ -171,8 +186,14 @@ const Actions: React.FC<ActionsProps> = ({
       }
 
       return (
-        <div className='flex flex-row justify-end opacity-100'>
-          <p className={primaryButtonClassName} onClick={(e) => clickHandler(e, openMakeListingModal)}>
+        <div className='flex w-full flex-row justify-end opacity-100'>
+          <p
+            className={cn(
+              primaryButtonClassName,
+              'flex w-full! flex-row items-center justify-center gap-1 border font-bold'
+            )}
+            onClick={(e) => clickHandler(e, openMakeListingModal)}
+          >
             List
           </p>
         </div>
@@ -182,7 +203,10 @@ const Actions: React.FC<ActionsProps> = ({
 
   return (
     <div
-      className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
+      className={cn(
+        'bg-foreground/5 flex w-full flex-row justify-between opacity-100',
+        watchlistId ? 'items-end' : 'justify-between'
+      )}
     >
       <div className='w-full'>
         {registrationStatus === GRACE_PERIOD ? (

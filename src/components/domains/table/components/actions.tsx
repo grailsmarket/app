@@ -302,7 +302,7 @@ const Actions: React.FC<ActionsProps> = ({
               isOwner={isMyDomain}
               registrationStatus={registrationStatus}
               dropdownPosition='left'
-              buttonClassName='rounded-none border-tertiary h-[54px] w-7 rounded-br-sm hover:bg-transparent'
+              buttonClassName='rounded-none border-tertiary h-7 w-7 rounded-br-sm hover:bg-transparent'
             />
           )}
         </div>
@@ -310,7 +310,7 @@ const Actions: React.FC<ActionsProps> = ({
           <PrimaryButton
             disabled={availableAction.disabled}
             className={cn(
-              'border-primary/80 text-primary hover:bg-primary! hover:text-background flex h-[54px]! w-14 max-w-14 min-w-14 items-center justify-center rounded-none border-l-2! bg-transparent p-0! text-nowrap hover:opacity-100 sm:w-19! sm:max-w-19! sm:min-w-19!',
+              'border-primary/80 text-background bg-primary hover:bg-primary/80 flex h-9! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-l-2! p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
               availableAction.label !== 'Reg' ? 'hidden md:block' : '',
               watchlistId ? 'hidden sm:block' : ''
             )}

@@ -76,9 +76,9 @@ const User: React.FC<UserProps> = ({
         {disableLink ? (
           <div
             className={cn(
-              'bg-tertiary relative flex w-fit cursor-pointer flex-row items-center gap-1.5 px-1 py-0.5 transition hover:opacity-70 rounded-sm',
+              'bg-tertiary relative flex w-fit cursor-pointer flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
               className,
-              radiusClassName,
+              radiusClassName
             )}
             onClick={(e) => {
               e.stopPropagation()

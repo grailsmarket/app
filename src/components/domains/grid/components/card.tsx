@@ -362,7 +362,7 @@ const Card: React.FC<CardProps> = ({
             profileTab.value === 'grace' ||
             profileTab.value === 'broker') &&
             filterType === 'profile') ||
-            filterType === 'category') &&
+            (filterType === 'category' && registrationStatus !== UNREGISTERED)) &&
             domain.expiry_date && (
               <div className='flex items-center gap-1'>
                 <p className='text-md text-neutral truncate font-semibold'>
@@ -388,8 +388,8 @@ const Card: React.FC<CardProps> = ({
                 wrapperClassName='w-full'
                 avatarSize='24px'
                 disableLink
-                disableTooltip
                 skipProfileFetch
+                alignTooltip={isFirstInRow ? 'left' : 'right'}
               />
             )}
         </div>

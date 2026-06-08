@@ -5,7 +5,7 @@ import { MarketplaceDomainType } from '@/types/domains'
 import Image from 'next/image'
 import React, { useMemo } from 'react'
 import ViewIcon from 'public/icons/view.svg'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 // import UpvoteIcon from 'public/icons/upvote.svg'
 // import DownvoteIcon from 'public/icons/downvote.svg'
 
@@ -14,13 +14,13 @@ interface ActionsProps {
 }
 
 const Actions: React.FC<ActionsProps> = ({ nameDetails }) => {
-  const { width } = useResponsiveSize()
+  const width = useAppContainerWidth()
   const tooltipAlign = useMemo(() => (width && width < 640 ? 'right' : 'left'), [width])
   const dropdownPosition = useMemo(() => (width && width < 640 ? 'left' : 'right'), [width])
 
   return (
     <div className='flex w-full flex-row justify-between gap-2'>
-      <div className='flex w-full flex-row justify-between gap-4 sm:justify-start md:w-fit'>
+      <div className='flex w-full flex-row justify-between gap-4 @[40rem]/app:justify-start @[48rem]/app:w-fit'>
         <div className='flex flex-row items-center gap-2'>
           <Image src={ViewIcon} alt='View' width={34} height={34} className='h-7 w-7 opacity-100' />
           <p>{nameDetails?.view_count}</p>

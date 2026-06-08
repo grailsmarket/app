@@ -1222,8 +1222,13 @@ export class SeaportClient {
     // Create the order to be submitted to the blockchain
     let executeAllActions
     try {
-      const result = await this.seaport.createBulkOrders(orderInputs, params.offererAddress as `0x${string}`)
-      executeAllActions = result.executeAllActions
+      if (orderInputs.length > 1) {
+        const result = await this.seaport.createBulkOrders(orderInputs, params.offererAddress as `0x${string}`)
+        executeAllActions = result.executeAllActions
+      } else {
+        const result = await this.seaport.createOrder(orderInputs[0], params.offererAddress as `0x${string}`)
+        executeAllActions = result.executeAllActions
+      }
     } catch (error: any) {
       console.error('Seaport createOrder failed:', error)
       console.error('Error details:', {
@@ -1236,12 +1241,13 @@ export class SeaportClient {
     }
 
     params.setStatus?.('submitting')
+
     // Execute all actions onchain (including getting the signature)
     const orders = await executeAllActions()
-    // console.log('Orders:', orders)
+    const orderArray = Array.isArray(orders) ? orders : [orders]
 
     // Add metadata to order
-    const formattedOrders = orders.map((order, index) => {
+    const formattedOrders = orderArray.map((order, index) => {
       const isNameWrapped = wrappedNames.includes(params.domains[index])
       return {
         ...order,

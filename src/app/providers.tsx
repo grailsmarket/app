@@ -46,16 +46,20 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                     <PostHogProfileProperties />
                     <SeaportProvider>
                       <NavbarProvider>
-                        <div className='relative flex min-h-[100dvh]!'>
-                          <div data-app-container='true' className='@container/app flex min-w-0 flex-1 flex-col'>
+                        <div className='relative flex min-h-[100dvh]! flex-col'>
+                          <div className='@container/app sticky top-0 z-50'>
                             {/* <InfoBar /> */}
                             <Navigation showInfo={false} />
-                            <Cart />
-                            <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
-                              {children}
-                            </div>
                           </div>
-                          <ChatSidebar />
+                          <div className='relative flex flex-1'>
+                            <div data-app-container='true' className='@container/app flex min-w-0 flex-1 flex-col'>
+                              <Cart />
+                              <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
+                                {children}
+                              </div>
+                            </div>
+                            <ChatSidebar />
+                          </div>
                         </div>
                         <TransactionModal />
                         <Modals />

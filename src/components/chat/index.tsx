@@ -116,7 +116,7 @@ const ChatSidebar: React.FC = () => {
             ...(!isDesktop && viewport ? { height: `${viewport.height}px`, top: `${viewport.offsetTop}px` } : {}),
             ...widthStyle,
           }}
-          className={`bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:sticky md:top-0 md:right-auto md:h-dvh md:w-auto md:shrink-0 ${!isDesktop && viewport ? '' : 'top-0 h-dvh'}`}
+          className={`bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:sticky md:top-[72px] md:right-auto md:z-40 md:h-[calc(100dvh-72px)] md:w-auto md:shrink-0 ${!isDesktop && viewport ? '' : 'max-md:top-0 max-md:h-dvh'}`}
           aria-label='Chat sidebar'
         >
           <div

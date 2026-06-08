@@ -114,7 +114,7 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const primaryButtonClassName =
-    'border-primary/60 hover:bg-primary w-full text-primary/90 hover:text-background rounded-none rounded-bl-sm! cursor-pointer border-y-2 border-l-2 px-2 h-10'
+    'border-primary/30 hover:bg-primary w-full text-primary/90 hover:text-background rounded-none rounded-bl-sm! cursor-pointer border-y-2 border-l-2 px-2 h-10'
   const secondaryButtonClassName =
     'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-none border-t-2 px-2.5 py-0.5 text-lg font-bold'
 
@@ -215,7 +215,7 @@ const Actions: React.FC<ActionsProps> = ({
             e.preventDefault()
             e.stopPropagation()
           }}
-          className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y-2 border-l-2'
+          className='border-foreground/25 hover:border-foreground/40 flex h-full w-10 flex-row items-center justify-center gap-1 border-y-2 border-l-2'
         >
           <Watchlist
             domain={domain}
@@ -232,7 +232,7 @@ const Actions: React.FC<ActionsProps> = ({
             isOwner={isMyDomain}
             registrationStatus={registrationStatus}
             dropdownPosition={isFirstInRow ? 'right' : 'left'}
-            buttonClassName='rounded-none border-y-2 border-x-2 h-10 w-10 rounded-br-sm hover:bg-tertiary '
+            buttonClassName='border-foreground/25 hover:border-foreground/40 rounded-none border-y-2 border-x-2 h-10 w-10 rounded-br-sm hover:bg-tertiary '
           />
         )}
       </div>

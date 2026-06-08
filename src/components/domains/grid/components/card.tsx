@@ -384,6 +384,7 @@ const Card: React.FC<CardProps> = ({
               <User
                 address={domain.owner as Address}
                 className='py-md w-full bg-transparent px-2.5!'
+                radiusClassName='rounded-b-sm'
                 wrapperClassName='w-full'
                 avatarSize='24px'
                 disableLink

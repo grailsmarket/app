@@ -23,6 +23,7 @@ interface UserProps {
   address: Address
   className?: string
   wrapperClassName?: string
+  radiusClassName?: string
   loadingCellWidth?: string
   avatarSize?: string
   fontSize?: string
@@ -36,6 +37,7 @@ interface UserProps {
 const User: React.FC<UserProps> = ({
   address,
   className,
+  radiusClassName,
   wrapperClassName,
   loadingCellWidth = '60%',
   avatarSize = '18px',
@@ -74,8 +76,9 @@ const User: React.FC<UserProps> = ({
         {disableLink ? (
           <div
             className={cn(
-              'bg-tertiary relative flex w-fit cursor-pointer flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
-              className
+              'bg-tertiary relative flex w-fit cursor-pointer flex-row items-center gap-1.5 px-1 py-0.5 transition hover:opacity-70 rounded-sm',
+              className,
+              radiusClassName,
             )}
             onClick={(e) => {
               e.stopPropagation()
@@ -90,7 +93,7 @@ const User: React.FC<UserProps> = ({
                 width={400}
                 height={80}
                 unoptimized={true}
-                className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+                className={cn('absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20', radiusClassName)}
               />
             )}
             <Avatar
@@ -110,7 +113,7 @@ const User: React.FC<UserProps> = ({
           <Link
             href={`/profile/${address}`}
             className={cn(
-              'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
+              'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 px-1 py-0.5 transition hover:opacity-70',
               className,
               disableTooltip && 'pointer-events-none'
             )}
@@ -122,7 +125,7 @@ const User: React.FC<UserProps> = ({
                 width={400}
                 height={80}
                 unoptimized={true}
-                className='absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20'
+                className={cn('absolute top-0 left-0 z-0 h-full w-full object-cover opacity-20', radiusClassName)}
               />
             )}
             <Avatar

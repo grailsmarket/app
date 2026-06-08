@@ -102,9 +102,23 @@ const ChatSidebar: React.FC = () => {
   }, [])
 
   const sidebarWidth = width ?? DEFAULT_WIDTH
-  const widthStyle = isDesktop
-    ? { width: `${sidebarWidth}px`, maxWidth: `${sidebarWidth}px`, flexBasis: `${sidebarWidth}px` }
-    : undefined
+  const widthStyle = isDesktop ? { width: `${sidebarWidth}px`, maxWidth: `${sidebarWidth}px` } : undefined
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--chat-sidebar-width', open && isDesktop ? `${sidebarWidth}px` : '0px')
+  }, [open, isDesktop, sidebarWidth])
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--chat-sidebar-anim-duration', isResizing ? '0ms' : '250ms')
+  }, [isResizing])
+
+  useEffect(
+    () => () => {
+      document.documentElement.style.removeProperty('--chat-sidebar-width')
+      document.documentElement.style.removeProperty('--chat-sidebar-anim-duration')
+    },
+    []
+  )
 
   return (
     <AnimatePresence>
@@ -114,13 +128,14 @@ const ChatSidebar: React.FC = () => {
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
-          transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
+          // Keep in sync with the app-content offset transition (providers + feed): same 250ms + curve.
+          transition={{ type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] }}
           style={{
             ...(!isDesktop && viewport ? { height: `${viewport.height}px`, top: `${viewport.offsetTop}px` } : {}),
             ...widthStyle,
           }}
           className={cn(
-            'bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:sticky md:right-auto md:z-40 md:w-auto md:shrink-0',
+            'bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:z-40',
             isNavbarVisible ? 'md:top-[72px] md:h-[calc(100dvh-72px)]' : 'md:top-0 md:h-dvh',
             !isDesktop && viewport ? '' : 'max-md:top-0 max-md:h-dvh'
           )}

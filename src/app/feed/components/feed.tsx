@@ -61,9 +61,14 @@ const Feed: React.FC = () => {
 
   return (
     <div
-      style={viewportStyle}
+      style={{
+        ...viewportStyle,
+        right: 'var(--chat-sidebar-width, 0px)',
+        transition:
+          'height 250ms cubic-bezier(0.32,0.72,0,1), top 250ms cubic-bezier(0.32,0.72,0,1), right var(--chat-sidebar-anim-duration, 250ms) cubic-bezier(0, 0, 0.58, 1)',
+      }}
       className={cn(
-        'fixed right-0 left-0 mx-auto flex h-[calc(100dvh-54px)] w-full flex-col transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:absolute md:inset-0 md:h-full',
+        'fixed left-0 mx-auto flex h-[calc(100dvh-54px)] flex-col md:absolute md:inset-0 md:h-full',
         viewport ? '' : 'top-[54px] md:top-0'
       )}
     >

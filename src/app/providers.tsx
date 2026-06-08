@@ -52,7 +52,15 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                             <Navigation showInfo={false} />
                           </div>
                           <div className='relative flex flex-1'>
-                            <div data-app-container='true' className='@container/app flex min-w-0 flex-1 flex-col'>
+                            <div
+                              data-app-container='true'
+                              className='@container/app flex min-w-0 flex-1 flex-col'
+                              style={{
+                                paddingRight: 'var(--chat-sidebar-width, 0px)',
+                                transition:
+                                  'padding-right var(--chat-sidebar-anim-duration, 250ms) cubic-bezier(0, 0, 0.58, 1)',
+                              }}
+                            >
                               <Cart />
                               <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
                                 {children}

@@ -19,11 +19,13 @@ import SecondaryButton from '../ui/buttons/secondary'
 import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
   const isClient = useIsClient()
   const { width: windowWidth } = useWindowSize()
+  const appContainerWidth = useAppContainerWidth()
   const { isPanelCategories, setPanelCategories, setPanelAll } = usePanels()
 
   useEffect(() => {
@@ -48,7 +50,8 @@ const FilterPanel: React.FC = () => {
 
   if (!isClient || !windowWidth) return null
 
-  const isMobile = windowWidth < 1024
+  const responsiveWidth = appContainerWidth ?? windowWidth
+  const isMobile = responsiveWidth < 1024
   const isOpen = filtersOpen
   // const isBulkSearch = search.replaceAll(' ', ',').split(',').length > 1
   const isDisabled = filterType === 'profile' && profileTab?.value === 'broker'

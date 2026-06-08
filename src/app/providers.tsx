@@ -47,7 +47,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                     <SeaportProvider>
                       <NavbarProvider>
                         <div className='relative flex min-h-[100dvh]!'>
-                          <div className='flex min-w-0 flex-1 flex-col'>
+                          <div data-app-container='true' className='@container/app flex min-w-0 flex-1 flex-col'>
                             {/* <InfoBar /> */}
                             <Navigation showInfo={false} />
                             <Cart />

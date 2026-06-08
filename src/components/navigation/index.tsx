@@ -118,12 +118,12 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         setDropdownOption(null)
       }}
       className={cn(
-        'bg-background border-tertiary app:border-r-2 app:border-l-2 max-w-app sticky top-0 left-0 z-50 mx-auto h-14 w-full border-b-2 transition-transform duration-300 md:h-18',
+        'bg-background border-tertiary app:border-r-2 app:border-l-2 max-w-app sticky top-0 left-0 z-50 mx-auto h-14 w-full border-b-2 transition-transform duration-300 md:h-18 @max-md/app:h-14 @md/app:h-18',
         showInfo ? 'mt-6' : '',
         !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
-      <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app relative z-30 mx-auto flex h-full items-center justify-between'>
+      <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app @max-md/app:px-md @md/app:px-lg @lg/app:px-xl relative z-30 mx-auto flex h-full items-center justify-between'>
         <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
           <Link
             href='/'
@@ -137,22 +137,22 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               alt='Grails Market'
               width={32}
               height={32}
-              className='h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
+              className='h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden @max-xl/app:block @max-md/app:h-7 @md/app:h-9 @xl/app:hidden'
             />
             <Image
               src={logo}
               alt='Grails Market'
               width={130}
               height={40}
-              className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
+              className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block @max-xl/app:hidden @xl/app:block'
               priority
             />
           </Link>
-          <div className='hidden lg:block'>
+          <div className='hidden lg:block @max-lg/app:hidden @lg/app:block'>
             <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
-            className='hidden md:flex'
+            className='hidden md:flex @max-md/app:hidden @md/app:flex'
             setDropdownOption={handleDropdownOption}
             dropdownOption={dropdownOption}
             onClick={() => {
@@ -187,7 +187,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       </nav>
       <div
         className={cn(
-          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 absolute top-14 left-0 -z-10 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350',
+          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 @max-md/app:p-lg @max-md/app:pt-lg @md/app:p-xl absolute top-14 left-0 -z-10 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350 @max-md/app:top-14 @max-md/app:h-[calc(100dvh-56px)] @max-md/app:shadow-none @max-md/app:duration-500 @md/app:top-16 @md/app:h-fit @md/app:shadow-md @md/app:duration-350',
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
@@ -199,7 +199,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
                 setPreviousDropdownOption(dropdownOption)
                 setDropdownOption(null)
               }}
-              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
+              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden @max-md/app:flex @md/app:hidden'
             >
               <h3 className='text-3xl font-semibold'>My Profile</h3>
               {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
@@ -207,10 +207,10 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           )}
           <div
             className={cn(
-              'border-neutral w-full border-b-2 md:border-none',
+              'border-neutral w-full border-b-2 md:border-none @max-md/app:border-b-2 @md/app:border-none',
               dropdownOption === 'explore' || (dropdownOption === null && previousDropdownOption === 'explore')
                 ? 'block'
-                : 'block md:hidden'
+                : 'block md:hidden @max-md/app:block @md/app:hidden'
             )}
           >
             <Explore
@@ -221,10 +221,10 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div>
           <div
             className={cn(
-              'border-neutral w-full border-b-2 md:border-none',
+              'border-neutral w-full border-b-2 md:border-none @max-md/app:border-b-2 @md/app:border-none',
               dropdownOption === 'premium' || (dropdownOption === null && previousDropdownOption === 'premium')
                 ? 'block'
-                : 'block md:hidden'
+                : 'block md:hidden @max-md/app:block @md/app:hidden'
             )}
           >
             <Premium
@@ -235,10 +235,10 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div>
           <div
             className={cn(
-              'border-neutral w-full border-b-2 md:border-none',
+              'border-neutral w-full border-b-2 md:border-none @max-md/app:border-b-2 @md/app:border-none',
               dropdownOption === 'categories' || (dropdownOption === null && previousDropdownOption === 'categories')
                 ? 'block'
-                : 'block md:hidden'
+                : 'block md:hidden @max-md/app:block @md/app:hidden'
             )}
           >
             <Categories
@@ -259,17 +259,17 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div> */}
           <div
             className={cn(
-              'border-neutral w-full border-b-2 md:border-none',
+              'border-neutral w-full border-b-2 md:border-none @max-md/app:border-b-2 @md/app:border-none',
               dropdownOption === 'more' || (dropdownOption === null && previousDropdownOption === 'more')
                 ? 'block'
-                : 'block md:hidden'
+                : 'block md:hidden @max-md/app:block @md/app:hidden'
             )}
           >
             <More setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
           </div>
         </div>
         <div
-          className='pt-lg py-md border-neutral flex w-full items-center justify-center gap-1.5 border-t-2 opacity-70 md:hidden'
+          className='pt-lg py-md border-neutral flex w-full items-center justify-center gap-1.5 border-t-2 opacity-70 md:hidden @max-md/app:flex @md/app:hidden'
           onClick={() => {
             setPreviousDropdownOption(dropdownOption)
             setDropdownOption(null)

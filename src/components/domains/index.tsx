@@ -257,7 +257,7 @@ const Domains: React.FC<DomainsProps> = ({
             <VirtualList<MarketplaceDomainType>
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
-              rowHeight={54}
+              rowHeight={60}
               overscanCount={visibleCount}
               gap={0}
               paddingBottom={paddingBottom ? paddingBottom : '40px'}
@@ -267,7 +267,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='border-tertiary flex h-[54px] w-full items-center justify-between border-b'>
+                    <div className='border-tertiary px-sm sm:px-md flex h-[60px] w-full items-center justify-between border-b'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

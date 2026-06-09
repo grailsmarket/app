@@ -142,17 +142,17 @@ const DownloadButton = ({
       <button
         disabled={authStatus !== 'authenticated'}
         onClick={handleDownload}
-        className='border-foreground md:border-tertiary md:hover:bg-secondary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-40 transition-all hover:opacity-80 disabled:opacity-20 disabled:hover:opacity-20 md:h-14 md:w-14 md:rounded-none md:border-0 md:border-l-2 md:opacity-100'
+        className='border-foreground @[48rem]/app:border-tertiary @[48rem]/app:hover:bg-secondary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-40 transition-all hover:opacity-80 disabled:opacity-20 disabled:hover:opacity-20 @[48rem]/app:h-14 @[48rem]/app:w-14 @[48rem]/app:rounded-none @[48rem]/app:border-0 @[48rem]/app:border-l-2 @[48rem]/app:opacity-100'
       >
         {isDownloading ? (
-          <div className='border-foreground md:border-neutral inline-block h-5 w-5 animate-spin rounded-full border-r-2 border-b-2 md:h-6 md:w-6'></div>
+          <div className='border-foreground @[48rem]/app:border-neutral inline-block h-5 w-5 animate-spin rounded-full border-r-2 border-b-2 @[48rem]/app:h-6 @[48rem]/app:w-6'></div>
         ) : (
           <Image
             src={DownloadIcon}
             alt='Download'
             width={24}
             height={24}
-            className='h-5 w-5 md:h-6 md:w-6 md:opacity-50'
+            className='h-5 w-5 @[48rem]/app:h-6 @[48rem]/app:w-6 @[48rem]/app:opacity-50'
           />
         )}
       </button>

@@ -68,9 +68,9 @@ const FilterPanel: React.FC = () => {
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
         isMobile && 'fixed left-0 w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
-        isMobile && '@[48rem]/app:top-[70px] @[48rem]/app:h-[calc(100dvh-70px)]',
-        isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[110%]'),
+        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh w-full'),
+        isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
+        isMobile && (isOpen ? 'translate-x-0' : 'translate-x-[-110%]'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile && (isNavbarVisible ? 'top-[130px] h-[calc(100dvh-130px)]' : 'top-[58px] h-[calc(100dvh-58px)]'),
@@ -78,11 +78,14 @@ const FilterPanel: React.FC = () => {
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}
+      style={{
+        width: 'calc(100% - var(--chat-sidebar-width, 0px))',
+      }}
     >
       <div
         className={cn(
           'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 @[64rem]/app:relative @[64rem]/app:duration-100',
-          isOpen ? 'w-full overflow-x-hidden @[64rem]/app:w-[292px]' : 'w-0 @[64rem]/app:z-0 @[64rem]/app:w-[56px]'
+          isOpen ? 'w-full @[64rem]/app:w-[292px]' : 'w-0 @[64rem]/app:z-0 @[64rem]/app:w-[56px]'
         )}
       >
         {/* Top div */}
@@ -90,7 +93,7 @@ const FilterPanel: React.FC = () => {
           <div
             className={cn(
               'px-lg py-md flex w-full min-w-full justify-between transition-transform @[64rem]/app:min-w-[292px]',
-              isPanelCategories && '-translate-x-[100%] @[64rem]/app:-translate-x-[292px]'
+              isPanelCategories && '-translate-x-full @[64rem]/app:translate-x-[-292px]'
             )}
           >
             <div className='flex items-center gap-2'>
@@ -107,7 +110,7 @@ const FilterPanel: React.FC = () => {
                 <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
               </div>
             </div>
-            <div className='flex items-center gap-2'>
+            <div className='z-10 flex items-center gap-2'>
               <SecondaryButton
                 onClick={() => {
                   console.log('clearFilters')
@@ -127,7 +130,7 @@ const FilterPanel: React.FC = () => {
             onClick={setPanelAll}
             className={cn(
               'p-lg hover:bg-secondary flex min-w-full cursor-pointer items-center gap-2 rounded-sm transition-transform @[48rem]/app:min-w-[284px] @[64rem]/app:min-w-[284px]',
-              isPanelCategories && '-translate-x-[100%] @[64rem]/app:-translate-x-[289px]'
+              isPanelCategories && '-translate-x-full @[64rem]/app:translate-x-[-289px]'
             )}
           >
             <Image src={backArrow} alt='back arrow' height={12} width={12} className='rotate-180' />

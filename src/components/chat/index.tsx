@@ -27,12 +27,12 @@ const viewVariants: Variants = {
   animate: {
     opacity: 1,
     x: 0,
-    transition: { type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] },
+    transition: { type: 'tween', duration: 0.2, ease: [0, 0, 0.58, 1] },
   },
   exit: (direction: number) => ({
     opacity: 0,
     x: direction > 0 ? -16 : 16,
-    transition: { type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] },
+    transition: { type: 'tween', duration: 0.2, ease: [0, 0, 0.58, 1] },
   }),
 }
 

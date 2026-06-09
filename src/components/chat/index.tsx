@@ -165,7 +165,7 @@ const ChatSidebar: React.FC = () => {
             ...widthStyle,
           }}
           className={cn(
-            'bg-background border-tertiary app:right-[calc((100%-2340px)/2)] app:border-r-2 fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:z-40',
+            'bg-background border-tertiary app:right-[calc((100%-2340px)/2)] app:border-r-2 fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] md:z-40',
             isNavbarVisible ? 'md:top-[72px] md:h-[calc(100dvh-72px)]' : 'md:top-0 md:h-dvh',
             !isDesktop && viewport ? '' : 'max-md:top-0 max-md:h-dvh'
           )}

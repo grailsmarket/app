@@ -44,7 +44,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
   const selectedSourceOption = SOURCE_OPTIONS.find((opt) => opt.value === source)
 
   return (
-    <div className='border-tertiary flex py-2 @[48rem]/app:py-0 min-h-14.5 flex-row flex-wrap items-center gap-2 border-b-2 px-2 @[40rem]/app:px-4'>
+    <div className='border-tertiary flex min-h-14.5 flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2 @[40rem]/app:px-4 @[48rem]/app:py-0'>
       {!hideTitle && <h1 className='mr-2 text-2xl font-bold'>Analytics</h1>}
 
       {/* Period Dropdown */}

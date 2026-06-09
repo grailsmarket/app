@@ -43,10 +43,6 @@ const FilterPanel: React.FC = () => {
   const filtersOpen = selectors.filters.open
   const { isNavbarVisible } = useNavbar()
 
-  // const outsideClickRef = useOutsideClick(() => {
-  //   dispatch(actions.setFiltersOpen(false))
-  // })
-
   if (!isClient || !responsiveWidth) return null
 
   const isMobile = responsiveWidth < 1024
@@ -67,7 +63,8 @@ const FilterPanel: React.FC = () => {
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
-        isMobile && 'fixed left-0 w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
+        isMobile &&
+          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0))] shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh w-full'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : 'translate-x-[-110%]'),
@@ -78,9 +75,6 @@ const FilterPanel: React.FC = () => {
         isDisabled && 'pointer-events-none cursor-not-allowed opacity-50',
         isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}
-      style={{
-        width: 'calc(100% - var(--chat-sidebar-width, 0px))',
-      }}
     >
       <div
         className={cn(

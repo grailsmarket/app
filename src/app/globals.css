@@ -500,6 +500,6 @@ body {
   }
 
   .user-profile-card-container {
-    display: block !important;
+    display: flex !important;
   }
 }

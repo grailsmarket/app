@@ -89,7 +89,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
   // }
 
   return (
-    <div className='border-tertiary flex h-14.5 flex-row flex-wrap items-center gap-2 border-b-2 px-2 @[40rem]/app:px-4'>
+    <div className='border-tertiary flex py-2 @[48rem]/app:py-0 min-h-14.5 flex-row flex-wrap items-center gap-2 border-b-2 px-2 @[40rem]/app:px-4'>
       <h1 className='mr-2 text-2xl font-bold'>Leaderboard</h1>
 
       {/* Categories Multi-select Dropdown */}

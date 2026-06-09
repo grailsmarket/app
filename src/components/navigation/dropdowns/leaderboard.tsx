@@ -6,7 +6,7 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
 import Arrowdown from 'public/icons/arrow-down.svg'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -24,7 +24,7 @@ interface LeaderboardProps {
 
 const Leaderboard: React.FC<LeaderboardProps> = ({ setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const { width } = useResponsiveSize()
+  const { width } = useWindowSize()
   const dispatch = useAppDispatch()
   const { data: leaderboard, isLoading } = useQuery({
     queryKey: ['navigation', 'leaderboard'],

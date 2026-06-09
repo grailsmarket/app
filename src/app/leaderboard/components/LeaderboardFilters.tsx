@@ -89,7 +89,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
   // }
 
   return (
-    <div className='border-tertiary flex flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2.5 @[40rem]/app:px-4'>
+    <div className='border-tertiary flex h-14.5 flex-row flex-wrap items-center gap-2 border-b-2 px-2 @[40rem]/app:px-4'>
       <h1 className='mr-2 text-2xl font-bold'>Leaderboard</h1>
 
       {/* Categories Multi-select Dropdown */}
@@ -98,7 +98,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
           type='button'
           onClick={() => setIsCategoryOpen(!isCategoryOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[180px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10 @[40rem]/app:w-[200px]'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-[180px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10 @[40rem]/app:w-[200px]'
           )}
         >
           <div className='flex items-center gap-2 overflow-hidden'>
@@ -125,7 +125,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
             </p>
           </div>
           <ShortArrow
-            className={cn('h-3 w-3 flex-shrink-0 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')}
+            className={cn('h-3 w-3 shrink-0 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')}
           />
         </button>
 
@@ -189,7 +189,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
             type='button'
             onClick={() => setIsSortOpen(!isSortOpen)}
             className={cn(
-              'border-tertiary hover:border-foreground/50 flex h-9 w-[180px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10 @[40rem]/app:w-[200px]'
+              'border-tertiary hover:border-foreground/50 flex h-9 w-[180px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10 @[40rem]/app:w-[200px]'
             )}
           >
             <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
@@ -221,7 +221,7 @@ const LeaderboardFilters: React.FC<LeaderboardFiltersProps> = ({ sortBy, sortOrd
           type='button'
           onClick={handleDirectionToggle}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-[2px] transition-all @[40rem]/app:h-10 @[40rem]/app:w-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-2 transition-all @[40rem]/app:h-10 @[40rem]/app:w-10'
           )}
           aria-label={sortOrder === 'asc' ? 'Sort ascending' : 'Sort descending'}
         >

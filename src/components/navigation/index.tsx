@@ -118,12 +118,12 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         setDropdownOption(null)
       }}
       className={cn(
-        'bg-background border-tertiary app:border-r-2 app:border-l-2 max-w-app sticky top-0 left-0 z-50 mx-auto h-14 w-full border-b-2 transition-transform duration-300 @max-[48rem]/app:h-14 @[48rem]/app:h-18',
+        'bg-background border-tertiary app:border-r-2 app:border-l-2 max-w-app sticky top-0 left-0 z-50 mx-auto h-14 w-full border-b-2 transition-transform duration-300 md:h-18',
         showInfo ? 'mt-6' : '',
         !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
-      <nav className='bg-background max-w-app @max-[48rem]/app:px-md @[48rem]/app:px-lg @[64rem]/app:px-xl relative z-30 mx-auto flex h-full items-center justify-between'>
+      <nav className='bg-background max-w-app px-md md:px-lg lg:px-xl relative z-30 mx-auto flex h-full items-center justify-between'>
         <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
           <Link
             href='/'
@@ -137,22 +137,22 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               alt='Grails Market'
               width={32}
               height={32}
-              className='h-7 w-auto cursor-pointer transition-all hover:opacity-80 @max-[80rem]/app:block @max-[48rem]/app:h-7 @[48rem]/app:h-9 @[80rem]/app:hidden'
+              className='block h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
             />
             <Image
               src={logo}
               alt='Grails Market'
               width={130}
               height={40}
-              className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 @max-[80rem]/app:hidden @[80rem]/app:block'
+              className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
               priority
             />
           </Link>
-          <div className='hidden @max-[64rem]/app:hidden @[64rem]/app:block'>
+          <div className='hidden lg:block'>
             <Searchbar onSearch={() => {}} className='h-10 w-48' placeholder='Search (type /)' />
           </div>
           <Pages
-            className='hidden @max-[48rem]/app:hidden @[48rem]/app:flex'
+            className='hidden md:flex'
             setDropdownOption={handleDropdownOption}
             dropdownOption={dropdownOption}
             onClick={() => {
@@ -162,7 +162,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           />
         </div>
         <div
-          className='flex items-center justify-end gap-3 @[48rem]/app:gap-3.5'
+          className='flex items-center justify-end gap-3 md:gap-3.5'
           onMouseEnter={() => {
             setPreviousDropdownOption(dropdownOption)
             handleDropdownOption(null)
@@ -187,7 +187,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       </nav>
       <div
         className={cn(
-          'border-tertiary bg-background/80 @max-[48rem]/app:p-lg @max-[48rem]/app:pt-lg @[48rem]/app:p-xl absolute top-14 left-0 -z-10 flex w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all ease-out @max-[48rem]/app:top-14 @max-[48rem]/app:h-[calc(100dvh-56px)] @max-[48rem]/app:shadow-none @max-[48rem]/app:duration-500 @[48rem]/app:top-16 @[48rem]/app:h-fit @[48rem]/app:shadow-md @[48rem]/app:duration-350',
+          'border-tertiary bg-background/80 p-lg pt-lg md:p-xl absolute top-14 left-0 -z-10 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 shadow-none backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350',
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
@@ -199,7 +199,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
                 setPreviousDropdownOption(dropdownOption)
                 setDropdownOption(null)
               }}
-              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 @max-[48rem]/app:flex @[48rem]/app:hidden'
+              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
             >
               <h3 className='text-3xl font-semibold'>My Profile</h3>
               {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
@@ -207,10 +207,10 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           )}
           <div
             className={cn(
-              'border-neutral w-full @max-[48rem]/app:border-b-2 @[48rem]/app:border-none',
+              'border-neutral w-full border-b-2 md:border-none',
               dropdownOption === 'explore' || (dropdownOption === null && previousDropdownOption === 'explore')
                 ? 'block'
-                : 'block @max-[48rem]/app:block @[48rem]/app:hidden'
+                : 'block md:hidden'
             )}
           >
             <Explore
@@ -221,10 +221,10 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div>
           <div
             className={cn(
-              'border-neutral w-full @max-[48rem]/app:border-b-2 @[48rem]/app:border-none',
+              'border-neutral w-full border-b-2 md:border-none',
               dropdownOption === 'premium' || (dropdownOption === null && previousDropdownOption === 'premium')
                 ? 'block'
-                : 'block @max-[48rem]/app:block @[48rem]/app:hidden'
+                : 'block md:hidden'
             )}
           >
             <Premium
@@ -235,10 +235,10 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div>
           <div
             className={cn(
-              'border-neutral w-full @max-[48rem]/app:border-b-2 @[48rem]/app:border-none',
+              'border-neutral w-full border-b-2 md:border-none',
               dropdownOption === 'categories' || (dropdownOption === null && previousDropdownOption === 'categories')
                 ? 'block'
-                : 'block @max-[48rem]/app:block @[48rem]/app:hidden'
+                : 'block md:hidden'
             )}
           >
             <Categories
@@ -249,27 +249,27 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div>
           {/* <div
             className={cn(
-              'border-neutral w-full @max-[48rem]/app:border-b-2 @[48rem]/app:border-none',
+              'border-neutral w-full border-b-2 md:border-none',
               dropdownOption === 'leaderboard' || (dropdownOption === null && previousDropdownOption === 'leaderboard')
                 ? 'block'
-                : 'block @max-[48rem]/app:block @[48rem]/app:hidden'
+                : 'block block md:hidden'
             )}
           >
             <Leaderboard setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
           </div> */}
           <div
             className={cn(
-              'border-neutral w-full @max-[48rem]/app:border-b-2 @[48rem]/app:border-none',
+              'border-neutral w-full border-b-2 md:border-none',
               dropdownOption === 'more' || (dropdownOption === null && previousDropdownOption === 'more')
                 ? 'block'
-                : 'block @max-[48rem]/app:block @[48rem]/app:hidden'
+                : 'block md:hidden'
             )}
           >
             <More setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />
           </div>
         </div>
         <div
-          className='pt-lg py-md border-neutral flex w-full items-center justify-center gap-1.5 border-t-2 opacity-70 @max-[48rem]/app:flex @[48rem]/app:hidden'
+          className='pt-lg py-md border-neutral flex w-full items-center justify-center gap-1.5 border-t-2 opacity-70 md:hidden'
           onClick={() => {
             setPreviousDropdownOption(dropdownOption)
             setDropdownOption(null)

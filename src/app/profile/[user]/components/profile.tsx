@@ -80,7 +80,7 @@ const Profile: React.FC<Props> = ({ user }) => {
       {isFollowersAndFollowingOpen && (
         <div
           onClick={() => setIsFollowersAndFollowingOpen(false)}
-          className='fixed top-0 left-0 z-50 flex h-[100dvh] w-full items-end justify-center overflow-y-auto bg-black/50 backdrop-blur-sm md:items-start'
+          className='fixed top-0 left-0 z-50 flex h-dvh w-full items-end justify-center overflow-y-auto bg-black/50 backdrop-blur-sm md:items-start'
         >
           <div className='max-h-[90vh] w-full max-w-2xl overflow-y-auto md:max-h-none md:overflow-y-visible md:py-12'>
             <FollowersAndFollowing connectedAddress={userAddress} user={user} defaultTab={defaultTab} />
@@ -117,19 +117,19 @@ const Profile: React.FC<Props> = ({ user }) => {
                   onEditProfileClick:
                     userProfile?.ens?.name && !isSubname
                       ? () => {
-                          if (!profileMetadata || !userProfile?.ens?.name) return
-                          dispatch(setEditRecordsModalName(userProfile?.ens?.name))
-                          dispatch(setEditRecordsModalMetadata(profileMetadata))
-                          dispatch(setEditRecordsModalOpen(true))
-                        }
+                        if (!profileMetadata || !userProfile?.ens?.name) return
+                        dispatch(setEditRecordsModalName(userProfile?.ens?.name))
+                        dispatch(setEditRecordsModalMetadata(profileMetadata))
+                        dispatch(setEditRecordsModalOpen(true))
+                      }
                       : undefined,
                   hideSocials: ['grails'],
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
-                        eventId: badge.event.id.toString(),
-                        participated: true,
-                        collection: badge,
-                      }))
+                      eventId: badge.event.id.toString(),
+                      participated: true,
+                      collection: badge,
+                    }))
                     : undefined,
                   onBioLinkClick: (link: string) => {
                     const sanitizedLink =
@@ -137,7 +137,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                     router.push(`/profile/${sanitizedLink}`)
                   },
                 }}
-                // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
+              // style={{ paddingBottom: '60px', transform: 'translateY(80px)' }}
               />
               <Details user={userProfile?.address} />
             </>

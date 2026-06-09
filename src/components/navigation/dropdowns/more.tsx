@@ -9,8 +9,7 @@ import trophyIcon from 'public/icons/trophy-primary.svg'
 import activityIcon from 'public/icons/activity-primary.svg'
 import searchIcon from 'public/icons/search-primary.svg'
 import chatIcon from 'public/icons/chat-primary.svg'
-import { useIsClient } from 'ethereum-identity-kit'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
@@ -24,7 +23,7 @@ interface MoreProps {
 
 const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const { width } = useResponsiveSize()
+  const { width } = useWindowSize()
   const dispatch = useAppDispatch()
   const isClient = useIsClient()
 

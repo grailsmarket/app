@@ -155,9 +155,9 @@ const ChatSidebar: React.FC = () => {
       {open && (
         <motion.aside
           key='chat-sidebar-panel'
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '100%', opacity: 0 }}
           // Keep in sync with the app-content offset transition (providers + feed): same 250ms + curve.
           transition={{ type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] }}
           style={{
@@ -165,7 +165,7 @@ const ChatSidebar: React.FC = () => {
             ...widthStyle,
           }}
           className={cn(
-            'bg-background border-tertiary fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:z-40',
+            'bg-background border-tertiary app:right-[calc((100%-2340px)/2)] app:border-r-2 fixed right-0 z-91 flex w-full flex-col border-l-2 transition-[height,top] duration-250 ease-[cubic-bezier(0.32,0.72,0,1)] md:z-40',
             isNavbarVisible ? 'md:top-[72px] md:h-[calc(100dvh-72px)]' : 'md:top-0 md:h-dvh',
             !isDesktop && viewport ? '' : 'max-md:top-0 max-md:h-dvh'
           )}

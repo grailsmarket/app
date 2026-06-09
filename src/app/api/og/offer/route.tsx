@@ -24,7 +24,7 @@ const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRES
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
   grails: 'https://grails.app/logo.svg',
-  ensvision: 'https://grails.app/logos/ensvision.svg',
+  vision: 'https://grails.app/logos/ensvision.svg',
 }
 
 const formatPrice = (priceWei: string, currencyAddress: string): string => {

@@ -94,7 +94,7 @@ const Offers: React.FC<OffersProps> = ({
       {showHeaders && (
         <div
           className={cn(
-            'px-md bg-background transition-top @[64rem]/app:px-lg border-tertiary py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
+            'px-md bg-background transition-top @[64rem]/app:px-lg border-tertiary py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 @[40rem]/app:flex',
             isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
           )}
         >

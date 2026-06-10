@@ -10,15 +10,15 @@ import poweredByEIK from 'public/powered-by-eik.svg'
 
 const Footer = () => {
   return (
-    <footer className='glass-card shadow-footer border-t-primary z-20 mt-8 flex w-full items-center justify-center border-t py-8 sm:mt-12 md:mt-20 lg:mt-24'>
-      <div className='xxs:gap-6 flex h-full w-full items-start justify-between gap-6 px-6 sm:justify-center sm:gap-28 md:gap-44'>
+    <footer className='glass-card shadow-footer border-t-primary z-20 mt-8 flex w-full items-center justify-center border-t py-8 @[40rem]/app:mt-12 @[48rem]/app:mt-20 @[64rem]/app:mt-24'>
+      <div className='xxs:gap-6 flex h-full w-full items-start justify-between gap-6 px-6 @[40rem]/app:justify-center @[40rem]/app:gap-28 @[48rem]/app:gap-44'>
         <section className='flex flex-col gap-6'>
           <Image
             src={logo}
             width={180}
             height={180}
             alt='Ethereum Follow Protocol'
-            className='w-[120px] sm:w-[180px]'
+            className='w-[120px] @[40rem]/app:w-[180px]'
             priority
           />
           <div className='flex items-center gap-3'>
@@ -28,7 +28,7 @@ const Footer = () => {
                 alt='Ethereum Identity Foundation'
                 width={100}
                 height={100}
-                className='h-auto w-20 sm:w-24'
+                className='h-auto w-20 @[40rem]/app:w-24'
               />
             </Link>
             <div className='bg-foreground/50 h-9 w-0.5 rounded-full' />
@@ -38,7 +38,7 @@ const Footer = () => {
                 alt='Powered by Ethereum Identity Kit'
                 width={120}
                 height={36}
-                className='h-auto w-28 sm:w-32'
+                className='h-auto w-28 @[40rem]/app:w-32'
               />
             </Link>
           </div>

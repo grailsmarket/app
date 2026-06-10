@@ -19,7 +19,7 @@ const Home = () => {
             <h1 className='font-sedan-sc text-center text-4xl @[40rem]/app:text-7xl @[80rem]/app:text-9xl'>
               ENS Manager & Market
             </h1>
-            <p className='xs:text-xl mb-2 text-center text-lg font-medium @[40rem]/app:mb-4 @[48rem]/app:text-2xl'>
+            <p className='mb-2 text-center text-lg font-medium @[26.25rem]/app:text-xl @[40rem]/app:mb-4 @[48rem]/app:text-2xl'>
               0% Market Fees — Bulk Tools — Open Source{' '}
             </p>
             <HeroSearch />

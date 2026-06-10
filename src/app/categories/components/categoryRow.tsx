@@ -373,7 +373,7 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
       >
         <div className='min-h-0 overflow-hidden'>
           <div className='bg-background border-tertiary border-b p-4 pt-3 shadow-md'>
-            <div className='grid grid-cols-3 gap-x-4 gap-y-3 md:grid-cols-4 lg:grid-cols-6'>
+            <div className='grid grid-cols-3 gap-x-4 gap-y-3 @[48rem]/app:grid-cols-4 @[64rem]/app:grid-cols-6'>
               <StatItem label='Names'>
                 <p>{localizeNumber(category.member_count ?? 0)}</p>
               </StatItem>

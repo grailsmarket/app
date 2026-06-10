@@ -20,7 +20,7 @@ const CategoriesPanel: React.FC = () => {
   const clientViewType = isClient ? viewType : 'list'
 
   const gridClasses = cn(
-    'grid gap-2 md:gap-4',
+    'grid gap-2 @[48rem]/app:gap-4',
     clientViewType === 'list' && isOpen
       ? '@[109.375rem]/app:grid-cols-4 grid-cols-1 @[48rem]/app:grid-cols-2 @[80rem]/app:grid-cols-2 @[96rem]/app:grid-cols-3'
       : '@[125rem]/app:grid-cols-4 grid-cols-1 @[64rem]/app:grid-cols-2 @[80rem]/app:grid-cols-3 @[96rem]/app:grid-cols-4'

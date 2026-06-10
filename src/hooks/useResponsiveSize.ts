@@ -12,8 +12,10 @@ let viewportSize: ViewportSize = { width: 0, height: 0 }
 let isListening = false
 const viewportListeners = new Set<() => void>()
 
+const serverViewportSnapshot: ViewportSize = { width: 0, height: 0 }
+
 const getViewportSnapshot = () => viewportSize
-const getServerViewportSnapshot = () => ({ width: 0, height: 0 })
+const getServerViewportSnapshot = () => serverViewportSnapshot
 
 const notifyViewportListeners = () => {
   viewportListeners.forEach((listener) => listener())

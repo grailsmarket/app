@@ -120,7 +120,7 @@ export default function Testemonials() {
               type='button'
               onClick={goPrev}
               aria-label='Previous testimonial'
-              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -left-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors @[40rem]/app:-left-8 @[40rem]/app:h-10 @[40rem]/app:w-10 @[64rem]/app:-left-7 @[64rem]/app:h-12 @[64rem]/app:w-12 @[80rem]/app:-left-[min(calc(100vw-1286px),3rem)]'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -left-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors @[40rem]/app:-left-8 @[40rem]/app:h-10 @[40rem]/app:w-10 @[64rem]/app:-left-7 @[64rem]/app:h-12 @[64rem]/app:w-12 @[80rem]/app:-left-[min(calc(100cqw-1286px),3rem)]'
             >
               <Image src={arrow} alt='' width={18} height={16} className='rotate-180' />
             </button>
@@ -128,7 +128,7 @@ export default function Testemonials() {
               type='button'
               onClick={goNext}
               aria-label='Next testimonial'
-              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -right-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors @[40rem]/app:-right-8 @[40rem]/app:h-10 @[40rem]/app:w-10 @[64rem]/app:-right-7 @[64rem]/app:h-12 @[64rem]/app:w-12 @[80rem]/app:-right-[min(calc(100vw-1286px),3rem)]'
+              className='bg-secondary/70 hover:bg-secondary absolute top-1/2 -right-2.5 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-sm backdrop-blur-sm transition-colors @[40rem]/app:-right-8 @[40rem]/app:h-10 @[40rem]/app:w-10 @[64rem]/app:-right-7 @[64rem]/app:h-12 @[64rem]/app:w-12 @[80rem]/app:-right-[min(calc(100cqw-1286px),3rem)]'
             >
               <Image src={arrow} alt='' width={18} height={16} />
             </button>

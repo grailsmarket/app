@@ -51,10 +51,12 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder, rank }) => {
     <Link
       href={`/profile/${holder.address}`}
       onClick={handleClick}
-      className='group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
+      className='group border-tertiary hover:bg-foreground/10 px-sm @[40rem]/app:px-md @[64rem]/app:px-lg flex h-[60px] w-full flex-row items-center border-b transition'
     >
-      <p className='text-neutral w-[38px] text-center text-lg font-semibold sm:w-[48px] sm:text-xl'>{rank}</p>
-      <div className='flex w-[65%] min-w-[40%] flex-row items-center gap-3 sm:w-[55%] lg:w-[45%]'>
+      <p className='text-neutral w-[38px] text-center text-lg font-semibold @[40rem]/app:w-[48px] @[40rem]/app:text-xl'>
+        {rank}
+      </p>
+      <div className='flex w-[65%] min-w-[40%] flex-row items-center gap-3 @[40rem]/app:w-[55%] @[64rem]/app:w-[45%]'>
         {/* {profileIsLoading ? (
           <LoadingCell width='40px' height='40px' radius='50%' />
         ) : (
@@ -85,13 +87,13 @@ const AllHolderRow: React.FC<AllHolderRowProps> = ({ holder, rank }) => {
         />
       </div>
 
-      <div className='flex w-[25%] items-center gap-1 sm:w-[35%] lg:w-[50%]'>
+      <div className='flex w-[25%] items-center gap-1 @[40rem]/app:w-[35%] @[64rem]/app:w-[50%]'>
         <p className='text-xl font-medium'>{holder.name_count}</p>
         {/* <span className='text-neutral text-xl'>names</span> */}
       </div>
 
       <div
-        className='flex w-[10%] min-w-[120px] justify-end lg:w-[5%]'
+        className='flex w-[10%] min-w-[120px] justify-end @[64rem]/app:w-[5%]'
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()

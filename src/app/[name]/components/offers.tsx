@@ -226,7 +226,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
       <User
         address={offer.buyer_address}
         className='max-w-full'
-        wrapperClassName='justify-start! max-w-36 xs:max-w-40!'
+        wrapperClassName='justify-start! max-w-36 @[26.25rem]/app:max-w-40!'
       />
       <SecondaryButton
         onClick={openShareModal}

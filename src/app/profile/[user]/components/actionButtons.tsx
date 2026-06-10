@@ -60,10 +60,11 @@ const ActionButtons = () => {
       <button
         onClick={scrollToTop}
         className={cn(
-          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-4',
+          'bg-secondary hover:bg-tertiary border-tertiary fixed right-[calc(var(--chat-sidebar-width,0px)+0.5rem)] z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0px)+1rem)]',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible ? 'bottom-16 @[48rem]/app:bottom-18' : 'bottom-4 @[48rem]/app:bottom-6',
-          isBulkSelectVisible && 'bottom-15 @[48rem]/app:right-5 @[48rem]/app:bottom-22',
+          isBulkSelectVisible &&
+            'bottom-15 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0px)+1.25rem)] @[48rem]/app:bottom-22',
           isBulkSelecting && 'bottom-30 @[48rem]/app:bottom-32',
           isBulkSelectVisible && isActionBarVisible && 'hidden'
         )}
@@ -74,7 +75,7 @@ const ActionButtons = () => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-20 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-transform duration-300 @[48rem]/app:h-16 starting:translate-y-full',
+          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-20 flex h-14 w-[calc(100%-var(--chat-sidebar-width,0px))] flex-row items-center justify-end rounded-b-lg border-t-2 transition-[transform,width] duration-300 @[48rem]/app:h-16 starting:translate-y-full',
           selectedTab.value === 'watchlist' && !cartIsEmpty ? 'translate-y-0' : 'hidden'
         )}
       >

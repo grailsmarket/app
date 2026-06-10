@@ -175,7 +175,7 @@ const Domains: React.FC<DomainsProps> = ({
         showHeaders && (
           <div
             className={cn(
-              'px-md pt-sm bg-background transition-top border-tertiary @[64rem]/app:px-lg @[48rem]/app:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
+              'px-md pt-sm bg-background transition-top border-tertiary @[64rem]/app:px-lg @[48rem]/app:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 @[40rem]/app:flex',
               isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
             )}
           >

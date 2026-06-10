@@ -183,12 +183,12 @@ body {
 
 @media screen and (min-width: 2340px) {
   .bulk-select-container {
-    right: calc((100vw - var(--max-width-app)) / 2 + 24px) !important;
+    right: calc((100vw - var(--max-width-app)) / 2 + var(--chat-sidebar-width, 0px) + 24px) !important;
   }
 
   .action-buttons-container {
     left: calc((100vw - var(--max-width-app)) / 2 + 2px) !important;
-    width: 2336px !important;
+    width: calc(2336px - var(--chat-sidebar-width, 0px)) !important;
   }
 }
 

@@ -30,7 +30,7 @@ const HEADER_SORT_MAP: Record<string, LeaderboardSortBy> = {
 
 export const LoadingRow = () => (
   <div className='border-tertiary hover:bg-foreground/10 px-sm @[40rem]/app:px-md @[64rem]/app:px-lg hidden h-[60px] w-full flex-row items-center border-b transition @[48rem]/app:flex'>
-    <div className='xs:min-w-[36px] flex w-[5%] min-w-[30px] justify-center @[40rem]/app:min-w-[40px]'>
+    <div className='flex w-[5%] min-w-[30px] justify-center @[26.25rem]/app:min-w-[36px] @[40rem]/app:min-w-[40px]'>
       <LoadingCell width='30px' height='20px' />
     </div>
     <div className='w-[25%] @[64rem]/app:w-[20%]'>
@@ -170,7 +170,7 @@ const LeaderboardList: React.FC = () => {
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
-        <p className='text-neutral text-md xs:min-w-[36px] w-[5%] min-w-[30px] text-center font-medium @[40rem]/app:min-w-[40px]'>
+        <p className='text-neutral text-md w-[5%] min-w-[30px] text-center font-medium @[26.25rem]/app:min-w-[36px] @[40rem]/app:min-w-[40px]'>
           #
         </p>
         <p className='text-neutral text-md w-[25%] font-medium @[64rem]/app:w-[20%]'>User</p>

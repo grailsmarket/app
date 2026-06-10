@@ -69,9 +69,13 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                             <ChatSidebar />
                           </div>
                         </div>
-                        <TransactionModal />
-                        <Modals />
-                        <div id='modal-root' />
+                        {/* Modal overlays span the viewport, so give them their own viewport-sized
+                            container named "app" for @[…]/app: variants in shared components. */}
+                        <div className='@container/app'>
+                          <TransactionModal />
+                          <Modals />
+                          <div id='modal-root' />
+                        </div>
                       </NavbarProvider>
                     </SeaportProvider>
                   </UserProvider>

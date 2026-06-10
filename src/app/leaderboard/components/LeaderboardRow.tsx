@@ -56,7 +56,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
       )}
     >
       {/* Rank */}
-      <div className='text-neutral xs:min-w-[36px] w-[5%] min-w-[30px] text-center text-base font-medium @[40rem]/app:min-w-[40px]'>
+      <div className='text-neutral w-[5%] min-w-[30px] text-center text-base font-medium @[26.25rem]/app:min-w-[36px] @[40rem]/app:min-w-[40px]'>
         {rank}
       </div>
 

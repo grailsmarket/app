@@ -49,7 +49,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   }, [selectedTab, mounted])
 
   return (
-    <div className='bg-background border-tertiary xs:text-lg text-md sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 @[40rem]/app:gap-4 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4'>
+    <div className='bg-background border-tertiary text-md sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:text-lg @[40rem]/app:gap-4 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4'>
       <button
         type='button'
         onClick={onToggleFilters}

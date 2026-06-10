@@ -101,9 +101,9 @@ const Activity: React.FC<ActivityProps> = ({
       {showHeaders && !noResults && (
         <div
           className={cn(
-            'pt-sm transition-top border-tertiary px-md lg:px-lg sm:py-md sticky flex w-full items-center justify-start border-b duration-300 sm:flex',
+            'pt-sm transition-top border-tertiary px-md @[64rem]/app:px-lg @[40rem]/app:py-md sticky flex w-full items-center justify-start border-b duration-300 @[40rem]/app:flex',
             stickyHeaders ? 'sitcky bg-background z-50' : '',
-            stickyHeaders && (isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'),
+            stickyHeaders && (isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'),
             className
           )}
         >
@@ -150,9 +150,9 @@ const Activity: React.FC<ActivityProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[86px] w-full flex-wrap items-center justify-between border-b py-1 sm:h-[60px] sm:flex-nowrap sm:py-0'>
+                  <div className='px-md @[48rem]/app:px-lg border-tertiary flex h-[86px] w-full flex-wrap items-center justify-between border-b py-1 @[40rem]/app:h-[60px] @[40rem]/app:flex-nowrap @[40rem]/app:py-0'>
                     <LoadingRow displayedColumns={displayedColumns} />
-                    <div className='flex w-full flex-row justify-between sm:hidden'>
+                    <div className='flex w-full flex-row justify-between @[40rem]/app:hidden'>
                       <LoadingCell height='24px' width='120px' />
                       <LoadingCell height='24px' width='120px' />
                     </div>

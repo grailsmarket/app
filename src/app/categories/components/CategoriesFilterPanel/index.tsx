@@ -91,7 +91,7 @@ const CategoriesFilterPanel: React.FC = () => {
       >
         {/* Header */}
         <div className='pt-md relative flex items-center justify-between'>
-          <div className='px-md sm:px-lg py-md flex w-full min-w-full justify-between @[64rem]/app:min-w-[292px]'>
+          <div className='px-md @[40rem]/app:px-lg py-md flex w-full min-w-full justify-between @[64rem]/app:min-w-[292px]'>
             <button
               onClick={handleClose}
               className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @max-[64rem]/app:flex @[48rem]/app:h-10 @[48rem]/app:w-10 @[64rem]/app:hidden'
@@ -115,8 +115,8 @@ const CategoriesFilterPanel: React.FC = () => {
       </div>
 
       <div className='flex-1 overflow-x-hidden overflow-y-auto'>
-        <div className='px-md sm:px-lg py-md flex w-full flex-col gap-2'>
-          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
+        <div className='px-md @[40rem]/app:px-lg py-md flex w-full flex-col gap-2'>
+          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[40rem]/app:h-10'>
             <input
               type='text'
               placeholder='Search categories'

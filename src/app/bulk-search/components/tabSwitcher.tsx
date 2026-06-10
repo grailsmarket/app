@@ -86,12 +86,12 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
     const count = getTabCount(tab.value)
     return (
       <div className='flex items-center gap-1.5'>
-        <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+        <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
         {count !== undefined && (
           <Label
             label={localizeNumber(count)}
             className={cn(
-              'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+              '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
               selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
             )}
           />
@@ -104,7 +104,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
     return (
       <div
         className={cn(
-          'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
+          'bg-background pr-lg border-tertiary text-md sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
@@ -125,7 +125,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
                 key={tab.value}
                 onClick={() => setBulkSearchTab(tab)}
                 className={cn(
-                  'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+                  'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:w-fit',
                   selectedTab.value === tab.value
                     ? 'text-primary font-bold opacity-100'
                     : 'font-semibold opacity-50 transition-colors hover:opacity-80'
@@ -147,7 +147,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
   return (
     <div
       className={cn(
-        'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-2 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
+        'bg-background pr-lg border-tertiary text-md sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
@@ -168,7 +168,7 @@ const BulkSearchTabSwitcher: React.FC<BulkSearchTabSwitcherProps> = ({ activeTab
               key={tab.value}
               onClick={() => setBulkSearchTab(tab)}
               className={cn(
-                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:w-fit',
                 selectedTab.value === tab.value
                   ? 'text-primary font-bold opacity-100'
                   : 'font-semibold opacity-50 transition-colors hover:opacity-80'

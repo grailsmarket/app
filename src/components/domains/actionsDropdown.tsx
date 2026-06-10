@@ -225,7 +225,11 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
 
           {!isOwner && (
             <div>
-              <CartIcon domain={domain} className='hover:bg-tertiary gap-2 px-3! opacity-100' size='16px' />
+              <CartIcon
+                domain={domain}
+                className='hover:bg-tertiary gap-2 rounded-none px-3! py-2! opacity-100'
+                size='16px'
+              />
             </div>
           )}
         </div>

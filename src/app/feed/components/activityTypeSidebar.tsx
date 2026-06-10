@@ -78,8 +78,13 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   return (
     <aside
       className={cn(
-        'bg-background border-tertiary fixed left-0 z-40 flex h-[calc(100dvh-58px)] w-full max-w-full flex-col overflow-y-scroll border-r-2 pb-2 shadow-md transition-transform duration-300 md:h-[calc(100dvh-130px)] @[48rem]/app:w-[292px] @[48rem]/app:min-w-[292px] @[64rem]/app:duration-100',
+        // Below 40rem container: full-screen fixed overlay. 40rem-64rem: fixed 292px overlay.
+        'bg-background border-tertiary fixed bottom-0 left-0 z-40 flex w-[calc(100%-var(--chat-sidebar-width,0))] max-w-full flex-col overflow-y-scroll border-r-2 pb-2 shadow-md transition-transform duration-300 @[40rem]/app:w-[292px] @[40rem]/app:min-w-[292px]',
+        // 64rem+ container: in-flow panel that pushes the feed content aside.
+        // min-width must stay 0 so the width transition can animate open; shrink-0 keeps the open panel at full width.
+        '@[64rem]/app:static @[64rem]/app:h-full @[64rem]/app:min-w-0 @[64rem]/app:shrink-0 @[64rem]/app:translate-x-0 @[64rem]/app:overflow-x-hidden @[64rem]/app:shadow-none @[64rem]/app:transition-[width]',
         isOpen ? 'translate-x-0' : 'translate-x-[-110%]',
+        isOpen ? '@[64rem]/app:w-[292px]' : '@[64rem]/app:w-0 @[64rem]/app:overflow-hidden @[64rem]/app:border-r-0',
         offsetClassName
       )}
     >

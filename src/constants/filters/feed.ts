@@ -7,10 +7,10 @@ import { ACTIVITY_TYPE_FILTERS } from './activity'
 
 export const FEED_TABS = [
   { label: 'Trending', value: 'trending' },
-  { label: 'All', value: 'all' },
   { label: 'Comments', value: 'comments' },
   { label: 'Activity', value: 'activity' },
   { label: 'Watchlist', value: 'watchlist' },
+  { label: 'All', value: 'all' },
 ] as const
 
 export const TRENDING_ACTIVITY_TYPES = ['mint', 'sold', 'offer_made'] as ActivityTypeFilterType[]

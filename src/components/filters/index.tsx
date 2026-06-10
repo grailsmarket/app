@@ -65,7 +65,7 @@ const FilterPanel: React.FC = () => {
         // Mobile styles
         isMobile &&
           'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0))] shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh w-full'),
+        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : 'translate-x-[-110%]'),
         // Desktop styles

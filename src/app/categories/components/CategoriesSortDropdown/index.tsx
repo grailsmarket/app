@@ -52,7 +52,7 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
           type='button'
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
           <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
@@ -83,7 +83,7 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
         type='button'
         onClick={handleDirectionToggle}
         className={cn(
-          'border-tertiary hover:border-foreground/50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-[2px] transition-all @[40rem]/app:h-10 @[40rem]/app:w-10'
+          'border-tertiary hover:border-foreground/50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-2 transition-all @[40rem]/app:h-10 @[40rem]/app:w-10'
         )}
         aria-label={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
       >

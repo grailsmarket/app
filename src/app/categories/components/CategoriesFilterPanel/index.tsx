@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectCategoriesPageFilters,
@@ -19,12 +18,11 @@ import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
 import ViewSelector from '@/components/domains/viewSelector'
-
-const FILTER_PANEL_DESKTOP_QUERY = '(min-width: 1024px)'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
-  const [isDesktopViewport, setIsDesktopViewport] = useState<boolean | null>(null)
+  const { width: responsiveWidth } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
   const filterPanel = useAppSelector(selectFilterPanel)
@@ -32,21 +30,9 @@ const CategoriesFilterPanel: React.FC = () => {
   const isFiltersClear = filters.type === null
   const { isNavbarVisible } = useNavbar()
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
+  if (!isClient || !responsiveWidth) return null
 
-    const mediaQuery = window.matchMedia(FILTER_PANEL_DESKTOP_QUERY)
-    const updateViewportMode = () => setIsDesktopViewport(mediaQuery.matches)
-
-    updateViewportMode()
-    mediaQuery.addEventListener('change', updateViewportMode)
-
-    return () => mediaQuery.removeEventListener('change', updateViewportMode)
-  }, [])
-
-  if (!isClient || isDesktopViewport === null) return null
-
-  const isMobile = !isDesktopViewport
+  const isMobile = responsiveWidth < 1024
   const isOpen = filtersOpen
 
   const handleClose = () => {
@@ -69,16 +55,14 @@ const CategoriesFilterPanel: React.FC = () => {
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
-        isMobile && 'fixed left-0 w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
+        isMobile &&
+          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0))] shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
+        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
-        isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[100%]'),
+        isMobile && (isOpen ? 'translate-x-0' : 'translate-x-[-110%]'),
         // Desktop styles
         !isMobile && 'sticky',
-        !isMobile &&
-          (isNavbarVisible
-            ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
-            : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
+        !isMobile && (isNavbarVisible ? 'top-[130px] h-[calc(100dvh-130px)]' : 'top-[58px] h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
         isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}
@@ -116,7 +100,7 @@ const CategoriesFilterPanel: React.FC = () => {
 
       <div className='flex-1 overflow-x-hidden overflow-y-auto'>
         <div className='px-md @[40rem]/app:px-lg py-md flex w-full flex-col gap-2'>
-          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[40rem]/app:h-10'>
+          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[40rem]/app:h-10'>
             <input
               type='text'
               placeholder='Search categories'

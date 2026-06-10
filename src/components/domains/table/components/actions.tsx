@@ -2,7 +2,6 @@ import { ALL_MARKETPLACE_COLUMNS } from '@/constants/domains/marketplaceDomains'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { cn } from '@/utils/tailwind'
 import React, { MouseEventHandler, useMemo } from 'react'
-import CartIcon from './CartIcon'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -45,7 +44,6 @@ interface ActionsProps {
 
 const Actions: React.FC<ActionsProps> = ({
   domain,
-  canAddToCart,
   index,
   columnCount,
   watchlistId,
@@ -272,44 +270,47 @@ const Actions: React.FC<ActionsProps> = ({
   // }
 
   return (
-    <div className={cn('z-10 flex flex-row items-center justify-end opacity-100', width)}>
-      <div className='flex h-7 items-center gap-1'>
-        {canAddToCart && !isMyDomain && !watchlistId && (
-          <button className={`cursor-pointer rounded-sm p-0 pr-0.5`}>
+    <div className={cn('flex flex-row items-center justify-end opacity-100', width)}>
+      <div className='flex h-[54px] items-center'>
+        {/* {canAddToCart && !isMyDomain && !watchlistId && (
+          <button className={`cursor-pointer rounded-none border-l-2 border-tertiary h-[54px] w-12 rounded-br-sm hover:bg-tertiary p-0 pr-0.5`}>
             <CartIcon domain={domain} />
           </button>
-        )}
-        {showWatchlist && (
-          <div
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-            className='flex h-7 w-fit flex-row items-center justify-center gap-1'
-          >
-            <Watchlist
+        )} */}
+        <div className='px-md flex h-[54px] min-w-12 items-center justify-center gap-2 sm:min-w-14 sm:gap-2 sm:px-2.5'>
+          {showWatchlist && (
+            <div
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+              className='flex h-full flex-row items-center justify-center gap-1'
+            >
+              <Watchlist
+                domain={domain}
+                showSettings={watchlistId ? true : false}
+                tooltipPosition={index === 0 ? 'bottom' : 'top'}
+                dropdownPosition='left'
+                watchlistId={watchlistId || domain.watchlist_record_id}
+                fetchWatchSettings={false}
+              />
+            </div>
+          )}
+          {!isBulkSelecting && !isUnregistered && (
+            <ActionsDropdown
               domain={domain}
-              showSettings={watchlistId ? true : false}
-              tooltipPosition={index === 0 ? 'bottom' : 'top'}
+              isOwner={isMyDomain}
+              registrationStatus={registrationStatus}
               dropdownPosition='left'
-              watchlistId={watchlistId || domain.watchlist_record_id}
-              fetchWatchSettings={false}
+              buttonClassName='rounded-none border-tertiary h-7 w-7 rounded-br-sm hover:bg-transparent'
             />
-          </div>
-        )}
-        {!isBulkSelecting && !isUnregistered && (
-          <ActionsDropdown
-            domain={domain}
-            isOwner={isMyDomain}
-            registrationStatus={registrationStatus}
-            dropdownPosition='left'
-          />
-        )}
+          )}
+        </div>
         {availableAction && (
           <PrimaryButton
             disabled={availableAction.disabled}
             className={cn(
-              'border-primary/80 text-primary hover:bg-primary! hover:text-background ml-1 flex w-12 max-w-12 min-w-12 items-center justify-center border-2 bg-transparent p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-18! @[40rem]/app:max-w-18! @[40rem]/app:min-w-18!',
+              'border-primary/80 text-primary hover:text-background hover:bg-primary flex h-9.5! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-2! bg-transparent p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-17! @[40rem]/app:max-w-17! @[40rem]/app:min-w-17!',
               availableAction.label !== 'Reg' ? 'hidden @[48rem]/app:block' : '',
               watchlistId ? 'hidden @[40rem]/app:block' : ''
             )}

@@ -93,7 +93,7 @@ const VirtualGridComponent: VirtualGridComponentType = (props, ref) => {
 
   // Calculate actual card width when columns are constrained
   const actualCardWidth = useMemo(() => {
-    const availableWidth = containerWidth - gap - containerPadding
+    const availableWidth = containerWidth - gap / columnsCount - containerPadding
     const totalGaps = (columnsCount - 1) * gap
     const calculatedWidth = (availableWidth - totalGaps) / columnsCount
 

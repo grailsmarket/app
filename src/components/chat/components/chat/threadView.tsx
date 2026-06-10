@@ -230,6 +230,7 @@ const ThreadView: React.FC = () => {
                 <React.Fragment key={m.id}>
                   {startsNewDay && <DayDivider date={current} />}
                   <MessageRow
+                    chatId={activeChatId as string}
                     message={m}
                     isOwn={m.sender_address?.toLowerCase() === myAddress}
                     isRead={m.id === peer?.last_read_message_id}

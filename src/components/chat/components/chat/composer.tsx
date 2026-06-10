@@ -5,12 +5,36 @@ import Image from 'next/image'
 import { cn } from '@/utils/tailwind'
 import { useSendMessage } from '@/hooks/chat/useSendMessage'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
+import type { SendMessageError } from '@/api/chats/sendMessage'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import MentionDropdown from './mentionDropdown'
+
+/** Minimal mutation surface the composer needs — satisfied by useSendMessage and useSendGlobalMessage. */
+interface SendController {
+  isPending: boolean
+  mutate: (body: string, options: { onError: (e: SendMessageError) => void }) => void
+}
+
+/** How a send error should surface in the composer UI. */
+export interface MappedSendError {
+  message: string
+  /** Disable the composer until remount (bans, disabled room, blocked). */
+  permanent?: boolean
+  /** Put the unsent text back so the user can retry. Defaults to true. */
+  restoreText?: boolean
+}
 
 interface Props {
   chatId: string
   disabled?: boolean
+  /** Override the send mutation (defaults to the DM useSendMessage). */
+  send?: SendController
+  /** Suppress typing-indicator emission (global chat has no typing). */
+  disableTyping?: boolean
+  /** Rendered below the input row (e.g. the global chat quota line). */
+  footerSlot?: React.ReactNode
+  /** Map a send error to UI behavior; return null to fall back to the default handling. */
+  mapSendError?: (e: SendMessageError) => MappedSendError | null
 }
 
 const MAX_LEN = 4000
@@ -23,6 +47,12 @@ interface MentionState {
 
 // Counts unicode code points so multi-code-unit characters (emoji) count as 1.
 const codePointLength = (s: string) => Array.from(s).length
+
+// DM default: 403 BLOCKED means the recipient blocked the caller.
+const defaultMapSendError = (e: SendMessageError): MappedSendError =>
+  e.code === 'BLOCKED'
+    ? { message: "Couldn't deliver, you have been blocked", permanent: true }
+    : { message: e.message ?? 'Failed to send' }
 
 // Walk back from the caret to find an active `@<query>` mention.
 // Returns null if the caret isn't inside a mention.
@@ -39,19 +69,27 @@ const detectMention = (value: string, caret: number): MentionState | null => {
   return null
 }
 
-const Composer: React.FC<Props> = ({ chatId, disabled }) => {
+const Composer: React.FC<Props> = ({
+  chatId,
+  disabled,
+  send: sendOverride,
+  disableTyping,
+  footerSlot,
+  mapSendError,
+}) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
-  // When the server returns 403 BLOCKED on send, the caller is being blocked
-  // by the recipient. Disable the composer until the user reloads — further
-  // sends will keep failing with the same error.
+  // When the server returns a permanent error on send (403 BLOCKED for DMs,
+  // bans/disabled room for global), disable the composer until remount —
+  // further sends will keep failing with the same error.
   const [permanentlyDisabled, setPermanentlyDisabled] = useState(false)
   const [mention, setMention] = useState<MentionState | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [resultCount, setResultCount] = useState(0)
   const ref = useRef<HTMLTextAreaElement>(null)
-  const send = useSendMessage(chatId)
-  const typing = useTypingEmitter(chatId)
+  const defaultSend = useSendMessage(chatId)
+  const send: SendController = sendOverride ?? defaultSend
+  const typing = useTypingEmitter(disableTyping ? null : chatId)
 
   const inputDisabled = disabled || permanentlyDisabled
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
@@ -120,16 +158,18 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
     }
     send.mutate(trimmed, {
       onError: (e) => {
-        if (e.code === 'BLOCKED') {
-          setError("Couldn't deliver, you have been blocked")
+        const mapped: MappedSendError = mapSendError?.(e) ?? defaultMapSendError(e)
+        setError(mapped.message)
+        if (mapped.permanent) {
           setPermanentlyDisabled(true)
-          // Drop the unsent text — retry isn't useful when blocked.
+          // Drop the unsent text — retry isn't useful on permanent failures.
           return
         }
-        setError(e.message ?? 'Failed to send')
-        // Restore the unsent text so the user can retry
-        setValue(trimmed)
-        requestAnimationFrame(autoSize)
+        if (mapped.restoreText !== false) {
+          // Restore the unsent text so the user can retry
+          setValue(trimmed)
+          requestAnimationFrame(autoSize)
+        }
       },
     })
   }
@@ -230,6 +270,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           <Image src={ArrowBack} alt='' width={12} height={12} className='invert' />
         </button>
       </div>
+      {footerSlot}
     </div>
   )
 }

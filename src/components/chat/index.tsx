@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, selectChatSidebar } from '@/state/reducers/chat/sidebar'
 import NewChatView from './components/new-chat/newChatView'
 import ThreadView from './components/chat/threadView'
+import GlobalThreadView from './components/global/globalThreadView'
 import ListView from './components/listView'
 
 const MIN_WIDTH = 360
@@ -146,6 +147,7 @@ const ChatSidebar: React.FC = () => {
             {view === 'list' && <ListView />}
             {view === 'new' && <NewChatView />}
             {view === 'thread' && <ThreadView />}
+            {view === 'global' && <GlobalThreadView />}
           </motion.aside>
         </motion.div>
       )}

@@ -7,6 +7,8 @@ import { useUserContext } from '@/context/user'
 import { useAppDispatch } from '@/state/hooks'
 import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/typing'
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
+import { GLOBAL_CHAT_ID } from '@/constants/chat'
+import { patchMessageReaction } from './utils/reactionCachePatch'
 import { setChatSocket } from './socketSingleton'
 import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
 
@@ -14,16 +16,19 @@ const TYPING_TTL_MS = 4000
 const PING_INTERVAL_MS = 25_000
 const RECONNECT_DELAYS_MS = [1_000, 2_000, 5_000, 15_000, 30_000]
 
-const buildWsUrl = (token: string): string => {
+const buildWsUrl = (token: string | null): string => {
   const baseHttp = API_URL.replace(/\/api\/v1$/, '')
   const baseWs = baseHttp.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')
-  return `${baseWs}/ws/chats?token=${encodeURIComponent(token)}`
+  // Token is optional — anonymous connections may subscribe to the global room only.
+  return token ? `${baseWs}/ws/chats?token=${encodeURIComponent(token)}` : `${baseWs}/ws/chats`
 }
 
 /**
- * Mounts once at the providers level (gated by auth) and keeps a single
- * WebSocket open for the lifetime of the authed session. Patches React Query
- * caches and Redux typing state on incoming events.
+ * Mounts once at the providers level and keeps a single WebSocket open —
+ * anonymously (global chat only) when signed out, authenticated (global +
+ * DMs) when signed in. Reconnects with the right credentials when the auth
+ * status flips. Patches React Query caches and Redux typing state on
+ * incoming events.
  *
  * Reconnects with exponential backoff (capped at 30s) on unexpected close.
  */
@@ -40,11 +45,13 @@ export const useChatSocket = () => {
   const intentionalCloseRef = useRef(false)
 
   useEffect(() => {
-    if (!userAddress || authStatus !== 'authenticated') return
+    // Wait for auth resolution so we don't open an anonymous socket and
+    // immediately reconnect with a token (or vice versa).
+    if (authStatus === 'loading') return
 
-    const cookies = typeof document === 'undefined' ? {} : parseCookie(document.cookie)
-    const token = cookies?.token
-    if (!token) return
+    const cookies = typeof document === 'undefined' || !document.cookie ? {} : parseCookie(document.cookie)
+    const isAuthed = !!userAddress && authStatus === 'authenticated'
+    const token: string | null = isAuthed ? (cookies?.token ?? null) : null
 
     intentionalCloseRef.current = false
     let mounted = true
@@ -67,8 +74,11 @@ export const useChatSocket = () => {
     const handleEvent = (evt: ChatWSEvent) => {
       switch (evt.type) {
         case 'connected':
-          // Server-confirmed; subscribe immediately for delivery.
-          send({ type: 'subscribe' })
+          // Server-confirmed; subscribe immediately for delivery. Everyone
+          // (anon + authed) joins the global room; only authed clients also
+          // subscribe to their own DM channel.
+          send({ type: 'subscribe_global' })
+          if (token) send({ type: 'subscribe' })
           return
 
         case 'subscribed':
@@ -82,7 +92,9 @@ export const useChatSocket = () => {
 
         case 'chat:message_new': {
           const { chat_id, message } = evt.data
-          const senderIsMe = message.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          const isGlobal = chat_id === GLOBAL_CHAT_ID
+          const senderIsMe = !!userAddress && message.sender_address?.toLowerCase() === userAddress.toLowerCase()
+          const messagesKey = isGlobal ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
           // Patch messages cache. Three cases to handle:
           // 1. Canonical id already present (POST onSuccess won the race) → no-op.
           // 2. Sender is me AND an optimistic placeholder with matching body is
@@ -90,7 +102,7 @@ export const useChatSocket = () => {
           //    appending, otherwise the optimistic + canonical both stick around
           //    and the message renders twice until the next refresh.
           // 3. Otherwise → prepend to the newest page.
-          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(['chats', chat_id, 'messages'], (old) => {
+          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(messagesKey, (old) => {
             if (!old) return old
             const exists = old.pages.some((p) => p.messages.some((m) => m.id === message.id))
             if (exists) return old
@@ -117,6 +129,8 @@ export const useChatSocket = () => {
               pages: [{ ...first, messages: [message, ...first.messages] }, ...rest],
             }
           })
+          // The global room is not part of the DM inbox — never patch it or count unread.
+          if (isGlobal) return
           // Patch inbox: bump last_message + last_message_at + unread (unless sender is me).
           queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
             if (!old) return old
@@ -145,7 +159,8 @@ export const useChatSocket = () => {
 
         case 'chat:message_deleted': {
           const { chat_id, message_id } = evt.data
-          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(['chats', chat_id, 'messages'], (old) => {
+          const deletedKey = chat_id === GLOBAL_CHAT_ID ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
+          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(deletedKey, (old) => {
             if (!old) return old
             return {
               ...old,
@@ -191,6 +206,22 @@ export const useChatSocket = () => {
 
         case 'chat:created': {
           queryClient.invalidateQueries({ queryKey: ['chats', 'inbox'] })
+          return
+        }
+
+        case 'chat:reaction_added':
+        case 'chat:reaction_removed': {
+          const { chat_id, message_id, address, emoji, count } = evt.data
+          const reactionKey = chat_id === GLOBAL_CHAT_ID ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
+          const actorIsMe = !!userAddress && address?.toLowerCase() === userAddress.toLowerCase()
+          // `count` is the absolute per-emoji count after the change, so this
+          // patch is idempotent with the optimistic toggle in useToggleReaction.
+          patchMessageReaction(queryClient, reactionKey, message_id, emoji, {
+            kind: 'set-count',
+            count,
+            actorIsMe,
+            add: evt.type === 'chat:reaction_added',
+          })
           return
         }
       }
@@ -257,7 +288,9 @@ export const useChatSocket = () => {
       typingTimers.current.clear()
       const ws = wsRef.current
       if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'unsubscribe' }))
+        ws.send(JSON.stringify({ type: 'unsubscribe_global' }))
+        // Anonymous connections may only send global/ping frames.
+        if (token) ws.send(JSON.stringify({ type: 'unsubscribe' }))
       }
       ws?.close()
       wsRef.current = null

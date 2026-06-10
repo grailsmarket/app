@@ -310,7 +310,7 @@ const Actions: React.FC<ActionsProps> = ({
           <PrimaryButton
             disabled={availableAction.disabled}
             className={cn(
-              'border-primary/80 text-background bg-primary hover:bg-primary/80 flex h-9! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-l-2! p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-18! @[40rem]/app:max-w-18! @[40rem]/app:min-w-18!',
+              'border-primary/80 text-primary hover:text-background hover:bg-primary flex h-9.5! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-2! bg-transparent p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-17! @[40rem]/app:max-w-17! @[40rem]/app:min-w-17!',
               availableAction.label !== 'Reg' ? 'hidden @[48rem]/app:block' : '',
               watchlistId ? 'hidden @[40rem]/app:block' : ''
             )}

@@ -47,7 +47,7 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                     <SeaportProvider>
                       <NavbarProvider>
                         <div className='max-w-app relative mx-auto flex min-h-dvh! flex-col'>
-                          <div className='sticky top-0 z-50'>
+                          <div className='z-50'>
                             {/* <InfoBar /> */}
                             <Navigation showInfo={false} />
                           </div>

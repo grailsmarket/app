@@ -52,7 +52,7 @@
 }
 
 @theme inline {
-  --breakpoint-xs: 420px;
+  --breakpoint-xs: 26.25rem;
   --breakpoint-3xl: 109.375rem;
   --breakpoint-4xl: 125rem;
   --breakpoint-app: 146.25rem;
@@ -183,12 +183,12 @@ body {
 
 @media screen and (min-width: 2340px) {
   .bulk-select-container {
-    right: calc((100vw - var(--max-width-app)) / 2 + 24px) !important;
+    right: calc((100vw - var(--max-width-app)) / 2 + var(--chat-sidebar-width, 0px) + 24px) !important;
   }
 
   .action-buttons-container {
     left: calc((100vw - var(--max-width-app)) / 2 + 2px) !important;
-    width: 2336px !important;
+    width: calc(2336px - var(--chat-sidebar-width, 0px)) !important;
   }
 }
 
@@ -438,4 +438,68 @@ body {
 
 .custom-links a:hover {
   opacity: 0.8;
+}
+
+/* Ethereum Identity Kit profile layout should respond to the app container,
+   not the viewport, so the chat sidebar can shrink the profile cleanly. */
+@container app (width < 109.375rem) {
+  .user-profile-header-container {
+    display: block !important;
+  }
+
+  .user-profile-header-container-ultra-wide {
+    width: 100vw !important;
+    height: 100% !important;
+    position: absolute !important;
+    display: none !important;
+  }
+}
+
+@container app (width < 96rem) {
+  .user-profile-avatar-container {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+
+@container app (width < 80rem) {
+  .user-profile-content {
+    padding: 48px 16px !important;
+  }
+
+  .user-profile-role {
+    left: 16px !important;
+  }
+}
+
+@container app (width < 64rem) {
+  .user-profile-avatar-container {
+    width: 90px !important;
+    height: 90px !important;
+  }
+
+  .user-profile-status-desktop,
+  .user-profile-desktop-common-followers-container {
+    display: none !important;
+  }
+
+  .user-profile-status-mobile,
+  .user-profile-mobile-common-followers-container {
+    display: flex !important;
+  }
+
+  .user-profile-bio-container {
+    max-width: 75% !important;
+    font-size: 16px !important;
+  }
+}
+
+@container app (width < 48rem) {
+  .full-width-profile-container {
+    display: none !important;
+  }
+
+  .user-profile-card-container {
+    display: flex !important;
+  }
 }

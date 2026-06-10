@@ -54,7 +54,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
   const cacheParam = refreshKey ? `?v=${refreshKey}` : ''
 
   return (
-    <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div
         className='flex cursor-pointer flex-row items-center justify-between transition-opacity hover:opacity-80'
         onClick={() => setIsMetadataOpen(!isMetadataOpen)}

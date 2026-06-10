@@ -49,7 +49,7 @@ export const ListingRow: React.FC<ListingRowProps> = ({ listing, index }) => {
     <HoverPrefetchLink
       href={`/${normalizeName(listing.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
         index === 0 && 'border-t'
       )}
     >
@@ -113,7 +113,7 @@ export const OfferRow: React.FC<OfferRowProps> = ({ offer, index }) => {
     <HoverPrefetchLink
       href={`/${normalizeName(offer.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
         index === 0 && 'border-t'
       )}
     >
@@ -179,7 +179,7 @@ export const SaleRow: React.FC<SaleRowProps> = ({ sale, index, hideSeller = fals
     <HoverPrefetchLink
       href={`/${normalizeName(sale.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-1 border-b px-2 transition sm:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-1 border-b px-2 transition @[40rem]/app:px-3',
         className,
         index === 0 && 'border-t'
       )}
@@ -258,7 +258,7 @@ export const RegistrationRow: React.FC<RegistrationRowProps> = ({ registration, 
     <HoverPrefetchLink
       href={`/${normalizeName(registration.name)}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition sm:px-3',
+        'group border-tertiary hover:bg-foreground/10 flex h-[52px] w-full flex-row items-center gap-3 border-b px-2 transition @[40rem]/app:px-3',
         className,
         index === 0 && 'border-t'
       )}

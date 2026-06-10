@@ -125,7 +125,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     const gracePeriodEndDate = new Date(expiryDateTimestamp + 90 * DAY_IN_SECONDS * 1000).toISOString()
 
     return (
-      <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-6 sm:rounded-lg sm:border-2'>
+      <div className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col gap-6 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
         <div className='flex flex-row items-center justify-between'>
           <h3 className='font-sedan-sc text-3xl'>Grace Period</h3>
           <PrimaryButton
@@ -155,10 +155,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
     const premiumPriceWei = rentPriceData?.premium?.toString() || '0'
 
     return (
-      <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col sm:rounded-lg sm:border-2'>
+      <div className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
         <h3 className='font-sedan-sc text-3xl'>Premium Registration</h3>
         <div className='mt-4 flex w-full flex-row items-center justify-between gap-4'>
-          <div className='flex flex-row items-center gap-2 text-2xl sm:text-3xl'>
+          <div className='flex flex-row items-center gap-2 text-2xl @[40rem]/app:text-3xl'>
             {isLoadingRentPrice ? (
               <span className='font-bold'>Loading...</span>
             ) : (
@@ -206,7 +206,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
               <CartIcon
                 domain={nameDetails}
                 hasBorder={true}
-                className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+                className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
               />
             </button> */}
           </div>
@@ -235,7 +235,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   }
 
   return (
-    <div className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <h3 className='font-sedan-sc text-3xl'>Register Name</h3>
       <div className='flex w-full flex-row items-center justify-between gap-4'>
         <div className='flex flex-row items-center gap-3'>
@@ -278,7 +278,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             <CartIcon
               domain={nameDetails}
               hasBorder={true}
-              className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+              className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
             />
           </button> */}
         </div>

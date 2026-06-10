@@ -29,7 +29,7 @@ const TopListsSection: React.FC<TopListsSectionProps> = ({ category }) => {
   return (
     <section>
       <div className='border-tertiary border-b-2'>
-        <div className='grid grid-cols-1 xl:grid-cols-3'>
+        <div className='grid grid-cols-1 @[80rem]/app:grid-cols-3'>
           <TopListCard
             title='Top Sales'
             type='sales'

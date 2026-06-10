@@ -8,7 +8,7 @@ interface FeedLoadingProps {
 const FeedLoading: React.FC<FeedLoadingProps> = ({ count = 6 }) => (
   <div className='flex flex-col gap-3'>
     {Array.from({ length: count }).map((_, index) => (
-      <article key={index} className='bg-secondary border-tertiary rounded-lg border-2 p-3 shadow-sm sm:px-4'>
+      <article key={index} className='bg-secondary border-tertiary rounded-lg border-2 p-3 shadow-sm @[40rem]/app:px-4'>
         <div className='flex flex-col gap-4'>
           <div className='flex w-full flex-wrap items-center justify-between'>
             <div className='flex flex-wrap items-center gap-2'>
@@ -18,7 +18,7 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({ count = 6 }) => (
               <LoadingCell height='32px' width='32px' radius='4px' />
               <LoadingCell height='22px' width='130px' />
             </div>
-            <LoadingCell height='14px' width='60px' className='hidden md:block' />
+            <LoadingCell height='14px' width='60px' className='hidden @[48rem]/app:block' />
           </div>
 
           <div className='flex flex-col gap-2'>
@@ -28,7 +28,7 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({ count = 6 }) => (
 
           <div className='flex items-center justify-between'>
             <LoadingCell height='18px' width='70px' />
-            <LoadingCell height='14px' width='60px' className='md:hidden' />
+            <LoadingCell height='14px' width='60px' className='@[48rem]/app:hidden' />
           </div>
         </div>
       </article>

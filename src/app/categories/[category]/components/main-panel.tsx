@@ -8,7 +8,8 @@ import ActivityPanel from './activity'
 import HoldersPanel from './holders'
 import TabSwitcher from './tabSwitcher'
 import ActionButtons from '@/app/marketplace/components/actionButtons'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { changeCategoryTab, selectCategory, setLastVisitedCategory } from '@/state/reducers/category/category'
@@ -64,14 +65,14 @@ interface CategoryContentProps {
 
 const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { selectors, categoryTab } = useFilterRouter()
   const filtersOpen = selectors.filters.open
   const activeTab = categoryTab?.value || 'names'
 
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     // These tabs should always be full width (no filter panel)
     if (activeTab === 'analytics' || activeTab === 'activity' || activeTab === 'holders') return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'

@@ -11,14 +11,15 @@ import {
 } from '@/state/reducers/filters/categoriesPageFilters'
 import { cn } from '@/utils/tailwind'
 import { useQuery } from '@tanstack/react-query'
-import { Arrow, useWindowSize } from 'ethereum-identity-kit'
+import { Arrow } from 'ethereum-identity-kit'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 import Link from 'next/link'
 import React, { useEffect, useMemo, useState } from 'react'
 import LoadingCell from '../ui/loadingCell'
 import { DEFAULT_CATEGORIES_PAGE_SORT } from '@/constants/filters/categories'
 
 const TopCategories = () => {
-  const { width } = useWindowSize()
+  const width = useAppContainerWidth()
   const [isMounted, setIsMounted] = useState(false)
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
@@ -53,17 +54,19 @@ const TopCategories = () => {
 
   return (
     <div className='w-full'>
-      <div className='px-sm sm:px-md py-lg sm:p-xl flex items-center justify-between'>
-        <div className='flex flex-col gap-1 sm:gap-2 lg:flex-row lg:items-center lg:gap-4'>
-          <h2 className='font-sedan-sc pb-1 text-4xl leading-11 sm:text-5xl md:text-6xl'>Top Categories</h2>
+      <div className='px-sm @[40rem]/app:px-md py-lg @[40rem]/app:p-xl flex items-center justify-between'>
+        <div className='flex flex-col gap-1 @[40rem]/app:gap-2 @[64rem]/app:flex-row @[64rem]/app:items-center @[64rem]/app:gap-4'>
+          <h2 className='font-sedan-sc pb-1 text-4xl leading-11 @[40rem]/app:text-5xl @[48rem]/app:text-6xl'>
+            Top Categories
+          </h2>
           <CategoriesSortDropdown />
         </div>
         <Link
           href='/categories'
-          className='text-primary hover:text-primary/80 flex items-center justify-end gap-2 text-center text-xl font-semibold sm:text-2xl'
+          className='text-primary hover:text-primary/80 flex items-center justify-end gap-2 text-center text-xl font-semibold @[40rem]/app:text-2xl'
         >
           <p>View All</p>
-          <Arrow className='text-primary h-3 w-3 rotate-180 sm:h-4 sm:w-4' />
+          <Arrow className='text-primary h-3 w-3 rotate-180 @[40rem]/app:h-4 @[40rem]/app:w-4' />
         </Link>
       </div>
       <div className='flex w-full flex-wrap justify-center gap-4'>
@@ -74,8 +77,8 @@ const TopCategories = () => {
                 <div
                   className={cn(
                     index === 0
-                      ? 'w-full lg:w-[calc(33.33%-12px)]'
-                      : 'w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]'
+                      ? 'w-full @[64rem]/app:w-[calc(33.33%-12px)]'
+                      : 'w-full @[40rem]/app:w-[calc(50%-8px)] @[64rem]/app:w-[calc(33.33%-12px)]'
                   )}
                   key={index}
                 >
@@ -83,7 +86,10 @@ const TopCategories = () => {
                 </div>
               ))
           : categories?.slice(0, categoryCount).map((category) => (
-              <div className='w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.33%-12px)]' key={category.name}>
+              <div
+                className='w-full @[40rem]/app:w-[calc(50%-8px)] @[64rem]/app:w-[calc(33.33%-12px)]'
+                key={category.name}
+              >
                 <CategoryRow category={category} reduceColumns={true} />
               </div>
             ))}

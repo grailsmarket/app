@@ -7,7 +7,8 @@ import FilterPanel from '@/components/filters'
 import DomainPanel from './domains'
 import TabSwitcher from './tabSwitcher'
 import { fetchAccount } from 'ethereum-identity-kit'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import ActivityPanel from './activity'
 import BrokerPanel from './brokerPanel'
 import { useQuery } from '@tanstack/react-query'
@@ -196,13 +197,13 @@ const ProfileContent: React.FC<ProfileContentProps> = ({
   isMyProfile,
 }) => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { selectors } = useFilterRouter()
   const filtersOpen = selectors.filters.open
 
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 

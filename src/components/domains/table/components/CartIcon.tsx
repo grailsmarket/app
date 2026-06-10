@@ -29,7 +29,7 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size = '18px', className, h
   return (
     <div
       className={cn(
-        'flex min-h-7 min-w-7 items-center justify-center rounded-[4px] transition-all sm:p-1.5',
+        'flex min-h-7 min-w-7 items-center justify-center rounded-[4px] transition-all @[40rem]/app:p-1.5',
         showInCart ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
         hasBorder && 'border-foreground/50 hover:border-foreground/80 rounded-sm border-2',
         hasBorder && showInCart && 'border-primary hover:border-primary',

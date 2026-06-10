@@ -16,7 +16,8 @@ import { getNameTokenId } from '@/utils/web3/ens'
 import type { ActivityType, ProfileActivityEventType } from '@/types/profile'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { truncateAddress, useWindowSize } from 'ethereum-identity-kit'
+import { truncateAddress } from 'ethereum-identity-kit'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 import { SOURCE_ICONS } from '@/constants/domains/sources'
 import Image from 'next/image'
 import ETHERSCAN_ICON from 'public/logos/etherscan.svg'
@@ -55,7 +56,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   const { authStatus } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const router = useRouter()
-  const { width } = useWindowSize()
+  const width = useAppContainerWidth()
   const normalizedName = normalizeName(activity.name)
   const tokenId = activity.token_id || getNameTokenId(normalizedName)
   const copy = EVENT_COPY[activity.event_type] ?? {
@@ -70,10 +71,10 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   return (
     <article
       onClick={() => router.push(namePagePath)}
-      className='bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors sm:px-4'
+      className='bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors @[40rem]/app:px-4'
     >
       <div className='flex flex-col gap-3'>
-        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+        <div className='flex flex-col gap-3 @[40rem]/app:flex-row @[40rem]/app:items-start @[40rem]/app:justify-between'>
           <div className='flex min-w-0 flex-wrap items-center gap-2'>
             {/* <p className='text-neutral text-sm font-bold tracking-wide uppercase'>
                 {activity.platform || 'ENS'} Activity
@@ -83,7 +84,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 <User
                   address={activity.actor_address}
                   wrapperClassName='justify-start'
-                  className='max-w-full py-[3px] sm:py-1'
+                  className='max-w-full py-[3px] @[40rem]/app:py-1'
                   avatarSize={width && width < 768 ? '20px' : '24px'}
                   alignTooltip='left'
                 />
@@ -100,16 +101,18 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}
-                className='h-6.5 w-6.5 rounded-sm sm:h-8 sm:w-8 md:rounded-md'
+                className='h-6.5 w-6.5 rounded-sm @[40rem]/app:h-8 @[40rem]/app:w-8 @[48rem]/app:rounded-md'
               />
               {beautifyName(normalizedName)}
             </HoverPrefetchLink>
           </div>
-          <span className='text-neutral hidden shrink-0 text-xs font-medium whitespace-nowrap sm:block'>{time}</span>
+          <span className='text-neutral hidden shrink-0 text-xs font-medium whitespace-nowrap @[40rem]/app:block'>
+            {time}
+          </span>
         </div>
 
         <div className='flex flex-row items-end justify-between'>
-          <div className='grid w-full max-w-full grid-cols-2 gap-2 sm:max-w-[calc(100%-72px)] lg:grid-cols-4'>
+          <div className='grid w-full max-w-full grid-cols-2 gap-2 @[40rem]/app:max-w-[calc(100%-72px)] @[64rem]/app:grid-cols-4'>
             {activity.platform && (
               <div className='bg-background/50 flex flex-col justify-between rounded-md p-2'>
                 <p className='text-neutral mb-1 text-xs font-bold tracking-wide uppercase'>Source</p>
@@ -164,7 +167,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                   onReply(normalizedName)
                 }
               }}
-              className='text-primary text-md hidden cursor-pointer items-center gap-1 pb-1 font-bold transition-opacity hover:opacity-80 sm:inline-flex'
+              className='text-primary text-md hidden cursor-pointer items-center gap-1 pb-1 font-bold transition-opacity hover:opacity-80 @[40rem]/app:inline-flex'
             >
               Reply <ReplyArrowIcon />
             </button>
@@ -173,7 +176,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
           )}
         </div>
 
-        <div className='flex items-center justify-between sm:hidden'>
+        <div className='flex items-center justify-between @[40rem]/app:hidden'>
           <span className='text-neutral text-xs font-medium whitespace-nowrap'>{time}</span>
 
           {onReply ? (

@@ -66,7 +66,7 @@ const Listings: React.FC<ListingsProps> = ({ domain, listings, listingsLoading }
   }
 
   return (
-    <div className='p-lg lg:px-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Listings</h3>
         {isMyDomain && (
@@ -115,13 +115,13 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
 
   return (
     <div className='flex flex-row items-center justify-between gap-2'>
-      <div className='flex flex-row items-center gap-2 sm:gap-4'>
+      <div className='flex flex-row items-center gap-2 @[40rem]/app:gap-4'>
         <Image
           src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
           width={32}
           height={32}
           alt={listing.source}
-          className='h-auto w-7 sm:w-8'
+          className='h-auto w-7 @[40rem]/app:w-8'
         />
         <div className='flex flex-col gap-1'>
           <div className='flex flex-row items-center gap-2'>
@@ -129,7 +129,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
               price={listing.price}
               currencyAddress={listing.currency_address}
               iconSize='22px'
-              fontSize='text-2xl sm:text-2xl pt-[3px] font-semibold'
+              fontSize='text-2xl @[40rem]/app:text-2xl pt-[3px] font-semibold'
             />
             {listing.broker_address && listing.broker_fee_bps && (
               <Tooltip
@@ -146,7 +146,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
               </Tooltip>
             )}
           </div>
-          <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
+          <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatExpiryDate(listing.expires_at)}</p>
         </div>
       </div>
       <ActionButtons listing={listing} isMyDomain={isMyDomain} domain={domain} />
@@ -216,7 +216,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
         <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
         <SecondaryButton
           onClick={openShareModal}
-          className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+          className='flex min-h-9 min-w-9 items-center justify-center p-0! @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
         >
           <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
         </SecondaryButton>
@@ -227,7 +227,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
   return (
     <div className='flex flex-row items-center gap-2'>
       <PrimaryButton onClick={openBuyNowModal}>
-        Buy<span className='hidden sm:inline'> Now</span>
+        Buy<span className='hidden @[40rem]/app:inline'> Now</span>
       </PrimaryButton>
       {/* <button
         onClick={(e) => {
@@ -235,17 +235,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
           e.stopPropagation()
           if (domain) addToCart(e, domain)
         }}
-        className='hidden sm:block'
+        className='hidden @[40rem]/app:block'
       >
         <CartIcon
           domain={domain}
           hasBorder={true}
-          className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+          className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
         />
       </button> */}
       <SecondaryButton
         onClick={openShareModal}
-        className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+        className='flex min-h-9 min-w-9 items-center justify-center p-0! @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
       >
         <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
       </SecondaryButton>

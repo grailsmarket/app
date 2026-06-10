@@ -136,7 +136,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
 
   return (
     <div className='border-tertiary border-t-2'>
-      <div className='bg-background mx-auto flex max-w-5xl flex-col gap-2 p-3 sm:px-4'>
+      <div className='bg-background mx-auto flex max-w-5xl flex-col gap-2 p-3 @[40rem]/app:px-4'>
         {error && <p className='text-sm font-medium text-red-400'>{error}</p>}
         <div ref={domainDropdownRef} className='relative'>
           {hasSearchResults && isDomainDropdownOpen && (
@@ -241,7 +241,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
               }}
               onFocus={() => setIsDomainDropdownOpen(true)}
               placeholder='ENS name, namehash, tokenId, or labelhash'
-              className='text-md w-full bg-transparent font-medium outline-none md:text-lg'
+              className='text-md w-full bg-transparent font-medium outline-none @[48rem]/app:text-lg'
             />
             {selectedName && (
               <button type='button' onClick={() => onSelectedNameChange(null)}>

@@ -9,7 +9,7 @@ import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import Image from 'next/image'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { localizeNumber } from '@/utils/localizeNumber'
 
 const formatCategoryName = (category: string) =>
@@ -27,7 +27,7 @@ interface NameProps {
 }
 
 const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, columnCount }) => {
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
   const maxShownCategories = width && width < 640 ? 1 : 2
   const displayedCategories = domain.clubs?.slice(0, maxShownCategories)
   const remainingCategories =
@@ -44,7 +44,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             name={domain.name}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
-            className='pointer-events-none h-8 max-h-8 max-w-8 min-w-8 rounded-sm sm:h-[34px] sm:max-h-[34px] sm:max-w-[34px] sm:min-w-[34px]'
+            className='pointer-events-none h-8 max-h-8 max-w-8 min-w-8 rounded-sm @[40rem]/app:h-[34px] @[40rem]/app:max-h-[34px] @[40rem]/app:max-w-[34px] @[40rem]/app:min-w-[34px]'
           />
           <div className='flex max-w-full flex-col gap-px truncate'>
             <p
@@ -55,14 +55,14 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
             >
               {beautifyName(domain.name)}
             </p>
-            <div className='text-md text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate font-semibold sm:gap-1.5'>
+            <div className='text-md text-neutral flex w-fit max-w-full flex-row items-center gap-1 truncate font-semibold @[40rem]/app:gap-1.5'>
               {displayedCategories?.map((club, index) => {
                 const isRankClub = club.includes('prepunk') || club.includes('short_name_auction')
                 const clubRank =
                   isRankClub && index === 0 ? domain.club_ranks?.find((rank) => rank.club === club)?.rank : null
 
                 return (
-                  <div key={club} className='flex min-w-fit flex-row items-center gap-0.5 sm:gap-1'>
+                  <div key={club} className='flex min-w-fit flex-row items-center gap-0.5 @[40rem]/app:gap-1'>
                     <Image
                       src={getCategoryDetails(club).avatar}
                       alt={club}

@@ -123,7 +123,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
         !effectiveVisibility ? '-translate-y-full' : 'translate-y-0'
       )}
     >
-      <nav className='px-md md:px-lg lg:px-xl bg-background max-w-app relative z-30 mx-auto flex h-full items-center justify-between'>
+      <nav className='bg-background max-w-app px-md md:px-lg lg:px-xl relative z-30 mx-auto flex h-full items-center justify-between'>
         <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
           <Link
             href='/'
@@ -137,7 +137,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               alt='Grails Market'
               width={32}
               height={32}
-              className='h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
+              className='block h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
             />
             <Image
               src={logo}
@@ -187,7 +187,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       </nav>
       <div
         className={cn(
-          'p-lg pt-lg md:p-xl border-tertiary bg-background/80 absolute top-14 left-0 -z-10 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350',
+          'border-tertiary bg-background/80 p-lg pt-lg md:p-xl absolute top-14 left-0 -z-10 flex h-[calc(100dvh-56px)] w-full flex-col justify-between gap-4 overflow-y-scroll border-b-2 shadow-none backdrop-blur-md transition-all duration-500 ease-out md:top-16 md:h-fit md:shadow-md md:duration-350',
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
@@ -252,7 +252,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
               'border-neutral w-full border-b-2 md:border-none',
               dropdownOption === 'leaderboard' || (dropdownOption === null && previousDropdownOption === 'leaderboard')
                 ? 'block'
-                : 'block md:hidden'
+                : 'block block md:hidden'
             )}
           >
             <Leaderboard setDropdownOption={handleDropdownOption} previousDropdownOption={previousDropdownOption} />

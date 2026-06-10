@@ -25,9 +25,9 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
       <button
         type='button'
         onClick={() => setIsExpanded((prev) => !prev)}
-        className='flex w-full cursor-pointer items-center justify-between gap-4 py-4 text-left sm:py-6'
+        className='flex w-full cursor-pointer items-center justify-between gap-4 py-4 text-left @[40rem]/app:py-6'
       >
-        <h3 className='text-xl font-bold sm:text-2xl'>{question}</h3>
+        <h3 className='text-xl font-bold @[40rem]/app:text-2xl'>{question}</h3>
         <svg
           xmlns='http://www.w3.org/2000/svg'
           width='20'
@@ -44,7 +44,10 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
         </svg>
       </button>
       <div
-        className={cn('overflow-hidden transition-all duration-300 ease-in-out', isExpanded && 'pb-4 sm:pb-6')}
+        className={cn(
+          'overflow-hidden transition-all duration-300 ease-in-out',
+          isExpanded && 'pb-4 @[40rem]/app:pb-6'
+        )}
         style={{
           maxHeight: isExpanded ? (contentRef.current?.scrollHeight ?? 0) + 20 : 0,
         }}
@@ -63,7 +66,7 @@ const QuestionItem = ({ question, answer, isLast }: QuestionItemProps) => {
 
 const FrequentlyAskedQuestions = () => {
   return (
-    <section className='mx-auto flex max-w-5xl flex-col gap-6 sm:gap-8'>
+    <section className='mx-auto flex max-w-5xl flex-col gap-6 @[40rem]/app:gap-8'>
       <h2 className='text-center text-4xl font-bold'>Frequently Asked Questions</h2>
       <div className='flex flex-col gap-0'>
         {FREQUENTLY_ASKED_QUESTIONS.map(({ question, answer }, index) => (

@@ -30,7 +30,7 @@ const Expiration: React.FC<ExpirationProps> = ({ domain, columnCount, registrati
         </Tooltip>
         {domain.expiry_date && (
           <p className='text-md font-semibold'>
-            <span className='xs:inline hidden'>Expiry</span>{' '}
+            <span className='hidden @[26.25rem]/app:inline'>Expiry</span>{' '}
             {formatExpiryDate(domain.expiry_date, { includeTime: false, dateDivider: '/' })}
           </p>
         )}

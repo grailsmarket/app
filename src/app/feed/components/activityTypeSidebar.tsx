@@ -74,17 +74,17 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   return (
     <aside
       className={cn(
-        'bg-background border-tertiary absolute top-0 bottom-0 left-0 z-40 flex w-full max-w-full flex-col overflow-hidden border-r-2 shadow-md transition-transform duration-300 md:w-[292px] md:min-w-[292px] lg:duration-100',
+        'bg-background border-tertiary absolute top-0 bottom-0 left-0 z-40 flex w-full max-w-full flex-col overflow-hidden border-r-2 shadow-md transition-transform duration-300 @[48rem]/app:w-[292px] @[48rem]/app:min-w-[292px] @[64rem]/app:duration-100',
         isOpen ? 'translate-x-0' : 'translate-x-[-110%]'
       )}
     >
       <div className='pt-md relative flex items-center justify-between'>
-        <div className='px-lg py-md flex w-full min-w-full justify-between transition-transform lg:min-w-[292px]'>
+        <div className='px-lg py-md flex w-full min-w-full justify-between transition-transform @[64rem]/app:min-w-[292px]'>
           <div className='flex items-center gap-2'>
             {/* <button
               type='button'
               onClick={onClose}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @[48rem]/app:h-10 @[48rem]/app:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button> */}
@@ -97,7 +97,7 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
             type='button'
             onClick={onClear}
             disabled={!canClear}
-            className='border-tertiary text-md hover:bg-secondary h-9 rounded-sm border px-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 md:h-10'
+            className='border-tertiary text-md hover:bg-secondary h-9 rounded-sm border px-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 @[48rem]/app:h-10'
           >
             Clear
           </button>

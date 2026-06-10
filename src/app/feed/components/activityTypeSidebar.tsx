@@ -11,6 +11,7 @@ import CategoryMultiSelect from './categoryMultiSelect'
 import { isAddress } from 'viem'
 import { truncateAddress } from 'ethereum-identity-kit'
 import { getMetadataAssetUrl } from '@/utils/web3/ens'
+import { useNavbar } from '@/context/navbar'
 
 export type FeedPlatformFilter = 'all' | 'grails' | 'opensea'
 
@@ -67,15 +68,19 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   canClear,
   onClear,
 }) => {
+  const { isNavbarVisible } = useNavbar()
   const handlePriceChange = (value: string, onChange: (value: string) => void) => {
     if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) onChange(value)
   }
 
+  const offsetClassName = isNavbarVisible ? 'md:top-[130px] top-[58px]' : 'md:top-[72px] top-[56px]'
+
   return (
     <aside
       className={cn(
-        'bg-background border-tertiary absolute top-0 bottom-0 left-0 z-40 flex w-full max-w-full flex-col overflow-hidden border-r-2 shadow-md transition-transform duration-300 @[48rem]/app:w-[292px] @[48rem]/app:min-w-[292px] @[64rem]/app:duration-100',
-        isOpen ? 'translate-x-0' : 'translate-x-[-110%]'
+        'bg-background border-tertiary fixed left-0 z-40 flex h-[calc(100dvh-58px)] w-full max-w-full flex-col overflow-y-scroll border-r-2 pb-2 shadow-md transition-transform duration-300 md:h-[calc(100dvh-130px)] @[48rem]/app:w-[292px] @[48rem]/app:min-w-[292px] @[64rem]/app:duration-100',
+        isOpen ? 'translate-x-0' : 'translate-x-[-110%]',
+        offsetClassName
       )}
     >
       <div className='pt-md relative flex items-center justify-between'>
@@ -97,13 +102,13 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
             type='button'
             onClick={onClear}
             disabled={!canClear}
-            className='border-tertiary text-md hover:bg-secondary h-9 rounded-sm border px-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 @[48rem]/app:h-10'
+            className='border-tertiary bg-tertiary text-md hover:bg-secondary h-9 cursor-pointer rounded-sm border px-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 @[48rem]/app:h-10'
           >
             Clear
           </button>
         </div>
       </div>
-      <div className='bg-dark-700 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto'>
+      <div className='bg-dark-700 flex h-fit flex-1 flex-col gap-2'>
         {(showCommentFilters || showActivityFilters) && (
           <div className='flex flex-col gap-4 p-3'>
             <div className='flex flex-col gap-2'>

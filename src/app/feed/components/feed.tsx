@@ -77,7 +77,7 @@ const Feed: React.FC = () => {
         onTabChange={setSelectedTab}
         selectedFilterCount={selectedFilterCount}
         filtersOpen={isFiltersOpen}
-        onToggleFilters={() => setIsFiltersOpen((isOpen) => !isOpen)}
+        onToggleFilters={() => setIsFiltersOpen(!isFiltersOpen)}
       />
 
       <div className='relative flex min-h-0 flex-1 flex-col @[64rem]/app:flex-row'>

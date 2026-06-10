@@ -29,6 +29,11 @@ export const useFeed = () => {
 
   const filters = selectors.filters as any
   const selectedTab = filters.selectedTab.value as FeedTabValue
+  const isFiltersOpen = filters.open as boolean
+
+  const setIsFiltersOpen = (open: boolean) => {
+    dispatch(actions.setFiltersOpen(open))
+  }
 
   const showComments = selectedTab !== 'activity'
   const showActivity = selectedTab !== 'comments'
@@ -47,7 +52,6 @@ export const useFeed = () => {
   const minPriceEth = filters.price.min === null ? '' : String(filters.price.min)
   const maxPriceEth = filters.price.max === null ? '' : String(filters.price.max)
 
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedName, setSelectedName] = useState<string | null>(null)
   const [replyContext, setReplyContext] = useState<ReplyContext | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)

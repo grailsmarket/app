@@ -6,8 +6,8 @@ import type { MarketFiltersState, PriceType } from '@/types/filters/name'
 import { ACTIVITY_TYPE_FILTERS } from './activity'
 
 export const FEED_TABS = [
-  { label: 'All', value: 'all' },
   { label: 'Trending', value: 'trending' },
+  { label: 'All', value: 'all' },
   { label: 'Comments', value: 'comments' },
   { label: 'Activity', value: 'activity' },
   { label: 'Watchlist', value: 'watchlist' },
@@ -30,7 +30,7 @@ export const DEFAULT_FEED_FILTERS_STATE: FeedFiltersState = {
 
 export const DEFAULT_FEED_FILTERS_OPENED_STATE: FeedFiltersOpenedState = {
   ...DEFAULT_FEED_FILTERS_STATE,
-  open: false,
+  open: true,
   scrollTop: 0,
 }
 

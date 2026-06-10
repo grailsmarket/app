@@ -12,6 +12,9 @@ import { isAddress } from 'viem'
 import { truncateAddress } from 'ethereum-identity-kit'
 import { getMetadataAssetUrl } from '@/utils/web3/ens'
 import { useNavbar } from '@/context/navbar'
+import { useAppDispatch } from '@/state/hooks'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
+import CloseIcon from 'public/icons/cross.svg'
 
 export type FeedPlatformFilter = 'all' | 'grails' | 'opensea'
 
@@ -21,7 +24,7 @@ const PLATFORM_FILTERS: { label: string; value: FeedPlatformFilter }[] = [
   { label: 'Opensea', value: 'opensea' },
 ]
 
-interface ActivityTypeSidebarProps {
+interface FilterSidebarProps {
   isOpen: boolean
   selectedTypes: ActivityTypeFilterType[]
   onToggleType: (type: ActivityTypeFilterType) => void
@@ -45,7 +48,7 @@ interface ActivityTypeSidebarProps {
   onClear: () => void
 }
 
-const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
+const FilterSidebar: React.FC<FilterSidebarProps> = ({
   isOpen,
   selectedTypes,
   onToggleType,
@@ -68,12 +71,14 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   canClear,
   onClear,
 }) => {
+  const dispatch = useAppDispatch()
+  const { actions } = useFilterRouter()
   const { isNavbarVisible } = useNavbar()
   const handlePriceChange = (value: string, onChange: (value: string) => void) => {
     if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) onChange(value)
   }
 
-  const offsetClassName = isNavbarVisible ? 'md:top-[130px] top-[58px]' : 'md:top-[72px] top-[56px]'
+  const offsetClassName = isNavbarVisible ? 'md:top-[130px] top-[56px]' : 'md:top-[72px] top-[56px]'
 
   return (
     <aside
@@ -91,13 +96,13 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
       <div className='pt-md relative flex items-center justify-between'>
         <div className='px-lg py-md flex w-full min-w-full justify-between transition-transform @[64rem]/app:min-w-[292px]'>
           <div className='flex items-center gap-2'>
-            {/* <button
+            <button
               type='button'
-              onClick={onClose}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @[48rem]/app:h-10 @[48rem]/app:w-10'
+              onClick={() => dispatch(actions.setFiltersOpen(false))}
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @[48rem]/app:hidden @[48rem]/app:h-10 @[48rem]/app:w-10'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
-            </button> */}
+            </button>
             <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
               <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
               <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
@@ -219,4 +224,4 @@ const ActivityTypeSidebar: React.FC<ActivityTypeSidebarProps> = ({
   )
 }
 
-export default ActivityTypeSidebar
+export default FilterSidebar

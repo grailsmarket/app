@@ -5,7 +5,7 @@ import { cn } from '@/utils/tailwind'
 import FeedFilters from './feedFilters'
 import FeedCommentCard from './feedCommentCard'
 import FeedActivityCard from './feedActivityCard'
-import ActivityTypeSidebar from './activityTypeSidebar'
+import FilterSidebar from './filterSidebar'
 import ReplyPreview from './replyPreview'
 import FeedComposer from './feedComposer'
 import FeedLoading from './feedLoading'
@@ -81,7 +81,7 @@ const Feed: React.FC = () => {
       />
 
       <div className='relative flex min-h-0 flex-1 flex-col @[64rem]/app:flex-row'>
-        <ActivityTypeSidebar
+        <FilterSidebar
           isOpen={isFiltersOpen}
           selectedTypes={selectedActivityTypes}
           onToggleType={toggleActivityType}

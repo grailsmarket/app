@@ -6,14 +6,14 @@ import AnimateIn from '@/components/ui/animateIn'
 
 const RecentContainer = () => {
   return (
-    <div className='flex w-full flex-row flex-wrap items-center justify-center gap-4 xl:flex-nowrap'>
-      <AnimateIn className='w-full lg:w-[calc(50%-8px)] xl:w-1/3' delay='100ms'>
+    <div className='flex w-full flex-row flex-wrap items-center justify-center gap-4 @[80rem]/app:flex-nowrap'>
+      <AnimateIn className='w-full @[64rem]/app:w-[calc(50%-8px)] @[80rem]/app:w-1/3' delay='100ms'>
         <Sales />
       </AnimateIn>
-      <AnimateIn className='w-full lg:w-[calc(50%-8px)] xl:w-1/3' delay='200ms'>
+      <AnimateIn className='w-full @[64rem]/app:w-[calc(50%-8px)] @[80rem]/app:w-1/3' delay='200ms'>
         <Premium />
       </AnimateIn>
-      <AnimateIn className='w-full xl:w-1/3' delay='300ms'>
+      <AnimateIn className='w-full @[80rem]/app:w-1/3' delay='300ms'>
         <Registrations />
       </AnimateIn>
     </div>

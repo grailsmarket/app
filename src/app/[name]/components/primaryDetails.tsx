@@ -146,7 +146,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   }
 
   return (
-    <div className='bg-secondary border-tertiary flex flex-col sm:rounded-lg sm:border-2'>
+    <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='bg-tertiary h-fit w-full'>
         {nameDetails?.token_id && (
           <NameImage
@@ -160,7 +160,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         {nameDetailsIsLoading && <LoadingCell height='100%' width='100%' className='aspect-square' />}
       </div>
 
-      <div className='p-lg flex flex-col items-center gap-3 lg:pt-5'>
+      <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>
         {REGISTERED_STATUSES.includes(registrationStatus) && (isOwner || !isSubname) && (
           <div className='flex w-full flex-row items-center justify-between gap-2'>
             {!isSubname && (
@@ -197,7 +197,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 <CartIcon
                   domain={nameDetails}
                   hasBorder={true}
-                  className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors md:min-h-10! md:min-w-10!'
+                  className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
                 />
               </button>
             )}
@@ -208,13 +208,13 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             value={nameDetails?.name ? beautifyName(nameDetails.name) : name}
             canCopy={true}
             truncateValue={false}
-            className='text-2xl font-bold md:text-3xl'
+            className='text-2xl font-bold @[48rem]/app:text-3xl'
             containerClassName='max-w-[calc(100%-52px)]!'
           />
           <Tooltip label='Refresh metadata' align='right' position='top'>
             <button
               type='button'
-              className='bg-tertiary hover:bg-foreground/15 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 md:h-10 md:w-10'
+              className='bg-tertiary hover:bg-foreground/15 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 @[48rem]/app:h-10 @[48rem]/app:w-10'
               onClick={refreshMetadata}
               disabled={isRefreshingMetadata || !nameDetails?.name}
               aria-label='Refresh metadata'
@@ -255,7 +255,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 )}
               </div>
               {nameDetails?.owner && (
-                <div className='pt-1 sm:hidden'>
+                <div className='pt-1 @[40rem]/app:hidden'>
                   <CopyValue
                     value={nameDetails.owner}
                     canCopy={true}
@@ -273,7 +273,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             <LoadingCell height='20px' width='110px' />
           ) : (
             nameDetails?.owner && (
-              <div className='hidden sm:block'>
+              <div className='hidden @[40rem]/app:block'>
                 <CopyValue value={nameDetails.owner} canCopy={true} truncateValue={true} className='text-neutral' />
               </div>
             )
@@ -329,15 +329,21 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         </div>
         <div className='flex w-full flex-row gap-2'>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://app.ens.domains/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
             }}
           >
-            <Image src={ENS_LOGO} alt='ENS Logo' width={28} height={28} className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5' />
+            <Image
+              src={ENS_LOGO}
+              alt='ENS Logo'
+              width={28}
+              height={28}
+              className='h-7.5 w-7.5 @[40rem]/app:h-8.5 @[40rem]/app:w-8.5'
+            />
           </button>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
                 `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
@@ -350,11 +356,11 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               alt='Opensea Logo'
               width={28}
               height={28}
-              className='h-7.5 w-7.5 sm:h-8.5 sm:w-8.5'
+              className='h-7.5 w-7.5 @[40rem]/app:h-8.5 @[40rem]/app:w-8.5'
             />
           </button>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#895a01] hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#895a01] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(`https://ensvision.com/name/${name}`, '_blank')
             }}
@@ -364,11 +370,11 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
               alt='ENS Vision Logo'
               width={28}
               height={28}
-              className='h-6 w-6 sm:h-7 sm:w-7'
+              className='h-6 w-6 @[40rem]/app:h-7 @[40rem]/app:w-7'
             />
           </button>
           <button
-            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 sm:h-10'
+            className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
                 `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,

@@ -108,7 +108,7 @@ const Price: React.FC<PriceProps> = ({
         </Tooltip>
         {expiry_date && (
           <p className='text-md text-neutral font-semibold'>
-            <span className='xs:inline hidden'>Expiry</span>{' '}
+            <span className='hidden @[26.25rem]/app:inline'>Expiry</span>{' '}
             {formatExpiryDate(expiry_date, { includeTime: false, dateDivider: '/' })}
           </p>
         )}
@@ -133,15 +133,15 @@ const Price: React.FC<PriceProps> = ({
                 position={index === 0 ? 'bottom' : 'top'}
                 align='left'
               >
-                <p className='bg-primary/20 text-primary hover:bg-primary/30 rounded-sm px-1 py-0.5 text-xs font-semibold transition-colors sm:px-1.5'>
-                  Broker<span className='hidden sm:inline'>ed</span>
+                <p className='bg-primary/20 text-primary hover:bg-primary/30 rounded-sm px-1 py-0.5 text-xs font-semibold transition-colors @[40rem]/app:px-1.5'>
+                  Broker<span className='hidden @[40rem]/app:inline'>ed</span>
                 </p>
               </Tooltip>
             )}
           </div>
           {listing.expires_at && (
             <p className='text-md text-neutral'>
-              <span className='xs:inline hidden'>Ends</span>{' '}
+              <span className='hidden @[26.25rem]/app:inline'>Ends</span>{' '}
               {formatExpiryDate(listing.expires_at, { includeTime: false, dateDivider: '/' })}
             </p>
           )}

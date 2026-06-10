@@ -215,7 +215,7 @@ const Actions: React.FC<ActionsProps> = ({
     if (domainListing?.price) {
       return (
         <>
-          <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+          <div className={cn('hidden flex-row justify-end gap-2 opacity-100 @[40rem]/app:flex', width)}>
             <SecondaryButton
               className='border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 bg-transparent text-lg font-bold'
               onClick={(e) => openListModal(e, true)}
@@ -229,7 +229,7 @@ const Actions: React.FC<ActionsProps> = ({
               Cancel
             </SecondaryButton>
           </div>
-          <div className={cn('flex flex-row justify-end sm:hidden', width)}>
+          <div className={cn('flex flex-row justify-end @[40rem]/app:hidden', width)}>
             <SecondaryButton
               onClick={(e) => {
                 e.preventDefault()
@@ -246,7 +246,7 @@ const Actions: React.FC<ActionsProps> = ({
 
     if (registrationStatus !== GRACE_PERIOD) {
       return (
-        <div className={cn('hidden flex-row justify-end gap-2 opacity-100 sm:flex', width)}>
+        <div className={cn('hidden flex-row justify-end gap-2 opacity-100 @[40rem]/app:flex', width)}>
           <PrimaryButton
             onClick={(e) => openListModal(e, false)}
             className={cn(
@@ -310,9 +310,9 @@ const Actions: React.FC<ActionsProps> = ({
           <PrimaryButton
             disabled={availableAction.disabled}
             className={cn(
-              'border-primary/80 text-background bg-primary hover:bg-primary/80 flex h-9! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-l-2! p-0! text-nowrap hover:opacity-100 sm:w-18! sm:max-w-18! sm:min-w-18!',
-              availableAction.label !== 'Reg' ? 'hidden md:block' : '',
-              watchlistId ? 'hidden sm:block' : ''
+              'border-primary/80 text-background bg-primary hover:bg-primary/80 flex h-9! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-l-2! p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-18! @[40rem]/app:max-w-18! @[40rem]/app:min-w-18!',
+              availableAction.label !== 'Reg' ? 'hidden @[48rem]/app:block' : '',
+              watchlistId ? 'hidden @[40rem]/app:block' : ''
             )}
             onClick={availableAction.onClick}
           >

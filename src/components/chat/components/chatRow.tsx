@@ -95,6 +95,8 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
                 top: 0,
                 left: 0,
                 opacity: 0.15,
+                borderTopLeftRadius: '0px',
+                borderTopRightRadius: '0px',
               }}
             />
           )}

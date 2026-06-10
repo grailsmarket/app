@@ -211,13 +211,13 @@ const Card: React.FC<CardProps> = ({
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 md:opacity-80',
+        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 @[48rem]/app:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
         backgroundColor,
         className
       )}
     >
-      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md'>
+      <div className='relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-[228px]'>
         {isHomeCarousel ? (
           <Image
             src={`${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}

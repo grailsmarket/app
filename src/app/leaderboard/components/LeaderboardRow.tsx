@@ -7,7 +7,8 @@ import type { LeaderboardSortBy, LeaderboardUser } from '@/types/leaderboard'
 import User from '@/components/ui/user'
 import Price from '@/components/ui/price'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
-import { useWindowSize, useIsClient, FollowButton, ShortArrow } from 'ethereum-identity-kit'
+import { useIsClient, FollowButton, ShortArrow } from 'ethereum-identity-kit'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { cn } from '@/utils/tailwind'
@@ -27,7 +28,7 @@ const MAX_VISIBLE_CATEGORIES = 10
 
 const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, sortBy }) => {
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const width = useAppContainerWidth()
   const { categories } = useCategories()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
@@ -50,17 +51,17 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
     <Link
       href={`/profile/${user.address}`}
       className={cn(
-        'group border-tertiary hover:bg-foreground/10 px-sm sm:px-md lg:px-lg hidden h-[60px] w-full flex-row items-center border-b transition md:flex',
+        'group border-tertiary hover:bg-foreground/10 px-sm @[40rem]/app:px-md @[64rem]/app:px-lg hidden h-[60px] w-full flex-row items-center border-b transition @[48rem]/app:flex',
         className
       )}
     >
       {/* Rank */}
-      <div className='text-neutral xs:min-w-[36px] w-[5%] min-w-[30px] text-center text-base font-medium sm:min-w-[40px]'>
+      <div className='text-neutral w-[5%] min-w-[30px] text-center text-base font-medium @[26.25rem]/app:min-w-[36px] @[40rem]/app:min-w-[40px]'>
         {rank}
       </div>
 
       {/* User */}
-      <div className='flex w-[25%] flex-row items-center gap-3 lg:w-[20%]'>
+      <div className='flex w-[25%] flex-row items-center gap-3 @[64rem]/app:w-[20%]'>
         <User
           address={user.address}
           alignTooltip='left'
@@ -74,32 +75,32 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
       </div>
 
       {/* Names Owned */}
-      <div className='flex w-[12.5%] items-center lg:w-[8%]'>
+      <div className='flex w-[12.5%] items-center @[64rem]/app:w-[8%]'>
         <span className='text-base font-medium'>{user.names_owned.toLocaleString()}</span>
       </div>
 
       {/* Category Names */}
-      <div className='flex w-[12.5%] items-center lg:w-[8%]'>
+      <div className='flex w-[12.5%] items-center @[64rem]/app:w-[8%]'>
         <span className='text-base font-medium'>{user.names_in_clubs.toLocaleString()}</span>
       </div>
 
       {/* Listed Names */}
-      <div className='flex w-[12.5%] items-center lg:w-[8%]'>
+      <div className='flex w-[12.5%] items-center @[64rem]/app:w-[8%]'>
         <span className='text-base font-medium'>{user.names_listed.toLocaleString()}</span>
       </div>
 
       {/* Sold Names */}
-      <div className='hidden w-[8%] items-center lg:flex'>
+      <div className='hidden w-[8%] items-center @[64rem]/app:flex'>
         <span className='text-base font-medium'>{user.names_sold.toLocaleString()}</span>
       </div>
 
       {/* Expired */}
-      <div className='hidden w-[8%] items-center lg:flex'>
+      <div className='hidden w-[8%] items-center @[64rem]/app:flex'>
         <span className='text-base font-medium'>{user.expired_names.toLocaleString()}</span>
       </div>
 
       {/* Sales Vol */}
-      <div className='hidden w-[10%] items-center lg:flex'>
+      <div className='hidden w-[10%] items-center @[64rem]/app:flex'>
         <Price
           price={user.sales_volume}
           currencyAddress={ETH_ADDRESS}
@@ -109,7 +110,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
       </div>
 
       {/* Categories */}
-      <div className='flex w-[20%] items-center gap-0.5 lg:w-[17%] lg:gap-1'>
+      <div className='flex w-[20%] items-center gap-0.5 @[64rem]/app:w-[17%] @[64rem]/app:gap-1'>
         <div className='flex items-center -space-x-1.5'>
           {visibleCategories.map((club) => {
             const categoryDetails = getCategoryDetails(club)
@@ -136,7 +137,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
 
       {/* Follow Button */}
       <div
-        className='hidden w-[5%] min-w-[120px] justify-end sm:flex'
+        className='hidden w-[5%] min-w-[120px] justify-end @[40rem]/app:flex'
         onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()
@@ -173,11 +174,11 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
 
   // Mobile row (< md)
   const mobileRow = (
-    <div ref={clickawayMobileRef} className={cn('relative w-full md:hidden', className)}>
+    <div ref={clickawayMobileRef} className={cn('relative w-full @[48rem]/app:hidden', className)}>
       {/* Compact row */}
       <div
         className={cn(
-          'border-tertiary px-sm sm:px-md active:bg-foreground/5 flex h-[60px] w-full cursor-pointer flex-row items-center border-b transition',
+          'border-tertiary px-sm @[40rem]/app:px-md active:bg-foreground/5 flex h-[60px] w-full cursor-pointer flex-row items-center border-b transition',
           isExpanded && 'border-b-0'
         )}
         onClick={() => setIsExpanded(!isExpanded)}

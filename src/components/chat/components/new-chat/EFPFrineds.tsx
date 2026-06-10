@@ -92,6 +92,8 @@ const FriendRow: React.FC<FriendRowProps> = ({ friend, submit, createChatIsPendi
             top: 0,
             left: 0,
             opacity: 0.15,
+            borderTopLeftRadius: '0px',
+            borderTopRightRadius: '0px',
           }}
         />
       )}

@@ -7,7 +7,7 @@ import {
   clearCategoriesPageFilters,
   setCategoriesPageSearch,
 } from '@/state/reducers/filters/categoriesPageFilters'
-import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Cross, useIsClient } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import FilterIcon from 'public/icons/filter.svg'
 import { useNavbar } from '@/context/navbar'
@@ -18,10 +18,11 @@ import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
 import ViewSelector from '@/components/domains/viewSelector'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const dispatch = useAppDispatch()
   const filters = useAppSelector(selectCategoriesPageFilters)
   const filterPanel = useAppSelector(selectFilterPanel)
@@ -29,9 +30,9 @@ const CategoriesFilterPanel: React.FC = () => {
   const isFiltersClear = filters.type === null
   const { isNavbarVisible } = useNavbar()
 
-  if (!isClient || !windowWidth) return null
+  if (!isClient || !responsiveWidth) return null
 
-  const isMobile = windowWidth < 1024
+  const isMobile = responsiveWidth < 1024
   const isOpen = filtersOpen
 
   const handleClose = () => {
@@ -54,32 +55,30 @@ const CategoriesFilterPanel: React.FC = () => {
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
-        isMobile && 'fixed left-0 w-full shadow-md md:max-w-[292px] md:min-w-[292px]',
-        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-[100dvh] w-full'),
+        isMobile &&
+          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0))] shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
+        isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
-        isMobile && (isOpen ? 'translate-x-0' : '-translate-x-[100%]'),
+        isMobile && (isOpen ? 'translate-x-0' : 'translate-x-[-110%]'),
         // Desktop styles
         !isMobile && 'sticky',
-        !isMobile &&
-          (isNavbarVisible
-            ? 'top-26 h-[calc(100dvh-104px)] md:top-[130px] md:h-[calc(100dvh-130px)]'
-            : 'top-[50px] h-[calc(100dvh-50px)] md:top-[58px] md:h-[calc(100dvh-58px)]'),
+        !isMobile && (isNavbarVisible ? 'top-[130px] h-[calc(100dvh-130px)]' : 'top-[58px] h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
-        isOpen ? 'md:border-r-2' : 'w-0'
+        isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
       )}
     >
       <div
         className={cn(
-          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 lg:relative lg:duration-100',
-          isOpen ? 'w-full overflow-x-hidden lg:w-[292px]' : 'w-0 lg:z-0 lg:w-[56px]'
+          'left-0 z-40 flex flex-col gap-y-px transition-[width] duration-300 @[64rem]/app:relative @[64rem]/app:duration-100',
+          isOpen ? 'w-full overflow-x-hidden @[64rem]/app:w-[292px]' : 'w-0 @[64rem]/app:z-0 @[64rem]/app:w-[56px]'
         )}
       >
         {/* Header */}
         <div className='pt-md relative flex items-center justify-between'>
-          <div className='px-md sm:px-lg py-md flex w-full min-w-full justify-between lg:min-w-[292px]'>
+          <div className='px-md @[40rem]/app:px-lg py-md flex w-full min-w-full justify-between @[64rem]/app:min-w-[292px]'>
             <button
               onClick={handleClose}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 md:h-10 md:w-10 lg:hidden'
+              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @max-[64rem]/app:flex @[48rem]/app:h-10 @[48rem]/app:w-10 @[64rem]/app:hidden'
             >
               <Image src={CloseIcon} alt='Close' width={16} height={16} />
             </button>
@@ -91,7 +90,7 @@ const CategoriesFilterPanel: React.FC = () => {
               <SecondaryButton onClick={handleClearFilters} disabled={isFiltersClear}>
                 Clear
               </SecondaryButton>
-              <span className='flex items-center gap-2 md:hidden'>
+              <span className='flex items-center gap-2 @[48rem]/app:hidden'>
                 <ViewSelector />
               </span>
             </div>
@@ -100,8 +99,8 @@ const CategoriesFilterPanel: React.FC = () => {
       </div>
 
       <div className='flex-1 overflow-x-hidden overflow-y-auto'>
-        <div className='px-md sm:px-lg py-md flex w-full flex-col gap-2'>
-          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
+        <div className='px-md @[40rem]/app:px-lg py-md flex w-full flex-col gap-2'>
+          <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[40rem]/app:h-10'>
             <input
               type='text'
               placeholder='Search categories'

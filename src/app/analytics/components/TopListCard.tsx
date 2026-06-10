@@ -35,7 +35,7 @@ const LoadingSkeleton = () => (
         <LoadingCell width='100px' height='20px' />
         <div className='flex-1' />
         <LoadingCell width='60px' height='20px' />
-        <LoadingCell width='80px' height='28px' className='hidden sm:block' />
+        <LoadingCell width='80px' height='28px' className='hidden @[40rem]/app:block' />
       </div>
     ))}
   </div>
@@ -78,8 +78,8 @@ const TopListCard: React.FC<TopListCardProps> = ({
   )
 
   return (
-    <div className='border-tertiary flex flex-col border-b last:border-r-0 xl:border-r-2 xl:border-b-0'>
-      <div className='bg-secondary flex items-center justify-between px-2 py-3 sm:px-4 xl:bg-transparent'>
+    <div className='border-tertiary flex flex-col border-b last:border-r-0 @[80rem]/app:border-r-2 @[80rem]/app:border-b-0'>
+      <div className='bg-secondary flex items-center justify-between px-2 py-3 @[40rem]/app:px-4 @[80rem]/app:bg-transparent'>
         <h3 className='text-xl font-bold'>{title}</h3>
         <div className='text-md text-neutral font-medium'>
           {chartLoading ? (

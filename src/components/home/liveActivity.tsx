@@ -6,7 +6,8 @@ import { NameActivityType } from '@/types/domains'
 import { fetchAllActivity } from '@/api/activity/all'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { API_URL } from '@/constants/api'
-import { Arrow, useWindowSize } from 'ethereum-identity-kit'
+import { Arrow } from 'ethereum-identity-kit'
+import { useAppContainerWidth } from '@/hooks/useAppContainerWidth'
 import { useRouter } from 'next/navigation'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
@@ -16,7 +17,7 @@ const LiveActivity = () => {
   const [liveActivities, setLiveActivities] = useState<NameActivityType[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const router = useRouter()
-  const { width } = useWindowSize()
+  const width = useAppContainerWidth()
   const dispatch = useAppDispatch()
   const wsRef = useRef<WebSocket | null>(null)
 
@@ -112,15 +113,15 @@ const LiveActivity = () => {
   const isActivityLoading = isLoadingHistoricalActivities || isFetchingNextPageHistoricalActivities
 
   return (
-    <div className='bg-secondary pt-sm border-tertiary h-[502px] w-full overflow-hidden rounded-md border-2 sm:h-[502px] lg:h-[518px] lg:max-w-[700px] lg:overflow-visible'>
-      <div className='pt-md p-md lg:p-lg flex items-center justify-between'>
+    <div className='bg-secondary pt-sm border-tertiary h-[502px] w-full overflow-hidden rounded-md border-2 @[40rem]/app:h-[502px] @[64rem]/app:h-[518px] @[64rem]/app:max-w-[700px] @[64rem]/app:overflow-visible'>
+      <div className='pt-md p-md @[64rem]/app:p-lg flex items-center justify-between'>
         <div className='flex items-center gap-4'>
           <h2 className='text-2xl font-bold text-white'>Live Activity</h2>
-          <div className='flex items-center justify-end gap-1 sm:gap-2'>
+          <div className='flex items-center justify-end gap-1 @[40rem]/app:gap-2'>
             <div
               className={`h-2.5 w-2.5 animate-pulse rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}
             ></div>
-            <span className='text-md text-right font-medium sm:text-lg'>
+            <span className='text-md text-right font-medium @[40rem]/app:text-lg'>
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
           </div>
@@ -129,7 +130,7 @@ const LiveActivity = () => {
           className='flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-80'
           onClick={handleViewAll}
         >
-          <p className='text-md text-primary text-right font-semibold sm:text-lg'>View All</p>
+          <p className='text-md text-primary text-right font-semibold @[40rem]/app:text-lg'>View All</p>
           <Arrow className='text-primary h-3 w-3 rotate-180' />
         </button>
       </div>

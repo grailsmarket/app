@@ -52,10 +52,10 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
           type='button'
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
-          <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
+          <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
             <span className='text-neutral text-md'>Sort:</span>&nbsp;{displayLabel}
           </p>
           <ShortArrow className={cn('h-3 w-3 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
@@ -68,7 +68,7 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
                 key={type}
                 onClick={() => handleTypeSelect(type)}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   sort === type && 'bg-secondary'
                 )}
               >
@@ -83,7 +83,7 @@ const CategoriesSortDropdown: React.FC<CategoriesSortDropdownProps> = ({ classNa
         type='button'
         onClick={handleDirectionToggle}
         className={cn(
-          'border-tertiary hover:border-foreground/50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-[2px] transition-all sm:h-10 sm:w-10'
+          'border-tertiary hover:border-foreground/50 flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-2 transition-all @[40rem]/app:h-10 @[40rem]/app:w-10'
         )}
         aria-label={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
       >

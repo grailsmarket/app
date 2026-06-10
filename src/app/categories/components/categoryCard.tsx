@@ -170,15 +170,17 @@ const CategoryCard = ({ category, reduceColumns = false, sort }: CategoryCardPro
         <div className='z-10 flex items-center gap-3'>
           <Image src={categoryAvatar} alt={category.display_name} width={60} height={60} className='rounded-full' />
           <div className='flex flex-col'>
-            <h3 className='text-2xl font-bold md:text-2xl'>{category.display_name}</h3>
+            <h3 className='text-2xl font-bold @[48rem]/app:text-2xl'>{category.display_name}</h3>
             <p className='text-neutral text-xl font-medium'>{category.description}</p>
           </div>
         </div>
       </div>
       <div
         className={cn(
-          'p-md sm:p-lg grid gap-4 gap-y-4 sm:gap-y-6',
-          reduceColumns ? 'grid-cols-2 md:grid-cols-2 2xl:grid-cols-3' : '4xl:grid-cols-4 grid-cols-3'
+          'p-md @[40rem]/app:p-lg grid gap-4 gap-y-4 @[40rem]/app:gap-y-6',
+          reduceColumns
+            ? 'grid-cols-2 @[48rem]/app:grid-cols-2 @[96rem]/app:grid-cols-3'
+            : 'grid-cols-3 @[125rem]/app:grid-cols-4'
         )}
       >
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
@@ -238,7 +240,7 @@ const CategoryCard = ({ category, reduceColumns = false, sort }: CategoryCardPro
           </span>
           {localizeNumber(category.registered_count + category.grace_count)}
           </p>
-          <p className='font-sedan-sc text-xl md:text-2xl'>
+          <p className='font-sedan-sc text-xl @[48rem]/app:text-2xl'>
             Reg+<span className='text-grace'>Grace</span>
           </p>
         </div> */}

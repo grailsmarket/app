@@ -17,15 +17,15 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
   const { domains, isLoading, loadingPhase, suggestionsStatus } = useSimilarNames(name)
 
   return (
-    <div className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'>
-      <div className='px-lg xl:px-xl flex items-center justify-between'>
+    <div className='@[40rem]/app:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 @[40rem]/app:rounded-lg @[40rem]/app:border-2 @[64rem]/app:gap-2'>
+      <div className='px-lg @[80rem]/app:px-xl flex items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Recommended</h2>
         <span className='text-neutral text-lg'>✨ GrailsAI</span>
       </div>
 
       <div className='relative w-full'>
         {suggestionsStatus === 'login_required' ? (
-          <div className='text-neutral py-2xl flex w-full items-center justify-center px-4 text-center text-base sm:text-lg'>
+          <div className='text-neutral py-2xl flex w-full items-center justify-center px-4 text-center text-base @[40rem]/app:text-lg'>
             Sign in to generate AI recommendations for this name.
           </div>
         ) : isLoading ? (
@@ -37,7 +37,7 @@ const SimilarNames: React.FC<Props> = ({ name }) => {
           </div>
         ) : domains.length > 0 ? (
           <>
-            <div className='border-tertiary px-md md:p-md lg:p-lg flex h-[40px] w-full flex-row items-center justify-between border-b'>
+            <div className='border-tertiary px-md @[48rem]/app:p-md @[64rem]/app:p-lg flex h-[40px] w-full flex-row items-center justify-between border-b'>
               {SIMILAR_NAMES_COLUMNS.map((column) => (
                 <div
                   key={column}

@@ -164,6 +164,12 @@ import {
   categoriesActivityFiltersActions,
 } from '@/state/reducers/filters/categoriesActivityFilters'
 
+import {
+  emptyFilterState as emptyFilterStateFeedFilters,
+  selectFeedFilters,
+  FeedFilterActions,
+} from '@/state/reducers/filters/feedFilters'
+
 export function useFilterRouter(): FilterRouter {
   const { filterType } = useFilterContext()
   const profileState = useAppSelector(selectUserProfile)
@@ -180,6 +186,7 @@ export function useFilterRouter(): FilterRouter {
   const activeCategoriesPageTab = categoriesPageState.categoriesPage.selectedTab?.value || 'categories'
   // Determine which tab is active in bulkSearch
   const activeBulkSearchTab = bulkSearchState.selectedTab?.value || 'names'
+  const activeFeedTab = useAppSelector((state: RootState) => selectFeedFilters(state).selectedTab.value)
 
   const activeTab = useMemo(() => {
     switch (filterType) {
@@ -189,15 +196,21 @@ export function useFilterRouter(): FilterRouter {
         return activeCategoryTab
       case 'marketplace':
         return activeMarketplaceTab
+      case 'feed':
+        return activeFeedTab
       default:
         return 'names'
     }
-  }, [filterType, activeBulkSearchTab, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab])
+  }, [filterType, activeBulkSearchTab, activeCategoriesPageTab, activeCategoryTab, activeMarketplaceTab, activeFeedTab])
 
   // Select appropriate filters depending on context
   const filters = useAppSelector((state: RootState) => {
     if (filterType === 'bulkSearch') {
       return selectBulkSearchFilters(state)
+    }
+
+    if (filterType === 'feed') {
+      return selectFeedFilters(state)
     }
 
     if (filterType === 'categoriesPage') {
@@ -285,6 +298,10 @@ export function useFilterRouter(): FilterRouter {
       return BulkSearchFilterActions
     }
 
+    if (filterType === 'feed') {
+      return FeedFilterActions
+    }
+
     if (filterType === 'categoriesPage') {
       switch (activeCategoriesPageTab) {
         case 'categories':
@@ -369,11 +386,16 @@ export function useFilterRouter(): FilterRouter {
     activeCategoryTab,
     activeCategoriesPageTab,
     activeBulkSearchTab,
+    activeFeedTab,
   ])
 
   const emptyFilterState = useMemo(() => {
     if (filterType === 'bulkSearch') {
       return emptyFilterStateBulkSearchFilters
+    }
+
+    if (filterType === 'feed') {
+      return emptyFilterStateFeedFilters
     }
 
     if (filterType === 'categoriesPage') {
@@ -460,13 +482,15 @@ export function useFilterRouter(): FilterRouter {
     activeCategoryTab,
     activeCategoriesPageTab,
     activeBulkSearchTab,
+    activeFeedTab,
   ])
 
   const isFiltersClear = useMemo(() => {
     const filtersWithoutOpen = _.omit(filters, 'open')
     const filtersWithoutScrollTop = _.omit(filtersWithoutOpen, 'scrollTop')
+    const filtersWithoutSelectedTab = _.omit(filtersWithoutScrollTop, 'selectedTab')
     // console.log(filtersWithoutScrollTop, emptyFilterState)
-    return _.isEqual(filtersWithoutScrollTop, emptyFilterState)
+    return _.isEqual(filtersWithoutSelectedTab, _.omit(emptyFilterState, 'selectedTab'))
   }, [filters, emptyFilterState])
 
   return {
@@ -488,6 +512,7 @@ export function useFilterRouter(): FilterRouter {
     categoryTab: categoryState.selectedTab,
     categoriesPageTab: categoriesPageState.categoriesPage.selectedTab,
     bulkSearchTab: bulkSearchState.selectedTab,
+    feedTab: filterType === 'feed' ? (filters as any).selectedTab : undefined,
     activeTab,
     isFiltersClear,
   }

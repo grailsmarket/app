@@ -151,7 +151,7 @@ const ThreadView: React.FC = () => {
 
   return (
     <>
-      <div className='border-tertiary relative flex items-center justify-between gap-2 border-b-2 p-3'>
+      <div className='border-tertiary relative flex h-14.5 items-center justify-between gap-2 border-b-2 pr-3 pl-4'>
         {peerProfile?.records['header'] && (
           <HeaderImage
             name={peerProfile?.ensName ?? undefined}
@@ -165,6 +165,8 @@ const ThreadView: React.FC = () => {
               top: 0,
               left: 0,
               opacity: 0.15,
+              borderTopLeftRadius: '0px',
+              borderTopRightRadius: '0px',
             }}
           />
         )}

@@ -20,16 +20,16 @@ const CategoriesPanel: React.FC = () => {
   const clientViewType = isClient ? viewType : 'list'
 
   const gridClasses = cn(
-    'grid gap-2 md:gap-4',
+    'grid gap-2 @[48rem]/app:gap-4',
     clientViewType === 'list' && isOpen
-      ? '3xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
-      : '4xl:grid-cols-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+      ? '@[109.375rem]/app:grid-cols-4 grid-cols-1 @[48rem]/app:grid-cols-2 @[80rem]/app:grid-cols-2 @[96rem]/app:grid-cols-3'
+      : '@[125rem]/app:grid-cols-4 grid-cols-1 @[64rem]/app:grid-cols-2 @[80rem]/app:grid-cols-3 @[96rem]/app:grid-cols-4'
   )
 
   return (
     <div className='z-0 flex w-full flex-col'>
       {/* Categories grid/list */}
-      <div className={cn('py-lg', clientViewType === 'list' ? 'p-0!' : 'px-md lg:px-lg')}>
+      <div className={cn('py-lg', clientViewType === 'list' ? 'p-0!' : 'px-md @[64rem]/app:px-lg')}>
         {isLoading ? (
           clientViewType === 'list' ? (
             <div className='flex flex-col'>

@@ -37,7 +37,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
 
   const setCategoryTab = (tab: CategoryTabType) => {
-    if (tab.value === 'analytics' || tab.value === 'holders') {
+    if (tab.value === 'analytics' || tab.value === 'holders' || tab.value === 'comments') {
       dispatch(actions.setFiltersOpen(false))
     }
 
@@ -95,7 +95,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   )
 
   const disableFilterButton = useMemo(() => {
-    return selectedTab.value === 'analytics' || selectedTab.value === 'holders'
+    return selectedTab.value === 'analytics' || selectedTab.value === 'holders' || selectedTab.value === 'comments'
   }, [selectedTab])
 
   // During SSR and initial mount, render all tabs without active state
@@ -141,7 +141,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
                   )}
                 >
                   <p>{tab.label}</p>
-                  {tab.value !== 'activity' && tab.value !== 'analytics' && (
+                  {tab.value !== 'activity' && tab.value !== 'analytics' && tab.value !== 'comments' && (
                     <Label
                       label={getTotalItems(tab)}
                       className={cn(
@@ -156,10 +156,10 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
           </div>
         </div>
         <div className='hidden items-center @[48rem]/app:flex'>
-          {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && (
+          {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && selectedTab.value !== 'comments' && (
             <DownloadButton category={category} />
           )}
-          <ViewSelector />
+          {selectedTab.value !== 'comments' && <ViewSelector />}
         </div>
       </div>
     )
@@ -206,7 +206,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
               )}
             >
               <p>{tab.label}</p>
-              {tab.value !== 'activity' && tab.value !== 'analytics' && (
+              {tab.value !== 'activity' && tab.value !== 'analytics' && tab.value !== 'comments' && (
                 <Label
                   label={getTotalItems(tab)}
                   className={cn(
@@ -220,8 +220,10 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
         </div>
       </div>
       <div className='hidden items-center @[48rem]/app:flex'>
-        {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && <DownloadButton category={category} />}
-        <ViewSelector />
+        {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && selectedTab.value !== 'comments' && (
+          <DownloadButton category={category} />
+        )}
+        {selectedTab.value !== 'comments' && <ViewSelector />}
       </div>
     </div>
   )

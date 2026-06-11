@@ -157,10 +157,10 @@ const Feed: React.FC = () => {
                         Load older feed events
                       </button>
                     )}
-                    {feedItems.map((item) =>
+                    {feedItems.map((item, index) =>
                       item.kind === 'comment' ? (
                         <FeedCommentCard
-                          key={`comment-${item.id}`}
+                          key={`comment-${item.id}-${index}`}
                           comment={{
                             id: item.id,
                             ens_name_id: item.ens_name_id,
@@ -178,7 +178,7 @@ const Feed: React.FC = () => {
                         />
                       ) : (
                         <FeedActivityCard
-                          key={`activity-${item.id}`}
+                          key={`activity-${item.id}-${index}`}
                           activity={{
                             id: item.id,
                             ens_name_id: item.ens_name_id,

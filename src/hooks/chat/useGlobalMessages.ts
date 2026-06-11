@@ -29,6 +29,7 @@ export const useGlobalMessages = () => {
       getGlobalMessages({
         before: pageParam ?? undefined,
         limit: PAGE_SIZE,
+        isAuthenticated: authStatus === 'authenticated',
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,

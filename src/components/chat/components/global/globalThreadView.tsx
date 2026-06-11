@@ -10,9 +10,9 @@ import { closeChatSidebar, openSidebarToList } from '@/state/reducers/chat/sideb
 import { useGlobalMessages } from '@/hooks/chat/useGlobalMessages'
 import { useOnlineUsers } from '@/hooks/chat/useOnlineUsers'
 import { useUserContext } from '@/context/user'
-import LoadingCell from '@/components/ui/loadingCell'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import GlobalMessageRow from './globalMessageRow'
+import GlobalMessageRowSkeleton from './globalMessageRowSkeleton'
 import GlobalComposer from './globalComposer'
 import OnlinePanel from './onlinePanel'
 import DayDivider from '../chat/dayDivider'
@@ -64,7 +64,7 @@ const GlobalThreadView: React.FC = () => {
 
   return (
     <>
-      <div className='border-tertiary relative flex items-center justify-between gap-2 border-b-2 p-3'>
+      <div className='border-tertiary relative flex h-14.5 items-center justify-between gap-2 border-b-2 px-3'>
         <button
           onClick={() => dispatch(openSidebarToList())}
           className='hover:bg-primary/10 rounded-md p-1 transition-colors'
@@ -99,9 +99,9 @@ const GlobalThreadView: React.FC = () => {
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
         {msgsLoading ? (
-          <div className='flex flex-col gap-2'>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <LoadingCell key={i} height='32px' width={i % 2 === 0 ? '60%' : '50%'} />
+          <div className='flex flex-col gap-1'>
+            {['65%', '45%', '55%', '70%', '40%', '60%'].map((width, i) => (
+              <GlobalMessageRowSkeleton key={i} showHeader={i % 3 === 0} bodyWidth={width} />
             ))}
           </div>
         ) : messages.length === 0 ? (
@@ -109,8 +109,10 @@ const GlobalThreadView: React.FC = () => {
         ) : (
           <div className='flex flex-col gap-1'>
             {isFetchingNextPage && (
-              <div className='py-2 text-center'>
-                <span className='text-neutral text-sm'>Loading older messages…</span>
+              <div className='flex flex-col gap-1'>
+                {['65%', '45%', '55%', '70%', '40%', '60%'].map((width, i) => (
+                  <GlobalMessageRowSkeleton key={i} showHeader={i % 3 === 0} bodyWidth={width} />
+                ))}
               </div>
             )}
             {messages.map((m, i) => {

@@ -58,7 +58,7 @@ const OnlinePanel: React.FC<Props> = ({ onClose }) => {
 
   return (
     <div className='bg-background absolute inset-0 z-20 flex flex-col'>
-      <div className='border-tertiary flex items-center justify-between border-b-2 p-4'>
+      <div className='border-tertiary flex h-14.5 items-center justify-between border-b-2 px-4'>
         <div className='flex items-center gap-2'>
           <h2 className='font-sedan-sc text-foreground text-2xl'>Online</h2>
           <Label label={total} className='bg-foreground/80 text-background mt-px' />

@@ -18,6 +18,7 @@ import { useUserContext } from '@/context/user'
 import LoadingCell from '@/components/ui/loadingCell'
 import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
+import MessageRowSkeleton from './messageRowSkeleton'
 import Composer from './composer'
 import TypingDots from './typingDots'
 import DayDivider from './dayDivider'
@@ -158,9 +159,9 @@ const ThreadView: React.FC = () => {
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
         {chatLoading || msgsLoading ? (
-          <div className='flex flex-col gap-2'>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <LoadingCell key={i} height='32px' width={i % 2 === 0 ? '60%' : '50%'} />
+          <div className='flex flex-col gap-3'>
+            {['55%', '40%', '60%', '35%', '50%', '45%'].map((width, i) => (
+              <MessageRowSkeleton key={i} isOwn={i % 2 === 1} width={width} />
             ))}
           </div>
         ) : messages.length === 0 ? (
@@ -168,8 +169,10 @@ const ThreadView: React.FC = () => {
         ) : (
           <div className='flex flex-col gap-3'>
             {isFetchingNextPage && (
-              <div className='py-2 text-center'>
-                <span className='text-neutral text-sm'>Loading older messages…</span>
+              <div className='flex flex-col gap-3'>
+                {['55%', '40%', '60%', '35%', '50%', '45%'].map((width, i) => (
+                  <MessageRowSkeleton key={i} isOwn={i % 2 === 1} width={width} />
+                ))}
               </div>
             )}
             {messages.map((m, i) => {

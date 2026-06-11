@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { after } from 'next/server'
 import { createPostHogServerClient } from '@/lib/posthog-server'
 
-// const API_URL = 'https://api.grails.app/api/v1'
-const API_URL = 'https://grails-api-dev.up.railway.app/api/v1'
+const API_URL = process.env.GRAILS_API_URL || 'https://api.grails.app/api/v1'
 
 async function captureAuthVerified(properties: {
   address: string | null

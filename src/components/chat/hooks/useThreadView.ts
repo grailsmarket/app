@@ -21,13 +21,13 @@ export const useThreadView = ({ messages, hasNextPage, isFetchingNextPage, fetch
   useEffect(() => {
     if (!scrollRef.current) return
 
-    const isLastMessageNewest = messages[messages.length - 1]?.id === lastSeenNewestMessageId.current
-    if (isLastMessageNewest) {
-      lastSeenNewestMessageId.current = messages[messages.length - 1]?.id
+    const isNewMessage = messages[messages.length - 1]?.id !== lastSeenNewestMessageId.current
+    if (isNewMessage) {
+      lastSeenNewestMessageId.current = messages[messages.length - 1]?.id ?? null
     }
 
     const isMyMessage =
-      isLastMessageNewest && messages[messages.length - 1]?.sender_address?.toLowerCase() === userAddress?.toLowerCase()
+      isNewMessage && messages[messages.length - 1]?.sender_address?.toLowerCase() === userAddress?.toLowerCase()
     // We should scroll to bottom if the newest message was sent by the user
     // or when the user is near the bottom of the thread and the newest message is from someone else
     if (hasScrolledToBottom.current && !isScrolledToBottom && !isMyMessage) return

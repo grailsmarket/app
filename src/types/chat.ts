@@ -33,10 +33,6 @@ export interface ChatMessage {
   edited_at: string | null
   deleted_at: string | null
   reactions?: MessageReaction[]
-  /** Present on global chat messages */
-  sender_ens_name?: string | null
-  /** Present on global chat messages */
-  sender_avatar?: string | null
 }
 
 export interface Chat {
@@ -94,9 +90,9 @@ export interface GlobalChatQuota {
 export interface OnlineUser {
   user_id: number
   address: Address
-  last_sign_in: string
-  ens_name: string | null
-  avatar: string | null
+  last_sign_in: string | null
+  /** Most recent activity (last_seen_at or last_sign_in, whichever is newer). */
+  last_active: string | null
 }
 
 export interface OnlineUsersResponse {

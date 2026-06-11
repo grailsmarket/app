@@ -6,18 +6,50 @@ import { Avatar, Cross } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { closeChatSidebar } from '@/state/reducers/chat/sidebar'
 import { useOnlineUsers } from '@/hooks/chat/useOnlineUsers'
+import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { formatAddress } from '@/utils/formatAddress'
 import LoadingCell from '@/components/ui/loadingCell'
 import NoResults from '@/components/ui/noResults'
+import type { OnlineUser } from '@/types/chat'
 
 interface Props {
   onClose: () => void
 }
 
-/** Overlay inside the chat sidebar listing users signed in within the last 24h. */
-const OnlinePanel: React.FC<Props> = ({ onClose }) => {
+const OnlineUserRow: React.FC<{ user: OnlineUser }> = ({ user }) => {
   const dispatch = useAppDispatch()
+  // Identity (primary name + avatar) resolves client-side from the address,
+  // same as DM chats — the backend only ships addresses.
+  const profile = usePeerProfile(user.address)
+  const lastActive = user.last_active ?? user.last_sign_in
+
+  return (
+    <Link
+      href={`/profile/${user.address}`}
+      prefetch={false}
+      onClick={() => dispatch(closeChatSidebar())}
+      className='border-secondary flex w-full cursor-pointer items-center gap-3 border-b p-3 transition-colors hover:bg-white/5'
+    >
+      <Avatar
+        key={`${user.address}-online-avatar`}
+        address={user.address}
+        src={profile?.avatar ?? undefined}
+        name={profile?.ensName ?? undefined}
+        style={{ width: '36px', height: '36px' }}
+      />
+      <div className='min-w-0 flex-1'>
+        <p className='text-foreground truncate text-lg font-semibold'>
+          {profile?.displayLabel ?? formatAddress(user.address)}
+        </p>
+        <p className='text-neutral text-sm'>{lastActive ? `active ${formatTimeAgo(lastActive)}` : 'recently active'}</p>
+      </div>
+    </Link>
+  )
+}
+
+/** Overlay inside the chat sidebar listing users active within the last 24h. */
+const OnlinePanel: React.FC<Props> = ({ onClose }) => {
   const { users, total, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useOnlineUsers(true)
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -48,27 +80,7 @@ const OnlinePanel: React.FC<Props> = ({ onClose }) => {
         ) : (
           <div className='flex flex-col'>
             {users.map((user) => (
-              <Link
-                key={user.user_id}
-                href={`/profile/${user.address}`}
-                prefetch={false}
-                onClick={() => dispatch(closeChatSidebar())}
-                className='border-secondary flex w-full cursor-pointer items-center gap-3 border-b p-3 transition-colors hover:bg-white/5'
-              >
-                <Avatar
-                  key={`${user.address}-online-avatar`}
-                  address={user.address}
-                  src={user.avatar ?? undefined}
-                  name={user.ens_name ?? undefined}
-                  style={{ width: '36px', height: '36px' }}
-                />
-                <div className='min-w-0 flex-1'>
-                  <p className='text-foreground truncate text-lg font-semibold'>
-                    {user.ens_name ?? formatAddress(user.address)}
-                  </p>
-                  <p className='text-neutral text-sm'>active {formatTimeAgo(user.last_sign_in)}</p>
-                </div>
-              </Link>
+              <OnlineUserRow key={user.user_id} user={user} />
             ))}
             {isFetchingNextPage && (
               <div className='flex flex-col gap-1 p-3'>

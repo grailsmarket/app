@@ -8,6 +8,7 @@ import { useAppDispatch } from '@/state/hooks'
 import { closeChatSidebar } from '@/state/reducers/chat/sidebar'
 import { useUserContext } from '@/context/user'
 import { useToggleReaction } from '@/hooks/chat/useToggleReaction'
+import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import { formatAddress } from '@/utils/formatAddress'
 import { cn } from '@/utils/tailwind'
@@ -36,7 +37,10 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
   const isDeleted = !!message.deleted_at
   const time = format(new Date(message.created_at), 'h:mm a')
   const senderAddress = message.sender_address
-  const senderLabel = message.sender_ens_name ?? (senderAddress ? formatAddress(senderAddress) : 'Unknown')
+  // Resolve identity (primary name + avatar) client-side from the address,
+  // exactly like DM threads — the backend only ships sender_address.
+  const senderProfile = usePeerProfile(senderAddress as `0x${string}` | undefined)
+  const senderLabel = senderProfile?.displayLabel ?? (senderAddress ? formatAddress(senderAddress) : 'Unknown')
 
   const canReact = authStatus === 'authenticated' && !isDeleted && !message.id.startsWith('optimistic-')
 
@@ -74,8 +78,8 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
             <Avatar
               key={`${message.id}-avatar`}
               address={senderAddress as `0x${string}`}
-              src={message.sender_avatar ?? undefined}
-              name={message.sender_ens_name ?? undefined}
+              src={senderProfile?.avatar ?? undefined}
+              name={senderProfile?.ensName ?? undefined}
               style={{ width: '36px', height: '36px' }}
             />
           </Link>

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useAppDispatch } from '@/state/hooks'
 import { openSidebarToGlobal } from '@/state/reducers/chat/sidebar'
 import { useGlobalMessages } from '@/hooks/chat/useGlobalMessages'
+import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { formatAddress } from '@/utils/formatAddress'
 import { cn } from '@/utils/tailwind'
@@ -16,7 +17,8 @@ const GlobalChatRow: React.FC = () => {
   const { messages } = useGlobalMessages()
 
   const newest = messages[messages.length - 1]
-  const senderLabel = newest ? (newest.sender_ens_name ?? formatAddress(newest.sender_address ?? '')) : null
+  const senderProfile = usePeerProfile(newest?.sender_address as `0x${string}` | undefined)
+  const senderLabel = newest ? (senderProfile?.displayLabel ?? formatAddress(newest.sender_address ?? '')) : null
   const preview = newest
     ? newest.deleted_at
       ? 'Message deleted'

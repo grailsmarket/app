@@ -19,11 +19,6 @@ const GlobalChatRow: React.FC = () => {
   const newest = messages[messages.length - 1]
   const senderProfile = usePeerProfile(newest?.sender_address as `0x${string}` | undefined)
   const senderLabel = newest ? (senderProfile?.displayLabel ?? formatAddress(newest.sender_address ?? '')) : null
-  const preview = newest
-    ? newest.deleted_at
-      ? 'Message deleted'
-      : `${senderLabel}: ${newest.body ?? ''}`
-    : 'Talk to the whole Grails community'
   const time = newest ? formatTimeAgo(newest.created_at) : ''
 
   const open = () => dispatch(openSidebarToGlobal())
@@ -52,7 +47,16 @@ const GlobalChatRow: React.FC = () => {
           <p className='text-foreground truncate text-lg font-semibold'>Grails Chat</p>
           {time && <span className='text-neutral text-sm font-medium whitespace-nowrap'>{time}</span>}
         </div>
-        <p className='text-md text-neutral truncate'>{preview}</p>
+        <p className='text-md text-neutral truncate'>
+          {newest ? (
+            <>
+              <span className='font-semibold'>{senderLabel}</span>
+              <span>: {newest.body ?? ''}</span>
+            </>
+          ) : (
+            'Talk to the whole Grails community'
+          )}
+        </p>
       </div>
     </div>
   )

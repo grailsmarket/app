@@ -2,7 +2,6 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { useUserContext } from '@/context/user'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'

@@ -225,6 +225,7 @@ const ThreadView: React.FC = () => {
               </div>
             )}
             {messages.map((m, i) => {
+              if (!activeChatId) return null
               const current = new Date(m.created_at)
               const previous = i > 0 ? new Date(messages[i - 1].created_at) : null
               const startsNewDay = !previous || !isSameDay(current, previous)
@@ -232,7 +233,7 @@ const ThreadView: React.FC = () => {
                 <React.Fragment key={m.id}>
                   {startsNewDay && <DayDivider date={current} />}
                   <MessageRow
-                    chatId={activeChatId as string}
+                    chatId={activeChatId}
                     message={m}
                     isOwn={m.sender_address?.toLowerCase() === myAddress}
                     isRead={m.id === peer?.last_read_message_id}

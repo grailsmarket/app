@@ -18,6 +18,7 @@ const VIEW_DEPTH: Record<ChatSidebarView, number> = {
   list: 0,
   new: 1,
   thread: 2,
+  global: 3,
 }
 
 const viewVariants: Variants = {

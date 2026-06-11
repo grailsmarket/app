@@ -160,11 +160,13 @@ const Composer: React.FC<Props> = ({
       onError: (e) => {
         const mapped: MappedSendError = mapSendError?.(e) ?? defaultMapSendError(e)
         setError(mapped.message)
+
         if (mapped.permanent) {
           setPermanentlyDisabled(true)
           // Drop the unsent text — retry isn't useful on permanent failures.
           return
         }
+
         if (mapped.restoreText !== false) {
           // Restore the unsent text so the user can retry
           setValue(trimmed)
@@ -181,16 +183,19 @@ const Composer: React.FC<Props> = ({
         setSelectedIndex((i) => (i + 1) % resultCount)
         return
       }
+
       if (e.key === 'ArrowUp') {
         e.preventDefault()
         setSelectedIndex((i) => (i - 1 + resultCount) % resultCount)
         return
       }
+
       if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault()
         keyboardSelectRef.current?.()
         return
       }
+
       if (e.key === 'Escape') {
         e.preventDefault()
         closeMention()

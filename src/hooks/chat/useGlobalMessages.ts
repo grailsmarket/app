@@ -5,6 +5,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import type { AuthenticationStatus } from '@rainbow-me/rainbowkit'
 import { getGlobalMessages } from '@/api/globalChat/getMessages'
 import { useUserContext } from '@/context/user'
+import { SECOND } from 'ethereum-identity-kit'
 
 const PAGE_SIZE = 50
 
@@ -33,7 +34,7 @@ export const useGlobalMessages = () => {
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    staleTime: 30_000,
+    staleTime: 30 * SECOND,
   })
 
   // Pages are newest-first, each page is also newest-first within itself.

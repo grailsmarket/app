@@ -13,22 +13,16 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({ count = 6 }) => (
           <div className='flex w-full flex-wrap items-center justify-between'>
             <div className='flex flex-wrap items-center gap-2'>
               <LoadingCell height='32px' width='32px' radius='50%' />
-              <LoadingCell height='20px' width='110px' />
-              <LoadingCell height='16px' width='95px' />
+              <LoadingCell height='20px' width='100px' />
+              <LoadingCell height='16px' width='80px' />
               <LoadingCell height='32px' width='32px' radius='4px' />
-              <LoadingCell height='22px' width='130px' />
+              <LoadingCell height='22px' width='100px' />
             </div>
             <LoadingCell height='14px' width='60px' className='hidden @[48rem]/app:block' />
           </div>
 
           <div className='flex flex-col gap-2'>
-            <LoadingCell height='22px' width='100%' />
-            <LoadingCell height='22px' width='70%' />
-          </div>
-
-          <div className='flex items-center justify-between'>
-            <LoadingCell height='18px' width='70px' />
-            <LoadingCell height='14px' width='60px' className='@[48rem]/app:hidden' />
+            <LoadingCell height='20px' width='80%' />
           </div>
         </div>
       </article>

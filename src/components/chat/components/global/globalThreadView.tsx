@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { isSameDay, differenceInMinutes } from 'date-fns'
 import { Cross } from 'ethereum-identity-kit'
@@ -19,6 +19,7 @@ import DayDivider from '../chat/dayDivider'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import Logo from 'public/logo.svg'
 import type { ChatMessage } from '@/types/chat'
+import { useThreadView } from '../../hooks/useThreadView'
 
 const SENDER_RUN_GAP_MINUTES = 5
 
@@ -36,6 +37,7 @@ const GlobalThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
   const { userAddress, authStatus, handleSignIn, isSigningIn } = useUserContext()
   const { openConnectModal } = useConnectModal()
+
   const [onlineOpen, setOnlineOpen] = useState(false)
 
   const { messages, isLoading: msgsLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useGlobalMessages()
@@ -44,63 +46,13 @@ const GlobalThreadView: React.FC = () => {
   const myAddress = userAddress?.toLowerCase()
   const isAuthed = !!userAddress && authStatus === 'authenticated'
 
-  // Auto-scroll to bottom on new messages.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const lastSeenCount = useRef(0)
-  useEffect(() => {
-    if (!scrollRef.current) return
-    if (messages.length > lastSeenCount.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-    lastSeenCount.current = messages.length
-  }, [messages.length])
-
-  // Adjust for the virtual keyboard along with keeping the latest message visible
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return
-    const vv = window.visualViewport
-    let previousHeight = vv.height
-    let pinning = false
-
-    const KEYBOARD_REVEAL_THRESHOLD = 80
-    const PIN_DURATION_MS = 350
-
-    const pinToBottom = () => {
-      if (pinning) return
-      pinning = true
-      const start = performance.now()
-      const tick = () => {
-        const el = scrollRef.current
-        if (el) el.scrollTop = el.scrollHeight
-        if (performance.now() - start < PIN_DURATION_MS) {
-          requestAnimationFrame(tick)
-        } else {
-          pinning = false
-        }
-      }
-      requestAnimationFrame(tick)
-    }
-
-    const onResize = () => {
-      const nextHeight = vv.height
-      if (nextHeight < previousHeight - KEYBOARD_REVEAL_THRESHOLD) {
-        pinToBottom()
-      }
-      previousHeight = nextHeight
-    }
-
-    vv.addEventListener('resize', onResize)
-    return () => {
-      vv.removeEventListener('resize', onResize)
-    }
-  }, [])
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const t = e.currentTarget
-    if (t.scrollTop < 200 && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
-    }
-  }
+  const { scrollRef, handleScroll } = useThreadView({
+    messages,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    disableAutoScroll: true,
+  })
 
   const onSignInClick = () => {
     if (!userAddress) {

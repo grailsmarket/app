@@ -3,8 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { Avatar, Cross } from 'ethereum-identity-kit'
-import { useAppDispatch } from '@/state/hooks'
-import { closeChatSidebar } from '@/state/reducers/chat/sidebar'
 import { useOnlineUsers } from '@/hooks/chat/useOnlineUsers'
 import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
@@ -12,13 +10,13 @@ import { formatAddress } from '@/utils/formatAddress'
 import LoadingCell from '@/components/ui/loadingCell'
 import NoResults from '@/components/ui/noResults'
 import type { OnlineUser } from '@/types/chat'
+import Label from '@/components/ui/label'
 
 interface Props {
   onClose: () => void
 }
 
 const OnlineUserRow: React.FC<{ user: OnlineUser }> = ({ user }) => {
-  const dispatch = useAppDispatch()
   // Identity (primary name + avatar) resolves client-side from the address,
   // same as DM chats — the backend only ships addresses.
   const profile = usePeerProfile(user.address)
@@ -28,7 +26,6 @@ const OnlineUserRow: React.FC<{ user: OnlineUser }> = ({ user }) => {
     <Link
       href={`/profile/${user.address}`}
       prefetch={false}
-      onClick={() => dispatch(closeChatSidebar())}
       className='border-secondary flex w-full cursor-pointer items-center gap-3 border-b p-3 transition-colors hover:bg-white/5'
     >
       <Avatar
@@ -38,11 +35,11 @@ const OnlineUserRow: React.FC<{ user: OnlineUser }> = ({ user }) => {
         name={profile?.ensName ?? undefined}
         style={{ width: '36px', height: '36px' }}
       />
-      <div className='min-w-0 flex-1'>
+      <div className='flex min-w-0 flex-1 flex-col gap-px'>
         <p className='text-foreground truncate text-lg font-semibold'>
           {profile?.displayLabel ?? formatAddress(user.address)}
         </p>
-        <p className='text-neutral text-sm'>{lastActive ? `active ${formatTimeAgo(lastActive)}` : 'recently active'}</p>
+        <p className='text-neutral text-md'>{lastActive ? `active ${formatTimeAgo(lastActive)}` : 'recently active'}</p>
       </div>
     </Link>
   )
@@ -62,7 +59,10 @@ const OnlinePanel: React.FC<Props> = ({ onClose }) => {
   return (
     <div className='bg-background absolute inset-0 z-20 flex flex-col'>
       <div className='border-tertiary flex items-center justify-between border-b-2 p-4'>
-        <h2 className='font-sedan-sc text-foreground text-2xl'>Online ({total})</h2>
+        <div className='flex items-center gap-2'>
+          <h2 className='font-sedan-sc text-foreground text-2xl'>Online</h2>
+          <Label label={total} className='bg-foreground/80 text-background mt-px' />
+        </div>
         <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors' aria-label='Close'>
           <Cross className='text-foreground h-4 w-4 cursor-pointer' />
         </button>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { isSameDay } from 'date-fns'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
@@ -26,6 +26,7 @@ import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import Link from 'next/link'
+import { useThreadView } from '../../hooks/useThreadView'
 
 const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -58,73 +59,20 @@ const ThreadView: React.FC = () => {
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
 
-  // Auto-scroll to bottom on new messages.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const lastSeenCount = useRef(0)
-  useEffect(() => {
-    if (!scrollRef.current) return
-    if (messages.length > lastSeenCount.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-    lastSeenCount.current = messages.length
-  }, [messages.length])
-
-  // Adjust for the virtual keyboard along with keeping the latest message visible
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return
-    const vv = window.visualViewport
-    let previousHeight = vv.height
-    let pinning = false
-
-    const KEYBOARD_REVEAL_THRESHOLD = 80
-    const PIN_DURATION_MS = 350
-
-    const pinToBottom = () => {
-      if (pinning) return
-      pinning = true
-      const start = performance.now()
-      const tick = () => {
-        const el = scrollRef.current
-        if (el) el.scrollTop = el.scrollHeight
-        if (performance.now() - start < PIN_DURATION_MS) {
-          requestAnimationFrame(tick)
-        } else {
-          pinning = false
-        }
-      }
-      requestAnimationFrame(tick)
-    }
-
-    const onResize = () => {
-      const nextHeight = vv.height
-      if (nextHeight < previousHeight - KEYBOARD_REVEAL_THRESHOLD) {
-        pinToBottom()
-      }
-      previousHeight = nextHeight
-    }
-
-    vv.addEventListener('resize', onResize)
-    return () => {
-      vv.removeEventListener('resize', onResize)
-    }
-  }, [])
+  const { scrollRef, handleScroll } = useThreadView({ messages, hasNextPage, isFetchingNextPage, fetchNextPage })
 
   // when the thread is open and there are messages, mark the newest as read.
   useEffect(() => {
     if (!activeChatId || messages.length === 0) return
+
     const newest: ChatMessage | undefined = messages[messages.length - 1]
     if (!newest) return
+
     if (newest.id.startsWith('optimistic-')) return
+
     markRead.mutate({ chatId: activeChatId, upToMessageId: newest.id })
     // Re-run on chat change or new tail.
   }, [activeChatId, messages[messages.length - 1]?.id])
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const t = e.currentTarget
-    if (t.scrollTop < 200 && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
-    }
-  }
 
   const peerLabel = peerProfile?.displayLabel ?? 'Direct chat'
 

@@ -5,87 +5,34 @@ import Image from 'next/image'
 import { cn } from '@/utils/tailwind'
 import { useSendMessage } from '@/hooks/chat/useSendMessage'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
-import type { SendMessageError } from '@/api/chats/sendMessage'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import MentionDropdown from './mentionDropdown'
+import { MappedSendError, MentionState, SendController, SendMessageError } from '@/types/chat'
+import { mapSendError } from '@/utils/chat/errors'
+import { codePointLength, detectMention } from '@/utils/chat/message'
 
-/** Minimal mutation surface the composer needs — satisfied by useSendMessage and useSendGlobalMessage. */
-interface SendController {
-  isPending: boolean
-  mutate: (body: string, options: { onError: (e: SendMessageError) => void }) => void
-}
-
-/** How a send error should surface in the composer UI. */
-export interface MappedSendError {
-  message: string
-  /** Disable the composer until remount (bans, disabled room, blocked). */
-  permanent?: boolean
-  /** Put the unsent text back so the user can retry. Defaults to true. */
-  restoreText?: boolean
-}
+const MAX_LEN = 4000
+const MENTION_MIN_QUERY = 2
 
 interface Props {
   chatId: string
   disabled?: boolean
-  /** Override the send mutation (defaults to the DM useSendMessage). */
   send?: SendController
   /** Suppress typing-indicator emission (global chat has no typing). */
   disableTyping?: boolean
   /** Rendered below the input row (e.g. the global chat quota line). */
   footerSlot?: React.ReactNode
-  /** Map a send error to UI behavior; return null to fall back to the default handling. */
   mapSendError?: (e: SendMessageError) => MappedSendError | null
 }
 
-const MAX_LEN = 4000
-const MENTION_MIN_QUERY = 2
-
-interface MentionState {
-  start: number
-  query: string
-}
-
-// Counts unicode code points so multi-code-unit characters (emoji) count as 1.
-const codePointLength = (s: string) => Array.from(s).length
-
-// DM default: 403 BLOCKED means the recipient blocked the caller.
-const defaultMapSendError = (e: SendMessageError): MappedSendError =>
-  e.code === 'BLOCKED'
-    ? { message: "Couldn't deliver, you have been blocked", permanent: true }
-    : { message: e.message ?? 'Failed to send' }
-
-// Walk back from the caret to find an active `@<query>` mention.
-// Returns null if the caret isn't inside a mention.
-const detectMention = (value: string, caret: number): MentionState | null => {
-  for (let i = caret - 1; i >= 0; i--) {
-    const ch = value[i]
-    if (ch === '@') {
-      const prev = i === 0 ? '' : value[i - 1]
-      if (i !== 0 && !/\s/.test(prev)) return null
-      return { start: i, query: value.slice(i + 1, caret) }
-    }
-    if (/\s/.test(ch)) return null
-  }
-  return null
-}
-
-const Composer: React.FC<Props> = ({
-  chatId,
-  disabled,
-  send: sendOverride,
-  disableTyping,
-  footerSlot,
-  mapSendError,
-}) => {
+const Composer: React.FC<Props> = ({ chatId, disabled, send: sendOverride, disableTyping, footerSlot }) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
-  // When the server returns a permanent error on send (403 BLOCKED for DMs,
-  // bans/disabled room for global), disable the composer until remount —
-  // further sends will keep failing with the same error.
   const [permanentlyDisabled, setPermanentlyDisabled] = useState(false)
   const [mention, setMention] = useState<MentionState | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [resultCount, setResultCount] = useState(0)
+
   const ref = useRef<HTMLTextAreaElement>(null)
   const defaultSend = useSendMessage(chatId)
   const send: SendController = sendOverride ?? defaultSend
@@ -125,14 +72,18 @@ const Composer: React.FC<Props> = ({
     // unbroken token so we don't leave dangling characters after the insert.
     let end = el.selectionStart ?? value.length
     while (end < value.length && !/\s/.test(value[end])) end++
+
     const before = value.slice(0, mention.start)
     const after = value.slice(end)
     const insertion = `@${name} `
     const nextValue = before + insertion + after
+
     setValue(nextValue)
     typing.onChange(nextValue)
     closeMention()
+
     const nextCaret = before.length + insertion.length
+
     requestAnimationFrame(() => {
       const node = ref.current
       if (!node) return
@@ -158,17 +109,15 @@ const Composer: React.FC<Props> = ({
     }
     send.mutate(trimmed, {
       onError: (e) => {
-        const mapped: MappedSendError = mapSendError?.(e) ?? defaultMapSendError(e)
+        const mapped = mapSendError(e)
         setError(mapped.message)
 
         if (mapped.permanent) {
           setPermanentlyDisabled(true)
-          // Drop the unsent text — retry isn't useful on permanent failures.
           return
         }
 
         if (mapped.restoreText !== false) {
-          // Restore the unsent text so the user can retry
           setValue(trimmed)
           requestAnimationFrame(autoSize)
         }
@@ -255,7 +204,7 @@ const Composer: React.FC<Props> = ({
           maxLength={MAX_LEN}
           placeholder='Type a message…'
           className={cn(
-            'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-7 outline-none',
+            'text-foreground placeholder:text-neutral max-h-40 min-h-7 flex-1 resize-none bg-transparent pt-0.5 text-lg outline-none',
             inputDisabled && 'cursor-not-allowed opacity-50'
           )}
         />

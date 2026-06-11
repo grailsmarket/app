@@ -4,7 +4,8 @@ import React, { useRef, useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import type { MessageReaction } from '@/types/chat'
 import EmojiPickerPopover from './emojiPickerPopover'
-
+import Image from 'next/image'
+import addIcon from 'public/icons/cross.svg'
 interface Props {
   reactions?: MessageReaction[]
   /** FALSE for anonymous viewers — pills render read-only and the "+" is hidden. */
@@ -35,7 +36,7 @@ const ReactionPills: React.FC<Props> = ({ reactions, canReact, onToggle, classNa
           }
           disabled={!canReact}
           className={cn(
-            'flex items-center gap-1 rounded-full border px-2 py-0.5 transition-colors',
+            'flex items-center gap-1 rounded-sm border py-0.5 pr-1.5 pl-1 transition-colors',
             r.reacted ? 'border-primary bg-primary/15 text-foreground' : 'border-tertiary bg-secondary text-neutral',
             canReact ? 'hover:border-primary/60 cursor-pointer' : 'cursor-default'
           )}
@@ -53,10 +54,10 @@ const ReactionPills: React.FC<Props> = ({ reactions, canReact, onToggle, classNa
             e.stopPropagation()
             setAnchorRect(addRef.current?.getBoundingClientRect() ?? null)
           }}
-          className='border-tertiary bg-secondary text-neutral hover:text-foreground hover:border-primary/60 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border text-sm font-bold transition-colors'
+          className='border-tertiary bg-secondary text-neutral hover:text-foreground hover:border-primary/60 flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm border text-sm font-bold transition-colors'
           aria-label='Add reaction'
         >
-          +
+          <Image src={addIcon} alt='Add reaction' width={8} height={8} className='rotate-45' />
         </button>
       )}
       {anchorRect && (

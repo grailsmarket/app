@@ -1,14 +1,6 @@
 import { API_URL } from '@/constants/api'
-import type { ChatMessage, GlobalChatQuota } from '@/types/chat'
+import type { ChatMessage, GlobalChatQuota, SendMessageError } from '@/types/chat'
 import { authFetch } from '../authFetch'
-
-export interface SendGlobalMessageError {
-  status: number
-  code: string
-  message: string
-  /** Quota snapshot — present on 429 QUOTA_EXCEEDED (from error details). */
-  quota?: GlobalChatQuota
-}
 
 export interface SendGlobalMessageResult {
   message: ChatMessage
@@ -32,7 +24,7 @@ export const sendGlobalMessage = async (body: string): Promise<SendGlobalMessage
   const json = (await response.json()) as SendGlobalMessageEnvelope
 
   if (!response.ok || !json.success || !json.data) {
-    const err: SendGlobalMessageError = {
+    const err: SendMessageError = {
       status: response.status,
       code: json.error?.code ?? 'UNKNOWN_ERROR',
       message: json.error?.message ?? 'Failed to send message',

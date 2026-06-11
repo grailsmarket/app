@@ -1,9 +1,9 @@
 'use client'
 
 import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
-import { sendGlobalMessage, type SendGlobalMessageError } from '@/api/globalChat/sendMessage'
+import { sendGlobalMessage } from '@/api/globalChat/sendMessage'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
-import type { ChatMessage, ChatMessagesResponse } from '@/types/chat'
+import type { ChatMessage, ChatMessagesResponse, GlobalChatQuota, SendMessageError } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 
 interface MessagesPage extends ChatMessagesResponse {}
@@ -18,7 +18,7 @@ export const useSendGlobalMessage = () => {
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
 
-  return useMutation<ChatMessage, SendGlobalMessageError, string, { tempId: string } | undefined>({
+  return useMutation<ChatMessage, SendMessageError, string, { tempId: string } | undefined>({
     mutationFn: async (body: string) => {
       const result = await sendGlobalMessage(body)
       return result.message
@@ -102,7 +102,16 @@ export const useSendGlobalMessage = () => {
       })
     },
     onSettled: () => {
-      // Every send (success or quota error) changes the caller's daily quota.
+      // optimistic update
+      queryClient.setQueryData<GlobalChatQuota>(['globalChat', 'quota'], (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          remaining: old.remaining ? old.remaining - 1 : null,
+        }
+      })
+
+      // server update
       queryClient.invalidateQueries({ queryKey: ['globalChat', 'quota'] })
     },
   })

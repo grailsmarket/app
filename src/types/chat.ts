@@ -75,7 +75,30 @@ export interface CreateChatResponse {
   created: boolean
 }
 
+export interface SendMessageError {
+  status: number
+  code: string
+  message: string
+  quota?: GlobalChatQuota
+}
+
+export interface MappedSendError {
+  message: string
+  permanent?: boolean
+  restoreText?: boolean
+}
+
+export type MentionState = {
+  start: number
+  query: string
+}
+
 // ---- Global chat ----
+
+export interface SendController {
+  isPending: boolean
+  mutate: (body: string, options: { onError: (e: SendMessageError) => void }) => void
+}
 
 export interface GlobalChatQuota {
   tier: 'avatar' | 'name' | 'none'

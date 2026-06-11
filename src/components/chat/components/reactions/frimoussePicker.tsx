@@ -45,7 +45,7 @@ const FrimoussePicker: React.FC<Props> = ({ onPick }) => {
             ),
             Emoji: ({ emoji, ...props }) => (
               <button
-                className='data-[active]:bg-primary/15 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-xl'
+                className='data-active:bg-primary/15 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-xl'
                 {...props}
               >
                 {emoji.emoji}

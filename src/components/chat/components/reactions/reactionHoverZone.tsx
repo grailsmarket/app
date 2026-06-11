@@ -64,44 +64,49 @@ const ReactionHoverZone: React.FC<Props> = ({ canReact, onPick, buttonSide = 'ri
   return (
     <div
       ref={wrapRef}
-      className={cn('group/react relative', className)}
+      className={cn('group/react w-full', className)}
       onTouchStart={canReact ? onTouchStart : undefined}
       onTouchMove={canReact ? onTouchMove : undefined}
       onTouchEnd={canReact ? cancelLongPress : undefined}
       onTouchCancel={canReact ? cancelLongPress : undefined}
     >
-      {children}
-      {canReact && (
-        <button
-          ref={buttonRef}
-          onClick={(e) => {
-            e.stopPropagation()
-            openFrom(buttonRef.current)
-          }}
-          className={cn(
-            'bg-secondary border-tertiary text-neutral hover:text-foreground absolute top-1/2 hidden h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border opacity-0 transition-opacity group-hover/react:opacity-100 md:flex',
-            buttonSide === 'right' ? 'left-full ml-1.5' : 'right-full mr-1.5'
-          )}
-          aria-label='Add reaction'
-        >
-          <svg
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            className='h-4 w-4'
+      <div className='relative w-fit'>
+        {children}
+        {canReact && (
+          <button
+            ref={buttonRef}
+            onClick={(e) => {
+              e.stopPropagation()
+              openFrom(buttonRef.current)
+            }}
+            className={cn(
+              'bg-secondary border-tertiary text-neutral hover:text-foreground absolute top-1/2 hidden h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border opacity-0 transition-opacity group-hover/react:opacity-100 md:flex',
+              buttonSide === 'right' ? 'left-full ml-1.5' : 'right-full mr-1.5',
+              anchorRect && 'opacity-100'
+            )}
+            aria-label='Add reaction'
           >
-            <circle cx='10.5' cy='12.5' r='8' />
-            <path d='M7.5 14.5a4 4 0 0 0 6 0' />
-            <line x1='8' y1='10.5' x2='8.01' y2='10.5' />
-            <line x1='13' y1='10.5' x2='13.01' y2='10.5' />
-            <line x1='19.5' y1='2.5' x2='19.5' y2='8.5' />
-            <line x1='16.5' y1='5.5' x2='22.5' y2='5.5' />
-          </svg>
-        </button>
-      )}
-      {anchorRect && <EmojiPickerPopover anchorRect={anchorRect} onPick={onPick} onClose={() => setAnchorRect(null)} />}
+            <svg
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              className='h-4 w-4'
+            >
+              <circle cx='10.5' cy='12.5' r='8' />
+              <path d='M7.5 14.5a4 4 0 0 0 6 0' />
+              <line x1='8' y1='10.5' x2='8.01' y2='10.5' />
+              <line x1='13' y1='10.5' x2='13.01' y2='10.5' />
+              <line x1='19.5' y1='2.5' x2='19.5' y2='8.5' />
+              <line x1='16.5' y1='5.5' x2='22.5' y2='5.5' />
+            </svg>
+          </button>
+        )}
+        {anchorRect && (
+          <EmojiPickerPopover anchorRect={anchorRect} onPick={onPick} onClose={() => setAnchorRect(null)} />
+        )}
+      </div>
     </div>
   )
 }

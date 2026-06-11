@@ -75,8 +75,8 @@ const NamePage: React.FC<Props> = ({ name }) => {
       <div className='px-md flex w-full flex-row justify-between'>
         <Actions nameDetails={nameDetails} />
       </div>
-      <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div className='flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg lg:w-2/5'>
+      <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:flex-row'>
+        <div className='flex h-fit flex-col gap-1 @[40rem]/app:gap-4 @[40rem]/app:rounded-lg @[64rem]/app:w-2/5'>
           <PrimaryDetails
             name={name}
             nameDetails={nameDetails}
@@ -85,10 +85,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
             isSubname={isSubname}
             openEditMetadataModal={openEditMetadataModal}
           />
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}
@@ -96,7 +96,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               categories={nameDetails?.clubs}
             />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <Metadata
               name={name}
               registrationStatus={registrationStatus}
@@ -106,7 +106,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               openEditMetadataModal={openEditMetadataModal}
             />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <Roles
               name={name}
               registrationStatus={registrationStatus}
@@ -116,11 +116,11 @@ const NamePage: React.FC<Props> = ({ name }) => {
               isRolesLoading={isRolesLoading}
             />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
         </div>
-        <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>
+        <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:w-3/5'>
           {isRegistered ? (
             <>
               <Listings
@@ -133,10 +133,10 @@ const NamePage: React.FC<Props> = ({ name }) => {
           ) : (
             <Register nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}
@@ -144,7 +144,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               categories={nameDetails?.clubs}
             />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <Metadata
               name={name}
               registrationStatus={registrationStatus}
@@ -154,7 +154,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               openEditMetadataModal={openEditMetadataModal}
             />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <Roles
               name={name}
               registrationStatus={registrationStatus}
@@ -164,7 +164,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               isRolesLoading={isRolesLoading}
             />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           </div>
           <ActivityPanel name={name} />

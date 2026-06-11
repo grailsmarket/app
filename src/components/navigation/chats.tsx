@@ -2,23 +2,26 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { useAppDispatch } from '@/state/hooks'
-import { openSidebarToList } from '@/state/reducers/chat/sidebar'
+import { useUserContext } from '@/context/user'
+import { useAppDispatch, useAppSelector } from '@/state/hooks'
+import { closeChatSidebar, openSidebarToList, selectChatSidebar } from '@/state/reducers/chat/sidebar'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
 import { cn } from '@/utils/tailwind'
 import chatIcon from 'public/icons/chat.svg'
 
 const Chats: React.FC = () => {
   const dispatch = useAppDispatch()
+  const { open } = useAppSelector(selectChatSidebar)
   // Inbox query is auth-gated, so the unread badge no-ops for signed-out
   // visitors — they can still open the sidebar for the global chat.
   const { totalUnread } = useChatsInbox()
 
   return (
     <button
-      onClick={() => dispatch(openSidebarToList())}
+      onClick={() => dispatch(open ? closeChatSidebar() : openSidebarToList())}
       className='hover:bg-primary/10 relative rounded-md p-1 transition-colors'
       aria-label='Messages'
+      aria-pressed={open}
     >
       <Image src={chatIcon} alt='Messages' width={24} height={24} className='h-5 w-5 md:h-6 md:w-6' />
       {totalUnread > 0 && (

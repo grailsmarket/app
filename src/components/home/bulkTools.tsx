@@ -78,18 +78,20 @@ const BulkTools = () => {
     openConnectModal?.()
   }
   return (
-    <div className='flex w-full flex-col justify-between gap-8 xl:flex-row'>
-      <div className='flex w-full flex-col items-center gap-7 lg:items-start'>
+    <div className='flex w-full flex-col justify-between gap-8 @[80rem]/app:flex-row'>
+      <div className='flex w-full flex-col items-center gap-7 @[64rem]/app:items-start'>
         <div className='flex flex-col gap-4'>
-          <h2 className='font-sedan-sc text-center text-5xl md:text-6xl lg:text-left'>Bulk Tools</h2>
-          <p className='text-center font-semibold sm:text-2xl lg:text-left'>
+          <h2 className='font-sedan-sc text-center text-5xl @[48rem]/app:text-6xl @[64rem]/app:text-left'>
+            Bulk Tools
+          </h2>
+          <p className='text-center font-semibold @[40rem]/app:text-2xl @[64rem]/app:text-left'>
             Save gas and time. For serious domainers.
           </p>
         </div>
         <div className='flex flex-row flex-wrap gap-4'>
           {bulkTools.map((tool) => (
             <div
-              className='hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border-1 transition-colors sm:w-[calc(50%-8px)] lg:w-[calc(33%-12px)]'
+              className='hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border-1 transition-colors @[40rem]/app:w-[calc(50%-8px)] @[64rem]/app:w-[calc(33%-12px)]'
               key={tool.title}
               onClick={() => handleToolClick(tool)}
             >
@@ -107,7 +109,7 @@ const BulkTools = () => {
         alt='Bulk Tools'
         width={1200}
         height={600}
-        className='mx-auto h-fit w-full max-w-[800px] lg:mx-0 xl:w-1/2'
+        className='mx-auto h-fit w-full max-w-[800px] @[64rem]/app:mx-0 @[80rem]/app:w-1/2'
       /> */}
     </div>
   )

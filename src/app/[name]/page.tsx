@@ -65,7 +65,7 @@ const Name = async (props: Props) => {
 
   if (isInAppNavigation) {
     return (
-      <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+      <main className='min-h-[calc(100dvh-56px)] w-full pb-4 md:min-h-[calc(100dvh-78px)] @[40rem]/app:px-4'>
         <ClientOnly>
           <HydrationBoundary state={dehydrate(queryClient)}>
             <NamePage name={normalizedName} />
@@ -84,7 +84,7 @@ const Name = async (props: Props) => {
   queryClient.setQueryData(['name', 'metadata', normalizedName], metadata)
 
   return (
-    <main className='min-h-[calc(100dvh-56px)] w-full pb-4 sm:px-4 md:min-h-[calc(100dvh-78px)]'>
+    <main className='min-h-[calc(100dvh-56px)] w-full pb-4 md:min-h-[calc(100dvh-78px)] @[40rem]/app:px-4'>
       <HideOnClient>
         <ServerPanels
           name={normalizedName}

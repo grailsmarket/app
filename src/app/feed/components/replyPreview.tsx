@@ -29,10 +29,10 @@ const ReplyPreview: React.FC<ReplyPreviewProps> = ({ context, onClear }) => {
   const displayName = ensName ? beautifyName(ensName) : truncateAddress(context.comment.author_address as `0x${string}`)
 
   return (
-    <div className='md:px-lg pointer-events-none absolute right-3 bottom-3 left-3 z-30 mx-auto max-w-5xl sm:right-5 sm:left-5'>
+    <div className='@[48rem]/app:px-lg pointer-events-none absolute right-3 bottom-3 left-3 z-30 mx-auto max-w-5xl @[40rem]/app:right-5 @[40rem]/app:left-5'>
       <article
         onClick={(e) => e.stopPropagation()}
-        className='bg-background border-primary pointer-events-auto rounded-lg border-2 p-3 shadow-2xl sm:p-4'
+        className='bg-background border-primary pointer-events-auto rounded-lg border-2 p-3 shadow-2xl @[40rem]/app:p-4'
       >
         <div className='mb-2 flex items-center justify-between gap-3'>
           <p className='text-primary text-sm font-bold'>Replying to</p>

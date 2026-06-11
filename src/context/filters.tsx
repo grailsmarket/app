@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, ReactNode, useEffect, useRef } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect, useRef, useState } from 'react'
 import { FilterContextType } from '@/types/filters/name'
 import { ProfileTabType } from '@/state/reducers/portfolio/profile'
 import { CategoryTabType } from '@/state/reducers/category/category'
@@ -8,9 +8,11 @@ import type { FeedTab } from '@/types/filters/feed'
 import { useAppDispatch } from '@/state/hooks'
 import { usePathname } from 'next/navigation'
 import { setFilterPanelOpen } from '@/state/reducers/filterPanel'
-import { Address, useWindowSize } from 'ethereum-identity-kit'
+import { Address } from 'ethereum-identity-kit'
 import { useFilterUrlSync } from '@/hooks/filters/useFilterUrlSync'
 import { clearBulkSelect, setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
+
+const FILTER_PANEL_DESKTOP_QUERY = '(min-width: 1024px)'
 
 interface FilterContextValue {
   filterType: FilterContextType
@@ -41,12 +43,24 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const pathname = usePathname()
-  const { width: windowWidth } = useWindowSize()
+  const [isDesktopViewport, setIsDesktopViewport] = useState<boolean | null>(null)
   const previousPathRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia(FILTER_PANEL_DESKTOP_QUERY)
+    const updateViewportMode = () => setIsDesktopViewport(mediaQuery.matches)
+
+    updateViewportMode()
+    mediaQuery.addEventListener('change', updateViewportMode)
+
+    return () => mediaQuery.removeEventListener('change', updateViewportMode)
+  }, [])
 
   // Close filters on mobile when navigating to a different page
   useEffect(() => {
-    const isMobile = windowWidth !== null && windowWidth < 1024
+    const isMobile = isDesktopViewport === false
 
     // Only close on mobile and when navigating to a different page (not on initial mount)
     if (isMobile && previousPathRef.current !== null && previousPathRef.current !== pathname) {
@@ -54,7 +68,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
     }
 
     previousPathRef.current = pathname
-  }, [pathname, windowWidth, dispatch])
+  }, [pathname, isDesktopViewport, dispatch])
 
   useEffect(() => {
     dispatch(setBulkSelectIsSelecting(false))
@@ -62,12 +76,14 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({
   }, [pathname, dispatch])
 
   useEffect(() => {
-    if (windowWidth !== null && windowWidth > 1024) {
+    if (isDesktopViewport === null) return
+
+    if (isDesktopViewport) {
       dispatch(setFilterPanelOpen(true))
     } else {
       dispatch(setFilterPanelOpen(false))
     }
-  }, [windowWidth, dispatch])
+  }, [isDesktopViewport, dispatch])
 
   return (
     <FilterContext.Provider value={{ filterType, profileTab, categoryTab, feedTab, profileAddress }}>

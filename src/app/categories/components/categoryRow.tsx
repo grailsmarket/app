@@ -13,7 +13,8 @@ import { useAppSelector } from '@/state/hooks'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { cn } from '@/utils/tailwind'
 import { useClickAway } from '@/hooks/useClickAway'
-import { ShortArrow, useWindowSize, useIsClient } from 'ethereum-identity-kit'
+import { ShortArrow, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 interface CategoryRowProps {
   category: CategoryType
@@ -112,7 +113,7 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
   const { avatar: categoryAvatar, header: categoryHeader } = getCategoryDetails(category.name)
 
   const isClient = useIsClient()
-  const { width } = useWindowSize()
+  const { width } = useResponsiveSize()
 
   const StatItem = ({
     label,
@@ -372,7 +373,7 @@ const CategoryRow = ({ category, sort }: CategoryRowProps) => {
       >
         <div className='min-h-0 overflow-hidden'>
           <div className='bg-background border-tertiary border-b p-4 pt-3 shadow-md'>
-            <div className='grid grid-cols-3 gap-x-4 gap-y-3 md:grid-cols-4 lg:grid-cols-6'>
+            <div className='grid grid-cols-3 gap-x-4 gap-y-3 @[48rem]/app:grid-cols-4 @[64rem]/app:grid-cols-6'>
               <StatItem label='Names'>
                 <p>{localizeNumber(category.member_count ?? 0)}</p>
               </StatItem>

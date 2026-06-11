@@ -69,7 +69,7 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
   }[platform as 'opensea' | 'grails' | 'vision' | 'snipezone' | 'enstools']
 
   return (
-    <div className='flex w-full flex-row items-center gap-1.5 sm:gap-2'>
+    <div className='flex w-full flex-row items-center gap-1.5 @[40rem]/app:gap-2'>
       <div className='flex h-7 w-7 items-center justify-center'>
         <Image
           src={platformIcon || ETHGray}
@@ -81,15 +81,23 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
       </div>
       <div className='flex flex-col items-start'>
         <div className='flex items-center gap-1'>
-          {icon && <Image src={icon} alt={event} width={15} height={15} className='h-3 w-3 sm:h-4 sm:w-4' />}
+          {icon && (
+            <Image
+              src={icon}
+              alt={event}
+              width={15}
+              height={15}
+              className='h-3 w-3 @[40rem]/app:h-4 @[40rem]/app:w-4'
+            />
+          )}
           <p>
-            <span className='text-md font-semibold capitalize sm:text-lg'>{eventName}</span>
-            <span className='sm:text-md text-neutral mt-px text-sm font-medium'>
+            <span className='text-md font-semibold capitalize @[40rem]/app:text-lg'>{eventName}</span>
+            <span className='@[40rem]/app:text-md text-neutral mt-px text-sm font-medium'>
               {duration ? ` (${formatDuration(duration)})` : ''}
             </span>
           </p>
         </div>
-        <p className='sm:text-md text-neutral mt-px text-sm font-medium'>{formatTimeAgo(timestamp)}</p>
+        <p className='@[40rem]/app:text-md text-neutral mt-px text-sm font-medium'>{formatTimeAgo(timestamp)}</p>
       </div>
     </div>
   )

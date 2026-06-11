@@ -115,34 +115,36 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
   // const githubLink = CATEGORY_SOCIAL_LINKS[categoryDetails.name as keyof typeof CATEGORY_SOCIAL_LINKS]?.github || null
 
   return (
-    <div className='relative w-full items-center justify-center md:px-4'>
+    <div className='relative w-full items-center justify-center @[48rem]/app:px-4'>
       <Image
         src={categoryHeader}
         alt={`${categoryDetails.display_name} header`}
         width={1000}
         height={1000}
-        className='bg-foreground absolute top-0 left-0 hidden h-full w-full object-cover opacity-20 md:block'
+        className='bg-foreground absolute top-0 left-0 hidden h-full w-full object-cover opacity-20 @[48rem]/app:block'
       />
-      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between md:flex-row md:gap-8 md:py-4'>
-        <div className='relative z-10 flex w-full items-center py-6 md:w-fit md:py-0'>
+      <div className='relative z-10 mx-auto flex w-full max-w-7xl flex-col justify-between @[48rem]/app:flex-row @[48rem]/app:gap-8 @[48rem]/app:py-4'>
+        <div className='relative z-10 flex w-full items-center py-6 @[48rem]/app:w-fit @[48rem]/app:py-0'>
           <Image
             src={categoryHeader}
             alt={`${categoryDetails.display_name} header`}
             width={1000}
             height={1000}
-            className='bg-foreground absolute top-0 left-0 block h-full w-full object-cover opacity-20 md:hidden'
+            className='bg-foreground absolute top-0 left-0 block h-full w-full object-cover opacity-20 @[48rem]/app:hidden'
           />
-          <div className='relative z-20 flex items-start gap-4 px-4 md:px-0'>
+          <div className='relative z-20 flex items-start gap-4 px-4 @[48rem]/app:px-0'>
             <Image
               src={categoryAvatar}
               alt={`${categoryDetails.display_name} avatar`}
               width={100}
               height={100}
-              className='h-16 w-16 rounded-full object-cover md:h-24 md:w-24'
+              className='h-16 w-16 rounded-full object-cover @[48rem]/app:h-24 @[48rem]/app:w-24'
             />
             <div className='flex flex-col gap-2'>
               <div className='flex flex-row items-center gap-2'>
-                <p className='text-3xl font-bold md:text-4xl lg:text-5xl'>{categoryDetails.display_name}</p>
+                <p className='text-3xl font-bold @[48rem]/app:text-4xl @[64rem]/app:text-5xl'>
+                  {categoryDetails.display_name}
+                </p>
                 {twitterLink && (
                   <Link href={twitterLink} target='_blank' rel='noopener noreferrer'>
                     <Image
@@ -166,11 +168,11 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                   </Link>
                 )} */}
               </div>
-              <p className='text-neutral text-xl font-medium md:text-2xl'>{categoryDetails.description}</p>
+              <p className='text-neutral text-xl font-medium @[48rem]/app:text-2xl'>{categoryDetails.description}</p>
             </div>
           </div>
         </div>
-        <div className='bg-background px-md py-lg sm:p-xl border-tertiary relative z-20 flex flex-col items-center gap-2 border-t-2 md:rounded-md md:border-2'>
+        <div className='bg-background px-md py-lg @[40rem]/app:p-xl border-tertiary relative z-20 flex flex-col items-center gap-2 border-t-2 @[48rem]/app:rounded-md @[48rem]/app:border-2'>
           {/* <div className='flex w-full items-center justify-between'>
             <p className='font-sedan-sc text-xl'>Names</p>
             <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>
@@ -197,7 +199,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               fontSize='font-semibold text-xl'
             />
           </div> */}
-          <div className='xs:grid-cols-4 grid grid-cols-3 gap-4 gap-y-4 sm:gap-y-6'>
+          <div className='grid grid-cols-3 gap-4 gap-y-4 @[26.25rem]/app:grid-cols-4 @[40rem]/app:gap-y-6'>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
               <p className='text-lg font-semibold'>{localizeNumber(categoryDetails.member_count ?? 0)}</p>
               <p className='text-neutral text-lg'>Names</p>
@@ -255,7 +257,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
           </span>
           {localizeNumber(categoryDetails.registered_count + categoryDetails.grace_count)}
           </p>
-          <p className='font-sedan-sc text-xl md:text-2xl'>
+          <p className='font-sedan-sc text-xl @[48rem]/app:text-2xl'>
             Reg+<span className='text-grace'>Grace</span>
           </p>
         </div> */}

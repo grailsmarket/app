@@ -80,7 +80,7 @@ const Profile: React.FC<Props> = ({ user }) => {
       {isFollowersAndFollowingOpen && (
         <div
           onClick={() => setIsFollowersAndFollowingOpen(false)}
-          className='fixed top-0 left-0 z-50 flex h-[100dvh] w-full items-end justify-center overflow-y-auto bg-black/50 backdrop-blur-sm md:items-start'
+          className='fixed top-0 left-0 z-50 flex h-dvh w-full items-end justify-center overflow-y-auto bg-black/50 backdrop-blur-sm md:items-start'
         >
           <div className='max-h-[90vh] w-full max-w-2xl overflow-y-auto md:max-h-none md:overflow-y-visible md:py-12'>
             <FollowersAndFollowing connectedAddress={userAddress} user={user} defaultTab={defaultTab} />
@@ -89,7 +89,7 @@ const Profile: React.FC<Props> = ({ user }) => {
       )}
       <div className='dark relative z-0 w-full'>
         <div
-          className='border-tertiary relative z-20 flex w-full flex-col border-b-2 lg:flex-row'
+          className='border-tertiary relative z-20 flex w-full flex-col border-b-2 @[64rem]/app:flex-row'
           suppressHydrationWarning={true}
         >
           {/* Issues inside of EIK, so having to render on the client */}

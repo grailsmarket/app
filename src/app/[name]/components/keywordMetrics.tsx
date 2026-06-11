@@ -292,7 +292,7 @@ const KeywordMetricsComponent: React.FC<KeywordMetricsProps> = ({ name, expiryDa
   }
 
   return (
-    <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 sm:rounded-lg sm:border-2'>
+    <div className='bg-secondary border-tertiary p-lg flex flex-col gap-3 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex flex-row items-center justify-between'>
         <div
           className='group/metrics flex flex-1 cursor-pointer flex-row items-center justify-between transition-opacity'
@@ -349,7 +349,7 @@ const MetricStatCard: React.FC<{ value: string; label: string; fillPercent: numb
   const fillOpacity = 0.72 + normalized * 0.28
 
   return (
-    <div className='bg-secondary border-neutral sm:pl-md pb-sm flex h-fit w-full flex-col sm:border-l-2'>
+    <div className='bg-secondary border-neutral @[40rem]/app:pl-md pb-sm flex h-fit w-full flex-col @[40rem]/app:border-l-2'>
       <p className='text-xl font-semibold'>{value}</p>
       <p className='text-neutral text-lg font-medium'>{label}</p>
       <div className='bg-neutral/25 relative mt-1.5 h-1.5 w-full overflow-hidden rounded-full'>
@@ -378,7 +378,7 @@ const MetricsStats: React.FC<{ metrics: KeywordMetrics }> = ({ metrics }) => {
 
   return (
     <>
-      <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-3'>
         <MetricStatCard value={avgSearches} label='Monthly Searches' fillPercent={monthlyFillPercent} />
         <MetricStatCard value={formatNumber(yearlyTotal)} label='Yearly Average' fillPercent={yearlyFillPercent} />
         {/* <MetricStatCard

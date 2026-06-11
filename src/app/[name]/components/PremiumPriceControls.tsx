@@ -136,9 +136,9 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
   const isReminderDisabled = !priceInput || !targetDate || targetDate <= new Date()
 
   return (
-    <div className='mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4'>
+    <div className='mt-4 flex flex-col gap-3 @[40rem]/app:flex-row @[40rem]/app:items-end @[40rem]/app:gap-4'>
       {/* Price Input */}
-      <div className='flex flex-1 flex-col gap-1 sm:max-w-3/12'>
+      <div className='flex flex-1 flex-col gap-1 @[40rem]/app:max-w-3/12'>
         <label className='text-neutral text-sm'>Target Price</label>
         <div className='relative'>
           <span className='text-neutral absolute top-1/2 left-3 -translate-y-1/2'>$</span>
@@ -183,7 +183,7 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
         <PrimaryButton
           onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
           disabled={isReminderDisabled}
-          className='flex h-10 w-full items-center justify-center gap-2 sm:w-auto'
+          className='flex h-10 w-full items-center justify-center gap-2 @[40rem]/app:w-auto'
         >
           <Image src={CalendarBlackIcon} alt='Calendar' width={20} height={20} />
           <span>Set Reminder</span>

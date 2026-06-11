@@ -84,14 +84,14 @@ const CategoriesPageTabSwitcher = () => {
     return (
       <div
         className={cn(
-          'bg-background pr-lg border-tertiary xs:text-lg text-md xs:gap-4 sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 lg:gap-8',
+          'bg-background pr-lg border-tertiary text-md sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
-        <div className='flex items-center justify-between gap-3 md:gap-4'>
+        <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
           <button
             className={cn(
-              'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14',
+              'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14',
               disableFilterButton && 'pointer-events-none cursor-not-allowed'
             )}
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
@@ -115,7 +115,7 @@ const CategoriesPageTabSwitcher = () => {
                   key={tab.value}
                   onClick={() => setCategoriesPageTab(tab)}
                   className={cn(
-                    'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:text-xl',
+                    'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
                     selectedTab.value === tab.value
                       ? 'text-primary font-bold opacity-100'
                       : 'font-medium opacity-50 transition-colors hover:opacity-80'
@@ -126,7 +126,7 @@ const CategoriesPageTabSwitcher = () => {
                     <Label
                       label={formatTotalTabItems(holdersCount || 0)}
                       className={cn(
-                        'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                        '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
                         selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
                       )}
                     />
@@ -135,7 +135,7 @@ const CategoriesPageTabSwitcher = () => {
                     <Label
                       label={formatTotalTabItems(listingsCount || 0)}
                       className={cn(
-                        'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                        '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
                         selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
                       )}
                     />
@@ -144,7 +144,7 @@ const CategoriesPageTabSwitcher = () => {
                     <Label
                       label={categories?.length || 0}
                       className={cn(
-                        'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                        '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
                         selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
                       )}
                     />
@@ -154,7 +154,7 @@ const CategoriesPageTabSwitcher = () => {
             </div>
           </div>
         </div>
-        <div className='hidden items-center md:flex'>
+        <div className='hidden items-center @[48rem]/app:flex'>
           {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
             <DownloadButton inAnyCategory={true} />
           )}
@@ -168,14 +168,14 @@ const CategoriesPageTabSwitcher = () => {
   return (
     <div
       className={cn(
-        'bg-background border-tertiary xs:text-lg text-md pr-lg xs:gap-4 sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 sm:pr-0 sm:text-xl md:min-h-14 lg:gap-8',
+        'bg-background border-tertiary text-md pr-lg sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
-      <div className='flex items-center justify-between gap-3 md:gap-4'>
+      <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
         <button
           className={cn(
-            'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all md:h-14 md:min-h-14 md:w-10 md:min-w-14',
+            'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14',
             disableFilterButton && 'pointer-events-none cursor-not-allowed'
           )}
           onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
@@ -188,7 +188,7 @@ const CategoriesPageTabSwitcher = () => {
             className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
           />
         </button>
-        <div ref={containerRef} className='relative flex h-10 gap-4 lg:w-full'>
+        <div ref={containerRef} className='relative flex h-10 gap-4 @[64rem]/app:w-full'>
           <div
             className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
             style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -198,18 +198,18 @@ const CategoriesPageTabSwitcher = () => {
               key={tab.value}
               onClick={() => setCategoriesPageTab(tab)}
               className={cn(
-                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg sm:w-fit',
+                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:w-fit',
                 selectedTab.value === tab.value
                   ? 'text-primary font-bold opacity-100'
                   : 'font-medium opacity-50 transition-colors hover:opacity-80'
               )}
             >
-              <p className='text-lg text-nowrap sm:text-xl'>{tab.label}</p>
+              <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
               {tab.value === 'holders' && (
                 <Label
                   label={localizeNumber(holdersCount || 0)}
                   className={cn(
-                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                    '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
                     selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
                   )}
                 />
@@ -218,7 +218,7 @@ const CategoriesPageTabSwitcher = () => {
                 <Label
                   label={formatTotalTabItems(listingsCount || 0)}
                   className={cn(
-                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                    '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
                     selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
                   )}
                 />
@@ -227,7 +227,7 @@ const CategoriesPageTabSwitcher = () => {
                 <Label
                   label={categories?.length || 0}
                   className={cn(
-                    'xs:text-sm sm:text-md xs:min-w-[16px] xs:h-[16px] h-[14px] min-w-[14px] px-0.5! text-xs sm:h-[18px] sm:min-w-[18px]',
+                    '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
                     selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
                   )}
                 />
@@ -236,7 +236,7 @@ const CategoriesPageTabSwitcher = () => {
           ))}
         </div>
       </div>
-      <div className='hidden items-center md:flex'>
+      <div className='hidden items-center @[48rem]/app:flex'>
         {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
           <DownloadButton inAnyCategory={true} />
         )}

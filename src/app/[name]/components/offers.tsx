@@ -69,7 +69,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
   }
 
   return (
-    <div className='p-lg lg:px-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <div className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Offers</h3>
         {!isMyDomain && <PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton>}
@@ -92,14 +92,14 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
 
           return (
             <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
-              <div className='flex flex-row items-center gap-2 sm:gap-4'>
+              <div className='flex flex-row items-center gap-2 @[40rem]/app:gap-4'>
                 <div className='flex flex-row items-center gap-2'>
                   <Image
                     src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
                     width={32}
                     height={32}
                     alt={offer.source}
-                    className='h-auto min-w-7 sm:w-8'
+                    className='h-auto min-w-7 @[40rem]/app:w-8'
                   />
                 </div>
                 <div className='flex flex-col gap-1'>
@@ -114,7 +114,7 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
                       ({fee * 100}% fee)
                     </p>
                   </div>
-                  <p className='sm:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
+                  <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
                 </div>
               </div>
               <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
@@ -192,13 +192,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
 
   if (isMyDomain) {
     return (
-      <div className='flex flex-col items-end gap-2 sm:flex-row sm:items-center'>
+      <div className='flex flex-col items-end gap-2 @[40rem]/app:flex-row @[40rem]/app:items-center'>
         <User address={offer.buyer_address} className='max-w-full' wrapperClassName='justify-start! max-w-40' />
         <div className='flex flex-row items-center gap-2'>
           <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
           <SecondaryButton
             onClick={openShareModal}
-            className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+            className='flex min-h-9 min-w-9 items-center justify-center p-0! @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
           >
             <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
           </SecondaryButton>
@@ -213,7 +213,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
         <SecondaryButton onClick={openCancelOfferModal}>Cancel</SecondaryButton>
         <SecondaryButton
           onClick={openShareModal}
-          className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+          className='flex min-h-9 min-w-9 items-center justify-center p-0! @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
         >
           <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
         </SecondaryButton>
@@ -226,11 +226,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
       <User
         address={offer.buyer_address}
         className='max-w-full'
-        wrapperClassName='justify-start! max-w-36 xs:max-w-40!'
+        wrapperClassName='justify-start! max-w-36 @[26.25rem]/app:max-w-40!'
       />
       <SecondaryButton
         onClick={openShareModal}
-        className='flex min-h-9 min-w-9 items-center justify-center p-0! md:min-h-10! md:min-w-10!'
+        className='flex min-h-9 min-w-9 items-center justify-center p-0! @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
       >
         <Image src={ShareIconWhite} width={24} height={24} alt='Share' />
       </SecondaryButton>

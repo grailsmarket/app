@@ -160,14 +160,14 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
     <div className='flex min-h-0 flex-1 overflow-x-hidden'>
       <div
         className={cn(
-          'flex min-h-0 min-w-full flex-col overflow-y-auto pb-16 transition-transform lg:min-w-[292px]',
-          showCategoryTab && isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
+          'flex min-h-0 w-full min-w-full flex-col overflow-y-auto pb-16 transition-transform @[64rem]/app:min-w-[292px]',
+          showCategoryTab && isPanelCategories && '-translate-x-full @[64rem]/app:translate-x-[-292px]'
         )}
       >
-        <div className='flex flex-col'>
+        <div className='flex w-full flex-col'>
           <div className='px-lg mb-2 flex w-full flex-col gap-2'>
             {showSearchInput && (
-              <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 sm:h-10'>
+              <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[48rem]/app:h-10'>
                 <input
                   type='text'
                   placeholder='Search'
@@ -215,8 +215,8 @@ const Filters: React.FC<FiltersProps> = ({ isPanelCategories, setPanelCategories
       {showCategoryTab && (
         <div
           className={cn(
-            'flex min-h-0 min-w-full flex-col overflow-y-auto pb-8 transition-transform lg:min-w-[292px]',
-            isPanelCategories && '-translate-x-[100%] lg:-translate-x-[292px]'
+            'flex min-h-0 min-w-full flex-col overflow-y-auto pb-8 transition-transform @[64rem]/app:min-w-[292px]',
+            isPanelCategories && '-translate-x-full @[64rem]/app:translate-x-[-292px]'
           )}
         >
           <CategoryFilterNone showUserCategoryCounts={showUserCategoryCounts} />

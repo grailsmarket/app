@@ -59,7 +59,6 @@ const SignInButton = () => {
           setIsDropdownOpen(!isDropdownOpen)
         }}
         expirationTime={DAY_IN_SECONDS * 1000}
-        hideName={!!width && width < 768}
       />
       <div
         className={cn(

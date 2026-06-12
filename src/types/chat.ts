@@ -13,6 +13,13 @@ export interface ChatParticipant {
   muted?: boolean
 }
 
+export interface MessageReaction {
+  emoji: string
+  count: number
+  /** TRUE when the caller has reacted with this emoji. Always false for anonymous callers. */
+  reacted: boolean
+}
+
 export interface ChatMessage {
   id: string
   chat_id: string
@@ -25,6 +32,7 @@ export interface ChatMessage {
   created_at: string
   edited_at: string | null
   deleted_at: string | null
+  reactions?: MessageReaction[]
 }
 
 export interface Chat {
@@ -67,11 +75,59 @@ export interface CreateChatResponse {
   created: boolean
 }
 
+export interface SendMessageError {
+  status: number
+  code: string
+  message: string
+  quota?: GlobalChatQuota
+}
+
+export interface MappedSendError {
+  message: string
+  permanent?: boolean
+  restoreText?: boolean
+}
+
+export type MentionState = {
+  start: number
+  query: string
+}
+
+// ---- Global chat ----
+
+export interface SendController {
+  isPending: boolean
+  mutate: (body: string, options: { onError: (e: SendMessageError) => void }) => void
+}
+
+export interface GlobalChatQuota {
+  tier: 'avatar' | 'name' | 'none'
+  used: number
+  /** null = unlimited */
+  limit: number | null
+  /** null = unlimited */
+  remaining: number | null
+  resets_at: string
+}
+
+export interface OnlineUser {
+  user_id: number
+  address: Address
+  last_sign_in: string | null
+  /** Most recent activity (last_seen_at or last_sign_in, whichever is newer). */
+  last_active: string | null
+}
+
+export interface OnlineUsersResponse {
+  users: OnlineUser[]
+  pagination: PaginationType
+}
+
 // ---- WebSocket protocol ----
 
 export type ChatWSEvent =
-  | { type: 'connected'; clientId: string; userId: number; channel: 'chats'; timestamp: string }
-  | { type: 'subscribed' | 'unsubscribed'; channel: 'chats'; timestamp: string }
+  | { type: 'connected'; clientId: string; userId: number | null; channel: 'chats'; timestamp: string }
+  | { type: 'subscribed' | 'unsubscribed'; channel: 'chats' | 'global_chat'; timestamp: string }
   | { type: 'pong'; timestamp: string }
   | { type: 'error'; message: string }
   | {
@@ -95,10 +151,18 @@ export type ChatWSEvent =
       timestamp: string
     }
   | { type: 'chat:created'; data: { chat: Chat }; timestamp: string }
+  | {
+      type: 'chat:reaction_added' | 'chat:reaction_removed'
+      /** `count` is the ABSOLUTE per-emoji count after the change */
+      data: { chat_id: string; message_id: string; user_id: number; address: string; emoji: string; count: number }
+      timestamp: string
+    }
 
 export type ChatWSOutgoing =
   | { type: 'subscribe' }
   | { type: 'unsubscribe' }
+  | { type: 'subscribe_global' }
+  | { type: 'unsubscribe_global' }
   | { type: 'typing'; chat_id: string }
   | { type: 'stop_typing'; chat_id: string }
   | { type: 'ping' }

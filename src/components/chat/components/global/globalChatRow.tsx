@@ -1,0 +1,76 @@
+'use client'
+
+import React from 'react'
+import Image from 'next/image'
+import { useAppDispatch } from '@/state/hooks'
+import { openSidebarToGlobal } from '@/state/reducers/chat/sidebar'
+import { useGlobalMessages } from '@/hooks/chat/useGlobalMessages'
+import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
+import formatTimeAgo from '@/utils/time/formatTimeAgo'
+import { formatAddress } from '@/utils/formatAddress'
+import { cn } from '@/utils/tailwind'
+import Logo from 'public/logo.svg'
+import { useOnlineUsers } from '@/hooks/chat/useOnlineUsers'
+
+/** Pinned entry for the global room at the top of the chats list. */
+const GlobalChatRow: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const { total } = useOnlineUsers(true)
+  const { messages } = useGlobalMessages()
+
+  const newest = messages[messages.length - 1]
+  const senderProfile = usePeerProfile(newest?.sender_address as `0x${string}` | undefined)
+  const senderLabel = newest ? (senderProfile?.displayLabel ?? formatAddress(newest.sender_address ?? '')) : null
+  const time = newest ? formatTimeAgo(newest.created_at) : ''
+
+  const open = () => dispatch(openSidebarToGlobal())
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      open()
+    }
+  }
+
+  return (
+    <div
+      role='button'
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={onKeyDown}
+      className={cn(
+        'border-tertiary bg-primary/5 relative flex w-full cursor-pointer items-center gap-3 border-b-2 p-3 text-left transition-colors hover:bg-white/5'
+      )}
+    >
+      <div className='bg-background border-tertiary flex h-10 w-10 shrink-0 items-center justify-center rounded-full border'>
+        <Image src={Logo} alt='Grails' width={26} height={26} className='h-6.5 w-6.5' />
+      </div>
+      <div className='relative min-w-0 flex-1'>
+        <div className='flex items-center justify-between gap-2'>
+          <div className='flex items-center gap-2'>
+            <p className='text-foreground truncate text-lg font-semibold'>Global Chat</p>
+            {!!total && (
+              <p className='pb-0.5'>
+                <span className='inline-block h-2 w-2 rounded-full bg-green-500' />
+                &nbsp;
+                <span className='text-neutral text-md font-semibold'>{total}</span>
+              </p>
+            )}
+          </div>
+          {time && <span className='text-neutral text-sm font-medium whitespace-nowrap'>{time}</span>}
+        </div>
+        <p className='text-md text-neutral truncate'>
+          {newest ? (
+            <>
+              <span className='font-semibold'>{senderLabel}</span>
+              <span>: {newest.body ?? ''}</span>
+            </>
+          ) : (
+            'Talk to the whole Grails community'
+          )}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default GlobalChatRow

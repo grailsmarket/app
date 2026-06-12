@@ -80,7 +80,7 @@ const CommentRow: React.FC<Props> = ({ comment, canDelete, isLast, onRequestDele
             )}
           </div>
         </div>
-        <p className='text-foreground text-md font-medium break-words whitespace-pre-wrap'>{comment.body}</p>
+        <p className='text-foreground text-md font-medium wrap-break-word whitespace-pre-wrap'>{comment.body}</p>
       </div>
     </div>
   )

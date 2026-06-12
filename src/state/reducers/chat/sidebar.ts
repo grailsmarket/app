@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 
-export type ChatSidebarView = 'list' | 'new' | 'thread'
+export type ChatSidebarView = 'list' | 'new' | 'thread' | 'global'
 
 type ChatSidebarState = {
   open: boolean
@@ -53,6 +53,12 @@ export const chatSidebarSlice = createSlice({
       state.activeChatId = payload.chatId
       state.presetRecipient = null
     },
+    openSidebarToGlobal(state) {
+      state.open = true
+      state.view = 'global'
+      state.activeChatId = null
+      state.presetRecipient = null
+    },
     clearPresetRecipient(state) {
       state.presetRecipient = null
     },
@@ -66,6 +72,7 @@ export const {
   openSidebarToList,
   openSidebarToNew,
   openSidebarToThread,
+  openSidebarToGlobal,
   clearPresetRecipient,
 } = chatSidebarSlice.actions
 

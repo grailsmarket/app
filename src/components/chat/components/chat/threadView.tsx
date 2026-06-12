@@ -129,7 +129,6 @@ const ThreadView: React.FC = () => {
         <Link
           href={`/profile/${peer?.address}`}
           prefetch
-          onClick={() => dispatch(closeChatSidebar())}
           className='relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 transition-opacity hover:opacity-80'
         >
           {peerProfile?.ensName ? (

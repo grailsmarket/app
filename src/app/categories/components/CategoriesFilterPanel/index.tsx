@@ -47,9 +47,6 @@ const CategoriesFilterPanel: React.FC = () => {
     dispatch(clearCategoriesPageFilters())
   }
 
-  // Check if any filters are active
-  const hasActiveFilters = filters.type !== null
-
   return (
     <div
       className={cn(
@@ -131,12 +128,6 @@ const CategoriesFilterPanel: React.FC = () => {
           <CategoryTypeFilter />
         </div>
       </div>
-
-      {hasActiveFilters && (
-        <div className='border-tertiary flex w-[292px] justify-end border-t-2 p-4'>
-          <SecondaryButton onClick={handleClearFilters}>Clear all filters</SecondaryButton>
-        </div>
-      )}
     </div>
   )
 }

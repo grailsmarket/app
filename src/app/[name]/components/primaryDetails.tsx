@@ -197,6 +197,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 <CartIcon
                   domain={nameDetails}
                   hasBorder={true}
+                  includeText={false}
                   className='flex min-h-9 min-w-9 cursor-pointer items-center justify-center rounded-sm transition-colors @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'
                 />
               </button>

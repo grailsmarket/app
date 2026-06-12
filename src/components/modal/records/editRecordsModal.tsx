@@ -111,14 +111,14 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
   return (
     <>
       <div
-        className='fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12'
+        className='fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
         onClick={(e) => {
           e.stopPropagation()
           handleClose()
         }}
       >
         <div
-          className='bg-background border-tertiary relative flex max-h-[calc(100dvh-56px)] w-full flex-col rounded-md border-t shadow-lg md:max-w-xl md:border-2'
+          className='bg-background border-tertiary relative flex max-h-[calc(100dvh-56px)] w-full flex-col rounded-md border-t shadow-lg transition-all duration-300 md:max-w-xl md:border-2 starting:translate-y-full md:starting:translate-y-0'
           onClick={(e) => e.stopPropagation()}
         >
           {/* Confirming / Processing state */}
@@ -217,7 +217,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                   </div>
 
                   {/* Avatar overlapping header */}
-                  <div className='absolute -bottom-[35px] left-4'>
+                  <div className='absolute bottom-[-35px] left-4'>
                     <div className='bg-background relative h-20 w-20 overflow-hidden rounded-full sm:h-26 sm:w-26'>
                       <Image
                         src={avatarUrl}
@@ -389,7 +389,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                               disabled={!isManager}
                             />
                             <button
-                              className='hover:bg-tertiary flex h-12 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50'
+                              className='hover:bg-tertiary flex h-12 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-50'
                               onClick={() => removeCustomRecord(key)}
                               disabled={!isManager}
                             >

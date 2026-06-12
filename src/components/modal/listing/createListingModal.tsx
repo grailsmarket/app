@@ -960,13 +960,13 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
           handleClose()
         }
       }}
-      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:overflow-y-auto md:p-4 md:py-[5vh] starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm md:items-start md:overflow-y-auto md:p-4 md:py-[5vh]'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-h-none md:max-w-md md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t transition-all duration-300 md:max-h-none md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
         {status === 'success' && CAN_CLAIM_POAP && !poapClaimed ? (
           <ClaimPoap />

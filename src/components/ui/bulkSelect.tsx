@@ -386,19 +386,33 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
+  const isMobile = responsiveWidth && responsiveWidth < 640
+
   const bulkSelectWidth = showOwnedActionButtons
     ? canRegisterDomains
-      ? 'min(1110px,95cqw)'
-      : 'min(980px,95cqw)'
+      ? isMobile
+        ? 'min(800px,95cqw)'
+        : 'min(1110px,95cqw)'
+      : isMobile
+        ? 'min(650px,95cqw)'
+        : 'min(980px,95cqw)'
     : showWatchlistButton
       ? canRegisterDomains
-        ? 'min(780px,95cqw)'
-        : 'min(650px,95cqw)'
+        ? isMobile
+          ? 'min(490px,95cqw)'
+          : 'min(780px,95cqw)'
+        : isMobile
+          ? 'min(370px,95cqw)'
+          : 'min(650px,95cqw)'
       : canRegisterDomains
         ? canExtendDomains
-          ? 'min(550px,95cqw)'
-          : 'min(430px,95cqw)'
-        : responsiveWidth && responsiveWidth < 640
+          ? isMobile
+            ? 'min(260px,95cqw)'
+            : 'min(550px,95cqw)'
+          : isMobile
+            ? 'min(240px,95cqw)'
+            : 'min(430px,95cqw)'
+        : isMobile
           ? 'min(130px,95cqw)'
           : 'min(420px,95cqw)'
 

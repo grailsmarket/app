@@ -229,13 +229,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
         e.preventDefault()
         onClose()
       }}
-      className='fixed inset-0 z-50 flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:p-4 starting:translate-y-[100vh] md:starting:translate-y-0'
+      className='fixed inset-0 z-50 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm md:items-center md:justify-center md:p-4'
     >
       <div
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col items-center gap-2 overflow-y-auto border-t sm:gap-2 md:w-fit md:justify-center md:rounded-md md:border-2'
+        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col items-center gap-2 overflow-y-auto border-t transition-all duration-300 sm:gap-2 md:w-fit md:justify-center md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
         <div className='flex w-full flex-col items-center gap-2 sm:w-[440px]'>
           <h2 className='font-sedan-sc mb-2 text-3xl'>

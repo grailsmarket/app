@@ -29,6 +29,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { PersistGate } from 'redux-persist/integration/react'
 import { persistor } from '@/state'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 
 interface Props {
   user: Address | string
@@ -38,6 +39,7 @@ const Profile: React.FC<Props> = ({ user }) => {
   const [isFollowersAndFollowingOpen, setIsFollowersAndFollowingOpen] = useState(false)
   const [defaultTab, setDefaultTab] = useState<ProfileTabType>('following')
 
+  const { windowWidth } = useResponsiveSize()
   const router = useRouter()
   const isClient = useIsClient()
   const dispatch = useAppDispatch()
@@ -98,7 +100,7 @@ const Profile: React.FC<Props> = ({ user }) => {
               <FullWidthProfile
                 connectedAddress={userAddress}
                 addressOrName={user}
-                showPoaps={true}
+                showPoaps={windowWidth ? windowWidth > 1280 : false}
                 showFollowButton={true}
                 showFollowerState={true}
                 style={{ paddingLeft: '10px' }}
@@ -124,6 +126,7 @@ const Profile: React.FC<Props> = ({ user }) => {
                         }
                       : undefined,
                   hideSocials: ['grails'],
+                  hideEFPPoaps: true,
                   customPoaps: userPoap?.badges
                     ? userPoap.badges.map((badge) => ({
                         eventId: badge.event.id.toString(),

@@ -27,4 +27,8 @@ export const CATEGORY_TABS = [
     label: 'Activity',
     value: 'activity',
   },
+  {
+    label: 'Comments',
+    value: 'comments',
+  },
 ] as const

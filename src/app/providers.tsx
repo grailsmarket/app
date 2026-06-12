@@ -18,6 +18,7 @@ import { NavbarProvider } from '@/context/navbar'
 import PostHogProvider from '@/components/posthog/posthog-provider'
 import PostHogIdentify from '@/components/posthog/posthog-identify'
 import PostHogProfileProperties from '@/components/posthog/posthog-profile-properties'
+import ChatSidebar from '@/components/chat'
 // import InfoBar from '@/components/ui/infoBar'
 
 type ProviderProps = {
@@ -45,17 +46,34 @@ const Providers: React.FC<ProviderProps> = ({ children, initialState }) => {
                     <PostHogProfileProperties />
                     <SeaportProvider>
                       <NavbarProvider>
-                        <div className='relative flex min-h-[100dvh]! flex-col'>
+                        <div className='max-w-app relative mx-auto flex min-h-dvh! flex-col'>
                           {/* <InfoBar /> */}
                           <Navigation showInfo={false} />
-                          <Cart />
-                          <div className='app:border-r-2 app:border-l-2 border-tertiary mx-auto w-full max-w-[2340px]'>
-                            {children}
+                          <div className='relative flex flex-1'>
+                            <div
+                              data-app-container='true'
+                              className='@container/app flex min-w-0 flex-1 flex-col'
+                              style={{
+                                paddingRight: 'var(--chat-sidebar-width, 0px)',
+                                transition:
+                                  'padding-right var(--chat-sidebar-anim-duration, 250ms) cubic-bezier(0, 0, 0.58, 1)',
+                              }}
+                            >
+                              <Cart />
+                              <div className='app:border-r-2 app:border-l-2 border-tertiary max-w-app mx-auto w-full'>
+                                {children}
+                              </div>
+                            </div>
+                            <ChatSidebar />
                           </div>
                         </div>
-                        <TransactionModal />
-                        <Modals />
-                        <div id='modal-root' />
+                        {/* Modal overlays span the viewport, so give them their own viewport-sized
+                            container named "app" for @[…]/app: variants in shared components. */}
+                        <div className='@container/app'>
+                          <TransactionModal />
+                          <Modals />
+                          <div id='modal-root' />
+                        </div>
                       </NavbarProvider>
                     </SeaportProvider>
                   </UserProvider>

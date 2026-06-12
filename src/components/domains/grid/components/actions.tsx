@@ -1,5 +1,4 @@
 import React from 'react'
-import CartIcon from '../../table/components/CartIcon'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
@@ -27,23 +26,24 @@ import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import ActionsDropdown from '@/components/domains/actionsDropdown'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import Watchlist from '@/components/ui/watchlist'
 
 interface ActionsProps {
   domain: MarketplaceDomainType
   registrationStatus: RegistrationStatus
-  canAddToCart: boolean
   isFirstInRow?: boolean
   watchlistId?: number | undefined
   isBulkSelecting?: boolean
+  index?: number
 }
 
 const Actions: React.FC<ActionsProps> = ({
   domain,
   registrationStatus,
-  canAddToCart,
   watchlistId,
   isBulkSelecting,
   isFirstInRow,
+  index,
 }) => {
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
@@ -114,13 +114,13 @@ const Actions: React.FC<ActionsProps> = ({
   }
 
   const primaryButtonClassName =
-    'border-primary/70 hover:bg-primary text-primary/70 hover:text-background cursor-pointer rounded-sm border-2 px-2 py-0.5'
+    'border-primary/50 hover:bg-primary w-full text-primary/70 hover:text-background rounded-none cursor-pointer border-y border-l px-2 h-10 transition-all duration-300'
   const secondaryButtonClassName =
-    'border-foreground/20 hover:bg-foreground/20 text-foreground/60 hover:text-foreground cursor-pointer rounded-sm border-2 px-2.5 py-0.5 text-lg font-bold'
+    'bg-tertiary w-full text-foreground/60 border-foreground/20 hover:text-foreground h-10 cursor-pointer rounded-none px-2.5 py-0.5 text-lg font-bold'
 
   if (isBulkSelecting) {
     return (
-      <div className='flex flex-row justify-end gap-4 opacity-100'>
+      <div className='flex w-full flex-row justify-end gap-4 opacity-100'>
         {isSelected ? (
           <PrimaryButton
             onClick={(e) => {
@@ -131,7 +131,10 @@ const Actions: React.FC<ActionsProps> = ({
                 grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
               }
             }}
-            className='border-primary flex h-fit! w-fit! flex-row items-center gap-1 border-2 px-2.5! py-[5px]!'
+            className={cn(
+              primaryButtonClassName,
+              'bg-primary! text-background! flex w-full! flex-row items-center justify-center gap-1'
+            )}
           >
             Selected
             <Check className='h-3 w-3' />
@@ -146,7 +149,7 @@ const Actions: React.FC<ActionsProps> = ({
                 grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
               }
             }}
-            className='border-tertiary h-fit! w-fit! border-2 px-2.5! py-[5px]!'
+            className={secondaryButtonClassName}
           >
             Select
           </SecondaryButton>
@@ -159,11 +162,23 @@ const Actions: React.FC<ActionsProps> = ({
     if (registrationStatus === REGISTERED) {
       if (domainListing?.price) {
         return (
-          <div className='flex flex-row justify-end gap-1 opacity-100'>
-            <button className={secondaryButtonClassName} onClick={(e) => clickHandler(e, openMakeListingModal)}>
+          <div className='flex w-full flex-row justify-end opacity-100'>
+            <button
+              className={cn(
+                secondaryButtonClassName,
+                'flex w-full! flex-row items-center justify-center gap-1 border-r font-bold'
+              )}
+              onClick={(e) => clickHandler(e, openMakeListingModal)}
+            >
               Edit
             </button>
-            <p className={secondaryButtonClassName} onClick={(e) => clickHandler(e, openCancelListingModal)}>
+            <p
+              className={cn(
+                secondaryButtonClassName,
+                'flex w-full! flex-row items-center justify-center gap-1 font-bold'
+              )}
+              onClick={(e) => clickHandler(e, openCancelListingModal)}
+            >
               Cancel
             </p>
           </div>
@@ -171,8 +186,14 @@ const Actions: React.FC<ActionsProps> = ({
       }
 
       return (
-        <div className='flex flex-row justify-end opacity-100'>
-          <p className={primaryButtonClassName} onClick={(e) => clickHandler(e, openMakeListingModal)}>
+        <div className='flex w-full flex-row justify-end opacity-100'>
+          <p
+            className={cn(
+              primaryButtonClassName,
+              'flex w-full! flex-row items-center justify-center gap-1 border font-bold'
+            )}
+            onClick={(e) => clickHandler(e, openMakeListingModal)}
+          >
             List
           </p>
         </div>
@@ -182,9 +203,12 @@ const Actions: React.FC<ActionsProps> = ({
 
   return (
     <div
-      className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
+      className={cn(
+        'bg-foreground/5 flex w-full flex-row justify-between opacity-100',
+        watchlistId ? 'items-end' : 'justify-between'
+      )}
     >
-      <div>
+      <div className='w-full'>
         {registrationStatus === GRACE_PERIOD ? (
           <button onClick={(e) => clickHandler(e, openExtendModal)} className={primaryButtonClassName}>
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
@@ -210,17 +234,29 @@ const Actions: React.FC<ActionsProps> = ({
         )}
       </div>
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
-        {canAddToCart && (
-          <button className='cursor-pointer rounded-sm' disabled={!canAddToCart}>
-            <CartIcon domain={domain} className='p-0' />
-          </button>
-        )}
+        <div
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y border-l'
+        >
+          <Watchlist
+            domain={domain}
+            showSettings={watchlistId ? true : false}
+            tooltipPosition={index === 0 ? 'bottom' : 'top'}
+            dropdownPosition='left'
+            watchlistId={watchlistId || domain.watchlist_record_id}
+            fetchWatchSettings={false}
+          />
+        </div>
         {!isBulkSelecting && (
           <ActionsDropdown
             domain={domain}
             isOwner={isMyDomain}
             registrationStatus={registrationStatus}
             dropdownPosition={isFirstInRow ? 'right' : 'left'}
+            buttonClassName='rounded-none border-y border-x h-10 w-10 hover:bg-tertiary'
           />
         )}
       </div>

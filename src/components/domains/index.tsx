@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useMemo } from 'react'
-import { useIsClient, useWindowSize, ShortArrow } from 'ethereum-identity-kit'
+import { useIsClient, ShortArrow } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import TableRow from './table/components/TableRow'
 import NoResults from '@/components/ui/noResults'
 import { MarketplaceDomainType, MarketplaceHeaderColumn } from '@/types/domains'
@@ -79,7 +80,7 @@ const Domains: React.FC<DomainsProps> = ({
   const currentSort = selectors.filters.sort
   const viewType = useAppSelector(selectViewType)
   const viewTypeToUse = forceViewType || viewType
-  const { width, height } = useWindowSize()
+  const { width, height } = useResponsiveSize()
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreDomains && hasMoreDomains && !isLoading) {
@@ -174,8 +175,8 @@ const Domains: React.FC<DomainsProps> = ({
         showHeaders && (
           <div
             className={cn(
-              'px-md pt-sm bg-background transition-top border-tertiary lg:px-lg md:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
-              isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
+              'px-md pt-sm bg-background transition-top border-tertiary @[64rem]/app:px-lg @[48rem]/app:py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 @[40rem]/app:flex',
+              isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
             )}
           >
             {displayedColumns.map((header, index) => {
@@ -219,7 +220,10 @@ const Domains: React.FC<DomainsProps> = ({
         )
       )}
       <div
-        className={cn('h-full w-full rounded-sm', viewTypeToUse === 'grid' ? 'md:px-md lg:px-lg px-0' : 'px-0')}
+        className={cn(
+          'h-full w-full rounded-sm',
+          viewTypeToUse === 'grid' ? '@[48rem]/app:px-md @[64rem]/app:px-lg px-0' : 'px-0'
+        )}
         ref={listRef}
       >
         {!noResults ? (
@@ -228,7 +232,7 @@ const Domains: React.FC<DomainsProps> = ({
               ref={listRef}
               items={[...domains, ...Array(isLoading ? loadingRowCount : 0).fill(null)]}
               cardWidth={width && width < 400 ? 150 : 180}
-              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 386}
+              cardHeight={width && width < 400 ? (width < 328 ? 500 : 380) : 370}
               gap={4}
               containerPadding={width && width < 768 ? 8 : 0}
               containerWidth={containerWidth}
@@ -267,7 +271,7 @@ const Domains: React.FC<DomainsProps> = ({
               renderItem={(item, index) => {
                 if (!item)
                   return (
-                    <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
+                    <div className='px-sm @[48rem]/app:px-md border-tertiary flex h-[60px] w-full items-center justify-between border-b'>
                       <TableLoadingRow displayedColumns={displayedColumns} />
                     </div>
                   )

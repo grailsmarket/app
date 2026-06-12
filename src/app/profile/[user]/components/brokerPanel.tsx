@@ -44,11 +44,11 @@ const BrokerPanel: React.FC<Props> = ({ user }) => {
     <div className='z-0 flex w-full flex-col'>
       <div
         className={cn(
-          'py-md md:py-lg px-sm md:px-md lg:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 sm:flex-row',
-          isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
+          'py-md @[48rem]/app:py-lg px-sm @[48rem]/app:px-md @[64rem]/app:px-lg transition-top bg-background sticky z-50 flex w-full flex-col items-center justify-between gap-2 duration-300 @[40rem]/app:flex-row',
+          isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
         )}
       >
-        <div className='px-sm flex w-full items-center gap-3 sm:w-fit md:p-0'>
+        <div className='px-sm flex w-full items-center gap-3 @[40rem]/app:w-fit @[48rem]/app:p-0'>
           <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className='relative w-[180px]'>
             {/* <Dropdown
               label='Status'
@@ -60,10 +60,10 @@ const BrokerPanel: React.FC<Props> = ({ user }) => {
               hideLabel
             /> */}
             <button
-              className='border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+              className='border-tertiary hover:border-foreground/50 flex h-9 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10'
               onClick={() => setIsStatusFilterOpen(!isStatusFilterOpen)}
             >
-              <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
+              <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
                 {STATUS_OPTIONS.find((option) => option.value === statusFilter)?.label || 'All Statuses'}
               </p>
               <ShortArrow
@@ -79,7 +79,7 @@ const BrokerPanel: React.FC<Props> = ({ user }) => {
               {STATUS_OPTIONS.map((option) => (
                 <button
                   key={option.value}
-                  className='hover:bg-secondary text-md h-10 w-full cursor-pointer bg-transparent px-3 text-left font-medium whitespace-nowrap sm:text-lg'
+                  className='hover:bg-secondary text-md h-10 w-full cursor-pointer bg-transparent px-3 text-left font-medium whitespace-nowrap @[40rem]/app:text-lg'
                   onClick={() => {
                     setStatusFilter(option.value)
                     setIsStatusFilterOpen(false)

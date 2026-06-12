@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useMemo } from 'react'
-import { Address, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Address, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import NoResults from '@/components/ui/noResults'
 import VirtualList from '@/components/ui/virtuallist'
 import { DomainOfferType, OfferColumnType } from '@/types/domains'
@@ -39,7 +40,7 @@ const Offers: React.FC<OffersProps> = ({
   currentUserAddress,
   useLocalScrollTop = false,
 }) => {
-  const { width, height } = useWindowSize()
+  const { width, height } = useResponsiveSize()
   const { isNavbarVisible } = useNavbar()
   const handleScrollNearBottom = useCallback(() => {
     if (fetchMoreOffers && hasMoreOffers && !isLoading) {
@@ -93,8 +94,8 @@ const Offers: React.FC<OffersProps> = ({
       {showHeaders && (
         <div
           className={cn(
-            'px-md bg-background transition-top lg:px-lg border-tertiary py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 sm:flex',
-            isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
+            'px-md bg-background transition-top @[64rem]/app:px-lg border-tertiary py-md sticky z-40 flex w-full items-center justify-between border-b duration-300 @[40rem]/app:flex',
+            isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
           )}
         >
           {displayedColumns.map((header, index) => {
@@ -133,7 +134,7 @@ const Offers: React.FC<OffersProps> = ({
             renderItem={(item, index) => {
               if (!item)
                 return (
-                  <div className='px-md md:px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
+                  <div className='px-md @[48rem]/app:px-lg border-tertiary flex h-[60px] w-full items-center border-b'>
                     <LoadingRow displayedColumns={displayedColumns} />
                   </div>
                 )

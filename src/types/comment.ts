@@ -15,7 +15,7 @@ export interface CommentsResponse {
 }
 
 export interface CommentFeedItem {
-  id: string
+  id: number
   ens_name_id: number
   name: string
   body: string

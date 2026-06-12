@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react'
-import { useAccount } from 'wagmi'
 import { Address, hexToBigInt, labelhash } from 'viem'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
@@ -31,7 +30,6 @@ import useETHPrice from '@/hooks/useETHPrice'
 import { accountQueryKey } from '@/utils/queryKeys'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
 import { calculateRegistrationPrice } from '@/utils/calculateRegistrationPrice'
-import Watchlist from '@/components/ui/watchlist'
 import User from '@/components/ui/user'
 import Image from 'next/image'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
@@ -68,7 +66,6 @@ const Card: React.FC<CardProps> = ({
   watchlistId,
   isHomeCarousel,
 }) => {
-  const { address } = useAccount()
   const dispatch = useAppDispatch()
   const { ethPrice } = useETHPrice()
   const { filterType } = useFilterContext()
@@ -76,8 +73,6 @@ const Card: React.FC<CardProps> = ({
   const { isSelecting: isBulkSelecting } = useAppSelector(selectBulkSelect)
   const domainIsValid = checkNameValidity(domain?.name)
   const registrationStatus = getRegistrationStatus(domain.expiry_date)
-  const isMyDomain = address?.toLowerCase() === domain.owner?.toLowerCase()
-  const canAddToCart = !isMyDomain
   const domainListing = domain.listings?.[0]
   // const grailsListings = domain.listings.filter((listing) => listing.source === 'grails')
   const { domains: selectedDomains, anchorIndex, hoveredIndex, isShiftPressed } = useAppSelector(selectBulkSelect)
@@ -216,13 +211,13 @@ const Card: React.FC<CardProps> = ({
         }
       }}
       className={cn(
-        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 md:opacity-80',
+        'group bg-secondary flex h-full w-full cursor-pointer flex-col rounded-sm opacity-100 transition-colors delay-400 duration-400 hover:opacity-100 @[48rem]/app:opacity-80',
         !domainIsValid && 'pointer-events-none opacity-40',
         backgroundColor,
         className
       )}
     >
-      <div className='xs:max-h-[228px] relative flex max-h-[340px] w-full flex-col justify-between overflow-hidden rounded-t-md'>
+      <div className='relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-[206px]'>
         {isHomeCarousel ? (
           <Image
             src={`${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
@@ -230,18 +225,18 @@ const Card: React.FC<CardProps> = ({
             unoptimized
             width={500}
             height={500}
-            className='aspect-square w-full object-cover'
+            className='aspect-square w-full rounded-t-sm rounded-b-none object-cover'
           />
         ) : (
           <NameImage
             name={domain.name}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
-            className='h-full w-full rounded-t-sm object-cover'
+            className='h-full w-full rounded-t-sm rounded-b-none object-cover'
           />
         )}
-        {!domainIsValid && (
-          <div className='absolute top-4 right-4 z-10'>
+        {domainIsValid ? null : (
+          <div className='bg-secondary absolute top-0 right-0 z-10 flex flex-row items-center gap-0 rounded-tr-[3px] rounded-bl-sm'>
             <Tooltip
               position='bottom'
               label='Name contains invalid character(s)'
@@ -251,36 +246,24 @@ const Card: React.FC<CardProps> = ({
             </Tooltip>
           </div>
         )}
-
-        <div
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-          className={cn(
-            'bg-secondary absolute top-3 right-3 z-10 flex flex-row items-center gap-0 rounded-sm',
-            watchlistId ? 'pl-2' : 'justify-center p-1'
-          )}
-        >
-          <Watchlist
-            domain={domain}
-            tooltipPosition='bottom'
-            dropdownPosition={isFirstInRow ? 'right' : 'left'}
-            tooltipAlign={isFirstInRow ? 'left' : 'right'}
-            watchlistId={watchlistId || domain.watchlist_record_id}
-            showSettings={watchlistId ? true : false}
-            showSettingsArrow={false}
-            fetchWatchSettings={false}
-          />
-        </div>
+      </div>
+      <div className='flex justify-between'>
+        <Actions
+          domain={domain}
+          registrationStatus={registrationStatus}
+          isFirstInRow={isFirstInRow}
+          watchlistId={watchlistId}
+          isBulkSelecting={isBulkSelecting}
+          index={index}
+        />
       </div>
       <div
         className={cn(
-          'flex w-full flex-1 flex-col justify-between gap-[3px] p-3.5 text-lg',
+          'flex w-full flex-1 flex-col justify-between gap-[3px] rounded-b-sm pt-3 text-lg',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
-        <div className='flex w-full flex-col gap-1'>
+        <div className='flex w-full flex-col gap-1 px-3'>
           {registrationStatus === GRACE_PERIOD ? (
             <Tooltip
               label={`Ends ${formatExpiryDate(new Date(new Date(domain.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
@@ -379,7 +362,7 @@ const Card: React.FC<CardProps> = ({
             profileTab.value === 'grace' ||
             profileTab.value === 'broker') &&
             filterType === 'profile') ||
-            filterType === 'category') &&
+            (filterType === 'category' && registrationStatus !== UNREGISTERED)) &&
             domain.expiry_date && (
               <div className='flex items-center gap-1'>
                 <p className='text-md text-neutral truncate font-semibold'>
@@ -395,28 +378,20 @@ const Card: React.FC<CardProps> = ({
             </div>
           )}
         </div>
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col'>
           {domain.owner &&
             (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
               <User
                 address={domain.owner as Address}
-                className='max-w-full bg-transparent'
-                wrapperClassName='justify-start! max-w-full'
+                className='py-md w-full bg-transparent px-2.5!'
+                radiusClassName='rounded-b-sm'
+                wrapperClassName='w-full'
+                avatarSize='24px'
                 disableLink
-                disableTooltip
                 skipProfileFetch
+                alignTooltip={isFirstInRow ? 'left' : 'right'}
               />
             )}
-          <div className='flex justify-between'>
-            <Actions
-              domain={domain}
-              registrationStatus={registrationStatus}
-              canAddToCart={canAddToCart}
-              isFirstInRow={isFirstInRow}
-              watchlistId={watchlistId}
-              isBulkSelecting={isBulkSelecting}
-            />
-          </div>
         </div>
       </div>
     </HoverPrefetchLink>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useMemo } from 'react'
-import { useWindowSize } from 'ethereum-identity-kit'
+import { useViewportSize } from '@/hooks/useResponsiveSize'
 import VirtualList from '@/components/ui/virtuallist'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -30,7 +30,7 @@ const AllHoldersPanel: React.FC<AllHoldersResult> = ({
   fetchNextPage,
   hasNextPage,
 }) => {
-  const { height } = useWindowSize()
+  const { height } = useViewportSize()
   const { isNavbarVisible } = useNavbar()
 
   const noResults = !isLoading && holders.length === 0
@@ -62,14 +62,14 @@ const AllHoldersPanel: React.FC<AllHoldersResult> = ({
     <div className='w-full'>
       <div
         className={cn(
-          'py-md px-sm sm:px-md lg:px-lg transition-top bg-background border-tertiary sticky z-40 flex w-full items-center justify-start border-b duration-300',
-          isNavbarVisible ? 'top-26 md:top-32' : 'top-12 md:top-14'
+          'py-md px-sm @[40rem]/app:px-md @[64rem]/app:px-lg transition-top bg-background border-tertiary sticky z-40 flex w-full items-center justify-start border-b duration-300',
+          isNavbarVisible ? 'top-26 @[48rem]/app:top-32' : 'top-12 @[48rem]/app:top-14'
         )}
       >
-        <p className='text-neutral text-md w-[30px] text-center font-medium sm:w-[48px]'>#</p>
-        <p className='text-neutral text-md w-[60%] font-medium sm:w-[55%] lg:w-[45%]'>Users</p>
-        <p className='text-neutral text-md w-[25%] font-medium sm:w-[35%] lg:w-[50%]'>Names</p>
-        <p className='text-neutral text-md w-[10%] min-w-[120px] font-medium lg:w-[5%]'></p>
+        <p className='text-neutral text-md w-[30px] text-center font-medium @[40rem]/app:w-[48px]'>#</p>
+        <p className='text-neutral text-md w-[60%] font-medium @[40rem]/app:w-[55%] @[64rem]/app:w-[45%]'>Users</p>
+        <p className='text-neutral text-md w-[25%] font-medium @[40rem]/app:w-[35%] @[64rem]/app:w-[50%]'>Names</p>
+        <p className='text-neutral text-md w-[10%] min-w-[120px] font-medium @[64rem]/app:w-[5%]'></p>
       </div>
       <div className='w-full'>
         {!noResults ? (

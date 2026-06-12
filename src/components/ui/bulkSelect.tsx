@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Cross, useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { Cross, useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -76,7 +77,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
     }
   }, [isSelecting])
 
-  const { width: windowWidth } = useWindowSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
@@ -387,39 +388,41 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   const bulkSelectWidth = showOwnedActionButtons
     ? canRegisterDomains
-      ? 'min(1110px,95vw)'
-      : 'min(980px,95vw)'
+      ? 'min(1110px,95cqw)'
+      : 'min(980px,95cqw)'
     : showWatchlistButton
       ? canRegisterDomains
-        ? 'min(780px,95vw)'
-        : 'min(650px,95vw)'
+        ? 'min(780px,95cqw)'
+        : 'min(650px,95cqw)'
       : canRegisterDomains
         ? canExtendDomains
-          ? 'min(550px,95vw)'
-          : 'min(430px,95vw)'
-        : windowWidth && windowWidth < 640
-          ? 'min(130px,95vw)'
-          : 'min(420px,95vw)'
+          ? 'min(550px,95cqw)'
+          : 'min(430px,95cqw)'
+        : responsiveWidth && responsiveWidth < 640
+          ? 'min(130px,95cqw)'
+          : 'min(420px,95cqw)'
 
   const componentWidth = useMemo(() => {
     if (!isClient) return '136px'
     if (isSelecting) return bulkSelectWidth
-    if (windowWidth && windowWidth < 640) return '130px'
+    if (responsiveWidth && responsiveWidth < 640) return '130px'
     return '136px'
-  }, [isSelecting, windowWidth, bulkSelectWidth, isClient])
+  }, [isSelecting, responsiveWidth, bulkSelectWidth, isClient])
 
   if (!isBulkSelectSupportedTab) return null
 
   return (
     <div
       className={cn(
-        'bulk-select-container fixed z-10 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all sm:right-2 sm:bottom-2 sm:gap-1.5',
-        isActionButtonsVisible ? 'right-1 bottom-15 md:right-4 md:bottom-18' : 'right-1 bottom-1 md:right-4 md:bottom-4'
+        'bulk-select-container fixed z-10 flex max-w-[calc(100cqw-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all',
+        isActionButtonsVisible
+          ? 'right-[calc(var(--chat-sidebar-width,0)+0.25rem)] bottom-15 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)] @[48rem]/app:bottom-18'
+          : 'right-[calc(var(--chat-sidebar-width,0)+0.25rem)] bottom-1 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)] @[48rem]/app:bottom-4'
       )}
     >
       {isSelecting && selectAllError && (
         <div
-          className='shadow-bulk bg-secondary text-grace flex flex-row items-center justify-between gap-2 rounded-md p-2 sm:p-3'
+          className='shadow-bulk bg-secondary text-grace flex flex-row items-center justify-between gap-2 rounded-md p-2 @[40rem]/app:p-3'
           onAnimationEnd={() => {
             setTimeout(() => {
               handleDismissError()
@@ -434,21 +437,21 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && isSelectAllLoading && selectAllProgress && (
-        <div className='shadow-bulk bg-background flex flex-row items-center gap-3 rounded-md p-2 sm:p-3'>
+        <div className='shadow-bulk bg-background flex flex-row items-center gap-3 rounded-md p-2 @[40rem]/app:p-3'>
           <div className='flex items-center gap-2'>
             <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white' />
             <p className='text-lg text-nowrap'>
               Loading names... {selectAllProgress.loaded}/{selectAllProgress.total}
             </p>
           </div>
-          <SecondaryButton onClick={handleCancelSelectAll} className='h-9 md:h-10'>
+          <SecondaryButton onClick={handleCancelSelectAll} className='h-9 @[48rem]/app:h-10'>
             Cancel
           </SecondaryButton>
         </div>
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk hidden flex-row gap-1.5 rounded-md p-2 lg:flex'>
+        <div className='bg-background shadow-bulk hidden flex-row gap-1.5 rounded-md p-2 @[64rem]/app:flex'>
           <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
           <div className='bg-neutral h-4 w-px' />
           <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to Select All</p>
@@ -458,8 +461,8 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk flex flex-row gap-1.5 rounded-md p-2 sm:hidden'>
-          <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap md:h-10 md:min-w-10'>
+        <div className='bg-background shadow-bulk flex flex-row gap-1.5 rounded-md p-2 @[40rem]/app:hidden'>
+          <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap @[48rem]/app:h-10 @[48rem]/app:min-w-10'>
             {selectedDomains.length}
           </SecondaryButton>
           <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
@@ -467,7 +470,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
           </SecondaryButton>
           <SecondaryButton
             onClick={handleCancelBulkSelect}
-            className='flex w-9 min-w-9 items-center justify-center p-0! md:w-10'
+            className='flex w-9 min-w-9 items-center justify-center p-0! @[48rem]/app:w-10'
           >
             <Cross className='h-3 w-3' />
           </SecondaryButton>
@@ -488,7 +491,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
               isSelecting ? 'opacity-100' : 'opacity-0'
             )}
           >
-            <div className='flex flex-row gap-1.5 p-2 sm:p-3'>
+            <div className='flex flex-row gap-1.5 p-2 @[40rem]/app:p-3'>
               {showWatchlistButton && (
                 <PrimaryButton
                   className='flex items-center gap-2'
@@ -563,18 +566,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 </>
               )}
             </div>
-            <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 sm:flex'>
+            <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 @[40rem]/app:flex'>
               <div className='flex flex-row gap-1.5'>
                 <SecondaryButton
                   className={cn(
-                    'hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-nowrap md:h-10 md:min-w-10',
+                    'hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-nowrap @[48rem]/app:h-10 @[48rem]/app:min-w-10',
                     selectedDomains.length > 999 ? 'text-xl' : 'text-2xl'
                   )}
                 >
                   {selectedDomains.length}
                 </SecondaryButton>
                 <SecondaryButton
-                  className='hidden sm:block'
+                  className='hidden @[40rem]/app:block'
                   onClick={handleSelectAll}
                   disabled={!selectAllContext?.canSelectAll}
                 >
@@ -582,7 +585,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 </SecondaryButton>
                 <SecondaryButton
                   onClick={handleCancelBulkSelect}
-                  className='hidden w-28 items-center justify-center sm:flex'
+                  className='hidden w-28 items-center justify-center @[40rem]/app:flex'
                 >
                   Close
                 </SecondaryButton>
@@ -590,7 +593,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
             </div>
           </div>
         ) : (
-          <div className='p-2 sm:p-3'>
+          <div className='p-2 @[40rem]/app:p-3'>
             <PrimaryButton onClick={handleBulkSelect} className='w-28'>
               Bulk&nbsp;Select
             </PrimaryButton>

@@ -99,7 +99,7 @@ const NewChatView: React.FC = () => {
 
   return (
     <div className='flex h-full flex-col overflow-y-auto'>
-      <div className='border-tertiary bg-background sticky top-0 z-10 flex items-center justify-between border-b-2 p-4'>
+      <div className='border-tertiary bg-background sticky top-0 z-10 flex min-h-14.5 items-center justify-between border-b-2 pr-3 pl-4'>
         <button
           onClick={() => dispatch(openSidebarToList())}
           className='hover:bg-primary/10 flex items-center gap-2 rounded-md p-1 transition-colors'
@@ -143,6 +143,8 @@ const NewChatView: React.FC = () => {
                     top: 0,
                     left: 0,
                     opacity: 0.15,
+                    borderTopLeftRadius: '0px',
+                    borderTopRightRadius: '0px',
                   }}
                 />
               )}

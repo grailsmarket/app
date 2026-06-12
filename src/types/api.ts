@@ -1,4 +1,5 @@
 import { Address } from 'viem'
+import { ProfileActivityEventType } from './profile'
 
 export type MetaType = {
   version?: string
@@ -137,3 +138,42 @@ export type DetailsResponseType = {
     icon: 'chart'
   }
 }
+
+export type FeedItemCommon = {
+  id: number
+  ens_name_id: number
+  name: string
+  clubs: string[]
+  owner_address: Address
+  created_at: string
+}
+
+export type FeedActivityType = {
+  event_type: ProfileActivityEventType
+  actor_address: Address | null
+  counterparty_address: Address | null
+  platform: string
+  chain_id: number
+  price_wei: string
+  currency_address: Address | null
+  transaction_hash: string | null
+  block_number: number | null
+  price: string | null
+  token_id: string
+  metadata: Record<string, unknown>
+}
+
+export type FeedCommentType = {
+  body: string
+  author_address: Address
+}
+
+export type FeedItemType =
+  | (FeedItemCommon & {
+      kind: 'activity'
+      activity: FeedActivityType
+    })
+  | (FeedItemCommon & {
+      kind: 'comment'
+      comment: FeedCommentType
+    })

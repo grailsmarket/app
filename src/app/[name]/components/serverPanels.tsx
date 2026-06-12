@@ -74,28 +74,28 @@ export default function ServerPanels({ name, nameDetails, offers = [], metadata 
       <div className='px-md flex w-full flex-row justify-between'>
         <ServerActions nameDetails={nameDetails} />
       </div>
-      <div className='flex w-full flex-col gap-1 sm:gap-4 lg:flex-row'>
-        <div className='flex h-fit flex-col gap-1 sm:gap-4 sm:rounded-lg lg:w-2/5'>
+      <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:flex-row'>
+        <div className='flex h-fit flex-col gap-1 @[40rem]/app:gap-4 @[40rem]/app:rounded-lg @[64rem]/app:w-2/5'>
           <ServerPrimaryDetails
             name={name}
             nameDetails={nameDetails}
             registrationStatus={registrationStatus}
             isSubname={isSubname}
           />
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <ServerCategories nameDetails={nameDetails} />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <ServerMetadata name={name} metadata={metadata} />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <ServerRoles roles={roles} />
           </div>
-          <div className='hidden lg:block'>
+          <div className='hidden @[64rem]/app:block'>
             <ServerSecondaryDetails nameDetails={nameDetails} roles={roles} />
           </div>
         </div>
-        <div className='flex w-full flex-col gap-1 sm:gap-4 lg:w-3/5'>
+        <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:w-3/5'>
           {isRegistered ? (
             <>
               <ServerListings domain={nameDetails} listings={nameDetails?.listings || []} />
@@ -104,16 +104,16 @@ export default function ServerPanels({ name, nameDetails, offers = [], metadata 
           ) : (
             <ServerRegisterSummary nameDetails={nameDetails} registrationStatus={registrationStatus} />
           )}
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <ServerCategories nameDetails={nameDetails} />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <ServerMetadata name={name} metadata={metadata} />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <ServerRoles roles={roles} />
           </div>
-          <div className='lg:hidden'>
+          <div className='@[64rem]/app:hidden'>
             <ServerSecondaryDetails nameDetails={nameDetails} roles={roles} />
           </div>
           <ServerClientOnlyPlaceholder title='Activity' description='Activity loads in the interactive app.' />
@@ -127,7 +127,7 @@ export default function ServerPanels({ name, nameDetails, offers = [], metadata 
 
 const ServerActions = ({ nameDetails }: { nameDetails?: MarketplaceDomainType | null }) => (
   <div className='flex w-full flex-row justify-between gap-2'>
-    <div className='flex w-full flex-row justify-between gap-4 sm:justify-start md:w-fit'>
+    <div className='flex w-full flex-row justify-between gap-4 @[40rem]/app:justify-start @[48rem]/app:w-fit'>
       <div className='flex flex-row items-center gap-2'>
         <p className='text-lg font-semibold'>{nameDetails?.view_count ?? 0}</p>
         <p className='text-neutral text-lg'>views</p>
@@ -151,7 +151,7 @@ const ServerPrimaryDetails = ({
   registrationStatus: RegistrationStatus
   isSubname: boolean
 }) => (
-  <div className='bg-secondary border-tertiary flex flex-col sm:rounded-lg sm:border-2'>
+  <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='bg-tertiary h-fit w-full'>
       <Image
         src={getNameImageUrl(name, nameDetails?.expiry_date)}
@@ -162,9 +162,9 @@ const ServerPrimaryDetails = ({
         priority
       />
     </div>
-    <div className='p-lg flex flex-col items-center gap-3 lg:pt-5'>
+    <div className='p-lg flex flex-col items-center gap-3 @[64rem]/app:pt-5'>
       <div className='flex w-full flex-row items-center justify-between gap-2'>
-        <h1 className='max-w-[calc(100%-52px)] truncate text-2xl font-bold md:text-3xl'>
+        <h1 className='max-w-[calc(100%-52px)] truncate text-2xl font-bold @[48rem]/app:text-3xl'>
           {nameDetails?.name ? beautifyName(nameDetails.name) : name}
         </h1>
       </div>
@@ -176,7 +176,7 @@ const ServerPrimaryDetails = ({
           </p>
         </div>
         {nameDetails?.owner && (
-          <p className='text-neutral hidden max-w-[50%] truncate font-mono sm:block'>{nameDetails.owner}</p>
+          <p className='text-neutral hidden max-w-[50%] truncate font-mono @[40rem]/app:block'>{nameDetails.owner}</p>
         )}
       </div>
       <div className='grid w-full grid-cols-2 gap-2 py-2'>
@@ -196,7 +196,7 @@ const ServerPrimaryDetails = ({
 )
 
 const ServerCategories = ({ nameDetails }: { nameDetails?: MarketplaceDomainType | null }) => (
-  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-2 sm:rounded-lg sm:border-2'>
+  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-2 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='mb-2 flex flex-row items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>Categories</h2>
       <p className='text-xl font-bold'>{nameDetails?.clubs?.length || 0}</p>
@@ -243,7 +243,7 @@ const ServerCategories = ({ nameDetails }: { nameDetails?: MarketplaceDomainType
 )
 
 const ServerMetadata = ({ name, metadata = [] }: { name: string; metadata?: MetadataType[] }) => (
-  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
+  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='flex flex-row items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>Records</h2>
       <p className='text-xl font-bold'>{metadata.length}</p>
@@ -267,7 +267,7 @@ const ServerMetadata = ({ name, metadata = [] }: { name: string; metadata?: Meta
 )
 
 const ServerRoles = ({ roles }: { roles?: RolesType | null }) => (
-  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
+  <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='flex flex-row items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>Roles</h2>
     </div>
@@ -306,7 +306,7 @@ const ServerSecondaryDetails = ({
   ].filter((row) => row.value)
 
   return (
-    <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <section className='bg-secondary border-tertiary p-lg flex flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex flex-row items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Details</h2>
       </div>
@@ -344,7 +344,7 @@ const ServerListings = ({
   })
 
   return (
-    <section className='p-lg lg:px-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <section className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Listings</h2>
       </div>
@@ -368,13 +368,13 @@ const ServerListingRow = ({
   domain?: MarketplaceDomainType | null
 }) => (
   <div className='flex flex-row items-center justify-between gap-2'>
-    <div className='flex flex-row items-center gap-2 sm:gap-4'>
+    <div className='flex flex-row items-center gap-2 @[40rem]/app:gap-4'>
       <Image
         src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
         width={32}
         height={32}
         alt={listing.source}
-        className='h-auto w-7 sm:w-8'
+        className='h-auto w-7 @[40rem]/app:w-8'
       />
       <div className='flex flex-col gap-1'>
         <div className='flex flex-row items-center gap-2'>
@@ -390,10 +390,10 @@ const ServerListingRow = ({
             </Link>
           )}
         </div>
-        <p className='sm:text-md text-neutral text-sm'>{formatSummaryDate(listing.expires_at)}</p>
+        <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatSummaryDate(listing.expires_at)}</p>
       </div>
     </div>
-    <p className='text-neutral hidden max-w-[35%] truncate text-sm sm:block'>
+    <p className='text-neutral hidden max-w-[35%] truncate text-sm @[40rem]/app:block'>
       {domain?.owner && listing.seller_address.toLowerCase() === domain.owner.toLowerCase()
         ? 'Owner listing'
         : 'Marketplace listing'}
@@ -411,7 +411,7 @@ const ServerOffers = ({ domain, offers }: { domain?: MarketplaceDomainType | nul
   })
 
   return (
-    <section className='p-lg lg:px-xl sm:border-tertiary bg-secondary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+    <section className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Offers</h2>
       </div>
@@ -432,23 +432,23 @@ const ServerOfferRow = ({ offer, domain }: { offer: DomainOfferType; domain?: Ma
 
   return (
     <div className='flex flex-row items-center justify-between gap-2'>
-      <div className='flex flex-row items-center gap-2 sm:gap-4'>
+      <div className='flex flex-row items-center gap-2 @[40rem]/app:gap-4'>
         <Image
           src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
           width={32}
           height={32}
           alt={offer.source}
-          className='h-auto min-w-7 sm:w-8'
+          className='h-auto min-w-7 @[40rem]/app:w-8'
         />
         <div className='flex flex-col gap-1'>
           <div className='flex flex-row items-center gap-1.5'>
             <p className='text-2xl font-semibold'>{formatTokenPrice(offer.offer_amount_wei, offer.currency_address)}</p>
             <p className={`text-md ${fee > 0 ? 'text-red-400' : 'text-green-500'}`}>({fee * 100}% fee)</p>
           </div>
-          <p className='sm:text-md text-neutral text-sm'>{formatSummaryDate(offer.expires_at)}</p>
+          <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatSummaryDate(offer.expires_at)}</p>
         </div>
       </div>
-      <p className='text-neutral hidden max-w-[35%] truncate text-sm sm:block'>
+      <p className='text-neutral hidden max-w-[35%] truncate text-sm @[40rem]/app:block'>
         {domain?.owner && offer.buyer_address.toLowerCase() === domain.owner.toLowerCase()
           ? 'Owner offer'
           : truncateAddress(offer.buyer_address)}
@@ -464,7 +464,7 @@ const ServerRegisterSummary = ({
   nameDetails?: MarketplaceDomainType | null
   registrationStatus: RegistrationStatus
 }) => (
-  <section className='p-lg lg:p-xl bg-secondary sm:border-tertiary flex w-full flex-col gap-4 sm:rounded-lg sm:border-2'>
+  <section className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='flex flex-row items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>
         {registrationStatus === UNREGISTERED ? 'Register' : `${registrationStatus} Registration`}
@@ -478,8 +478,8 @@ const ServerRegisterSummary = ({
 )
 
 const ServerClientOnlyPlaceholder = ({ title, description }: { title: string; description: string }) => (
-  <section className='sm:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 sm:rounded-lg sm:border-2 lg:gap-2'>
-    <div className='px-lg xl:px-xl flex items-center justify-between'>
+  <section className='@[40rem]/app:border-tertiary bg-secondary pt-lg flex w-full flex-col gap-1 @[40rem]/app:rounded-lg @[40rem]/app:border-2 @[64rem]/app:gap-2'>
+    <div className='px-lg @[80rem]/app:px-xl flex items-center justify-between'>
       <h2 className='font-sedan-sc text-3xl'>{title}</h2>
     </div>
     <div className='py-2xl flex w-full flex-col items-center justify-center gap-3 px-4 text-center'>

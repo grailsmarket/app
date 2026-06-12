@@ -13,9 +13,16 @@ interface CartIconProps {
   size?: string | number
   className?: string
   hasBorder?: boolean
+  includeText?: boolean
 }
 
-const CartIcon: React.FC<CartIconProps> = ({ domain, size = '18px', className, hasBorder = false }) => {
+const CartIcon: React.FC<CartIconProps> = ({
+  domain,
+  size = '18px',
+  className,
+  hasBorder = false,
+  includeText = true,
+}) => {
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
   const { isAddedToCart: isAddedToCartDomains, isModifyingDomain, isCartDomainsLoading, onSelect } = useCartDomains()
@@ -29,11 +36,12 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size = '18px', className, h
   return (
     <div
       className={cn(
-        'flex min-h-7 min-w-7 items-center justify-center rounded-[4px] transition-all sm:p-1.5',
+        'flex min-h-7 min-w-7 items-center justify-center rounded-[4px] transition-all @[40rem]/app:p-1.5',
         showInCart ? 'opacity-100 hover:opacity-80' : 'opacity-70 hover:opacity-100',
         hasBorder && 'border-foreground/50 hover:border-foreground/80 rounded-sm border-2',
         hasBorder && showInCart && 'border-primary hover:border-primary',
         isCartDomainsLoading && 'opacity-40',
+        includeText && 'flex-row items-center justify-start gap-1',
         className
       )}
       onClick={(e) => {
@@ -51,6 +59,7 @@ const CartIcon: React.FC<CartIconProps> = ({ domain, size = '18px', className, h
         alt='Add to cart'
         style={size ? { width: size, height: size, minWidth: size, minHeight: size } : {}}
       />
+      {includeText && <p className='text-lg font-medium'>{showInCart ? 'Remove from Cart' : 'Add to Cart'}</p>}
     </div>
   )
 }

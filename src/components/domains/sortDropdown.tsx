@@ -128,10 +128,10 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
           type='button'
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-full min-w-[190px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all sm:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-full min-w-[190px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-[2px] bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
-          <p className='text-md font-medium whitespace-nowrap sm:text-lg'>
+          <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
             <span className='text-neutral text-md'>Sort:</span>&nbsp;{displayLabel}
           </p>
           <ShortArrow className={cn('h-3 w-3 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
@@ -142,7 +142,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
             <button
               onClick={() => handleTypeSelect(null)}
               className={cn(
-                'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                 !sortType && 'bg-secondary'
               )}
             >
@@ -154,7 +154,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
                 key={type}
                 onClick={() => handleTypeSelect(type)}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors sm:text-lg',
+                  'hover:bg-tertiary text-md flex w-full items-center px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
                   sortType === type && 'bg-secondary',
                   type === 'ranking' && !hasOnlyOneCategory && 'pointer-events-none opacity-50'
                 )}
@@ -171,7 +171,7 @@ const SortDropdown: React.FC<SortDropdownProps> = ({ className }) => {
         onClick={handleDirectionToggle}
         disabled={!sortType}
         className={cn(
-          'border-tertiary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-[2px] transition-all sm:h-10 sm:w-10',
+          'border-tertiary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border-[2px] transition-all @[40rem]/app:h-10 @[40rem]/app:w-10',
           sortType ? 'hover:border-foreground/50 opacity-100' : 'cursor-not-allowed opacity-40'
         )}
         aria-label={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}

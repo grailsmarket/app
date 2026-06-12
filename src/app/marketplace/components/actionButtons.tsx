@@ -47,15 +47,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
       <button
         onClick={scrollToTop}
         className={cn(
-          'bg-secondary hover:bg-tertiary border-tertiary fixed right-2 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 md:right-4 xl:right-5',
+          'bg-secondary hover:bg-tertiary border-tertiary fixed right-[calc(var(--chat-sidebar-width,0px)+0.5rem)] z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-md border-2 shadow-sm transition-all duration-300 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0px)+1rem)] @[80rem]/app:right-[calc(var(--chat-sidebar-width,0px)+1.25rem)]',
           showScrollTop ? 'opacity-100' : 'pointer-events-none opacity-0',
           isActionBarVisible
-            ? 'bottom-16 md:bottom-18'
+            ? 'bottom-16 @[48rem]/app:bottom-18'
             : isBulkSelectVisible
               ? isSelecting
-                ? 'bottom-30 md:bottom-32'
-                : 'bottom-15 md:bottom-22'
-              : 'bottom-4 md:bottom-6',
+                ? 'bottom-30 @[48rem]/app:bottom-32'
+                : 'bottom-15 @[48rem]/app:bottom-22'
+              : 'bottom-4 @[48rem]/app:bottom-6',
           isBulkSelectVisible && isActionBarVisible && 'hidden'
         )}
         aria-label='Scroll to top'
@@ -65,12 +65,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ hideDomainActions }) => {
 
       <div
         className={cn(
-          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-40 flex h-14 w-full flex-row items-center justify-end rounded-b-lg border-t-2 transition-all duration-300 md:h-16 starting:translate-y-full',
+          'border-tertiary action-buttons-container bg-background fixed bottom-0 left-0 z-40 flex h-14 w-[calc(100%-var(--chat-sidebar-width,0px))] flex-row items-center justify-end rounded-b-lg border-t-2 transition-all duration-300 @[48rem]/app:h-16 starting:translate-y-full',
           !cartIsEmpty && !hideDomainActions ? 'translate-y-0' : 'hidden'
         )}
       >
         {!cartIsEmpty && !hideDomainActions && (
-          <div className='px-md md:px-lg flex w-fit flex-row gap-x-2'>
+          <div className='px-md @[48rem]/app:px-lg flex w-fit flex-row gap-x-2'>
             <SecondaryButton onClick={clearCart} disabled={cartIsEmpty}>
               Clear Cart
             </SecondaryButton>

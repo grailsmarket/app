@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useAppSelector } from '@/state/hooks'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectMarketplaceFilters } from '@/state/reducers/filters/marketplaceFilters'
@@ -15,7 +16,7 @@ const MainPanel: React.FC = () => {
   const [isLiveActivityConnected, setIsLiveActivityConnected] = useState(false)
   const isClient = useIsClient()
   const { selectedTab } = useAppSelector(selectMarketplace)
-  const { width: windowWidth } = useWindowSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { open: filtersOpen } = useAppSelector(selectMarketplaceFilters)
 
   const showDomainsPanel =
@@ -27,8 +28,8 @@ const MainPanel: React.FC = () => {
 
   // On mobile: always 100%, on desktop: adjust based on filter open state
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 

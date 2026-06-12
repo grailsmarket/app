@@ -18,6 +18,7 @@ import { MarketplaceTabType } from '@/state/reducers/marketplace/marketplace'
 import { CategoryTabType } from '@/state/reducers/category/category'
 import { CategoriesPageTabType } from '@/constants/categories/categoriesPageTabs'
 import { BulkSearchTabType } from '@/constants/domains/bulkSearch/tabs'
+import type { FeedTab } from './feed'
 
 export type StatusType = (typeof NAME_STATUS_FILTER_LABELS)[number]
 
@@ -105,7 +106,7 @@ export type NamefiltersOpened = NameFilters & {
   scrollTop: number
 }
 
-export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage' | 'bulkSearch'
+export type FilterContextType = 'marketplace' | 'profile' | 'category' | 'categoriesPage' | 'bulkSearch' | 'feed'
 
 export interface FilterRouterSelectors {
   filters: NamefiltersOpened
@@ -148,6 +149,7 @@ export interface FilterRouter {
   categoryTab?: CategoryTabType
   categoriesPageTab?: CategoriesPageTabType
   bulkSearchTab?: BulkSearchTabType
+  feedTab?: FeedTab
   activeTab?: string
   isFiltersClear: boolean
 }

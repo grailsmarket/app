@@ -36,9 +36,7 @@ import { useOpenSettingsFromUrl } from '@/hooks/useOpenSettingsFromUrl'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
 import { selectRegistration } from '@/state/reducers/registration'
-import ChatSidebar from '@/components/chat'
 import ChatSocketMount from '@/components/chat/socketMount'
-import { selectChatSidebar } from '@/state/reducers/chat/sidebar'
 
 const OpenSettingsFromUrl: React.FC = () => {
   useOpenSettingsFromUrl()
@@ -100,7 +98,6 @@ const Modals: React.FC = () => {
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
   const { isOpen: registrationModalOpen } = useAppSelector(selectRegistration)
-  const { open: chatSidebarOpen } = useAppSelector(selectChatSidebar)
 
   const anyModalOpen =
     makeOfferModalOpen ||
@@ -117,8 +114,7 @@ const Modals: React.FC = () => {
     editRecordsModalOpen ||
     isSettingsOpen ||
     listSettingsModalOpen ||
-    registrationModalOpen ||
-    chatSidebarOpen
+    registrationModalOpen
 
   useEffect(() => {
     if (anyModalOpen) {
@@ -223,7 +219,6 @@ const Modals: React.FC = () => {
         />
       )}
       <ChatSocketMount />
-      <ChatSidebar />
     </div>
   )
 }

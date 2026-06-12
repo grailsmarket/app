@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
+import { useIsClient } from 'ethereum-identity-kit'
+import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useAppSelector } from '@/state/hooks'
 import { selectBulkSearchFilters } from '@/state/reducers/filters/bulkSearchFilters'
 import TabSwitcher from './tabSwitcher'
@@ -13,14 +14,14 @@ import { useBulkSearchDomains } from '../hooks/useBulkSearchDomains'
 
 const MainPanel: React.FC = () => {
   const isClient = useIsClient()
-  const { width: windowWidth } = useWindowSize()
+  const { width: responsiveWidth } = useResponsiveSize()
   const { open: filtersOpen } = useAppSelector(selectBulkSearchFilters)
   const bulkSearchDomains = useBulkSearchDomains()
 
   // On mobile: always 100%, on desktop: adjust based on filter open state
   const getContentWidth = () => {
-    if (!isClient || !windowWidth) return '100%'
-    if (windowWidth < 1024) return '100%'
+    if (!isClient || !responsiveWidth) return '100%'
+    if (responsiveWidth < 1024) return '100%'
     return filtersOpen ? 'calc(100% - 290px)' : '100%'
   }
 

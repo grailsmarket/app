@@ -72,7 +72,7 @@ const TextareaSection: React.FC = () => {
   return (
     <div className='border-tertiary relative flex w-full flex-col gap-3 border-b-2 p-4'>
       <div className='bg-background pt-lg px-lg pb-md absolute top-4.5 left-4.5 flex w-[calc(100%-36px)] items-center justify-between gap-3'>
-        <h1 className='text-xl font-bold sm:text-2xl'>Bulk Search</h1>
+        <h1 className='text-xl font-bold @[40rem]/app:text-2xl'>Bulk Search</h1>
         <p className={`text-lg font-medium ${isOverLimit ? 'text-red-500' : 'opacity-50'}`}>
           {formatNumber(nameCount)} / {formatNumber(MAX_NAMES)} names
         </p>

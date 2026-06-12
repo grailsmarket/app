@@ -25,6 +25,7 @@ import RegisterIcon from 'public/icons/registration-white.svg'
 import BuyNowIcon from 'public/icons/cart.svg'
 import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { setBuyNowModalDomain, setBuyNowModalListing, setBuyNowModalOpen } from '@/state/reducers/modals/buyNowModal'
+import CartIcon from './table/components/CartIcon'
 
 interface ActionsDropdownProps {
   domain: MarketplaceDomainType
@@ -32,13 +33,14 @@ interface ActionsDropdownProps {
   registrationStatus: RegistrationStatus
   dropdownPosition?: 'left' | 'right'
   className?: string
+  buttonClassName?: string
 }
 
 const ThreeDotsIcon = () => (
   <svg width='16' height='16' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'>
-    <circle cx='8' cy='3' r='1.5' />
+    <circle cx='3' cy='8' r='1.5' />
     <circle cx='8' cy='8' r='1.5' />
-    <circle cx='8' cy='13' r='1.5' />
+    <circle cx='13' cy='8' r='1.5' />
   </svg>
 )
 
@@ -48,6 +50,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
   registrationStatus,
   dropdownPosition = 'left',
   className,
+  buttonClassName,
 }) => {
   const dispatch = useAppDispatch()
   const [isOpen, setIsOpen] = useState(false)
@@ -140,7 +143,10 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
     <div ref={dropdownRef as React.RefObject<HTMLDivElement>} className={cn('relative', className)}>
       <button
         onClick={handleToggle}
-        className='hover:bg-tertiary hover:text-foreground text-neutral flex h-7 w-5 cursor-pointer items-center justify-center rounded-sm transition-colors'
+        className={cn(
+          'hover:bg-tertiary hover:text-foreground text-neutral flex h-7 w-5 cursor-pointer items-center justify-center rounded-sm transition-colors',
+          buttonClassName
+        )}
         aria-label='More actions'
       >
         <ThreeDotsIcon />
@@ -149,7 +155,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            'bg-background border-tertiary absolute top-full z-50 mt-1 min-w-[160px] overflow-hidden rounded-md border-2 font-medium shadow-lg',
+            'bg-background border-tertiary absolute top-full z-100 mt-1 min-w-[180px] overflow-hidden rounded-md border-2 font-medium shadow-lg',
             dropdownPosition === 'left' ? 'right-0' : 'left-0'
           )}
         >
@@ -215,6 +221,16 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
               <Image src={CancelIcon} alt='Cancel Listing' className='h-4 w-4' width={16} height={16} />
               <p>Cancel Listing</p>
             </button>
+          )}
+
+          {!isOwner && (
+            <div>
+              <CartIcon
+                domain={domain}
+                className='hover:bg-tertiary gap-2 rounded-none px-3! py-2! opacity-100'
+                size='16px'
+              />
+            </div>
           )}
         </div>
       )}

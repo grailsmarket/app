@@ -46,7 +46,7 @@ const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs
         onClick={() => setIsOpen((open) => !open)}
         onMouseEnter={() => setPrefetch(true)}
         onFocus={() => setPrefetch(true)}
-        className='border-tertiary hover:border-foreground/50 px-md flex h-10 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent transition-all sm:w-[210px] md:px-3'
+        className='border-tertiary hover:border-foreground/50 px-md flex h-10 w-full cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent transition-all @[40rem]/app:w-[210px] @[48rem]/app:px-3'
       >
         <div className='flex min-w-0 items-center gap-2'>
           {selectedClubs.length > 0 && (
@@ -63,7 +63,7 @@ const CategoryMultiSelect: React.FC<CategoryMultiSelectProps> = ({ selectedClubs
               ))}
             </div>
           )}
-          <p className='text-md truncate font-medium whitespace-nowrap md:text-lg'>{label}</p>
+          <p className='text-md truncate font-medium whitespace-nowrap @[48rem]/app:text-lg'>{label}</p>
         </div>
         <ShortArrow className={cn('h-3 w-3 shrink-0 transition-transform', isOpen ? 'rotate-0' : 'rotate-180')} />
       </button>

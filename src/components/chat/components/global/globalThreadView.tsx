@@ -76,7 +76,7 @@ const GlobalThreadView: React.FC = () => {
           <div className='bg-background border-tertiary flex h-9 w-9 shrink-0 items-center justify-center rounded-full border'>
             <Image src={Logo} alt='Grails' width={24} height={24} className='h-6 w-6' />
           </div>
-          <p className='text-foreground truncate text-xl font-semibold'>Grails Chat</p>
+          <p className='text-foreground truncate text-xl font-semibold'>Global Chat</p>
         </div>
         <div className='relative flex items-center gap-1'>
           <button

@@ -89,7 +89,7 @@ const ListSettings: React.FC<ListSettingsProps> = ({ selectedList, onClose, prof
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t md:max-h-none md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+        className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t transition-all duration-300 md:max-h-none md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
         <div className='flex w-full items-center justify-between px-3'>
           <div className='flex cursor-pointer items-center gap-2'>

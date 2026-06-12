@@ -706,7 +706,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
         {CAN_CLAIM_POAP && !poapClaimed && step === 'success' ? (
           <ClaimPoap />

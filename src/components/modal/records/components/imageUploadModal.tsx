@@ -164,7 +164,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
 
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 px-4 z-110 flex h-dvh w-screen items-center justify-center bg-black/60 backdrop-blur-sm'
+      className='fixed top-0 right-0 bottom-0 left-0 z-110 flex h-dvh w-screen items-center justify-center bg-black/60 px-4 backdrop-blur-sm'
       onClick={(e) => {
         e.stopPropagation()
         onClose()

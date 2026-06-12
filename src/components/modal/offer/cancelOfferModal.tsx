@@ -69,7 +69,7 @@ const CancelOfferModal: React.FC<CancelOfferModalProps> = ({ onClose, name, offe
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
         <div className='z-10 mb-4 flex min-h-6 items-center justify-center'>
           <h2 className='font-sedan-sc text-3xl'>Cancel Offer</h2>

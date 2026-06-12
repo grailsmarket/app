@@ -40,7 +40,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         }}
       >
         <div
-          className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col items-center gap-6 rounded-md border-t shadow-lg md:max-w-xl md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+          className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col items-center gap-6 rounded-md border-t shadow-lg transition-all duration-300 md:max-w-xl md:border-2 starting:translate-y-full md:starting:translate-y-0'
           onClick={(e) => e.stopPropagation()}
         >
           <div className='flex min-h-6 items-center justify-center'>

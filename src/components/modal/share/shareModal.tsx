@@ -235,7 +235,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col items-center gap-2 overflow-y-auto border-t sm:gap-2 md:w-fit md:justify-center md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+        className='border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col items-center gap-2 overflow-y-auto border-t transition-all duration-300 sm:gap-2 md:w-fit md:justify-center md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
         <div className='flex w-full flex-col items-center gap-2 sm:w-[440px]'>
           <h2 className='font-sedan-sc mb-2 text-3xl'>

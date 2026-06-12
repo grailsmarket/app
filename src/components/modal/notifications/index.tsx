@@ -83,7 +83,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ isOpen, onClose }
         ) : null}
       </AnimatePresence>
       <div
-        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+        className='bg-background border-secondary relative flex max-h-[calc(100dvh-80px)] w-full flex-col border-t-2 transition-all duration-300 md:h-[600px] md:max-h-[600px] md:max-w-xl md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

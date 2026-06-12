@@ -172,7 +172,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         onClick={(e) => {
           e.stopPropagation()
         }}
-        className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 md:max-h-none md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300'
+        className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 transition-all duration-300 md:max-h-none md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0'
       >
         {success && CAN_CLAIM_POAP && !poapClaimed ? (
           <ClaimPoap />

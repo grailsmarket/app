@@ -21,7 +21,7 @@ const ModalBackdrop: React.FC<ModalBackdropProps> = ({ children, onClose, preven
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t sm:gap-4 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0 transition-all duration-300',
+          'border-tertiary bg-background p-lg sm:p-xl relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t transition-all duration-300 sm:gap-4 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0',
           className
         )}
       >

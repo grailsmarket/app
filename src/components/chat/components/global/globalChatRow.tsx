@@ -10,10 +10,12 @@ import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { formatAddress } from '@/utils/formatAddress'
 import { cn } from '@/utils/tailwind'
 import Logo from 'public/logo.svg'
+import { useOnlineUsers } from '@/hooks/chat/useOnlineUsers'
 
 /** Pinned entry for the global room at the top of the chats list. */
 const GlobalChatRow: React.FC = () => {
   const dispatch = useAppDispatch()
+  const { total } = useOnlineUsers(true)
   const { messages } = useGlobalMessages()
 
   const newest = messages[messages.length - 1]
@@ -44,7 +46,16 @@ const GlobalChatRow: React.FC = () => {
       </div>
       <div className='relative min-w-0 flex-1'>
         <div className='flex items-center justify-between gap-2'>
-          <p className='text-foreground truncate text-lg font-semibold'>Global Chat</p>
+          <div className='flex items-center gap-2'>
+            <p className='text-foreground truncate text-lg font-semibold'>Global Chat</p>
+            {!!total && (
+              <p className='pb-0.5'>
+                <span className='inline-block h-2 w-2 rounded-full bg-green-500' />
+                &nbsp;
+                <span className='text-neutral text-md font-semibold'>{total}</span>
+              </p>
+            )}
+          </div>
           {time && <span className='text-neutral text-sm font-medium whitespace-nowrap'>{time}</span>}
         </div>
         <p className='text-md text-neutral truncate'>

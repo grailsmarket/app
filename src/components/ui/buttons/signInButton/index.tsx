@@ -34,6 +34,7 @@ const SignInButton = () => {
     handleSignInError,
   } = useUserContext()
   const { width } = useWindowSize()
+  const isMobile = !!width && width < 768
 
   return (
     <div
@@ -59,6 +60,7 @@ const SignInButton = () => {
           setIsDropdownOpen(!isDropdownOpen)
         }}
         expirationTime={DAY_IN_SECONDS * 1000}
+        hideName={isMobile}
       />
       <div
         className={cn(

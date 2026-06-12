@@ -44,7 +44,7 @@ const GlobalChatRow: React.FC = () => {
       </div>
       <div className='relative min-w-0 flex-1'>
         <div className='flex items-center justify-between gap-2'>
-          <p className='text-foreground truncate text-lg font-semibold'>Grails Chat</p>
+          <p className='text-foreground truncate text-lg font-semibold'>Global Chat</p>
           {time && <span className='text-neutral text-sm font-medium whitespace-nowrap'>{time}</span>}
         </div>
         <p className='text-md text-neutral truncate'>

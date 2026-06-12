@@ -33,17 +33,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   if (!isSignedIn) {
     return (
       <div
-        className={cn(
-          'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
-          isOpen ? 'translate-y-0' : 'translate-y-[100vh]'
-        )}
+        className='fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm md:items-center md:justify-center md:px-2 md:py-12'
         onClick={(e) => {
           e.stopPropagation()
           onClose()
         }}
       >
         <div
-          className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col items-center gap-6 rounded-md border-t shadow-lg md:max-w-xl md:border-2'
+          className='bg-background border-tertiary p-lg md:p-xl relative flex max-h-[calc(100dvh-56px)] w-full flex-col items-center gap-6 rounded-md border-t shadow-lg transition-all duration-300 md:max-w-xl md:border-2 starting:translate-y-full md:starting:translate-y-0'
           onClick={(e) => e.stopPropagation()}
         >
           <div className='flex min-h-6 items-center justify-center'>
@@ -102,7 +99,7 @@ const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address
   return (
     <div
       className={cn(
-        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
+        'fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-end bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-center md:justify-center md:px-2 md:py-12 starting:translate-y-[100vh] md:starting:translate-y-0',
         isOpen ? 'translate-y-0' : 'translate-y-[100vh]'
       )}
       onClick={(e) => {
@@ -208,7 +205,7 @@ const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address
                 </div>
               ))}
             <Input
-              label='Min Offer Notification Threshold'
+              label='Min Offer Threshold'
               value={offerNotificationThresholdValue || ''}
               onChange={(e) => {
                 const val = e.target.value
@@ -219,7 +216,7 @@ const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address
                 }
               }}
               placeholder='0.00'
-              labelClassName='min-w-[264px]'
+              labelClassName='min-w-[224px]'
               suffix='ETH'
             />
             <div className='border-tertiary flex flex-col gap-2 rounded-md border p-3'>

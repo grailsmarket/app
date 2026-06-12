@@ -189,7 +189,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
   return (
     <div
       className={cn(
-        'fixed top-0 right-0 bottom-0 left-0 z-[100] flex h-[100dvh] w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm transition-all duration-250 md:items-start md:py-12 xl:items-center starting:translate-y-[100vh] md:starting:translate-y-0',
+        'fixed top-0 right-0 bottom-0 left-0 z-100 flex h-dvh w-screen items-end justify-center overflow-scroll bg-black/40 backdrop-blur-sm md:items-start md:py-12 xl:items-center',
         isOpen && !isClosing ? 'translate-y-0' : 'translate-y-[100vh] md:translate-y-0'
       )}
       onClick={(e) => {
@@ -198,7 +198,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, 
       }}
     >
       <div
-        className='bg-background border-tertiary relative flex h-[calc(100dvh-80px)] w-full flex-col border-t shadow-lg md:h-fit md:max-w-2xl md:rounded-md md:border-2'
+        className='bg-background border-tertiary relative flex h-[calc(100dvh-80px)] w-full flex-col border-t shadow-lg transition-all duration-300 md:h-fit md:max-w-2xl md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >

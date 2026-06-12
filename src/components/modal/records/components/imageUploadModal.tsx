@@ -164,7 +164,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
 
   return (
     <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-[110] flex h-[100dvh] w-screen items-center justify-center bg-black/60 backdrop-blur-sm'
+      className='fixed top-0 right-0 bottom-0 left-0 z-110 flex h-dvh w-screen items-center justify-center bg-black/60 px-4 backdrop-blur-sm'
       onClick={(e) => {
         e.stopPropagation()
         onClose()
@@ -227,7 +227,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
               />
               {manualUrl && (
                 <button
-                  className='group flex h-[50px] w-[50px] flex-shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-500 transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50'
+                  className='group flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-500 transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50'
                   onClick={() => {
                     setManualUrl('')
                     setPreviewUrl(null)

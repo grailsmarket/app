@@ -157,8 +157,28 @@ export const useChatSocket = () => {
           return
         }
 
+        case 'chat:message_edited': {
+          const { chat_id, message } = evt.data
+          const editedKey = chat_id === GLOBAL_CHAT_ID ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
+          // Patch only body + edited_at so cached reactions survive (the payload
+          // carries reactions: []). No-op if the message isn't in cache.
+          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(editedKey, (old) => {
+            if (!old) return old
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                messages: page.messages.map((m) =>
+                  m.id === message.id ? { ...m, body: message.body, edited_at: message.edited_at } : m
+                ),
+              })),
+            }
+          })
+          return
+        }
+
         case 'chat:message_deleted': {
-          const { chat_id, message_id } = evt.data
+          const { chat_id, message_id, deleted_by_admin } = evt.data
           const deletedKey = chat_id === GLOBAL_CHAT_ID ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
           queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(deletedKey, (old) => {
             if (!old) return old
@@ -167,7 +187,9 @@ export const useChatSocket = () => {
               pages: old.pages.map((page) => ({
                 ...page,
                 messages: page.messages.map((m) =>
-                  m.id === message_id ? { ...m, body: null, deleted_at: new Date().toISOString() } : m
+                  m.id === message_id
+                    ? { ...m, body: null, deleted_at: new Date().toISOString(), deleted_by_admin }
+                    : m
                 ),
               })),
             }

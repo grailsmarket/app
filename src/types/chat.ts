@@ -32,6 +32,8 @@ export interface ChatMessage {
   created_at: string
   edited_at: string | null
   deleted_at: string | null
+  /** TRUE when an admin (not the author) soft-deleted the message. Only meaningful when deleted_at is set. */
+  deleted_by_admin?: boolean
   reactions?: MessageReaction[]
 }
 
@@ -136,8 +138,13 @@ export type ChatWSEvent =
       timestamp: string
     }
   | {
+      type: 'chat:message_edited'
+      data: { chat_id: string; message: ChatMessage }
+      timestamp: string
+    }
+  | {
       type: 'chat:message_deleted'
-      data: { chat_id: string; message_id: string }
+      data: { chat_id: string; message_id: string; deleted_by_admin: boolean }
       timestamp: string
     }
   | {

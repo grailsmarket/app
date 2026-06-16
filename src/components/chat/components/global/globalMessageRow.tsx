@@ -8,7 +8,10 @@ import { cn } from '@/utils/tailwind'
 import type { ChatMessage } from '@/types/chat'
 import ReactionPills from '../reactions/reactionPills'
 import ReactionHoverZone from '../reactions/reactionHoverZone'
+import ContextMenu from '@/components/ui/contextMenu'
+import MessageEditor from '../messageEditor'
 import { useMessage } from '../../hooks/useMessage'
+import { useMessageActions } from '../../hooks/useMessageActions'
 
 interface Props {
   message: ChatMessage
@@ -17,9 +20,12 @@ interface Props {
 }
 
 const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
-  const { time, senderLabel, canReact, onToggle, onPick, body, isDeleted, senderAddress, senderProfile } = useMessage(
+  const { time, senderLabel, canReact, onToggle, onPick, body, isDeleted, isEdited, senderAddress, senderProfile } =
+    useMessage(message, GLOBAL_CHAT_ID)
+  const { canManage, menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
     message,
-    GLOBAL_CHAT_ID
+    GLOBAL_CHAT_ID,
+    isOwn
   )
 
   return (
@@ -46,34 +52,44 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
           )}
         </div>
         <div className='flex min-w-0 flex-1 flex-col items-start gap-1'>
-          <ReactionHoverZone canReact={canReact} onPick={onPick} buttonSide='right' className='max-w-[90%]'>
-            <div className='bg-secondary p-md flex flex-col gap-0.5 rounded-md'>
-              {showHeader && (
-                <div className='flex items-baseline gap-2'>
-                  <Link
-                    href={`/profile/${senderAddress}`}
-                    prefetch
-                    className={cn(
-                      'text-lg font-semibold wrap-anywhere transition-opacity hover:opacity-80',
-                      isOwn ? 'text-primary' : 'text-foreground'
+          {isEditing ? (
+            <MessageEditor value={draft} onChange={setDraft} onSave={saveEdit} onCancel={cancelEdit} />
+          ) : (
+            <>
+              <div className='flex w-full items-start gap-1'>
+                <ReactionHoverZone canReact={canReact} onPick={onPick} buttonSide='right' className='max-w-[90%]'>
+                  <div className='bg-secondary p-md flex flex-col gap-0.5 rounded-md'>
+                    {showHeader && (
+                      <div className='flex items-baseline gap-2'>
+                        <Link
+                          href={`/profile/${senderAddress}`}
+                          prefetch
+                          className={cn(
+                            'text-lg font-semibold wrap-anywhere transition-opacity hover:opacity-80',
+                            isOwn ? 'text-primary' : 'text-foreground'
+                          )}
+                        >
+                          {senderLabel}
+                        </Link>
+                        <span className='text-neutral text-sm whitespace-nowrap'>{time}</span>
+                      </div>
                     )}
-                  >
-                    {senderLabel}
-                  </Link>
-                  <span className='text-neutral text-sm whitespace-nowrap'>{time}</span>
-                </div>
-              )}
-              <div
-                className={cn(
-                  'text-foreground w-fit max-w-full break-before-all text-lg wrap-anywhere whitespace-pre-wrap',
-                  isDeleted && 'text-neutral italic'
-                )}
-              >
-                {body}
+                    <div
+                      className={cn(
+                        'text-foreground w-fit max-w-full break-before-all text-lg wrap-anywhere whitespace-pre-wrap',
+                        isDeleted && 'text-neutral italic'
+                      )}
+                    >
+                      {body}
+                      {isEdited && <span className='text-neutral ml-1 text-sm'>(edited)</span>}
+                    </div>
+                  </div>
+                </ReactionHoverZone>
+                {canManage && <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />}
               </div>
-            </div>
-          </ReactionHoverZone>
-          <ReactionPills reactions={message.reactions} canReact={canReact} onToggle={onToggle} />
+              <ReactionPills reactions={message.reactions} canReact={canReact} onToggle={onToggle} />
+            </>
+          )}
         </div>
       </div>
     </div>

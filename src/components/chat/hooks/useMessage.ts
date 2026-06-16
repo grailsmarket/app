@@ -12,6 +12,7 @@ export const useMessage = (message: ChatMessage, chatId: string) => {
   const toggleReaction = useToggleReaction(chatId)
 
   const isDeleted = !!message.deleted_at
+  const isEdited = !!message.edited_at && !isDeleted
   const time = format(new Date(message.created_at), 'h:mm a')
   const senderAddress = message.sender_address
   const senderProfile = usePeerProfile(senderAddress as `0x${string}` | undefined)
@@ -29,9 +30,11 @@ export const useMessage = (message: ChatMessage, chatId: string) => {
   }
 
   const body = useMemo(() => {
-    if (isDeleted) return 'This message was deleted'
+    if (isDeleted) {
+      return message.deleted_by_admin ? 'This message was deleted by Admin' : 'This message was deleted by user'
+    }
     return linkifyMessage(message.body ?? '')
-  }, [isDeleted, message.body])
+  }, [isDeleted, message.deleted_by_admin, message.body])
 
   return {
     time,
@@ -41,6 +44,7 @@ export const useMessage = (message: ChatMessage, chatId: string) => {
     onPick,
     body,
     isDeleted,
+    isEdited,
     senderAddress,
     senderProfile,
   }

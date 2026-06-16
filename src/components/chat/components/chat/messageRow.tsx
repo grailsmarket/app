@@ -5,7 +5,10 @@ import { cn } from '@/utils/tailwind'
 import type { ChatMessage } from '@/types/chat'
 import ReactionPills from '../reactions/reactionPills'
 import ReactionHoverZone from '../reactions/reactionHoverZone'
+import ContextMenu from '@/components/ui/contextMenu'
+import MessageEditor from '../messageEditor'
 import { useMessage } from '../../hooks/useMessage'
+import { useMessageActions } from '../../hooks/useMessageActions'
 
 interface Props {
   chatId: string
@@ -15,36 +18,53 @@ interface Props {
 }
 
 const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead }) => {
-  const { time, canReact, onToggle, onPick, body, isDeleted } = useMessage(message, chatId)
+  const { time, canReact, onToggle, onPick, body, isDeleted, isEdited } = useMessage(message, chatId)
+  const { canManage, menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
+    message,
+    chatId,
+    isOwn
+  )
 
   return (
     <div className={cn('flex w-full', isOwn ? 'justify-end' : 'justify-start')}>
       <div className={cn('flex w-full flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>
-        <ReactionHoverZone
-          canReact={canReact}
-          onPick={onPick}
-          buttonSide={isOwn ? 'left' : 'right'}
-          className={cn('flex w-fit! max-w-[80%]', isOwn ? 'justify-end' : 'justify-start')}
-        >
-          <div
-            className={cn(
-              'w-fit break-before-all rounded-2xl px-4 py-2 text-lg wrap-anywhere whitespace-pre-wrap',
-              isOwn ? 'bg-primary text-background rounded-br-sm' : 'bg-secondary text-foreground rounded-bl-sm',
-              isDeleted && 'italic opacity-60'
-            )}
-          >
-            {body}
+        {isEditing ? (
+          <div className='w-full max-w-[80%]'>
+            <MessageEditor value={draft} onChange={setDraft} onSave={saveEdit} onCancel={cancelEdit} />
           </div>
-        </ReactionHoverZone>
-        <ReactionPills
-          reactions={message.reactions}
-          canReact={canReact}
-          onToggle={onToggle}
-          className={isOwn ? 'justify-end' : 'justify-start'}
-        />
-        <span className={cn('text-neutral text-sm', isOwn ? 'text-right' : 'text-left')}>
-          {isOwn && isRead ? 'Seen •' : ''} {time}
-        </span>
+        ) : (
+          <>
+            <div className='flex max-w-[80%] items-start gap-1'>
+              {canManage && <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />}
+              <ReactionHoverZone
+                canReact={canReact}
+                onPick={onPick}
+                buttonSide={isOwn ? 'left' : 'right'}
+                className={cn('flex w-fit!', isOwn ? 'justify-end' : 'justify-start')}
+              >
+                <div
+                  className={cn(
+                    'w-fit break-before-all rounded-2xl px-4 py-2 text-lg wrap-anywhere whitespace-pre-wrap',
+                    isOwn ? 'bg-primary text-background rounded-br-sm' : 'bg-secondary text-foreground rounded-bl-sm',
+                    isDeleted && 'italic opacity-60'
+                  )}
+                >
+                  {body}
+                  {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
+                </div>
+              </ReactionHoverZone>
+            </div>
+            <ReactionPills
+              reactions={message.reactions}
+              canReact={canReact}
+              onToggle={onToggle}
+              className={isOwn ? 'justify-end' : 'justify-start'}
+            />
+            <span className={cn('text-neutral text-sm', isOwn ? 'text-right' : 'text-left')}>
+              {isOwn && isRead ? 'Seen •' : ''} {time}
+            </span>
+          </>
+        )}
       </div>
     </div>
   )

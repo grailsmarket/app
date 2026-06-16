@@ -132,21 +132,22 @@ const Composer: React.FC<Props> = ({
     send.mutate(
       { body: trimmed, replyToId, replyTo },
       {
-      onError: (e) => {
-        const mapped = mapSendError(e)
-        setError(mapped.message)
+        onError: (e) => {
+          const mapped = mapSendError(e)
+          setError(mapped.message)
 
-        if (mapped.permanent) {
-          setPermanentlyDisabled(true)
-          return
-        }
+          if (mapped.permanent) {
+            setPermanentlyDisabled(true)
+            return
+          }
 
-        if (mapped.restoreText !== false) {
-          setValue(trimmed)
-          requestAnimationFrame(autoSize)
-        }
-      },
-    })
+          if (mapped.restoreText !== false) {
+            setValue(trimmed)
+            requestAnimationFrame(autoSize)
+          }
+        },
+      }
+    )
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

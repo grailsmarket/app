@@ -18,8 +18,7 @@ interface Props {
  */
 const ReplyPreview: React.FC<Props> = ({ replyTo, className }) => {
   const profile = usePeerProfile(replyTo.sender_address as `0x${string}` | undefined)
-  const label =
-    profile?.displayLabel ?? (replyTo.sender_address ? formatAddress(replyTo.sender_address) : 'Unknown')
+  const label = profile?.displayLabel ?? (replyTo.sender_address ? formatAddress(replyTo.sender_address) : 'Unknown')
 
   return (
     <div className={cn('border-primary/50 mb-1 flex flex-col gap-0.5 border-l-2 pl-2 text-sm', className)}>

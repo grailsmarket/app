@@ -9,11 +9,7 @@ import { authFetch } from '../authFetch'
  * message (the response carries `reactions: []`; callers should patch only
  * `body` + `edited_at` and keep their cached reactions).
  */
-export const editMessage = async (
-  chatId: string,
-  messageId: string,
-  body: string
-): Promise<ChatMessage> => {
+export const editMessage = async (chatId: string, messageId: string, body: string): Promise<ChatMessage> => {
   const response = await authFetch(`${API_URL}/chats/${chatId}/messages/${messageId}`, {
     method: 'PATCH',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },

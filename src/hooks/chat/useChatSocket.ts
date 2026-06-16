@@ -187,9 +187,7 @@ export const useChatSocket = () => {
               pages: old.pages.map((page) => ({
                 ...page,
                 messages: page.messages.map((m) =>
-                  m.id === message_id
-                    ? { ...m, body: null, deleted_at: new Date().toISOString(), deleted_by_admin }
-                    : m
+                  m.id === message_id ? { ...m, body: null, deleted_at: new Date().toISOString(), deleted_by_admin } : m
                 ),
               })),
             }

@@ -27,9 +27,7 @@ export const useEditMessage = (chatId: string) => {
         ...old,
         pages: old.pages.map((page) => ({
           ...page,
-          messages: page.messages.map((m) =>
-            m.id === messageId ? { ...m, body, edited_at: editedAt } : m
-          ),
+          messages: page.messages.map((m) => (m.id === messageId ? { ...m, body, edited_at: editedAt } : m)),
         })),
       }
     })

@@ -21,6 +21,8 @@ import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useFiltersChanged } from '@/hooks/filters/useFiltersChanged'
+import _ from 'lodash'
 
 const FilterPanel: React.FC = () => {
   const filterRef = useRef<HTMLDivElement>(null)
@@ -43,6 +45,12 @@ const FilterPanel: React.FC = () => {
   const { selectedTab: marketplaceTab } = useAppSelector(selectMarketplace)
   const filtersOpen = selectors.filters.open
   const { isNavbarVisible } = useNavbar()
+
+  // Enable "Apply" only once the filters changed since the panel was opened.
+  const hasFilterChanges = useFiltersChanged(
+    filtersOpen,
+    _.omit(selectors.filters, ['open', 'scrollTop', 'selectedTab'])
+  )
 
   if (!isClient || !responsiveWidth) return null
 
@@ -143,6 +151,7 @@ const FilterPanel: React.FC = () => {
 
       {isMobile && (
         <MobileFilterActions
+          canApply={hasFilterChanges}
           onClose={() => dispatch(actions.setFiltersOpen(false))}
           onApply={() => dispatch(actions.setFiltersOpen(false))}
         />

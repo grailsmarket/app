@@ -9,6 +9,8 @@ interface MobileFilterActionsProps {
   onClose: () => void
   /** Confirm the (live-applied) filters and dismiss the panel. */
   onApply: () => void
+  /** Enables the Apply button — typically true once filters changed since opening. */
+  canApply?: boolean
   /**
    * `absolute` pins the bar to the bottom of a non-scrolling panel root.
    * `sticky` pins it to the bottom of a scroll container (use when the bar lives
@@ -25,6 +27,7 @@ interface MobileFilterActionsProps {
 const MobileFilterActions: React.FC<MobileFilterActionsProps> = ({
   onClose,
   onApply,
+  canApply = true,
   position = 'absolute',
   className,
 }) => (
@@ -36,7 +39,9 @@ const MobileFilterActions: React.FC<MobileFilterActionsProps> = ({
     )}
   >
     <SecondaryButton onClick={onClose}>Close</SecondaryButton>
-    <PrimaryButton onClick={onApply}>Apply</PrimaryButton>
+    <PrimaryButton onClick={onApply} disabled={!canApply}>
+      Apply
+    </PrimaryButton>
   </div>
 )
 

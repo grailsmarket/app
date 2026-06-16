@@ -16,6 +16,7 @@ import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import CloseIcon from 'public/icons/cross.svg'
 import MobileFilterActions from '@/components/filters/components/MobileFilterActions'
+import { useFiltersChanged } from '@/hooks/filters/useFiltersChanged'
 
 export type FeedPlatformFilter = 'all' | 'grails' | 'opensea'
 
@@ -78,6 +79,16 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const handlePriceChange = (value: string, onChange: (value: string) => void) => {
     if (value === '' || /^[0-9]*\.?[0-9]*$/.test(value)) onChange(value)
   }
+
+  // Enable "Apply" only once the filters changed since the panel was opened.
+  const hasFilterChanges = useFiltersChanged(isOpen, {
+    selectedTypes,
+    selectedClubs,
+    platform,
+    ownerInput,
+    minPriceEth,
+    maxPriceEth,
+  })
 
   const offsetClassName = isNavbarVisible ? 'md:top-[130px] top-[56px]' : 'md:top-[72px] top-[56px]'
 
@@ -225,6 +236,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       <MobileFilterActions
         position='sticky'
         className='@[64rem]/app:hidden'
+        canApply={hasFilterChanges}
         onClose={() => dispatch(actions.setFiltersOpen(false))}
         onApply={() => dispatch(actions.setFiltersOpen(false))}
       />

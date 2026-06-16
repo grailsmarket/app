@@ -20,6 +20,8 @@ import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
 import ViewSelector from '@/components/domains/viewSelector'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useFiltersChanged } from '@/hooks/filters/useFiltersChanged'
+import _ from 'lodash'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
@@ -30,6 +32,9 @@ const CategoriesFilterPanel: React.FC = () => {
   const filtersOpen = filterPanel.open
   const isFiltersClear = filters.type === null
   const { isNavbarVisible } = useNavbar()
+
+  // Enable "Apply" only once the filters changed since the panel was opened.
+  const hasFilterChanges = useFiltersChanged(filtersOpen, _.omit(filters, ['open', 'scrollTop']))
 
   if (!isClient || !responsiveWidth) return null
 
@@ -139,7 +144,7 @@ const CategoriesFilterPanel: React.FC = () => {
         </div>
       )}
 
-      {isMobile && <MobileFilterActions onClose={handleClose} onApply={handleClose} />}
+      {isMobile && <MobileFilterActions canApply={hasFilterChanges} onClose={handleClose} onApply={handleClose} />}
     </div>
   )
 }

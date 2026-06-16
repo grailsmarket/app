@@ -7,11 +7,9 @@ import { premiumDropdownQueryOptions } from '@/components/navigation/dropdowns/q
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import ArrowRight from 'public/icons/arrow-back.svg'
-import Arrowdown from 'public/icons/arrow-down.svg'
 import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
-import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
@@ -26,7 +24,6 @@ interface PremiumProps {
 }
 
 const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, previousDropdownOption }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const isClient = useIsClient()
   const isActive = dropdownOption === 'premium'
   const { categories } = useCategories({ enabled: isActive })
@@ -50,12 +47,6 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
 
   const defaultAnimationdelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
 
-  useEffect(() => {
-    if (previousDropdownOption === null) {
-      setIsDropdownOpen(false)
-    }
-  }, [previousDropdownOption])
-
   const cardContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -66,24 +57,16 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
 
   return (
     <div
-      className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center xl:gap-8'
-      style={{ height: isClient && width && width < 768 ? (isDropdownOpen ? '348px' : '40px') : 'auto' }}
+      className='mx-auto flex h-14 w-full items-center gap-4 overflow-hidden transition-all duration-300 md:h-auto md:flex-row md:justify-center xl:gap-8'
       onScroll={(e) => e.stopPropagation()}
     >
-      <div
+      <Link
+        href='/marketplace?tab=premium'
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
         <h3 className='text-3xl font-semibold'>Premium</h3>
-        <Image
-          src={Arrowdown}
-          alt='Arrow Down'
-          width={20}
-          height={20}
-          className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
-        />
-      </div>
-      <div className='pl-lg md:pt-xl text-neutral flex h-fit w-56 flex-col justify-between gap-4 text-2xl font-semibold md:h-[370px] md:pl-0'>
+      </Link>
+      <div className='pl-lg md:pt-xl text-neutral hidden h-fit w-56 flex-col justify-between gap-4 text-2xl font-semibold md:flex md:h-[370px] md:pl-0'>
         <div className='flex h-full w-fit flex-col gap-4'>
           <div className='fadeIn w-fit md:hidden' style={{ animationDelay: `${defaultAnimationdelay}s` }}>
             <Link

@@ -191,7 +191,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
-        <div className='flex w-full flex-col gap-4'>
+        <div className='flex w-full flex-col'>
           {userAddress && (
             <Link
               href={`/profile/${userAddress}`}
@@ -199,7 +199,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
                 setPreviousDropdownOption(dropdownOption)
                 setDropdownOption(null)
               }}
-              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
+              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 py-3 md:hidden'
             >
               <h3 className='text-3xl font-semibold'>My Profile</h3>
               {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
@@ -259,7 +259,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div> */}
           <div
             className={cn(
-              'border-neutral w-full border-b-2 md:border-none',
+              'w-full',
               dropdownOption === 'more' || (dropdownOption === null && previousDropdownOption === 'more')
                 ? 'block'
                 : 'block md:hidden'

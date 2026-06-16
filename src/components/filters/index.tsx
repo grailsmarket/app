@@ -16,6 +16,7 @@ import { useEffect, useRef } from 'react'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
 import SecondaryButton from '../ui/buttons/secondary'
+import MobileFilterActions from './components/MobileFilterActions'
 import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
@@ -138,6 +139,13 @@ const FilterPanel: React.FC = () => {
         <ActivityTypeFilter />
       ) : (
         <Filters isPanelCategories={isPanelCategories} setPanelCategories={setPanelCategories} />
+      )}
+
+      {isMobile && (
+        <MobileFilterActions
+          onClose={() => dispatch(actions.setFiltersOpen(false))}
+          onApply={() => dispatch(actions.setFiltersOpen(false))}
+        />
       )}
     </div>
   )

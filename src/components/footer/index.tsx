@@ -11,8 +11,8 @@ import poweredByEIK from 'public/powered-by-eik.svg'
 const Footer = () => {
   return (
     <footer className='glass-card shadow-footer border-t-primary z-20 mt-8 flex w-full items-center justify-center border-t py-8 @[40rem]/app:mt-12 @[48rem]/app:mt-20 @[64rem]/app:mt-24'>
-      <div className='xxs:gap-6 flex h-full w-full items-start justify-between gap-6 px-6 @[40rem]/app:justify-center @[40rem]/app:gap-28 @[48rem]/app:gap-44'>
-        <section className='flex flex-col gap-6'>
+      <div className='xxs:gap-6 flex h-full w-full max-w-5xl flex-col-reverse items-center justify-between gap-6 px-6 @[40rem]/app:flex-row @[40rem]/app:justify-between @[40rem]/app:gap-28 @[48rem]/app:gap-44'>
+        <section className='flex gap-6 @[40rem]/app:flex-col!'>
           <Image
             src={logo}
             width={180}
@@ -43,9 +43,11 @@ const Footer = () => {
             </Link>
           </div>
         </section>
-        <Pages />
-        <Extras />
-        <Sources />
+        <div className='flex w-full flex-row items-start justify-between gap-4 @[40rem]/app:w-2/3 @[40rem]/app:justify-between @[40rem]/app:gap-8'>
+          <Pages />
+          <Extras />
+          <Sources />
+        </div>
       </div>
     </footer>
   )

@@ -14,6 +14,7 @@ import { useNavbar } from '@/context/navbar'
 import CategoryTypeFilter from '../CategoryTypeFilter'
 import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import MobileFilterActions from '@/components/filters/components/MobileFilterActions'
 import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
@@ -98,7 +99,7 @@ const CategoriesFilterPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className='flex-1 overflow-x-hidden overflow-y-auto'>
+      <div className={cn('flex-1 overflow-x-hidden overflow-y-auto', isMobile && 'pb-20')}>
         <div className='px-md @[40rem]/app:px-lg py-md flex w-full flex-col gap-2'>
           <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[40rem]/app:h-10'>
             <input
@@ -132,11 +133,13 @@ const CategoriesFilterPanel: React.FC = () => {
         </div>
       </div>
 
-      {hasActiveFilters && (
+      {!isMobile && hasActiveFilters && (
         <div className='border-tertiary flex w-[292px] justify-end border-t-2 p-4'>
           <SecondaryButton onClick={handleClearFilters}>Clear all filters</SecondaryButton>
         </div>
       )}
+
+      {isMobile && <MobileFilterActions onClose={handleClose} onApply={handleClose} />}
     </div>
   )
 }

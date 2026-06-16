@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useState, useRef } from 'react'
-import { AnimatePresence, motion, type Variants } from 'motion/react'
+import { AnimatePresence, motion, useDragControls, type PanInfo, type Variants } from 'motion/react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { closeChatSidebar, selectChatSidebar, type ChatSidebarView } from '@/state/reducers/chat/sidebar'
 import { useNavbar } from '@/context/navbar'
@@ -12,6 +12,17 @@ import ListView from './components/listView'
 
 const MIN_WIDTH = 360
 const DEFAULT_WIDTH = 380
+
+// Swipe-to-close (mobile): a deliberate left-to-right drag dismisses the panel.
+// Thresholds are kept intentionally high so a stray horizontal nudge while
+// scrolling can't close it by accident.
+const SWIPE_CLOSE_DISTANCE = 90 // px of rightward drag that dismisses outright
+const SWIPE_CLOSE_VELOCITY = 500 // px/s rightward flick that dismisses with less distance
+const SWIPE_CLOSE_MIN_FLICK_DISTANCE = 40 // px floor so a tiny twitch never counts as a flick
+// The swipe may only begin within this many px of the panel's left edge. This
+// lets it start at any height (over the list, a thread, anywhere) while leaving
+// mid-panel horizontal moves to the content, mirroring the native edge-back gesture.
+const EDGE_SWIPE_ZONE = 48
 
 const VIEW_DEPTH: Record<ChatSidebarView, number> = {
   list: 0,
@@ -44,6 +55,8 @@ const ChatSidebar: React.FC = () => {
   const [isDesktop, setIsDesktop] = useState(false)
   const [width, setWidth] = useState<number | null>(null)
   const [isResizing, setIsResizing] = useState(false)
+
+  const dragControls = useDragControls()
 
   const prevViewRef = useRef<ChatSidebarView>(view)
   const direction = VIEW_DEPTH[view] > VIEW_DEPTH[prevViewRef.current] ? 1 : -1
@@ -131,6 +144,56 @@ const ChatSidebar: React.FC = () => {
     setIsResizing(true)
   }, [])
 
+  // Start the swipe only when the gesture begins near the panel's left edge, so a
+  // touch can land anywhere vertically yet mid-panel horizontal moves stay with
+  // the content. The whole panel still drags once the gesture is under way.
+  const onEdgePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLElement>) => {
+      if (isDesktop) return
+      const left = e.currentTarget.getBoundingClientRect().left
+      if (e.clientX - left > EDGE_SWIPE_ZONE) return
+      dragControls.start(e)
+    },
+    [isDesktop, dragControls]
+  )
+
+  // A far-enough or fast-enough rightward swipe closes the sidebar, regardless of
+  // which view is showing. If the threshold isn't met Framer springs it back.
+  const onSwipeEnd = useCallback(
+    (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const shouldClose =
+        info.offset.x > SWIPE_CLOSE_DISTANCE ||
+        (info.velocity.x > SWIPE_CLOSE_VELOCITY && info.offset.x > SWIPE_CLOSE_MIN_FLICK_DISTANCE)
+      if (shouldClose) dispatch(closeChatSidebar())
+    },
+    [dispatch]
+  )
+
+  // While the panel is open on mobile (where it covers the full screen) lock the
+  // page behind it from scrolling, and suppress the browser's own touch gestures
+  // (pull-to-refresh, overscroll glow, horizontal overscroll back/forward nav) so
+  // they can't fire underneath the swipe-to-close gesture. The panel itself gets
+  // `touch-action: pan-y` from Framer's `drag` prop, which hands horizontal
+  // gestures to us while leaving vertical scrolling of the chat intact.
+  useEffect(() => {
+    if (!open || isDesktop) return
+    const html = document.documentElement
+    const { body } = document
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      overscroll: html.style.overscrollBehavior,
+    }
+    html.style.overflow = 'hidden'
+    body.style.overflow = 'hidden'
+    html.style.overscrollBehavior = 'none'
+    return () => {
+      html.style.overflow = prev.htmlOverflow
+      body.style.overflow = prev.bodyOverflow
+      html.style.overscrollBehavior = prev.overscroll
+    }
+  }, [open, isDesktop])
+
   const sidebarWidth = width ?? DEFAULT_WIDTH
   const widthStyle = isDesktop ? { width: `${sidebarWidth}px`, maxWidth: `${sidebarWidth}px` } : undefined
 
@@ -160,7 +223,27 @@ const ChatSidebar: React.FC = () => {
           exit={{ x: '100%', opacity: 0 }}
           // Keep in sync with the app-content offset transition (providers + feed): same 250ms + curve.
           transition={{ type: 'tween', duration: 0.25, ease: [0, 0, 0.58, 1] }}
+          // Mobile only: an edge swipe to the right goes back / dismisses. We start
+          // the drag manually (dragListener=false + onPointerDown) so it only fires
+          // from the left-edge zone, while the whole panel moves once it's started.
+          // Locked to the horizontal axis (vertical scrolling of the chat is
+          // unaffected) and to the rightward direction (left elastic 0 — the panel
+          // can't be pulled further onscreen).
+          drag={isDesktop ? false : 'x'}
+          dragControls={dragControls}
+          dragListener={false}
+          dragDirectionLock
+          dragMomentum={false}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={{ left: 0, right: 0.9 }}
+          onDragEnd={onSwipeEnd}
+          onPointerDown={isDesktop ? undefined : onEdgePointerDown}
           style={{
+            // With dragListener=false Framer no longer sets this for us; `pan-y`
+            // lets the browser keep vertical scrolling while handing horizontal
+            // gestures to our edge swipe (otherwise the browser eats the gesture
+            // as a scroll and the drag never starts).
+            ...(!isDesktop ? { touchAction: 'pan-y' } : {}),
             ...(!isDesktop && viewport ? { height: `${viewport.height}px`, top: `${viewport.offsetTop}px` } : {}),
             ...widthStyle,
           }}

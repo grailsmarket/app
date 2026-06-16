@@ -15,6 +15,7 @@ import { useNavbar } from '@/context/navbar'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import CloseIcon from 'public/icons/cross.svg'
+import MobileFilterActions from '@/components/filters/components/MobileFilterActions'
 
 export type FeedPlatformFilter = 'all' | 'grails' | 'opensea'
 
@@ -220,6 +221,13 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </>
         )}
       </div>
+
+      <MobileFilterActions
+        position='sticky'
+        className='@[64rem]/app:hidden'
+        onClose={() => dispatch(actions.setFiltersOpen(false))}
+        onApply={() => dispatch(actions.setFiltersOpen(false))}
+      />
     </aside>
   )
 }

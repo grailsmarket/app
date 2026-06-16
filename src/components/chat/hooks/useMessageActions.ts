@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ChatMessage } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 import { useDeleteMessage } from '@/hooks/chat/useDeleteMessage'
@@ -21,13 +21,18 @@ export const useMessageActions = (message: ChatMessage, chatId: string, isOwn: b
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(message.body ?? '')
 
+  // Mirror the draft to the latest body while the editor is closed, so a remote
+  // edit (e.g. a WS edit from another device) can't leave a stale draft that
+  // would clobber the newer body on the next open. Left untouched mid-edit so
+  // the user's in-progress typing is never overwritten.
+  useEffect(() => {
+    if (!isEditing) setDraft(message.body ?? '')
+  }, [message.body, isEditing])
+
   const canManage =
     authStatus === 'authenticated' && isOwn && !message.deleted_at && !message.id.startsWith('optimistic-')
 
-  const startEdit = () => {
-    setDraft(message.body ?? '')
-    setIsEditing(true)
-  }
+  const startEdit = () => setIsEditing(true)
 
   const cancelEdit = () => setIsEditing(false)
 
@@ -44,5 +49,5 @@ export const useMessageActions = (message: ChatMessage, chatId: string, isOwn: b
     { label: 'Delete', destructive: true, confirmLabel: 'Confirm delete', onClick: () => del.mutate(message.id) },
   ]
 
-  return { canManage, menuItems, isEditing, draft, setDraft, startEdit, cancelEdit, saveEdit }
+  return { canManage, menuItems, isEditing, draft, setDraft, cancelEdit, saveEdit }
 }

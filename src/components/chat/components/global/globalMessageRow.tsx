@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Avatar } from 'ethereum-identity-kit'
+import { DEFAULT_FALLBACK_AVATAR, ImageWithFallback } from 'ethereum-identity-kit'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage } from '@/types/chat'
@@ -22,6 +22,8 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
     GLOBAL_CHAT_ID
   )
 
+  console.log('senderProfile', senderProfile)
+
   return (
     <div
       className={cn(
@@ -35,12 +37,12 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
         <div className='w-9 shrink-0'>
           {showHeader && senderAddress && (
             <Link href={`/profile/${senderAddress}`} prefetch className='block transition-opacity hover:opacity-80'>
-              <Avatar
+              <ImageWithFallback
+                fallback={DEFAULT_FALLBACK_AVATAR}
                 key={`${message.id}-avatar`}
-                address={senderAddress as `0x${string}`}
-                src={senderProfile?.avatar ?? undefined}
-                name={senderProfile?.ensName ?? undefined}
-                style={{ width: '36px', height: '36px' }}
+                src={senderProfile?.avatar ?? ''}
+                alt={senderProfile?.ensName ?? ''}
+                style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '50%' }}
               />
             </Link>
           )}

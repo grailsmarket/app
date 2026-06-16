@@ -22,8 +22,6 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
     GLOBAL_CHAT_ID
   )
 
-  console.log('senderProfile', senderProfile)
-
   return (
     <div
       className={cn(

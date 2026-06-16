@@ -20,6 +20,15 @@ export interface MessageReaction {
   reacted: boolean
 }
 
+/** Compact preview of the parent message when this message is a reply. */
+export interface ReplyPreview {
+  id: string
+  sender_address?: string
+  /** null when the parent has been deleted */
+  body: string | null
+  deleted: boolean
+}
+
 export interface ChatMessage {
   id: string
   chat_id: string
@@ -34,6 +43,8 @@ export interface ChatMessage {
   deleted_at: string | null
   /** TRUE when an admin (not the author) soft-deleted the message. Only meaningful when deleted_at is set. */
   deleted_by_admin?: boolean
+  /** Parent-message preview when this message is a reply; null/absent otherwise. */
+  reply_to?: ReplyPreview | null
   reactions?: MessageReaction[]
 }
 
@@ -97,9 +108,17 @@ export type MentionState = {
 
 // ---- Global chat ----
 
+export interface SendVars {
+  body: string
+  /** Parent message id when sending a reply. */
+  replyToId?: string
+  /** Parent preview for optimistic rendering; server returns the canonical reply_to. */
+  replyTo?: ReplyPreview | null
+}
+
 export interface SendController {
   isPending: boolean
-  mutate: (body: string, options: { onError: (e: SendMessageError) => void }) => void
+  mutate: (vars: SendVars, options: { onError: (e: SendMessageError) => void }) => void
 }
 
 export interface GlobalChatQuota {
@@ -162,6 +181,12 @@ export type ChatWSEvent =
       type: 'chat:reaction_added' | 'chat:reaction_removed'
       /** `count` is the ABSOLUTE per-emoji count after the change */
       data: { chat_id: string; message_id: string; user_id: number; address: string; emoji: string; count: number }
+      timestamp: string
+    }
+  | {
+      /** Nudge to re-fetch the unread-notification count (chat reply/mention written). */
+      type: 'notification:unread'
+      data: Record<string, never>
       timestamp: string
     }
 

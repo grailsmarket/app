@@ -23,6 +23,7 @@ import { useNotificationRow } from '../hooks/useNotificationRow'
 import { motion } from 'motion/react'
 import Expand from 'public/icons/expand.svg'
 import { Arrow } from 'ethereum-identity-kit'
+import ChatNotificationRow from './chatNotificationRow'
 
 interface NotificationRowProps {
   notification: Notification
@@ -109,6 +110,10 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
   const icon = getIcon(notification.type)
   const eventName = getEventName(notification.type)
   const timeAgo = formatDistanceToNow(new Date(notification.sentAt), { addSuffix: true }).replace('about ', '')
+
+  if (notification.type === 'chat_reply' || notification.type === 'chat_mention') {
+    return <ChatNotificationRow notification={notification} onClick={onClick} />
+  }
 
   if (notification.type === 'admin-broadcast') {
     const title = notification.metadata.title || 'Announcement'

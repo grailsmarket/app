@@ -244,6 +244,14 @@ export const useChatSocket = () => {
           })
           return
         }
+
+        case 'notification:unread': {
+          // A chat reply/mention notification was written for us — refresh the
+          // bell count (and the list, if open) instead of waiting for the poll.
+          queryClient.invalidateQueries({ queryKey: ['unreadCount'] })
+          queryClient.invalidateQueries({ queryKey: ['notifications'] })
+          return
+        }
       }
     }
 

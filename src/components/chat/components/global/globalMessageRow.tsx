@@ -10,6 +10,7 @@ import ReactionPills from '../reactions/reactionPills'
 import ReactionHoverZone from '../reactions/reactionHoverZone'
 import ContextMenu from '@/components/ui/contextMenu'
 import MessageEditor from '../messageEditor'
+import ReplyPreview from '../replyPreview'
 import { useMessage } from '../../hooks/useMessage'
 import { useMessageActions } from '../../hooks/useMessageActions'
 
@@ -17,15 +18,17 @@ interface Props {
   message: ChatMessage
   isOwn: boolean
   showHeader: boolean
+  onReply?: (message: ChatMessage) => void
 }
 
-const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
+const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader, onReply }) => {
   const { time, senderLabel, canReact, onToggle, onPick, body, isDeleted, isEdited, senderAddress, senderProfile } =
     useMessage(message, GLOBAL_CHAT_ID)
-  const { canManage, menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
+  const { menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
     message,
     GLOBAL_CHAT_ID,
-    isOwn
+    isOwn,
+    onReply
   )
 
   return (
@@ -74,6 +77,7 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
                         <span className='text-neutral text-sm whitespace-nowrap'>{time}</span>
                       </div>
                     )}
+                    {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} />}
                     <div
                       className={cn(
                         'text-foreground w-fit max-w-full break-before-all text-lg wrap-anywhere whitespace-pre-wrap',
@@ -85,7 +89,9 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader }) => {
                     </div>
                   </div>
                 </ReactionHoverZone>
-                {canManage && <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />}
+                {menuItems.length > 0 && (
+                  <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />
+                )}
               </div>
               <ReactionPills reactions={message.reactions} canReact={canReact} onToggle={onToggle} />
             </>

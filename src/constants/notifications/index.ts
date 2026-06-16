@@ -16,6 +16,8 @@ export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.R
   'listing-cancelled-ownership-change': AlarmClock,
   'comment-received': Bell,
   'admin-broadcast': Bell,
+  chat_reply: Bell,
+  chat_mention: Bell,
 }
 
 export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> = {
@@ -28,4 +30,6 @@ export const NOTIFICATION_CATEGORY_TO_MESSAGE: Record<NotificationType, string> 
   'listing-cancelled-ownership-change': 'Listing cancelled (ownership changed)',
   'comment-received': 'New Comment',
   'admin-broadcast': 'Announcement',
+  chat_reply: 'Replied to you',
+  chat_mention: 'Mentioned you',
 }

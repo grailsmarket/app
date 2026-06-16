@@ -7,6 +7,7 @@ import ReactionPills from '../reactions/reactionPills'
 import ReactionHoverZone from '../reactions/reactionHoverZone'
 import ContextMenu from '@/components/ui/contextMenu'
 import MessageEditor from '../messageEditor'
+import ReplyPreview from '../replyPreview'
 import { useMessage } from '../../hooks/useMessage'
 import { useMessageActions } from '../../hooks/useMessageActions'
 
@@ -15,14 +16,16 @@ interface Props {
   message: ChatMessage
   isOwn: boolean
   isRead: boolean
+  onReply?: (message: ChatMessage) => void
 }
 
-const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead }) => {
+const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }) => {
   const { time, canReact, onToggle, onPick, body, isDeleted, isEdited } = useMessage(message, chatId)
-  const { canManage, menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
+  const { menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
     message,
     chatId,
-    isOwn
+    isOwn,
+    onReply
   )
 
   return (
@@ -35,7 +38,9 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead }) => {
         ) : (
           <>
             <div className='flex max-w-[80%] items-start gap-1'>
-              {canManage && <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />}
+              {menuItems.length > 0 && (
+                <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />
+              )}
               <ReactionHoverZone
                 canReact={canReact}
                 onPick={onPick}
@@ -49,6 +54,7 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead }) => {
                     isDeleted && 'italic opacity-60'
                   )}
                 >
+                  {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} />}
                   {body}
                   {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
                 </div>

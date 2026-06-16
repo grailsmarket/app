@@ -7,7 +7,8 @@ import { useSendMessage } from '@/hooks/chat/useSendMessage'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import MentionDropdown from './mentionDropdown'
-import { MappedSendError, MentionState, SendController, SendMessageError } from '@/types/chat'
+import ReplyPreview from '../replyPreview'
+import { ChatMessage, MappedSendError, MentionState, SendController, SendMessageError } from '@/types/chat'
 import { mapSendError } from '@/utils/chat/errors'
 import { codePointLength, detectMention } from '@/utils/chat/message'
 
@@ -23,9 +24,20 @@ interface Props {
   /** Rendered below the input row (e.g. the global chat quota line). */
   footerSlot?: React.ReactNode
   mapSendError?: (e: SendMessageError) => MappedSendError | null
+  /** Message being replied to (renders a banner; threaded into send). */
+  replyingTo?: ChatMessage | null
+  onCancelReply?: () => void
 }
 
-const Composer: React.FC<Props> = ({ chatId, disabled, send: sendOverride, disableTyping, footerSlot }) => {
+const Composer: React.FC<Props> = ({
+  chatId,
+  disabled,
+  send: sendOverride,
+  disableTyping,
+  footerSlot,
+  replyingTo,
+  onCancelReply,
+}) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [permanentlyDisabled, setPermanentlyDisabled] = useState(false)
@@ -107,7 +119,19 @@ const Composer: React.FC<Props> = ({ chatId, disabled, send: sendOverride, disab
     if (ref.current) {
       ref.current.style.height = 'auto'
     }
-    send.mutate(trimmed, {
+    const replyTo = replyingTo
+      ? {
+          id: replyingTo.id,
+          sender_address: replyingTo.sender_address,
+          body: replyingTo.body ? replyingTo.body.slice(0, 140) : null,
+          deleted: !!replyingTo.deleted_at,
+        }
+      : undefined
+    const replyToId = replyingTo?.id
+    onCancelReply?.()
+    send.mutate(
+      { body: trimmed, replyToId, replyTo },
+      {
       onError: (e) => {
         const mapped = mapSendError(e)
         setError(mapped.message)
@@ -168,6 +192,27 @@ const Composer: React.FC<Props> = ({ chatId, disabled, send: sendOverride, disab
   return (
     <div className='border-tertiary relative border-t-2 p-3'>
       {error && <p className='text-md mb-2 text-red-400'>{error}</p>}
+      {replyingTo && (
+        <div className='bg-secondary mb-2 flex items-start justify-between gap-2 rounded-md p-2'>
+          <ReplyPreview
+            replyTo={{
+              id: replyingTo.id,
+              sender_address: replyingTo.sender_address,
+              body: replyingTo.body ? replyingTo.body.slice(0, 140) : null,
+              deleted: !!replyingTo.deleted_at,
+            }}
+            className='mb-0 min-w-0 flex-1'
+          />
+          <button
+            type='button'
+            onClick={onCancelReply}
+            className='hover:bg-primary/10 text-neutral hover:text-foreground rounded p-1 transition-colors'
+            aria-label='Cancel reply'
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <div className='bg-secondary border-tertiary relative flex items-end gap-2 rounded-md border p-2'>
         {mention && codePointLength(mention.query) >= MENTION_MIN_QUERY && (
           <MentionDropdown

@@ -8,12 +8,18 @@ import { useEditMessage } from '@/hooks/chat/useEditMessage'
 import type { ContextMenuItem } from '@/components/ui/contextMenu'
 
 /**
- * Per-message owner actions (edit + delete) shared by the DM and global rows.
- * `canManage` gates the kebab menu to the caller's own, non-deleted, persisted
- * messages. Edit uses an inline draft; save is optimistic (the row closes
- * immediately and the mutation rolls the cache back on failure).
+ * Per-message actions shared by the DM and global rows. Reply is available to
+ * any authenticated user on a live message; Edit/Delete are gated to the
+ * caller's own messages (`canManage`). Edit uses an inline draft; save is
+ * optimistic (the row closes immediately, the mutation rolls the cache back on
+ * failure). `onReply` is supplied by the thread view to set its reply target.
  */
-export const useMessageActions = (message: ChatMessage, chatId: string, isOwn: boolean) => {
+export const useMessageActions = (
+  message: ChatMessage,
+  chatId: string,
+  isOwn: boolean,
+  onReply?: (message: ChatMessage) => void
+) => {
   const { authStatus } = useUserContext()
   const del = useDeleteMessage(chatId)
   const edit = useEditMessage(chatId)
@@ -29,8 +35,9 @@ export const useMessageActions = (message: ChatMessage, chatId: string, isOwn: b
     if (!isEditing) setDraft(message.body ?? '')
   }, [message.body, isEditing])
 
-  const canManage =
-    authStatus === 'authenticated' && isOwn && !message.deleted_at && !message.id.startsWith('optimistic-')
+  const isPersisted = !message.deleted_at && !message.id.startsWith('optimistic-')
+  const canManage = authStatus === 'authenticated' && isOwn && isPersisted
+  const canReply = authStatus === 'authenticated' && isPersisted && !!onReply
 
   const startEdit = () => setIsEditing(true)
 
@@ -44,10 +51,21 @@ export const useMessageActions = (message: ChatMessage, chatId: string, isOwn: b
     edit.mutate({ messageId: message.id, body: trimmed })
   }
 
+  // Reply first (available to everyone), then owner-only Edit/Delete.
   const menuItems: ContextMenuItem[] = [
-    { label: 'Edit', onClick: startEdit },
-    { label: 'Delete', destructive: true, confirmLabel: 'Confirm delete', onClick: () => del.mutate(message.id) },
+    ...(canReply ? [{ label: 'Reply', onClick: () => onReply!(message) }] : []),
+    ...(canManage
+      ? [
+          { label: 'Edit', onClick: startEdit },
+          {
+            label: 'Delete',
+            destructive: true,
+            confirmLabel: 'Confirm delete',
+            onClick: () => del.mutate(message.id),
+          },
+        ]
+      : []),
   ]
 
-  return { canManage, menuItems, isEditing, draft, setDraft, cancelEdit, saveEdit }
+  return { canManage, canReply, menuItems, isEditing, draft, setDraft, cancelEdit, saveEdit }
 }

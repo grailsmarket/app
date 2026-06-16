@@ -39,6 +39,7 @@ const GlobalThreadView: React.FC = () => {
   const { openConnectModal } = useConnectModal()
 
   const [onlineOpen, setOnlineOpen] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
 
   const { messages, isLoading: msgsLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useGlobalMessages()
   const { total: onlineTotal } = useOnlineUsers(true)
@@ -126,6 +127,7 @@ const GlobalThreadView: React.FC = () => {
                     message={m}
                     isOwn={!!myAddress && m.sender_address?.toLowerCase() === myAddress}
                     showHeader={startsNewRun(m, previous)}
+                    onReply={setReplyingTo}
                   />
                 </React.Fragment>
               )
@@ -135,7 +137,7 @@ const GlobalThreadView: React.FC = () => {
       </div>
 
       {isAuthed ? (
-        <GlobalComposer />
+        <GlobalComposer replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} />
       ) : (
         <div className='border-tertiary flex items-center justify-between gap-3 border-t-2 p-3'>
           <p className='text-neutral text-md'>Sign in to chat with the Grails community.</p>

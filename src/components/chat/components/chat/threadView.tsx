@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { isSameDay } from 'date-fns'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
@@ -47,6 +47,10 @@ const ThreadView: React.FC = () => {
   useChatsInbox()
 
   const typingUserIds = useAppSelector(selectTypingForChat(activeChatId))
+
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
+  // Drop any pending reply target when switching chats.
+  useEffect(() => setReplyingTo(null), [activeChatId])
 
   const myAddress = userAddress?.toLowerCase()
   const otherParticipants: ChatParticipant[] = useMemo(
@@ -187,6 +191,7 @@ const ThreadView: React.FC = () => {
                     message={m}
                     isOwn={m.sender_address?.toLowerCase() === myAddress}
                     isRead={m.id === peer?.last_read_message_id}
+                    onReply={setReplyingTo}
                   />
                 </React.Fragment>
               )
@@ -215,7 +220,11 @@ const ThreadView: React.FC = () => {
             </button>
           </div>
         ) : (
-          <Composer chatId={activeChatId} />
+          <Composer
+            chatId={activeChatId}
+            replyingTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
+          />
         ))}
     </>
   )

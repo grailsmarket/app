@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { sendMessage, type SendMessageError } from '@/api/chats/sendMessage'
-import type { ChatMessage, ChatMessagesResponse } from '@/types/chat'
+import type { ChatMessage, ChatMessagesResponse, SendVars } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 
 interface MessagesPage extends ChatMessagesResponse {}
@@ -16,12 +16,12 @@ export const useSendMessage = (chatId: string | null) => {
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
 
-  return useMutation<ChatMessage, SendMessageError, string, { tempId: string } | undefined>({
-    mutationFn: (body: string) => {
+  return useMutation<ChatMessage, SendMessageError, SendVars, { tempId: string } | undefined>({
+    mutationFn: ({ body, replyToId }) => {
       if (!chatId) throw new Error('No chat selected')
-      return sendMessage({ chatId, body })
+      return sendMessage({ chatId, body, replyToId })
     },
-    onMutate: async (body) => {
+    onMutate: async ({ body, replyTo }) => {
       if (!chatId) return undefined
       await queryClient.cancelQueries({ queryKey: ['chats', chatId, 'messages'] })
 
@@ -37,6 +37,7 @@ export const useSendMessage = (chatId: string | null) => {
         created_at: new Date().toISOString(),
         edited_at: null,
         deleted_at: null,
+        reply_to: replyTo ?? null,
       }
 
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['chats', chatId, 'messages'], (old) => {

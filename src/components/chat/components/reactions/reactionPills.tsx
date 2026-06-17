@@ -4,9 +4,12 @@ import React, { useRef, useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import type { MessageReaction } from '@/types/chat'
 import EmojiPickerPopover from './emojiPickerPopover'
+import ReactionPill from './reactionPill'
 import Image from 'next/image'
 import addIcon from 'public/icons/cross.svg'
 interface Props {
+  chatId: string
+  messageId: string
   reactions?: MessageReaction[]
   /** FALSE for anonymous viewers — pills render read-only and the "+" is hidden. */
   canReact: boolean
@@ -15,7 +18,7 @@ interface Props {
 }
 
 /** Per-emoji reaction pills under a message bubble. Renders nothing when empty. */
-const ReactionPills: React.FC<Props> = ({ reactions, canReact, onToggle, className }) => {
+const ReactionPills: React.FC<Props> = ({ chatId, messageId, reactions, canReact, onToggle, className }) => {
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null)
   const addRef = useRef<HTMLButtonElement>(null)
 
@@ -24,28 +27,14 @@ const ReactionPills: React.FC<Props> = ({ reactions, canReact, onToggle, classNa
   return (
     <div className={cn('flex flex-wrap items-center gap-1', className)}>
       {reactions.map((r) => (
-        <button
+        <ReactionPill
           key={r.emoji}
-          onClick={
-            canReact
-              ? (e) => {
-                  e.stopPropagation()
-                  onToggle(r.emoji, r.reacted)
-                }
-              : undefined
-          }
-          disabled={!canReact}
-          className={cn(
-            'flex items-center gap-1 rounded-sm border py-0.5 pr-1.5 pl-1 transition-colors',
-            r.reacted ? 'border-primary bg-primary/15 text-foreground' : 'border-tertiary bg-secondary text-neutral',
-            canReact ? 'hover:border-primary/60 cursor-pointer' : 'cursor-default'
-          )}
-          aria-label={`${r.emoji} ${r.count}${r.reacted ? ' (you reacted)' : ''}`}
-          aria-pressed={canReact ? r.reacted : undefined}
-        >
-          <span className='text-md leading-none'>{r.emoji}</span>
-          <span className='text-sm font-semibold'>{r.count}</span>
-        </button>
+          chatId={chatId}
+          messageId={messageId}
+          reaction={r}
+          canReact={canReact}
+          onToggle={onToggle}
+        />
       ))}
       {canReact && (
         <button

@@ -93,7 +93,13 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader, onReply
                   <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />
                 )}
               </div>
-              <ReactionPills reactions={message.reactions} canReact={canReact} onToggle={onToggle} />
+              <ReactionPills
+                chatId={GLOBAL_CHAT_ID}
+                messageId={message.id}
+                reactions={message.reactions}
+                canReact={canReact}
+                onToggle={onToggle}
+              />
             </>
           )}
         </div>

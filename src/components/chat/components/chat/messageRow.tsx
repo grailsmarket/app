@@ -68,6 +68,8 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }
               )}
             </div>
             <ReactionPills
+              chatId={chatId}
+              messageId={message.id}
               reactions={message.reactions}
               canReact={canReact}
               onToggle={onToggle}

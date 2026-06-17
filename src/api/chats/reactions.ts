@@ -1,6 +1,27 @@
 import { API_URL } from '@/constants/api'
 import type { APIResponseType } from '@/types/api'
+import type { ReactionWithUsers } from '@/types/chat'
 import { authFetch } from '../authFetch'
+
+/**
+ * GET /chats/:chatId/messages/:messageId/reactions — who reacted, grouped by
+ * emoji with reactor addresses. Works for DMs and the global room (anonymous
+ * reads succeed for the global room since the endpoint is optional-auth).
+ */
+export const getMessageReactions = async (chatId: string, messageId: string): Promise<ReactionWithUsers[]> => {
+  const response = await authFetch(`${API_URL}/chats/${chatId}/messages/${messageId}/reactions`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  })
+
+  const json = (await response.json()) as APIResponseType<{ message_id: string; reactions: ReactionWithUsers[] }>
+
+  if (!response.ok || !json.success) {
+    throw new Error(json.error?.message ?? `Failed to load reactions: ${response.status}`)
+  }
+
+  return json.data.reactions
+}
 
 /**
  * POST /chats/:chatId/messages/:messageId/reactions — add an emoji reaction.

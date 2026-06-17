@@ -20,6 +20,18 @@ export interface MessageReaction {
   reacted: boolean
 }
 
+/** A single reactor, returned by GET …/reactions. */
+export interface ReactionUser {
+  address: string
+}
+
+/** Reactions grouped by emoji with the reactor addresses (who-reacted view). */
+export interface ReactionWithUsers {
+  emoji: string
+  count: number
+  users: ReactionUser[]
+}
+
 /** Compact preview of the parent message when this message is a reply. */
 export interface ReplyPreview {
   id: string

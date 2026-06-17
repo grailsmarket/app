@@ -6,15 +6,20 @@ import { Cross } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { closeChatSidebar, openSidebarToNew } from '@/state/reducers/chat/sidebar'
 import { useChatsInbox } from '@/hooks/chat/useChatsInbox'
+import { useUserContext } from '@/context/user'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import NoResults from '@/components/ui/noResults'
 import LoadingCell from '@/components/ui/loadingCell'
 import PlusIcon from 'public/icons/plus.svg'
 import ChatRow from './chatRow'
+import GlobalChatRow from './global/globalChatRow'
 
 const ListView: React.FC = () => {
   const dispatch = useAppDispatch()
+  const { userAddress, authStatus } = useUserContext()
   const { chats, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useChatsInbox()
+
+  const isAuthed = !!userAddress && authStatus === 'authenticated'
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const t = e.currentTarget
@@ -28,13 +33,15 @@ const ListView: React.FC = () => {
       <div className='border-tertiary flex h-14.5 items-center justify-between gap-3 border-b-2 pr-3 pl-4'>
         <h2 className='font-sedan-sc text-foreground text-2xl'>Grails Chat</h2>
         <div className='flex shrink-0 items-center gap-2'>
-          <PrimaryButton
-            onClick={() => dispatch(openSidebarToNew())}
-            className='px-md text-md flex h-7.5! items-center justify-center gap-1'
-          >
-            <Image src={PlusIcon} alt='add new chat' width={14} height={14} />
-            New chat
-          </PrimaryButton>
+          {isAuthed && (
+            <PrimaryButton
+              onClick={() => dispatch(openSidebarToNew())}
+              className='px-md text-md flex h-7.5! items-center justify-center gap-1'
+            >
+              <Image src={PlusIcon} alt='add new chat' width={14} height={14} />
+              New chat
+            </PrimaryButton>
+          )}
           <button
             onClick={() => dispatch(closeChatSidebar())}
             className='hover:bg-primary/10 rounded-md p-1 transition-colors'
@@ -46,7 +53,11 @@ const ListView: React.FC = () => {
       </div>
 
       <div onScroll={handleScroll} className='flex-1 overflow-y-auto'>
-        {isLoading ? (
+        {/* The global room is pinned above the DM inbox and available to everyone */}
+        <GlobalChatRow />
+        {!isAuthed ? (
+          <p className='text-neutral text-md p-4 text-center'>Sign in to start direct chats</p>
+        ) : isLoading ? (
           <div className='flex flex-col gap-1 p-3'>
             {Array.from({ length: 6 }).map((_, i) => (
               <LoadingCell key={i} height='64px' width='100%' />

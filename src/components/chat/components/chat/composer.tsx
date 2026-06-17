@@ -7,51 +7,36 @@ import { useSendMessage } from '@/hooks/chat/useSendMessage'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import MentionDropdown from './mentionDropdown'
-
-interface Props {
-  chatId: string
-  disabled?: boolean
-}
+import { MappedSendError, MentionState, SendController, SendMessageError } from '@/types/chat'
+import { mapSendError } from '@/utils/chat/errors'
+import { codePointLength, detectMention } from '@/utils/chat/message'
 
 const MAX_LEN = 4000
 const MENTION_MIN_QUERY = 2
 
-interface MentionState {
-  start: number
-  query: string
+interface Props {
+  chatId: string
+  disabled?: boolean
+  send?: SendController
+  /** Suppress typing-indicator emission (global chat has no typing). */
+  disableTyping?: boolean
+  /** Rendered below the input row (e.g. the global chat quota line). */
+  footerSlot?: React.ReactNode
+  mapSendError?: (e: SendMessageError) => MappedSendError | null
 }
 
-// Counts unicode code points so multi-code-unit characters (emoji) count as 1.
-const codePointLength = (s: string) => Array.from(s).length
-
-// Walk back from the caret to find an active `@<query>` mention.
-// Returns null if the caret isn't inside a mention.
-const detectMention = (value: string, caret: number): MentionState | null => {
-  for (let i = caret - 1; i >= 0; i--) {
-    const ch = value[i]
-    if (ch === '@') {
-      const prev = i === 0 ? '' : value[i - 1]
-      if (i !== 0 && !/\s/.test(prev)) return null
-      return { start: i, query: value.slice(i + 1, caret) }
-    }
-    if (/\s/.test(ch)) return null
-  }
-  return null
-}
-
-const Composer: React.FC<Props> = ({ chatId, disabled }) => {
+const Composer: React.FC<Props> = ({ chatId, disabled, send: sendOverride, disableTyping, footerSlot }) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
-  // When the server returns 403 BLOCKED on send, the caller is being blocked
-  // by the recipient. Disable the composer until the user reloads — further
-  // sends will keep failing with the same error.
   const [permanentlyDisabled, setPermanentlyDisabled] = useState(false)
   const [mention, setMention] = useState<MentionState | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [resultCount, setResultCount] = useState(0)
+
   const ref = useRef<HTMLTextAreaElement>(null)
-  const send = useSendMessage(chatId)
-  const typing = useTypingEmitter(chatId)
+  const defaultSend = useSendMessage(chatId)
+  const send: SendController = sendOverride ?? defaultSend
+  const typing = useTypingEmitter(disableTyping ? null : chatId)
 
   const inputDisabled = disabled || permanentlyDisabled
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
@@ -87,14 +72,18 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
     // unbroken token so we don't leave dangling characters after the insert.
     let end = el.selectionStart ?? value.length
     while (end < value.length && !/\s/.test(value[end])) end++
+
     const before = value.slice(0, mention.start)
     const after = value.slice(end)
     const insertion = `@${name} `
     const nextValue = before + insertion + after
+
     setValue(nextValue)
     typing.onChange(nextValue)
     closeMention()
+
     const nextCaret = before.length + insertion.length
+
     requestAnimationFrame(() => {
       const node = ref.current
       if (!node) return
@@ -120,16 +109,18 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
     }
     send.mutate(trimmed, {
       onError: (e) => {
-        if (e.code === 'BLOCKED') {
-          setError("Couldn't deliver, you have been blocked")
+        const mapped = mapSendError(e)
+        setError(mapped.message)
+
+        if (mapped.permanent) {
           setPermanentlyDisabled(true)
-          // Drop the unsent text — retry isn't useful when blocked.
           return
         }
-        setError(e.message ?? 'Failed to send')
-        // Restore the unsent text so the user can retry
-        setValue(trimmed)
-        requestAnimationFrame(autoSize)
+
+        if (mapped.restoreText !== false) {
+          setValue(trimmed)
+          requestAnimationFrame(autoSize)
+        }
       },
     })
   }
@@ -141,16 +132,19 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
         setSelectedIndex((i) => (i + 1) % resultCount)
         return
       }
+
       if (e.key === 'ArrowUp') {
         e.preventDefault()
         setSelectedIndex((i) => (i - 1 + resultCount) % resultCount)
         return
       }
+
       if (e.key === 'Enter' || e.key === 'Tab') {
         e.preventDefault()
         keyboardSelectRef.current?.()
         return
       }
+
       if (e.key === 'Escape') {
         e.preventDefault()
         closeMention()
@@ -210,7 +204,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           maxLength={MAX_LEN}
           placeholder='Type a message…'
           className={cn(
-            'text-foreground placeholder:text-neutral max-h-40 flex-1 resize-none bg-transparent text-lg leading-7 outline-none',
+            'text-foreground placeholder:text-neutral max-h-40 min-h-7 flex-1 resize-none bg-transparent pt-0.5 text-lg outline-none',
             inputDisabled && 'cursor-not-allowed opacity-50'
           )}
         />
@@ -230,6 +224,7 @@ const Composer: React.FC<Props> = ({ chatId, disabled }) => {
           <Image src={ArrowBack} alt='' width={12} height={12} className='invert' />
         </button>
       </div>
+      {footerSlot}
     </div>
   )
 }

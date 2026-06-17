@@ -53,9 +53,6 @@ const CategoriesFilterPanel: React.FC = () => {
     dispatch(clearCategoriesPageFilters())
   }
 
-  // Check if any filters are active
-  const hasActiveFilters = filters.type !== null
-
   return (
     <div
       aria-hidden={!isOpen}
@@ -139,12 +136,6 @@ const CategoriesFilterPanel: React.FC = () => {
           <CategoryTypeFilter />
         </div>
       </div>
-
-      {!isMobile && hasActiveFilters && (
-        <div className='border-tertiary flex w-[292px] justify-end border-t-2 p-4'>
-          <SecondaryButton onClick={handleClearFilters}>Clear all filters</SecondaryButton>
-        </div>
-      )}
 
       {isMobile && <MobileFilterActions canApply={hasFilterChanges} onClose={handleClose} onApply={handleClose} />}
     </div>

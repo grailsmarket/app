@@ -8,6 +8,7 @@ import { useNavbar } from '@/context/navbar'
 import { cn } from '@/utils/tailwind'
 import NewChatView from './components/new-chat/newChatView'
 import ThreadView from './components/chat/threadView'
+import GlobalThreadView from './components/global/globalThreadView'
 import ListView from './components/listView'
 
 const MIN_WIDTH = 360
@@ -28,6 +29,7 @@ const VIEW_DEPTH: Record<ChatSidebarView, number> = {
   list: 0,
   new: 1,
   thread: 2,
+  global: 3,
 }
 
 const viewVariants: Variants = {
@@ -274,6 +276,7 @@ const ChatSidebar: React.FC = () => {
               {view === 'list' && <ListView />}
               {view === 'new' && <NewChatView />}
               {view === 'thread' && <ThreadView />}
+              {view === 'global' && <GlobalThreadView />}
             </motion.div>
           </AnimatePresence>
         </motion.aside>

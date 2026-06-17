@@ -100,13 +100,15 @@ const NewChatView: React.FC = () => {
   return (
     <div className='flex h-full flex-col overflow-y-auto'>
       <div className='border-tertiary bg-background sticky top-0 z-10 flex min-h-14.5 items-center justify-between border-b-2 pr-3 pl-4'>
-        <button
-          onClick={() => dispatch(openSidebarToList())}
-          className='hover:bg-primary/10 flex items-center gap-2 rounded-md p-1 transition-colors'
-        >
-          <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
+        <div className='flex items-center gap-2'>
+          <button
+            onClick={() => dispatch(openSidebarToList())}
+            className='hover:bg-primary/10 flex cursor-pointer items-center gap-2 rounded-md p-1 transition-colors'
+          >
+            <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
+          </button>
           <span className='text-lg font-semibold'>New chat</span>
-        </button>
+        </div>
         <button
           onClick={() => dispatch(closeChatSidebar())}
           className='hover:bg-primary/10 rounded-md p-1 transition-colors'

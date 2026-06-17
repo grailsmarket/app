@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import { isSameDay } from 'date-fns'
 import { Avatar, Cross, HeaderImage } from 'ethereum-identity-kit'
@@ -18,6 +18,7 @@ import { useUserContext } from '@/context/user'
 import LoadingCell from '@/components/ui/loadingCell'
 import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
 import MessageRow from './messageRow'
+import MessageRowSkeleton from './messageRowSkeleton'
 import Composer from './composer'
 import TypingDots from './typingDots'
 import DayDivider from './dayDivider'
@@ -26,6 +27,7 @@ import { cn } from '@/utils/tailwind'
 import type { ChatMessage, ChatParticipant } from '@/types/chat'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import Link from 'next/link'
+import { useThreadView } from '../../hooks/useThreadView'
 
 const ThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -58,73 +60,20 @@ const ThreadView: React.FC = () => {
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
 
-  // Auto-scroll to bottom on new messages.
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const lastSeenCount = useRef(0)
-  useEffect(() => {
-    if (!scrollRef.current) return
-    if (messages.length > lastSeenCount.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-    lastSeenCount.current = messages.length
-  }, [messages.length])
-
-  // Adjust for the virtual keyboard along with keeping the latest message visible
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return
-    const vv = window.visualViewport
-    let previousHeight = vv.height
-    let pinning = false
-
-    const KEYBOARD_REVEAL_THRESHOLD = 80
-    const PIN_DURATION_MS = 350
-
-    const pinToBottom = () => {
-      if (pinning) return
-      pinning = true
-      const start = performance.now()
-      const tick = () => {
-        const el = scrollRef.current
-        if (el) el.scrollTop = el.scrollHeight
-        if (performance.now() - start < PIN_DURATION_MS) {
-          requestAnimationFrame(tick)
-        } else {
-          pinning = false
-        }
-      }
-      requestAnimationFrame(tick)
-    }
-
-    const onResize = () => {
-      const nextHeight = vv.height
-      if (nextHeight < previousHeight - KEYBOARD_REVEAL_THRESHOLD) {
-        pinToBottom()
-      }
-      previousHeight = nextHeight
-    }
-
-    vv.addEventListener('resize', onResize)
-    return () => {
-      vv.removeEventListener('resize', onResize)
-    }
-  }, [])
+  const { scrollRef, handleScroll } = useThreadView({ messages, hasNextPage, isFetchingNextPage, fetchNextPage })
 
   // when the thread is open and there are messages, mark the newest as read.
   useEffect(() => {
     if (!activeChatId || messages.length === 0) return
+
     const newest: ChatMessage | undefined = messages[messages.length - 1]
     if (!newest) return
+
     if (newest.id.startsWith('optimistic-')) return
+
     markRead.mutate({ chatId: activeChatId, upToMessageId: newest.id })
     // Re-run on chat change or new tail.
   }, [activeChatId, messages[messages.length - 1]?.id])
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const t = e.currentTarget
-    if (t.scrollTop < 200 && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
-    }
-  }
 
   const peerLabel = peerProfile?.displayLabel ?? 'Direct chat'
 
@@ -180,7 +129,6 @@ const ThreadView: React.FC = () => {
         <Link
           href={`/profile/${peer?.address}`}
           prefetch
-          onClick={() => dispatch(closeChatSidebar())}
           className='relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 transition-opacity hover:opacity-80'
         >
           {peerProfile?.ensName ? (
@@ -210,9 +158,9 @@ const ThreadView: React.FC = () => {
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
         {chatLoading || msgsLoading ? (
-          <div className='flex flex-col gap-2'>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <LoadingCell key={i} height='32px' width={i % 2 === 0 ? '60%' : '50%'} />
+          <div className='flex flex-col gap-3'>
+            {['55%', '40%', '60%', '35%', '50%', '45%'].map((width, i) => (
+              <MessageRowSkeleton key={i} isOwn={i % 2 === 1} width={width} />
             ))}
           </div>
         ) : messages.length === 0 ? (
@@ -220,11 +168,14 @@ const ThreadView: React.FC = () => {
         ) : (
           <div className='flex flex-col gap-3'>
             {isFetchingNextPage && (
-              <div className='py-2 text-center'>
-                <span className='text-neutral text-sm'>Loading older messages…</span>
+              <div className='flex flex-col gap-3'>
+                {['55%', '40%', '60%', '35%', '50%', '45%'].map((width, i) => (
+                  <MessageRowSkeleton key={i} isOwn={i % 2 === 1} width={width} />
+                ))}
               </div>
             )}
             {messages.map((m, i) => {
+              if (!activeChatId) return null
               const current = new Date(m.created_at)
               const previous = i > 0 ? new Date(messages[i - 1].created_at) : null
               const startsNewDay = !previous || !isSameDay(current, previous)
@@ -232,6 +183,7 @@ const ThreadView: React.FC = () => {
                 <React.Fragment key={m.id}>
                   {startsNewDay && <DayDivider date={current} />}
                   <MessageRow
+                    chatId={activeChatId}
                     message={m}
                     isOwn={m.sender_address?.toLowerCase() === myAddress}
                     isRead={m.id === peer?.last_read_message_id}

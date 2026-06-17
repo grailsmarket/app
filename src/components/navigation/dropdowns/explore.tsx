@@ -55,7 +55,14 @@ const Explore: React.FC<ExploreProps> = ({ dropdownOption, setDropdownOption, pr
 
   return (
     <div className='mx-auto flex h-14 w-full items-center gap-4 overflow-hidden transition-all duration-300 md:h-auto md:flex-row md:justify-center xl:gap-8'>
-      <Link href='/marketplace' className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'>
+      <Link
+        href='/marketplace'
+        className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
+        onClick={() => {
+          dispatch(changeMarketplaceTab(MARKETPLACE_TABS[0]))
+          setDropdownOption(null)
+        }}
+      >
         <h3 className='text-3xl font-semibold'>Explore</h3>
       </Link>
       <div className='pl-lg md:pt-xl text-neutral hidden h-fit w-56 flex-col justify-between gap-4 text-2xl font-semibold md:flex md:h-[370px] md:pl-0'>

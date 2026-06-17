@@ -63,6 +63,10 @@ const Premium: React.FC<PremiumProps> = ({ dropdownOption, setDropdownOption, pr
       <Link
         href='/marketplace?tab=premium'
         className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
+        onClick={() => {
+          dispatch(changeMarketplaceTab(MARKETPLACE_TABS[2]))
+          setDropdownOption(null)
+        }}
       >
         <h3 className='text-3xl font-semibold'>Premium</h3>
       </Link>

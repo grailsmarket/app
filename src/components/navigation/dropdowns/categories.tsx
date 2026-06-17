@@ -78,7 +78,14 @@ const Categories: React.FC<CategoriesProps> = ({ dropdownOption, setDropdownOpti
 
   return (
     <div className='mx-auto flex h-14 w-full items-center gap-4 overflow-hidden transition-all duration-300 md:h-auto md:flex-row md:justify-center xl:gap-8'>
-      <Link href='/categories' className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'>
+      <Link
+        href='/categories'
+        className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
+        onClick={() => {
+          dispatch(changeCategoriesPageTab(CATEGORIES_PAGE_TABS[0]))
+          setDropdownOption(null)
+        }}
+      >
         <h3 className='text-3xl font-semibold'>Categories</h3>
       </Link>
       <div className='pl-lg md:pt-lg text-neutral hidden h-fit w-56 flex-col gap-4 text-2xl font-semibold md:flex md:h-[370px] md:justify-between md:pl-0'>

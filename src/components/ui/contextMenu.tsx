@@ -19,6 +19,12 @@ interface Props {
   className?: string
   /** ARIA label on the trigger. */
   label?: string
+  /**
+   * Which edge of the trigger the dropdown aligns to. 'right' (default) opens
+   * leftward (good for triggers near the right edge); 'left' opens rightward
+   * (good for triggers near the left edge, e.g. other users' message kebabs).
+   */
+  align?: 'left' | 'right'
 }
 
 /**
@@ -26,7 +32,7 @@ interface Props {
  * Items can opt into a two-step confirm by providing `confirmLabel`, which
  * matches the destructive-row pattern used elsewhere without spawning a modal.
  */
-const ContextMenu: React.FC<Props> = ({ items, className, label = 'More options' }) => {
+const ContextMenu: React.FC<Props> = ({ items, className, label = 'More options', align = 'right' }) => {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState<number | null>(null)
 
@@ -86,7 +92,10 @@ const ContextMenu: React.FC<Props> = ({ items, className, label = 'More options'
         <div
           role='menu'
           onClick={(e) => e.stopPropagation()}
-          className='border-tertiary bg-background absolute top-full right-0 z-[110] mt-1 flex w-56 flex-col overflow-hidden rounded-md border-2 shadow-lg'
+          className={cn(
+            'border-tertiary bg-background absolute top-full z-[110] mt-1 flex w-56 flex-col overflow-hidden rounded-md border-2 shadow-lg',
+            align === 'left' ? 'left-0' : 'right-0'
+          )}
         >
           {items.map((item, idx) => {
             const isConfirming = confirming === idx

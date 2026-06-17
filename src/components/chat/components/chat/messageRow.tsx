@@ -37,9 +37,13 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }
           </div>
         ) : (
           <>
+            {/* Kebab sits on the OUTER edge, opposite the reaction picker (which is
+                on the inner side per buttonSide), so the two never overlap: other
+                users' messages → kebab left (menu opens right into the panel); own
+                messages → kebab right (menu opens left into the panel). */}
             <div className='flex max-w-[80%] items-start gap-1'>
-              {menuItems.length > 0 && (
-                <ContextMenu items={menuItems} className='mt-1 shrink-0' label='Message options' />
+              {!isOwn && menuItems.length > 0 && (
+                <ContextMenu items={menuItems} align='left' className='mt-1 shrink-0' label='Message options' />
               )}
               <ReactionHoverZone
                 canReact={canReact}
@@ -54,11 +58,14 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }
                     isDeleted && 'italic opacity-60'
                   )}
                 >
-                  {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} />}
+                  {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} onOwnBubble={isOwn} />}
                   {body}
                   {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
                 </div>
               </ReactionHoverZone>
+              {isOwn && menuItems.length > 0 && (
+                <ContextMenu items={menuItems} align='right' className='mt-1 shrink-0' label='Message options' />
+              )}
             </div>
             <ReactionPills
               reactions={message.reactions}

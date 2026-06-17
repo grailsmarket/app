@@ -169,7 +169,7 @@ const Actions: React.FC<ActionsProps> = ({
               >
                 Edit
               </button>
-              <p
+              <button
                 className={cn(
                   secondaryButtonClassName,
                   'flex w-full! flex-row items-center justify-center gap-1 border-y border-l font-bold'
@@ -177,13 +177,13 @@ const Actions: React.FC<ActionsProps> = ({
                 onClick={(e) => clickHandler(e, openCancelListingModal)}
               >
                 Cancel
-              </p>
+              </button>
             </div>
           )
         }
 
         return (
-          <p
+          <button
             className={cn(
               primaryButtonClassName,
               'flex w-full! flex-row items-center justify-center gap-1 border font-bold'
@@ -191,7 +191,7 @@ const Actions: React.FC<ActionsProps> = ({
             onClick={(e) => clickHandler(e, openMakeListingModal)}
           >
             List
-          </p>
+          </button>
         )
       }
     }

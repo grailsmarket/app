@@ -241,6 +241,7 @@ const Composer: React.FC<Props> = ({
         )}
         <textarea
           ref={ref}
+          id='chat-composer-textarea'
           value={value}
           onChange={(e) => {
             const nextValue = e.target.value

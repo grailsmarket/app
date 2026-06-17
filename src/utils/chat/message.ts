@@ -1,4 +1,5 @@
-import { MentionState } from '@/types/chat'
+import { ChatMessage, MentionState } from '@/types/chat'
+import { isSameDay, differenceInMinutes } from 'date-fns'
 
 // Counts unicode code points so multi-code-unit characters (emoji) count as 1.
 export const codePointLength = (s: string) => Array.from(s).length
@@ -16,4 +17,15 @@ export const detectMention = (value: string, caret: number): MentionState | null
     if (/\s/.test(ch)) return null
   }
   return null
+}
+
+const SENDER_RUN_GAP_MINUTES = 5
+
+export const startsNewRun = (message: ChatMessage, previous: ChatMessage | null): boolean => {
+  if (!previous) return true
+  if (previous.sender_address?.toLowerCase() !== message.sender_address?.toLowerCase()) return true
+  const current = new Date(message.created_at)
+  const prev = new Date(previous.created_at)
+  if (!isSameDay(current, prev)) return true
+  return differenceInMinutes(current, prev) > SENDER_RUN_GAP_MINUTES
 }

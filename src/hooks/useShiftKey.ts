@@ -2,12 +2,18 @@ import { useEffect } from 'react'
 import { useAppDispatch } from '@/state/hooks'
 import { setBulkSelectIsSelecting, setIsShiftPressed } from '@/state/reducers/modals/bulkSelectModal'
 
+const isTypingInInput = (target: EventTarget | null) => {
+  const el = target as HTMLElement | null
+  if (!el) return false
+  return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable
+}
+
 export const useShiftKeyListener = (canListen: boolean) => {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Shift' && canListen) {
+      if (e.key === 'Shift' && canListen && !isTypingInInput(e.target)) {
         dispatch(setBulkSelectIsSelecting(true))
         dispatch(setIsShiftPressed(true))
       }

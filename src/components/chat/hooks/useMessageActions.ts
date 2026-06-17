@@ -5,16 +5,12 @@ import type { ChatMessage } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 import { useDeleteMessage } from '@/hooks/chat/useDeleteMessage'
 import { useEditMessage } from '@/hooks/chat/useEditMessage'
-import type { ContextMenuItem } from '@/components/ui/contextMenu'
+import type { ContextMenuItem } from '@/components/chat/components/contextMenu'
+import CopyIcon from 'public/icons/copy.svg'
+import EditIcon from 'public/icons/pencil-white.svg'
+import DeleteIcon from 'public/icons/trash.svg'
+import ReplyIcon from 'public/icons/reply.svg'
 
-/**
- * Per-message actions shared by the DM and global rows. Reply is available to
- * any authenticated user on a live message; Edit/Delete are gated to the
- * caller's own messages. Edit uses an inline draft and keeps the editor open
- * until the save succeeds: on failure the draft is preserved and an inline
- * error is surfaced (`editError`) so a typed edit is never silently lost.
- * `onReply` is supplied by the thread view to set its reply target.
- */
 export const useMessageActions = (
   message: ChatMessage,
   chatId: string,
@@ -28,14 +24,8 @@ export const useMessageActions = (
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState(message.body ?? '')
   const [editError, setEditError] = useState<string | null>(null)
-  // Hard re-entrancy guard: `edit.isPending` only flips on the next render, so a
-  // rapid double-Enter could otherwise fire two mutations before it updates.
   const savingRef = useRef(false)
 
-  // Mirror the draft to the latest body while the editor is closed, so a remote
-  // edit (e.g. a WS edit from another device) can't leave a stale draft that
-  // would clobber the newer body on the next open. Left untouched mid-edit so
-  // the user's in-progress typing is never overwritten.
   useEffect(() => {
     if (!isEditing) setDraft(message.body ?? '')
   }, [message.body, isEditing])
@@ -43,6 +33,8 @@ export const useMessageActions = (
   const isPersisted = !message.deleted_at && !message.id.startsWith('optimistic-')
   const canManage = authStatus === 'authenticated' && isOwn && isPersisted
   const canReply = authStatus === 'authenticated' && isPersisted && !!onReply
+  // Copy is offered for any non-deleted message that still has body text.
+  const canCopy = !message.deleted_at && !!message.body?.trim()
 
   const startEdit = () => {
     setEditError(null)
@@ -68,8 +60,6 @@ export const useMessageActions = (
     edit.mutate(
       { messageId: message.id, body: trimmed },
       {
-        // Keep the editor open until the server confirms, then close. On failure
-        // leave it open with the draft + an inline error so the edit isn't lost.
         onSuccess: () => setIsEditing(false),
         onError: () => setEditError('Failed to save edit. Try again.'),
         onSettled: () => {
@@ -79,21 +69,39 @@ export const useMessageActions = (
     )
   }
 
-  // Reply first (available to everyone), then owner-only Edit/Delete.
+  const copyText = () => {
+    if (message.body) navigator.clipboard?.writeText(message.body)
+  }
+
+  // Reply now lives in its own hover icon; the overflow menu carries Copy
+  // (anyone) followed by owner-only Edit/Delete.
   const menuItems: ContextMenuItem[] = [
-    ...(canReply ? [{ label: 'Reply', onClick: () => onReply!(message) }] : []),
+    ...(canReply
+      ? [
+          {
+            label: 'Reply',
+            onClick: () => {
+              onReply?.(message)
+              document.getElementById('chat-composer-textarea')?.focus()
+            },
+            icon: ReplyIcon,
+          },
+        ]
+      : []),
+    ...(canCopy ? [{ label: 'Copy text', onClick: copyText, icon: CopyIcon }] : []),
     ...(canManage
       ? [
-          { label: 'Edit', onClick: startEdit },
+          { label: 'Edit', onClick: startEdit, icon: EditIcon },
           {
             label: 'Delete',
             destructive: true,
             confirmLabel: 'Confirm delete',
             onClick: () => del.mutate(message.id),
+            icon: DeleteIcon,
           },
         ]
       : []),
   ]
 
-  return { menuItems, isEditing, draft, setDraft, cancelEdit, saveEdit, editError, isSaving: edit.isPending }
+  return { menuItems, canReply, isEditing, draft, setDraft, cancelEdit, saveEdit, editError, isSaving: edit.isPending }
 }

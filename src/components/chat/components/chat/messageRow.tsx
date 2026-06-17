@@ -4,12 +4,12 @@ import React from 'react'
 import { cn } from '@/utils/tailwind'
 import type { ChatMessage } from '@/types/chat'
 import ReactionPills from '../reactions/reactionPills'
-import ReactionHoverZone from '../reactions/reactionHoverZone'
-import ContextMenu from '@/components/ui/contextMenu'
+import MessageHoverActions from '../messageHoverActions'
 import MessageEditor from '../messageEditor'
 import ReplyPreview from '../replyPreview'
 import { useMessage } from '../../hooks/useMessage'
 import { useMessageActions } from '../../hooks/useMessageActions'
+import { startsNewRun } from '@/utils/chat/message'
 
 interface Props {
   chatId: string
@@ -17,19 +17,21 @@ interface Props {
   isOwn: boolean
   isRead: boolean
   onReply?: (message: ChatMessage) => void
+  /** Play the subtle entrance animation (set for messages received live). */
+  animate?: boolean
+  menuPosition: 'top' | 'bottom'
+  next: ChatMessage | null
 }
 
-const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }) => {
+const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply, animate, menuPosition, next }) => {
   const { time, canReact, onToggle, onPick, body, isDeleted, isEdited } = useMessage(message, chatId)
-  const { menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit, editError, isSaving } = useMessageActions(
-    message,
-    chatId,
-    isOwn,
-    onReply
-  )
+  const { menuItems, canReply, isEditing, draft, setDraft, saveEdit, cancelEdit, editError, isSaving } =
+    useMessageActions(message, chatId, isOwn, onReply)
+
+  const showTime = startsNewRun(message, next)
 
   return (
-    <div className={cn('flex w-full', isOwn ? 'justify-end' : 'justify-start')}>
+    <div className={cn('flex w-full hover:z-10', isOwn ? 'justify-end' : 'justify-start', animate && 'messageIn')}>
       <div className={cn('flex w-full flex-col gap-1', isOwn ? 'items-end' : 'items-start')}>
         {isEditing ? (
           <div className='w-full max-w-[80%]'>
@@ -44,36 +46,39 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }
           </div>
         ) : (
           <>
-            {/* Kebab sits on the OUTER edge, opposite the reaction picker (which is
-                on the inner side per buttonSide), so the two never overlap: other
-                users' messages → kebab left (menu opens right into the panel); own
-                messages → kebab right (menu opens left into the panel). */}
-            <div className='flex max-w-[80%] items-start gap-1'>
-              {!isOwn && menuItems.length > 0 && (
-                <ContextMenu items={menuItems} align='left' className='mt-1 shrink-0' label='Message options' />
-              )}
-              <ReactionHoverZone
-                canReact={canReact}
-                onPick={onPick}
-                buttonSide={isOwn ? 'left' : 'right'}
-                className={cn('flex w-fit!', isOwn ? 'justify-end' : 'justify-start')}
+            <MessageHoverActions
+              position={menuPosition}
+              canReact={canReact}
+              onPick={onPick}
+              canReply={canReply}
+              onReply={() => onReply?.(message)}
+              menuItems={menuItems}
+              side={isOwn ? 'left' : 'right'}
+              className='w-fit max-w-[92.5%]'
+            >
+              <div
+                className={cn(
+                  'relative w-fit break-before-all rounded-2xl px-4 py-2 text-lg wrap-anywhere whitespace-pre-wrap',
+                  isOwn ? 'bg-primary text-background rounded-br-sm' : 'bg-secondary text-foreground rounded-bl-sm',
+                  isDeleted && 'italic opacity-60'
+                )}
               >
-                <div
-                  className={cn(
-                    'w-fit break-before-all rounded-2xl px-4 py-2 text-lg wrap-anywhere whitespace-pre-wrap',
-                    isOwn ? 'bg-primary text-background rounded-br-sm' : 'bg-secondary text-foreground rounded-bl-sm',
-                    isDeleted && 'italic opacity-60'
-                  )}
-                >
-                  {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} onOwnBubble={isOwn} />}
-                  {body}
-                  {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
-                </div>
-              </ReactionHoverZone>
-              {isOwn && menuItems.length > 0 && (
-                <ContextMenu items={menuItems} align='right' className='mt-1 shrink-0' label='Message options' />
-              )}
-            </div>
+                {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} onOwnBubble={isOwn} />}
+                {body}
+                {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
+                {showTime && (
+                  <p
+                    className={cn(
+                      'text-neutral absolute -bottom-0.5 shrink-0 text-sm text-nowrap',
+                      isOwn ? 'right-[calc(100%+6px)]' : 'left-[calc(100%+4px)]'
+                    )}
+                  >
+                    {isOwn && isRead ? 'Seen • ' : ''}
+                    {time}
+                  </p>
+                )}
+              </div>
+            </MessageHoverActions>
             <ReactionPills
               chatId={chatId}
               messageId={message.id}
@@ -82,9 +87,6 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply }
               onToggle={onToggle}
               className={isOwn ? 'justify-end' : 'justify-start'}
             />
-            <span className={cn('text-neutral text-sm', isOwn ? 'text-right' : 'text-left')}>
-              {isOwn && isRead ? 'Seen •' : ''} {time}
-            </span>
           </>
         )}
       </div>

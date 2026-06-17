@@ -43,7 +43,7 @@ const ReactionPills: React.FC<Props> = ({ chatId, messageId, reactions, canReact
             e.stopPropagation()
             setAnchorRect(addRef.current?.getBoundingClientRect() ?? null)
           }}
-          className='border-tertiary bg-secondary text-neutral hover:text-foreground hover:border-primary/60 flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm border text-sm font-bold transition-colors'
+          className='border-tertiary bg-secondary text-neutral hover:text-foreground hover:border-primary/60 flex h-[21px] w-[21px] cursor-pointer items-center justify-center rounded-sm border text-sm font-bold transition-colors'
           aria-label='Add reaction'
         >
           <Image src={addIcon} alt='Add reaction' width={8} height={8} className='rotate-45' />

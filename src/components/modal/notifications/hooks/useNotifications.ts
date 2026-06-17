@@ -1,12 +1,17 @@
 import { fetchNotifications } from '@/api/notifications/fetchNotifications'
 import { markAllAsRead } from '@/api/notifications/markAllAsRead'
 import { useUserContext } from '@/context/user'
+import type { NotificationType } from '@/types/notifications'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 
 interface UseNotificationsProps {
   isOpen: boolean
 }
+
+// Types that render without an ENS name (their own row components), so the
+// ensName/ensTokenId requirement below must not drop them.
+const NON_ENS_NOTIFICATION_TYPES = new Set<NotificationType>(['admin-broadcast', 'chat_reply', 'chat_mention'])
 
 export const useNotifications = ({ isOpen }: UseNotificationsProps) => {
   const queryClient = useQueryClient()
@@ -28,14 +33,16 @@ export const useNotifications = ({ isOpen }: UseNotificationsProps) => {
     refetchOnWindowFocus: true,
   })
 
-  // Get all notifications from pages. Admin broadcasts have no ensName/ensTokenId;
-  // ENS-scoped notifications still require both (malformed rows are dropped).
+  // Get all notifications from pages. Admin broadcasts + chat (reply/mention)
+  // notifications render without an ENS name; ENS-scoped notifications still
+  // require both name + tokenId (malformed rows are dropped).
   const allNotifications =
     data?.pages
       .flatMap((page) => page.notifications)
       .filter(
         (notification) =>
-          notification.type === 'admin-broadcast' || (!!notification.ensName && !!notification.ensTokenId)
+          NON_ENS_NOTIFICATION_TYPES.has(notification.type) ||
+          (!!notification.ensName && !!notification.ensTokenId)
       ) || []
   const isNotificationsLoading = isLoading || isFetchingNextPage
 

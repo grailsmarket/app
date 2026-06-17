@@ -148,7 +148,7 @@ const Actions: React.FC<ActionsProps> = ({
               grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
             }
           }}
-          className={secondaryButtonClassName}
+          className={cn(secondaryButtonClassName, 'bg-tertiary cursor-pointer')}
         >
           Select
         </SecondaryButton>
@@ -267,31 +267,33 @@ const Actions: React.FC<ActionsProps> = ({
         )} */}
         {actionButton}
       </div>
-      <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
-        <div
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-          className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y border-l'
-        >
-          <Watchlist
+      {!isBulkSelecting && (
+        <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
+          <div
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
+            className='border-foreground/55 hover:border-foreground/80 flex h-full w-10 flex-row items-center justify-center gap-1 border-y border-l'
+          >
+            <Watchlist
+              domain={domain}
+              showSettings={watchlistId ? true : false}
+              tooltipPosition={index === 0 ? 'bottom' : 'top'}
+              dropdownPosition='left'
+              watchlistId={watchlistId || domain.watchlist_record_id}
+              fetchWatchSettings={false}
+            />
+          </div>
+          <ActionsDropdown
             domain={domain}
-            showSettings={watchlistId ? true : false}
-            tooltipPosition={index === 0 ? 'bottom' : 'top'}
-            dropdownPosition='left'
-            watchlistId={watchlistId || domain.watchlist_record_id}
-            fetchWatchSettings={false}
+            isOwner={isMyDomain}
+            registrationStatus={registrationStatus}
+            dropdownPosition={isFirstInRow ? 'right' : 'left'}
+            buttonClassName='rounded-none border-y border-x h-10 w-10 hover:bg-tertiary'
           />
         </div>
-        <ActionsDropdown
-          domain={domain}
-          isOwner={isMyDomain}
-          registrationStatus={registrationStatus}
-          dropdownPosition={isFirstInRow ? 'right' : 'left'}
-          buttonClassName='rounded-none border-y border-x h-10 w-10 hover:bg-tertiary'
-        />
-      </div>
+      )}
     </div>
   )
 }

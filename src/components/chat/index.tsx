@@ -20,10 +20,8 @@ const DEFAULT_WIDTH = 380
 const SWIPE_CLOSE_DISTANCE = 90 // px of rightward drag that dismisses outright
 const SWIPE_CLOSE_VELOCITY = 500 // px/s rightward flick that dismisses with less distance
 const SWIPE_CLOSE_MIN_FLICK_DISTANCE = 40 // px floor so a tiny twitch never counts as a flick
-// The swipe may only begin within this many px of the panel's left edge. This
-// lets it start at any height (over the list, a thread, anywhere) while leaving
-// mid-panel horizontal moves to the content, mirroring the native edge-back gesture.
 const EDGE_SWIPE_ZONE = 48
+const EDGE_NAV_GUARD_ZONE = 24
 
 const VIEW_DEPTH: Record<ChatSidebarView, number> = {
   list: 0,
@@ -171,12 +169,6 @@ const ChatSidebar: React.FC = () => {
     [dispatch]
   )
 
-  // While the panel is open on mobile (where it covers the full screen) lock the
-  // page behind it from scrolling, and suppress the browser's own touch gestures
-  // (pull-to-refresh, overscroll glow, horizontal overscroll back/forward nav) so
-  // they can't fire underneath the swipe-to-close gesture. The panel itself gets
-  // `touch-action: pan-y` from Framer's `drag` prop, which hands horizontal
-  // gestures to us while leaving vertical scrolling of the chat intact.
   useEffect(() => {
     if (!open || isDesktop) return
     const html = document.documentElement
@@ -185,15 +177,36 @@ const ChatSidebar: React.FC = () => {
       htmlOverflow: html.style.overflow,
       bodyOverflow: body.style.overflow,
       overscroll: html.style.overscrollBehavior,
+      htmlTouchAction: html.style.touchAction,
+      bodyTouchAction: body.style.touchAction,
     }
     html.style.overflow = 'hidden'
     body.style.overflow = 'hidden'
     html.style.overscrollBehavior = 'none'
+    html.style.touchAction = 'pan-y'
+    body.style.touchAction = 'pan-y'
     return () => {
       html.style.overflow = prev.htmlOverflow
       body.style.overflow = prev.bodyOverflow
       html.style.overscrollBehavior = prev.overscroll
+      html.style.touchAction = prev.htmlTouchAction
+      body.style.touchAction = prev.bodyTouchAction
     }
+  }, [open, isDesktop])
+
+  // iOS/Safari swipe disable
+  useEffect(() => {
+    if (!open || isDesktop) return
+    const onTouchStart = (e: TouchEvent) => {
+      if (!e.cancelable) return
+      const x = e.touches[0]?.clientX
+      if (x === undefined) return
+      if (x < EDGE_NAV_GUARD_ZONE || x > window.innerWidth - EDGE_NAV_GUARD_ZONE) {
+        e.preventDefault()
+      }
+    }
+    document.addEventListener('touchstart', onTouchStart, { passive: false })
+    return () => document.removeEventListener('touchstart', onTouchStart)
   }, [open, isDesktop])
 
   const sidebarWidth = width ?? DEFAULT_WIDTH

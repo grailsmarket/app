@@ -277,7 +277,7 @@ const Actions: React.FC<ActionsProps> = ({
             <CartIcon domain={domain} />
           </button>
         )} */}
-        <div className='flex h-[54px] min-w-12 items-center justify-center gap-0 @[48rem]/app:min-w-14 @[48rem]/app:gap-2 @[48rem]/app:px-2.5'>
+        <div className='flex h-[54px] min-w-12 items-center justify-center gap-0 @[48rem]/app:min-w-14 @[48rem]/app:gap-0.5 @[48rem]/app:pr-1'>
           {showWatchlist && (
             <div
               onClick={(e) => {

@@ -24,7 +24,7 @@ interface Props {
 const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader, onReply }) => {
   const { time, senderLabel, canReact, onToggle, onPick, body, isDeleted, isEdited, senderAddress, senderProfile } =
     useMessage(message, GLOBAL_CHAT_ID)
-  const { menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit } = useMessageActions(
+  const { menuItems, isEditing, draft, setDraft, saveEdit, cancelEdit, editError, isSaving } = useMessageActions(
     message,
     GLOBAL_CHAT_ID,
     isOwn,
@@ -56,7 +56,14 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader, onReply
         </div>
         <div className='flex min-w-0 flex-1 flex-col items-start gap-1'>
           {isEditing ? (
-            <MessageEditor value={draft} onChange={setDraft} onSave={saveEdit} onCancel={cancelEdit} />
+            <MessageEditor
+              value={draft}
+              onChange={setDraft}
+              onSave={saveEdit}
+              onCancel={cancelEdit}
+              error={editError}
+              saving={isSaving}
+            />
           ) : (
             <>
               <div className='flex w-full items-start gap-1'>

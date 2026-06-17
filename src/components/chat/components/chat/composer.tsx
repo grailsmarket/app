@@ -1,19 +1,29 @@
 'use client'
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
+import { Cross } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useSendMessage } from '@/hooks/chat/useSendMessage'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
 import ArrowBack from 'public/icons/arrow-back.svg'
 import MentionDropdown from './mentionDropdown'
 import ReplyPreview from '../replyPreview'
-import { ChatMessage, MappedSendError, MentionState, SendController, SendMessageError } from '@/types/chat'
+import {
+  ChatMessage,
+  MappedSendError,
+  MentionState,
+  ReplyPreview as ReplyPreviewData,
+  SendController,
+  SendMessageError,
+} from '@/types/chat'
 import { mapSendError } from '@/utils/chat/errors'
 import { codePointLength, detectMention } from '@/utils/chat/message'
+import { MESSAGE_INPUT_MAX_HEIGHT, MESSAGE_MAX_LEN } from '@/constants/chat'
 
-const MAX_LEN = 4000
 const MENTION_MIN_QUERY = 2
+/** Max characters of the parent body kept in a reply's optimistic preview. */
+const REPLY_PREVIEW_MAX_LEN = 140
 
 interface Props {
   chatId: string
@@ -27,6 +37,8 @@ interface Props {
   /** Message being replied to (renders a banner; threaded into send). */
   replyingTo?: ChatMessage | null
   onCancelReply?: () => void
+  /** Re-assert the reply target after a failed send (mirrors text restoration). */
+  onRestoreReply?: (message: ChatMessage) => void
 }
 
 const Composer: React.FC<Props> = ({
@@ -37,6 +49,7 @@ const Composer: React.FC<Props> = ({
   footerSlot,
   replyingTo,
   onCancelReply,
+  onRestoreReply,
 }) => {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -54,11 +67,23 @@ const Composer: React.FC<Props> = ({
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
   const dropdownOpen = mentionActive && resultCount > 0
 
+  // Single source for the reply-preview shape — consumed by both the banner and
+  // the optimistic send payload so the two never drift.
+  const replyPreview = useMemo<ReplyPreviewData | undefined>(() => {
+    if (!replyingTo) return undefined
+    return {
+      id: replyingTo.id,
+      sender_address: replyingTo.sender_address,
+      body: replyingTo.body ? replyingTo.body.slice(0, REPLY_PREVIEW_MAX_LEN) : null,
+      deleted: !!replyingTo.deleted_at,
+    }
+  }, [replyingTo])
+
   const autoSize = () => {
     const el = ref.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+    el.style.height = Math.min(el.scrollHeight, MESSAGE_INPUT_MAX_HEIGHT) + 'px'
   }
 
   const closeMention = useCallback(() => {
@@ -108,8 +133,8 @@ const Composer: React.FC<Props> = ({
   const submit = () => {
     const trimmed = value.trim()
     if (!trimmed || send.isPending) return
-    if (trimmed.length > MAX_LEN) {
-      setError(`Message too long (max ${MAX_LEN} characters)`)
+    if (trimmed.length > MESSAGE_MAX_LEN) {
+      setError(`Message too long (max ${MESSAGE_MAX_LEN} characters)`)
       return
     }
     setError(null)
@@ -119,15 +144,11 @@ const Composer: React.FC<Props> = ({
     if (ref.current) {
       ref.current.style.height = 'auto'
     }
-    const replyTo = replyingTo
-      ? {
-          id: replyingTo.id,
-          sender_address: replyingTo.sender_address,
-          body: replyingTo.body ? replyingTo.body.slice(0, 140) : null,
-          deleted: !!replyingTo.deleted_at,
-        }
-      : undefined
+    const replyTo = replyPreview
     const replyToId = replyingTo?.id
+    // Capture the reply target before clearing it so a failed send can restore
+    // it alongside the text (the banner is cleared optimistically below).
+    const replySnapshot = replyingTo
     onCancelReply?.()
     send.mutate(
       { body: trimmed, replyToId, replyTo },
@@ -143,6 +164,7 @@ const Composer: React.FC<Props> = ({
 
           if (mapped.restoreText !== false) {
             setValue(trimmed)
+            if (replySnapshot) onRestoreReply?.(replySnapshot)
             requestAnimationFrame(autoSize)
           }
         },
@@ -193,24 +215,16 @@ const Composer: React.FC<Props> = ({
   return (
     <div className='border-tertiary relative border-t-2 p-3'>
       {error && <p className='text-md mb-2 text-red-400'>{error}</p>}
-      {replyingTo && (
+      {replyPreview && (
         <div className='bg-secondary mb-2 flex items-start justify-between gap-2 rounded-md p-2'>
-          <ReplyPreview
-            replyTo={{
-              id: replyingTo.id,
-              sender_address: replyingTo.sender_address,
-              body: replyingTo.body ? replyingTo.body.slice(0, 140) : null,
-              deleted: !!replyingTo.deleted_at,
-            }}
-            className='mb-0 min-w-0 flex-1'
-          />
+          <ReplyPreview replyTo={replyPreview} className='mb-0 min-w-0 flex-1' />
           <button
             type='button'
             onClick={onCancelReply}
             className='hover:bg-primary/10 text-neutral hover:text-foreground rounded p-1 transition-colors'
             aria-label='Cancel reply'
           >
-            ✕
+            <Cross className='h-3.5 w-3.5' />
           </button>
         </div>
       )}
@@ -247,7 +261,7 @@ const Composer: React.FC<Props> = ({
           onKeyDown={onKeyDown}
           disabled={inputDisabled}
           rows={1}
-          maxLength={MAX_LEN}
+          maxLength={MESSAGE_MAX_LEN}
           placeholder='Type a message…'
           className={cn(
             'text-foreground placeholder:text-neutral max-h-40 min-h-7 flex-1 resize-none bg-transparent pt-0.5 text-lg outline-none',

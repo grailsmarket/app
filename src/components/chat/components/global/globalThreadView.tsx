@@ -137,7 +137,11 @@ const GlobalThreadView: React.FC = () => {
       </div>
 
       {isAuthed ? (
-        <GlobalComposer replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} />
+        <GlobalComposer
+          replyingTo={replyingTo}
+          onCancelReply={() => setReplyingTo(null)}
+          onRestoreReply={(m) => setReplyingTo(m)}
+        />
       ) : (
         <div className='border-tertiary flex items-center justify-between gap-3 border-t-2 p-3'>
           <p className='text-neutral text-md'>Sign in to chat with the Grails community.</p>

@@ -220,7 +220,12 @@ const ThreadView: React.FC = () => {
             </button>
           </div>
         ) : (
-          <Composer chatId={activeChatId} replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} />
+          <Composer
+            chatId={activeChatId}
+            replyingTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
+            onRestoreReply={(m) => setReplyingTo(m)}
+          />
         ))}
     </>
   )

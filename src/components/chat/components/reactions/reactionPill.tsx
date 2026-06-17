@@ -1,14 +1,13 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import type { MessageReaction } from '@/types/chat'
 import ReactorsPopover from './reactorsPopover'
+import { LONG_PRESS_MS, LONG_PRESS_MOVE_CANCEL_PX } from './constants'
 
 const OPEN_DELAY_MS = 250
 const CLOSE_DELAY_MS = 200
-const LONG_PRESS_MS = 500
-const LONG_PRESS_MOVE_CANCEL_PX = 10
 
 interface Props {
   chatId: string
@@ -41,6 +40,17 @@ const ReactionPill: React.FC<Props> = ({ chatId, messageId, reaction, canReact, 
       t.current = null
     }
   }
+
+  // Clear any pending hover/long-press timers on unmount — a pill unmounts when
+  // its emoji count drops to 0, and a stray timer would setState afterwards.
+  useEffect(
+    () => () => {
+      if (openTimer.current) clearTimeout(openTimer.current)
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+      if (pressTimer.current) clearTimeout(pressTimer.current)
+    },
+    []
+  )
 
   const open = () => setAnchorRect(btnRef.current?.getBoundingClientRect() ?? null)
   const close = () => setAnchorRect(null)

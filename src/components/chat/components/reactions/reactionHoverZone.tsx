@@ -1,11 +1,9 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/utils/tailwind'
 import EmojiPickerPopover from './emojiPickerPopover'
-
-const LONG_PRESS_MS = 500
-const LONG_PRESS_MOVE_CANCEL_PX = 10
+import { LONG_PRESS_MS, LONG_PRESS_MOVE_CANCEL_PX } from './constants'
 
 interface Props {
   /** FALSE disables the hover button and long-press entirely (anonymous viewers). */
@@ -40,6 +38,14 @@ const ReactionHoverZone: React.FC<Props> = ({ canReact, onPick, buttonSide = 'ri
     }
     pressOrigin.current = null
   }
+
+  // Clear a pending long-press timer on unmount so it can't fire afterwards.
+  useEffect(
+    () => () => {
+      if (pressTimer.current) clearTimeout(pressTimer.current)
+    },
+    []
+  )
 
   const onTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0]

@@ -21,8 +21,10 @@ const ListView: React.FC = () => {
   const { chats, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useChatsInbox()
 
   const [search, setSearch] = useState('')
-  const searching = search.trim().length > 0
-  const { data: searchResults = [], isFetching: searchFetching } = useChatSearch(search)
+  // Only switch into search mode once the query is long enough to actually
+  // search — below that the normal inbox (Global room + DMs) stays visible.
+  const searching = search.trim().length >= MIN_CHAT_SEARCH_LEN
+  const { data: searchResults = [], isPending: searchPending } = useChatSearch(search)
 
   const isAuthed = !!userAddress && authStatus === 'authenticated'
 
@@ -84,11 +86,7 @@ const ListView: React.FC = () => {
       <div onScroll={handleScroll} className='flex-1 overflow-y-auto'>
         {searching ? (
           // Search mode (DMs only — global room is excluded).
-          search.trim().length < MIN_CHAT_SEARCH_LEN ? (
-            <p className='text-neutral text-md p-4 text-center'>
-              Type at least {MIN_CHAT_SEARCH_LEN} characters to search
-            </p>
-          ) : searchFetching && searchResults.length === 0 ? (
+          searchPending && searchResults.length === 0 ? (
             <div className='flex flex-col gap-1 p-3'>
               {Array.from({ length: 4 }).map((_, i) => (
                 <LoadingCell key={i} height='64px' width='100%' />

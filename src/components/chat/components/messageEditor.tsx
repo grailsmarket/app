@@ -2,14 +2,17 @@
 
 import React, { useEffect, useRef } from 'react'
 import { cn } from '@/utils/tailwind'
-
-const MAX_LEN = 4000
+import { MESSAGE_INPUT_MAX_HEIGHT, MESSAGE_MAX_LEN } from '@/constants/chat'
 
 interface Props {
   value: string
   onChange: (v: string) => void
   onSave: () => void
   onCancel: () => void
+  /** Inline error shown when a save fails (the editor stays open). */
+  error?: string | null
+  /** True while the save is in flight — disables Save and ignores Enter. */
+  saving?: boolean
 }
 
 /**
@@ -17,14 +20,14 @@ interface Props {
  * a newline, Escape cancels. Autosizes to content and focuses on mount with the
  * caret at the end. Intentionally simpler than the Composer (no mentions/typing).
  */
-const MessageEditor: React.FC<Props> = ({ value, onChange, onSave, onCancel }) => {
+const MessageEditor: React.FC<Props> = ({ value, onChange, onSave, onCancel, error, saving }) => {
   const ref = useRef<HTMLTextAreaElement>(null)
 
   const autoSize = () => {
     const el = ref.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+    el.style.height = Math.min(el.scrollHeight, MESSAGE_INPUT_MAX_HEIGHT) + 'px'
   }
 
   useEffect(() => {
@@ -38,7 +41,7 @@ const MessageEditor: React.FC<Props> = ({ value, onChange, onSave, onCancel }) =
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      onSave()
+      if (!saving) onSave()
     } else if (e.key === 'Escape') {
       e.preventDefault()
       onCancel()
@@ -56,15 +59,21 @@ const MessageEditor: React.FC<Props> = ({ value, onChange, onSave, onCancel }) =
         }}
         onKeyDown={onKeyDown}
         rows={1}
-        maxLength={MAX_LEN}
+        maxLength={MESSAGE_MAX_LEN}
         className={cn(
           'bg-secondary border-tertiary text-foreground max-h-40 min-h-7 w-full resize-none rounded-md',
           'border p-2 text-lg outline-none'
         )}
       />
+      {error && <p className='text-md text-red-400'>{error}</p>}
       <div className='text-neutral flex items-center gap-2 text-sm'>
-        <button type='button' onClick={onSave} className='text-primary font-semibold hover:opacity-80'>
-          Save
+        <button
+          type='button'
+          onClick={onSave}
+          disabled={saving}
+          className='text-primary font-semibold hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50'
+        >
+          {saving ? 'Saving…' : 'Save'}
         </button>
         <button type='button' onClick={onCancel} className='hover:text-foreground'>
           Cancel

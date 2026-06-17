@@ -93,7 +93,7 @@ const ReactorsPopover: React.FC<Props> = ({
     >
       <div className='text-neutral mb-1 flex items-center gap-1 px-1 text-sm'>
         <span className='text-md leading-none'>{emoji}</span>
-        <span className='font-semibold'>{users.length || ''}</span>
+        {users.length > 0 && <span className='font-semibold'>{users.length}</span>}
         <span>reacted</span>
       </div>
       {isLoading && users.length === 0 ? (

@@ -9,6 +9,7 @@ import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/ty
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import { patchMessageReaction } from './utils/reactionCachePatch'
+import { messageReactorsQueryKey } from './useMessageReactors'
 import { setChatSocket } from './socketSingleton'
 import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
 
@@ -174,6 +175,23 @@ export const useChatSocket = () => {
               })),
             }
           })
+          // Keep the inbox preview fresh when the edited message is the chat's last_message.
+          if (chat_id !== GLOBAL_CHAT_ID) {
+            queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
+              if (!old) return old
+              return {
+                ...old,
+                pages: old.pages.map((page) => ({
+                  ...page,
+                  chats: page.chats.map((c) => {
+                    const lm = c.last_message
+                    if (!lm || lm.id !== message.id) return c
+                    return { ...c, last_message: { ...lm, body: message.body, edited_at: message.edited_at } }
+                  }),
+                })),
+              }
+            })
+          }
           return
         }
 
@@ -192,6 +210,26 @@ export const useChatSocket = () => {
               })),
             }
           })
+          // Keep the inbox preview fresh when the deleted message is the chat's last_message.
+          if (chat_id !== GLOBAL_CHAT_ID) {
+            queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
+              if (!old) return old
+              return {
+                ...old,
+                pages: old.pages.map((page) => ({
+                  ...page,
+                  chats: page.chats.map((c) => {
+                    const lm = c.last_message
+                    if (!lm || lm.id !== message_id) return c
+                    return {
+                      ...c,
+                      last_message: { ...lm, body: null, deleted_at: new Date().toISOString(), deleted_by_admin },
+                    }
+                  }),
+                })),
+              }
+            })
+          }
           return
         }
 
@@ -242,6 +280,9 @@ export const useChatSocket = () => {
             actorIsMe,
             add: evt.type === 'chat:reaction_added',
           })
+          // Counts are patched above; the reactors popover ("who reacted") is a
+          // separate query, so invalidate it (scoped to this message) to keep it fresh.
+          queryClient.invalidateQueries({ queryKey: messageReactorsQueryKey(chat_id, message_id) })
           return
         }
 

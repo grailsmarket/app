@@ -11,9 +11,10 @@ import type { ChatMessage } from '@/types/chat'
 interface Props {
   replyingTo?: ChatMessage | null
   onCancelReply?: () => void
+  onRestoreReply?: (message: ChatMessage) => void
 }
 
-const GlobalComposer: React.FC<Props> = ({ replyingTo, onCancelReply }) => {
+const GlobalComposer: React.FC<Props> = ({ replyingTo, onCancelReply, onRestoreReply }) => {
   const send = useSendGlobalMessage()
   const { data: quota } = useGlobalQuota()
 
@@ -36,6 +37,7 @@ const GlobalComposer: React.FC<Props> = ({ replyingTo, onCancelReply }) => {
       footerSlot={footerSlot}
       replyingTo={replyingTo}
       onCancelReply={onCancelReply}
+      onRestoreReply={onRestoreReply}
     />
   )
 }

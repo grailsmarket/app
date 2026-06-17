@@ -47,7 +47,8 @@ export const useEditMessage = (chatId: string) => {
       // Reconcile with the authoritative body + edited_at from the server.
       patchBody(serverMessage.id, serverMessage.body ?? '', serverMessage.edited_at ?? new Date().toISOString())
     },
-    onError: (_err, _vars, ctx) => {
+    onError: (err, _vars, ctx) => {
+      console.error('[chat] edit failed', err)
       if (ctx?.previous) {
         queryClient.setQueryData(queryKey, ctx.previous)
       }

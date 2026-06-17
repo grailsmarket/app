@@ -14,14 +14,23 @@ export const MIN_CHAT_SEARCH_LEN = 2
  * address. The frontend just debounces and renders the resulting inbox rows.
  */
 export const useChatSearch = (query: string) => {
-  const debounced = useDebounce(query.trim(), 250)
+  const trimmed = query.trim()
+  const debounced = useDebounce(trimmed, 250)
   const enabled = debounced.length >= MIN_CHAT_SEARCH_LEN
 
-  return useQuery<Chat[]>({
+  const result = useQuery<Chat[]>({
     queryKey: ['chats', 'search', debounced],
     enabled,
     placeholderData: keepPreviousData,
     staleTime: 15_000,
     queryFn: () => searchChats(debounced),
   })
+
+  // True while a search is settling: the user has typed enough to search, but
+  // results aren't final yet — either the request is in flight, or the debounce
+  // hasn't caught up to the latest keystroke. Lets the list show skeletons
+  // (instead of a premature "No chats found") until a search actually resolves.
+  const isPending = trimmed.length >= MIN_CHAT_SEARCH_LEN && (result.isFetching || debounced !== trimmed)
+
+  return { ...result, isPending }
 }

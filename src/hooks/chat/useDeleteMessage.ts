@@ -39,7 +39,8 @@ export const useDeleteMessage = (chatId: string) => {
       })
       return { previous }
     },
-    onError: (_err, _messageId, ctx) => {
+    onError: (err, _messageId, ctx) => {
+      console.error('[chat] delete failed', err)
       if (ctx?.previous) {
         queryClient.setQueryData(queryKey, ctx.previous)
       }

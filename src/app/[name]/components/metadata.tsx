@@ -90,7 +90,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             <LoadingSpinner size='h-10 w-10' />
           </div>
         ) : metadata.length > 0 ? (
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
             {metadata.find((row) => row.label.toLowerCase() === 'ethereum') && (
               <>
                 <div key='ethereum' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
@@ -101,7 +101,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
                   />
                   <p className='text-neutral text-lg font-medium'>ethereum</p>
                 </div>
-                <div />
+                <div className='hidden @[40rem]/app:block' />
               </>
             )}
             {metadata.find((row) => row.label === 'avatar') && (

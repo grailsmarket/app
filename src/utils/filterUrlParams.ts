@@ -346,7 +346,6 @@ export function serializeFiltersToUrl(
   // Market filters (only non-default values) - skip for activity tabs
   if (!isActivityTab && filters.market) {
     // Skip Listed if tab implies it (e.g., 'listings' tab)
-    console.log('filters.market', filters.market)
     if (
       filters.market.Listed !== emptyFilterState.market?.Listed &&
       !shouldSkipListedForTab(tab, filters.market.Listed)

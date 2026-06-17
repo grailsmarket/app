@@ -249,7 +249,7 @@ const TableRow: React.FC<TableRowProps> = ({
         }
       }}
       className={cn(
-        'group px-sm @[48rem]/app:px-md border-tertiary flex h-[60px] w-full flex-row items-center justify-between border-b transition',
+        'group pl-md pr-sm @[48rem]/app:pr-md border-tertiary flex h-[60px] w-full flex-row items-center justify-between border-b transition',
         domainIsValid ? 'cursor-pointer opacity-100' : 'pointer-events-none cursor-not-allowed opacity-40',
         backgroundColor
       )}

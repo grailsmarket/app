@@ -9,8 +9,11 @@ interface HamburgerProps {
 const Hamburger: React.FC<HamburgerProps> = ({ onClick, isOpen }) => {
   return (
     <button
+      type='button'
       onClick={onClick}
-      className='flex cursor-pointer flex-col items-center justify-center gap-[6px] py-1.5 hover:opacity-80 md:hidden md:gap-[7px]'
+      aria-label={isOpen ? 'Close menu' : 'Open menu'}
+      aria-expanded={isOpen}
+      className='flex shrink-0 cursor-pointer flex-col items-center justify-center gap-[6px] rounded-md transition-opacity hover:opacity-80 md:hidden md:gap-[7px]'
     >
       <div
         className={cn(
@@ -27,7 +30,7 @@ const Hamburger: React.FC<HamburgerProps> = ({ onClick, isOpen }) => {
       <div
         className={cn(
           'bg-foreground h-[2px] w-5 rounded-full transition-all duration-300 md:w-6',
-          isOpen ? '-translate-y-2 rotate-[-45deg]' : ''
+          isOpen ? '-translate-y-2 -rotate-45' : ''
         )}
       ></div>
     </button>

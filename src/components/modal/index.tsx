@@ -9,7 +9,7 @@ const Modal: React.FC<ModalProps> = ({ children, onClose }) => {
   return (
     <div
       onClick={onClose}
-      className='fixed top-0 left-0 z-100 flex h-screen w-screen justify-center overflow-scroll bg-black/40 px-2 py-12 sm:px-4'
+      className='fixed inset-0 z-100 flex min-h-dvh w-full justify-center overflow-y-auto bg-black/40 px-2 py-12 sm:px-4'
     >
       <div
         onClick={(e) => e.stopPropagation()}

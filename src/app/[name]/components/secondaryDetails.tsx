@@ -80,7 +80,7 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
             <LoadingSpinner size='h-10 w-10' />
           </div>
         ) : (
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
             {rows
               .filter((row) => row.value !== null)
               .map((row) => {

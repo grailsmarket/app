@@ -3,8 +3,8 @@ import Footer from '@/components/footer'
 const PrivacyPolicy = () => {
   return (
     <>
-      <main className='mx-auto flex max-w-4xl flex-col items-center gap-6 py-8 font-medium'>
-        <h1 className='text-4xl font-bold'>Privacy Policy</h1>
+      <main className='px-lg @[40rem]/app:px-xl mx-auto flex max-w-4xl flex-col items-start gap-6 py-8 font-medium @[40rem]/app:items-center'>
+        <h1 className='text-3xl font-bold @[40rem]/app:text-4xl'>Privacy Policy</h1>
 
         <div className='flex w-full flex-col gap-1'>
           <p className='font-semibold'>1. Who We Are</p>

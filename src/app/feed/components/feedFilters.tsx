@@ -47,7 +47,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
   }, [selectedTab, mounted])
 
   return (
-    <div className='bg-background border-tertiary text-md sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:text-lg @[40rem]/app:gap-4 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4'>
+    <div className='bg-background border-tertiary text-md touch-scroll-x sticky top-0 z-20 flex min-h-12 max-w-full scrollbar-none items-center gap-3 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:text-lg @[40rem]/app:gap-4 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4'>
       <button
         type='button'
         onClick={onToggleFilters}
@@ -67,7 +67,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
           </span>
         )}
       </button>
-      <div ref={containerRef} className='relative flex h-10 gap-4'>
+      <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
         {mounted && (
           <div
             className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
@@ -80,7 +80,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
             type='button'
             onClick={() => onTabChange(tab.value)}
             className={cn(
-              'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:w-fit',
+              'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg',
               selectedTab === tab.value
                 ? 'text-primary font-bold opacity-100'
                 : 'font-semibold opacity-50 transition-colors hover:opacity-80'

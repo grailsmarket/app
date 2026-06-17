@@ -277,7 +277,7 @@ const Actions: React.FC<ActionsProps> = ({
             <CartIcon domain={domain} />
           </button>
         )} */}
-        <div className='px-md flex h-[54px] min-w-12 items-center justify-center gap-2 sm:min-w-14 sm:gap-2 sm:px-2.5'>
+        <div className='flex h-[54px] min-w-12 items-center justify-center gap-0 @[48rem]/app:min-w-14 @[48rem]/app:gap-2 @[48rem]/app:px-2.5'>
           {showWatchlist && (
             <div
               onClick={(e) => {
@@ -296,13 +296,13 @@ const Actions: React.FC<ActionsProps> = ({
               />
             </div>
           )}
-          {!isBulkSelecting && !isUnregistered && (
+          {!isBulkSelecting && (
             <ActionsDropdown
               domain={domain}
               isOwner={isMyDomain}
               registrationStatus={registrationStatus}
               dropdownPosition='left'
-              buttonClassName='rounded-none border-tertiary h-7 w-7 rounded-br-sm hover:bg-transparent'
+              buttonClassName='h-10 w-10 rounded-none rounded-br-sm border-tertiary hover:bg-transparent'
             />
           )}
         </div>
@@ -310,7 +310,7 @@ const Actions: React.FC<ActionsProps> = ({
           <PrimaryButton
             disabled={availableAction.disabled}
             className={cn(
-              'border-primary/80 text-primary hover:text-background hover:bg-primary flex h-9.5! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-2! bg-transparent p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-17! @[40rem]/app:max-w-17! @[40rem]/app:min-w-17!',
+              'border-primary/80 text-primary hover:text-background hover:bg-primary hidden h-9.5! w-14 max-w-14 min-w-14 items-center justify-center rounded-sm border-2! bg-transparent p-0! text-nowrap hover:opacity-100 @[40rem]/app:w-17! @[40rem]/app:max-w-17! @[40rem]/app:min-w-17! @[48rem]/app:flex',
               availableAction.label !== 'Reg' ? 'hidden @[48rem]/app:block' : '',
               watchlistId ? 'hidden @[40rem]/app:block' : ''
             )}

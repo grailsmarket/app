@@ -103,7 +103,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
     return (
       <div
         className={cn(
-          'bg-background border-tertiary text-md sticky z-20 flex min-h-12 items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
+          'bg-background border-tertiary text-md touch-scroll-x sticky z-20 flex min-h-12 scrollbar-none items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
@@ -123,7 +123,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
               className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
             />
           </button>
-          <div ref={containerRef} className='relative flex h-10 gap-4'>
+          <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
             <div
               className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
               style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -134,7 +134,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
                   key={tab.value}
                   onClick={() => setCategoryTab(tab)}
                   className={cn(
-                    'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
+                    'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
                     selectedTab.value === tab.value
                       ? 'text-primary font-bold opacity-100'
                       : 'font-medium opacity-50 transition-colors hover:opacity-80'
@@ -169,7 +169,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   return (
     <div
       className={cn(
-        'bg-background border-tertiary text-md sticky z-20 flex min-h-12 max-w-full items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
+        'bg-background border-tertiary text-md touch-scroll-x sticky z-20 flex min-h-12 max-w-full scrollbar-none items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
@@ -189,7 +189,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
             className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
           />
         </button>
-        <div ref={containerRef} className='relative flex h-10 gap-4'>
+        <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
           <div
             className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
             style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -199,7 +199,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
               key={tab.value}
               onClick={() => setCategoryTab(tab)}
               className={cn(
-                'py-md flex w-full cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
+                'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
                 selectedTab.value === tab.value
                   ? 'text-primary font-bold opacity-100'
                   : 'font-medium opacity-50 transition-colors hover:opacity-80'

@@ -124,27 +124,29 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       )}
     >
       <nav className='bg-background max-w-app px-md md:px-lg lg:px-xl relative z-30 mx-auto flex h-full items-center justify-between'>
-        <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
+        <div onMouseEnter={prefetchDropdownData} className='flex min-w-0 items-center gap-2 md:gap-4'>
           <Link
             href='/'
             onMouseEnter={() => {
               setPreviousDropdownOption(dropdownOption)
               handleDropdownOption(null)
             }}
+            className='-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-opacity hover:opacity-80 md:ml-0 md:h-auto md:w-auto'
+            aria-label='Grails Market home'
           >
             <Image
               src={logoMobile}
               alt='Grails Market'
               width={32}
               height={32}
-              className='block h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
+              className='block h-7 w-auto md:h-9 xl:hidden'
             />
             <Image
               src={logo}
               alt='Grails Market'
               width={130}
               height={40}
-              className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
+              className='hidden h-[39px] w-[124px] xl:block'
               priority
             />
           </Link>
@@ -162,13 +164,13 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           />
         </div>
         <div
-          className='flex items-center justify-end gap-3 md:gap-3.5'
+          className='flex min-w-0 items-center justify-end gap-3 md:gap-4'
           onMouseEnter={() => {
             setPreviousDropdownOption(dropdownOption)
             handleDropdownOption(null)
           }}
         >
-          <div className='flex items-center gap-2.5'>
+          <div className='flex min-w-0 items-center gap-3 md:gap-4'>
             <SearchIcon />
             <Cart />
             <Chats />

@@ -32,7 +32,7 @@ const Notifications = () => {
   }
 
   return (
-    <button onClick={handleClick} className='hover:bg-primary/10 relative rounded-md p-1 transition-colors'>
+    <button onClick={handleClick} className='relative cursor-pointer rounded-md'>
       <Image src={notifications} alt='notifications' width={24} height={24} className='h-5 w-5 md:h-6 md:w-6' />
       {unreadCount > 0 && (
         <div

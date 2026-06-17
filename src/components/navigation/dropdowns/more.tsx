@@ -67,13 +67,13 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
 
   return (
     <div className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'>
-      <div className='px-md hidden w-full flex-row flex-wrap gap-4 md:flex md:px-0'>
+      <div className='px-md py-xl hidden w-full flex-row flex-wrap gap-4 md:flex md:px-0'>
         {cards.map((card, index) => (
           <Link
             key={card.title}
             href={card.href}
             onClick={card.onClick}
-            className='fadeIn hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
+            className='fadeIn hover:bg-primary/15 border-primary p-lg py-xl flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
             style={{ animationDelay: `${defaultAnimationDelay + ANIMATION_DELAY_INCREMENT * index}s` }}
           >
             <div className='flex flex-row items-center gap-2'>
@@ -84,7 +84,7 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
           </Link>
         ))}
       </div>
-      <div className='flex flex-col gap-0'>
+      <div className='flex flex-col gap-0 md:hidden'>
         {cards.map((card, index) => (
           <Link
             key={card.title}

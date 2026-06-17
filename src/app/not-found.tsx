@@ -2,8 +2,8 @@ import Link from 'next/link'
 
 const NotFound = () => {
   return (
-    <main className='flex h-screen w-full flex-col items-center justify-center gap-4'>
-      <h2 className='text-2xl font-bold'>Seems like you&apos;re lost</h2>
+    <main className='px-lg flex min-h-dvh w-full flex-col items-center justify-center gap-4 text-center'>
+      <h2 className='text-2xl font-bold @[40rem]/app:text-3xl'>Seems like you&apos;re lost</h2>
       <p className='text-text-neutral max-w-[390px] text-center'>
         The page you&apos;re looking for doesn&apos;t really exist, sorry about that. Let&apos;s get you back home.
       </p>

@@ -244,7 +244,12 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
               className='text-md w-full bg-transparent font-medium outline-none @[48rem]/app:text-lg'
             />
             {selectedName && (
-              <button type='button' onClick={() => onSelectedNameChange(null)}>
+              <button
+                type='button'
+                onClick={() => onSelectedNameChange(null)}
+                className='hover:bg-foreground/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-md'
+                aria-label='Clear selected name'
+              >
                 <Cross className='text-neutral hover:text-foreground h-4 w-4 transition-colors' />
               </button>
             )}
@@ -287,7 +292,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
               type='button'
               onClick={submit}
               disabled={!selectedName || !body.trim() || composerLocked || post.isPending}
-              className='bg-primary text-background flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-all hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'
+              className='bg-primary text-background flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-all hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'
               aria-label='Post comment'
             >
               <ReplyArrowIcon />

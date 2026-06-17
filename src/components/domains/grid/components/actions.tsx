@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { GRACE_PERIOD, REGISTERABLE_STATUSES, REGISTERED } from '@/constants/domains/registrationStatuses'
@@ -116,77 +116,73 @@ const Actions: React.FC<ActionsProps> = ({
   const primaryButtonClassName =
     'border-primary/50 hover:bg-primary w-full text-primary/70 hover:text-background rounded-none cursor-pointer border-y border-l px-2 h-10 transition-all duration-300'
   const secondaryButtonClassName =
-    'bg-tertiary w-full text-foreground/60 border-foreground/20 hover:text-foreground h-10 cursor-pointer rounded-none px-2.5 py-0.5 text-lg font-bold'
+    'bg-transparent hover:bg-tertiary w-full text-foreground/60 border-foreground/50 hover:text-foreground h-10 cursor-pointer rounded-none px-2.5 py-0.5 text-lg font-bold'
 
-  if (isBulkSelecting) {
-    return (
-      <div className='flex w-full flex-row justify-end gap-4 opacity-100'>
-        {isSelected ? (
-          <PrimaryButton
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              dispatch(removeBulkSelectDomain(domain))
-              if (grailsListings.length > 0) {
-                grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
-              }
-            }}
-            className={cn(
-              primaryButtonClassName,
-              'bg-primary! text-background! flex w-full! flex-row items-center justify-center gap-1'
-            )}
-          >
-            Selected
-            <Check className='h-3 w-3' />
-          </PrimaryButton>
-        ) : (
-          <SecondaryButton
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              dispatch(addBulkSelectDomain(domain))
-              if (grailsListings.length > 0) {
-                grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
-              }
-            }}
-            className={secondaryButtonClassName}
-          >
-            Select
-          </SecondaryButton>
-        )}
-      </div>
-    )
-  }
+  const actionButton = useMemo(() => {
+    if (isBulkSelecting) {
+      return isSelected ? (
+        <PrimaryButton
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            dispatch(removeBulkSelectDomain(domain))
+            if (grailsListings.length > 0) {
+              grailsListings.forEach((listing) => dispatch(removeBulkSelectPreviousListing(listing)))
+            }
+          }}
+          className={cn(
+            primaryButtonClassName,
+            'bg-primary! text-background! flex w-full! flex-row items-center justify-center gap-1'
+          )}
+        >
+          Selected
+          <Check className='h-3 w-3' />
+        </PrimaryButton>
+      ) : (
+        <SecondaryButton
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            dispatch(addBulkSelectDomain(domain))
+            if (grailsListings.length > 0) {
+              grailsListings.forEach((listing) => dispatch(addBulkSelectPreviousListing(listing)))
+            }
+          }}
+          className={secondaryButtonClassName}
+        >
+          Select
+        </SecondaryButton>
+      )
+    }
 
-  if (isMyDomain) {
-    if (registrationStatus === REGISTERED) {
-      if (domainListing?.price) {
+    if (isMyDomain) {
+      if (registrationStatus === REGISTERED) {
+        if (domainListing?.price) {
+          return (
+            <div className='flex w-full flex-row justify-end opacity-100'>
+              <button
+                className={cn(
+                  secondaryButtonClassName,
+                  'flex w-full! flex-row items-center justify-center gap-1 border-y border-l font-bold'
+                )}
+                onClick={(e) => clickHandler(e, openMakeListingModal)}
+              >
+                Edit
+              </button>
+              <p
+                className={cn(
+                  secondaryButtonClassName,
+                  'flex w-full! flex-row items-center justify-center gap-1 border-y border-l font-bold'
+                )}
+                onClick={(e) => clickHandler(e, openCancelListingModal)}
+              >
+                Cancel
+              </p>
+            </div>
+          )
+        }
+
         return (
-          <div className='flex w-full flex-row justify-end opacity-100'>
-            <button
-              className={cn(
-                secondaryButtonClassName,
-                'flex w-full! flex-row items-center justify-center gap-1 border-r font-bold'
-              )}
-              onClick={(e) => clickHandler(e, openMakeListingModal)}
-            >
-              Edit
-            </button>
-            <p
-              className={cn(
-                secondaryButtonClassName,
-                'flex w-full! flex-row items-center justify-center gap-1 font-bold'
-              )}
-              onClick={(e) => clickHandler(e, openCancelListingModal)}
-            >
-              Cancel
-            </p>
-          </div>
-        )
-      }
-
-      return (
-        <div className='flex w-full flex-row justify-end opacity-100'>
           <p
             className={cn(
               primaryButtonClassName,
@@ -196,20 +192,57 @@ const Actions: React.FC<ActionsProps> = ({
           >
             List
           </p>
-        </div>
+        )
+      }
+    }
+
+    if (registrationStatus === GRACE_PERIOD) {
+      return (
+        <button onClick={(e) => clickHandler(e, openExtendModal)} className={primaryButtonClassName}>
+          <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
+        </button>
       )
     }
-  }
+
+    if (REGISTERABLE_STATUSES.includes(registrationStatus)) {
+      return (
+        <button onClick={(e) => clickHandler(e, handleOpenRegistrationModal)} className={primaryButtonClassName}>
+          <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Register</p>
+        </button>
+      )
+    }
+
+    if (domainListing?.price) {
+      return (
+        <button onClick={(e) => clickHandler(e, openBuyNowModal)} className={primaryButtonClassName}>
+          <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Buy Now</p>
+        </button>
+      )
+    }
+
+    return (
+      <button onClick={(e) => clickHandler(e, openMakeOfferModal)} className={primaryButtonClassName}>
+        <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Offer</p>
+      </button>
+    )
+  }, [
+    isBulkSelecting,
+    isSelected,
+    grailsListings,
+    dispatch,
+    primaryButtonClassName,
+    secondaryButtonClassName,
+    isMyDomain,
+    registrationStatus,
+    domainListing,
+  ])
 
   return (
     <div
-      className={cn(
-        'bg-foreground/5 flex w-full flex-row justify-between opacity-100',
-        watchlistId ? 'items-end' : 'justify-between'
-      )}
+      className={cn('flex w-full flex-row justify-between opacity-100', watchlistId ? 'items-end' : 'justify-between')}
     >
       <div className='w-full'>
-        {registrationStatus === GRACE_PERIOD ? (
+        {/* {registrationStatus === GRACE_PERIOD ? (
           <button onClick={(e) => clickHandler(e, openExtendModal)} className={primaryButtonClassName}>
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Extend</p>
           </button>
@@ -231,7 +264,8 @@ const Actions: React.FC<ActionsProps> = ({
           <button onClick={(e) => clickHandler(e, openMakeOfferModal)} className={primaryButtonClassName}>
             <p className='cursor-pointer py-0.5 text-lg font-bold transition-colors'>Offer</p>
           </button>
-        )}
+        )} */}
+        {actionButton}
       </div>
       <div className={cn('flex items-center', watchlistId ? 'items-end' : 'gap-x-0')}>
         <div
@@ -250,15 +284,13 @@ const Actions: React.FC<ActionsProps> = ({
             fetchWatchSettings={false}
           />
         </div>
-        {!isBulkSelecting && (
-          <ActionsDropdown
-            domain={domain}
-            isOwner={isMyDomain}
-            registrationStatus={registrationStatus}
-            dropdownPosition={isFirstInRow ? 'right' : 'left'}
-            buttonClassName='rounded-none border-y border-x h-10 w-10 hover:bg-tertiary'
-          />
-        )}
+        <ActionsDropdown
+          domain={domain}
+          isOwner={isMyDomain}
+          registrationStatus={registrationStatus}
+          dropdownPosition={isFirstInRow ? 'right' : 'left'}
+          buttonClassName='rounded-none border-y border-x h-10 w-10 hover:bg-tertiary'
+        />
       </div>
     </div>
   )

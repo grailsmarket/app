@@ -29,7 +29,8 @@ const Watchlist = () => {
     <Link
       href={`/profile/${userAddress}?tab=watchlist`}
       onClick={handleClick}
-      className='hover:bg-primary/10 cursor-pointer rounded-md p-1 transition-all'
+      className='flex shrink-0 cursor-pointer items-center justify-center rounded-md'
+      aria-label='Open watchlist'
     >
       <Image src={watchlist} alt='Watchlist' width={30} height={30} className='h-6 w-6 scale-120' />
     </Link>

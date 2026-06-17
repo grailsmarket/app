@@ -3,9 +3,9 @@ import Footer from '@/components/footer'
 const TermsOfService = () => {
   return (
     <>
-      <main className='mx-auto flex max-w-4xl flex-col items-center gap-6 py-8 font-medium'>
-        <h1 className='text-4xl font-bold'>Terms of Service</h1>
-        <div className='flex flex-col gap-1'>
+      <main className='px-lg @[40rem]/app:px-xl mx-auto flex max-w-4xl flex-col items-start gap-6 py-8 font-medium @[40rem]/app:items-center'>
+        <h1 className='text-3xl font-bold @[40rem]/app:text-4xl'>Terms of Service</h1>
+        <div className='flex w-full flex-col gap-1'>
           <p className='font-semibold'>1. Acceptance of Terms</p>
           <p>
             By accessing or using Grails, you agree to these Terms of Service (“Terms”). If you do not agree, do not use

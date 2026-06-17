@@ -124,8 +124,9 @@ body {
   }
 
   body {
-    height: 100dvh;
-    width: 100vw;
+    min-height: 100dvh;
+    width: 100%;
+    overflow-x: hidden;
     top: 0;
     left: 0;
   }
@@ -140,6 +141,23 @@ body {
   input[type='number'] {
     -moz-appearance: textfield;
     appearance: textfield;
+  }
+}
+
+@layer utilities {
+  .touch-scroll-x {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: 1rem;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -171,6 +189,26 @@ body {
 
 .user-profile {
   box-sizing: border-box;
+}
+
+.user-profile .profile-link,
+.user-profile .social-link,
+.profile-card-details .profile-link,
+.profile-card-details .social-link {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+}
+
+.user-profile .profile-link,
+.profile-card-details .profile-link {
+  padding-inline: 8px;
+}
+
+.user-profile .social-link,
+.profile-card-details .social-link {
+  min-width: 40px;
+  justify-content: center;
 }
 
 /* .user-profile-content {
@@ -502,4 +540,8 @@ body {
   .user-profile-card-container {
     display: flex !important;
   }
+}
+
+.activity-feed-card > .tooltip-wrapper {
+  width: fit-content !important;
 }

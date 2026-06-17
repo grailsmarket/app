@@ -124,27 +124,29 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
       )}
     >
       <nav className='bg-background max-w-app px-md md:px-lg lg:px-xl relative z-30 mx-auto flex h-full items-center justify-between'>
-        <div onMouseEnter={prefetchDropdownData} className='flex items-center gap-4'>
+        <div onMouseEnter={prefetchDropdownData} className='flex min-w-0 items-center gap-2 md:gap-4'>
           <Link
             href='/'
             onMouseEnter={() => {
               setPreviousDropdownOption(dropdownOption)
               handleDropdownOption(null)
             }}
+            className='-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-opacity hover:opacity-80 md:ml-0 md:h-auto md:w-auto'
+            aria-label='Grails Market home'
           >
             <Image
               src={logoMobile}
               alt='Grails Market'
               width={32}
               height={32}
-              className='block h-7 w-auto cursor-pointer transition-all hover:opacity-80 md:h-9 xl:hidden'
+              className='block h-7 w-auto md:h-9 xl:hidden'
             />
             <Image
               src={logo}
               alt='Grails Market'
               width={130}
               height={40}
-              className='hidden h-[39px] w-[124px] cursor-pointer transition-all hover:opacity-80 xl:block'
+              className='hidden h-[39px] w-[124px] xl:block'
               priority
             />
           </Link>
@@ -162,13 +164,13 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           />
         </div>
         <div
-          className='flex items-center justify-end gap-3 md:gap-3.5'
+          className='flex min-w-0 items-center justify-end gap-3 md:gap-4'
           onMouseEnter={() => {
             setPreviousDropdownOption(dropdownOption)
             handleDropdownOption(null)
           }}
         >
-          <div className='flex items-center gap-2.5'>
+          <div className='flex min-w-0 items-center gap-3 md:gap-4'>
             <SearchIcon />
             <Cart />
             <Chats />
@@ -191,7 +193,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           dropdownOption ? 'translate-y-0' : '-translate-y-full'
         )}
       >
-        <div className='flex w-full flex-col gap-4'>
+        <div className='flex w-full flex-col'>
           {userAddress && (
             <Link
               href={`/profile/${userAddress}`}
@@ -199,7 +201,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
                 setPreviousDropdownOption(dropdownOption)
                 setDropdownOption(null)
               }}
-              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 pb-3 md:hidden'
+              className='px-md border-neutral flex items-center justify-between gap-1.5 border-b-2 py-3 md:hidden'
             >
               <h3 className='text-3xl font-semibold'>My Profile</h3>
               {/* <Image src={ArrowrightIcon} alt='Arrow Right' width={24} height={24} /> */}
@@ -259,7 +261,7 @@ const Navigation = ({ showInfo }: { showInfo: boolean }) => {
           </div> */}
           <div
             className={cn(
-              'border-neutral w-full border-b-2 md:border-none',
+              'w-full',
               dropdownOption === 'more' || (dropdownOption === null && previousDropdownOption === 'more')
                 ? 'block'
                 : 'block md:hidden'

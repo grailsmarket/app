@@ -199,7 +199,7 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               fontSize='font-semibold text-xl'
             />
           </div> */}
-          <div className='grid grid-cols-3 gap-4 gap-y-4 @[26.25rem]/app:grid-cols-4 @[40rem]/app:gap-y-6'>
+          <div className='grid grid-cols-2 gap-4 gap-y-4 @[40rem]/app:grid-cols-3 @[40rem]/app:gap-y-6 @[64rem]/app:grid-cols-4'>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
               <p className='text-lg font-semibold'>{localizeNumber(categoryDetails.member_count ?? 0)}</p>
               <p className='text-neutral text-lg'>Names</p>

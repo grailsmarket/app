@@ -1,16 +1,13 @@
 'use client'
 
+import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import React, { useEffect, useMemo, useState } from 'react'
-import Arrowdown from 'public/icons/arrow-down.svg'
 import analyticsIcon from 'public/icons/analytics-primary.svg'
 import trophyIcon from 'public/icons/trophy-primary.svg'
 import activityIcon from 'public/icons/activity-primary.svg'
 import searchIcon from 'public/icons/search-primary.svg'
 import chatIcon from 'public/icons/chat-primary.svg'
-import { useIsClient, useWindowSize } from 'ethereum-identity-kit'
-import { cn } from '@/utils/tailwind'
 import { useAppDispatch } from '@/state/hooks'
 import { changeMarketplaceTab } from '@/state/reducers/marketplace/marketplace'
 import { MARKETPLACE_TABS } from '@/constants/domains/marketplace/tabs'
@@ -22,10 +19,7 @@ interface MoreProps {
 }
 
 const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const { width } = useWindowSize()
   const dispatch = useAppDispatch()
-  const isClient = useIsClient()
 
   const defaultAnimationDelay = previousDropdownOption ? 0 : DEFAULT_ANIMATION_DELAY
   const activityTab = MARKETPLACE_TABS.find((tab) => tab.value === 'activity')!
@@ -71,39 +65,15 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
     },
   ]
 
-  useEffect(() => {
-    if (previousDropdownOption === null) {
-      setIsDropdownOpen(false)
-    }
-  }, [previousDropdownOption])
-
-  const isMobile = useMemo(() => (isClient && width ? width < 768 : false), [width, isClient])
-
   return (
-    <div
-      className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'
-      style={{ height: isMobile ? (isDropdownOpen ? '580px' : '40px') : 'auto' }}
-    >
-      <div
-        className='px-md flex cursor-pointer flex-row items-center justify-between md:hidden'
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-      >
-        <h3 className='text-3xl font-semibold'>More</h3>
-        <Image
-          src={Arrowdown}
-          alt='Arrow Down'
-          width={20}
-          height={20}
-          className={cn('transition-transform duration-300', isDropdownOpen ? 'rotate-180' : '')}
-        />
-      </div>
-      <div className='px-md flex w-full flex-row flex-wrap gap-4 md:px-0'>
+    <div className='mx-auto flex w-full flex-col gap-4 overflow-hidden transition-all duration-300 md:flex-row md:justify-center'>
+      <div className='px-md py-xl hidden w-full flex-row flex-wrap gap-4 md:flex md:px-0'>
         {cards.map((card, index) => (
           <Link
             key={card.title}
             href={card.href}
             onClick={card.onClick}
-            className='fadeIn hover:bg-primary/15 border-primary p-lg flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
+            className='fadeIn hover:bg-primary/15 border-primary p-lg py-xl flex w-full cursor-pointer flex-col gap-2 rounded-md border transition-colors md:min-w-[220px] md:flex-1'
             style={{ animationDelay: `${defaultAnimationDelay + ANIMATION_DELAY_INCREMENT * index}s` }}
           >
             <div className='flex flex-row items-center gap-2'>
@@ -111,6 +81,19 @@ const More: React.FC<MoreProps> = ({ setDropdownOption, previousDropdownOption }
               <h3 className='text-primary text-2xl font-bold'>{card.title}</h3>
             </div>
             <p className='text-lg font-medium'>{card.description}</p>
+          </Link>
+        ))}
+      </div>
+      <div className='flex flex-col gap-0 md:hidden'>
+        {cards.map((card, index) => (
+          <Link
+            key={card.title}
+            href={card.href}
+            onClick={card.onClick}
+            className='px-md border-neutral border-b-2 py-3.5'
+            style={{ animationDelay: `${defaultAnimationDelay + ANIMATION_DELAY_INCREMENT * index}s` }}
+          >
+            <h3 className='text-3xl font-semibold'>{card.title}</h3>
           </Link>
         ))}
       </div>

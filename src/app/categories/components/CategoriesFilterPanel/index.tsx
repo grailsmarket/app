@@ -14,11 +14,14 @@ import { useNavbar } from '@/context/navbar'
 import CategoryTypeFilter from '../CategoryTypeFilter'
 import { selectFilterPanel, setFilterPanelOpen } from '@/state/reducers/filterPanel'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import MobileFilterActions from '@/components/filters/components/MobileFilterActions'
 import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
 import ViewSelector from '@/components/domains/viewSelector'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import { useFiltersChanged } from '@/hooks/filters/useFiltersChanged'
+import _ from 'lodash'
 
 const CategoriesFilterPanel: React.FC = () => {
   const isClient = useIsClient()
@@ -29,6 +32,9 @@ const CategoriesFilterPanel: React.FC = () => {
   const filtersOpen = filterPanel.open
   const isFiltersClear = filters.type === null
   const { isNavbarVisible } = useNavbar()
+
+  // Enable "Apply" only once the filters changed since the panel was opened.
+  const hasFilterChanges = useFiltersChanged(filtersOpen, _.omit(filters, ['open', 'scrollTop']))
 
   if (!isClient || !responsiveWidth) return null
 
@@ -49,19 +55,21 @@ const CategoriesFilterPanel: React.FC = () => {
 
   return (
     <div
+      aria-hidden={!isOpen}
+      inert={!isOpen ? true : undefined}
       className={cn(
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
         isMobile &&
-          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0))] shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
+          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0px))] max-w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
-        isMobile && (isOpen ? 'translate-x-0' : 'translate-x-[-110%]'),
+        isMobile && (isOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'),
         // Desktop styles
         !isMobile && 'sticky',
         !isMobile && (isNavbarVisible ? 'top-[130px] h-[calc(100dvh-130px)]' : 'top-[58px] h-[calc(100dvh-58px)]'),
         !isMobile && (isOpen ? 'w-[292px] min-w-[292px]' : 'w-0 min-w-0'),
-        isOpen ? '@[48rem]/app:border-r-2' : 'w-0'
+        isOpen && '@[48rem]/app:border-r-2'
       )}
     >
       <div
@@ -95,7 +103,7 @@ const CategoriesFilterPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className='flex-1 overflow-x-hidden overflow-y-auto'>
+      <div className={cn('flex-1 overflow-x-hidden overflow-y-auto', isMobile && 'pb-20')}>
         <div className='px-md @[40rem]/app:px-lg py-md flex w-full flex-col gap-2'>
           <div className='group border-tertiary flex h-9 w-full items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all outline-none focus-within:border-white/80! hover:border-white/50 @[40rem]/app:h-10'>
             <input
@@ -128,6 +136,8 @@ const CategoriesFilterPanel: React.FC = () => {
           <CategoryTypeFilter />
         </div>
       </div>
+
+      {isMobile && <MobileFilterActions canApply={hasFilterChanges} onClose={handleClose} onApply={handleClose} />}
     </div>
   )
 }

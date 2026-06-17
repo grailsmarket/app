@@ -144,7 +144,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
       <button
         onClick={handleToggle}
         className={cn(
-          'hover:bg-tertiary hover:text-foreground text-neutral flex h-7 w-5 cursor-pointer items-center justify-center rounded-sm transition-colors',
+          'hover:bg-tertiary hover:text-foreground text-neutral flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm transition-colors',
           buttonClassName
         )}
         aria-label='More actions'
@@ -159,7 +159,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
             dropdownPosition === 'left' ? 'right-0' : 'left-0'
           )}
         >
-          {isRegistered && hasListing && (
+          {isRegistered && hasListing && !isOwner && (
             <button
               onClick={handleBuyNow}
               className='hover:bg-tertiary flex w-full items-center gap-1.5 px-3 py-2 text-left text-lg transition-colors'

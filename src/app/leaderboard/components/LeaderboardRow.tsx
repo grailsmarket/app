@@ -257,7 +257,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ user, rank, className, 
       >
         <div className='min-h-0 overflow-hidden'>
           <div className='bg-background border-tertiary rounded-b-lg border-b p-4 pt-3 shadow-md'>
-            <div className='grid grid-cols-3 gap-x-4 gap-y-3'>
+            <div className='grid grid-cols-2 gap-x-4 gap-y-3 @[40rem]/app:grid-cols-3'>
               <div className='border-tertiary border-l-2 pl-1.5'>
                 <p className='text-lg font-semibold'>{user.names_owned.toLocaleString()}</p>
                 <p className='text-neutral text-md'>Names</p>

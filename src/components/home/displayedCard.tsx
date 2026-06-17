@@ -4,6 +4,7 @@ import { fetchDomains } from '@/api/domains/fetchDomains'
 import { emptyFilterState } from '@/state/reducers/filters/marketplaceFilters'
 import { useQuery } from '@tanstack/react-query'
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
+import { motion, useMotionValue, animate, type AnimationPlaybackControls } from 'motion/react'
 import Card from '../domains/grid/components/card'
 import LoadingCard from '../domains/grid/components/loadingCard'
 import { useUserContext } from '@/context/user'
@@ -19,8 +20,26 @@ const CARD_HEIGHT_DESKTOP = 380
 const CARD_GAP = 16
 const AUTO_FLIP_MS = 3000
 const MANUAL_PAUSE_MS = 10000
-const TRANSITION_MS = 500
-const SWIPE_THRESHOLD = 0.2 // fraction of card width needed to trigger a swipe
+
+// Spring that settles the track after a swipe, flick, arrow tap or auto-flip.
+// Tuned to feel natural — responsive but not stiff, with a gentle settle and no
+// noticeable overshoot (damping ratio ≈ 0.95).
+const SETTLE_SPRING = { type: 'spring', stiffness: 210, damping: 26, mass: 0.9 } as const
+// How many seconds of "coasting" at the release velocity we project the throw
+// forward by. Higher = a flick travels further. A 1000px/s flick projects ~200px
+// (roughly one card); a hard 3000px/s flick projects ~600px (a few cards).
+const VELOCITY_PROJECTION = 0.2
+// Hard cap on how many cards a single swipe can travel, so a fast flick can never
+// overshoot the clone buffer and reveal a seam in the infinite loop.
+const MAX_CARDS_PER_SWIPE = 4
+// Movement (px) a touch must clear before we lock it to an axis — lets vertical
+// scrolls pass through to the page untouched.
+const AXIS_LOCK_THRESHOLD = 8
+// If the finger is held still longer than this before lifting, treat the release
+// as having no velocity (so a pause-then-lift snaps rather than flicks).
+const VELOCITY_IDLE_MS = 100
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
 
 const DisplayedCards: React.FC = () => {
   const { authStatus } = useUserContext()
@@ -29,15 +48,31 @@ const DisplayedCards: React.FC = () => {
   const width = useAppContainerWidth()
   const [isMounted, setIsMounted] = useState(false)
   const [isPositioned, setIsPositioned] = useState(false)
-  const [trackPos, setTrackPos] = useState(0)
-  const [enableTransition, setEnableTransition] = useState(true)
   const [isPausedByUser, setIsPausedByUser] = useState(false)
   const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isMobileRef = useRef(false)
-  const touchStartXRef = useRef(0)
-  const [swipeOffset, setSwipeOffset] = useState(0)
-  const isSwipingRef = useRef(false)
+
+  // The track's horizontal offset in pixels — the single source of truth for
+  // where the carousel sits. Gestures, the settle spring and auto-flip all write
+  // to it; React never re-renders to move the track.
+  const trackX = useMotionValue(0)
+  // Logical index of the resting card within `trackItems`.
+  const indexRef = useRef(0)
+  // Handle to the in-flight settle animation so we can interrupt it.
+  const settleRef = useRef<AnimationPlaybackControls | null>(null)
+
+  // Live state of an in-progress touch drag.
+  const dragRef = useRef({
+    active: false,
+    axis: 'undecided' as 'undecided' | 'horizontal' | 'vertical',
+    startIndex: 0,
+    startPointerX: 0,
+    startPointerY: 0,
+    startTrackX: 0,
+    lastPointerX: 0,
+    lastPointerTime: 0,
+    velocity: 0, // px/s
+  })
 
   const { data: domains, isLoading } = useQuery({
     queryKey: ['domains-carousel'],
@@ -81,7 +116,6 @@ const DisplayedCards: React.FC = () => {
   }, [])
 
   const isMobile = containerWidth > 0 && containerWidth < 640
-  isMobileRef.current = isMobile
   const cardWidth = isMobile ? CARD_WIDTH_MOBILE : CARD_WIDTH_DESKTOP
   const cardHeight = isMobile ? CARD_HEIGHT_MOBILE : CARD_HEIGHT_DESKTOP
   const step = cardWidth + CARD_GAP
@@ -101,57 +135,70 @@ const DisplayedCards: React.FC = () => {
     return [...domains.slice(-c), ...domains, ...domains.slice(0, c)]
   }, [domains, cloneCount])
 
-  // Initialize trackPos to the first real card once domains load AND the
-  // container has been measured. Waiting for containerWidth guarantees
-  // visibleCount/cloneCount/step are final, so the carousel is revealed in its
-  // final position with the correct number of cards (no post-load reshuffle).
+  const hydratedWidth = isMounted ? width : null
+  const smallMobileOffset = hydratedWidth && hydratedWidth < 440 ? (hydratedWidth - cardWidth) / 2 - step : 0
+
+  // Pixel offset at which a given logical index sits at rest.
+  const restX = useCallback((index: number) => -index * step + smallMobileOffset, [step, smallMobileOffset])
+
+  // After a settle lands on a clone, snap instantly to the equivalent real card.
+  // The clone is visually identical to the real card, so the jump is invisible
+  // and the carousel keeps a full clone buffer on either side for the next swipe.
+  const normalizeLoop = useCallback(() => {
+    if (totalCards === 0) return
+    const c = Math.min(cloneCount, totalCards)
+    const i = indexRef.current
+    const logical = (((i - c) % totalCards) + totalCards) % totalCards
+    const normalized = c + logical
+    if (normalized !== i) {
+      indexRef.current = normalized
+      trackX.jump(restX(normalized))
+    }
+  }, [totalCards, cloneCount, restX, trackX])
+
+  // Animate the track to a target card with the settle spring, carrying any
+  // release velocity into the spring so the motion continues from the flick.
+  const settleTo = useCallback(
+    (index: number, velocity = 0) => {
+      indexRef.current = index
+      settleRef.current?.stop()
+      settleRef.current = animate(trackX, restX(index), {
+        ...SETTLE_SPRING,
+        velocity,
+        onComplete: normalizeLoop,
+      })
+    },
+    [trackX, restX, normalizeLoop]
+  )
+
+  // Initialize the track to the first real card once domains have loaded AND the
+  // container has been measured, so the carousel is revealed in its final
+  // position with the correct number of cards (no post-load reshuffle).
   const initializedRef = useRef(false)
   useEffect(() => {
     if (domains && domains.length > 0 && containerWidth > 0 && !initializedRef.current) {
       initializedRef.current = true
-      setEnableTransition(false)
-      setTrackPos(Math.min(cloneCount, domains.length))
+      const initial = Math.min(cloneCount, domains.length)
+      indexRef.current = initial
+      trackX.jump(restX(initial))
       setIsPositioned(true)
     }
-  }, [domains, cloneCount, containerWidth])
+  }, [domains, cloneCount, containerWidth, restX, trackX])
 
-  // Re-enable transition after initialization snap
+  // Keep the resting card aligned when the layout changes (resize, breakpoint or
+  // the small-mobile centering offset). Re-position instantly, never animated.
   useEffect(() => {
-    if (!enableTransition) {
-      const frame = requestAnimationFrame(() => {
-        setEnableTransition(true)
-      })
-      return () => cancelAnimationFrame(frame)
-    }
-  }, [enableTransition])
+    if (!initializedRef.current) return
+    trackX.jump(restX(indexRef.current))
+  }, [restX, trackX])
 
   const advance = useCallback(
     (direction: 1 | -1) => {
       if (totalCards === 0) return
-      setTrackPos((prev) => prev + direction)
+      settleTo(indexRef.current + direction)
     },
-    [totalCards]
+    [totalCards, settleTo]
   )
-
-  // Handle seamless loop on transition end
-  const handleTransitionEnd = useCallback(() => {
-    if (totalCards === 0) return
-    const c = Math.min(cloneCount, totalCards)
-    setTrackPos((prev) => {
-      // Past last real card → snap to first real
-      if (prev >= c + totalCards) {
-        setEnableTransition(false)
-        return c
-      }
-
-      // Before first real card → snap to last real
-      if (prev < c) {
-        setEnableTransition(false)
-        return c + totalCards - 1
-      }
-      return prev
-    })
-  }, [totalCards, cloneCount])
 
   // Auto-flip timer
   useEffect(() => {
@@ -166,67 +213,110 @@ const DisplayedCards: React.FC = () => {
     }
   }, [isLoading, totalCards, isPausedByUser, advance])
 
+  // Pause auto-flip for a while after any manual interaction.
+  const pauseAutoFlip = useCallback(() => {
+    setIsPausedByUser(true)
+    if (autoTimerRef.current) {
+      clearInterval(autoTimerRef.current)
+      autoTimerRef.current = null
+    }
+    if (pauseTimerRef.current) {
+      clearTimeout(pauseTimerRef.current)
+    }
+    pauseTimerRef.current = setTimeout(() => {
+      setIsPausedByUser(false)
+    }, MANUAL_PAUSE_MS)
+  }, [])
+
   const handleManualNav = useCallback(
     (direction: 1 | -1) => {
       advance(direction)
-
-      // Pause auto-flip
-      setIsPausedByUser(true)
-      if (autoTimerRef.current) {
-        clearInterval(autoTimerRef.current)
-        autoTimerRef.current = null
-      }
-      if (pauseTimerRef.current) {
-        clearTimeout(pauseTimerRef.current)
-      }
-      pauseTimerRef.current = setTimeout(() => {
-        setIsPausedByUser(false)
-      }, MANUAL_PAUSE_MS)
+      pauseAutoFlip()
     },
-    [advance]
+    [advance, pauseAutoFlip]
   )
 
-  // Touch swipe handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX
-    isSwipingRef.current = true
-    setSwipeOffset(0)
-    setEnableTransition(false)
-  }, [])
+  // Touch dragging. The track follows the finger 1:1 by writing straight to the
+  // `trackX` motion value — no React re-render per move, so it stays smooth — and
+  // we sample velocity ourselves. On release we project the throw from both the
+  // dragged distance and the velocity, then settle to the resulting card.
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      const touch = e.touches[0]
+      settleRef.current?.stop()
+      dragRef.current = {
+        active: true,
+        axis: 'undecided',
+        startIndex: indexRef.current,
+        startPointerX: touch.clientX,
+        startPointerY: touch.clientY,
+        startTrackX: trackX.get(),
+        lastPointerX: touch.clientX,
+        lastPointerTime: e.timeStamp,
+        velocity: 0,
+      }
+    },
+    [trackX]
+  )
 
-  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isSwipingRef.current) return
-    const diff = e.touches[0].clientX - touchStartXRef.current
-    // e.currentTarget.style.transform = `translateX(${-trackPos * step + diff}px)`
-    setSwipeOffset(diff)
-  }, [])
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      const drag = dragRef.current
+      if (!drag.active) return
+      const touch = e.touches[0]
+      const dx = touch.clientX - drag.startPointerX
+      const dy = touch.clientY - drag.startPointerY
 
-  const handleTouchEnd = useCallback(() => {
-    if (!isSwipingRef.current) return
-    isSwipingRef.current = false
-    setEnableTransition(true)
+      // Lock to an axis on the first decisive movement; if it's vertical, bow out
+      // so the page scrolls normally and we never fight it.
+      if (drag.axis === 'undecided') {
+        if (Math.abs(dx) < AXIS_LOCK_THRESHOLD && Math.abs(dy) < AXIS_LOCK_THRESHOLD) return
+        drag.axis = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical'
+        if (drag.axis === 'horizontal') pauseAutoFlip()
+      }
+      if (drag.axis === 'vertical') return
 
-    const threshold = cardWidth * SWIPE_THRESHOLD
-    if (swipeOffset < -threshold) {
-      handleManualNav(1)
-    } else if (swipeOffset > threshold) {
-      handleManualNav(-1)
-    }
+      trackX.set(drag.startTrackX + dx)
 
-    setSwipeOffset(0)
-  }, [swipeOffset, cardWidth, handleManualNav])
+      const dt = e.timeStamp - drag.lastPointerTime
+      if (dt > 0) drag.velocity = ((touch.clientX - drag.lastPointerX) / dt) * 1000
+      drag.lastPointerX = touch.clientX
+      drag.lastPointerTime = e.timeStamp
+    },
+    [trackX, pauseAutoFlip]
+  )
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      const drag = dragRef.current
+      if (!drag.active) return
+      drag.active = false
+      if (drag.axis !== 'horizontal') return
+
+      // Drop stale velocity if the finger paused before lifting.
+      const velocity = e.timeStamp - drag.lastPointerTime > VELOCITY_IDLE_MS ? 0 : drag.velocity
+
+      // Project where the throw would coast to, then snap to the nearest card,
+      // capping the reach so a hard flick never travels past the clone buffer.
+      const projected = trackX.get() + velocity * VELOCITY_PROJECTION
+      const nearestIndex = Math.round((smallMobileOffset - projected) / step)
+      const reach = Math.min(MAX_CARDS_PER_SWIPE, Math.max(1, Math.min(cloneCount, totalCards)))
+      const target = clamp(nearestIndex, drag.startIndex - reach, drag.startIndex + reach)
+
+      settleTo(target, velocity)
+      pauseAutoFlip()
+    },
+    [trackX, smallMobileOffset, step, cloneCount, totalCards, settleTo, pauseAutoFlip]
+  )
 
   // Cleanup
   useEffect(() => {
     return () => {
       if (autoTimerRef.current) clearInterval(autoTimerRef.current)
       if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+      settleRef.current?.stop()
     }
   }, [])
-
-  const hydratedWidth = isMounted ? width : null
-  const smallMobileOffset = hydratedWidth && hydratedWidth < 440 ? (hydratedWidth - cardWidth) / 2 - step : 0
-  const translateX = -trackPos * step + swipeOffset + smallMobileOffset
 
   const hasDomains = !!domains && domains.length > 0
   const showEmpty = !isLoading && !hasDomains
@@ -273,15 +363,9 @@ const DisplayedCards: React.FC = () => {
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
           >
-            <div
-              className='flex gap-4'
-              style={{
-                transform: `translateX(${translateX}px)`,
-                transition: enableTransition ? `transform ${TRANSITION_MS}ms ease` : 'none',
-              }}
-              onTransitionEnd={handleTransitionEnd}
-            >
+            <motion.div className='flex gap-4' style={{ x: trackX }}>
               {isReady
                 ? trackItems.map((domain, index) => (
                     <div
@@ -307,7 +391,7 @@ const DisplayedCards: React.FC = () => {
                         <LoadingCard />
                       </div>
                     ))}
-            </div>
+            </motion.div>
 
             {showEmpty && <div className='flex h-full items-center justify-center'>No domains found</div>}
           </div>

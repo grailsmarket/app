@@ -249,7 +249,7 @@ const ServerMetadata = ({ name, metadata = [] }: { name: string; metadata?: Meta
       <p className='text-xl font-bold'>{metadata.length}</p>
     </div>
     {metadata.length > 0 ? (
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
         {metadata.map((row) => (
           <div
             key={`${name}-${row.label}`}
@@ -272,7 +272,7 @@ const ServerRoles = ({ roles }: { roles?: RolesType | null }) => (
       <h2 className='font-sedan-sc text-3xl'>Roles</h2>
     </div>
     {roles ? (
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
         <div className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
           <CopyableText value={roles.owner} />
           <p className='text-neutral text-lg font-medium'>Owner</p>
@@ -310,7 +310,7 @@ const ServerSecondaryDetails = ({
       <div className='flex flex-row items-center justify-between'>
         <h2 className='font-sedan-sc text-3xl'>Details</h2>
       </div>
-      <div className='grid grid-cols-2 gap-4'>
+      <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
         {rows.map((row) => (
           <div key={row.label} className='bg-secondary border-neutral pl-md flex w-full flex-col border-l-2'>
             <p className='max-w-full truncate text-xl font-medium'>{row.value}</p>

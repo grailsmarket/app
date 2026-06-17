@@ -86,7 +86,7 @@ const Roles: React.FC<NameDetailsProps> = ({
             <LoadingSpinner size='h-10 w-10' />
           </div>
         ) : roles ? (
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 gap-4 @[40rem]/app:grid-cols-2'>
             <div key='owner' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
               <CopyValue value={roles.owner} canCopy={true} truncateValue={isAddress(roles.owner)} />
               <p className='text-neutral text-lg font-medium'>Owner</p>

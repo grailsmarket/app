@@ -91,8 +91,11 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
           const fee = getFee()
 
           return (
-            <div key={offer.id} className='flex flex-row items-center justify-between gap-2'>
-              <div className='flex flex-row items-center gap-2 @[40rem]/app:gap-4'>
+            <div
+              key={offer.id}
+              className='flex flex-col items-stretch gap-3 @[40rem]/app:flex-row @[40rem]/app:items-center @[40rem]/app:justify-between'
+            >
+              <div className='flex min-w-0 flex-row items-center gap-2 @[40rem]/app:gap-4'>
                 <div className='flex flex-row items-center gap-2'>
                   <Image
                     src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
@@ -192,7 +195,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
 
   if (isMyDomain) {
     return (
-      <div className='flex flex-col items-end gap-2 @[40rem]/app:flex-row @[40rem]/app:items-center'>
+      <div className='flex w-full flex-col items-end gap-2 @[40rem]/app:w-auto @[40rem]/app:flex-row @[40rem]/app:items-center'>
         <User address={offer.buyer_address} className='max-w-full' wrapperClassName='justify-start! max-w-40' />
         <div className='flex flex-row items-center gap-2'>
           <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
@@ -209,7 +212,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
 
   if (isMyOffer) {
     return (
-      <div className='flex flex-row items-center gap-2'>
+      <div className='flex w-full flex-row items-center justify-end gap-2 @[40rem]/app:w-auto'>
         <SecondaryButton onClick={openCancelOfferModal}>Cancel</SecondaryButton>
         <SecondaryButton
           onClick={openShareModal}
@@ -222,7 +225,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
   }
 
   return (
-    <div className='flex flex-row items-center gap-2'>
+    <div className='flex w-full flex-row items-center justify-between gap-2 @[40rem]/app:w-auto'>
       <User
         address={offer.buyer_address}
         className='max-w-full'

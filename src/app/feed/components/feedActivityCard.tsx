@@ -133,15 +133,11 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
 
         <div className='flex flex-row items-end justify-between'>
           {/* Activity details as a single sentence-style line to keep the card as compact as a comment */}
-          <div className='text-foreground/80 flex w-full max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 text-lg font-medium @[40rem]/app:max-w-[calc(100%-72px)]'>
+          <div className='activity-feed-card text-foreground/80 flex w-full max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 text-lg font-medium @[40rem]/app:max-w-[calc(100%-72px)]'>
             {copy.counterpartyLabel && activity.counterparty_address && (
               <>
                 <span className='text-neutral'>{copy.counterpartyPreposition ?? 'with'}</span>
-                <User
-                  address={activity.counterparty_address}
-                  wrapperClassName='justify-start w-fit max-w-fit'
-                  className='max-w-full'
-                />
+                <User address={activity.counterparty_address} wrapperClassName='justify-start' className='w-fit' />
               </>
             )}
             {duration && (

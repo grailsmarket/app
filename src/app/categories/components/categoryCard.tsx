@@ -180,7 +180,7 @@ const CategoryCard = ({ category, reduceColumns = false, sort }: CategoryCardPro
           'p-md @[40rem]/app:p-lg grid gap-4 gap-y-4 @[40rem]/app:gap-y-6',
           reduceColumns
             ? 'grid-cols-2 @[48rem]/app:grid-cols-2 @[96rem]/app:grid-cols-3'
-            : 'grid-cols-3 @[125rem]/app:grid-cols-4'
+            : 'grid-cols-2 @[40rem]/app:grid-cols-3 @[125rem]/app:grid-cols-4'
         )}
       >
         <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>

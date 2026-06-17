@@ -17,8 +17,9 @@ const Chats: React.FC = () => {
 
   return (
     <button
+      type='button'
       onClick={() => dispatch(open ? closeChatSidebar() : openSidebarToList())}
-      className='hover:bg-primary/10 relative rounded-md p-1 transition-colors'
+      className='relative flex shrink-0 cursor-pointer items-center justify-center rounded-md'
       aria-label='Messages'
       aria-pressed={open}
     >

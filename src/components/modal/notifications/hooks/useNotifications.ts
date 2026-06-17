@@ -41,8 +41,7 @@ export const useNotifications = ({ isOpen }: UseNotificationsProps) => {
       .flatMap((page) => page.notifications)
       .filter(
         (notification) =>
-          NON_ENS_NOTIFICATION_TYPES.has(notification.type) ||
-          (!!notification.ensName && !!notification.ensTokenId)
+          NON_ENS_NOTIFICATION_TYPES.has(notification.type) || (!!notification.ensName && !!notification.ensTokenId)
       ) || []
   const isNotificationsLoading = isLoading || isFetchingNextPage
 

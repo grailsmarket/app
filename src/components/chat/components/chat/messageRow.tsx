@@ -7,6 +7,7 @@ import ReactionPills from '../reactions/reactionPills'
 import MessageHoverActions from '../messageHoverActions'
 import MessageEditor from '../messageEditor'
 import ReplyPreview from '../replyPreview'
+import ChatImages from '../chatImages'
 import { useMessage } from '../../hooks/useMessage'
 import { useMessageActions } from '../../hooks/useMessageActions'
 import { startsNewRun } from '@/utils/chat/message'
@@ -64,6 +65,11 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply, 
                 )}
               >
                 {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} onOwnBubble={isOwn} />}
+                {!isDeleted && message.attachments.length > 0 && (
+                  <div className={cn(message.body && 'mb-1')}>
+                    <ChatImages chatId={chatId} attachments={message.attachments} />
+                  </div>
+                )}
                 {body}
                 {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
                 {/* {showTime && (

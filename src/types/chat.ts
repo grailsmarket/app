@@ -41,6 +41,18 @@ export interface ReplyPreview {
   deleted: boolean
 }
 
+/** Image attachment on a message. `url` is relative — prepend API_ORIGIN to load it. */
+export interface MessageAttachment {
+  url: string
+  content_type: string
+  /** Not extracted server-side yet; may be null, so don't rely on it for layout. */
+  width: number | null
+  height: number | null
+  byte_size: number
+  /** TRUE once the image has been expired/removed — render a placeholder, don't load it. */
+  expired: boolean
+}
+
 export interface ChatMessage {
   id: string
   chat_id: string
@@ -48,7 +60,7 @@ export interface ChatMessage {
   sender_address?: string
   /** null when the message has been soft-deleted */
   body: string | null
-  content_type: 'text'
+  content_type: 'text' | 'image'
   metadata: unknown
   created_at: string
   edited_at: string | null
@@ -58,6 +70,7 @@ export interface ChatMessage {
   /** Parent-message preview when this message is a reply; null/absent otherwise. */
   reply_to?: ReplyPreview | null
   reactions?: MessageReaction[]
+  attachments: MessageAttachment[]
 }
 
 export interface Chat {
@@ -122,6 +135,7 @@ export type MentionState = {
 
 export interface SendVars {
   body: string
+  files?: File[]
   /** Parent message id when sending a reply. */
   replyToId?: string
   /** Parent preview for optimistic rendering; server returns the canonical reply_to. */
@@ -130,7 +144,21 @@ export interface SendVars {
 
 export interface SendController {
   isPending: boolean
-  mutate: (vars: SendVars, options: { onError: (e: SendMessageError) => void }) => void
+  mutate: (vars: SendVars, options: { onError: (e: SendMessageError) => void; onSuccess?: () => void }) => void
+}
+
+/** Public global-room info + image capability flags (GET /chats/global). */
+export interface GlobalChatInfo {
+  chat_id: string
+  title: string
+  enabled: boolean
+  max_message_length: number
+  /** Master kill-switch for image sending across ALL chats (global + DMs). */
+  images_enabled: boolean
+  /** Client-side upload size cap, in bytes. */
+  max_image_bytes: number
+  max_images_per_message: number
+  last_message_at: string | null
 }
 
 export interface GlobalChatQuota {

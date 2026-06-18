@@ -138,7 +138,7 @@ const TableRow: React.FC<TableRowProps> = ({
             wrapperClassName='justify-start! max-w-full'
             disableLink
             disableTooltip
-            skipProfileFetch
+            // skipProfileFetch
           />
         )}
       </div>

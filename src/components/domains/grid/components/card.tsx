@@ -383,12 +383,13 @@ const Card: React.FC<CardProps> = ({
             (filterType !== 'profile' || profileTab.value === 'watchlist' || profileTab.value === 'broker') && (
               <User
                 address={domain.owner as Address}
+                // name={domain.owner_name as string}
                 className='py-md w-full bg-transparent px-2.5!'
                 radiusClassName='rounded-b-sm'
                 wrapperClassName='w-full'
                 avatarSize='24px'
                 disableLink
-                skipProfileFetch
+                // skipProfileFetch
                 alignTooltip={isFirstInRow ? 'left' : 'right'}
               />
             )}

@@ -31,6 +31,8 @@ interface UserProps {
   disableTooltip?: boolean
   disableLink?: boolean
   hideHeaderImage?: boolean
+  // We get owner name from the search endpoint, therefore skipping profileData fetch
+  name?: string
   skipProfileFetch?: boolean
 }
 
@@ -46,24 +48,39 @@ const User: React.FC<UserProps> = ({
   disableTooltip = false,
   disableLink = false,
   hideHeaderImage = false,
+  name,
   skipProfileFetch = false,
 }) => {
+  // console.log('address', address)
   const router = useRouter()
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: accountQueryKey(address),
     queryFn: async () => {
+      console.log('queryFn', address)
       if (!address) return null
 
-      const profile = await fetchAccount(address)
-      return profile
+      const profileData = await fetchAccount(address)
+      return profileData
     },
     enabled: !skipProfileFetch,
   })
 
+  const profileData = name
+    ? {
+        ens: {
+          name: name,
+        },
+      }
+    : profile
+
+  console.log('profileData', profileData)
+
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
-  const avatarSrc = profile?.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${profile.ens.name}` : undefined
-  const headerImageSrc = profile?.ens?.name ? `${ENS_METADATA_URL}/mainnet/header/${profile.ens.name}` : undefined
+  const avatarSrc = profileData?.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${profileData.ens.name}` : undefined
+  const headerImageSrc = profileData?.ens?.name
+    ? `${ENS_METADATA_URL}/mainnet/header/${profileData.ens.name}`
+    : undefined
 
   return (
     <TooltipWrapper
@@ -83,7 +100,7 @@ const User: React.FC<UserProps> = ({
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
-              router.push(`/profile/${address}`)
+              router.push(`/profileData/${address}`)
             }}
           >
             {!hideHeaderImage && (
@@ -101,20 +118,20 @@ const User: React.FC<UserProps> = ({
             )}
             <Avatar
               address={address}
-              name={profile?.ens?.name}
+              name={profileData?.ens?.name}
               src={avatarSrc}
               fallback={DEFAULT_FALLBACK_AVATAR}
               style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
             />
             <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
               <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
-                {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+                {profileData?.ens?.name ? beautifyName(profileData?.ens?.name) : truncateAddress(address)}
               </p>
             </div>
           </div>
         ) : (
           <Link
-            href={`/profile/${address}`}
+            href={`/profileData/${address}`}
             className={cn(
               'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
               className,
@@ -136,14 +153,14 @@ const User: React.FC<UserProps> = ({
             )}
             <Avatar
               address={address}
-              name={profile?.ens?.name}
-              src={profile?.ens?.avatar}
+              name={profileData?.ens?.name}
+              src={avatarSrc}
               fallback={DEFAULT_FALLBACK_AVATAR}
               style={{ width: avatarSize, minWidth: avatarSize, height: avatarSize, minHeight: avatarSize, zIndex: 10 }}
             />
             <div className='relative w-full' style={{ maxWidth: `calc(100% - ${parseInt(avatarSize) + 6}px)` }}>
               <p className='z-10 truncate text-[15px] font-semibold' style={{ fontSize: fontSize }}>
-                {profile?.ens?.name ? beautifyName(profile?.ens?.name) : truncateAddress(address)}
+                {profileData?.ens?.name ? beautifyName(profileData?.ens?.name) : truncateAddress(address)}
               </p>
             </div>
           </Link>

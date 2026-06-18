@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   fetchCachedValuationEvidence,
@@ -29,11 +29,17 @@ export function useValuationEvidence(name: string) {
   const [valuationEvidenceProgressByStage, setValuationEvidenceProgressByStage] =
     useState<ValuationEvidenceProgressByStage>({})
 
+  // Cancels an in-flight generation when the user navigates away / unmounts.
+  const abortRef = useRef<AbortController | null>(null)
+  useEffect(() => {
+    return () => abortRef.current?.abort()
+  }, [name])
+
   // Page-load auto-fetch: unauthenticated cache "peek". Returns the cached
   // valuation to anyone (logged in or not) or null when none exists yet.
   const cachedQuery = useQuery({
     queryKey: valuationEvidenceQueryKey(name),
-    queryFn: () => fetchCachedValuationEvidence(name),
+    queryFn: ({ signal }) => fetchCachedValuationEvidence(name, signal),
     enabled: Boolean(name),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -42,13 +48,17 @@ export function useValuationEvidence(name: string) {
   })
 
   const mutation = useMutation({
-    mutationFn: async ({ refresh }: { refresh: boolean }) => {
+    mutationFn: async () => {
       setValuationEvidenceProgress(null)
       setValuationEvidenceProgressByStage({})
 
       if (!isAuthenticated) {
         throw new ValuationEvidenceRequestError('Sign in to generate a valuation', 401, 'UNAUTHORIZED')
       }
+
+      abortRef.current?.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
 
       const body: ValuationEvidenceRequest = {
         recommendationCount: DEFAULT_RECOMMENDATION_COUNT,
@@ -68,7 +78,7 @@ export function useValuationEvidence(name: string) {
             setValuationEvidenceProgress(event)
           }
         },
-        { refresh }
+        controller.signal
       )
     },
     onSuccess: (result) => {
@@ -81,15 +91,13 @@ export function useValuationEvidence(name: string) {
   const valuationEvidence = mutation.data ?? cachedQuery.data ?? undefined
 
   return {
-    generateEvidence: (refresh = false) => mutation.mutate({ refresh }),
-    generateEvidenceAsync: (refresh = false) => mutation.mutateAsync({ refresh }),
+    generateEvidence: () => mutation.mutate(),
     valuationEvidence,
     valuationEvidenceError: mutation.error,
     valuationEvidenceProgress,
     valuationEvidenceProgressByStage,
     valuationEvidenceIsLoading: mutation.isPending,
     valuationEvidenceIsInitialLoading: cachedQuery.isLoading,
-    valuationEvidenceIsSuccess: Boolean(valuationEvidence),
     hasResult: Boolean(valuationEvidence),
     loginRequired: !isAuthenticated,
   }

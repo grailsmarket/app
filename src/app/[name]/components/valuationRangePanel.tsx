@@ -825,7 +825,7 @@ const ValuationRangePanel: React.FC<{ name: string }> = ({ name }) => {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
-    generateEvidence(hasResult)
+    generateEvidence()
   }
 
   return (

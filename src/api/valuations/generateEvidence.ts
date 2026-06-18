@@ -30,9 +30,8 @@ export class ValuationEvidenceRequestError extends Error {
 
 export type ValuationEvidenceProgressHandler = (event: ValuationEvidenceStreamStageEvent) => void
 
-function valuationEvidenceUrl(name: string, refresh?: boolean) {
-  const query = refresh ? '?refresh=true' : ''
-  return `${API_URL}/valuations/${encodeURIComponent(name)}/evidence${query}`
+function valuationEvidenceUrl(name: string) {
+  return `${API_URL}/valuations/${encodeURIComponent(name)}/evidence`
 }
 
 function isStreamingResponse(response: Response) {
@@ -83,30 +82,45 @@ async function readValuationEvidenceStream(
   let buffer = ''
   let result: ValuationEvidenceResult | null = null
 
+  // Parse one NDJSON line. A malformed/partial line is skipped (not fatal) so a
+  // single bad chunk can't abort a generation that would otherwise succeed; only
+  // a typed error event surfaced via handleStreamEvent throws.
   const processLine = (line: string) => {
     if (!line.trim()) return
 
-    const event = JSON.parse(line) as ValuationEvidenceStreamEvent
+    let event: ValuationEvidenceStreamEvent
+    try {
+      event = JSON.parse(line) as ValuationEvidenceStreamEvent
+    } catch {
+      return
+    }
+
     const eventResult = handleStreamEvent(event, onProgress)
     if (eventResult) {
       result = eventResult
     }
   }
 
-  while (true) {
-    const { done, value } = await reader.read()
-    buffer += decoder.decode(value, { stream: !done })
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      buffer += decoder.decode(value, { stream: !done })
 
-    const lines = buffer.split('\n')
-    buffer = lines.pop() ?? ''
-    for (const line of lines) {
-      processLine(line)
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+      for (const line of lines) {
+        processLine(line)
+      }
+
+      if (done) break
     }
 
-    if (done) break
+    processLine(buffer)
+  } finally {
+    // Always release the lock so the body stream/connection isn't leaked on
+    // error, abort, or early return.
+    reader.releaseLock()
   }
-
-  processLine(buffer)
 
   if (!result) {
     throw new ValuationEvidenceRequestError(
@@ -119,18 +133,19 @@ async function readValuationEvidenceStream(
 }
 
 /**
- * Generate (or refresh) a valuation. Requires an authenticated user on the
- * backend; streams NDJSON progress when available. Pass `refresh` to bypass the
- * backend's cached result and force a fresh generation.
+ * Generate a valuation. Requires an authenticated user on the backend; streams
+ * NDJSON progress when available. Pass an `AbortSignal` to cancel an in-flight
+ * generation (e.g. on navigation/unmount).
  */
 export async function generateValuationEvidence(
   name: string,
   body: ValuationEvidenceRequest,
   onProgress?: ValuationEvidenceProgressHandler,
-  options?: { refresh?: boolean }
+  signal?: AbortSignal
 ): Promise<ValuationEvidenceResult> {
-  const response = await authFetch(valuationEvidenceUrl(name, options?.refresh), {
+  const response = await authFetch(valuationEvidenceUrl(name), {
     method: 'POST',
+    signal,
     headers: {
       Accept: 'application/x-ndjson',
       'Content-Type': 'application/json',
@@ -155,11 +170,15 @@ export async function generateValuationEvidence(
  * Returns null when there is no cached valuation yet (the backend answers 401
  * because generating would be required), or on any transient failure.
  */
-export async function fetchCachedValuationEvidence(name: string): Promise<ValuationEvidenceResult | null> {
+export async function fetchCachedValuationEvidence(
+  name: string,
+  signal?: AbortSignal
+): Promise<ValuationEvidenceResult | null> {
   try {
     const response = await fetch(valuationEvidenceUrl(name), {
       method: 'POST',
       mode: 'cors',
+      signal,
       headers: {
         Accept: 'application/json',
       },

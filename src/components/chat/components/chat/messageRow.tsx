@@ -66,7 +66,7 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply, 
                 {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} onOwnBubble={isOwn} />}
                 {body}
                 {isEdited && <span className='ml-1 text-sm opacity-70'>(edited)</span>}
-                {showTime && (
+                {/* {showTime && (
                   <p
                     className={cn(
                       'text-neutral absolute -bottom-0.5 shrink-0 text-sm text-nowrap',
@@ -76,7 +76,7 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply, 
                     {isOwn && isRead ? 'Seen • ' : ''}
                     {time}
                   </p>
-                )}
+                )} */}
               </div>
             </MessageHoverActions>
             <ReactionPills
@@ -87,6 +87,12 @@ const MessageRow: React.FC<Props> = ({ chatId, message, isOwn, isRead, onReply, 
               onToggle={onToggle}
               className={isOwn ? 'justify-end' : 'justify-start'}
             />
+            {showTime && (
+              <p className='text-neutral text-sm text-nowrap'>
+                {isOwn && isRead ? 'Seen • ' : ''}
+                {time}
+              </p>
+            )}
           </>
         )}
       </div>

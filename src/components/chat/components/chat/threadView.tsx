@@ -173,7 +173,7 @@ const ThreadView: React.FC = () => {
 
       <div ref={scrollRef} onScroll={handleScroll} className='flex-1 overflow-y-auto p-3'>
         {chatLoading || msgsLoading ? (
-          <div className='flex flex-col gap-3'>
+          <div className='flex flex-col gap-2'>
             {['55%', '40%', '60%', '35%', '50%', '45%'].map((width, i) => (
               <MessageRowSkeleton key={i} isOwn={i % 2 === 1} width={width} />
             ))}
@@ -181,7 +181,7 @@ const ThreadView: React.FC = () => {
         ) : messages.length === 0 ? (
           <p className='text-neutral text-md mt-8 text-center'>No messages yet — say hi.</p>
         ) : (
-          <div className='flex flex-col gap-3'>
+          <div className='flex flex-col gap-2'>
             {isFetchingNextPage && (
               <div className='flex flex-col gap-3'>
                 {['55%', '40%', '60%', '35%', '50%', '45%'].map((width, i) => (
@@ -206,7 +206,7 @@ const ThreadView: React.FC = () => {
                     onReply={setReplyingTo}
                     animate={!isOwn && isNewMessage(message)}
                     next={i < messages.length - 1 ? messages[i + 1] : null}
-                    menuPosition={i < messages.length - 3 ? 'top' : 'bottom'}
+                    menuPosition={messages.length > 6 && i < messages.length - 3 ? 'top' : 'bottom'}
                   />
                 </React.Fragment>
               )

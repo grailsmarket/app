@@ -18,15 +18,13 @@ export const useSendMessage = (chatId: string | null) => {
   const { userAddress } = useUserContext()
 
   return useMutation<ChatMessage, SendMessageError, SendVars, { tempId: string } | undefined>({
-    mutationFn: ({ body, file, replyToId }) => {
+    mutationFn: ({ body, files, replyToId }) => {
       if (!chatId) throw new Error('No chat selected')
-      if (file) return sendChatImage({ chatId, file, body, replyToId }).then((r) => r.message)
+      if (files?.length) return sendChatImage({ chatId, files, body, replyToId }).then((r) => r.message)
       return sendMessage({ chatId, body, replyToId })
     },
-    onMutate: async ({ body, file, replyTo }) => {
-      // Image sends skip the optimistic insert — the composer shows the upload
-      // preview, and the canonical message lands via onSuccess / the WS event.
-      if (!chatId || file) return undefined
+    onMutate: async ({ body, files, replyTo }) => {
+      if (!chatId || files?.length) return undefined
       await queryClient.cancelQueries({ queryKey: ['chats', chatId, 'messages'] })
 
       const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -42,6 +40,7 @@ export const useSendMessage = (chatId: string | null) => {
         edited_at: null,
         deleted_at: null,
         reply_to: replyTo ?? null,
+        attachments: [],
       }
 
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['chats', chatId, 'messages'], (old) => {

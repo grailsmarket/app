@@ -20,16 +20,14 @@ export const useSendGlobalMessage = () => {
   const { userAddress } = useUserContext()
 
   return useMutation<ChatMessage, SendMessageError, SendVars, { tempId: string } | undefined>({
-    mutationFn: async ({ body, file, replyToId }) => {
-      const result = file
-        ? await sendChatImage({ chatId: GLOBAL_CHAT_ID, file, body, replyToId })
+    mutationFn: async ({ body, files, replyToId }) => {
+      const result = files?.length
+        ? await sendChatImage({ chatId: GLOBAL_CHAT_ID, files, body, replyToId })
         : await sendGlobalMessage(body, replyToId)
       return result.message
     },
-    onMutate: async ({ body, file, replyTo }) => {
-      // Image sends skip the optimistic insert — the composer shows the upload
-      // preview, and the canonical message lands via onSuccess / the WS event.
-      if (file) return undefined
+    onMutate: async ({ body, files, replyTo }) => {
+      if (files?.length) return undefined
       await queryClient.cancelQueries({ queryKey: ['globalChat', 'messages'] })
 
       const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -46,6 +44,7 @@ export const useSendGlobalMessage = () => {
         deleted_at: null,
         reply_to: replyTo ?? null,
         reactions: [],
+        attachments: [],
       }
 
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['globalChat', 'messages'], (old) => {

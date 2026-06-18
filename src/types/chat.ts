@@ -70,8 +70,7 @@ export interface ChatMessage {
   /** Parent-message preview when this message is a reply; null/absent otherwise. */
   reply_to?: ReplyPreview | null
   reactions?: MessageReaction[]
-  /** Image payload when content_type is 'image'; null/absent for text messages. */
-  attachment?: MessageAttachment | null
+  attachments: MessageAttachment[]
 }
 
 export interface Chat {
@@ -136,8 +135,7 @@ export type MentionState = {
 
 export interface SendVars {
   body: string
-  /** When set, sends an image (multipart) with `body` as the optional caption. */
-  file?: File
+  files?: File[]
   /** Parent message id when sending a reply. */
   replyToId?: string
   /** Parent preview for optimistic rendering; server returns the canonical reply_to. */
@@ -159,6 +157,7 @@ export interface GlobalChatInfo {
   images_enabled: boolean
   /** Client-side upload size cap, in bytes. */
   max_image_bytes: number
+  max_images_per_message: number
   last_message_at: string | null
 }
 

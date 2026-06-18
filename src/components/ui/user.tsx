@@ -51,13 +51,11 @@ const User: React.FC<UserProps> = ({
   name,
   skipProfileFetch = false,
 }) => {
-  // console.log('address', address)
   const router = useRouter()
   const { userAddress } = useUserContext()
   const { data: profile, isLoading: profileIsLoading } = useQuery({
     queryKey: accountQueryKey(address),
     queryFn: async () => {
-      console.log('queryFn', address)
       if (!address) return null
 
       const profileData = await fetchAccount(address)
@@ -68,13 +66,11 @@ const User: React.FC<UserProps> = ({
 
   const profileData = name
     ? {
-        ens: {
-          name: name,
-        },
-      }
+      ens: {
+        name: name,
+      },
+    }
     : profile
-
-  console.log('profileData', profileData)
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />
   const avatarSrc = profileData?.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${profileData.ens.name}` : undefined

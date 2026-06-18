@@ -24,6 +24,7 @@ import { codePointLength, detectMention } from '@/utils/chat/message'
 import {
   CHAT_IMAGE_ALLOWED_TYPES,
   CHAT_IMAGE_MAX_BYTES,
+  CHAT_IMAGE_MAX_COUNT,
   MESSAGE_INPUT_MAX_HEIGHT,
   MESSAGE_MAX_LEN,
 } from '@/constants/chat'
@@ -64,8 +65,8 @@ const Composer: React.FC<Props> = ({
   const [mention, setMention] = useState<MentionState | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [resultCount, setResultCount] = useState(0)
-  const [file, setFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [files, setFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [isDragging, setIsDragging] = useState(false)
 
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -77,20 +78,16 @@ const Composer: React.FC<Props> = ({
   const { data: chatInfo } = useGlobalChatInfo()
   const imagesEnabled = !!chatInfo?.images_enabled
   const maxImageBytes = chatInfo?.max_image_bytes ?? CHAT_IMAGE_MAX_BYTES
-  const uploading = send.isPending && !!file
+  const maxImages = chatInfo?.max_images_per_message ?? CHAT_IMAGE_MAX_COUNT
+  const uploading = send.isPending && files.length > 0
 
   const inputDisabled = disabled || permanentlyDisabled || uploading
 
-  // Manage the object URL backing the selected image's composer preview.
   useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null)
-      return
-    }
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [file])
+    const urls = files.map((f) => URL.createObjectURL(f))
+    setPreviewUrls(urls)
+    return () => urls.forEach((url) => URL.revokeObjectURL(url))
+  }, [files])
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
   const dropdownOpen = mentionActive && resultCount > 0
 
@@ -157,33 +154,40 @@ const Composer: React.FC<Props> = ({
     })
   }
 
-  const acceptFile = (picked: File | null | undefined) => {
-    if (!picked) return
-    if (!CHAT_IMAGE_ALLOWED_TYPES.includes(picked.type)) {
-      setError('Unsupported image type (use JPEG, PNG, GIF, or WebP)')
-      return
+  const acceptFiles = (picked: FileList | null) => {
+    const incoming = picked ? Array.from(picked) : []
+    if (incoming.length === 0) return
+    for (const f of incoming) {
+      if (!CHAT_IMAGE_ALLOWED_TYPES.includes(f.type)) {
+        setError('Unsupported image type (use JPEG, PNG, GIF, or WebP)')
+        return
+      }
+      if (f.size > maxImageBytes) {
+        setError(`Each image must be under ${Math.round(maxImageBytes / (1024 * 1024))} MB`)
+        return
+      }
     }
-    if (picked.size > maxImageBytes) {
-      setError(`Image is too large (max ${Math.round(maxImageBytes / (1024 * 1024))} MB)`)
-      return
-    }
-    setError(null)
-    setFile(picked)
+    setError(files.length + incoming.length > maxImages ? `You can attach up to ${maxImages} images` : null)
+    setFiles(files.concat(incoming).slice(0, maxImages))
   }
 
-  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.target.value = '' // let the same file be re-picked after removal
-    acceptFile(e.target.files?.[0])
+  const removeFileAt = (index: number) => {
+    setError(null)
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const onSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    acceptFiles(e.target.files)
+    e.target.value = ''
   }
 
   const onDragOver = (e: React.DragEvent) => {
     if (!imagesEnabled || inputDisabled || !e.dataTransfer.types.includes('Files')) return
-    e.preventDefault() // required for onDrop to fire
+    e.preventDefault()
     setIsDragging(true)
   }
 
   const onDragLeave = (e: React.DragEvent) => {
-    // Ignore leave events bubbling up from children; only clear at the real edge.
     if (e.currentTarget.contains(e.relatedTarget as Node | null)) return
     setIsDragging(false)
   }
@@ -192,12 +196,12 @@ const Composer: React.FC<Props> = ({
     if (!imagesEnabled || inputDisabled) return
     e.preventDefault()
     setIsDragging(false)
-    acceptFile(e.dataTransfer.files?.[0])
+    acceptFiles(e.dataTransfer.files)
   }
 
   const submit = () => {
     const trimmed = value.trim()
-    if (send.isPending || (!trimmed && !file)) return
+    if (send.isPending || (!trimmed && !files.length)) return
     if (trimmed.length > MESSAGE_MAX_LEN) {
       setError(`Message too long (max ${MESSAGE_MAX_LEN} characters)`)
       return
@@ -207,17 +211,15 @@ const Composer: React.FC<Props> = ({
     const replyTo = replyPreview
     const replyToId = replyingTo?.id
 
-    if (file) {
-      // Image: keep the preview + caption visible during upload, then clear on
-      // success. On error everything stays put so the user can retry.
+    if (files.length) {
       closeMention()
       send.mutate(
-        { body: trimmed, file, replyToId, replyTo },
+        { body: trimmed, files, replyToId, replyTo },
         {
           onError: (e) => setError(mapSendError(e).message),
           onSuccess: () => {
             setValue('')
-            setFile(null)
+            setFiles([])
             typing.flush()
             if (ref.current) ref.current.style.height = 'auto'
             onCancelReply?.()
@@ -326,26 +328,28 @@ const Composer: React.FC<Props> = ({
           </button>
         </div>
       )}
-      {previewUrl && (
-        <div className='bg-secondary mb-2 flex items-center gap-3 rounded-md p-2'>
-          <div className='relative h-16 w-16 shrink-0 overflow-hidden rounded-md'>
-            <img src={previewUrl} alt='' className='h-full w-full object-cover' />
-            {uploading && (
-              <div className='absolute inset-0 flex items-center justify-center bg-black/40'>
-                <span className='h-5 w-5 animate-spin rounded-full border-2 border-white/90 border-t-transparent' />
-              </div>
-            )}
-          </div>
-          <span className='text-neutral text-md min-w-0 flex-1 truncate'>{file?.name}</span>
-          <button
-            type='button'
-            onClick={() => setFile(null)}
-            disabled={uploading}
-            className='hover:bg-primary/10 text-neutral hover:text-foreground rounded p-1 transition-colors disabled:opacity-40'
-            aria-label='Remove image'
-          >
-            <Cross className='h-3.5 w-3.5' />
-          </button>
+      {previewUrls.length > 0 && (
+        <div className='relative mb-2 flex flex-wrap gap-2'>
+          {previewUrls.map((url, index) => (
+            <div key={url} className='relative h-16 w-16 overflow-hidden rounded-md'>
+              <img src={url} alt='' className='h-full w-full object-cover' />
+              {!uploading && (
+                <button
+                  type='button'
+                  onClick={() => removeFileAt(index)}
+                  className='absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80'
+                  aria-label='Remove image'
+                >
+                  <Cross className='h-2.5 w-2.5' />
+                </button>
+              )}
+            </div>
+          ))}
+          {uploading && (
+            <div className='absolute inset-0 flex items-center justify-center rounded-md bg-black/40'>
+              <span className='h-5 w-5 animate-spin rounded-full border-2 border-white/90 border-t-transparent' />
+            </div>
+          )}
         </div>
       )}
       <div className='bg-secondary border-tertiary relative flex items-end gap-2 rounded-md border p-2'>
@@ -365,13 +369,14 @@ const Composer: React.FC<Props> = ({
               ref={fileInputRef}
               type='file'
               accept={CHAT_IMAGE_ALLOWED_TYPES.join(',')}
-              onChange={onSelectFile}
+              multiple
+              onChange={onSelectFiles}
               className='hidden'
             />
             <button
               type='button'
               onClick={() => fileInputRef.current?.click()}
-              disabled={inputDisabled}
+              disabled={inputDisabled || files.length >= maxImages}
               className='flex h-7 w-7 shrink-0 items-center justify-center rounded-md opacity-60 transition-opacity hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-40'
               aria-label='Attach image'
             >
@@ -403,7 +408,7 @@ const Composer: React.FC<Props> = ({
           disabled={inputDisabled}
           rows={1}
           maxLength={MESSAGE_MAX_LEN}
-          placeholder={file ? 'Add a caption…' : 'Type a message…'}
+          placeholder={files.length ? 'Add a caption…' : 'Type a message…'}
           className={cn(
             'text-foreground placeholder:text-neutral max-h-40 min-h-7 flex-1 resize-none bg-transparent pt-0.5 text-lg outline-none',
             inputDisabled && 'cursor-not-allowed opacity-50'
@@ -415,7 +420,7 @@ const Composer: React.FC<Props> = ({
             ref.current?.focus()
             submit()
           }}
-          disabled={(!value.trim() && !file) || send.isPending || inputDisabled}
+          disabled={(!value.trim() && !files.length) || send.isPending || inputDisabled}
           className={cn(
             'bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all',
             'hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'

@@ -10,7 +10,7 @@ import ReactionPills from '../reactions/reactionPills'
 import MessageHoverActions from '../messageHoverActions'
 import MessageEditor from '../messageEditor'
 import ReplyPreview from '../replyPreview'
-import ChatImage from '../chatImage'
+import ChatImages from '../chatImages'
 import { useMessage } from '../../hooks/useMessage'
 import { useMessageActions } from '../../hooks/useMessageActions'
 
@@ -94,9 +94,9 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader, onReply
                     </div>
                   )}
                   {!isDeleted && message.reply_to && <ReplyPreview replyTo={message.reply_to} />}
-                  {!isDeleted && message.attachment && (
+                  {!isDeleted && message.attachments.length > 0 && (
                     <div className={cn(message.body && 'mb-1')}>
-                      <ChatImage chatId={GLOBAL_CHAT_ID} attachment={message.attachment} />
+                      <ChatImages chatId={GLOBAL_CHAT_ID} attachments={message.attachments} />
                     </div>
                   )}
                   <div

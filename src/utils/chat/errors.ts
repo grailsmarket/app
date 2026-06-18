@@ -25,6 +25,8 @@ export const mapSendError = (e: SendMessageError): MappedSendError => {
       return { message: 'Image is too large' }
     case 'UNSUPPORTED_TYPE':
       return { message: 'Unsupported image type' }
+    case 'TOO_MANY_IMAGES':
+      return { message: e.message ?? 'Too many images' }
     case 'BLOCKED':
       return { message: "Couldn't deliver, you have been blocked", permanent: true }
     default:

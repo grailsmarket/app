@@ -21,17 +21,17 @@ interface SendImageEnvelope {
  */
 export const sendChatImage = async ({
   chatId,
-  file,
+  files,
   body,
   replyToId,
 }: {
   chatId: string
-  file: File
+  files: File[]
   body?: string
   replyToId?: string
 }): Promise<SendImageResult> => {
   const form = new FormData()
-  form.append('file', file)
+  for (const file of files) form.append('file', file)
   if (body) form.append('body', body)
   if (replyToId) form.append('reply_to_message_id', replyToId)
 

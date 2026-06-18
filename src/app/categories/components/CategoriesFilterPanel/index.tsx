@@ -18,7 +18,6 @@ import MobileFilterActions from '@/components/filters/components/MobileFilterAct
 import CategoriesSortDropdown from '../CategoriesSortDropdown'
 import MagnifyingGlass from 'public/icons/search.svg'
 import CloseIcon from 'public/icons/cross.svg'
-import ViewSelector from '@/components/domains/viewSelector'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
 import { useFiltersChanged } from '@/hooks/filters/useFiltersChanged'
 import _ from 'lodash'
@@ -95,9 +94,6 @@ const CategoriesFilterPanel: React.FC = () => {
               <SecondaryButton onClick={handleClearFilters} disabled={isFiltersClear}>
                 Clear
               </SecondaryButton>
-              <span className='flex items-center gap-2 @[48rem]/app:hidden'>
-                <ViewSelector />
-              </span>
             </div>
           </div>
         </div>

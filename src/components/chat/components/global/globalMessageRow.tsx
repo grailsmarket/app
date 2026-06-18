@@ -31,7 +31,7 @@ const GlobalMessageRow: React.FC<Props> = ({ message, isOwn, showHeader, onReply
   return (
     <div
       className={cn(
-        'flex w-full gap-2',
+        'flex w-full gap-2 hover:z-10',
         showHeader ? 'mt-1' : 'mt-0',
         message.reactions && message.reactions.length > 0 && 'mb-1',
         animate && 'messageIn'

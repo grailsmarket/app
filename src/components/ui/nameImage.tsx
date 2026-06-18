@@ -103,23 +103,15 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   }, [refreshKey])
 
   useEffect(() => {
-    if (attempt >= 1) return
+    if (attempt > 1) return
     // reverse for now to only use unwrapped because the graph subgraph returns correct reccord no matter what
     const url = attempt === 1 ? wrappedSrc : unwrappedSrc
 
     let cancelled = false
     const maxRetries = 2
 
-    // `/explore` fires dozens of parallel fetches; a share of them transiently
-    // fail under worker / HTTP-2 stream pressure, so retry with backoff before
-    // falling through. A genuine 404 means this name isn't at this contract —
-    // skip ahead to the next URL immediately.
     const attemptFetch = async (retry = 0): Promise<void> => {
       try {
-        // `cache: 'reload'` when a refreshKey is active forces the browser to
-        // bypass its HTTP cache for this fetch — the `?v=` query already
-        // makes the URL unique, but `reload` covers any intermediate caches
-        // that ignore query params.
         const res = await fetch(url, refreshKey !== undefined ? { cache: 'reload' } : undefined)
         if (res.status === 404) {
           if (!cancelled) setAttempt((a) => a + 1)
@@ -132,14 +124,16 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
         }
       } catch {
         if (cancelled) return
+
         if (retry < maxRetries) {
           const backoff = 250 * 2 ** retry + Math.random() * 150
           setTimeout(() => {
-            if (!cancelled) attemptFetch(retry + 1)
+            attemptFetch(retry + 1)
           }, backoff)
           return
         }
-        if (!cancelled) setAttempt((a) => a + 1)
+
+        setAttempt((a) => a + 1)
       }
     }
 
@@ -166,6 +160,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     }
     const blob = new Blob([svg], { type: 'image/svg+xml' })
     const url = URL.createObjectURL(blob)
+
     // Only crossfade when there's already a layer underneath to fade over.
     // The very first layer renders instantly so the initial image isn't
     // gated behind a 500ms fade; subsequent layers animate status changes.
@@ -199,12 +194,6 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   )
 
   const markLayerLoaded = (url: string) => {
-    // Blob URLs resolve essentially instantly, so onLoad usually fires
-    // before the browser has painted the layer's initial `opacity-0`
-    // state. Toggling the class in the same frame collapses both states
-    // into a single paint and the CSS transition never triggers. Two
-    // requestAnimationFrame hops guarantee a paint of opacity:0 lands
-    // before we flip to opacity:1, so the 500ms fade actually runs.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setLayers((prev) => prev.map((l) => (l.url === url ? { ...l, loaded: true } : l)))
@@ -214,7 +203,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 
-  const showPngFallback = attempt >= 2
+  const showPngFallback = attempt >= 1
   const hasLoadedLayer = layers.some((l) => l.loaded)
   const loaded = showPngFallback ? pngLoaded : hasLoadedLayer
 

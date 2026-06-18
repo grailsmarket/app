@@ -23,9 +23,16 @@ export const fetchNameBundle = async (name: string): Promise<NameBundleType> => 
 
     const data = (await response.json()) as APIResponseType<NameBundleType>
 
-    if (!data.success) throw new Error(data.error?.message || 'Failed to fetch name bundle')
-
-    return data.data
+    if (!data.success) {
+      console.error(data.error?.message || 'Failed to fetch name bundle')
+      return {
+        details: generateEmptyName(name, hexToBigInt(labelhash(name)).toString()),
+        offers: [],
+        roles: null,
+      }
+    } else {
+      return data.data
+    }
   } catch (err) {
     console.error(err)
 

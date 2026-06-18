@@ -17,7 +17,6 @@ import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
 import SecondaryButton from '../ui/buttons/secondary'
 import MobileFilterActions from './components/MobileFilterActions'
-import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
@@ -126,7 +125,6 @@ const FilterPanel: React.FC = () => {
                 Clear
               </SecondaryButton>
               <span className='flex items-center gap-2 @[48rem]/app:hidden'>
-                <ViewSelector />
                 <DownloadButton />
               </span>
             </div>

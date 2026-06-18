@@ -1,12 +1,16 @@
 'use client'
 
 import React, { FormEvent, useEffect, useId, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'motion/react'
 import { formatNumber, ShortArrow } from 'ethereum-identity-kit'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import AnimateIn from '@/components/ui/animateIn'
 import { cn } from '@/utils/tailwind'
 import { toSteppedPercent } from '@/utils/metrics'
+import { useAppDispatch } from '@/state/hooks'
+import { setShareModalType, setShareModalDomainInfo, setShareModalOpen } from '@/state/reducers/modals/shareModal'
+import ShareIconWhite from 'public/icons/image.svg'
 import useETHPrice from '@/hooks/useETHPrice'
 import { useValuationEvidence } from '../hooks/useValuationEvidence'
 import { ValuationEvidenceRequestError } from '@/api/valuations/generateEvidence'
@@ -844,8 +848,9 @@ const ValuationProgressChecklist: React.FC<{
   )
 }
 
-const ValuationRangePanel: React.FC<{ name: string }> = ({ name }) => {
+const ValuationRangePanel: React.FC<{ name: string; ownerAddress?: string | null }> = ({ name, ownerAddress }) => {
   const { ethPrice } = useETHPrice()
+  const dispatch = useAppDispatch()
 
   const {
     generateEvidence,
@@ -872,13 +877,37 @@ const ValuationRangePanel: React.FC<{ name: string }> = ({ name }) => {
     generateEvidence()
   }
 
+  const openShareModal = () => {
+    dispatch(setShareModalType('valuation'))
+    dispatch(
+      setShareModalDomainInfo({
+        name,
+        ownerAddress: ownerAddress ?? null,
+        categories: null,
+      })
+    )
+    dispatch(setShareModalOpen(true))
+  }
+
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
       <div className='flex flex-row items-center justify-between gap-2'>
         <h2 className='font-sedan-sc text-3xl'>
           Valuation <span className='text-neutral text-sm'>beta</span>
         </h2>
-        <span className='text-neutral text-lg'>✨ GrailsAI</span>
+        <div className='flex flex-row items-center gap-2'>
+          {hasResult && (
+            <button
+              type='button'
+              onClick={openShareModal}
+              className='flex cursor-pointer items-center justify-center rounded-md p-1 transition-opacity hover:opacity-80'
+              aria-label='Share valuation'
+            >
+              <Image src={ShareIconWhite} width={22} height={22} alt='Share' />
+            </button>
+          )}
+          <span className='text-neutral text-lg'>✨ GrailsAI</span>
+        </div>
       </div>
 
       {/* CTA only shown until a valuation exists (refresh is disabled) */}

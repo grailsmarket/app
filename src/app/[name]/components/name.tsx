@@ -97,7 +97,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden @[64rem]/app:block'>
-            <ValuationRangePanel key={`range-${name}`} name={name} />
+            <ValuationRangePanel key={`range-${name}`} name={name} ownerAddress={nameDetails?.owner} />
           </div>
           <div className='hidden @[64rem]/app:block'>
             <KeywordMetrics
@@ -113,7 +113,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='@[64rem]/app:hidden'>
-            <ValuationRangePanel key={`range-${name}`} name={name} />
+            <ValuationRangePanel key={`range-${name}`} name={name} ownerAddress={nameDetails?.owner} />
           </div>
           <div className='flex w-full flex-col gap-0 @[40rem]/app:gap-2.5'>
             <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>

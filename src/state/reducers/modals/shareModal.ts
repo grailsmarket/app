@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
 import { DomainListingType, DomainOfferType } from '@/types/domains'
 
-type ShareModalType = 'listing' | 'offer' | 'google-analytics' | null
+type ShareModalType = 'listing' | 'offer' | 'google-analytics' | 'valuation' | null
 
 type ShareModalState = {
   open: boolean

@@ -8,6 +8,7 @@ import { useGlobalMessages } from '@/hooks/chat/useGlobalMessages'
 import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { formatAddress } from '@/utils/formatAddress'
+import { messagePreview } from '@/utils/chat/message'
 import { cn } from '@/utils/tailwind'
 import Logo from 'public/logo.svg'
 import { useOnlineUsers } from '@/hooks/chat/useOnlineUsers'
@@ -62,7 +63,7 @@ const GlobalChatRow: React.FC = () => {
           {newest ? (
             <>
               <span className='font-semibold'>{senderLabel}</span>
-              <span>: {newest.body ?? ''}</span>
+              <span>: {messagePreview(newest)}</span>
             </>
           ) : (
             'Talk to the whole Grails community'

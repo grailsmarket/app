@@ -1,12 +1,14 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Cross } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useSendMessage } from '@/hooks/chat/useSendMessage'
+import { useGlobalChatInfo } from '@/hooks/chat/useGlobalChatInfo'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
 import ArrowBack from 'public/icons/arrow-back.svg'
+import ImageIcon from 'public/icons/image.svg'
 import MentionDropdown from './mentionDropdown'
 import ReplyPreview from '../replyPreview'
 import {
@@ -19,7 +21,13 @@ import {
 } from '@/types/chat'
 import { mapSendError } from '@/utils/chat/errors'
 import { codePointLength, detectMention } from '@/utils/chat/message'
-import { MESSAGE_INPUT_MAX_HEIGHT, MESSAGE_MAX_LEN } from '@/constants/chat'
+import {
+  CHAT_IMAGE_ALLOWED_TYPES,
+  CHAT_IMAGE_MAX_BYTES,
+  CHAT_IMAGE_MAX_COUNT,
+  MESSAGE_INPUT_MAX_HEIGHT,
+  MESSAGE_MAX_LEN,
+} from '@/constants/chat'
 
 const MENTION_MIN_QUERY = 2
 /** Max characters of the parent body kept in a reply's optimistic preview. */
@@ -57,13 +65,29 @@ const Composer: React.FC<Props> = ({
   const [mention, setMention] = useState<MentionState | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [resultCount, setResultCount] = useState(0)
+  const [files, setFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [isDragging, setIsDragging] = useState(false)
 
   const ref = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const defaultSend = useSendMessage(chatId)
   const send: SendController = sendOverride ?? defaultSend
   const typing = useTypingEmitter(disableTyping ? null : chatId)
 
-  const inputDisabled = disabled || permanentlyDisabled
+  const { data: chatInfo } = useGlobalChatInfo()
+  const imagesEnabled = !!chatInfo?.images_enabled
+  const maxImageBytes = chatInfo?.max_image_bytes ?? CHAT_IMAGE_MAX_BYTES
+  const maxImages = chatInfo?.max_images_per_message ?? CHAT_IMAGE_MAX_COUNT
+  const uploading = send.isPending && files.length > 0
+
+  const inputDisabled = disabled || permanentlyDisabled || uploading
+
+  useEffect(() => {
+    const urls = files.map((f) => URL.createObjectURL(f))
+    setPreviewUrls(urls)
+    return () => urls.forEach((url) => URL.revokeObjectURL(url))
+  }, [files])
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
   const dropdownOpen = mentionActive && resultCount > 0
 
@@ -130,22 +154,88 @@ const Composer: React.FC<Props> = ({
     })
   }
 
+  const acceptFiles = (picked: FileList | null) => {
+    const incoming = picked ? Array.from(picked) : []
+    if (incoming.length === 0) return
+    for (const f of incoming) {
+      if (!CHAT_IMAGE_ALLOWED_TYPES.includes(f.type)) {
+        setError('Unsupported image type (use JPEG, PNG, GIF, or WebP)')
+        return
+      }
+      if (f.size > maxImageBytes) {
+        setError(`Each image must be under ${Math.round(maxImageBytes / (1024 * 1024))} MB`)
+        return
+      }
+    }
+    setError(files.length + incoming.length > maxImages ? `You can attach up to ${maxImages} images` : null)
+    setFiles(files.concat(incoming).slice(0, maxImages))
+  }
+
+  const removeFileAt = (index: number) => {
+    setError(null)
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const onSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    acceptFiles(e.target.files)
+    e.target.value = ''
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    if (!imagesEnabled || inputDisabled || !e.dataTransfer.types.includes('Files')) return
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const onDragLeave = (e: React.DragEvent) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return
+    setIsDragging(false)
+  }
+
+  const onDrop = (e: React.DragEvent) => {
+    if (!imagesEnabled || inputDisabled) return
+    e.preventDefault()
+    setIsDragging(false)
+    acceptFiles(e.dataTransfer.files)
+  }
+
   const submit = () => {
     const trimmed = value.trim()
-    if (!trimmed || send.isPending) return
+    if (send.isPending || (!trimmed && !files.length)) return
     if (trimmed.length > MESSAGE_MAX_LEN) {
       setError(`Message too long (max ${MESSAGE_MAX_LEN} characters)`)
       return
     }
     setError(null)
+
+    const replyTo = replyPreview
+    const replyToId = replyingTo?.id
+
+    if (files.length) {
+      closeMention()
+      send.mutate(
+        { body: trimmed, files, replyToId, replyTo },
+        {
+          onError: (e) => setError(mapSendError(e).message),
+          onSuccess: () => {
+            setValue('')
+            setFiles([])
+            typing.flush()
+            if (ref.current) ref.current.style.height = 'auto'
+            onCancelReply?.()
+          },
+        }
+      )
+      return
+    }
+
+    // Text: optimistic — clear immediately and restore on failure.
     setValue('')
     closeMention()
     typing.flush()
     if (ref.current) {
       ref.current.style.height = 'auto'
     }
-    const replyTo = replyPreview
-    const replyToId = replyingTo?.id
     // Capture the reply target before clearing it so a failed send can restore
     // it alongside the text (the banner is cleared optimistically below).
     const replySnapshot = replyingTo
@@ -213,7 +303,17 @@ const Composer: React.FC<Props> = ({
   }, [])
 
   return (
-    <div className='border-tertiary relative border-t-2 p-3'>
+    <div
+      className='border-tertiary relative border-t-2 p-3'
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
+      {isDragging && (
+        <div className='bg-background/90 border-primary text-neutral text-md pointer-events-none absolute inset-1 z-10 flex items-center justify-center rounded-md border-2 border-dashed'>
+          Drop image to send
+        </div>
+      )}
       {error && <p className='text-md mb-2 text-red-400'>{error}</p>}
       {replyPreview && (
         <div className='bg-secondary mb-2 flex items-start justify-between gap-2 rounded-md p-2'>
@@ -228,6 +328,30 @@ const Composer: React.FC<Props> = ({
           </button>
         </div>
       )}
+      {previewUrls.length > 0 && (
+        <div className='relative mb-2 flex flex-wrap gap-2'>
+          {previewUrls.map((url, index) => (
+            <div key={url} className='relative h-16 w-16 overflow-hidden rounded-md'>
+              <img src={url} alt='' className='h-full w-full object-cover' />
+              {!uploading && (
+                <button
+                  type='button'
+                  onClick={() => removeFileAt(index)}
+                  className='absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80'
+                  aria-label='Remove image'
+                >
+                  <Cross className='h-2.5 w-2.5' />
+                </button>
+              )}
+            </div>
+          ))}
+          {uploading && (
+            <div className='absolute inset-0 flex items-center justify-center rounded-md bg-black/40'>
+              <span className='h-5 w-5 animate-spin rounded-full border-2 border-white/90 border-t-transparent' />
+            </div>
+          )}
+        </div>
+      )}
       <div className='bg-secondary border-tertiary relative flex items-end gap-2 rounded-md border p-2'>
         {mention && codePointLength(mention.query) >= MENTION_MIN_QUERY && (
           <MentionDropdown
@@ -238,6 +362,27 @@ const Composer: React.FC<Props> = ({
             onResultsChange={setResultCount}
             registerKeyboardSelect={registerKeyboardSelect}
           />
+        )}
+        {imagesEnabled && (
+          <>
+            <input
+              ref={fileInputRef}
+              type='file'
+              accept={CHAT_IMAGE_ALLOWED_TYPES.join(',')}
+              multiple
+              onChange={onSelectFiles}
+              className='hidden'
+            />
+            <button
+              type='button'
+              onClick={() => fileInputRef.current?.click()}
+              disabled={inputDisabled || files.length >= maxImages}
+              className='flex h-7 w-7 shrink-0 items-center justify-center rounded-md opacity-60 transition-opacity hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-40'
+              aria-label='Attach image'
+            >
+              <Image src={ImageIcon} alt='' width={18} height={18} />
+            </button>
+          </>
         )}
         <textarea
           ref={ref}
@@ -263,7 +408,7 @@ const Composer: React.FC<Props> = ({
           disabled={inputDisabled}
           rows={1}
           maxLength={MESSAGE_MAX_LEN}
-          placeholder='Type a message…'
+          placeholder={files.length ? 'Add a caption…' : 'Type a message…'}
           className={cn(
             'text-foreground placeholder:text-neutral max-h-40 min-h-7 flex-1 resize-none bg-transparent pt-0.5 text-lg outline-none',
             inputDisabled && 'cursor-not-allowed opacity-50'
@@ -275,7 +420,7 @@ const Composer: React.FC<Props> = ({
             ref.current?.focus()
             submit()
           }}
-          disabled={!value.trim() || send.isPending || inputDisabled}
+          disabled={(!value.trim() && !files.length) || send.isPending || inputDisabled}
           className={cn(
             'bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all',
             'hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'

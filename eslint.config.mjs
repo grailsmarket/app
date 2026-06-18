@@ -7,7 +7,9 @@ import pluginReactHooks from 'eslint-plugin-react-hooks'
 
 const eslintConfig = [
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
-  { ignores: ['public/*', 'node_modules/*', '.next/*', '.next-env.d.ts'] },
+  {
+    ignores: ['public/*', 'node_modules/*', '.next/*', '.next-env.d.ts', '.design-sync/*', 'ds-bundle/*', '.ds-sync/*'],
+  },
   { languageOptions: { globals: globals.browser } },
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,

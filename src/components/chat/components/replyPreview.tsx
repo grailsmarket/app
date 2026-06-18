@@ -9,19 +9,9 @@ import type { ReplyPreview as ReplyPreviewData } from '@/types/chat'
 interface Props {
   replyTo: ReplyPreviewData
   className?: string
-  /**
-   * Rendered on the caller's own (light `bg-primary`) bubble, whose body uses
-   * `text-background`. The default colors (`text-primary`/`text-neutral`) wash
-   * out there, so switch to the dark on-bubble color to match the body text.
-   */
   onOwnBubble?: boolean
 }
 
-/**
- * Compact quoted preview of the parent message, shown above a reply's body.
- * Resolves the parent author's display name the same way the main sender label
- * does (usePeerProfile → ENS, fallback to a short address).
- */
 const ReplyPreview: React.FC<Props> = ({ replyTo, className, onOwnBubble }) => {
   const profile = usePeerProfile(replyTo.sender_address as `0x${string}` | undefined)
   const label = profile?.displayLabel ?? (replyTo.sender_address ? formatAddress(replyTo.sender_address) : 'Unknown')

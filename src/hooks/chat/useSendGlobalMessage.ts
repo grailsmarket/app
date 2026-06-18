@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { sendGlobalMessage } from '@/api/globalChat/sendMessage'
+import { sendChatImage } from '@/api/chats/sendImage'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import type { ChatMessage, ChatMessagesResponse, GlobalChatQuota, SendMessageError, SendVars } from '@/types/chat'
 import { useUserContext } from '@/context/user'
@@ -19,11 +20,14 @@ export const useSendGlobalMessage = () => {
   const { userAddress } = useUserContext()
 
   return useMutation<ChatMessage, SendMessageError, SendVars, { tempId: string } | undefined>({
-    mutationFn: async ({ body, replyToId }) => {
-      const result = await sendGlobalMessage(body, replyToId)
+    mutationFn: async ({ body, files, replyToId }) => {
+      const result = files?.length
+        ? await sendChatImage({ chatId: GLOBAL_CHAT_ID, files, body, replyToId })
+        : await sendGlobalMessage(body, replyToId)
       return result.message
     },
-    onMutate: async ({ body, replyTo }) => {
+    onMutate: async ({ body, files, replyTo }) => {
+      if (files?.length) return undefined
       await queryClient.cancelQueries({ queryKey: ['globalChat', 'messages'] })
 
       const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -40,6 +44,7 @@ export const useSendGlobalMessage = () => {
         deleted_at: null,
         reply_to: replyTo ?? null,
         reactions: [],
+        attachments: [],
       }
 
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['globalChat', 'messages'], (old) => {
@@ -67,10 +72,18 @@ export const useSendGlobalMessage = () => {
       }
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['globalChat', 'messages'], (old) => {
         if (!old) return old
+        const realIdExists = old.pages.some((p) => p.messages.some((m) => m.id === merged.id))
+        // Image sends have no optimistic placeholder: prepend the canonical
+        // message unless the WS broadcast already added it.
+        if (!ctx?.tempId) {
+          if (realIdExists) return old
+          const [first, ...rest] = old.pages
+          if (!first) return { pageParams: [undefined], pages: [{ messages: [merged], nextCursor: null }] }
+          return { ...old, pages: [{ ...first, messages: [merged, ...first.messages] }, ...rest] }
+        }
         // If the canonical id is already in the cache (WS arrived first and
         // replaced our optimistic placeholder, or appended), just drop the
         // optimistic row by id — never let both coexist.
-        const realIdExists = old.pages.some((p) => p.messages.some((m) => m.id === merged.id))
         if (realIdExists) {
           return {
             ...old,

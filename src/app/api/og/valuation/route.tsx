@@ -466,9 +466,25 @@ export async function GET(req: NextRequest) {
           width: CONTENT_WIDTH,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 40, fontWeight: 700, color: FOREGROUND }}>Valuation</span>
-          <span style={{ fontSize: 22, color: NEUTRAL }}>beta</span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255,255,255,0.8)',
+              color: '#222222',
+              fontSize: 18,
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              padding: '4px 10px',
+              borderRadius: 6,
+            }}
+          >
+            beta
+          </div>
         </div>
         <span style={{ fontSize: 26, color: NEUTRAL }}>✨ GrailsAI</span>
       </div>

@@ -892,9 +892,12 @@ const ValuationRangePanel: React.FC<{ name: string; ownerAddress?: string | null
   return (
     <div className='bg-secondary border-tertiary p-lg flex flex-col gap-4 sm:rounded-lg sm:border-2'>
       <div className='flex flex-row items-center justify-between gap-2'>
-        <h2 className='font-sedan-sc text-3xl'>
-          Valuation <span className='text-neutral text-sm'>beta</span>
-        </h2>
+        <div className='flex items-center gap-2'>
+          <h2 className='font-sedan-sc text-3xl'>Valuation</h2>
+          <span className='bg-foreground/80 text-background rounded px-1.5 py-0.5 text-xs font-bold tracking-wide uppercase'>
+            beta
+          </span>
+        </div>
         <div className='flex flex-row items-center gap-2'>
           {hasResult && (
             <button

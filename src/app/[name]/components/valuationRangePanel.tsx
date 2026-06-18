@@ -429,15 +429,17 @@ const ClassicPlot: React.FC<{
       </div>
 
       {/* "Similar sales" subheading, filling the gap; dims while a comp is hovered */}
-      <div
-        className={cn(
-          'text-neutral absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold transition-opacity',
-          (activeGroup !== null || activeSubject !== null) && 'opacity-[0.15]'
-        )}
-        style={{ top: barBottom + CLASSIC_TICKS_H + CLASSIC_CURVE_GAP / 2 }}
-      >
-        Similar Sales
-      </div>
+      {groups.length > 0 && (
+        <div
+          className={cn(
+            'text-neutral absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold transition-opacity',
+            (activeGroup !== null || activeSubject !== null) && 'opacity-[0.15]'
+          )}
+          style={{ top: barBottom + CLASSIC_TICKS_H + CLASSIC_CURVE_GAP / 2 }}
+        >
+          Similar Sales
+        </div>
+      )}
 
       {/* in-bar contact lines — always shown, brightest at the bar's middle */}
       {layout && (
@@ -511,7 +513,7 @@ const ClassicPlot: React.FC<{
       )}
 
       {/* comp pills — one per name, bumped together, wrapping to extra rows as needed */}
-      <div className='flex flex-wrap justify-center gap-1' style={{ marginTop: CLASSIC_CURVE_GAP }}>
+      <div className='flex flex-wrap justify-center gap-1' style={{ marginTop: groups.length > 0 ? CLASSIC_CURVE_GAP : 0 }}>
         {groups.map((group) => renderGroup(group))}
       </div>
 
@@ -647,12 +649,13 @@ const ValuationResult: React.FC<{
       <p className='text-2xl font-semibold break-all text-center'>{name}</p>
 
       {/* low / estimate / high — connected slider */}
-      <div className='relative w-full' style={{ height: 76 }}>
+      <div className='relative w-full' style={{ height: 96 }}>
         {/* connecting line: low -> est (brighter), est -> high (softer) — at the dot center */}
-        <div className='bg-primary/50 absolute h-0.5 -translate-y-1/2' style={{ left: '12.5%', width: '37.5%', top: 66 }} />
-        <div className='bg-primary/25 absolute h-0.5 -translate-y-1/2' style={{ left: '50%', width: '37.5%', top: 66 }} />
+        <div className='bg-primary/50 absolute h-0.5 -translate-y-1/2' style={{ left: '12.5%', width: '37.5%', top: 86 }} />
+        <div className='bg-primary/25 absolute h-0.5 -translate-y-1/2' style={{ left: '50%', width: '37.5%', top: 86 }} />
         {scenarios.map((s) => {
           const dimmed = activeSubject !== null && activeSubject !== s.key
+          const active = activeSubject === s.key
           return (
             <div
               key={s.key}
@@ -664,6 +667,12 @@ const ValuationResult: React.FC<{
               )}
               style={{ left: `${s.center * 100}%`, top: 0 }}
             >
+              {/* USD value, shown on hover above the ETH value */}
+              <div className='flex h-5 items-end'>
+                {active && ethPrice > 0 && (
+                  <span className='text-neutral text-sm font-medium'>{formatUsd(s.eth * ethPrice)}</span>
+                )}
+              </div>
               <div className='flex h-9 items-end'>
                 <span className={cn('leading-none font-semibold', s.primary ? 'text-3xl' : 'text-neutral text-2xl')}>
                   {formatEth(s.eth)}

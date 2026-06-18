@@ -10,6 +10,8 @@ import TopCategories from '@/components/home/topCategories'
 import TwitterBot from '@/components/home/twitterBot'
 import AnimateIn from '@/components/ui/animateIn'
 
+const HERO_PILLS = ['0% Market Fees', 'Bulk Tools', 'Open Source'] as const
+
 const Home = () => {
   return (
     <main className='relative max-w-screen overflow-hidden'>
@@ -20,9 +22,6 @@ const Home = () => {
               ENS Manager & Market
             </h1>
             <div className='mb-2 flex flex-wrap items-center justify-center gap-2 @[40rem]/app:mb-4 @[48rem]/app:gap-3'>
-const HERO_PILLS = ['0% Market Fees', 'Bulk Tools', 'Open Source'] as const
-
-// ... inside component JSX:
               {HERO_PILLS.map((pill) => (
                 <span
                   key={pill}

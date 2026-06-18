@@ -19,6 +19,14 @@ export const detectMention = (value: string, caret: number): MentionState | null
   return null
 }
 
+/** Inbox/preview text for a message: deletion notice, photo label, or the body. */
+export const messagePreview = (message: ChatMessage | null | undefined): string => {
+  if (!message) return ''
+  if (message.deleted_at) return 'Message deleted'
+  if (message.content_type === 'image') return message.body?.trim() || '📷 Photo'
+  return message.body ?? ''
+}
+
 const SENDER_RUN_GAP_MINUTES = 5
 
 export const startsNewRun = (message: ChatMessage, previous: ChatMessage | null): boolean => {

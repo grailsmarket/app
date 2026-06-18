@@ -9,6 +9,7 @@ import { usePeerProfile } from '@/hooks/chat/usePeerProfile'
 import { useBlockUser } from '@/hooks/chat/useBlockUser'
 import { useUnblockUser } from '@/hooks/chat/useUnblockUser'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
+import { messagePreview } from '@/utils/chat/message'
 import { cn } from '@/utils/tailwind'
 import ContextMenu, { type ContextMenuItem } from './contextMenu'
 import type { Chat, ChatParticipant } from '@/types/chat'
@@ -40,7 +41,7 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
 
-  const lastBody = chat.last_message?.deleted_at ? 'Message deleted' : (chat.last_message?.body ?? '')
+  const lastBody = messagePreview(chat.last_message)
   const time = chat.last_message_at ? formatTimeAgo(chat.last_message_at) : ''
 
   const open = () => dispatch(openSidebarToThread({ chatId: chat.id }))

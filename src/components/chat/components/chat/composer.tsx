@@ -1,12 +1,14 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { Cross } from 'ethereum-identity-kit'
 import { cn } from '@/utils/tailwind'
 import { useSendMessage } from '@/hooks/chat/useSendMessage'
+import { useGlobalChatInfo } from '@/hooks/chat/useGlobalChatInfo'
 import { useTypingEmitter } from '@/hooks/chat/useTypingEmitter'
 import ArrowBack from 'public/icons/arrow-back.svg'
+import ImageIcon from 'public/icons/image.svg'
 import MentionDropdown from './mentionDropdown'
 import ReplyPreview from '../replyPreview'
 import {
@@ -19,7 +21,12 @@ import {
 } from '@/types/chat'
 import { mapSendError } from '@/utils/chat/errors'
 import { codePointLength, detectMention } from '@/utils/chat/message'
-import { MESSAGE_INPUT_MAX_HEIGHT, MESSAGE_MAX_LEN } from '@/constants/chat'
+import {
+  CHAT_IMAGE_ALLOWED_TYPES,
+  CHAT_IMAGE_MAX_BYTES,
+  MESSAGE_INPUT_MAX_HEIGHT,
+  MESSAGE_MAX_LEN,
+} from '@/constants/chat'
 
 const MENTION_MIN_QUERY = 2
 /** Max characters of the parent body kept in a reply's optimistic preview. */
@@ -57,13 +64,32 @@ const Composer: React.FC<Props> = ({
   const [mention, setMention] = useState<MentionState | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [resultCount, setResultCount] = useState(0)
+  const [file, setFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const ref = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const defaultSend = useSendMessage(chatId)
   const send: SendController = sendOverride ?? defaultSend
   const typing = useTypingEmitter(disableTyping ? null : chatId)
 
-  const inputDisabled = disabled || permanentlyDisabled
+  const { data: chatInfo } = useGlobalChatInfo()
+  const imagesEnabled = !!chatInfo?.images_enabled
+  const maxImageBytes = chatInfo?.max_image_bytes ?? CHAT_IMAGE_MAX_BYTES
+  const uploading = send.isPending && !!file
+
+  const inputDisabled = disabled || permanentlyDisabled || uploading
+
+  // Manage the object URL backing the selected image's composer preview.
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null)
+      return
+    }
+    const url = URL.createObjectURL(file)
+    setPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [file])
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
   const dropdownOpen = mentionActive && resultCount > 0
 
@@ -130,22 +156,61 @@ const Composer: React.FC<Props> = ({
     })
   }
 
+  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0]
+    e.target.value = '' // let the same file be re-picked after removal
+    if (!picked) return
+    if (!CHAT_IMAGE_ALLOWED_TYPES.includes(picked.type)) {
+      setError('Unsupported image type (use JPEG, PNG, GIF, or WebP)')
+      return
+    }
+    if (picked.size > maxImageBytes) {
+      setError(`Image is too large (max ${Math.round(maxImageBytes / (1024 * 1024))} MB)`)
+      return
+    }
+    setError(null)
+    setFile(picked)
+  }
+
   const submit = () => {
     const trimmed = value.trim()
-    if (!trimmed || send.isPending) return
+    if (send.isPending || (!trimmed && !file)) return
     if (trimmed.length > MESSAGE_MAX_LEN) {
       setError(`Message too long (max ${MESSAGE_MAX_LEN} characters)`)
       return
     }
     setError(null)
+
+    const replyTo = replyPreview
+    const replyToId = replyingTo?.id
+
+    if (file) {
+      // Image: keep the preview + caption visible during upload, then clear on
+      // success. On error everything stays put so the user can retry.
+      closeMention()
+      send.mutate(
+        { body: trimmed, file, replyToId, replyTo },
+        {
+          onError: (e) => setError(mapSendError(e).message),
+          onSuccess: () => {
+            setValue('')
+            setFile(null)
+            typing.flush()
+            if (ref.current) ref.current.style.height = 'auto'
+            onCancelReply?.()
+          },
+        }
+      )
+      return
+    }
+
+    // Text: optimistic — clear immediately and restore on failure.
     setValue('')
     closeMention()
     typing.flush()
     if (ref.current) {
       ref.current.style.height = 'auto'
     }
-    const replyTo = replyPreview
-    const replyToId = replyingTo?.id
     // Capture the reply target before clearing it so a failed send can restore
     // it alongside the text (the banner is cleared optimistically below).
     const replySnapshot = replyingTo
@@ -228,6 +293,28 @@ const Composer: React.FC<Props> = ({
           </button>
         </div>
       )}
+      {previewUrl && (
+        <div className='bg-secondary mb-2 flex items-center gap-3 rounded-md p-2'>
+          <div className='relative h-16 w-16 shrink-0 overflow-hidden rounded-md'>
+            <img src={previewUrl} alt='' className='h-full w-full object-cover' />
+            {uploading && (
+              <div className='absolute inset-0 flex items-center justify-center bg-black/40'>
+                <span className='h-5 w-5 animate-spin rounded-full border-2 border-white/90 border-t-transparent' />
+              </div>
+            )}
+          </div>
+          <span className='text-neutral text-md min-w-0 flex-1 truncate'>{file?.name}</span>
+          <button
+            type='button'
+            onClick={() => setFile(null)}
+            disabled={uploading}
+            className='hover:bg-primary/10 text-neutral hover:text-foreground rounded p-1 transition-colors disabled:opacity-40'
+            aria-label='Remove image'
+          >
+            <Cross className='h-3.5 w-3.5' />
+          </button>
+        </div>
+      )}
       <div className='bg-secondary border-tertiary relative flex items-end gap-2 rounded-md border p-2'>
         {mention && codePointLength(mention.query) >= MENTION_MIN_QUERY && (
           <MentionDropdown
@@ -238,6 +325,26 @@ const Composer: React.FC<Props> = ({
             onResultsChange={setResultCount}
             registerKeyboardSelect={registerKeyboardSelect}
           />
+        )}
+        {imagesEnabled && (
+          <>
+            <input
+              ref={fileInputRef}
+              type='file'
+              accept={CHAT_IMAGE_ALLOWED_TYPES.join(',')}
+              onChange={onSelectFile}
+              className='hidden'
+            />
+            <button
+              type='button'
+              onClick={() => fileInputRef.current?.click()}
+              disabled={inputDisabled}
+              className='flex h-7 w-7 shrink-0 items-center justify-center rounded-md opacity-60 transition-opacity hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-40'
+              aria-label='Attach image'
+            >
+              <Image src={ImageIcon} alt='' width={18} height={18} />
+            </button>
+          </>
         )}
         <textarea
           ref={ref}
@@ -263,7 +370,7 @@ const Composer: React.FC<Props> = ({
           disabled={inputDisabled}
           rows={1}
           maxLength={MESSAGE_MAX_LEN}
-          placeholder='Type a message…'
+          placeholder={file ? 'Add a caption…' : 'Type a message…'}
           className={cn(
             'text-foreground placeholder:text-neutral max-h-40 min-h-7 flex-1 resize-none bg-transparent pt-0.5 text-lg outline-none',
             inputDisabled && 'cursor-not-allowed opacity-50'
@@ -275,7 +382,7 @@ const Composer: React.FC<Props> = ({
             ref.current?.focus()
             submit()
           }}
-          disabled={!value.trim() || send.isPending || inputDisabled}
+          disabled={(!value.trim() && !file) || send.isPending || inputDisabled}
           className={cn(
             'bg-primary text-background flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all',
             'hover:opacity-80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'

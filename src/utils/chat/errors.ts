@@ -17,6 +17,14 @@ export const mapSendError = (e: SendMessageError): MappedSendError => {
       return { message: 'Global chat is temporarily disabled', permanent: true }
     case 'MESSAGE_TOO_LONG':
       return { message: e.message ?? 'Message too long', restoreText: true }
+    case 'IMAGES_DISABLED':
+      return { message: 'Image sending is currently disabled' }
+    case 'STORAGE_UNAVAILABLE':
+      return { message: 'Image uploads are temporarily unavailable' }
+    case 'FILE_TOO_LARGE':
+      return { message: 'Image is too large' }
+    case 'UNSUPPORTED_TYPE':
+      return { message: 'Unsupported image type' }
     case 'BLOCKED':
       return { message: "Couldn't deliver, you have been blocked", permanent: true }
     default:

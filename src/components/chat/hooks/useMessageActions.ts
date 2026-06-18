@@ -32,6 +32,8 @@ export const useMessageActions = (
 
   const isPersisted = !message.deleted_at && !message.id.startsWith('optimistic-')
   const canManage = authStatus === 'authenticated' && isOwn && isPersisted
+  // Editing changes the text body; image messages have no editable text.
+  const canEdit = canManage && message.content_type !== 'image'
   const canReply = authStatus === 'authenticated' && isPersisted && !!onReply
   // Copy is offered for any non-deleted message that still has body text.
   const canCopy = !message.deleted_at && !!message.body?.trim()
@@ -89,9 +91,9 @@ export const useMessageActions = (
         ]
       : []),
     ...(canCopy ? [{ label: 'Copy text', onClick: copyText, icon: CopyIcon }] : []),
+    ...(canEdit ? [{ label: 'Edit', onClick: startEdit, icon: EditIcon }] : []),
     ...(canManage
       ? [
-          { label: 'Edit', onClick: startEdit, icon: EditIcon },
           {
             label: 'Delete',
             destructive: true,

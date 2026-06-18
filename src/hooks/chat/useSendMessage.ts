@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { sendMessage, type SendMessageError } from '@/api/chats/sendMessage'
+import { sendChatImage } from '@/api/chats/sendImage'
 import type { ChatMessage, ChatMessagesResponse, SendVars } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 
@@ -17,12 +18,15 @@ export const useSendMessage = (chatId: string | null) => {
   const { userAddress } = useUserContext()
 
   return useMutation<ChatMessage, SendMessageError, SendVars, { tempId: string } | undefined>({
-    mutationFn: ({ body, replyToId }) => {
+    mutationFn: ({ body, file, replyToId }) => {
       if (!chatId) throw new Error('No chat selected')
+      if (file) return sendChatImage({ chatId, file, body, replyToId }).then((r) => r.message)
       return sendMessage({ chatId, body, replyToId })
     },
-    onMutate: async ({ body, replyTo }) => {
-      if (!chatId) return undefined
+    onMutate: async ({ body, file, replyTo }) => {
+      // Image sends skip the optimistic insert — the composer shows the upload
+      // preview, and the canonical message lands via onSuccess / the WS event.
+      if (!chatId || file) return undefined
       await queryClient.cancelQueries({ queryKey: ['chats', chatId, 'messages'] })
 
       const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -67,10 +71,18 @@ export const useSendMessage = (chatId: string | null) => {
       }
       queryClient.setQueryData<InfiniteData<MessagesPage>>(['chats', chatId, 'messages'], (old) => {
         if (!old) return old
+        const realIdExists = old.pages.some((p) => p.messages.some((m) => m.id === merged.id))
+        // Image sends have no optimistic placeholder: prepend the canonical
+        // message unless the WS broadcast already added it.
+        if (!ctx?.tempId) {
+          if (realIdExists) return old
+          const [first, ...rest] = old.pages
+          if (!first) return { pageParams: [undefined], pages: [{ messages: [merged], nextCursor: null }] }
+          return { ...old, pages: [{ ...first, messages: [merged, ...first.messages] }, ...rest] }
+        }
         // If the canonical id is already in the cache (WS arrived first and
         // replaced our optimistic placeholder, or appended), just drop the
         // optimistic row by id — never let both coexist.
-        const realIdExists = old.pages.some((p) => p.messages.some((m) => m.id === merged.id))
         if (realIdExists) {
           return {
             ...old,

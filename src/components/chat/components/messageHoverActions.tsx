@@ -104,7 +104,7 @@ const MessageHoverActions: React.FC<Props> = ({
   const cluster = hasActions ? (
     <div
       className={cn(
-        'flex w-fit flex-wrap items-center gap-1 gap-y-1.5 transition-opacity',
+        'z-10 flex w-fit flex-wrap items-center gap-1 gap-y-1.5 transition-opacity',
         'opacity-100 md:opacity-0 md:group-hover/msg:opacity-100',
         pinned && 'opacity-100',
         isMsgFullWidth ? 'flex-col' : 'flex-row',

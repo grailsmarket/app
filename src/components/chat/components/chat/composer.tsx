@@ -66,6 +66,7 @@ const Composer: React.FC<Props> = ({
   const [resultCount, setResultCount] = useState(0)
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const ref = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -156,9 +157,7 @@ const Composer: React.FC<Props> = ({
     })
   }
 
-  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const picked = e.target.files?.[0]
-    e.target.value = '' // let the same file be re-picked after removal
+  const acceptFile = (picked: File | null | undefined) => {
     if (!picked) return
     if (!CHAT_IMAGE_ALLOWED_TYPES.includes(picked.type)) {
       setError('Unsupported image type (use JPEG, PNG, GIF, or WebP)')
@@ -170,6 +169,30 @@ const Composer: React.FC<Props> = ({
     }
     setError(null)
     setFile(picked)
+  }
+
+  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = '' // let the same file be re-picked after removal
+    acceptFile(e.target.files?.[0])
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    if (!imagesEnabled || inputDisabled || !e.dataTransfer.types.includes('Files')) return
+    e.preventDefault() // required for onDrop to fire
+    setIsDragging(true)
+  }
+
+  const onDragLeave = (e: React.DragEvent) => {
+    // Ignore leave events bubbling up from children; only clear at the real edge.
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return
+    setIsDragging(false)
+  }
+
+  const onDrop = (e: React.DragEvent) => {
+    if (!imagesEnabled || inputDisabled) return
+    e.preventDefault()
+    setIsDragging(false)
+    acceptFile(e.dataTransfer.files?.[0])
   }
 
   const submit = () => {
@@ -278,7 +301,17 @@ const Composer: React.FC<Props> = ({
   }, [])
 
   return (
-    <div className='border-tertiary relative border-t-2 p-3'>
+    <div
+      className='border-tertiary relative border-t-2 p-3'
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
+      {isDragging && (
+        <div className='bg-background/90 border-primary text-neutral text-md pointer-events-none absolute inset-1 z-10 flex items-center justify-center rounded-md border-2 border-dashed'>
+          Drop image to send
+        </div>
+      )}
       {error && <p className='text-md mb-2 text-red-400'>{error}</p>}
       {replyPreview && (
         <div className='bg-secondary mb-2 flex items-start justify-between gap-2 rounded-md p-2'>

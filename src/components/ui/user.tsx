@@ -66,10 +66,10 @@ const User: React.FC<UserProps> = ({
 
   const profileData = name
     ? {
-      ens: {
-        name: name,
-      },
-    }
+        ens: {
+          name: name,
+        },
+      }
     : profile
 
   if (profileIsLoading) return <LoadingCell height='28px' width={loadingCellWidth} />

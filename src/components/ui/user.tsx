@@ -100,7 +100,7 @@ const User: React.FC<UserProps> = ({
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
-              router.push(`/profileData/${address}`)
+              router.push(`/profile/${address}`)
             }}
           >
             {!hideHeaderImage && (
@@ -131,7 +131,7 @@ const User: React.FC<UserProps> = ({
           </div>
         ) : (
           <Link
-            href={`/profileData/${address}`}
+            href={`/profile/${address}`}
             className={cn(
               'bg-tertiary relative flex w-fit flex-row items-center gap-1.5 rounded-sm px-1 py-0.5 transition hover:opacity-70',
               className,

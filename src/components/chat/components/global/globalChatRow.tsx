@@ -47,7 +47,7 @@ const GlobalChatRow: React.FC = () => {
       <div className='relative min-w-0 flex-1'>
         <div className='flex items-center justify-between gap-2'>
           <div className='flex items-center gap-2'>
-            <p className='text-foreground truncate text-lg font-semibold'>Global Chat</p>
+            <p className='text-foreground truncate text-lg font-semibold'>ENS Global Chat</p>
             {!!total && (
               <p className='pb-0.5'>
                 <span className='inline-block h-2 w-2 rounded-full bg-green-500' />

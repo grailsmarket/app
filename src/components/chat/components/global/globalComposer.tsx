@@ -6,8 +6,15 @@ import { useGlobalQuota } from '@/hooks/chat/useGlobalQuota'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import Composer from '../chat/composer'
 import { formatResetTime } from '@/utils/chat/formatters'
+import type { ChatMessage } from '@/types/chat'
 
-const GlobalComposer: React.FC = () => {
+interface Props {
+  replyingTo?: ChatMessage | null
+  onCancelReply?: () => void
+  onRestoreReply?: (message: ChatMessage) => void
+}
+
+const GlobalComposer: React.FC<Props> = ({ replyingTo, onCancelReply, onRestoreReply }) => {
   const send = useSendGlobalMessage()
   const { data: quota } = useGlobalQuota()
 
@@ -21,7 +28,18 @@ const GlobalComposer: React.FC = () => {
       </p>
     ) : null
 
-  return <Composer chatId={GLOBAL_CHAT_ID} send={send} disableTyping disabled={outOfQuota} footerSlot={footerSlot} />
+  return (
+    <Composer
+      chatId={GLOBAL_CHAT_ID}
+      send={send}
+      disableTyping
+      disabled={outOfQuota}
+      footerSlot={footerSlot}
+      replyingTo={replyingTo}
+      onCancelReply={onCancelReply}
+      onRestoreReply={onRestoreReply}
+    />
+  )
 }
 
 export default GlobalComposer

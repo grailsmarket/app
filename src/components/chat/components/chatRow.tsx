@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Avatar, HeaderImage } from 'ethereum-identity-kit'
 import { useAppDispatch } from '@/state/hooks'
 import { openSidebarToThread } from '@/state/reducers/chat/sidebar'
@@ -10,7 +10,7 @@ import { useBlockUser } from '@/hooks/chat/useBlockUser'
 import { useUnblockUser } from '@/hooks/chat/useUnblockUser'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { cn } from '@/utils/tailwind'
-import ContextMenu, { type ContextMenuItem } from '@/components/ui/contextMenu'
+import ContextMenu, { type ContextMenuItem } from './contextMenu'
 import type { Chat, ChatParticipant } from '@/types/chat'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { Address } from 'viem'
@@ -26,6 +26,8 @@ const otherParticipant = (chat: Chat, myAddress: Address | null | undefined): Ch
 }
 
 const ChatRow: React.FC<Props> = ({ chat }) => {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
 
@@ -133,7 +135,9 @@ const ChatRow: React.FC<Props> = ({ chat }) => {
           )}
         </div>
       </div>
-      {menuItems.length > 0 && <ContextMenu items={menuItems} />}
+      {menuItems.length > 0 && (
+        <ContextMenu open={menuOpen} onOpenChange={setMenuOpen} items={menuItems} position='bottom' align='right' />
+      )}
     </div>
   )
 }

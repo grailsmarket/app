@@ -5,6 +5,7 @@ import { addReaction, removeReaction } from '@/api/chats/reactions'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import type { ChatMessagesResponse } from '@/types/chat'
 import { patchMessageReaction } from './utils/reactionCachePatch'
+import { messageReactorsQueryKey } from './useMessageReactors'
 
 interface ToggleReactionVariables {
   messageId: string
@@ -41,6 +42,12 @@ export const useToggleReaction = (chatId: string) => {
       if (ctx?.previous) {
         queryClient.setQueryData(queryKey, ctx.previous)
       }
+    },
+    onSettled: (_data, _err, { messageId }) => {
+      // The pill counts are patched in-place above, but the reactors popover
+      // ("who reacted") is a separate query — invalidate it (scoped to this
+      // message) so re-opening within staleTime shows the fresh list.
+      queryClient.invalidateQueries({ queryKey: messageReactorsQueryKey(chatId, messageId) })
     },
   })
 }

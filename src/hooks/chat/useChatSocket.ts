@@ -9,6 +9,7 @@ import { setTyping, clearTyping, clearAllTyping } from '@/state/reducers/chat/ty
 import { parseCookie } from '@/api/authFetch/utils/parseCookie'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
 import { patchMessageReaction } from './utils/reactionCachePatch'
+import { messageReactorsQueryKey } from './useMessageReactors'
 import { setChatSocket } from './socketSingleton'
 import type { ChatMessagesResponse, ChatInboxResponse, ChatWSEvent, ChatWSOutgoing } from '@/types/chat'
 
@@ -157,8 +158,45 @@ export const useChatSocket = () => {
           return
         }
 
+        case 'chat:message_edited': {
+          const { chat_id, message } = evt.data
+          const editedKey = chat_id === GLOBAL_CHAT_ID ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
+          // Patch only body + edited_at so cached reactions survive (the payload
+          // carries reactions: []). No-op if the message isn't in cache.
+          queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(editedKey, (old) => {
+            if (!old) return old
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                messages: page.messages.map((m) =>
+                  m.id === message.id ? { ...m, body: message.body, edited_at: message.edited_at } : m
+                ),
+              })),
+            }
+          })
+          // Keep the inbox preview fresh when the edited message is the chat's last_message.
+          if (chat_id !== GLOBAL_CHAT_ID) {
+            queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
+              if (!old) return old
+              return {
+                ...old,
+                pages: old.pages.map((page) => ({
+                  ...page,
+                  chats: page.chats.map((c) => {
+                    const lm = c.last_message
+                    if (!lm || lm.id !== message.id) return c
+                    return { ...c, last_message: { ...lm, body: message.body, edited_at: message.edited_at } }
+                  }),
+                })),
+              }
+            })
+          }
+          return
+        }
+
         case 'chat:message_deleted': {
-          const { chat_id, message_id } = evt.data
+          const { chat_id, message_id, deleted_by_admin } = evt.data
           const deletedKey = chat_id === GLOBAL_CHAT_ID ? ['globalChat', 'messages'] : ['chats', chat_id, 'messages']
           queryClient.setQueryData<InfiniteData<ChatMessagesResponse>>(deletedKey, (old) => {
             if (!old) return old
@@ -167,11 +205,31 @@ export const useChatSocket = () => {
               pages: old.pages.map((page) => ({
                 ...page,
                 messages: page.messages.map((m) =>
-                  m.id === message_id ? { ...m, body: null, deleted_at: new Date().toISOString() } : m
+                  m.id === message_id ? { ...m, body: null, deleted_at: new Date().toISOString(), deleted_by_admin } : m
                 ),
               })),
             }
           })
+          // Keep the inbox preview fresh when the deleted message is the chat's last_message.
+          if (chat_id !== GLOBAL_CHAT_ID) {
+            queryClient.setQueryData<InfiniteData<ChatInboxResponse>>(['chats', 'inbox'], (old) => {
+              if (!old) return old
+              return {
+                ...old,
+                pages: old.pages.map((page) => ({
+                  ...page,
+                  chats: page.chats.map((c) => {
+                    const lm = c.last_message
+                    if (!lm || lm.id !== message_id) return c
+                    return {
+                      ...c,
+                      last_message: { ...lm, body: null, deleted_at: new Date().toISOString(), deleted_by_admin },
+                    }
+                  }),
+                })),
+              }
+            })
+          }
           return
         }
 
@@ -222,6 +280,17 @@ export const useChatSocket = () => {
             actorIsMe,
             add: evt.type === 'chat:reaction_added',
           })
+          // Counts are patched above; the reactors popover ("who reacted") is a
+          // separate query, so invalidate it (scoped to this message) to keep it fresh.
+          queryClient.invalidateQueries({ queryKey: messageReactorsQueryKey(chat_id, message_id) })
+          return
+        }
+
+        case 'notification:unread': {
+          // A chat reply/mention notification was written for us — refresh the
+          // bell count (and the list, if open) instead of waiting for the poll.
+          queryClient.invalidateQueries({ queryKey: ['unreadCount'] })
+          queryClient.invalidateQueries({ queryKey: ['notifications'] })
           return
         }
       }

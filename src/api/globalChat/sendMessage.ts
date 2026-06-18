@@ -13,12 +13,12 @@ interface SendGlobalMessageEnvelope {
   error?: { code: string; message: string; details?: GlobalChatQuota }
 }
 
-/** POST /chats/global/messages — send a text message to the global room. */
-export const sendGlobalMessage = async (body: string): Promise<SendGlobalMessageResult> => {
+/** POST /chats/global/messages — send a text message to the global room (optionally a reply). */
+export const sendGlobalMessage = async (body: string, replyToId?: string): Promise<SendGlobalMessageResult> => {
   const response = await authFetch(`${API_URL}/chats/global/messages`, {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({ body, ...(replyToId ? { reply_to_message_id: replyToId } : {}) }),
   })
 
   const json = (await response.json()) as SendGlobalMessageEnvelope

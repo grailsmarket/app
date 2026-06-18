@@ -8,6 +8,8 @@ export type NotificationType =
   | 'listing-cancelled-ownership-change'
   | 'comment-received'
   | 'admin-broadcast'
+  | 'chat_reply'
+  | 'chat_mention'
 
 export interface NotificationMetadata {
   title?: string
@@ -21,6 +23,12 @@ export interface NotificationMetadata {
   listingId?: number
   offerId?: number
   offerAmountWei?: string
+  // Chat reply/mention notifications
+  chatId?: string
+  messageId?: string
+  replyToMessageId?: string
+  senderAddress?: string
+  snippet?: string
 }
 
 export interface Notification {

@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { sendGlobalMessage } from '@/api/globalChat/sendMessage'
 import { GLOBAL_CHAT_ID } from '@/constants/chat'
-import type { ChatMessage, ChatMessagesResponse, GlobalChatQuota, SendMessageError } from '@/types/chat'
+import type { ChatMessage, ChatMessagesResponse, GlobalChatQuota, SendMessageError, SendVars } from '@/types/chat'
 import { useUserContext } from '@/context/user'
 
 interface MessagesPage extends ChatMessagesResponse {}
@@ -18,12 +18,12 @@ export const useSendGlobalMessage = () => {
   const queryClient = useQueryClient()
   const { userAddress } = useUserContext()
 
-  return useMutation<ChatMessage, SendMessageError, string, { tempId: string } | undefined>({
-    mutationFn: async (body: string) => {
-      const result = await sendGlobalMessage(body)
+  return useMutation<ChatMessage, SendMessageError, SendVars, { tempId: string } | undefined>({
+    mutationFn: async ({ body, replyToId }) => {
+      const result = await sendGlobalMessage(body, replyToId)
       return result.message
     },
-    onMutate: async (body) => {
+    onMutate: async ({ body, replyTo }) => {
       await queryClient.cancelQueries({ queryKey: ['globalChat', 'messages'] })
 
       const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`
@@ -38,6 +38,7 @@ export const useSendGlobalMessage = () => {
         created_at: new Date().toISOString(),
         edited_at: null,
         deleted_at: null,
+        reply_to: replyTo ?? null,
         reactions: [],
       }
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { isSameDay, differenceInMinutes } from 'date-fns'
+import { isSameDay } from 'date-fns'
 import { Cross } from 'ethereum-identity-kit'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { useAppDispatch } from '@/state/hooks'
@@ -20,18 +20,9 @@ import ArrowBack from 'public/icons/arrow-back.svg'
 import Logo from 'public/logo.svg'
 import type { ChatMessage } from '@/types/chat'
 import { useThreadView } from '../../hooks/useThreadView'
-
-const SENDER_RUN_GAP_MINUTES = 5
-
-/** Avatar + sender header renders when the sender run breaks: new sender, >5 min gap, or new day. */
-const startsNewRun = (message: ChatMessage, previous: ChatMessage | null): boolean => {
-  if (!previous) return true
-  if (previous.sender_address?.toLowerCase() !== message.sender_address?.toLowerCase()) return true
-  const current = new Date(message.created_at)
-  const prev = new Date(previous.created_at)
-  if (!isSameDay(current, prev)) return true
-  return differenceInMinutes(current, prev) > SENDER_RUN_GAP_MINUTES
-}
+import { useNewMessageGate } from '../../hooks/useNewMessageGate'
+import { GLOBAL_CHAT_ID } from '@/constants/chat'
+import { startsNewRun } from '@/utils/chat/message'
 
 const GlobalThreadView: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -39,12 +30,15 @@ const GlobalThreadView: React.FC = () => {
   const { openConnectModal } = useConnectModal()
 
   const [onlineOpen, setOnlineOpen] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null)
 
   const { messages, isLoading: msgsLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useGlobalMessages()
   const { total: onlineTotal } = useOnlineUsers(true)
 
   const myAddress = userAddress?.toLowerCase()
   const isAuthed = !!userAddress && authStatus === 'authenticated'
+  // Animate messages that land live (from a peer) while the chat is open.
+  const isNewMessage = useNewMessageGate(messages, GLOBAL_CHAT_ID, !msgsLoading)
 
   const { scrollRef, handleScroll } = useThreadView({
     messages,
@@ -76,7 +70,7 @@ const GlobalThreadView: React.FC = () => {
           <div className='bg-background border-tertiary flex h-9 w-9 shrink-0 items-center justify-center rounded-full border'>
             <Image src={Logo} alt='Grails' width={24} height={24} className='h-6 w-6' />
           </div>
-          <p className='text-foreground truncate text-xl font-semibold'>Global Chat</p>
+          <p className='text-foreground truncate text-xl font-semibold'>ENS Global Chat</p>
         </div>
         <div className='relative flex items-center gap-1'>
           <button
@@ -115,17 +109,23 @@ const GlobalThreadView: React.FC = () => {
                 ))}
               </div>
             )}
-            {messages.map((m, i) => {
+            {messages.map((message, i) => {
               const previous = i > 0 ? messages[i - 1] : null
-              const current = new Date(m.created_at)
+              const current = new Date(message.created_at)
               const startsNewDay = !previous || !isSameDay(current, new Date(previous.created_at))
+              const isOwn = !!myAddress && message.sender_address?.toLowerCase() === myAddress
+              const menuPosition = i < messages.length - 3 ? 'top' : 'bottom' // show context menu above the latest 3 messages
+
               return (
-                <React.Fragment key={m.id}>
+                <React.Fragment key={message.id}>
                   {startsNewDay && <DayDivider date={current} />}
                   <GlobalMessageRow
-                    message={m}
-                    isOwn={!!myAddress && m.sender_address?.toLowerCase() === myAddress}
-                    showHeader={startsNewRun(m, previous)}
+                    menuPosition={menuPosition}
+                    message={message}
+                    isOwn={isOwn}
+                    showHeader={startsNewRun(message, previous)}
+                    onReply={setReplyingTo}
+                    animate={!isOwn && isNewMessage(message)}
                   />
                 </React.Fragment>
               )
@@ -135,7 +135,11 @@ const GlobalThreadView: React.FC = () => {
       </div>
 
       {isAuthed ? (
-        <GlobalComposer />
+        <GlobalComposer
+          replyingTo={replyingTo}
+          onCancelReply={() => setReplyingTo(null)}
+          onRestoreReply={(message) => setReplyingTo(message)}
+        />
       ) : (
         <div className='border-tertiary flex items-center justify-between gap-3 border-t-2 p-3'>
           <p className='text-neutral text-md'>Sign in to chat with the Grails community.</p>

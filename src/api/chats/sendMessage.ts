@@ -9,12 +9,20 @@ export interface SendMessageError {
   message: string
 }
 
-/** POST /chats/:id/messages — send a text message. */
-export const sendMessage = async ({ chatId, body }: { chatId: string; body: string }): Promise<ChatMessage> => {
+/** POST /chats/:id/messages — send a text message (optionally a reply). */
+export const sendMessage = async ({
+  chatId,
+  body,
+  replyToId,
+}: {
+  chatId: string
+  body: string
+  replyToId?: string
+}): Promise<ChatMessage> => {
   const response = await authFetch(`${API_URL}/chats/${chatId}/messages`, {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({ body, ...(replyToId ? { reply_to_message_id: replyToId } : {}) }),
   })
 
   const json = (await response.json()) as APIResponseType<{ message: ChatMessage }>

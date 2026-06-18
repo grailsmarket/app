@@ -191,7 +191,10 @@ export async function fetchCachedValuationEvidence(
     if (!response.ok || !json?.success || !json.data) return null
 
     return json.data
-  } catch {
+  } catch (error) {
+    // Let React Query handle its own cancellation: re-throw aborts so a cancelled
+    // peek isn't recorded as a successful `null` and cached for staleTime.
+    if ((error as { name?: string })?.name === 'AbortError') throw error
     return null
   }
 }

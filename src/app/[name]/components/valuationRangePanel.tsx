@@ -1,6 +1,6 @@
 'use client'
 
-import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import React, { FormEvent, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { formatNumber, ShortArrow } from 'ethereum-identity-kit'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
 import { cn } from '@/utils/tailwind'
@@ -20,7 +20,8 @@ import {
 const PRIMARY = 'var(--color-primary)'
 
 // Match the Google Metrics graph tooltip styling across the panel.
-const TOOLTIP_CLASS = 'bg-secondary border-tertiary pointer-events-none absolute z-50 rounded border px-2 py-1 whitespace-nowrap'
+const TOOLTIP_CLASS =
+  'bg-secondary border-tertiary pointer-events-none absolute z-50 rounded border px-2 py-1 whitespace-nowrap'
 const TOOLTIP_SHADOW = { boxShadow: '0 4px 4px rgba(0,0,0,0.2)' } as const
 
 function toNumber(value: string | number | null | undefined): number | null {
@@ -202,6 +203,12 @@ const ClassicPlot: React.FC<{
   const barTop = CLASSIC_SUBJECT_H
   const barBottom = barTop + CLASSIC_BAR_H
 
+  // Unique gradient ids so the two mounted (desktop/mobile) panels don't collide.
+  const uid = useId()
+  const fadeId = `inbar-fade-${uid}`
+  const linkId = `inbar-link-${uid}`
+  const linkUpId = `inbar-link-up-${uid}`
+
   // subject estimates mapped to box centers (boxes are 1·2·1, so ⅛, ½, ⅞)
   const subjects: { key: SubjectKey; v: number; boxCenter: number }[] = [
     { key: 'low', v: low, boxCenter: 1 / 8 },
@@ -339,7 +346,10 @@ const ClassicPlot: React.FC<{
         )}
 
         {/* track + heat bar */}
-        <div className='bg-tertiary/30 absolute right-0 left-0 rounded-lg' style={{ top: barTop, height: CLASSIC_BAR_H }} />
+        <div
+          className='bg-tertiary/30 absolute right-0 left-0 rounded-lg'
+          style={{ top: barTop, height: CLASSIC_BAR_H }}
+        />
         <div
           className='absolute right-0 left-0 rounded-lg'
           style={{ top: barTop, height: CLASSIC_BAR_H, background: heatGradient }}
@@ -391,13 +401,20 @@ const ClassicPlot: React.FC<{
         />
         {cursor && (
           <div
-            className={cn('pointer-events-none absolute z-40 w-px -translate-x-1/2', !cursor.outlier && 'bg-foreground/70')}
+            className={cn(
+              'pointer-events-none absolute z-40 w-px -translate-x-1/2',
+              !cursor.outlier && 'bg-foreground/70'
+            )}
             style={{
               left: `${cursor.leftPct}%`,
               top: barTop,
               height: CLASSIC_BAR_H,
               ...(cursor.outlier
-                ? { backgroundImage: 'linear-gradient(var(--color-foreground) 50%, transparent 50%)', backgroundSize: '1px 4px', opacity: 0.7 }
+                ? {
+                    backgroundImage: 'linear-gradient(var(--color-foreground) 50%, transparent 50%)',
+                    backgroundSize: '1px 4px',
+                    opacity: 0.7,
+                  }
                 : {}),
             }}
           />
@@ -446,18 +463,18 @@ const ClassicPlot: React.FC<{
         <svg className='pointer-events-none absolute inset-0 h-full w-full overflow-visible'>
           <defs>
             {/* idle: brightest in the middle, fades at both ends */}
-            <linearGradient id='inbar-fade' gradientUnits='userSpaceOnUse' x1='0' y1={barTop} x2='0' y2={barBottom}>
+            <linearGradient id={fadeId} gradientUnits='userSpaceOnUse' x1='0' y1={barTop} x2='0' y2={barBottom}>
               <stop offset='0%' stopColor='var(--color-primary)' stopOpacity='0' />
               <stop offset='50%' stopColor='var(--color-primary)' stopOpacity='1' />
               <stop offset='100%' stopColor='var(--color-primary)' stopOpacity='0' />
             </linearGradient>
             {/* active: solid at the bottom so it links into the trace curve */}
-            <linearGradient id='inbar-link' gradientUnits='userSpaceOnUse' x1='0' y1={barTop} x2='0' y2={barBottom}>
+            <linearGradient id={linkId} gradientUnits='userSpaceOnUse' x1='0' y1={barTop} x2='0' y2={barBottom}>
               <stop offset='0%' stopColor='var(--color-primary)' stopOpacity='0' />
               <stop offset='100%' stopColor='var(--color-primary)' stopOpacity='1' />
             </linearGradient>
             {/* subject: solid at the top so it links up into the brace */}
-            <linearGradient id='inbar-link-up' gradientUnits='userSpaceOnUse' x1='0' y1={barTop} x2='0' y2={barBottom}>
+            <linearGradient id={linkUpId} gradientUnits='userSpaceOnUse' x1='0' y1={barTop} x2='0' y2={barBottom}>
               <stop offset='0%' stopColor='var(--color-primary)' stopOpacity='1' />
               <stop offset='100%' stopColor='var(--color-primary)' stopOpacity='0' />
             </linearGradient>
@@ -473,7 +490,7 @@ const ClassicPlot: React.FC<{
                   y1={barTop}
                   x2={priceX}
                   y2={barBottom}
-                  stroke={active ? 'url(#inbar-link)' : 'url(#inbar-fade)'}
+                  stroke={active ? `url(#${linkId})` : `url(#${fadeId})`}
                   strokeOpacity={active ? 0.9 : 0.4}
                   strokeWidth={active ? 1.5 : 1}
                   strokeDasharray={isOutlier ? '2 2' : undefined}
@@ -503,7 +520,7 @@ const ClassicPlot: React.FC<{
                 y1={barTop}
                 x2={fingerX}
                 y2={barBottom}
-                stroke='url(#inbar-link-up)'
+                stroke={`url(#${linkUpId})`}
                 strokeOpacity={opacity}
                 strokeWidth={1.5}
               />
@@ -513,7 +530,10 @@ const ClassicPlot: React.FC<{
       )}
 
       {/* comp pills — one per name, bumped together, wrapping to extra rows as needed */}
-      <div className='flex flex-wrap justify-center gap-1' style={{ marginTop: groups.length > 0 ? CLASSIC_CURVE_GAP : 0 }}>
+      <div
+        className='flex flex-wrap justify-center gap-1'
+        style={{ marginTop: groups.length > 0 ? CLASSIC_CURVE_GAP : 0 }}
+      >
         {groups.map((group) => renderGroup(group))}
       </div>
 
@@ -646,13 +666,19 @@ const ValuationResult: React.FC<{
   return (
     <div className='flex flex-col gap-4'>
       {/* name being valued */}
-      <p className='text-2xl font-semibold break-all text-center'>{name}</p>
+      <p className='text-center text-2xl font-semibold break-all'>{name}</p>
 
       {/* low / estimate / high — connected slider */}
       <div className='relative w-full' style={{ height: 96 }}>
         {/* connecting line: low -> est (brighter), est -> high (softer) — at the dot center */}
-        <div className='bg-primary/50 absolute h-0.5 -translate-y-1/2' style={{ left: '12.5%', width: '37.5%', top: 86 }} />
-        <div className='bg-primary/25 absolute h-0.5 -translate-y-1/2' style={{ left: '50%', width: '37.5%', top: 86 }} />
+        <div
+          className='bg-primary/50 absolute h-0.5 -translate-y-1/2'
+          style={{ left: '12.5%', width: '37.5%', top: 86 }}
+        />
+        <div
+          className='bg-primary/25 absolute h-0.5 -translate-y-1/2'
+          style={{ left: '50%', width: '37.5%', top: 86 }}
+        />
         {scenarios.map((s) => {
           const dimmed = activeSubject !== null && activeSubject !== s.key
           const active = activeSubject === s.key
@@ -748,7 +774,8 @@ const ValuationResult: React.FC<{
 
       {/* disclaimer footer */}
       <p className='border-tertiary text-neutral border-t pt-3 text-lg'>
-        Valuations are AI-generated estimates for informational purposes only and may be inaccurate. Not financial advice.
+        Valuations are AI-generated estimates for informational purposes only and may be inaccurate. Not financial
+        advice.
       </p>
 
       {/* expand / contract toggle */}
@@ -866,17 +893,15 @@ const ValuationRangePanel: React.FC<{ name: string }> = ({ name }) => {
           </form>
         ))}
 
-      {valuationEvidenceIsLoading && (
-        <ValuationProgressChecklist progressByStage={valuationEvidenceProgressByStage} />
-      )}
+      {valuationEvidenceIsLoading && <ValuationProgressChecklist progressByStage={valuationEvidenceProgressByStage} />}
 
       {loginRequired && !hasResult && !valuationEvidenceIsInitialLoading && (
         <p className='text-neutral text-lg'>Sign in to generate a valuation.</p>
       )}
       {errorMessage && <p className='text-lg font-medium text-red-400'>{errorMessage}</p>}
 
-      {appraisal && (
-        <ValuationResult name={name} appraisal={appraisal} evidence={valuationEvidence!.evidence} ethPrice={ethPrice} />
+      {appraisal && valuationEvidence && (
+        <ValuationResult name={name} appraisal={appraisal} evidence={valuationEvidence.evidence} ethPrice={ethPrice} />
       )}
     </div>
   )

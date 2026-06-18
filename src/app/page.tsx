@@ -20,7 +20,10 @@ const Home = () => {
               ENS Manager & Market
             </h1>
             <div className='mb-2 flex flex-wrap items-center justify-center gap-2 @[40rem]/app:mb-4 @[48rem]/app:gap-3'>
-              {['0% Market Fees', 'Bulk Tools', 'Open Source'].map((pill) => (
+const HERO_PILLS = ['0% Market Fees', 'Bulk Tools', 'Open Source'] as const
+
+// ... inside component JSX:
+              {HERO_PILLS.map((pill) => (
                 <span
                   key={pill}
                   className='bg-secondary border-tertiary text-foreground/90 rounded-full border px-3 py-1 text-sm font-medium shadow-sm @[26.25rem]/app:text-base @[48rem]/app:px-4 @[48rem]/app:py-1.5 @[48rem]/app:text-lg'

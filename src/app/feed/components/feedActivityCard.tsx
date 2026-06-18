@@ -68,7 +68,7 @@ const EVENT_STYLE_MAP: Record<ProfileActivityEventType, string> = {
   mint: 'bg-available/5 border-available/30',
   renewal: 'bg-available/5 border-available/30',
   listed: 'bg-primary/5 border-primary/30',
-  listing_cancelled: 'bg-primary/5 border-primary/30',
+  listing_cancelled: 'bg-foreground/5 border-foreground/20',
   offer: 'bg-premium/5 border-premium/30',
   offer_made: 'bg-premium/5 border-premium/30',
   offer_accepted: 'bg-premium/5 border-premium/30',

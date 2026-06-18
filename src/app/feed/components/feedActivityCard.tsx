@@ -21,6 +21,7 @@ import { SOURCE_ICONS, SOURCE_LABELS } from '@/constants/domains/sources'
 import Image from 'next/image'
 import ETHERSCAN_ICON from 'public/logos/etherscan.svg'
 import { formatDuration } from '@/utils/time/formatDuration'
+import { cn } from '@/utils/tailwind'
 
 interface FeedActivityCardProps {
   activity: ActivityType
@@ -62,6 +63,23 @@ const EVENT_COPY: Record<
   renewal: { verb: 'extended', actorLabel: 'Extended by' },
 }
 
+const EVENT_STYLE_MAP: Record<ProfileActivityEventType, string> = {
+  registration: 'bg-available/5 border-available/30',
+  mint: 'bg-available/5 border-available/30',
+  renewal: 'bg-available/5 border-available/30',
+  listed: 'bg-primary/5 border-primary/30',
+  listing_cancelled: 'bg-primary/5 border-primary/30',
+  offer: 'bg-premium/5 border-premium/30',
+  offer_made: 'bg-premium/5 border-premium/30',
+  offer_accepted: 'bg-premium/5 border-premium/30',
+  offer_cancelled: 'bg-premium/5 border-premium/30',
+  sale: 'bg-grace/5 border-grace/30',
+  bought: 'bg-grace/5 border-grace/30',
+  sold: 'bg-grace/5 border-grace/30',
+  sent: 'bg-foreground/5 border-foreground/20',
+  received: 'bg-foreground/5 border-foreground/20',
+}
+
 const formatEventType = (eventType: string) => {
   return eventType
     .split('_')
@@ -91,7 +109,10 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
   return (
     <article
       onClick={() => router.push(namePagePath)}
-      className='bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors @[40rem]/app:px-4'
+      className={cn(
+        'bg-secondary border-tertiary hover:border-foreground/30 cursor-pointer rounded-lg border-2 p-3 shadow-sm transition-colors @[40rem]/app:px-4',
+        EVENT_STYLE_MAP[activity.event_type]
+      )}
     >
       <div className='flex flex-col gap-3'>
         <div className='flex flex-col gap-3 @[40rem]/app:flex-row @[40rem]/app:items-start @[40rem]/app:justify-between'>

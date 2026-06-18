@@ -19,9 +19,16 @@ const Home = () => {
             <h1 className='font-sedan-sc text-center text-4xl @[40rem]/app:text-7xl @[80rem]/app:text-9xl'>
               ENS Manager & Market
             </h1>
-            <p className='mb-2 text-center text-lg font-medium @[26.25rem]/app:text-xl @[40rem]/app:mb-4 @[48rem]/app:text-2xl'>
-              0% Market Fees — Bulk Tools — Open Source{' '}
-            </p>
+            <div className='mb-2 flex flex-wrap items-center justify-center gap-2 @[40rem]/app:mb-4 @[48rem]/app:gap-3'>
+              {['0% Market Fees', 'Bulk Tools', 'Open Source'].map((pill) => (
+                <span
+                  key={pill}
+                  className='bg-secondary border-tertiary text-foreground/90 rounded-full border px-3 py-1 text-sm font-medium shadow-sm @[26.25rem]/app:text-base @[48rem]/app:px-4 @[48rem]/app:py-1.5 @[48rem]/app:text-lg'
+                >
+                  {pill}
+                </span>
+              ))}
+            </div>
             <HeroSearch />
           </div>
         </AnimateIn>

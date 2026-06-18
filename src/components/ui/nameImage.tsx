@@ -17,7 +17,7 @@ import { RegistrationStatus } from '@/types/domains'
 export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
-const INTRINSIC_SIZE = 270
+const INTRINSIC_SIZE = 540
 
 interface NameImageProps {
   name: string
@@ -203,7 +203,7 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
 
   const sizeStyle = width !== undefined || height !== undefined ? { width, height } : undefined
 
-  const showPngFallback = attempt >= 1
+  const showPngFallback = attempt > 1
   const hasLoadedLayer = layers.some((l) => l.loaded)
   const loaded = showPngFallback ? pngLoaded : hasLoadedLayer
 

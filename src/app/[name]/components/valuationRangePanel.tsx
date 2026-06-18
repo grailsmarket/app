@@ -1,8 +1,10 @@
 'use client'
 
 import React, { FormEvent, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { formatNumber, ShortArrow } from 'ethereum-identity-kit'
 import LoadingSpinner from '@/components/ui/loadingSpinner'
+import AnimateIn from '@/components/ui/animateIn'
 import { cn } from '@/utils/tailwind'
 import { toSteppedPercent } from '@/utils/metrics'
 import useETHPrice from '@/hooks/useETHPrice'
@@ -664,129 +666,144 @@ const ValuationResult: React.FC<{
   ]
 
   return (
-    <div className='flex flex-col gap-4'>
-      {/* name being valued */}
-      <p className='text-center text-2xl font-semibold break-all'>{name}</p>
+    <div className='flex flex-col'>
+      <div className='flex flex-col gap-4'>
+        {/* name being valued */}
+        <p className='text-center text-2xl font-semibold break-all'>{name}</p>
 
-      {/* low / estimate / high — connected slider */}
-      <div className='relative w-full' style={{ height: 96 }}>
-        {/* connecting line: low -> est (brighter), est -> high (softer) — at the dot center */}
-        <div
-          className='bg-primary/50 absolute h-0.5 -translate-y-1/2'
-          style={{ left: '12.5%', width: '37.5%', top: 86 }}
-        />
-        <div
-          className='bg-primary/25 absolute h-0.5 -translate-y-1/2'
-          style={{ left: '50%', width: '37.5%', top: 86 }}
-        />
-        {scenarios.map((s) => {
-          const dimmed = activeSubject !== null && activeSubject !== s.key
-          const active = activeSubject === s.key
-          return (
-            <div
-              key={s.key}
-              onMouseEnter={() => setActiveSubject(s.key)}
-              onMouseLeave={() => setActiveSubject(null)}
-              className={cn(
-                'absolute flex w-28 -translate-x-1/2 cursor-default flex-col items-center transition-opacity',
-                dimmed && 'opacity-40'
-              )}
-              style={{ left: `${s.center * 100}%`, top: 0 }}
-            >
-              {/* USD value, shown on hover above the ETH value */}
-              <div className='flex h-5 items-end'>
-                {active && ethPrice > 0 && (
-                  <span className='text-neutral text-sm font-medium'>{formatUsd(s.eth * ethPrice)}</span>
+        {/* low / estimate / high — connected slider */}
+        <div className='relative w-full' style={{ height: 96 }}>
+          {/* connecting line: low -> est (brighter), est -> high (softer) — at the dot center */}
+          <div
+            className='bg-primary/50 absolute h-0.5 -translate-y-1/2'
+            style={{ left: '12.5%', width: '37.5%', top: 86 }}
+          />
+          <div
+            className='bg-primary/25 absolute h-0.5 -translate-y-1/2'
+            style={{ left: '50%', width: '37.5%', top: 86 }}
+          />
+          {scenarios.map((s) => {
+            const dimmed = activeSubject !== null && activeSubject !== s.key
+            const active = activeSubject === s.key
+            return (
+              <div
+                key={s.key}
+                onMouseEnter={() => setActiveSubject(s.key)}
+                onMouseLeave={() => setActiveSubject(null)}
+                className={cn(
+                  'absolute flex w-28 -translate-x-1/2 cursor-default flex-col items-center transition-opacity',
+                  dimmed && 'opacity-40'
                 )}
-              </div>
-              <div className='flex h-9 items-end'>
-                <span className={cn('leading-none font-semibold', s.primary ? 'text-3xl' : 'text-neutral text-2xl')}>
-                  {formatEth(s.eth)}
-                </span>
-              </div>
-              <div className='flex h-4 items-center'>
-                <span className='text-neutral text-sm font-medium'>{s.label}</span>
-              </div>
-              {/* fixed-height row so every dot center lands on the line */}
-              <div className='mt-1 flex h-5 items-center justify-center'>
-                <div
-                  className={cn(
-                    'bg-primary rounded-full',
-                    s.primary ? 'ring-primary/30 h-4 w-4 ring-2' : 'h-2.5 w-2.5'
+                style={{ left: `${s.center * 100}%`, top: 0 }}
+              >
+                {/* USD value, shown on hover above the ETH value */}
+                <div className='flex h-5 items-end'>
+                  {active && ethPrice > 0 && (
+                    <span className='text-neutral text-sm font-medium'>{formatUsd(s.eth * ethPrice)}</span>
                   )}
-                />
+                </div>
+                <div className='flex h-9 items-end'>
+                  <span className={cn('leading-none font-semibold', s.primary ? 'text-3xl' : 'text-neutral text-2xl')}>
+                    {formatEth(s.eth)}
+                  </span>
+                </div>
+                <div className='flex h-4 items-center'>
+                  <span className='text-neutral text-sm font-medium'>{s.label}</span>
+                </div>
+                {/* fixed-height row so every dot center lands on the line */}
+                <div className='mt-1 flex h-5 items-center justify-center'>
+                  <div
+                    className={cn(
+                      'bg-primary rounded-full',
+                      s.primary ? 'ring-primary/30 h-4 w-4 ring-2' : 'h-2.5 w-2.5'
+                    )}
+                  />
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
 
-      {expanded && (
-        <>
-          <ClassicPlot
-            low={low}
-            estimate={estimate}
-            high={high}
-            axisMax={axisMax}
-            comps={comps}
-            ethPrice={ethPrice}
-            activeSubject={activeSubject}
-            onActiveChange={setStatsDimmed}
-          />
-
-          {/* supporting signals — metric rings (same gradient as the google metrics bars) */}
-          <div
-            className={cn(
-              'mt-4 grid grid-cols-4 gap-3 transition-opacity',
-              (statsDimmed || activeSubject !== null) && 'opacity-[0.15]'
-            )}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key='details'
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className='overflow-hidden'
           >
-            <CircularMetric
-              value={web2Count != null ? formatNumber(web2Count) : 'N/A'}
-              label='Web2 TLDs registered'
-              fillPercent={toSteppedPercent(web2Count ?? 0, 500)}
-            />
-            <CircularMetric
-              value={avgSearches != null ? formatSearchCount(avgSearches) : 'N/A'}
-              label='Avg monthly searches'
-              fillPercent={toSteppedPercent(avgSearches ?? 0, 1_000_000)}
-            />
-            <CircularMetric
-              value={meaningsCount != null ? formatNumber(meaningsCount) : 'N/A'}
-              label='Meanings'
-              fillPercent={toSteppedPercent(meaningsCount ?? 0, 10)}
-            />
-            <CircularMetric
-              value={salesAnalysed != null ? formatNumber(salesAnalysed) : 'N/A'}
-              label='Sales analysed'
-              fillPercent={toSteppedPercent(salesAnalysed ?? 0, 200)}
-            />
-          </div>
+            <div className='flex flex-col gap-4 pt-4'>
+              <ClassicPlot
+                low={low}
+                estimate={estimate}
+                high={high}
+                axisMax={axisMax}
+                comps={comps}
+                ethPrice={ethPrice}
+                activeSubject={activeSubject}
+                onActiveChange={setStatsDimmed}
+              />
 
-          {appraisal.reasoning && (
-            <div className='border-tertiary bg-tertiary/30 flex flex-col gap-2 rounded-lg border p-4'>
-              <p className='text-lg font-semibold'>Rationale</p>
-              <p className='text-neutral text-lg'>{appraisal.reasoning}</p>
+              {/* supporting signals — metric rings (same gradient as the google metrics bars) */}
+              <div
+                className={cn(
+                  'mt-4 grid grid-cols-4 gap-3 transition-opacity',
+                  (statsDimmed || activeSubject !== null) && 'opacity-[0.15]'
+                )}
+              >
+                <CircularMetric
+                  value={web2Count != null ? formatNumber(web2Count) : 'N/A'}
+                  label='Web2 TLDs registered'
+                  fillPercent={toSteppedPercent(web2Count ?? 0, 500)}
+                />
+                <CircularMetric
+                  value={avgSearches != null ? formatSearchCount(avgSearches) : 'N/A'}
+                  label='Avg monthly searches'
+                  fillPercent={toSteppedPercent(avgSearches ?? 0, 1_000_000)}
+                />
+                <CircularMetric
+                  value={meaningsCount != null ? formatNumber(meaningsCount) : 'N/A'}
+                  label='Meanings'
+                  fillPercent={toSteppedPercent(meaningsCount ?? 0, 10)}
+                />
+                <CircularMetric
+                  value={salesAnalysed != null ? formatNumber(salesAnalysed) : 'N/A'}
+                  label='Sales analysed'
+                  fillPercent={toSteppedPercent(salesAnalysed ?? 0, 200)}
+                />
+              </div>
+
+              {appraisal.reasoning && (
+                <div className='border-tertiary bg-tertiary/30 flex flex-col gap-2 rounded-lg border p-4'>
+                  <p className='text-lg font-semibold'>Rationale</p>
+                  <p className='text-neutral text-lg'>{appraisal.reasoning}</p>
+                </div>
+              )}
             </div>
-          )}
-        </>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* disclaimer footer */}
-      <p className='border-tertiary text-neutral border-t pt-3 text-lg'>
-        Valuations are AI-generated estimates for informational purposes only and may be inaccurate. Not financial
-        advice.
-      </p>
+      <div className='flex flex-col gap-4 pt-4'>
+        {/* disclaimer footer */}
+        <p className='border-tertiary text-neutral border-t pt-3 text-lg'>
+          Valuations are AI-generated estimates for informational purposes only and may be inaccurate. Not financial
+          advice.
+        </p>
 
-      {/* expand / contract toggle */}
-      <button
-        type='button'
-        onClick={() => setExpanded((open) => !open)}
-        className='text-primary mx-auto flex items-center gap-1 text-lg font-semibold hover:opacity-80'
-      >
-        {expanded ? 'Show less' : 'Show details'}
-        <ShortArrow className={cn('h-4 w-4 transition-transform', expanded ? 'rotate-0' : 'rotate-180')} />
-      </button>
+        {/* expand / contract toggle */}
+        <button
+          type='button'
+          onClick={() => setExpanded((open) => !open)}
+          className='text-primary mx-auto flex items-center gap-1 text-lg font-semibold hover:opacity-80'
+        >
+          {expanded ? 'Show less' : 'Show details'}
+          <ShortArrow className={cn('h-4 w-4 transition-transform', expanded ? 'rotate-0' : 'rotate-180')} />
+        </button>
+      </div>
     </div>
   )
 }
@@ -893,7 +910,11 @@ const ValuationRangePanel: React.FC<{ name: string }> = ({ name }) => {
           </form>
         ))}
 
-      {valuationEvidenceIsLoading && <ValuationProgressChecklist progressByStage={valuationEvidenceProgressByStage} />}
+      {valuationEvidenceIsLoading && (
+        <AnimateIn>
+          <ValuationProgressChecklist progressByStage={valuationEvidenceProgressByStage} />
+        </AnimateIn>
+      )}
 
       {loginRequired && !hasResult && !valuationEvidenceIsInitialLoading && (
         <p className='text-neutral text-lg'>Sign in to generate a valuation.</p>
@@ -901,7 +922,14 @@ const ValuationRangePanel: React.FC<{ name: string }> = ({ name }) => {
       {errorMessage && <p className='text-lg font-medium text-red-400'>{errorMessage}</p>}
 
       {appraisal && valuationEvidence && (
-        <ValuationResult name={name} appraisal={appraisal} evidence={valuationEvidence.evidence} ethPrice={ethPrice} />
+        <AnimateIn>
+          <ValuationResult
+            name={name}
+            appraisal={appraisal}
+            evidence={valuationEvidence.evidence}
+            ethPrice={ethPrice}
+          />
+        </AnimateIn>
       )}
     </div>
   )

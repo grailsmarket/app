@@ -421,7 +421,10 @@ export async function GET(req: NextRequest) {
           headers: { Accept: 'application/json' },
         })
         if (!res.ok) return null
-        const json = (await res.json().catch(() => null)) as { success?: boolean; data?: ValuationEvidenceResult } | null
+        const json = (await res.json().catch(() => null)) as {
+          success?: boolean
+          data?: ValuationEvidenceResult
+        } | null
         if (!json?.success || !json.data) return null
         return json.data
       } catch (error) {
@@ -512,166 +515,164 @@ export async function GET(req: NextRequest) {
     const salesAnalysed = evidence.marketActivity?.salesFound ?? evidence.marketActivity?.summary?.salesFound
 
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #444444, #222222)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 28,
+          padding: 48,
+          fontFamily: 'Inter, sans-serif',
+          color: FOREGROUND,
+        }}
+      >
         <div
           style={{
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, #444444, #222222)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 28,
-            padding: 48,
-            fontFamily: 'Inter, sans-serif',
-            color: FOREGROUND,
+            width: CARD_WIDTH,
+            padding: CARD_PADDING,
+            gap: 26,
+            borderRadius: 20,
+            border: `2px solid ${CARD_BORDER}`,
+            backgroundColor: CARD_BG,
           }}
         >
+          {header}
+
+          <div style={{ display: 'flex', width: CONTENT_WIDTH, justifyContent: 'center' }}>
+            <span
+              style={{
+                fontSize: 52,
+                fontWeight: 700,
+                maxWidth: CONTENT_WIDTH,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {beautified}
+            </span>
+          </div>
+
+          <ScenarioRow low={low!} estimate={estimate!} high={high!} ethPrice={ethPrice} />
+
+          <ValuationBar low={low!} estimate={estimate!} high={high!} axisMax={axisMax} comps={comps} />
+
+          {visibleGroups.length > 0 && (
+            <div
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: CONTENT_WIDTH }}
+            >
+              <span style={{ fontSize: 26, fontWeight: 600, color: NEUTRAL }}>Similar Sales</span>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: 10,
+                  width: CONTENT_WIDTH,
+                }}
+              >
+                {visibleGroups.map((group) => (
+                  <div
+                    key={group.name}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                      backgroundColor: PILL_BG,
+                      border: '1px solid #555555',
+                      borderRadius: 8,
+                      padding: '6px 14px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 26,
+                        color: FOREGROUND,
+                        maxWidth: 240,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {group.name}
+                    </span>
+                    {group.count > 1 && <span style={{ fontSize: 26, color: NEUTRAL }}>{`×${group.count}`}</span>}
+                  </div>
+                ))}
+                {hiddenGroupCount > 0 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      backgroundColor: PILL_BG,
+                      border: '1px solid #555555',
+                      borderRadius: 8,
+                      padding: '6px 14px',
+                    }}
+                  >
+                    <span style={{ fontSize: 26, color: NEUTRAL }}>{`+${hiddenGroupCount} more`}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* supporting signals — circular rings, mirroring the panel */}
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              width: CARD_WIDTH,
-              padding: CARD_PADDING,
-              gap: 26,
-              borderRadius: 20,
-              border: `2px solid ${CARD_BORDER}`,
-              backgroundColor: CARD_BG,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              width: CONTENT_WIDTH,
+              marginTop: 4,
             }}
           >
-            {header}
-
-            <div style={{ display: 'flex', width: CONTENT_WIDTH, justifyContent: 'center' }}>
-              <span
-                style={{
-                  fontSize: 52,
-                  fontWeight: 700,
-                  maxWidth: CONTENT_WIDTH,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {beautified}
-              </span>
-            </div>
-
-            <ScenarioRow low={low!} estimate={estimate!} high={high!} ethPrice={ethPrice} />
-
-            <ValuationBar low={low!} estimate={estimate!} high={high!} axisMax={axisMax} comps={comps} />
-
-            {visibleGroups.length > 0 && (
-              <div
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: CONTENT_WIDTH }}
-              >
-                <span style={{ fontSize: 26, fontWeight: 600, color: NEUTRAL }}>Similar Sales</span>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    justifyContent: 'center',
-                    gap: 10,
-                    width: CONTENT_WIDTH,
-                  }}
-                >
-                  {visibleGroups.map((group) => (
-                    <div
-                      key={group.name}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 6,
-                        backgroundColor: PILL_BG,
-                        border: '1px solid #555555',
-                        borderRadius: 8,
-                        padding: '6px 14px',
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 26,
-                          color: FOREGROUND,
-                          maxWidth: 240,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {group.name}
-                      </span>
-                      {group.count > 1 && <span style={{ fontSize: 26, color: NEUTRAL }}>{`×${group.count}`}</span>}
-                    </div>
-                  ))}
-                  {hiddenGroupCount > 0 && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        backgroundColor: PILL_BG,
-                        border: '1px solid #555555',
-                        borderRadius: 8,
-                        padding: '6px 14px',
-                      }}
-                    >
-                      <span style={{ fontSize: 26, color: NEUTRAL }}>{`+${hiddenGroupCount} more`}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* supporting signals — circular rings, mirroring the panel */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                width: CONTENT_WIDTH,
-                marginTop: 4,
-              }}
-            >
-              <CircularMetric
-                value={web2Count != null ? formatNumber(web2Count) : 'N/A'}
-                label='Web2 TLDs registered'
-                fillPercent={toSteppedPercent(web2Count ?? 0, 500)}
-              />
-              <CircularMetric
-                value={avgSearches != null ? formatSearchCount(avgSearches) : 'N/A'}
-                label='Avg monthly searches'
-                fillPercent={toSteppedPercent(avgSearches ?? 0, 1_000_000)}
-              />
-              <CircularMetric
-                value={meaningsCount != null ? formatNumber(meaningsCount) : 'N/A'}
-                label='Meanings'
-                fillPercent={toSteppedPercent(meaningsCount ?? 0, 10)}
-              />
-              <CircularMetric
-                value={salesAnalysed != null ? formatNumber(salesAnalysed) : 'N/A'}
-                label='Sales analysed'
-                fillPercent={toSteppedPercent(salesAnalysed ?? 0, 200)}
-              />
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                width: CONTENT_WIDTH,
-                borderTop: `1px solid ${CARD_BORDER}`,
-                paddingTop: 18,
-                marginTop: 4,
-              }}
-            >
-              <span style={{ fontSize: 22, color: NEUTRAL, lineHeight: 1.3 }}>{DISCLAIMER}</span>
-            </div>
+            <CircularMetric
+              value={web2Count != null ? formatNumber(web2Count) : 'N/A'}
+              label='Web2 TLDs registered'
+              fillPercent={toSteppedPercent(web2Count ?? 0, 500)}
+            />
+            <CircularMetric
+              value={avgSearches != null ? formatSearchCount(avgSearches) : 'N/A'}
+              label='Avg monthly searches'
+              fillPercent={toSteppedPercent(avgSearches ?? 0, 1_000_000)}
+            />
+            <CircularMetric
+              value={meaningsCount != null ? formatNumber(meaningsCount) : 'N/A'}
+              label='Meanings'
+              fillPercent={toSteppedPercent(meaningsCount ?? 0, 10)}
+            />
+            <CircularMetric
+              value={salesAnalysed != null ? formatNumber(salesAnalysed) : 'N/A'}
+              label='Sales analysed'
+              fillPercent={toSteppedPercent(salesAnalysed ?? 0, 200)}
+            />
           </div>
 
-          {footer}
+          <div
+            style={{
+              display: 'flex',
+              width: CONTENT_WIDTH,
+              borderTop: `1px solid ${CARD_BORDER}`,
+              paddingTop: 18,
+              marginTop: 4,
+            }}
+          >
+            <span style={{ fontSize: 22, color: NEUTRAL, lineHeight: 1.3 }}>{DISCLAIMER}</span>
+          </div>
         </div>
-      ),
+
+        {footer}
+      </div>,
       {
         ...size,
         emoji: 'twemoji',

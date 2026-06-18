@@ -3,20 +3,13 @@
 import React, { useEffect, useState } from 'react'
 import PrimaryDetails from './primaryDetails'
 import { useName } from '../hooks/useName'
-import Listings from './listings'
-import Offers from './offers'
-import ActivityPanel from './activity'
-import Register from './register'
 import Actions from './actions'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { REGISTERED, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import Categories from './categories'
-import SecondaryDetails from './secondaryDetails'
-import Metadata from './metadata'
-import Roles from './roles'
 import KeywordMetrics from './keywordMetrics'
-import SimilarNames from './similarNames'
 import CommentsPanel from './commentsPanel'
+import NamePageTabContent from './namePageTabContent'
 import { cn } from '@/utils/tailwind'
 
 interface Props {
@@ -30,7 +23,7 @@ const NAME_PAGE_TABS = [
   { label: 'Recommended', value: 'recommended' },
 ] as const
 
-type NamePageTab = (typeof NAME_PAGE_TABS)[number]['value']
+export type NamePageTab = (typeof NAME_PAGE_TABS)[number]['value']
 
 const NamePage: React.FC<Props> = ({ name }) => {
   const [selectedTab, setSelectedTab] = useState<NamePageTab>('market')
@@ -82,50 +75,6 @@ const NamePage: React.FC<Props> = ({ name }) => {
   // const isUnregistered = registrationStatus === UNREGISTERED || registrationStatus === PREMIUM
 
   const selectedTabIndex = NAME_PAGE_TABS.findIndex((tab) => tab.value === selectedTab)
-
-  const renderSelectedTab = () => {
-    switch (selectedTab) {
-      case 'market':
-        return isRegistered ? (
-          <>
-            <Listings
-              domain={nameDetails}
-              listings={nameDetails?.listings || []}
-              listingsLoading={nameDetailsIsLoading}
-            />
-            <Offers offers={nameOffers ?? []} offersLoading={nameOffersIsLoading} domain={nameDetails} />
-          </>
-        ) : (
-          <Register nameDetails={nameDetails} registrationStatus={registrationStatus} />
-        )
-      case 'activity':
-        return <ActivityPanel name={name} />
-      case 'details':
-        return (
-          <>
-            <Metadata
-              name={name}
-              registrationStatus={registrationStatus}
-              nameOwner={nameDetails?.owner}
-              metadata={metadata}
-              isMetadataLoading={isMetadataLoading}
-              openEditMetadataModal={openEditMetadataModal}
-            />
-            <Roles
-              name={name}
-              registrationStatus={registrationStatus}
-              nameOwner={nameDetails?.owner}
-              metadata={metadata}
-              roles={roles}
-              isRolesLoading={isRolesLoading}
-            />
-            <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
-          </>
-        )
-      case 'recommended':
-        return <SimilarNames name={name} />
-    }
-  }
 
   return (
     <div className='dark mx-auto flex min-h-[calc(100dvh-52px)] max-w-7xl flex-col items-center gap-3 pt-3 md:min-h-[calc(100dvh-70px)]'>
@@ -189,7 +138,23 @@ const NamePage: React.FC<Props> = ({ name }) => {
               )
             })}
           </div>
-          <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4'>{renderSelectedTab()}</div>
+          <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4'>
+            <NamePageTabContent
+              selectedTab={selectedTab}
+              name={name}
+              isRegistered={isRegistered}
+              registrationStatus={registrationStatus}
+              nameDetails={nameDetails}
+              nameDetailsIsLoading={nameDetailsIsLoading}
+              nameOffers={nameOffers}
+              nameOffersIsLoading={nameOffersIsLoading}
+              metadata={metadata}
+              isMetadataLoading={isMetadataLoading}
+              roles={roles}
+              isRolesLoading={isRolesLoading}
+              openEditMetadataModal={openEditMetadataModal}
+            />
+          </div>
           <div className='border-tertiary flex w-full flex-col border-t-2 pt-1 @[40rem]/app:pt-4'>
             <CommentsPanel name={name} nameDetails={nameDetails} />
           </div>

@@ -107,7 +107,49 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='@[64rem]/app:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
-          <div className='@[64rem]/app:hidden'>
+          <div className='flex w-full flex-col gap-0 @[40rem]/app:gap-2.5'>
+            <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>
+              <div
+                className='bg-primary pointer-events-none absolute bottom-0 left-0 h-0.5 w-1/3 rounded-full transition-transform duration-300 ease-out'
+                style={{ transform: `translateX(${Math.max(selectedTabIndex, 0) * 100}%)` }}
+              />
+              {NAME_PAGE_TABS.map((tab) => {
+                const isActive = selectedTab === tab.value
+
+                return (
+                  <button
+                    key={tab.value}
+                    type='button'
+                    onClick={() => setSelectedTab(tab.value)}
+                    className={cn(
+                      'py-md flex flex-1 cursor-pointer items-center justify-center px-2 text-center text-lg font-semibold transition-colors @[40rem]/app:text-xl',
+                      isActive ? 'text-primary font-bold' : 'text-neutral hover:text-foreground'
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div className='flex w-full flex-col @[40rem]/app:gap-2.5'>
+              <NamePageTabContent
+                selectedTab={selectedTab}
+                name={name}
+                isRegistered={isRegistered}
+                registrationStatus={registrationStatus}
+                nameDetails={nameDetails}
+                nameDetailsIsLoading={nameDetailsIsLoading}
+                nameOffers={nameOffers}
+                nameOffersIsLoading={nameOffersIsLoading}
+                metadata={metadata}
+                isMetadataLoading={isMetadataLoading}
+                roles={roles}
+                isRolesLoading={isRolesLoading}
+                openEditMetadataModal={openEditMetadataModal}
+              />
+            </div>
+          </div>
+          <div className='@[64rem]/app:hidde border-tertiary @[40rem]/app:border-t-2 @[40rem]/app:pt-4'>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}
@@ -115,47 +157,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               categories={nameDetails?.clubs}
             />
           </div>
-          <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>
-            <div
-              className='bg-primary pointer-events-none absolute bottom-0 left-0 h-0.5 w-1/3 rounded-full transition-transform duration-300 ease-out'
-              style={{ transform: `translateX(${Math.max(selectedTabIndex, 0) * 100}%)` }}
-            />
-            {NAME_PAGE_TABS.map((tab) => {
-              const isActive = selectedTab === tab.value
-
-              return (
-                <button
-                  key={tab.value}
-                  type='button'
-                  onClick={() => setSelectedTab(tab.value)}
-                  className={cn(
-                    'py-md flex flex-1 cursor-pointer items-center justify-center px-2 text-center text-lg font-semibold transition-colors @[40rem]/app:text-xl',
-                    isActive ? 'text-primary font-bold' : 'text-neutral hover:text-foreground'
-                  )}
-                >
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
-          <div className='flex w-full flex-col @[40rem]/app:gap-4'>
-            <NamePageTabContent
-              selectedTab={selectedTab}
-              name={name}
-              isRegistered={isRegistered}
-              registrationStatus={registrationStatus}
-              nameDetails={nameDetails}
-              nameDetailsIsLoading={nameDetailsIsLoading}
-              nameOffers={nameOffers}
-              nameOffersIsLoading={nameOffersIsLoading}
-              metadata={metadata}
-              isMetadataLoading={isMetadataLoading}
-              roles={roles}
-              isRolesLoading={isRolesLoading}
-              openEditMetadataModal={openEditMetadataModal}
-            />
-          </div>
-          <div className='border-tertiary flex w-full flex-col border-t-2 pt-1 @[40rem]/app:pt-4'>
+          <div className='border-tertiary flex w-full flex-col @[64rem]/app:border-t-2 @[64rem]/app:pt-4'>
             <CommentsPanel name={name} nameDetails={nameDetails} />
           </div>
           <div className='border-tertiary flex w-full flex-col'>

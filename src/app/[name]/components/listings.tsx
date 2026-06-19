@@ -114,7 +114,7 @@ const DisplayedListing: React.FC<DisplayedListingProps> = ({ listing, isMyDomain
   })
 
   return (
-    <div className='flex flex-col items-stretch gap-3 @[40rem]/app:flex-row @[40rem]/app:items-center @[40rem]/app:justify-between'>
+    <div className='flex flex-row items-center justify-between gap-3'>
       <div className='flex min-w-0 flex-row items-center gap-2 @[40rem]/app:gap-4'>
         <Image
           src={SOURCE_ICONS[listing.source as keyof typeof SOURCE_ICONS]}
@@ -211,7 +211,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
 
   if (isMyDomain) {
     return (
-      <div className='flex w-full flex-row flex-wrap items-center justify-end gap-2 @[40rem]/app:w-auto'>
+      <div className='flex flex-row flex-wrap items-center justify-end gap-2 @[40rem]/app:w-auto'>
         <SecondaryButton onClick={openEditListingModal}>Edit</SecondaryButton>
         <SecondaryButton onClick={openCancelListingModal}>Cancel</SecondaryButton>
         <SecondaryButton
@@ -225,7 +225,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ listing, isMyDomain, doma
   }
 
   return (
-    <div className='flex w-full flex-row items-center justify-end gap-2 @[40rem]/app:w-auto'>
+    <div className='flex flex-row items-center justify-end gap-2 @[40rem]/app:w-auto'>
       <PrimaryButton onClick={openBuyNowModal}>
         Buy<span className='hidden @[40rem]/app:inline'> Now</span>
       </PrimaryButton>

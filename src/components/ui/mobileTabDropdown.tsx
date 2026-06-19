@@ -18,7 +18,7 @@ interface MobileTabDropdownProps {
 const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, className }) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const listboxId = useId()
+  const menuId = useId()
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
   const dropdownRef = useClickAway<HTMLDivElement>(() => {
     setIsOpen(false)
@@ -87,9 +87,9 @@ const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, c
     <div ref={dropdownRef} className={cn('relative flex-1', className)} onKeyDown={handleKeyDown}>
       <button
         type='button'
-        aria-haspopup='listbox'
+        aria-haspopup='menu'
         aria-expanded={isOpen}
-        aria-controls={listboxId}
+        aria-controls={menuId}
         aria-label='Select tab'
         onClick={() => (isOpen ? setIsOpen(false) : openAndFocusSelectedOption())}
         className='hover:bg-secondary px-lg flex h-12 w-full min-w-0 cursor-pointer items-center justify-between gap-4 text-left transition-colors'
@@ -104,8 +104,8 @@ const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, c
 
       {isOpen && (
         <div
-          id={listboxId}
-          role='listbox'
+          id={menuId}
+          role='menu'
           className='bg-background border-tertiary absolute right-1 left-0 z-50 mt-1.5 max-h-[320px] overflow-y-auto rounded-md border-2 shadow-sm'
         >
           {options.map((option, index) => (
@@ -115,8 +115,8 @@ const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, c
                 optionRefs.current[index] = element
               }}
               type='button'
-              role='option'
-              aria-selected={option.value === value}
+              role='menuitemradio'
+              aria-checked={option.value === value}
               onClick={() => handleSelect(option)}
               className={cn(
                 'hover:bg-tertiary focus:bg-tertiary flex w-full min-w-0 items-center gap-2 px-4 py-2.5 text-left text-white transition-colors focus:outline-none',

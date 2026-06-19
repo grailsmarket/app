@@ -40,7 +40,8 @@ const ChatImage: React.FC<Props> = ({ chatId, attachment, variant = 'full' }) =>
 
   if (attachment.expired) return <div className={boxClass}>Image expired</div>
 
-  if (isGlobal) return <img src={fullUrl} alt='' loading='lazy' className={imgClass} />
+  // crossOrigin makes this a CORS request so the API's CORP (same-origin) header doesn't block the public image.
+  if (isGlobal) return <img src={fullUrl} alt='' loading='lazy' crossOrigin='anonymous' className={imgClass} />
 
   if (protectedImg.status === 'expired') return <div className={boxClass}>Image expired</div>
 

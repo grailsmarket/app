@@ -353,3 +353,16 @@ export type ValuationEvidenceResult = {
   evidence: ValuationEvidence
   generatedAt: string
 }
+
+// View-model types for the valuation panel, derived from the appraisal's
+// `compsUsed` (a comparable sale) and the low/estimate/high range.
+export type Comp = {
+  name: string
+  priceEth: number
+  date: Date
+}
+
+// One pill per name; a name can have multiple sales (multiple bar positions).
+export type CompGroup = { name: string; sales: Comp[] }
+
+export type SubjectKey = 'low' | 'est' | 'high'

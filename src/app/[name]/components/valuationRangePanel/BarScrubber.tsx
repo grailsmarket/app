@@ -3,7 +3,8 @@ import { cn } from '@/utils/tailwind'
 import { CLASSIC_BAR_H, CLASSIC_BAR_TOP, TOOLTIP_CLASS, TOOLTIP_SHADOW } from './constants'
 import { formatEthAtScale, formatUsd } from './format'
 import { OUTLIER_MULT } from './plotMath'
-import type { Comp, CompGroup, PriceScale } from './types'
+import type { Comp, CompGroup } from '@/types/valuation'
+import type { PriceScale } from './types'
 
 const barTop = CLASSIC_BAR_TOP
 

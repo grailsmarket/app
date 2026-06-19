@@ -1,13 +1,5 @@
-export type Comp = {
-  name: string
-  priceEth: number
-  date: Date
-}
-
-// One pill per name; a name can have multiple sales (multiple bar positions).
-export type CompGroup = { name: string; sales: Comp[] }
-
-export type SubjectKey = 'low' | 'est' | 'high'
+// Plot-internal view types. Valuation domain types (Comp, CompGroup, SubjectKey)
+// live in @/types/valuation.ts alongside the rest of the valuation contract.
 
 // Linear price -> axis fraction/percent mapping (0..axisMax).
 export type PriceScale = {

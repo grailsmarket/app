@@ -6,7 +6,8 @@ import { buildHeatGradient, computeTicks, createPriceScale } from './plotMath'
 import BarScrubber from './BarScrubber'
 import CompPills from './CompPills'
 import InBarLines from './InBarLines'
-import type { Comp, CompGroup, PlotLayout, SubjectKey } from './types'
+import type { Comp, CompGroup, SubjectKey } from '@/types/valuation'
+import type { PlotLayout } from './types'
 
 const barTop = CLASSIC_BAR_TOP
 const barBottom = CLASSIC_BAR_BOTTOM

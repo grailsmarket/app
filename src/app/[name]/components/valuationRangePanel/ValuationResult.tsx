@@ -8,7 +8,7 @@ import ClassicPlot from './ClassicPlot'
 import CircularMetric from './CircularMetric'
 import { formatEth, formatSearchCount, formatUsd, toNumber } from './format'
 import { computeAxisMax, OUTLIER_MULT } from './plotMath'
-import type { Comp, SubjectKey } from './types'
+import type { Comp, SubjectKey } from '@/types/valuation'
 
 const ValuationResult: React.FC<{
   name: string

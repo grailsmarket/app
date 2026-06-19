@@ -1,7 +1,8 @@
 import React, { useId } from 'react'
 import { CLASSIC_BAR_BOTTOM, CLASSIC_BAR_TOP } from './constants'
 import { OUTLIER_MULT } from './plotMath'
-import type { Comp, CompGroup, PriceScale, SubjectKey } from './types'
+import type { Comp, CompGroup, SubjectKey } from '@/types/valuation'
+import type { PriceScale } from './types'
 
 const barTop = CLASSIC_BAR_TOP
 const barBottom = CLASSIC_BAR_BOTTOM

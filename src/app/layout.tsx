@@ -6,7 +6,8 @@ import Providers from './providers'
 import { Production } from './production'
 import SuspendedPostHogPageView from '@/components/posthog/posthog-pageview'
 import PostHogGroupSync from '@/components/posthog/posthog-group-sync'
-import { sharedMetadata } from '@/lib/metadata'
+import ServiceWorkerRegistration from '@/components/pwa/service-worker-registration'
+import { metadataThemeColor, sharedMetadata } from '@/lib/metadata'
 import 'ethereum-identity-kit/css'
 import '@rainbow-me/rainbowkit/styles.css'
 import './globals.css'
@@ -28,6 +29,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   interactiveWidget: 'resizes-content',
+  themeColor: metadataThemeColor,
+  colorScheme: 'dark',
 }
 
 export default function RootLayout({
@@ -39,6 +42,7 @@ export default function RootLayout({
     <html lang='en' className='dark'>
       <body className={`${inter.variable} ${sedanSC.variable} antialiased`}>
         <Providers>{children}</Providers>
+        <ServiceWorkerRegistration />
         <PostHogGroupSync />
         <SuspendedPostHogPageView />
         <Production>

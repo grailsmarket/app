@@ -154,8 +154,7 @@ const Composer: React.FC<Props> = ({
     })
   }
 
-  const acceptFiles = (picked: FileList | null) => {
-    const incoming = picked ? Array.from(picked) : []
+  const acceptFiles = (incoming: File[]) => {
     if (incoming.length === 0) return
     for (const f of incoming) {
       if (!CHAT_IMAGE_ALLOWED_TYPES.includes(f.type)) {
@@ -177,8 +176,19 @@ const Composer: React.FC<Props> = ({
   }
 
   const onSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    acceptFiles(e.target.files)
+    acceptFiles(Array.from(e.target.files ?? []))
     e.target.value = ''
+  }
+
+  const onPaste = (e: React.ClipboardEvent) => {
+    if (!imagesEnabled || inputDisabled) return
+    const images = Array.from(e.clipboardData.items)
+      .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      .map((item) => item.getAsFile())
+      .filter((f): f is File => f !== null)
+    if (images.length === 0) return
+    e.preventDefault()
+    acceptFiles(images)
   }
 
   const onDragOver = (e: React.DragEvent) => {
@@ -196,7 +206,7 @@ const Composer: React.FC<Props> = ({
     if (!imagesEnabled || inputDisabled) return
     e.preventDefault()
     setIsDragging(false)
-    acceptFiles(e.dataTransfer.files)
+    acceptFiles(Array.from(e.dataTransfer.files))
   }
 
   const submit = () => {
@@ -405,6 +415,7 @@ const Composer: React.FC<Props> = ({
             setTimeout(closeMention, 0)
           }}
           onKeyDown={onKeyDown}
+          onPaste={onPaste}
           disabled={inputDisabled}
           rows={1}
           maxLength={MESSAGE_MAX_LEN}

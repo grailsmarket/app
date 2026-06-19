@@ -65,14 +65,14 @@ const ChatSidebar: React.FC = () => {
     prevViewRef.current = view
   }, [view])
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') dispatch(closeChatSidebar())
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, dispatch])
+  // useEffect(() => {
+  //   if (!open) return
+  //   const onKey = (e: KeyboardEvent) => {
+  //     if (e.key === 'Escape') dispatch(closeChatSidebar())
+  //   }
+  //   window.addEventListener('keydown', onKey)
+  //   return () => window.removeEventListener('keydown', onKey)
+  // }, [open, dispatch])
 
   useEffect(() => {
     if (!open) return

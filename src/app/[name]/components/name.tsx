@@ -10,6 +10,7 @@ import Categories from './categories'
 import KeywordMetrics from './keywordMetrics'
 import CommentsPanel from './commentsPanel'
 import NamePageTabContent from './namePageTabContent'
+import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
 
 interface Props {
@@ -20,7 +21,6 @@ const NAME_PAGE_TABS = [
   { label: 'Market', value: 'market' },
   { label: 'Activity', value: 'activity' },
   { label: 'Details', value: 'details' },
-  { label: 'Recommended', value: 'recommended' },
 ] as const
 
 export type NamePageTab = (typeof NAME_PAGE_TABS)[number]['value']
@@ -115,9 +115,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
               categories={nameDetails?.clubs}
             />
           </div>
-          <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-t-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>
+          <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>
             <div
-              className='bg-primary pointer-events-none absolute bottom-0 left-0 h-0.5 w-1/4 rounded-full transition-transform duration-300 ease-out'
+              className='bg-primary pointer-events-none absolute bottom-0 left-0 h-0.5 w-1/3 rounded-full transition-transform duration-300 ease-out'
               style={{ transform: `translateX(${Math.max(selectedTabIndex, 0) * 100}%)` }}
             />
             {NAME_PAGE_TABS.map((tab) => {
@@ -138,7 +138,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               )
             })}
           </div>
-          <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4'>
+          <div className='flex w-full flex-col @[40rem]/app:gap-4'>
             <NamePageTabContent
               selectedTab={selectedTab}
               name={name}
@@ -157,6 +157,9 @@ const NamePage: React.FC<Props> = ({ name }) => {
           </div>
           <div className='border-tertiary flex w-full flex-col border-t-2 pt-1 @[40rem]/app:pt-4'>
             <CommentsPanel name={name} nameDetails={nameDetails} />
+          </div>
+          <div className='border-tertiary flex w-full flex-col'>
+            <SimilarNames name={name} />
           </div>
         </div>
       </div>

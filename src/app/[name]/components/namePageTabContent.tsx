@@ -8,7 +8,6 @@ import Register from './register'
 import Metadata from './metadata'
 import Roles from './roles'
 import SecondaryDetails from './secondaryDetails'
-import SimilarNames from './similarNames'
 import { DomainOfferType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { MetadataType, RolesType } from '@/types/api'
 import type { NamePageTab } from './name'
@@ -82,8 +81,6 @@ const NamePageTabContent: React.FC<Props> = ({
           <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
         </>
       )
-    case 'recommended':
-      return <SimilarNames name={name} />
     default:
       return null
   }

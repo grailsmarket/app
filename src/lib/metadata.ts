@@ -5,6 +5,7 @@ export const metadataBaseUrl = new URL('https://grails.app')
 export const metadataTitle = 'Grails: ENS Manager & Market'
 export const metadataSiteName = 'Grails Market'
 export const metadataDescription = 'Your ENS Market. Find, sell, buy, and manage your ENS names on Grails Market.'
+export const metadataThemeColor = '#ffdfc0'
 
 export const sharedMetadataIcons: Metadata['icons'] = [
   {
@@ -56,6 +57,7 @@ export const sharedMetadata: Metadata = {
   },
   description: metadataDescription,
   applicationName: metadataSiteName,
+  manifest: '/manifest.json',
   keywords: [
     'Grails',
     'Grails Market',
@@ -93,5 +95,8 @@ export const sharedMetadata: Metadata = {
     title: metadataTitle,
     statusBarStyle: 'black-translucent',
     startupImage: 'https://grails.app/apple-touch-icon.png',
+  },
+  formatDetection: {
+    telephone: false,
   },
 }

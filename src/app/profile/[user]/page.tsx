@@ -123,7 +123,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description,
       images: ogImageUrl,
     },
-    icons: avatarResponse ? ensAvatar : '@/app/favicon.ico',
+    icons: avatarResponse ? ensAvatar : '/favicon.ico',
     appleWebApp: {
       capable: true,
       title: displayUser,

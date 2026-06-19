@@ -110,8 +110,11 @@ const NamePage: React.FC<Props> = ({ name }) => {
           <div className='flex w-full flex-col gap-0 @[40rem]/app:gap-2.5'>
             <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>
               <div
-                className='bg-primary pointer-events-none absolute bottom-0 left-0 h-0.5 w-1/3 rounded-full transition-transform duration-300 ease-out'
-                style={{ transform: `translateX(${Math.max(selectedTabIndex, 0) * 100}%)` }}
+                className='bg-primary pointer-events-none absolute bottom-0 left-0 h-0.5 rounded-full transition-transform duration-300 ease-out'
+                style={{ 
+                  transform: `translateX(${Math.max(selectedTabIndex, 0) * 100}%)`,
+                  width: `${100 / NAME_PAGE_TABS.length}%`
+                }}
               />
               {NAME_PAGE_TABS.map((tab) => {
                 const isActive = selectedTab === tab.value

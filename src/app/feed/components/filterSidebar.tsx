@@ -14,7 +14,6 @@ import { getMetadataAssetUrl } from '@/utils/web3/ens'
 import { useNavbar } from '@/context/navbar'
 import { useAppDispatch } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
-import CloseIcon from 'public/icons/cross.svg'
 import MobileFilterActions from '@/components/filters/components/MobileFilterActions'
 import { useFiltersChanged } from '@/hooks/filters/useFiltersChanged'
 
@@ -98,7 +97,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       inert={!isOpen ? true : undefined}
       className={cn(
         // Below 40rem container: full-screen fixed overlay. 40rem-64rem: fixed 292px overlay.
-        'bg-background border-tertiary fixed bottom-0 left-0 z-40 flex w-[calc(100%-var(--chat-sidebar-width,0px))] max-w-full flex-col overflow-y-scroll border-r-2 pb-2 shadow-md transition-transform duration-300 @[40rem]/app:w-[292px] @[40rem]/app:min-w-[292px]',
+        'bg-background border-tertiary fixed bottom-0 left-0 z-40 flex w-[calc(100%-var(--chat-sidebar-width,0px))] max-w-full flex-col overflow-y-scroll border-r-2 shadow-md transition-transform duration-300 @[40rem]/app:w-[292px] @[40rem]/app:min-w-[292px]',
         // 64rem+ container: in-flow panel that pushes the feed content aside.
         // min-width must stay 0 so the width transition can animate open; shrink-0 keeps the open panel at full width.
         '@[64rem]/app:static @[64rem]/app:h-full @[64rem]/app:min-w-0 @[64rem]/app:shrink-0 @[64rem]/app:translate-x-0 @[64rem]/app:overflow-x-hidden @[64rem]/app:shadow-none @[64rem]/app:transition-[width]',
@@ -109,18 +108,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     >
       <div className='pt-md relative flex items-center justify-between'>
         <div className='px-lg py-md flex w-full min-w-full justify-between transition-transform @[64rem]/app:min-w-[292px]'>
-          <div className='flex items-center gap-2'>
-            <button
-              type='button'
-              onClick={() => dispatch(actions.setFiltersOpen(false))}
-              className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @[48rem]/app:hidden @[48rem]/app:h-10 @[48rem]/app:w-10'
-            >
-              <Image src={CloseIcon} alt='Close' width={16} height={16} />
-            </button>
-            <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
-              <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
-              <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
-            </div>
+          <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
+            <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
+            <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
           </div>
           <button
             type='button'

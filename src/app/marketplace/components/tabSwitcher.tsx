@@ -11,6 +11,7 @@ import FilterIcon from 'public/icons/filter.svg'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import DownloadButton from '@/components/ui/downloadButton'
 import ViewSelector from '@/components/domains/viewSelector'
+import MobileTabDropdown from '@/components/ui/mobileTabDropdown'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
 
 interface MarketplaceTabSwitcherProps {
@@ -62,23 +63,103 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
     return () => window.removeEventListener('resize', updateIndicator)
   }, [selectedTab, mounted])
 
+  const renderTabLabel = (tab: MarketplaceTabType) => (
+    <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
+  )
+
   // During SSR and initial mount, render without active state
   if (!mounted) {
     return (
       <div
         className={cn(
-          'bg-background pr-lg border-tertiary text-md touch-scroll-x sticky z-10 flex min-h-12 max-w-full scrollbar-none items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
+          'bg-background border-tertiary text-md sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
-        <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
+        <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+          <div className='flex flex-1 items-center @[48rem]/app:flex-none @[48rem]/app:gap-4'>
+            <button
+              type='button'
+              aria-label='Toggle filters'
+              className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14'
+              onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+            >
+              <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
+            </button>
+            <div className='flex-1 @[48rem]/app:hidden'>
+              <MobileTabDropdown
+                options={MARKETPLACE_TABS.map((tab) => ({
+                  value: tab.value,
+                  label: renderTabLabel(tab),
+                  onClick: () => setMarketplaceTab(tab),
+                }))}
+                value={selectedTab.value}
+              />
+            </div>
+            <div ref={containerRef} className='relative hidden h-10 min-w-max gap-4 pr-4 @[48rem]/app:flex'>
+              <div
+                className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
+                style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+              />
+              {MARKETPLACE_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setMarketplaceTab(tab)}
+                  className={cn(
+                    'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg',
+                    selectedTab.value === tab.value
+                      ? 'text-primary font-bold opacity-100'
+                      : 'font-semibold opacity-50 transition-colors hover:opacity-80'
+                  )}
+                >
+                  {renderTabLabel(tab)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className='flex items-center gap-2 @[48rem]/app:hidden'>
+            {selectedTab.value !== 'activity' && <ViewSelector />}
+          </div>
+        </div>
+        <div className='hidden items-center @[48rem]/app:flex'>
+          {selectedTab.value !== 'activity' && <DownloadButton />}
+          {selectedTab.value !== 'activity' && <ViewSelector />}
+        </div>
+      </div>
+    )
+  }
+
+  // After mount, render with proper active state
+  return (
+    <div
+      className={cn(
+        'bg-background border-tertiary text-md @[48rem]/app:touch-scroll-x sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-4',
+        isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
+      )}
+    >
+      <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+        <div className='flex flex-1 items-center @[48rem]/app:flex-none @[48rem]/app:gap-4'>
           <button
+            type='button'
+            aria-label='Toggle filters'
             className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14'
             onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
           >
             <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
           </button>
-          <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
+
+          <div className='flex-1 @[48rem]/app:hidden'>
+            <MobileTabDropdown
+              options={MARKETPLACE_TABS.map((tab) => ({
+                value: tab.value,
+                label: renderTabLabel(tab),
+                onClick: () => setMarketplaceTab(tab),
+              }))}
+              value={selectedTab.value}
+            />
+          </div>
+
+          <div ref={containerRef} className='relative hidden h-10 min-w-max gap-4 pr-4 @[48rem]/app:flex'>
             <div
               className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
               style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -94,55 +175,17 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
                     : 'font-semibold opacity-50 transition-colors hover:opacity-80'
                 )}
               >
-                <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
+                {renderTabLabel(tab)}
               </button>
             ))}
           </div>
         </div>
-        <div className='hidden items-center @[48rem]/app:flex'>
-          {selectedTab.value !== 'activity' && <DownloadButton />}
+
+        <div className='flex items-center gap-2 @[48rem]/app:hidden'>
           {selectedTab.value !== 'activity' && <ViewSelector />}
         </div>
       </div>
-    )
-  }
 
-  // After mount, render with proper active state
-  return (
-    <div
-      className={cn(
-        'bg-background pr-lg border-tertiary text-md touch-scroll-x sticky z-10 flex min-h-12 max-w-full scrollbar-none items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
-        isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
-      )}
-    >
-      <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
-        <button
-          className='border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14'
-          onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
-        >
-          <Image src={FilterIcon} alt='Filter' width={20} height={20} className='opacity-40' />
-        </button>
-        <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
-          <div
-            className='bg-primary absolute bottom-1.5 h-0.5 rounded-full transition-all duration-300 ease-out'
-            style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-          />
-          {MARKETPLACE_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setMarketplaceTab(tab)}
-              className={cn(
-                'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg',
-                selectedTab.value === tab.value
-                  ? 'text-primary font-bold opacity-100'
-                  : 'font-semibold opacity-50 transition-colors hover:opacity-80'
-              )}
-            >
-              <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
-            </button>
-          ))}
-        </div>
-      </div>
       <div className='hidden items-center @[48rem]/app:flex'>
         {selectedTab.value !== 'activity' && <DownloadButton />}
         {selectedTab.value !== 'activity' && <ViewSelector />}

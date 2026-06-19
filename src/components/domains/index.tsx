@@ -168,7 +168,7 @@ const Domains: React.FC<DomainsProps> = ({
   if (!isClient) return null
 
   return (
-    <div className={cn('flex w-full flex-1 flex-col', viewTypeToUse === 'grid' ? 'gap-4' : '')}>
+    <div className={cn('flex w-full flex-1 flex-col', viewTypeToUse === 'grid' ? 'gap-2' : '')}>
       {viewTypeToUse === 'grid' ? (
         <div></div>
       ) : (

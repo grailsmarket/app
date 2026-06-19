@@ -7,103 +7,7 @@ import { CategoryType } from '@/types/domains'
 import TwitterIcon from 'public/logos/x.svg'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
-// import GithubIcon from 'public/logos/github.svg'
-
-export const CATEGORY_SOCIAL_LINKS: Record<string, { twitter?: string; github?: string }> = {
-  prepunks: {
-    twitter: 'https://x.com/PrePunkOfficial',
-  },
-  prepunk_100: {
-    twitter: 'https://x.com/PrePunkOfficial',
-  },
-  prepunk_1k: {
-    twitter: 'https://x.com/PrePunkOfficial',
-  },
-  prepunk_10k: {
-    twitter: 'https://x.com/PrePunkOfficial',
-  },
-  '10k': {
-    twitter: 'https://x.com/10kClubOfficial',
-  },
-  pokemon: {
-    twitter: 'https://x.com/PokemonENS',
-  },
-  '999': {
-    twitter: 'https://x.com/ens999club',
-  },
-  base_single_ethmoji: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  single_ethmoji: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  triple_ethmoji: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  ethmoji_999: {
-    twitter: 'https://x.com/Ethmoji999',
-  },
-  ethmoji_99: {
-    twitter: 'https://x.com/Ethmoji99',
-  },
-  wikidata_top_fantasy_char: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main/wikidata_top_fantasy_char',
-  },
-  prepunk_digits: {
-    twitter: 'https://x.com/PrePunkOfficial',
-  },
-  ethmoji_10k: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  quad_ethmoji: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  quint_ethmoji: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  double_ethmoji: {
-    twitter: 'https://x.com/EthmojiClub',
-  },
-  top_crypto_names: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  top_crypto_tickers: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  top_cities_global: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  top_cities_usa: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  us_states: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  common_animals: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  common_english: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  gamertags: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  gamertags_double: {
-    github: 'https://github.com/grailsmarket/ens-categories/tree/main',
-  },
-  pokemon_gen1: {
-    twitter: 'https://x.com/PokemonENS',
-  },
-  pokemon_gen2: {
-    twitter: 'https://x.com/PokemonENS',
-  },
-  pokemon_gen3: {
-    twitter: 'https://x.com/PokemonENS',
-  },
-  pokemon_gen4: {
-    twitter: 'https://x.com/PokemonENS',
-  },
-}
+import { CATEGORY_SOCIAL_LINKS } from '@/constants/categories/details'
 
 interface Props {
   categoryDetails: CategoryType
@@ -156,50 +60,13 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
                     />
                   </Link>
                 )}
-                {/* {githubLink && (
-                  <Link href={githubLink} target='_blank' rel='noopener noreferrer'>
-                    <Image
-                      src={GithubIcon}
-                      alt='Github'
-                      width={28}
-                      height={28}
-                      className='border-tertiary rounded-full border bg-black p-px transition-opacity hover:opacity-70'
-                    />
-                  </Link>
-                )} */}
               </div>
               <p className='text-neutral text-xl font-medium @[48rem]/app:text-2xl'>{categoryDetails.description}</p>
             </div>
           </div>
         </div>
         <div className='bg-background px-md py-lg @[40rem]/app:p-xl border-tertiary relative z-20 flex flex-col items-center gap-2 border-t-2 @[48rem]/app:rounded-md @[48rem]/app:border-2'>
-          {/* <div className='flex w-full items-center justify-between'>
-            <p className='font-sedan-sc text-xl'>Names</p>
-            <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.member_count)}</p>
-          </div>
-          <div className='flex w-full items-center justify-between'>
-            <p className='font-sedan-sc text-xl'>Floor Price</p>
-            <Price
-              price={categoryDetails.floor_price_wei}
-              currencyAddress={categoryDetails.floor_price_currency as Address}
-              iconSize='18px'
-              fontSize='font-semibold text-xl'
-            />
-          </div>
-          <div className='flex w-full items-center justify-between'>
-            <p className='font-sedan-sc text-xl'>Total Sales</p>
-            <p className='text-xl font-semibold'>{localizeNumber(categoryDetails.total_sales_count)}</p>
-          </div>
-          <div className='flex w-full items-center justify-between'>
-            <p className='font-sedan-sc text-xl'>Total Sales Volume</p>
-            <Price
-              price={categoryDetails.total_sales_volume_wei}
-              currencyAddress={categoryDetails.floor_price_currency as Address}
-              iconSize='18px'
-              fontSize='font-semibold text-xl'
-            />
-          </div> */}
-          <div className='grid grid-cols-2 gap-4 gap-y-4 @[40rem]/app:grid-cols-3 @[40rem]/app:gap-y-6 @[64rem]/app:grid-cols-4'>
+          <div className='grid w-full grid-cols-2 gap-4 gap-y-4 @[40rem]/app:grid-cols-3 @[40rem]/app:gap-y-6 @[64rem]/app:grid-cols-4'>
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
               <p className='text-lg font-semibold'>{localizeNumber(categoryDetails.member_count ?? 0)}</p>
               <p className='text-neutral text-lg'>Names</p>
@@ -250,17 +117,6 @@ const CategoryDetails = ({ categoryDetails }: Props) => {
               </div>
               <p className='text-grace text-lg font-medium'>Grace</p>
             </div>
-            {/* <div className='z-10 flex h-fit flex-col items-start border-l-2 border-neutral pl-2'>
-          <p className='text-lg font-semibold'>
-          <span className='mr-1 text-lg font-medium'>
-          ({(categoryDetails.registered_percent + categoryDetails.grace_percent).toFixed(1)}%)
-          </span>
-          {localizeNumber(categoryDetails.registered_count + categoryDetails.grace_count)}
-          </p>
-          <p className='font-sedan-sc text-xl @[48rem]/app:text-2xl'>
-            Reg+<span className='text-grace'>Grace</span>
-          </p>
-        </div> */}
             <div className='border-neutral z-10 flex h-fit flex-col items-start border-l-2 pl-2'>
               <div className='flex items-center gap-[3px] text-lg font-semibold'>
                 <p>{localizeNumber(categoryDetails.premium_count ?? 0)}</p>

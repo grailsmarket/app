@@ -9,7 +9,6 @@ import { useIsClient } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 import { cn } from '@/utils/tailwind'
-import CloseIcon from 'public/icons/cross.svg'
 import { useFilterContext } from '@/context/filters'
 import ActivityTypeFilter from './ActivityFilter/TypeFilter'
 import { useEffect, useRef } from 'react'
@@ -17,7 +16,6 @@ import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { useNavbar } from '@/context/navbar'
 import SecondaryButton from '../ui/buttons/secondary'
 import MobileFilterActions from './components/MobileFilterActions'
-import ViewSelector from '../domains/viewSelector'
 import DownloadButton from '../ui/downloadButton'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
 import { useResponsiveSize } from '@/hooks/useResponsiveSize'
@@ -75,7 +73,7 @@ const FilterPanel: React.FC = () => {
         'bg-background border-tertiary z-30 flex flex-col overflow-hidden overscroll-contain transition-all duration-300',
         // Mobile styles
         isMobile &&
-          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0px))] max-w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
+          'fixed left-0 w-[calc(100%-var(--chat-sidebar-width,0))] max-w-full shadow-md @[48rem]/app:max-w-[292px] @[48rem]/app:min-w-[292px]',
         isMobile && (isNavbarVisible ? 'top-[56px] h-[calc(100dvh-56px)]' : 'top-0 left-0 h-dvh'),
         isMobile && 'md:top-[70px] md:h-[calc(100dvh-70px)]',
         isMobile && (isOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'),
@@ -101,19 +99,9 @@ const FilterPanel: React.FC = () => {
               isPanelCategories && '-translate-x-full @[64rem]/app:translate-x-[-292px]'
             )}
           >
-            <div className='flex items-center gap-2'>
-              <button
-                onClick={() => {
-                  dispatch(actions.setFiltersOpen(false))
-                }}
-                className='border-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-30 transition-opacity hover:opacity-80 @max-[64rem]/app:flex @[48rem]/app:h-10 @[48rem]/app:w-10 @[64rem]/app:hidden'
-              >
-                <Image src={CloseIcon} alt='Close' width={16} height={16} />
-              </button>
-              <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
-                <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
-                <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
-              </div>
+            <div className='flex max-w-full items-center gap-1.5 pl-0.5 text-sm font-bold'>
+              <Image src={FilterIcon} alt='filter icon' height={16} width={16} />
+              <p className='text-light-800 text-xl leading-6 font-bold'>Filters</p>
             </div>
             <div className='z-10 flex items-center gap-2'>
               <SecondaryButton
@@ -126,7 +114,6 @@ const FilterPanel: React.FC = () => {
                 Clear
               </SecondaryButton>
               <span className='flex items-center gap-2 @[48rem]/app:hidden'>
-                <ViewSelector />
                 <DownloadButton />
               </span>
             </div>

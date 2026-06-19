@@ -48,8 +48,8 @@ const ValuationResult: React.FC<{
 
   const web2Count = evidence.web2?.summary?.registeredExtensions
   const avgSearches = evidence.searchDemand?.summary?.avgMonthlySearches
-  const meaningsCount = evidence.nameResearch?.senses?.length ?? evidence.nameResearch?.meanings?.length
-  const salesAnalysed = evidence.marketActivity?.salesFound ?? evidence.marketActivity?.summary?.salesFound
+  const meaningsCount = evidence.nameResearch?.senses?.length
+  const salesAnalysed = evidence.marketActivity?.salesFound
 
   const scenarios: { key: SubjectKey; label: string; eth: number; center: number; primary?: boolean }[] = [
     { key: 'low', label: 'Low', eth: low, center: 1 / 8 },

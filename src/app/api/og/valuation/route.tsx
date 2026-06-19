@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { beautifyName } from '@/lib/ens'
 import { toSteppedPercent } from '@/utils/metrics'
 import { getEtherPrice } from '@/utils/web3/getEtherPrice'
+import { computeAxisMax, heatBellSamples, niceStep, OUTLIER_MULT } from '@/utils/valuation/plotMath'
 import { API_URL } from '@/constants/api'
 import type { ValuationEvidenceResult } from '@/types/valuation'
 import { getInterFonts } from '../_lib/inter'
@@ -33,9 +34,6 @@ const CARD_PADDING = 40
 const CONTENT_WIDTH = CARD_WIDTH - CARD_PADDING * 2 // 1000
 const BAR_HEIGHT = 56
 
-const OUTLIER_MULT = 3
-const HEAT_EDGE_OFFSET = 0.05
-const HEAT_SIGMA_K = 2.5
 const MAX_PILLS = 12
 
 const DISCLAIMER =
@@ -88,19 +86,6 @@ function formatSearchCount(value: number): string {
   return value.toLocaleString('en-US')
 }
 
-function computeAxisMax(high: number, maxCompPrice: number): number {
-  return Math.max(high, maxCompPrice, 1e-6) * 1.05
-}
-
-function niceStep(value: number): number {
-  if (value <= 0) return 1
-  const magnitude = 10 ** Math.floor(Math.log10(value))
-  const normalized = value / magnitude
-  const steps = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]
-  const step = steps.find((s) => normalized <= s + 1e-9) ?? 10
-  return step * magnitude
-}
-
 /** Interpolate neutral grey -> primary as the metric fills (replaces color-mix). */
 function edgeColor(fill: number): string {
   const t = Math.max(0, Math.min(1, fill))
@@ -110,31 +95,17 @@ function edgeColor(fill: number): string {
   return `rgb(${r},${g},${b})`
 }
 
-/** Heat gradient ported from the panel; emits rgba stops (no color-mix). */
+/** Heat gradient for Satori: maps the shared bell samples to rgba stops (no color-mix). */
 function buildHeatGradient(lowFrac: number, estFrac: number, highFrac: number): string {
-  const STOPS = 32
-  const span = Math.max(highFrac - lowFrac, 0)
-  const sigmaLeft = (estFrac - lowFrac) / HEAT_SIGMA_K
-  const sigmaRight = (highFrac - estFrac) / HEAT_SIGMA_K
-  const gEdge = Math.exp(-0.5 * HEAT_SIGMA_K * HEAT_SIGMA_K)
-
-  const bell = (f: number) => {
-    const d = f - estFrac
-    const sigma = d <= 0 ? sigmaLeft : sigmaRight
-    if (sigma <= 0) return 1
-    const g = Math.exp(-0.5 * (d / sigma) ** 2)
-    const normalized = Math.max(0, (g - gEdge) / (1 - gEdge))
-    return HEAT_EDGE_OFFSET + (1 - HEAT_EDGE_OFFSET) * normalized
-  }
-
   const pct = (f: number) => (f * 100).toFixed(2)
-  const stops: string[] = ['transparent 0%', `transparent ${pct(lowFrac)}%`]
-  for (let i = 0; i <= STOPS; i++) {
-    const f = lowFrac + (span * i) / STOPS
-    const opacity = f <= lowFrac || f >= highFrac ? 0 : bell(f)
-    stops.push(`rgba(${PRIMARY_RGB},${(opacity * 0.92).toFixed(3)}) ${pct(f)}%`)
-  }
-  stops.push(`transparent ${pct(highFrac)}%`, 'transparent 100%')
+  const samples = heatBellSamples(lowFrac, estFrac, highFrac)
+  const stops = [
+    'transparent 0%',
+    `transparent ${pct(lowFrac)}%`,
+    ...samples.map((s) => `rgba(${PRIMARY_RGB},${(s.opacity * 0.92).toFixed(3)}) ${pct(s.frac)}%`),
+    `transparent ${pct(highFrac)}%`,
+    'transparent 100%',
+  ]
   return `linear-gradient(to right, ${stops.join(', ')})`
 }
 
@@ -414,29 +385,35 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
+    // Returns null ONLY for a definitive "no valuation": not generated yet (401),
+    // feature disabled (404) or an ineligible name (400). A transient backend
+    // failure throws, so we can answer 502 instead of a misleading "no valuation" 404.
     const getValuation = async (): Promise<ValuationEvidenceResult | null> => {
-      try {
-        const res = await fetch(`${API_URL}/valuations/${encodeURIComponent(name)}/evidence`, {
-          method: 'POST',
-          headers: { Accept: 'application/json' },
-        })
-        if (!res.ok) return null
-        const json = (await res.json().catch(() => null)) as {
-          success?: boolean
-          data?: ValuationEvidenceResult
-        } | null
-        if (!json?.success || !json.data) return null
-        return json.data
-      } catch (error) {
-        console.error('Error fetching valuation evidence:', error)
-        return null
-      }
+      const res = await fetch(`${API_URL}/valuations/${encodeURIComponent(name)}/evidence`, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      })
+      if (res.status === 401 || res.status === 404 || res.status === 400) return null
+      if (!res.ok) throw new Error(`valuation backend responded ${res.status}`)
+      const json = (await res.json().catch(() => null)) as {
+        success?: boolean
+        data?: ValuationEvidenceResult
+      } | null
+      if (!json?.success || !json.data) return null
+      return json.data
     }
 
     // Only generate an image for names that already have a valuation. This is an
     // unauthenticated cache "peek" (never triggers a generation); when no cached
-    // valuation exists we 404 rather than render a placeholder image.
-    const valuation = await getValuation()
+    // valuation exists we 404 rather than render a placeholder image. A transient
+    // upstream failure answers 502 so a backend hiccup isn't cached as a 404.
+    let valuation: ValuationEvidenceResult | null
+    try {
+      valuation = await getValuation()
+    } catch (error) {
+      console.error('Error fetching valuation evidence:', error)
+      return NextResponse.json({ error: 'Valuation is temporarily unavailable' }, { status: 502 })
+    }
     const appraisal = valuation?.evidence.appraisal
     const low = toNumber(appraisal?.lowEth)
     const estimate = toNumber(appraisal?.ethValue)
@@ -527,8 +504,8 @@ export async function GET(req: NextRequest) {
     const evidence = valuation!.evidence
     const web2Count = evidence.web2?.summary?.registeredExtensions
     const avgSearches = evidence.searchDemand?.summary?.avgMonthlySearches
-    const meaningsCount = evidence.nameResearch?.senses?.length ?? evidence.nameResearch?.meanings?.length
-    const salesAnalysed = evidence.marketActivity?.salesFound ?? evidence.marketActivity?.summary?.salesFound
+    const meaningsCount = evidence.nameResearch?.senses?.length
+    const salesAnalysed = evidence.marketActivity?.salesFound
 
     return new ImageResponse(
       <div

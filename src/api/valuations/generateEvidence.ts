@@ -167,34 +167,37 @@ export async function generateValuationEvidence(
  * generation path requires a logged-in user. So this can return a cached result
  * to anyone, but can never trigger a new generation or consume quota.
  *
- * Returns null when there is no cached valuation yet (the backend answers 401
- * because generating would be required), or on any transient failure.
+ * Returns null ONLY for a definitive "no valuation for this name": not generated
+ * yet (401), feature disabled (404) or an ineligible name (400). A transient
+ * failure (5xx, network, abort) THROWS so React Query records an error instead of
+ * caching a false `null` for `staleTime` — which would hide an existing valuation.
  */
 export async function fetchCachedValuationEvidence(
   name: string,
   signal?: AbortSignal
 ): Promise<ValuationEvidenceResult | null> {
-  try {
-    const response = await fetch(valuationEvidenceUrl(name), {
-      method: 'POST',
-      mode: 'cors',
-      signal,
-      headers: {
-        Accept: 'application/json',
-      },
-    })
+  const response = await fetch(valuationEvidenceUrl(name), {
+    method: 'POST',
+    mode: 'cors',
+    signal,
+    headers: {
+      Accept: 'application/json',
+    },
+  })
 
-    // 401 => not cached; a logged-in user must explicitly generate it.
-    if (response.status === 401) return null
-
-    const json = (await response.json().catch(() => null)) as ValuationEvidenceApiResponse | null
-    if (!response.ok || !json?.success || !json.data) return null
-
-    return json.data
-  } catch (error) {
-    // Let React Query handle its own cancellation: re-throw aborts so a cancelled
-    // peek isn't recorded as a successful `null` and cached for staleTime.
-    if ((error as { name?: string })?.name === 'AbortError') throw error
+  // Definitive "no valuation" — safe to cache as null.
+  if (response.status === 401 || response.status === 404 || response.status === 400) {
     return null
   }
+
+  // Anything else non-OK is a transient backend failure: throw so it isn't cached
+  // as "no valuation". (AbortError + network errors propagate from fetch above.)
+  if (!response.ok) {
+    throw new ValuationEvidenceRequestError('Valuation service is temporarily unavailable', response.status)
+  }
+
+  const json = (await response.json().catch(() => null)) as ValuationEvidenceApiResponse | null
+  if (!json?.success || !json.data) return null
+
+  return json.data
 }

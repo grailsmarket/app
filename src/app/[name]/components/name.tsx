@@ -12,7 +12,6 @@ import CommentsPanel from './commentsPanel'
 import NamePageTabContent from './namePageTabContent'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
-import ValuationRangePanel from './valuationRangePanel'
 // import Metadata from './metadata'
 
 interface Props {
@@ -22,6 +21,7 @@ interface Props {
 const NAME_PAGE_TABS = [
   { label: 'Market', value: 'market' },
   { label: 'Activity', value: 'activity' },
+  { label: 'Valuation', value: 'valuation' },
   { label: 'Details', value: 'details' },
 ] as const
 
@@ -97,9 +97,6 @@ const NamePage: React.FC<Props> = ({ name }) => {
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
           </div>
           <div className='hidden @[64rem]/app:block'>
-            <ValuationRangePanel key={`range-${name}`} name={name} ownerAddress={nameDetails?.owner} />
-          </div>
-          <div className='hidden @[64rem]/app:block'>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}
@@ -111,9 +108,6 @@ const NamePage: React.FC<Props> = ({ name }) => {
         <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:w-3/5'>
           <div className='@[64rem]/app:hidden'>
             <Categories nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} />
-          </div>
-          <div className='@[64rem]/app:hidden'>
-            <ValuationRangePanel key={`range-${name}`} name={name} ownerAddress={nameDetails?.owner} />
           </div>
           <div className='flex w-full flex-col gap-0 @[40rem]/app:gap-2.5'>
             <div className='bg-secondary border-tertiary relative flex w-full overflow-hidden border-b-2 @[40rem]/app:rounded-lg @[40rem]/app:border-x-2 @[40rem]/app:border-t-2'>

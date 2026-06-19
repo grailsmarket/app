@@ -1,5 +1,82 @@
 {
   "name": "Grails Market",
-  "description": "The ENS marketplace for buying, selling, and discovering ENS domain names",
-  "iconPath": "logo.svg"
+  "short_name": "Grails",
+  "description": "Find, sell, buy, and manage ENS names on Grails Market.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "background_color": "#222222",
+  "theme_color": "#ffdfc0",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/previews/home.jpeg",
+      "sizes": "800x411",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Grails home page"
+    },
+    {
+      "src": "/previews/explore.jpeg",
+      "sizes": "800x411",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Explore ENS names on Grails"
+    },
+    {
+      "src": "/previews/categories.jpeg",
+      "sizes": "800x411",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Browse ENS categories"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Marketplace",
+      "short_name": "Market",
+      "description": "Browse ENS names listed for sale.",
+      "url": "/marketplace",
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Bulk Search",
+      "short_name": "Bulk",
+      "description": "Search ENS names in bulk.",
+      "url": "/bulk-search",
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Activity Feed",
+      "short_name": "Feed",
+      "description": "See the latest ENS market activity.",
+      "url": "/feed",
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
 }

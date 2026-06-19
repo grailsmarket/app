@@ -20,10 +20,6 @@ export const sharedMetadataIcons: Metadata['icons'] = [
     rel: 'android-chrome',
     url: 'https://grails.app/android-chrome-192x192.png',
   },
-  {
-    rel: 'manifest',
-    url: 'https://grails.app/manifest.json',
-  },
 ]
 
 export const sharedMetadataOpenGraph: Metadata['openGraph'] = {

@@ -6,14 +6,7 @@ import {
   ValuationEvidenceRequestError,
 } from '@/api/valuations/generateEvidence'
 import { useUserContext } from '@/context/user'
-import type {
-  ValuationEvidenceRequest,
-  ValuationEvidenceStreamStageEvent,
-  ValuationProgressStage,
-} from '@/types/valuation'
-
-const DEFAULT_RECOMMENDATION_COUNT = 200
-const DEFAULT_PREMIUM_FLOOR = '0.1'
+import type { ValuationEvidenceStreamStageEvent, ValuationProgressStage } from '@/types/valuation'
 
 type ValuationEvidenceProgressByStage = Partial<Record<ValuationProgressStage, ValuationEvidenceStreamStageEvent>>
 
@@ -60,14 +53,12 @@ export function useValuationEvidence(name: string) {
       const controller = new AbortController()
       abortRef.current = controller
 
-      const body: ValuationEvidenceRequest = {
-        recommendationCount: DEFAULT_RECOMMENDATION_COUNT,
-        premiumRegistrationFloorEth: DEFAULT_PREMIUM_FLOOR,
-      }
-
+      // The backend ignores all client-supplied generation knobs (recommendationCount
+      // is unused; the premium-registration floor is fixed server-side and not
+      // client-overridable), so we send an empty body.
       return generateValuationEvidence(
         name,
-        body,
+        {},
         (event) => {
           setValuationEvidenceProgressByStage((previousProgress) => ({
             ...previousProgress,

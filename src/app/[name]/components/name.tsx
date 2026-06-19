@@ -152,7 +152,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
               />
             </div>
           </div>
-          <div className='@[64rem]/app:hidde border-tertiary @[40rem]/app:border-t-2 @[40rem]/app:pt-4'>
+          <div className='@[64rem]/app:hidde border-tertiary @[40rem]/app:border-t-2 @[40rem]/app:pt-4 @[64rem]/app:hidden'>
             <KeywordMetrics
               name={name}
               expiryDate={nameDetails?.expiry_date}

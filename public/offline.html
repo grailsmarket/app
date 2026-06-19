@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffdfc0" />
+    <title>Grails Market is offline</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at top, #444444 0, #222222 52%, #141414 100%);
+        color: #f4f4f4;
+      }
+
+      main {
+        width: min(100% - 32px, 520px);
+        padding: 32px;
+        border: 1px solid rgba(255, 223, 192, 0.22);
+        border-radius: 24px;
+        background: rgba(34, 34, 34, 0.86);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+        text-align: center;
+      }
+
+      img {
+        width: 180px;
+        height: auto;
+        margin-bottom: 32px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 8vw, 3.25rem);
+        line-height: 1;
+      }
+
+      p {
+        margin: 0 auto 28px;
+        max-width: 36rem;
+        color: #cccccc;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 22px;
+        background: #ffdfc0;
+        color: #222222;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      button:focus-visible {
+        outline: 3px solid #ffffff;
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/logo-w-text.svg" alt="Grails Market" />
+      <h1>You are offline</h1>
+      <p>
+        Grails needs a network connection for live ENS listings, wallet actions, chat, and market data. Reconnect and
+        try again.
+      </p>
+      <button type="button" onclick="window.location.reload()">Try again</button>
+    </main>
+  </body>
+</html>

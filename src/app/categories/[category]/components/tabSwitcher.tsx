@@ -17,6 +17,7 @@ import Image from 'next/image'
 import FilterIcon from 'public/icons/filter.svg'
 import ViewSelector from '@/components/domains/viewSelector'
 import { setBulkSelectIsSelecting } from '@/state/reducers/modals/bulkSelectModal'
+import MobileTabDropdown from '@/components/ui/mobileTabDropdown'
 
 interface Props {
   category: string
@@ -107,7 +108,7 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
-        <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
+        <div className='justify-between@[48rem]/app:gap-4 flex items-center'>
           <button
             className={cn(
               'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14',
@@ -123,7 +124,19 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
               className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
             />
           </button>
-          <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
+
+          <div className='flex-1 @[48rem]/app:hidden'>
+            <MobileTabDropdown
+              options={CATEGORY_TABS.map((tab) => ({
+                value: tab.value,
+                label: tab.label,
+                onClick: () => setCategoryTab(tab),
+              }))}
+              value={selectedTab.value}
+            />
+          </div>
+
+          <div ref={containerRef} className='relative hidden h-10 min-w-max gap-4 pr-4 @[48rem]/app:flex'>
             <div
               className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
               style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
@@ -154,6 +167,9 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
               ))}
             </div>
           </div>
+          <div className='flex items-center gap-2'>
+            {selectedTab.value !== 'holders' && selectedTab.value !== 'activity' && <ViewSelector />}
+          </div>
         </div>
         <div className='hidden items-center @[48rem]/app:flex'>
           {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && selectedTab.value !== 'comments' && (
@@ -169,60 +185,74 @@ const TabSwitcher: React.FC<Props> = ({ category }) => {
   return (
     <div
       className={cn(
-        'bg-background border-tertiary text-md touch-scroll-x sticky z-20 flex min-h-12 max-w-full scrollbar-none items-center justify-between gap-2 overflow-x-auto border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
+        'bg-background border-tertiary text-md sticky z-20 flex min-h-12 max-w-full scrollbar-none items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
-      <div className='flex items-center justify-between gap-3 @[48rem]/app:gap-4'>
-        <button
-          className={cn(
-            'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14',
-            disableFilterButton && 'pointer-events-none cursor-not-allowed'
-          )}
-          onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
-        >
-          <Image
-            src={FilterIcon}
-            alt='Filter'
-            width={20}
-            height={20}
-            className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
-          />
-        </button>
-        <div ref={containerRef} className='relative flex h-10 min-w-max gap-4 pr-4'>
-          <div
-            className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
-            style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-          />
-          {CATEGORY_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setCategoryTab(tab)}
-              className={cn(
-                'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
-                selectedTab.value === tab.value
-                  ? 'text-primary font-bold opacity-100'
-                  : 'font-medium opacity-50 transition-colors hover:opacity-80'
-              )}
-            >
-              <p>{tab.label}</p>
-              {tab.value !== 'activity' && tab.value !== 'analytics' && tab.value !== 'comments' && (
-                <Label
-                  label={getTotalItems(tab)}
-                  className={cn(
-                    '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
-                    selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
-                  )}
-                />
-              )}
-            </button>
-          ))}
+      <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+        <div className='flex w-full items-center justify-between @[48rem]/app:gap-4'>
+          <button
+            className={cn(
+              'border-tertiary bg-background hover:bg-secondary sticky left-0 z-10 flex h-12 min-h-12 w-12 min-w-12 cursor-pointer items-center justify-center border-r-2 transition-all @[48rem]/app:h-14 @[48rem]/app:min-h-14 @[48rem]/app:w-10 @[48rem]/app:min-w-14',
+              disableFilterButton && 'pointer-events-none cursor-not-allowed'
+            )}
+            onClick={() => dispatch(actions.setFiltersOpen(!selectors.filters.open))}
+          >
+            <Image
+              src={FilterIcon}
+              alt='Filter'
+              width={20}
+              height={20}
+              className={!disableFilterButton ? 'opacity-40' : 'opacity-10'}
+            />
+          </button>
+
+          <div className='flex-1 @[48rem]/app:hidden'>
+            <MobileTabDropdown
+              options={CATEGORY_TABS.map((tab) => ({
+                value: tab.value,
+                label: tab.label,
+                onClick: () => setCategoryTab(tab),
+              }))}
+              value={selectedTab.value}
+            />
+          </div>
+
+          <div ref={containerRef} className='relative hidden h-10 min-w-max gap-4 pr-4 @[48rem]/app:flex'>
+            <div
+              className='bg-primary absolute bottom-1 h-0.5 rounded-full transition-all duration-300 ease-out'
+              style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+            />
+            {CATEGORY_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setCategoryTab(tab)}
+                className={cn(
+                  'py-md flex w-fit shrink-0 cursor-pointer flex-row items-center justify-center gap-1 text-lg @[40rem]/app:text-xl',
+                  selectedTab.value === tab.value
+                    ? 'text-primary font-bold opacity-100'
+                    : 'font-medium opacity-50 transition-colors hover:opacity-80'
+                )}
+              >
+                <p>{tab.label}</p>
+                {tab.value !== 'activity' && tab.value !== 'analytics' && tab.value !== 'comments' && (
+                  <Label
+                    label={getTotalItems(tab)}
+                    className={cn(
+                      '@[40rem]/app:text-md h-[14px] min-w-[14px] px-0.5! text-xs @[26.25rem]/app:h-[16px] @[26.25rem]/app:min-w-[16px] @[26.25rem]/app:text-sm @[40rem]/app:h-[18px] @[40rem]/app:min-w-[18px]',
+                      selectedTab.value === tab.value ? 'bg-primary' : 'bg-neutral'
+                    )}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
+
+        <div className='flex items-center gap-2 @[48rem]/app:hidden'>{!disableFilterButton && <ViewSelector />}</div>
       </div>
       <div className='hidden items-center @[48rem]/app:flex'>
-        {selectedTab.value !== 'analytics' && selectedTab.value !== 'holders' && selectedTab.value !== 'comments' && (
-          <DownloadButton category={category} />
-        )}
+        {!disableFilterButton && <DownloadButton category={category} />}
         {selectedTab.value !== 'comments' && <ViewSelector />}
       </div>
     </div>

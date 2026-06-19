@@ -77,7 +77,7 @@ const ViewSelector = () => {
         <Tooltip label={viewType === 'grid' ? 'Grid view' : 'List view'}>
           <button
             onClick={() => onChangeViewType(viewType === 'grid' ? 'list' : 'grid')}
-            className='border-foreground @[48rem]/app:border-tertiary @[48rem]/app:hover:bg-secondary flex h-9 w-9 cursor-pointer items-center justify-center rounded-sm border opacity-40 transition-opacity hover:opacity-80 @[48rem]/app:h-14 @[48rem]/app:w-14 @[48rem]/app:rounded-none @[48rem]/app:border-0 @[48rem]/app:border-l-2 @[48rem]/app:opacity-100'
+            className='border-tertiary hover:bg-secondary flex h-12 w-12 cursor-pointer items-center justify-center border-l-2 opacity-100 transition-opacity hover:opacity-80 @[48rem]/app:h-14 @[48rem]/app:w-14'
           >
             {viewType === 'grid' ? (
               <Image src={grid} alt='Grid layout' width={20} height={20} className='@[48rem]/app:opacity-60' />

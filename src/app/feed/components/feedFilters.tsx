@@ -52,7 +52,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
 
   return (
     <div className='bg-background border-tertiary text-md @[48rem]/app:touch-scroll-x sticky top-0 z-20 flex min-h-12 max-w-full items-center gap-3 border-b-2 transition-[top] duration-300 @[26.25rem]/app:text-lg @[40rem]/app:gap-4 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-4'>
-      <div className='flex w-full items-center gap-3 @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+      <div className='flex w-full items-center @[48rem]/app:w-auto @[48rem]/app:gap-4'>
         <button
           type='button'
           onClick={onToggleFilters}
@@ -73,7 +73,7 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
           )}
         </button>
 
-        <div className='flex-1 pr-4 @[48rem]/app:hidden'>
+        <div className='flex-1 @[48rem]/app:hidden'>
           <MobileTabDropdown
             options={FEED_TABS.map((tab) => ({
               value: tab.value,

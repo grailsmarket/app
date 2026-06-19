@@ -79,6 +79,7 @@ const CategoriesPageTabSwitcher = () => {
     window.addEventListener('resize', updateIndicator)
     return () => window.removeEventListener('resize', updateIndicator)
   }, [selectedTab, mounted, holdersCount, listingsCount])
+
   const renderTabLabel = (tab: CategoriesPageTabType, isActive: boolean) => (
     <>
       <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
@@ -117,12 +118,12 @@ const CategoriesPageTabSwitcher = () => {
     return (
       <div
         className={cn(
-          'bg-background pr-lg border-tertiary text-md sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
+          'bg-background border-tertiary text-md sticky z-10 flex min-h-12 items-center gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-8',
           isNavbarVisible ? 'top-14 md:top-[70px]' : 'top-0'
         )}
       >
-        <div className='flex w-full items-center justify-between gap-3 @[48rem]/app:w-auto @[48rem]/app:gap-4'>
-          <div className='flex flex-1 items-center gap-3 @[48rem]/app:flex-none @[48rem]/app:gap-4'>
+        <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+          <div className='flex flex-1 items-center @[48rem]/app:flex-none @[48rem]/app:gap-4'>
             <button
               type='button'
               aria-label='Toggle filters'
@@ -193,12 +194,12 @@ const CategoriesPageTabSwitcher = () => {
   return (
     <div
       className={cn(
-        'bg-background border-tertiary text-md pr-lg @[48rem]/app:touch-scroll-x sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-8',
+        'bg-background border-tertiary text-md @[48rem]/app:touch-scroll-x sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-4 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-8',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
-      <div className='flex w-full items-center justify-between gap-3 @[48rem]/app:w-auto @[48rem]/app:gap-4'>
-        <div className='flex flex-1 items-center gap-3 @[48rem]/app:flex-none @[48rem]/app:gap-4'>
+      <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+        <div className='flex flex-1 items-center @[48rem]/app:flex-none @[48rem]/app:gap-4'>
           <button
             type='button'
             aria-label='Toggle filters'
@@ -255,15 +256,11 @@ const CategoriesPageTabSwitcher = () => {
           </div>
         </div>
 
-        <div className='flex items-center gap-2 @[48rem]/app:hidden'>
-          {selectedTab.value !== 'holders' && <ViewSelector />}
-        </div>
+        <div className='flex items-center gap-2 @[48rem]/app:hidden'>{!disableFilterButton && <ViewSelector />}</div>
       </div>
 
       <div className='hidden items-center @[48rem]/app:flex'>
-        {selectedTab.value !== 'categories' && selectedTab.value !== 'holders' && (
-          <DownloadButton inAnyCategory={true} />
-        )}
+        {!disableFilterButton && <DownloadButton inAnyCategory={true} />}
         {selectedTab.value !== 'holders' && <ViewSelector />}
       </div>
     </div>

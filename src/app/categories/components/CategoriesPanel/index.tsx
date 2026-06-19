@@ -29,7 +29,7 @@ const CategoriesPanel: React.FC = () => {
   return (
     <div className='z-0 flex w-full flex-col'>
       {/* Categories grid/list */}
-      <div className={cn('py-lg', clientViewType === 'list' ? 'p-0!' : 'px-md @[64rem]/app:px-lg')}>
+      <div className={cn('py-md', clientViewType === 'list' ? 'p-0!' : 'px-md @[64rem]/app:px-lg')}>
         {isLoading ? (
           clientViewType === 'list' ? (
             <div className='flex flex-col'>

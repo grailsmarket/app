@@ -70,8 +70,8 @@ const TextareaSection: React.FC = () => {
   }
 
   return (
-    <div className='border-tertiary relative flex w-full flex-col gap-3 border-b-2 p-4'>
-      <div className='bg-background pt-lg px-lg pb-md absolute top-4.5 left-4.5 flex w-[calc(100%-36px)] items-center justify-between gap-3'>
+    <div className='border-tertiary relative flex w-full flex-col gap-3 @[48rem]/app:border-b-2 @[48rem]/app:p-4'>
+      <div className='bg-background pt-lg px-lg pb-md absolute top-0.5 left-0 flex w-full items-center justify-between gap-3 @[48rem]/app:top-4.5 @[48rem]/app:left-4.5 @[48rem]/app:w-[calc(100%-36px)]'>
         <h1 className='text-xl font-bold @[40rem]/app:text-2xl'>Bulk Search</h1>
         <p className={`text-lg font-medium ${isOverLimit ? 'text-red-500' : 'opacity-50'}`}>
           {formatNumber(nameCount)} / {formatNumber(MAX_NAMES)} names
@@ -82,10 +82,10 @@ const TextareaSection: React.FC = () => {
         onChange={(e) => setTextareaValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder='Enter up to 10,000 names separated by commas, spaces, or new lines'
-        className='border-tertiary p-lg min-h-[180px] w-full resize-y rounded-sm border-2 bg-transparent pt-13 pb-16 text-lg transition-all outline-none hover:border-white/50 focus:border-white/80'
+        className='border-tertiary p-lg min-h-[180px] w-full resize-y border-b-2 bg-transparent pt-13 pb-16 text-lg transition-all outline-none @[48rem]/app:rounded-sm @[48rem]/app:border-2 @[48rem]/app:hover:border-white/50 @[48rem]/app:focus:border-white/80'
         rows={4}
       />
-      <div className='p-md bg-background absolute right-6.5 bottom-6.5 flex items-center gap-2'>
+      <div className='p-md bg-background absolute right-1 bottom-1 flex items-center gap-2 @[48rem]/app:right-6.5 @[48rem]/app:bottom-6.5'>
         <button
           onClick={handleSearch}
           disabled={isDisabled}

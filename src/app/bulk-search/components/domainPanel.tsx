@@ -28,8 +28,8 @@ const DomainPanel = ({
 
   if (!searchTerms) {
     return (
-      <div className='flex w-full flex-col items-center justify-center py-20 opacity-50'>
-        <p className='text-xl'>Enter names above and click Search to see results</p>
+      <div className='px-lg flex w-full flex-col items-center justify-center py-20 opacity-50'>
+        <p className='text-center text-xl'>Enter names above and click Search to see results</p>
       </div>
     )
   }

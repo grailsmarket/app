@@ -62,6 +62,7 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
     window.addEventListener('resize', updateIndicator)
     return () => window.removeEventListener('resize', updateIndicator)
   }, [selectedTab, mounted])
+
   const renderTabLabel = (tab: MarketplaceTabType) => (
     <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
   )
@@ -71,12 +72,12 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
     return (
       <div
         className={cn(
-          'bg-background pr-lg border-tertiary text-md sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
+          'bg-background border-tertiary text-md sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[64rem]/app:gap-4',
           isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
         )}
       >
-        <div className='flex w-full items-center justify-between gap-3 @[48rem]/app:w-auto @[48rem]/app:gap-4'>
-          <div className='flex flex-1 items-center gap-3 @[48rem]/app:flex-none @[48rem]/app:gap-4'>
+        <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+          <div className='flex flex-1 items-center @[48rem]/app:flex-none @[48rem]/app:gap-4'>
             <button
               type='button'
               aria-label='Toggle filters'
@@ -132,12 +133,12 @@ const MarketplaceTabSwitcher: React.FC<MarketplaceTabSwitcherProps> = () => {
   return (
     <div
       className={cn(
-        'bg-background pr-lg border-tertiary text-md @[48rem]/app:touch-scroll-x sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-4',
+        'bg-background border-tertiary text-md @[48rem]/app:touch-scroll-x sticky z-10 flex min-h-12 max-w-full items-center justify-between gap-2 border-b-2 transition-[top] duration-300 @[26.25rem]/app:gap-2 @[26.25rem]/app:text-lg @[40rem]/app:pr-0 @[40rem]/app:text-xl @[48rem]/app:min-h-14 @[48rem]/app:scrollbar-none @[48rem]/app:overflow-x-auto @[64rem]/app:gap-4',
         isNavbarVisible ? 'top-14 md:top-[72px]' : 'top-0'
       )}
     >
-      <div className='flex w-full items-center justify-between gap-3 @[48rem]/app:w-auto @[48rem]/app:gap-4'>
-        <div className='flex flex-1 items-center gap-3 @[48rem]/app:flex-none @[48rem]/app:gap-4'>
+      <div className='flex w-full items-center justify-between @[48rem]/app:w-auto @[48rem]/app:gap-4'>
+        <div className='flex flex-1 items-center @[48rem]/app:flex-none @[48rem]/app:gap-4'>
           <button
             type='button'
             aria-label='Toggle filters'

@@ -17,6 +17,7 @@ interface MobileTabDropdownProps {
 
 const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, className }) => {
   const [isOpen, setIsOpen] = useState(false)
+
   const listboxId = useId()
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
   const dropdownRef = useClickAway<HTMLDivElement>(() => {
@@ -91,7 +92,7 @@ const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, c
         aria-controls={listboxId}
         aria-label='Select tab'
         onClick={() => (isOpen ? setIsOpen(false) : openAndFocusSelectedOption())}
-        className='bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary focus-visible:ring-primary flex h-10 w-full min-w-0 cursor-pointer items-center justify-between gap-4 rounded-md border px-4 py-2 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none focus-visible:ring-2'
+        className='hover:bg-secondary px-lg flex h-12 w-full min-w-0 cursor-pointer items-center justify-between gap-4 text-left transition-colors'
       >
         <div className='flex min-w-0 items-center gap-2'>
           <span className='flex min-w-0 items-center gap-2 overflow-hidden text-lg font-medium [&_p]:truncate'>
@@ -105,7 +106,7 @@ const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, c
         <div
           id={listboxId}
           role='listbox'
-          className='bg-background border-tertiary absolute right-0 left-0 z-50 mt-2 max-h-[240px] overflow-y-auto rounded-md border-2 shadow-lg'
+          className='bg-background border-tertiary absolute right-1 left-0 z-50 mt-1.5 max-h-[320px] overflow-y-auto rounded-md border-2 shadow-sm'
         >
           {options.map((option, index) => (
             <button
@@ -122,7 +123,9 @@ const MobileTabDropdown: React.FC<MobileTabDropdownProps> = ({ options, value, c
                 option.value === value && 'bg-secondary'
               )}
             >
-              <span className='flex min-w-0 items-center gap-2 overflow-hidden [&_p]:truncate'>{option.label}</span>
+              <p className='flex min-w-0 items-center gap-2 overflow-hidden text-lg font-medium [&_p]:truncate'>
+                {option.label}
+              </p>
             </button>
           ))}
         </div>

@@ -45,6 +45,15 @@ self.addEventListener('message', (event) => {
   }
 })
 
+self.addEventListener('push', (event) => {
+  event.waitUntil(showPushNotification(event.data))
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil(openNotificationTarget(event.notification.data?.url))
+})
+
 self.addEventListener('fetch', (event) => {
   const { request } = event
 
@@ -126,4 +135,66 @@ function isImageAsset(request, url) {
 
 function isCacheable(response) {
   return response && response.ok && response.type === 'basic'
+}
+
+async function showPushNotification(pushData) {
+  const payload = parsePushPayload(pushData)
+  const title = typeof payload.title === 'string' && payload.title ? payload.title : 'Grails Market'
+  const body = typeof payload.body === 'string' && payload.body ? payload.body : 'You have a new notification'
+  const url = normalizeNotificationUrl(payload.url)
+
+  await self.registration.showNotification(title, {
+    body,
+    icon: '/pwa-icon-192.png',
+    badge: '/pwa-icon-192.png',
+    data: {
+      ...payload,
+      url,
+    },
+  })
+}
+
+function parsePushPayload(pushData) {
+  if (!pushData) return {}
+
+  const text = pushData.text()
+  if (!text) return {}
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    return {
+      body: text,
+    }
+  }
+}
+
+async function openNotificationTarget(rawUrl) {
+  const targetUrl = normalizeNotificationUrl(rawUrl)
+  const windowClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+  const exactClient = windowClients.find((client) => client.url === targetUrl)
+
+  if (exactClient) {
+    await exactClient.focus()
+    return
+  }
+
+  const rootClient = windowClients.find((client) => new URL(client.url).origin === self.location.origin)
+  if (rootClient) {
+    await rootClient.focus()
+    rootClient.navigate(targetUrl)
+    return
+  }
+
+  await self.clients.openWindow(targetUrl)
+}
+
+function normalizeNotificationUrl(rawUrl) {
+  try {
+    const url = new URL(typeof rawUrl === 'string' ? rawUrl : '/', self.location.origin)
+    if (url.origin !== self.location.origin) return self.location.origin
+    return url.href
+  } catch {
+    return self.location.origin
+  }
 }

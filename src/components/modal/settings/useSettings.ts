@@ -13,9 +13,23 @@ import {
   setUserId,
   setUserTelegram,
 } from '@/state/reducers/portfolio/profile'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
 import { track } from '@/lib/analytics'
+import {
+  getPushSubscriptions,
+  getVapidPublicKey,
+  registerPushSubscription,
+  deletePushSubscription,
+  isPushBackendUnavailableError,
+} from '@/api/push'
+import {
+  getBrowserPushSupport,
+  getNotificationPermission,
+  getExistingPushSubscription,
+  subscribeToBrowserPush,
+  unsubscribeFromBrowserPush,
+} from '@/lib/push-notifications'
 
 export const useSettings = () => {
   const dispatch = useAppDispatch()
@@ -41,6 +55,75 @@ export const useSettings = () => {
   const [notifyOnListingSoldValue, setNotifyOnListingSoldValue] = useState(notifyOnListingSold)
   const [notifyOnOfferReceivedValue, setNotifyOnOfferReceivedValue] = useState(notifyOnOfferReceived)
   const [notifyOnCommentReceivedValue, setNotifyOnCommentReceivedValue] = useState(notifyOnCommentReceived)
+
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default')
+  const [browserSubscription, setBrowserSubscription] = useState<PushSubscription | null>(null)
+  const [pushLoading, setPushLoading] = useState(false)
+  const [pushError, setPushError] = useState<string | null>(null)
+  const [pushUnavailable, setPushUnavailable] = useState(false)
+
+  const pushSupport = useMemo(() => getBrowserPushSupport(), [])
+
+  useEffect(() => {
+    setPushPermission(getNotificationPermission())
+    if (pushSupport.supported) {
+      getExistingPushSubscription().then(setBrowserSubscription).catch(console.error)
+    }
+  }, [pushSupport.supported])
+
+  const {
+    data: backendSubscriptions,
+    isLoading: backendSubscriptionsLoading,
+    error: backendSubscriptionsError,
+    refetch: refetchBackendSubscriptions,
+  } = useQuery({
+    queryKey: ['push-subscriptions'],
+    queryFn: getPushSubscriptions,
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (backendSubscriptionsError && isPushBackendUnavailableError(backendSubscriptionsError)) {
+      setPushUnavailable(true)
+    }
+  }, [backendSubscriptionsError])
+
+  const isPushEnabled = useMemo(() => {
+    if (!browserSubscription || !backendSubscriptions) return false
+    return backendSubscriptions.some((sub) => sub.endpoint === browserSubscription.endpoint)
+  }, [browserSubscription, backendSubscriptions])
+
+  const togglePushNotifications = async () => {
+    setPushLoading(true)
+    setPushError(null)
+    try {
+      if (isPushEnabled) {
+        const backendSub = backendSubscriptions?.find((sub) => sub.endpoint === browserSubscription?.endpoint)
+        if (backendSub) {
+          await deletePushSubscription(backendSub.id)
+        }
+        await unsubscribeFromBrowserPush()
+        setBrowserSubscription(null)
+        await refetchBackendSubscriptions()
+      } else {
+        const vapidKey = await getVapidPublicKey()
+        const sub = await subscribeToBrowserPush(vapidKey)
+        await registerPushSubscription(sub.payload)
+        setBrowserSubscription(await getExistingPushSubscription())
+        setPushPermission(getNotificationPermission())
+        await refetchBackendSubscriptions()
+      }
+    } catch (error) {
+      console.error('Error toggling push notifications', error)
+      if (isPushBackendUnavailableError(error)) {
+        setPushUnavailable(true)
+      } else {
+        setPushError(error instanceof Error ? error.message : 'Failed to toggle push notifications')
+      }
+    } finally {
+      setPushLoading(false)
+    }
+  }
 
   const {
     mutate: updateUserProfileMutation,
@@ -185,5 +268,13 @@ export const useSettings = () => {
     setNotifyOnOfferReceivedValue,
     notifyOnCommentReceivedValue,
     setNotifyOnCommentReceivedValue,
+    pushSupport,
+    pushPermission,
+    isPushEnabled,
+    pushLoading,
+    pushError,
+    pushUnavailable,
+    togglePushNotifications,
+    backendSubscriptionsLoading,
   }
 }

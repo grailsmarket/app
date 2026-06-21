@@ -128,7 +128,7 @@ const ThreadView: React.FC = () => {
         )}
         <button
           onClick={() => dispatch(openSidebarToList())}
-          className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+          className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
           aria-label='Back to chats'
         >
           <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
@@ -163,7 +163,7 @@ const ThreadView: React.FC = () => {
           )}
           <button
             onClick={() => dispatch(closeChatSidebar())}
-            className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+            className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
             aria-label='Close'
           >
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
@@ -204,7 +204,7 @@ const ThreadView: React.FC = () => {
                     isOwn={isOwn}
                     isRead={message.id === peer?.last_read_message_id}
                     onReply={setReplyingTo}
-                    animate={!isOwn && isNewMessage(message)}
+                    animate={isOwn ? message.id.startsWith('optimistic-') : isNewMessage(message)}
                     next={i < messages.length - 1 ? messages[i + 1] : null}
                     menuPosition={messages.length > 6 && i < messages.length - 3 ? 'top' : 'bottom'}
                   />

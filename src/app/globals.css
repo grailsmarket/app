@@ -419,7 +419,7 @@ body {
 @keyframes messageIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -431,6 +431,16 @@ body {
   .messageIn {
     animation: none;
   }
+}
+
+.hit-expand {
+  position: relative;
+}
+
+.hit-expand::before {
+  content: '';
+  position: absolute;
+  inset: -8px -4px;
 }
 
 .hover-underline {

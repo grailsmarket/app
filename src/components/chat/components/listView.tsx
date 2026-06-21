@@ -52,7 +52,7 @@ const ListView: React.FC = () => {
           )}
           <button
             onClick={() => dispatch(closeChatSidebar())}
-            className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+            className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
             aria-label='Close'
           >
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />

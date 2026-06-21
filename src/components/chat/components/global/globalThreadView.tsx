@@ -61,7 +61,7 @@ const GlobalThreadView: React.FC = () => {
       <div className='border-tertiary relative flex h-14.5 items-center justify-between gap-2 border-b-2 px-3'>
         <button
           onClick={() => dispatch(openSidebarToList())}
-          className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+          className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
           aria-label='Back to chats'
         >
           <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
@@ -83,7 +83,7 @@ const GlobalThreadView: React.FC = () => {
           </button>
           <button
             onClick={() => dispatch(closeChatSidebar())}
-            className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+            className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
             aria-label='Close'
           >
             <Cross className='text-foreground h-4 w-4 cursor-pointer' />
@@ -125,7 +125,7 @@ const GlobalThreadView: React.FC = () => {
                     isOwn={isOwn}
                     showHeader={startsNewRun(message, previous)}
                     onReply={setReplyingTo}
-                    animate={!isOwn && isNewMessage(message)}
+                    animate={isOwn ? message.id.startsWith('optimistic-') : isNewMessage(message)}
                   />
                 </React.Fragment>
               )

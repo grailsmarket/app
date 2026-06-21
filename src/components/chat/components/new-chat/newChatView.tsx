@@ -103,7 +103,7 @@ const NewChatView: React.FC = () => {
         <div className='flex items-center gap-2'>
           <button
             onClick={() => dispatch(openSidebarToList())}
-            className='hover:bg-primary/10 flex cursor-pointer items-center gap-2 rounded-md p-1 transition-colors'
+            className='hover:bg-primary/10 hit-expand flex cursor-pointer items-center gap-2 rounded-md p-1 transition-colors'
           >
             <Image src={ArrowBack} alt='' width={16} height={16} className='rotate-180' />
           </button>
@@ -111,7 +111,7 @@ const NewChatView: React.FC = () => {
         </div>
         <button
           onClick={() => dispatch(closeChatSidebar())}
-          className='hover:bg-primary/10 rounded-md p-1 transition-colors'
+          className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
           aria-label='Close'
         >
           <Cross className='text-foreground h-4 w-4 cursor-pointer' />

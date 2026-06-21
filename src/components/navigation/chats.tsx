@@ -27,7 +27,7 @@ const Chats: React.FC = () => {
       {totalUnread > 0 && (
         <div
           className={cn(
-            'absolute -top-1 -right-1 h-5 min-w-5',
+            'absolute -top-2 -right-2 h-5 min-w-5',
             'bg-primary text-background text-md font-bold',
             'flex items-center justify-center rounded-full px-1'
           )}

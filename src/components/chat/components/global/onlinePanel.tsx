@@ -63,7 +63,11 @@ const OnlinePanel: React.FC<Props> = ({ onClose }) => {
           <h2 className='font-sedan-sc text-foreground text-2xl'>Online</h2>
           <Label label={total} className='bg-foreground/80 text-background mt-px' />
         </div>
-        <button onClick={onClose} className='hover:bg-primary/10 rounded-md p-1 transition-colors' aria-label='Close'>
+        <button
+          onClick={onClose}
+          className='hover:bg-primary/10 hit-expand rounded-md p-1 transition-colors'
+          aria-label='Close'
+        >
           <Cross className='text-foreground h-4 w-4 cursor-pointer' />
         </button>
       </div>

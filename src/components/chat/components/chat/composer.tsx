@@ -88,6 +88,12 @@ const Composer: React.FC<Props> = ({
     setPreviewUrls(urls)
     return () => urls.forEach((url) => URL.revokeObjectURL(url))
   }, [files])
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => ref.current?.focus({ preventScroll: true }))
+    return () => cancelAnimationFrame(raf)
+  }, [chatId])
+
   const mentionActive = mention !== null && codePointLength(mention.query) >= MENTION_MIN_QUERY
   const dropdownOpen = mentionActive && resultCount > 0
 

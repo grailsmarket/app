@@ -81,6 +81,10 @@ const parsePushResponse = async <T>(response: Response) => {
     throw new PushBackendUnavailableError()
   }
 
+  if (response.status === 204) {
+    return { success: true, data: null as unknown as T } as APIResponseType<T>
+  }
+
   let json: APIResponseType<T> | null = null
   try {
     json = (await response.json()) as APIResponseType<T>

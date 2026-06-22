@@ -10,13 +10,12 @@ import { computeAxisMax, OUTLIER_MULT } from '@/utils/valuation/plotMath'
 import type { Comp, SubjectKey } from '@/types/valuation'
 
 interface ValuationResultProps {
-  name: string
   appraisal: ValuationAppraisalEvidence
   evidence: ValuationEvidence
   ethPrice: number
 }
 
-const ValuationResult: React.FC<ValuationResultProps> = ({ name, appraisal, evidence, ethPrice }) => {
+const ValuationResult: React.FC<ValuationResultProps> = ({ appraisal, evidence, ethPrice }) => {
   const [statsDimmed, setStatsDimmed] = useState(false)
   const [activeSubject, setActiveSubject] = useState<SubjectKey | null>(null)
   const low = toNumber(appraisal.lowEth)
@@ -59,9 +58,6 @@ const ValuationResult: React.FC<ValuationResultProps> = ({ name, appraisal, evid
 
   return (
     <div className='flex flex-col gap-4'>
-      {/* name being valued */}
-      <p className='text-center text-2xl font-semibold break-all'>{name}</p>
-
       {/* low / estimate / high — connected slider */}
       <div className='relative w-full' style={{ height: 96 }}>
         {/* connecting line: low -> est (brighter), est -> high (softer) — at the dot center */}

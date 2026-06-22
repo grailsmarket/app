@@ -7,6 +7,7 @@ import {
   type ValuationEvidenceStreamStageEvent,
   type ValuationProgressStage,
 } from '@/types/valuation'
+import { Check } from 'ethereum-identity-kit'
 
 const ValuationProgressChecklist: React.FC<{
   progressByStage: Partial<Record<ValuationProgressStage, ValuationEvidenceStreamStageEvent>>
@@ -31,7 +32,7 @@ const ValuationProgressChecklist: React.FC<{
                     : 'border-tertiary text-neutral'
               )}
             >
-              {isComplete ? '✓' : isActive ? <LoadingSpinner size='h-3 w-3' /> : ''}
+              {isComplete ? <Check height={12} width={12} /> : isActive ? <LoadingSpinner size='h-3 w-3' /> : ''}
             </span>
             <span className={cn(isComplete || isActive ? 'text-foreground' : 'text-neutral')}>
               {VALUATION_PROGRESS_STAGE_LABELS[stage]}

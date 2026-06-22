@@ -126,12 +126,7 @@ const ValuationPanel: React.FC<ValuationPanelProps> = ({ name, ownerAddress }) =
 
       {appraisal && valuationEvidence && (
         <AnimateIn>
-          <ValuationResult
-            name={name}
-            appraisal={appraisal}
-            evidence={valuationEvidence.evidence}
-            ethPrice={ethPrice}
-          />
+          <ValuationResult appraisal={appraisal} evidence={valuationEvidence.evidence} ethPrice={ethPrice} />
         </AnimateIn>
       )}
     </div>

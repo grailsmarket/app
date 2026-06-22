@@ -182,7 +182,7 @@ async function openNotificationTarget(rawUrl) {
   const rootClient = windowClients.find((client) => new URL(client.url).origin === self.location.origin)
   if (rootClient) {
     await rootClient.focus()
-    rootClient.navigate(targetUrl)
+    await rootClient.navigate(targetUrl)
     return
   }
 

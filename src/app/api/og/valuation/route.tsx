@@ -15,7 +15,7 @@ import { getInterFonts } from '../_lib/inter'
 // own portrait proportions instead of a 1.91:1 social ratio.
 const size = {
   width: 1200,
-  height: 1350,
+  height: 1200,
 }
 
 // Palette (hardcoded — Satori can't read the app's global CSS variables).
@@ -468,7 +468,16 @@ export async function GET(req: NextRequest) {
     )
 
     const footer = (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: 4 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          width: CONTENT_WIDTH - 20,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 14,
+        }}
+      >
         {logoDataUri && <img src={logoDataUri} alt='Grails' width={250} height={77} />}
         <span style={{ fontSize: 30, color: PRIMARY }}>{`grails.app/${beautified}`}</span>
       </div>

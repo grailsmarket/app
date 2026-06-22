@@ -17,7 +17,7 @@ type ShareModalStatus = 'loading' | 'ready' | 'error'
 
 interface ShareModalProps {
   onClose: () => void
-  type: 'listing' | 'offer' | 'google-analytics' | null
+  type: 'listing' | 'offer' | 'google-analytics' | 'valuation' | null
   listing: DomainListingType | null
   offer: DomainOfferType | null
   domainName: string | null
@@ -73,6 +73,9 @@ const ShareModal: React.FC<ShareModalProps> = ({
           ...(categories && { categories: categories.join(',') }),
         })
         endpoint = `/api/og/google-analytics?${params.toString()}`
+      } else if (type === 'valuation') {
+        const params = new URLSearchParams({ name: domainName })
+        endpoint = `/api/og/valuation?${params.toString()}`
       } else {
         throw new Error('Invalid type or missing data')
       }
@@ -208,6 +211,8 @@ const ShareModal: React.FC<ShareModalProps> = ({
         title = `Offer on ${domainName} for ${formatPrice(offer.offer_amount_wei, asset)} ${asset} on ${offer.source[0].toUpperCase() + offer.source.slice(1)}`
       } else if (type === 'google-analytics') {
         title = `Google Metrics for ${domainName}`
+      } else if (type === 'valuation') {
+        title = `Valuation for ${domainName}`
       }
 
       await navigator.share({
@@ -239,11 +244,22 @@ const ShareModal: React.FC<ShareModalProps> = ({
       >
         <div className='flex w-full flex-col items-center gap-2 sm:w-[440px]'>
           <h2 className='font-sedan-sc mb-2 text-3xl'>
-            Share {type === 'listing' ? 'Listing' : type === 'offer' ? 'Offer' : 'Google Metrics'}
+            Share{' '}
+            {type === 'listing'
+              ? 'Listing'
+              : type === 'offer'
+                ? 'Offer'
+                : type === 'valuation'
+                  ? 'Valuation'
+                  : 'Google Metrics'}
           </h2>
 
-          <div className='border-tertiary flex h-fit w-full items-center justify-center overflow-hidden rounded-lg border-2'>
-            {status === 'loading' && <LoadingCell height='235px' width='100%' />}
+          <div
+            className={`border-tertiary relative flex w-full items-center justify-center overflow-hidden rounded-lg border-2 ${
+              type === 'valuation' ? 'aspect-1200/1350' : 'aspect-1600/836'
+            }`}
+          >
+            {status === 'loading' && <LoadingCell height='100%' width='100%' />}
             {status === 'error' && (
               <div className='flex flex-col items-center gap-2 p-4'>
                 <p className='text-red-400'>Failed to generate image</p>
@@ -252,7 +268,13 @@ const ShareModal: React.FC<ShareModalProps> = ({
               </div>
             )}
             {status === 'ready' && imageUrl && (
-              <Image src={imageUrl} alt={`${domainName} ${type}`} width={450} height={236} className='h-auto w-full' />
+              <Image
+                src={imageUrl}
+                alt={`${domainName} ${type}`}
+                width={type === 'valuation' ? 1200 : 1600}
+                height={type === 'valuation' ? 1350 : 836}
+                className='h-full w-full object-contain'
+              />
             )}
           </div>
 

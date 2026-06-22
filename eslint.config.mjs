@@ -22,6 +22,8 @@ const eslintConfig = [
   },
   {
     rules: {
+      'no-unassigned-vars': 'warn',
+      'prefer-arrow-callback': 'warn',
       'react/prop-types': 'off',
       'react/jsx-uses-react': 'off',
       'react/react-in-jsx-scope': 'off',

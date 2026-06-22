@@ -3,14 +3,16 @@ import { BigNumber } from '@ethersproject/bignumber'
 export const formatEtherPrice = (price: string | number, returnNumber?: boolean, maximumFractionDigits?: number) => {
   if (!price) return ''
 
+  const sanitizedPrice = price.toString().replaceAll(',', '').replaceAll(' ', '').replace('.', '')
+
+  // The backend can return non-numeric values such as the string "NULL"; bail
+  // out before BigNumber.from throws on them.
+  if (!/^\d+$/.test(sanitizedPrice)) return ''
+
   const locale = typeof window === 'undefined' ? 'default' : navigator.language
 
   // check if price exceeds total ETH supply (120,700,000)
-  if (
-    BigNumber.from(price.toString().replaceAll(',', '').replaceAll(' ', '').replace('.', ''))
-      .div(BigNumber.from(10).pow(18))
-      .gt(BigNumber.from(120700000))
-  ) {
+  if (BigNumber.from(sanitizedPrice).div(BigNumber.from(10).pow(18)).gt(BigNumber.from(120700000))) {
     if (returnNumber) {
       return 120700000
     }
@@ -18,17 +20,10 @@ export const formatEtherPrice = (price: string | number, returnNumber?: boolean,
   }
 
   if (returnNumber) {
-    return (
-      BigNumber.from(price.toString().replaceAll(',', '').replaceAll(' ', '').replace('.', ''))
-        .div(BigNumber.from(10).pow(12))
-        .toNumber() /
-      10 ** 6
-    )
+    return BigNumber.from(sanitizedPrice).div(BigNumber.from(10).pow(12)).toNumber() / 10 ** 6
   }
 
-  const bignumberPrice = BigNumber.from(price.toString().replaceAll(',', '').replaceAll(' ', '').replace('.', '')).div(
-    BigNumber.from(10).pow(13)
-  )
+  const bignumberPrice = BigNumber.from(sanitizedPrice).div(BigNumber.from(10).pow(13))
 
   const isBillion = bignumberPrice.gt(BigNumber.from(10).pow(15))
   const isMillion = bignumberPrice.gt(BigNumber.from(10).pow(12))

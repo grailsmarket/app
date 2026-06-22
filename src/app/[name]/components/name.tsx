@@ -12,6 +12,7 @@ import CommentsPanel from './commentsPanel'
 import NamePageTabContent from './namePageTabContent'
 import SimilarNames from './similarNames'
 import { cn } from '@/utils/tailwind'
+// import Metadata from './metadata'
 
 interface Props {
   name: string
@@ -20,6 +21,7 @@ interface Props {
 const NAME_PAGE_TABS = [
   { label: 'Market', value: 'market' },
   { label: 'Activity', value: 'activity' },
+  { label: 'Valuation', value: 'valuation' },
   { label: 'Details', value: 'details' },
 ] as const
 

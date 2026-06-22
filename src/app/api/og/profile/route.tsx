@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 import { ens_beautify } from '@adraffy/ens-normalize'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
 
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://ens-metadata-flarecloud.encrypted-063.workers.dev'
+const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
 
 export async function GET(req: NextRequest) {
   const user = req.url.split('user=')[1] || ''

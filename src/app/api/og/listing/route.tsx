@@ -18,7 +18,7 @@ const size = {
   height: 836,
 }
 
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://ens-metadata-flarecloud.encrypted-063.workers.dev'
+const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
 const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
 const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 

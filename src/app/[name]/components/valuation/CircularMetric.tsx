@@ -1,19 +1,18 @@
 import React from 'react'
 
-const CircularMetric: React.FC<{ value: string; label: string; fillPercent: number }> = ({
-  value,
-  label,
-  fillPercent,
-}) => {
+interface CircularMetricProps {
+  value: string
+  label: string
+  fillPercent: number
+}
+
+const CircularMetric: React.FC<CircularMetricProps> = ({ value, label, fillPercent }) => {
   const size = 72
   const stroke = 6
   const safeFill = Math.max(0, Math.min(fillPercent, 100))
-  // Like the google metrics bars: the colour at the fill edge tracks the value —
-  // grey at low fill, blending toward (glowing) primary as it grows.
   const fillOpacity = 0.72 + (safeFill / 100) * 0.28
   const edgeColor = `color-mix(in srgb, var(--color-primary) ${safeFill.toFixed(0)}%, var(--color-neutral))`
   const glow = (safeFill / 100) * 6
-  // donut mask: keep only the outer ring of thickness `stroke`
   const ringMask = `radial-gradient(farthest-side, transparent calc(100% - ${stroke}px), #000 calc(100% - ${stroke}px))`
 
   return (

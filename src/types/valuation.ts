@@ -8,6 +8,17 @@
 // server-side and must NOT be modeled here, or accesses will typecheck and then
 // be undefined at runtime.
 
+export type ValuationEvidenceApiResponse = {
+  success: boolean
+  data?: ValuationEvidenceResult
+  error?: {
+    code: string
+    message: string
+  }
+}
+
+export type ValuationEvidenceProgressHandler = (event: ValuationEvidenceStreamStageEvent) => void
+
 export type ValuationEvidenceRequest = {
   recommendationCount?: number
   premiumRegistrationFloorEth?: string
@@ -164,3 +175,19 @@ export type Comp = {
 export type CompGroup = { name: string; sales: Comp[] }
 
 export type SubjectKey = 'low' | 'est' | 'high'
+
+export type Cursor = { leftPct: number; price: number; outlier: boolean }
+
+// Linear price -> axis fraction/percent mapping (0..axisMax).
+export type PriceScale = {
+  axisMax: number
+  toFrac: (price: number) => number
+  fromFrac: (frac: number) => number
+  xPct: (price: number) => number
+}
+
+// A measured pill: its horizontal center and top, relative to the plot container.
+export type PillAnchor = { x: number; top: number }
+
+// Plot layout snapshot: container width + measured pill anchors by name.
+export type PlotLayout = { width: number; anchors: Map<string, PillAnchor> }

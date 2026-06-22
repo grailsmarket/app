@@ -1,19 +1,13 @@
 import React from 'react'
 import { cn } from '@/utils/tailwind'
-import { CLASSIC_BAR_BOTTOM, CLASSIC_CURVE_GAP, TOOLTIP_CLASS, TOOLTIP_SHADOW } from './constants'
-import { formatEth, formatUsd } from './format'
-import { OUTLIER_MULT } from './plotMath'
-import type { CompGroup, SubjectKey } from '@/types/valuation'
-import type { PlotLayout, PriceScale } from './types'
+import { CLASSIC_BAR_BOTTOM, CLASSIC_CURVE_GAP, TOOLTIP_CLASS, TOOLTIP_SHADOW } from '@/constants/valuations'
+import { formatEth, formatUsd } from '../../../../utils/valuation/format'
+import { OUTLIER_MULT } from '@/utils/valuation/plotMath'
+import type { CompGroup, SubjectKey, PlotLayout, PriceScale } from '@/types/valuation'
 
 const barBottom = CLASSIC_BAR_BOTTOM
 
-/**
- * The comp layer below the bar: one pill per name (bumped together, wrapping to
- * extra rows), a per-name tooltip on hover, and the curved connectors tracing
- * each of a name's sales up to the bar.
- */
-const CompPills: React.FC<{
+interface CompPillsProps {
   groups: CompGroup[]
   activeGroup: CompGroup | null
   setActiveGroup: (group: CompGroup | null) => void
@@ -23,15 +17,27 @@ const CompPills: React.FC<{
   scale: PriceScale
   ethPrice: number
   high: number
-}> = ({ groups, activeGroup, setActiveGroup, activeSubject, layout, registerPill, scale, ethPrice, high }) => {
+}
+
+const CompPills: React.FC<CompPillsProps> = ({
+  groups,
+  activeGroup,
+  setActiveGroup,
+  activeSubject,
+  layout,
+  registerPill,
+  scale,
+  ethPrice,
+  high,
+}) => {
   const renderGroup = (group: CompGroup) => {
     const active = activeGroup === group
-    // Keep the tooltip inside the panel: anchor it to the pill's left/right edge
-    // when the pill sits near a panel edge, otherwise center it.
     const anchorX = layout?.anchors.get(group.name)?.x ?? 0
     const containerW = layout?.width ?? 0
+
     const TOOLTIP_HALF = 80
     const tooltipAlign = anchorX < TOOLTIP_HALF ? 'left' : anchorX > containerW - TOOLTIP_HALF ? 'right' : 'center'
+
     return (
       <div
         key={group.name}
@@ -92,7 +98,6 @@ const CompPills: React.FC<{
 
   return (
     <>
-      {/* comp pills — one per name, bumped together, wrapping to extra rows as needed */}
       <div
         className='flex flex-wrap justify-center gap-1'
         style={{ marginTop: groups.length > 0 ? CLASSIC_CURVE_GAP : 0 }}
@@ -100,17 +105,18 @@ const CompPills: React.FC<{
         {groups.map((group) => renderGroup(group))}
       </div>
 
-      {/* hover trace — a curve to each of the name's sales, above the pills */}
       {layout &&
         activeGroup &&
         (() => {
           const anchor = layout.anchors.get(activeGroup.name)
           if (!anchor) return null
+
           const dy = anchor.top - barBottom
           // Push the control points further from the ends so the curve stays
           // vertical longer and eases out of the bar instead of bending sharply.
           const c1y = barBottom + dy * 0.7
           const c2y = anchor.top - dy * 0.7
+
           return (
             <svg className='pointer-events-none absolute inset-0 z-50 h-full w-full overflow-visible'>
               {activeGroup.sales.map((sale, i) => {

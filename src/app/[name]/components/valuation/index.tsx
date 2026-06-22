@@ -10,11 +10,16 @@ import { setShareModalType, setShareModalDomainInfo, setShareModalOpen } from '@
 import ShareIconWhite from 'public/icons/image.svg'
 import useETHPrice from '@/hooks/useETHPrice'
 import { useValuationEvidence } from '../../hooks/useValuationEvidence'
-import { ValuationEvidenceRequestError } from '@/api/valuations/generateEvidence'
+import { ValuationEvidenceRequestError } from '@/constants/valuations'
 import ValuationResult from './ValuationResult'
-import ValuationProgressChecklist from './ValuationProgressChecklist'
+import ValuationProgressChecklist from './ProgressChecklist'
 
-const ValuationRangePanel: React.FC<{ name: string; ownerAddress?: string | null }> = ({ name, ownerAddress }) => {
+interface ValuationPanelProps {
+  name: string
+  ownerAddress?: string | null
+}
+
+const ValuationPanel: React.FC<ValuationPanelProps> = ({ name, ownerAddress }) => {
   const { ethPrice } = useETHPrice()
   const dispatch = useAppDispatch()
 
@@ -133,4 +138,4 @@ const ValuationRangePanel: React.FC<{ name: string; ownerAddress?: string | null
   )
 }
 
-export default ValuationRangePanel
+export default ValuationPanel

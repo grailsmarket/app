@@ -1,8 +1,4 @@
-// Shared, runtime-agnostic valuation-plot math. Imported by BOTH the live panel
-// (src/app/[name]/components/valuationRangePanel) and the OG share-image route
-// (src/app/api/og/valuation/route.tsx) so the axis + heat-bell logic can't drift.
-// Color emission and locale-aware formatting stay local to each consumer — the OG
-// route renders via Satori with a hardcoded rgba palette and en-US formatting.
+import type { PriceScale } from '@/types/valuation'
 
 // Comps priced above this multiple of the high estimate are treated as outliers:
 // they don't stretch the axis and instead pin to the far right edge.
@@ -64,4 +60,39 @@ export function heatBellSamples(lowFrac: number, estFrac: number, highFrac: numb
     samples.push({ frac, opacity })
   }
   return samples
+}
+
+const PRIMARY = 'var(--color-primary)'
+
+/** Linear price axis from 0 to axisMax, with fraction/percent helpers. */
+export function createPriceScale(axisMax: number): PriceScale {
+  const toFrac = (price: number) => Math.max(0, Math.min(1, price / axisMax))
+  const fromFrac = (frac: number) => frac * axisMax
+  const xPct = (price: number) => toFrac(price) * 100
+  return { axisMax, toFrac, fromFrac, xPct }
+}
+
+/**
+ * Soft "heat" gradient across the price axis for the live panel. Maps the shared
+ * Gaussian bell samples to `color-mix` stops (the OG route maps the same samples
+ * to rgba for Satori).
+ */
+export function buildHeatGradient(
+  lowFrac: number,
+  estFrac: number,
+  highFrac: number,
+  direction: 'to right' | 'to top' = 'to right'
+): string {
+  const pct = (f: number) => (f * 100).toFixed(2)
+  const samples = heatBellSamples(lowFrac, estFrac, highFrac)
+  const stops = [
+    'transparent 0%',
+    `transparent ${pct(lowFrac)}%`,
+    ...samples.map(
+      (s) => `color-mix(in srgb, ${PRIMARY} ${(s.opacity * 92).toFixed(1)}%, transparent) ${pct(s.frac)}%`
+    ),
+    `transparent ${pct(highFrac)}%`,
+    'transparent 100%',
+  ]
+  return `linear-gradient(${direction}, ${stops.join(', ')})`
 }

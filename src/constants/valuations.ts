@@ -12,3 +12,15 @@ export const CLASSIC_CURVE_GAP = 56 // vertical room for the curved connectors b
 // Derived bar bounds within the plot's top region.
 export const CLASSIC_BAR_TOP = CLASSIC_SUBJECT_H
 export const CLASSIC_BAR_BOTTOM = CLASSIC_SUBJECT_H + CLASSIC_BAR_H
+
+export class ValuationEvidenceRequestError extends Error {
+  status: number
+  code?: string
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'ValuationEvidenceRequestError'
+    this.status = status
+    this.code = code
+  }
+}

@@ -469,10 +469,7 @@ export async function GET(req: NextRequest) {
 
     const footer = (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: 4 }}>
-        {logoDataUri && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoDataUri} alt='Grails' width={250} height={77} />
-        )}
+        {logoDataUri && <img src={logoDataUri} alt='Grails' width={250} height={77} />}
         <span style={{ fontSize: 30, color: PRIMARY }}>{`grails.app/${beautified}`}</span>
       </div>
     )

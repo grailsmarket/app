@@ -1,28 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/utils/tailwind'
-import { CLASSIC_BAR_BOTTOM, CLASSIC_BAR_H, CLASSIC_BAR_TOP, CLASSIC_CURVE_GAP, CLASSIC_TICKS_H } from './constants'
-import { formatEthShort } from './format'
-import { buildHeatGradient, computeTicks, createPriceScale } from './plotMath'
+import {
+  CLASSIC_BAR_BOTTOM,
+  CLASSIC_BAR_H,
+  CLASSIC_BAR_TOP,
+  CLASSIC_CURVE_GAP,
+  CLASSIC_TICKS_H,
+} from '@/constants/valuations'
+import { formatEthShort } from '../../../../utils/valuation/format'
+import { buildHeatGradient, computeTicks, createPriceScale } from '@/utils/valuation/plotMath'
 import BarScrubber from './BarScrubber'
 import CompPills from './CompPills'
 import InBarLines from './InBarLines'
 import type { Comp, CompGroup, SubjectKey } from '@/types/valuation'
-import type { PlotLayout } from './types'
+import type { PlotLayout } from '@/types/valuation'
 
 const barTop = CLASSIC_BAR_TOP
 const barBottom = CLASSIC_BAR_BOTTOM
-
-// Defensive cap: generation already limits comps to ~25, but bound the rendered
-// pill count (and the per-pill measurement/hover handlers) so a comp-heavy
-// payload can't produce a runaway-tall, expensive panel.
 const MAX_PILLS = 25
 
-/**
- * Classic layout: horizontal heat bar on top, comps hang below connected to the
- * bar by price (shared x-axis). No timeline — vertical position is only used to
- * pack the name pills into rows so they don't collide.
- */
-const ClassicPlot: React.FC<{
+interface ClassicPlotProps {
   low: number
   estimate: number
   high: number
@@ -31,7 +28,18 @@ const ClassicPlot: React.FC<{
   ethPrice: number
   activeSubject: SubjectKey | null
   onActiveChange?: (active: boolean) => void
-}> = ({ low, estimate, high, axisMax, comps, ethPrice, activeSubject, onActiveChange }) => {
+}
+
+const ClassicPlot: React.FC<ClassicPlotProps> = ({
+  low,
+  estimate,
+  high,
+  axisMax,
+  comps,
+  ethPrice,
+  activeSubject,
+  onActiveChange,
+}) => {
   const [activeGroup, setActiveGroup] = useState<CompGroup | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const pillRefs = useRef<Map<string, HTMLDivElement>>(new Map())

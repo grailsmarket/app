@@ -5,16 +5,18 @@ import { toSteppedPercent } from '@/utils/metrics'
 import type { ValuationAppraisalEvidence, ValuationEvidence } from '@/types/valuation'
 import ClassicPlot from './ClassicPlot'
 import CircularMetric from './CircularMetric'
-import { formatEth, formatSearchCount, formatUsd, toNumber } from './format'
-import { computeAxisMax, OUTLIER_MULT } from './plotMath'
+import { formatEth, formatSearchCount, formatUsd, toNumber } from '../../../../utils/valuation/format'
+import { computeAxisMax, OUTLIER_MULT } from '@/utils/valuation/plotMath'
 import type { Comp, SubjectKey } from '@/types/valuation'
 
-const ValuationResult: React.FC<{
+interface ValuationResultProps {
   name: string
   appraisal: ValuationAppraisalEvidence
   evidence: ValuationEvidence
   ethPrice: number
-}> = ({ name, appraisal, evidence, ethPrice }) => {
+}
+
+const ValuationResult: React.FC<ValuationResultProps> = ({ name, appraisal, evidence, ethPrice }) => {
   const [statsDimmed, setStatsDimmed] = useState(false)
   const [activeSubject, setActiveSubject] = useState<SubjectKey | null>(null)
   const low = toNumber(appraisal.lowEth)
@@ -112,7 +114,6 @@ const ValuationResult: React.FC<{
           )
         })}
       </div>
-
       <ClassicPlot
         low={low}
         estimate={estimate}
@@ -123,8 +124,6 @@ const ValuationResult: React.FC<{
         activeSubject={activeSubject}
         onActiveChange={setStatsDimmed}
       />
-
-      {/* supporting signals — metric rings (same gradient as the google metrics bars) */}
       <div
         className={cn(
           'grid grid-cols-4 gap-3 transition-opacity',

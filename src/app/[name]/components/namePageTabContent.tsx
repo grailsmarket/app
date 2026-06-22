@@ -8,7 +8,7 @@ import Register from './register'
 import Metadata from './metadata'
 import Roles from './roles'
 import SecondaryDetails from './secondaryDetails'
-import ValuationRangePanel from './valuationRangePanel'
+import ValuationPanel from './valuation'
 import { DomainOfferType, MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { MetadataType, RolesType } from '@/types/api'
 import type { NamePageTab } from './name'
@@ -61,7 +61,7 @@ const NamePageTabContent: React.FC<Props> = ({
     case 'activity':
       return <ActivityPanel name={name} />
     case 'valuation':
-      return <ValuationRangePanel key={`valuation-${name}`} name={name} ownerAddress={nameDetails?.owner} />
+      return <ValuationPanel key={`valuation-${name}`} name={name} ownerAddress={nameDetails?.owner} />
     case 'details':
       return (
         <>

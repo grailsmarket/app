@@ -1,19 +1,12 @@
 import React, { useId } from 'react'
-import { CLASSIC_BAR_BOTTOM, CLASSIC_BAR_TOP } from './constants'
-import { OUTLIER_MULT } from './plotMath'
-import type { Comp, CompGroup, SubjectKey } from '@/types/valuation'
-import type { PriceScale } from './types'
+import { CLASSIC_BAR_BOTTOM, CLASSIC_BAR_TOP } from '@/constants/valuations'
+import { OUTLIER_MULT } from '@/utils/valuation/plotMath'
+import type { Comp, CompGroup, SubjectKey, PriceScale } from '@/types/valuation'
 
 const barTop = CLASSIC_BAR_TOP
 const barBottom = CLASSIC_BAR_BOTTOM
 
-/**
- * The vertical lines living inside the heat bar: one faint contact line per comp
- * sale (brightening when its name is hovered) plus the low/estimate/high "fingers"
- * that appear when a subject value is hovered. Owns its own gradient <defs> so the
- * ids stay unique to this instance.
- */
-const InBarLines: React.FC<{
+interface InBarLinesProps {
   sortedComps: Comp[]
   subjects: { key: SubjectKey; v: number }[]
   activeGroup: CompGroup | null
@@ -21,7 +14,17 @@ const InBarLines: React.FC<{
   layoutWidth: number
   scale: PriceScale
   high: number
-}> = ({ sortedComps, subjects, activeGroup, activeSubject, layoutWidth, scale, high }) => {
+}
+
+const InBarLines: React.FC<InBarLinesProps> = ({
+  sortedComps,
+  subjects,
+  activeGroup,
+  activeSubject,
+  layoutWidth,
+  scale,
+  high,
+}) => {
   const uid = useId()
   const fadeId = `inbar-fade-${uid}`
   const linkId = `inbar-link-${uid}`

@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  fetchCachedValuationEvidence,
-  generateValuationEvidence,
-  ValuationEvidenceRequestError,
-} from '@/api/valuations/generateEvidence'
+import { fetchCachedValuationEvidence } from '@/api/valuations/fetchEvidence'
 import { useUserContext } from '@/context/user'
 import type { ValuationEvidenceStreamStageEvent, ValuationProgressStage } from '@/types/valuation'
+import { ValuationEvidenceRequestError } from '@/constants/valuations'
+import { generateValuationEvidence } from '@/api/valuations/generateEvidence'
+import { valuationEvidenceQueryKey } from '@/utils/queryKeys'
 
 type ValuationEvidenceProgressByStage = Partial<Record<ValuationProgressStage, ValuationEvidenceStreamStageEvent>>
-
-const valuationEvidenceQueryKey = (name: string) => ['valuation-evidence', name] as const
 
 export function useValuationEvidence(name: string) {
   const { authStatus } = useUserContext()
@@ -32,7 +29,7 @@ export function useValuationEvidence(name: string) {
   // valuation to anyone (logged in or not) or null when none exists yet.
   const cachedQuery = useQuery({
     queryKey: valuationEvidenceQueryKey(name),
-    queryFn: ({ signal }) => fetchCachedValuationEvidence(name, signal),
+    queryFn: ({ signal }) => fetchCachedValuationEvidence({ name, signal }),
     enabled: Boolean(name),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -56,10 +53,10 @@ export function useValuationEvidence(name: string) {
       // The backend ignores all client-supplied generation knobs (recommendationCount
       // is unused; the premium-registration floor is fixed server-side and not
       // client-overridable), so we send an empty body.
-      return generateValuationEvidence(
+      return generateValuationEvidence({
         name,
-        {},
-        (event) => {
+        body: {},
+        onProgress: (event) => {
           setValuationEvidenceProgressByStage((previousProgress) => ({
             ...previousProgress,
             [event.stage]: event,
@@ -69,8 +66,8 @@ export function useValuationEvidence(name: string) {
             setValuationEvidenceProgress(event)
           }
         },
-        controller.signal
-      )
+        signal: controller.signal,
+      })
     },
     onSuccess: (result) => {
       // Share the fresh result with the peek cache so the other responsive

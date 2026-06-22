@@ -99,10 +99,10 @@ export const useSettings = () => {
     try {
       if (isPushEnabled) {
         const backendSub = backendSubscriptions?.find((sub) => sub.endpoint === browserSubscription?.endpoint)
+        await unsubscribeFromBrowserPush()
         if (backendSub) {
           await deletePushSubscription(backendSub.id)
         }
-        await unsubscribeFromBrowserPush()
         setBrowserSubscription(null)
         await refetchBackendSubscriptions()
       } else {

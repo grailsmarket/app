@@ -10,6 +10,7 @@ export const FEED_TABS = [
   { label: 'Comments', value: 'comments' },
   { label: 'Activity', value: 'activity' },
   { label: 'Watchlist', value: 'watchlist' },
+  { label: 'Friends', value: 'friends' },
   { label: 'All', value: 'all' },
 ] as const
 

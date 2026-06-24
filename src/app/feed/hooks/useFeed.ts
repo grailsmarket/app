@@ -18,7 +18,7 @@ import { useFeedScrollLock } from '@/hooks/comments/useFeedScrollLock'
 import { useFeedViewport } from '@/hooks/comments/useFeedViewport'
 import { FeedItemCommon, FeedItemType } from '@/types/api'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { getFeed } from '@/api/activity/feed'
+import { getFeed, isFeedRequestError } from '@/api/activity/feed'
 import { FeedKind } from '@/types/filters/feed'
 import { ACTIVITY_TYPE_FILTERS } from '@/constants/filters/activity'
 
@@ -41,6 +41,7 @@ export const useFeed = () => {
   const showActivityFilters = selectedTab !== 'comments'
   const isTrending = selectedTab === 'trending'
   const isWatchlist = selectedTab === 'watchlist'
+  const isFriends = selectedTab === 'friends'
 
   const ownerInput = filters.search as string
   const selectedClubs = filters.categories as string[]
@@ -59,6 +60,9 @@ export const useFeed = () => {
   const isLoadingOlder = useRef(false)
   // Distance from the bottom captured before older items prepend, used to re-anchor the viewport.
   const prependAnchorRef = useRef<number | null>(null)
+  // Signature of the query whose first page we last auto-scrolled. A change here means a fresh
+  // query (tab / filter / auth change) whose first page must jump back to the newest items.
+  const lastScrolledQueryRef = useRef<string | null>(null)
 
   const { ownerAddress, ownerEnsName, oppositeIdentifier, ownerError } = useOwnerAddressLookup(ownerInput)
   const activityEventTypes = useMemo(
@@ -75,20 +79,23 @@ export const useFeed = () => {
   const selectedMaxPriceWei = ethNumberToWei(filters.price.max)
   const minPriceWei = selectedMinPriceWei ?? (isTrending ? TRENDING_MIN_WEI : undefined)
 
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useInfiniteQuery({
-    queryKey: [
-      'feed',
-      selectedTab,
-      ownerAddress,
-      selectedClubs,
-      activityEventTypes,
-      activityPlatform,
-      minPriceWei,
-      selectedMaxPriceWei,
-      isWatchlist,
-      userAddress,
-      authStatus,
-    ],
+  const feedQueryKey = [
+    'feed',
+    selectedTab,
+    ownerAddress,
+    selectedClubs,
+    activityEventTypes,
+    activityPlatform,
+    minPriceWei,
+    selectedMaxPriceWei,
+    isWatchlist,
+    userAddress,
+    authStatus,
+  ]
+  const querySignature = JSON.stringify(feedQueryKey)
+
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, isError, error } = useInfiniteQuery({
+    queryKey: feedQueryKey,
     queryFn: async ({ pageParam }) => {
       const kinds: FeedKind[] = []
       if (showActivity) kinds.push('activity')
@@ -100,6 +107,7 @@ export const useFeed = () => {
         page: pageParam,
         limit: 20,
         watchlist: isWatchlist,
+        following: isFriends,
         priceRange: {
           min: minPriceWei,
           max: selectedMaxPriceWei,
@@ -117,6 +125,8 @@ export const useFeed = () => {
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => (lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined),
+    enabled: !isFriends || authStatus === 'authenticated',
+    retry: (failureCount, queryError) => (isFriends && isFeedRequestError(queryError) ? false : failureCount < 3),
   })
 
   const feedItems = useMemo<FeedItemType[]>(() => data?.pages.flatMap((page) => page.results).reverse() ?? [], [data])
@@ -126,6 +136,12 @@ export const useFeed = () => {
   const isInitialLoading = isLoading
   const isFetchingMore = isFetchingNextPage
   const hasMore = !!hasNextPage
+
+  const efpUnavailable =
+    isFriends &&
+    isError &&
+    isFeedRequestError(error) &&
+    (error.code === 'EFP_UNAVAILABLE' || error.code === 'FEATURE_DISABLED')
 
   const selectedFilterCount =
     selectedClubs.length +
@@ -155,13 +171,16 @@ export const useFeed = () => {
       return
     }
 
-    // scroll to botton on initial load, or newer items arriving at the bottom
+    // Jump to the newest items at the bottom when a fresh query loads its first page
+    // (tab / filter / auth change or initial load), or when newer items arrive at the bottom.
     const newest = feedItems[feedItems.length - 1]
-    if (lastSeenNewestId.current !== newest.id) {
+    const isFreshQuery = lastScrolledQueryRef.current !== querySignature
+    if (isFreshQuery || lastSeenNewestId.current !== newest.id) {
       el.scrollTop = el.scrollHeight
+      lastScrolledQueryRef.current = querySignature
       lastSeenNewestId.current = newest.id
     }
-  }, [feedItems])
+  }, [feedItems, querySignature])
 
   const loadMore = async () => {
     if (isFetchingMore || !hasNextPage) return
@@ -248,6 +267,8 @@ export const useFeed = () => {
     minPriceEth,
     maxPriceEth,
     isWatchlist,
+    isFriends,
+    efpUnavailable,
     visibleActivityTypeFilters,
   }
 }

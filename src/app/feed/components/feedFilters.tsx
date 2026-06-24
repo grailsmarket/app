@@ -47,7 +47,20 @@ const FeedFilters: React.FC<FeedFiltersProps> = ({
     return () => window.removeEventListener('resize', updateIndicator)
   }, [selectedTab, mounted])
   const renderTabLabel = (tab: (typeof FEED_TABS)[number]) => (
-    <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
+    <span className='flex items-center gap-1.5'>
+      {tab.value === 'friends' && (
+        <Image
+          src='https://efp.app/assets/logo.svg'
+          alt=''
+          aria-hidden
+          width={18}
+          height={18}
+          unoptimized
+          className='shrink-0'
+        />
+      )}
+      <p className='text-lg text-nowrap @[40rem]/app:text-xl'>{tab.label}</p>
+    </span>
   )
 
   return (

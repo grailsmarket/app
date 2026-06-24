@@ -4,6 +4,15 @@ import { ActivityTypeFilterType } from '@/types/filters/activity'
 import { FeedKind } from '@/types/filters/feed'
 import { authFetch } from '../authFetch'
 
+export interface FeedRequestError {
+  status: number
+  code: string
+  message: string
+}
+
+export const isFeedRequestError = (error: unknown): error is FeedRequestError =>
+  typeof error === 'object' && error !== null && 'status' in error && 'code' in error
+
 interface GetFeedParams {
   kinds: FeedKind[]
   owner?: string
@@ -11,6 +20,7 @@ interface GetFeedParams {
   page?: number
   limit?: number
   watchlist?: boolean
+  following?: boolean
   priceRange: {
     min?: string
     max?: string
@@ -26,6 +36,7 @@ export const getFeed = async ({
   page,
   limit,
   watchlist,
+  following,
   priceRange,
   eventTypes,
   platform,
@@ -40,6 +51,7 @@ export const getFeed = async ({
   if (page) params.set('page', page.toString())
   if (limit) params.set('limit', limit.toString())
   if (watchlist) params.set('watchlist', 'true')
+  if (following) params.set('following', 'true')
   if (!isOnlyComments && priceRange?.min) params.set('min_price_wei', priceRange.min.toString())
   if (!isOnlyComments && priceRange?.max) params.set('max_price_wei', priceRange.max.toString())
   if (!isOnlyComments && eventTypes) params.set('event_type', eventTypes.join(','))
@@ -47,10 +59,19 @@ export const getFeed = async ({
 
   const response = await authFetch(`${API_URL}/feed?${params.toString()}`)
 
-  const data = (await response.json()) as APIResponseType<{
+  const json = (await response.json()) as APIResponseType<{
     results: FeedItemType[]
     pagination: PaginationType
   }>
 
-  return data
+  if (!response.ok) {
+    const error: FeedRequestError = {
+      status: response.status,
+      code: json.error?.code ?? 'UNKNOWN_ERROR',
+      message: json.error?.message ?? 'Failed to fetch feed',
+    }
+    throw error
+  }
+
+  return json
 }

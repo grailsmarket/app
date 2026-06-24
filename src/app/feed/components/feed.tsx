@@ -56,6 +56,8 @@ const Feed: React.FC = () => {
     minPriceEth,
     maxPriceEth,
     isWatchlist,
+    isFriends,
+    efpUnavailable,
     visibleActivityTypeFilters,
   } = useFeed()
 
@@ -135,10 +137,21 @@ const Feed: React.FC = () => {
               <div className='mx-auto max-w-5xl px-3 @[40rem]/app:px-5'>
                 {isInitialLoading ? (
                   <FeedLoading />
-                ) : isWatchlist && authStatus !== 'authenticated' ? (
+                ) : (isWatchlist || isFriends) && authStatus !== 'authenticated' ? (
                   <div className='flex h-full min-h-[280px] flex-col items-center justify-center gap-4 text-center'>
-                    <p className='text-neutral text-lg'>Sign in to view your watchlist feed</p>
+                    <p className='text-neutral text-lg'>
+                      {isFriends
+                        ? 'Sign in to see activity from accounts you follow'
+                        : 'Sign in to view your watchlist feed'}
+                    </p>
                     <SignInButton />
+                  </div>
+                ) : efpUnavailable ? (
+                  <div className='flex h-full min-h-[280px] flex-col items-center justify-center gap-2 text-center'>
+                    <p className='text-neutral text-lg'>EFP is currently unavailable</p>
+                    <p className='text-neutral/70 text-sm'>
+                      We couldn&apos;t load the accounts you follow. Please try again later.
+                    </p>
                   </div>
                 ) : feedItems.length === 0 ? (
                   <div className='flex h-full min-h-[280px] items-center justify-center text-center'>

@@ -127,6 +127,7 @@ const useBulkRegisterDomains = () => {
     labels: string[],
     owner: Address,
     durations: bigint[],
+    prices: bigint[],
     secret: Hex,
     value: bigint,
     reverseRecord: number = 0
@@ -147,6 +148,7 @@ const useBulkRegisterDomains = () => {
             labels,
             owner,
             durations,
+            prices,
             secret,
             ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
             labels.map(() => []) as `0x${string}`[][],
@@ -173,6 +175,7 @@ const useBulkRegisterDomains = () => {
           labels,
           owner,
           durations,
+          prices,
           secret,
           ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
           labels.map(() => []) as `0x${string}`[][],

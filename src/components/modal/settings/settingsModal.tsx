@@ -94,6 +94,14 @@ const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address
     setNotifyOnOfferReceivedValue,
     notifyOnCommentReceivedValue,
     setNotifyOnCommentReceivedValue,
+    pushSupport,
+    pushPermission,
+    isPushEnabled,
+    pushLoading,
+    pushError,
+    pushUnavailable,
+    togglePushNotifications,
+    backendSubscriptionsLoading,
   } = useSettings()
 
   return (
@@ -281,6 +289,51 @@ const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address
                     className={cn(
                       'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
                       notifyOnCommentReceivedValue ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                  />
+                </button>
+              </div>
+              <div className='flex items-center justify-between'>
+                <div className='flex flex-col'>
+                  <p className='text-lg font-medium'>Browser Push Notifications</p>
+                  <p className='text-neutral text-sm'>Receive notifications directly in your browser</p>
+                  {pushUnavailable && <p className='mt-1 text-xs text-red-400'>Browser push is not available yet.</p>}
+                  {!pushSupport.supported && !pushUnavailable && (
+                    <p className='mt-1 text-xs text-red-400'>Push notifications are not supported in this browser.</p>
+                  )}
+                  {pushPermission === 'denied' && !pushUnavailable && (
+                    <p className='mt-1 text-xs text-red-400'>
+                      Notification permission is denied. Please enable it in your browser settings.
+                    </p>
+                  )}
+                  {pushError && <p className='mt-1 text-xs text-red-400'>{pushError}</p>}
+                </div>
+                <button
+                  type='button'
+                  onClick={togglePushNotifications}
+                  disabled={
+                    !pushSupport.supported ||
+                    pushPermission === 'denied' ||
+                    pushUnavailable ||
+                    pushLoading ||
+                    backendSubscriptionsLoading
+                  }
+                  className={cn(
+                    'group relative h-6 w-11 rounded-full transition-colors duration-200',
+                    isPushEnabled ? 'bg-primary' : 'bg-tertiary',
+                    !pushSupport.supported ||
+                      pushPermission === 'denied' ||
+                      pushUnavailable ||
+                      pushLoading ||
+                      backendSubscriptionsLoading
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-200',
+                      isPushEnabled ? 'translate-x-5' : 'translate-x-0'
                     )}
                   />
                 </button>

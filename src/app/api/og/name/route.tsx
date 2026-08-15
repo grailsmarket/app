@@ -2,14 +2,12 @@ import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { labelhash, namehash } from 'viem'
+import { namehash } from 'viem'
 
 const size = {
   width: 800,
   height: 418,
 }
-
-const PROBE_TIMEOUT_MS = 750
 
 const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
 const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`

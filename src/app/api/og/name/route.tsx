@@ -27,28 +27,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid ENS name' }, { status: 400 })
   }
 
-  const getENSImage = async () => {
-    try {
-      const nameHash = namehash(name)
-      const labelHash = labelhash(name.replace('.eth', ''))
+  // const getENSImage = async () => {
+  //   try {
+  //     const nameHash = namehash(name)
+  //     const labelHash = labelhash(name.replace('.eth', ''))
 
-      const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-      const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
+  //     const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+  //     const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
-      const wrappedResult = await fetch(wrappedImageUrl, {
-        signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-      })
-        .then((res) => res.ok)
-        .catch(() => false)
+  //     const wrappedResult = await fetch(wrappedImageUrl, {
+  //       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+  //     })
+  //       .then((res) => res.ok)
+  //       .catch(() => false)
 
-      return wrappedResult ? wrappedImageUrl : unwrappedImageUrl
-    } catch (error) {
-      console.error('Error fetching ENS Image:', error)
-      return null
-    }
-  }
+  //     return wrappedImageUrl
+  //   } catch (error) {
+  //     console.error('Error fetching ENS Image:', error)
+  //     return null
+  //   }
+  // }
 
-  const ensImage = await getENSImage()
+  const nameHash = namehash(name)
+  const ensImage = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+
 
   try {
     return new ImageResponse(
@@ -67,18 +69,16 @@ export async function GET(req: NextRequest) {
           fontWeight: 700,
         }}
       >
-        {ensImage && (
-          <img
-            src={ensImage}
-            alt='ens'
-            width={281}
-            height={281}
-            style={{
-              borderRadius: 16,
-              marginRight: 16,
-            }}
-          />
-        )}
+        <img
+          src={ensImage}
+          alt='ens'
+          width={281}
+          height={281}
+          style={{
+            borderRadius: 16,
+            marginRight: 16,
+          }}
+        />
         <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />
         <img src='https://grails.app/your-ens-market-logo.svg' alt='Grails Logo' width={232} height={71} />
       </div>,

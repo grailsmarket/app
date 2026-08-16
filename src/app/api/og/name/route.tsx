@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
-import { namehash } from 'viem'
+import { labelhash, namehash } from 'viem'
 
 const size = {
   width: 800,
@@ -25,30 +25,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid ENS name' }, { status: 400 })
   }
 
-  // const getENSImage = async () => {
-  //   try {
-  //     const nameHash = namehash(name)
-  //     const labelHash = labelhash(name.replace('.eth', ''))
-
-  //     const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-  //     const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
-
-  //     const wrappedResult = await fetch(wrappedImageUrl, {
-  //       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
-  //     })
-  //       .then((res) => res.ok)
-  //       .catch(() => false)
-
-  //     return wrappedImageUrl
-  //   } catch (error) {
-  //     console.error('Error fetching ENS Image:', error)
-  //     return null
-  //   }
-  // }
-
   const nameHash = namehash(name)
-  const ensImage = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+  const labelHash = labelhash(name.replace('.eth', ''))
 
+  const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
+  const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
   try {
     return new ImageResponse(
@@ -67,16 +48,41 @@ export async function GET(req: NextRequest) {
           fontWeight: 700,
         }}
       >
-        <img
-          src={ensImage}
-          alt='ens'
-          width={281}
-          height={281}
-          style={{
-            borderRadius: 16,
-            marginRight: 16,
-          }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 281, height: 281, borderRadius: 16, marginRight: 16, position: 'relative' }}>
+          {/* show wrapped on top, but if it fails it's blank, so it will show the unwrapped underneath */}
+          <img
+            src={wrappedImageUrl}
+            alt='ens'
+            width={281}
+            height={281}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: 16,
+              marginRight: 16,
+              zIndex: "2",
+            }}
+          />
+          <img
+            src={unwrappedImageUrl}
+            alt='ens'
+            width={281}
+            height={281}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              borderRadius: 16,
+              marginRight: 16,
+              zIndex: "1"
+            }}
+          />
+        </div>
         <div style={{ height: 80, width: 2, backgroundColor: '#ffffff' }} />
         <img src='https://grails.app/your-ens-market-logo.svg' alt='Grails Logo' width={232} height={71} />
       </div>,

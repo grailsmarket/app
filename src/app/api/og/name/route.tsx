@@ -48,7 +48,18 @@ export async function GET(req: NextRequest) {
           fontWeight: 700,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 281, height: 281, borderRadius: 16, marginRight: 16, position: 'relative' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 281,
+            height: 281,
+            borderRadius: 16,
+            marginRight: 16,
+            position: 'relative',
+          }}
+        >
           {/* show wrapped on top, but if it fails it's blank, so it will show the unwrapped underneath */}
           <img
             src={wrappedImageUrl}
@@ -63,7 +74,7 @@ export async function GET(req: NextRequest) {
               height: '100%',
               borderRadius: 16,
               marginRight: 16,
-              zIndex: "2",
+              zIndex: '2',
             }}
           />
           <img
@@ -79,7 +90,7 @@ export async function GET(req: NextRequest) {
               height: '100%',
               borderRadius: 16,
               marginRight: 16,
-              zIndex: "1"
+              zIndex: '1',
             }}
           />
         </div>

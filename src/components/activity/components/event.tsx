@@ -13,6 +13,7 @@ import Grails from 'public/logo.svg'
 import Vision from 'public/logos/vision.svg'
 import SnipeZone from 'public/logos/snipezone.png'
 import ENSTools from 'public/logos/enstools.png'
+import NameWhisper from 'public/logos/namewhisper.png'
 import ETHGray from 'public/icons/eth-gray.svg'
 import formatTimeAgo from '@/utils/time/formatTimeAgo'
 import { formatDuration } from '@/utils/time/formatDuration'
@@ -66,7 +67,8 @@ const Event: React.FC<EventProps> = ({ event, platform, timestamp, duration }) =
     vision: Vision,
     snipezone: SnipeZone,
     enstools: ENSTools,
-  }[platform as 'opensea' | 'grails' | 'vision' | 'snipezone' | 'enstools']
+    namewhisper: NameWhisper,
+  }[platform as 'opensea' | 'grails' | 'vision' | 'snipezone' | 'enstools' | 'namewhisper']
 
   return (
     <div className='flex w-full flex-row items-center gap-1.5 @[40rem]/app:gap-2'>

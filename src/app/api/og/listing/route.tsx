@@ -26,6 +26,7 @@ const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
   grails: 'https://grails.app/logo.svg',
   vision: 'https://grails.app/logos/ensvision.svg',
+  namewhisper: 'https://grails.app/logos/namewhisper.png',
 }
 
 const formatPrice = (priceWei: string, currencyAddress: string): string => {

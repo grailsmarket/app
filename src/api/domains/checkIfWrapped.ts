@@ -22,7 +22,7 @@ export const checkIfWrapped = async (domain: string) => {
   }
 }
   `
-  const response = await fetch(`https://ensnode-api-production-500f.up.railway.app/subgraph`, {
+  const response = await fetch(`https://ensnode.on.hotbox.wtf/subgraph`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

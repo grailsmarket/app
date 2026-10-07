@@ -170,7 +170,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   ))}
               </div>
               <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
-                {selectedCategories.length === 0 && 'No Categories'}
+                {selectedCategories.length === 0 && '---------'}
                 {selectedCategories.length === 1 && (selectedCategoriesDetails?.[0]?.name || selectedCategories[0])}
                 {selectedCategories.length > 1 && `${selectedCategories.length} Categories`}
               </p>

@@ -1,12 +1,19 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
-import { selectAnalytics, setCategory, setPeriod, setSource } from '@/state/reducers/analytics'
+import {
+  removeCategory,
+  addCategory,
+  selectAnalytics,
+  setCategories,
+  setPeriod,
+  setSource,
+} from '@/state/reducers/analytics'
 import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
-import { ShortArrow } from 'ethereum-identity-kit'
+import { Check, ShortArrow } from 'ethereum-identity-kit'
 import { PERIOD_OPTIONS, SOURCE_OPTIONS } from '@/constants/analytics'
 import { AnalyticsPeriod, AnalyticsSource } from '@/types/analytics'
 import { useCategories } from '@/components/filters/hooks/useCategories'
@@ -20,17 +27,15 @@ interface AnalyticsFiltersProps {
 const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, hideCategory = false }) => {
   const dispatch = useAppDispatch()
   const { categories } = useCategories()
-  const { period, source, category: selectedCategory } = useAppSelector(selectAnalytics)
-  const selectedCategoryDetails = useMemo(() => {
-    if (!selectedCategory) return null
-    const category = categories?.find((c) => c.name === selectedCategory)
-    if (!category) return null
-    const categoryDetails = getCategoryDetails(category.name)
-    return {
-      ...categoryDetails,
-      display_name: category.display_name,
-    }
-  }, [selectedCategory, categories])
+  const { period, source, categories: selectedCategories } = useAppSelector(selectAnalytics)
+  const selectedCategoriesDetails = useMemo(() => {
+    if (!selectedCategories) return null
+    return selectedCategories.map((category) => {
+      if (category === 'none') return { name: 'No Category', avatar: null }
+      if (category === 'all') return { name: 'All Categories', avatar: null }
+      return { ...getCategoryDetails(category), name: categories?.find((c) => c.name === category)?.display_name }
+    })
+  }, [selectedCategories])
 
   const [isPeriodOpen, setIsPeriodOpen] = useState(false)
   const [isSourceOpen, setIsSourceOpen] = useState(false)
@@ -43,6 +48,12 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
   const selectedPeriodLabel = PERIOD_OPTIONS.find((opt) => opt.value === period)?.label || '7 Days'
   const selectedSourceOption = SOURCE_OPTIONS.find((opt) => opt.value === source)
 
+  useEffect(() => {
+    if (selectedCategories.includes('all') && selectedCategories.length > 1) {
+      dispatch(removeCategory('all'))
+    }
+  }, [selectedCategories])
+
   return (
     <div className='border-tertiary flex min-h-14.5 flex-row flex-wrap items-center gap-2 border-b-2 px-2 py-2 @[40rem]/app:px-4 @[48rem]/app:py-0'>
       {!hideTitle && <h1 className='mr-2 text-2xl font-bold'>Analytics</h1>}
@@ -53,7 +64,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           type='button'
           onClick={() => setIsPeriodOpen(!isPeriodOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[110px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-27.5 cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
           <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>{selectedPeriodLabel}</p>
@@ -87,7 +98,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           type='button'
           onClick={() => setIsSourceOpen(!isSourceOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[130px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-32.5 cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
           <div className='flex items-center gap-2'>
@@ -136,25 +147,32 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
             type='button'
             onClick={() => setIsCategoryOpen(!isCategoryOpen)}
             className={cn(
-              'border-tertiary hover:border-foreground/50 flex h-9 w-[200px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
+              'border-tertiary hover:border-foreground/50 flex h-9 w-50 cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
             )}
           >
             <div className='flex items-center gap-2'>
-              {selectedCategoryDetails?.avatar && selectedCategory !== 'none' && selectedCategory !== 'any' ? (
-                <Image
-                  src={selectedCategoryDetails.avatar}
-                  alt={selectedCategoryDetails.display_name}
-                  width={20}
-                  height={20}
-                  className='h-auto w-5 rounded-full'
-                />
-              ) : null}
+              <div className='relative flex items-center'>
+                {selectedCategoriesDetails
+                  ?.filter((category) => !!category.avatar)
+                  .slice(0, 3)
+                  .map((category, index) => (
+                    <Image
+                      key={`${category.avatar}-${index}`}
+                      src={category.avatar as string}
+                      alt={category.name || selectedCategories[index]}
+                      width={20}
+                      height={20}
+                      className='h-auto w-5 rounded-full'
+                      style={{
+                        marginLeft: index > 0 ? -10 : '0',
+                      }}
+                    />
+                  ))}
+              </div>
               <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>
-                {selectedCategory === 'none'
-                  ? 'No Categories'
-                  : selectedCategory === 'any'
-                    ? 'All Categories'
-                    : selectedCategoryDetails?.display_name || 'Pick a Category'}
+                {selectedCategories.length === 0 && 'No Categories'}
+                {selectedCategories.length === 1 && (selectedCategoriesDetails?.[0]?.name || selectedCategories[0])}
+                {selectedCategories.length > 1 && `${selectedCategories.length} Categories`}
               </p>
             </div>
             <ShortArrow className={cn('h-3 w-3 transition-transform', isCategoryOpen ? 'rotate-0' : 'rotate-180')} />
@@ -163,43 +181,48 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           {isCategoryOpen && (
             <div className='bg-background border-tertiary absolute left-0 z-50 mt-1 max-h-[max(200px,50vh)] w-full overflow-scroll rounded-md border-2 shadow-lg'>
               <button
-                key='all'
+                key='none'
                 onClick={() => {
-                  dispatch(setCategory(null))
+                  dispatch(setCategories([]))
                   setIsCategoryOpen(false)
                 }}
                 className={cn(
                   'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
-                  selectedCategory === null && 'bg-secondary'
+                  selectedCategories.length === 0 && 'bg-secondary'
                 )}
               >
                 ---------
               </button>
               <button
-                key='all'
+                key='no category'
                 onClick={() => {
-                  dispatch(setCategory('none'))
-                  setIsCategoryOpen(false)
+                  if (selectedCategories.includes('none')) {
+                    dispatch(removeCategory('none'))
+                  } else {
+                    dispatch(addCategory('none'))
+                  }
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
-                  selectedCategory === null && 'bg-secondary'
+                  'hover:bg-tertiary text-md flex w-full items-center justify-between gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
+                  selectedCategories.length === 0 && 'bg-secondary'
                 )}
               >
-                No Categories
+                No Category
+                {selectedCategories.includes('none') && <Check className='h-4 w-4 transition-transform' />}
               </button>
               <button
                 key='all'
                 onClick={() => {
-                  dispatch(setCategory('any'))
+                  dispatch(setCategories(['all']))
                   setIsCategoryOpen(false)
                 }}
                 className={cn(
-                  'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
-                  selectedCategory === null && 'bg-secondary'
+                  'hover:bg-tertiary text-md flex w-full items-center justify-between gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
+                  selectedCategories.includes('all') && 'bg-secondary'
                 )}
               >
                 All Categories
+                {selectedCategories.includes('all') && <Check className='h-4 w-4 transition-transform' />}
               </button>
               {categories?.map((category) => {
                 const categoryDetails = getCategoryDetails(category.name)
@@ -207,24 +230,28 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
                   <button
                     key={category.name}
                     onClick={() => {
-                      dispatch(setCategory(category.name))
+                      if (selectedCategories.includes(category.name)) {
+                        dispatch(removeCategory(category.name))
+                      } else {
+                        dispatch(addCategory(category.name))
+                      }
                       setIsCategoryOpen(false)
                     }}
-                    className={cn(
-                      'hover:bg-tertiary text-md flex w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg',
-                      selectedCategory === category.name && 'bg-secondary'
-                    )}
+                    className='hover:bg-tertiary text-md flex w-full items-center justify-between gap-2 px-3 py-2 text-left font-medium transition-colors @[40rem]/app:text-lg'
                   >
-                    {categoryDetails.avatar && (
-                      <Image
-                        src={categoryDetails.avatar}
-                        alt={category.display_name}
-                        width={20}
-                        height={20}
-                        className='h-auto w-5 rounded-full'
-                      />
-                    )}
-                    {category.display_name}
+                    <div className='flex items-center gap-2'>
+                      {categoryDetails.avatar && (
+                        <Image
+                          src={categoryDetails.avatar}
+                          alt={category.display_name}
+                          width={20}
+                          height={20}
+                          className='h-auto w-5 rounded-full'
+                        />
+                      )}
+                      {category.display_name}
+                    </div>
+                    {selectedCategories.includes(category.name) && <Check className='h-4 w-4 transition-transform' />}
                   </button>
                 )
               })}

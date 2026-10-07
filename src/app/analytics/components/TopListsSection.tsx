@@ -13,11 +13,11 @@ import {
 } from '../hooks/useAnalyticsData'
 
 interface TopListsSectionProps {
-  category?: string
+  categories?: string[]
 }
 
-const TopListsSection: React.FC<TopListsSectionProps> = ({ category }) => {
-  const hookOptions = category ? { categoryOverride: category } : undefined
+const TopListsSection: React.FC<TopListsSectionProps> = ({ categories }) => {
+  const hookOptions = categories ? { categoriesOverride: categories } : undefined
   const { data: offersData, isLoading: offersLoading } = useTopOffers(hookOptions)
   const { data: salesData, isLoading: salesLoading } = useTopSales(hookOptions)
   const { data: saleChartData, isLoading: saleChartLoading } = useSalesChart(hookOptions)

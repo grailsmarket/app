@@ -8,6 +8,7 @@ import DatePicker from '@/components/ui/datepicker'
 import { beautifyName } from '@/lib/ens'
 import type { NameRegistrationEntry, TimeUnit, CalculationResults } from '@/types/registration'
 import { timeUnitOptions } from '@/constants/registration'
+import { PAYMENT_TOKEN_OPTIONS } from '@/hooks/usePaymentToken'
 import PerNameDurationEditor from './per-name-duration-editor'
 import CustomOwnerSection from './custom-owner-section'
 import CostSummary from './cost-summary'
@@ -48,6 +49,9 @@ interface ReviewFormProps {
   totalBatches: number
   gasEstimate: bigint | null
   gasPrice: bigint | undefined
+  paymentToken?: string
+  onPaymentTokenChange?: (symbol: string) => void
+  bulkUnavailable?: boolean
   onTimeUnitChange: (value: string) => void
   onQuantityChange: (value: number) => void
   onCustomDateSelect: (timestamp: number) => void
@@ -93,6 +97,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   totalBatches,
   gasEstimate,
   gasPrice,
+  paymentToken,
+  onPaymentTokenChange,
+  bulkUnavailable,
   onTimeUnitChange,
   onQuantityChange,
   onCustomDateSelect,
@@ -188,21 +195,40 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         account={account}
         isResolving={isResolving}
       />
-      <CostSummary
-        calculationResults={calculationResults}
-        isBulk={isBulk}
-        availableEntries={availableEntries}
-        totalBatches={totalBatches}
-        hasSufficientBalance={hasSufficientBalance}
-        allNamesValid={allNamesValid}
-        gasEstimate={gasEstimate}
-        gasPrice={gasPrice}
-      />
+      {bulkUnavailable ? (
+        <div className='rounded-lg border border-amber-500/20 bg-amber-900/20 p-3'>
+          <p className='text-md text-amber-400'>
+            ENSv2 bulk registration is coming soon. For now, register names one at a time.
+          </p>
+        </div>
+      ) : (
+        <>
+          {paymentToken && (
+            <Dropdown
+              label='Pay with'
+              options={PAYMENT_TOKEN_OPTIONS}
+              value={paymentToken}
+              onSelect={(value) => onPaymentTokenChange?.(String(value))}
+            />
+          )}
+          <CostSummary
+            calculationResults={calculationResults}
+            isBulk={isBulk}
+            availableEntries={availableEntries}
+            totalBatches={totalBatches}
+            hasSufficientBalance={hasSufficientBalance}
+            allNamesValid={allNamesValid}
+            gasEstimate={gasEstimate}
+            gasPrice={gasPrice}
+          />
+        </>
+      )}
       {/* <ReverseRecordSection reverseRecord={reverseRecord} setReverseRecord={setReverseRecord} /> */}
       <div className='flex flex-col gap-2'>
         <PrimaryButton
           onClick={handleCommit}
           disabled={
+            bulkUnavailable ||
             !calculationResults ||
             !hasSufficientBalance ||
             !allNamesValid ||
@@ -214,17 +240,21 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           }
           className='w-full'
         >
-          {!allNamesValid
-            ? 'Invalid Name'
-            : !hasSufficientBalance
-              ? 'Insufficient ETH Balance'
-              : calculationResults?.isBelowMinimum
-                ? 'Duration Too Short (28 days minimum)'
-                : !allAvailabilityChecked
-                  ? 'Checking Availability...'
-                  : isBulk
-                    ? `Register ${availableEntries.length} Names`
-                    : `Register ${beautifyName(firstName!)}`}
+          {bulkUnavailable
+            ? 'Bulk Registration Coming Soon'
+            : !allNamesValid
+              ? 'Invalid Name'
+              : paymentToken && calculationResults?.isLoadingPrice
+                ? 'Loading Price...'
+                : !hasSufficientBalance
+                  ? `Insufficient ${calculationResults?.paymentToken ?? 'ETH'} Balance`
+                  : calculationResults?.isBelowMinimum
+                    ? 'Duration Too Short (28 days minimum)'
+                    : !allAvailabilityChecked
+                      ? 'Checking Availability...'
+                      : isBulk
+                        ? `Register ${availableEntries.length} Names`
+                        : `Register ${beautifyName(firstName!)}`}
         </PrimaryButton>
         <SecondaryButton onClick={handleClose} className='w-full'>
           Close

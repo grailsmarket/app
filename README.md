@@ -111,6 +111,19 @@ Public RPCs are used as a final fallback, but reliable Alchemy / QuickNode keys 
 | `ENS_METADATA_URL`                      | optional | Base URL of the ENS metadata service  |
 | `ENS_METADATA_CACHE_INVALIDATION_TOKEN` | optional | Token used to bust the metadata cache |
 
+### ENSv2
+
+ENSv2 flows switch on automatically once all six addresses are set and the ENS Universal Resolver reports ENSv2. Leave them empty until ENS publishes the mainnet deployment.
+
+| Variable                                        | Required | Description                            |
+| ----------------------------------------------- | -------- | -------------------------------------- |
+| `NEXT_PUBLIC_ENS_V2_ETH_REGISTRY`               | optional | ENSv2 `.eth` registry (ETHRegistry)    |
+| `NEXT_PUBLIC_ENS_V2_ETH_REGISTRAR`              | optional | ENSv2 ETHRegistrar                     |
+| `NEXT_PUBLIC_ENS_V2_ETH_RENEWER_V1`             | optional | ETHRenewerV1 (renews unmigrated names) |
+| `NEXT_PUBLIC_ENS_V2_VERIFIABLE_FACTORY`         | optional | VerifiableFactory                      |
+| `NEXT_PUBLIC_ENS_V2_PERMISSIONED_RESOLVER_IMPL` | optional | PermissionedResolver implementation    |
+| `NEXT_PUBLIC_ENS_V2_MIGRATION_HELPER`           | optional | MigrationHelper (v1 to v2 upgrades)    |
+
 ### Misc
 
 | Variable                     | Required | Description                                       |

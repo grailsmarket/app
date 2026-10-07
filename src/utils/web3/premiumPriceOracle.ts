@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { DAY_IN_SECONDS, ONE_HOUR, ONE_MINUTE } from '../../constants/time'
+import { getGracePeriod } from '../getRegistrationStatus'
 
-const GRACE_PERIOD = 90 * DAY_IN_SECONDS // 90 days in seconds
 const TOTAL_DAYS = 21
 const PRECISION = BigInt('1000000000000000000') // 1e18
 const ONE_DAY_SECONDS = BigInt(DAY_IN_SECONDS)
@@ -32,15 +32,15 @@ export default class PremiumPriceOracle {
   startPremium: bigint
   endValue: bigint
   expiryDate: number // expiry date in seconds
-  releasedDate: number // when premium period starts (expiry + 90 days grace)
+  releasedDate: number // when premium period starts (expiry + grace period)
   zeroPremiumDate: number // when premium period ends
 
-  constructor(expiryDate: number) {
+  constructor(expiryDate: number, ensVersion?: number | null) {
     // startPremium is $100,000,000 with 18 decimals
     this.startPremium = BigInt('100000000000000000000000000') // 100_000_000 * 1e18
     this.endValue = this.startPremium >> BigInt(TOTAL_DAYS) // startPremium / 2^21
     this.expiryDate = expiryDate
-    this.releasedDate = expiryDate + GRACE_PERIOD
+    this.releasedDate = expiryDate + getGracePeriod(ensVersion)
     this.zeroPremiumDate = this.releasedDate + TOTAL_DAYS * DAY_IN_SECONDS
   }
 
@@ -51,7 +51,7 @@ export default class PremiumPriceOracle {
    * @returns premium in USD * 1e18 (bigint)
    */
   getPremiumWei(currentDate: number): bigint {
-    const expires = this.expiryDate + GRACE_PERIOD
+    const expires = this.releasedDate
 
     // If still in grace period or before, no premium
     if (expires > currentDate) {

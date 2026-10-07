@@ -5,7 +5,7 @@ import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
 import { GRACE_PERIOD, UNREGISTERED } from '@/constants/domains/registrationStatuses'
 import { useExpiryCountdown } from '@/hooks/useExpiryCountdown'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getGraceEnd } from '@/utils/getRegistrationStatus'
 import Tooltip from '@/components/ui/tooltip'
 
 interface ExpirationProps {
@@ -16,13 +16,13 @@ interface ExpirationProps {
 
 const Expiration: React.FC<ExpirationProps> = ({ domain, columnCount, registrationStatus }) => {
   const countdownType = registrationStatus === GRACE_PERIOD ? 'grace' : null
-  const { timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType)
+  const { timeLeftString } = useExpiryCountdown(domain.expiry_date, countdownType, domain.ens_version)
 
   if (registrationStatus === GRACE_PERIOD) {
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['expires'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
         <Tooltip
-          label={`Ends ${formatExpiryDate(new Date(new Date(domain.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+          label={`Ends ${formatExpiryDate(getGraceEnd(domain.expiry_date, domain.ens_version), { includeTime: true, dateDivider: '/' })}`}
           align='left'
           position='top'
         >

@@ -71,7 +71,7 @@ const NamePage: React.FC<Props> = ({ name }) => {
   const registrationStatus = nameDetails
     ? isSubname
       ? REGISTERED
-      : getRegistrationStatus(nameDetails.expiry_date)
+      : getRegistrationStatus(nameDetails.expiry_date, nameDetails.ens_version)
     : UNREGISTERED
   const isRegistered = registrationStatus === REGISTERED
   // const isUnregistered = registrationStatus === UNREGISTERED || registrationStatus === PREMIUM

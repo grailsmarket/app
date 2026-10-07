@@ -170,6 +170,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                         name={domain.name}
                         tokenId={domain.token_id}
                         expiryDate={domain.expiry_date}
+                        ensVersion={domain.ens_version}
                         className='h-9 min-h-9 w-9 min-w-9 rounded-sm'
                       />
                       <div className='min-w-0'>
@@ -197,6 +198,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ selectedName, onSelectedNam
                 expiryDate={
                   domainsQuery.data?.domains.find((domain) => domain.name === selectedName)?.expiry_date ?? null
                 }
+                ensVersion={domainsQuery.data?.domains.find((domain) => domain.name === selectedName)?.ens_version}
                 className='h-8 min-h-8 w-8 min-w-8 rounded-sm'
               />
             )}

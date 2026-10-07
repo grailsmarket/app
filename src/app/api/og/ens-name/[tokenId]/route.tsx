@@ -26,8 +26,8 @@ const gradients = {
   'gradient-gray': 'linear-gradient(135deg, rgba(129, 133, 152) 0%, rgba(231, 237, 246) 103.11%)',
 }
 
-function getGradient(expiryDate: string | null) {
-  const registrationStatus = getRegistrationStatus(expiryDate)
+function getGradient(expiryDate: string | null, ensVersion: number) {
+  const registrationStatus = getRegistrationStatus(expiryDate, ensVersion)
 
   if (registrationStatus === REGISTERED) return gradients['gradient-blue']
   if (registrationStatus === UNREGISTERED) return gradients['gradient-gray']
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     const expires = searchParams.get('expires')
     const expiryDate = expires ? new Date(Number(expires)).toISOString() : null
 
-    const gradient = getGradient(expiryDate)
+    const gradient = getGradient(expiryDate, Number(searchParams.get('version')))
 
     const satoshiBold = await readFile(join(process.cwd(), 'public/fonts/satoshi/Satoshi-Black.otf'))
 

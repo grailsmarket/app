@@ -48,7 +48,7 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
     },
     {
       label: 'Token ID',
-      value: nameDetails?.token_id ? nameDetails?.token_id : null,
+      value: nameDetails?.token_id ?? null,
       canCopy: true,
     },
     {
@@ -71,7 +71,7 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
       >
         <h3 className='font-sedan-sc text-3xl'>Details</h3>
         <ShortArrow
-          className={cn('h-4 w-4 flex-shrink-0 transition-transform', isDetailsOpen ? 'rotate-0' : 'rotate-180')}
+          className={cn('h-4 w-4 shrink-0 transition-transform', isDetailsOpen ? 'rotate-0' : 'rotate-180')}
         />
       </div>
       {isDetailsOpen &&
@@ -105,7 +105,7 @@ const SecondaryDetails: React.FC<NameDetailsProps> = ({ nameDetails, nameDetails
                 <p className='text-neutral text-lg font-medium'>Resolver</p>
               </div>
             )}
-            {}
+            { }
           </div>
         ))}
     </div>

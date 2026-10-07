@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { usePublicClient } from 'wagmi'
+import { mainnet } from 'wagmi/chains'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
+import { ensureChain } from '@/utils/web3/ensureChain'
 import { seaportClient } from '@/lib/seaport/seaportClient'
 import { OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import { createOffer as createOfferApi, submitOfferToOpenSea } from '@/api/offers/create'
@@ -16,7 +18,7 @@ export function useSeaportClient() {
   const queryClient = useQueryClient()
   const { userAddress: address, authStatus } = useUserContext()
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: mainnet.id })
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,6 +93,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, mainnet.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -373,6 +376,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, mainnet.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -496,6 +500,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, mainnet.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -587,6 +592,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, mainnet.id)
 
       setIsLoading(true)
       setError(null)

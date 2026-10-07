@@ -65,6 +65,8 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
     txHash,
     isManager,
     isOwner,
+    isV2,
+    isMovingRecords,
   } = useEditRecords(name, metadata)
 
   const [activeTab, setActiveTab] = useState<'records' | 'roles'>(defaultTab || 'records')
@@ -128,6 +130,9 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
               <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
               <div className='flex flex-col items-center gap-4'>
                 <p className='text-xl'>{step === 'confirming' ? 'Confirm in Wallet' : 'Processing Transaction'}</p>
+                {isMovingRecords && (
+                  <p className='text-neutral text-center text-lg'>Moving your records to your own ENSv2 resolver</p>
+                )}
                 {txHash && (
                   <a
                     href={`https://etherscan.io/tx/${txHash}`}
@@ -493,24 +498,26 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                         isResolving={roleOwnerResolving}
                       />
                     </div>
-                    <div className='flex flex-col'>
-                      <Input
-                        label='Manager'
-                        value={roleManager}
-                        onChange={(e) => {
-                          const input = e.target.value
-                          if (input.includes(' ')) return
-                          setRoleManager(input)
-                        }}
-                        placeholder='0x... or name.eth'
-                        disabled={!isManager && !isOwner}
-                      />
-                      <InputWithResolution
-                        value={roleManager}
-                        resolvedAddress={resolvedRoleManager}
-                        isResolving={roleManagerResolving}
-                      />
-                    </div>
+                    {!isV2 && (
+                      <div className='flex flex-col'>
+                        <Input
+                          label='Manager'
+                          value={roleManager}
+                          onChange={(e) => {
+                            const input = e.target.value
+                            if (input.includes(' ')) return
+                            setRoleManager(input)
+                          }}
+                          placeholder='0x... or name.eth'
+                          disabled={!isManager && !isOwner}
+                        />
+                        <InputWithResolution
+                          value={roleManager}
+                          resolvedAddress={resolvedRoleManager}
+                          isResolving={roleManagerResolving}
+                        />
+                      </div>
+                    )}
                     <div className='flex flex-col'>
                       <Input
                         label='Ethereum'
@@ -535,7 +542,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
 
               {/* Footer */}
               <div className='border-tertiary flex flex-col gap-2 border-t p-4 sm:px-6'>
-                {activeTab === 'records' && !isManager && (
+                {activeTab === 'records' && !isManager && !isV2 && (
                   <div className='bg-grace/10 border-tertiary flex flex-row items-center justify-between gap-2 rounded-md border p-4'>
                     <p className='text-grace text-md'>
                       You are not the <b>Manager</b> of this name. To edit records, set your current address as the{' '}

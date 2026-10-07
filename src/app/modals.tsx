@@ -35,6 +35,8 @@ import { useGlobalSearchShortcut } from '@/hooks/useGlobalSearchShortcut'
 import { useOpenSettingsFromUrl } from '@/hooks/useOpenSettingsFromUrl'
 import { selectListSettingsModal, setListSettingsModalOpen } from '@/state/reducers/modals/listSettingsModal'
 import ListSettings from '@/components/modal/list-settings'
+import MigrationModal from '@/components/modal/migration/migrationModal'
+import { closeMigrationModal, selectMigrationModal } from '@/state/reducers/modals/migrationModal'
 import { selectRegistration } from '@/state/reducers/registration'
 import ChatSocketMount from '@/components/chat/socketMount'
 
@@ -98,6 +100,7 @@ const Modals: React.FC = () => {
     list: listSettingsModalList,
   } = useAppSelector(selectListSettingsModal)
   const { isOpen: registrationModalOpen } = useAppSelector(selectRegistration)
+  const { open: migrationModalOpen, names: migrationModalNames } = useAppSelector(selectMigrationModal)
 
   const anyModalOpen =
     makeOfferModalOpen ||
@@ -114,7 +117,8 @@ const Modals: React.FC = () => {
     editRecordsModalOpen ||
     isSettingsOpen ||
     listSettingsModalOpen ||
-    registrationModalOpen
+    registrationModalOpen ||
+    migrationModalOpen
 
   useEffect(() => {
     if (anyModalOpen) {
@@ -185,6 +189,9 @@ const Modals: React.FC = () => {
         />
       )}
       <RegistrationModal />
+      {migrationModalOpen && (
+        <MigrationModal names={migrationModalNames} onClose={() => dispatch(closeMigrationModal())} />
+      )}
       {shareModalOpen && (
         <ShareModal
           onClose={() => dispatch(setShareModalOpen(false))}

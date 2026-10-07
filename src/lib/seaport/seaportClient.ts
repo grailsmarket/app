@@ -14,6 +14,7 @@ import {
   encodePacked,
   toHex,
   Abi,
+  isAddressEqual,
 } from 'viem'
 import {
   CreateOrderInput,
@@ -41,6 +42,8 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { MarketplaceDomainType } from '@/types/domains'
 import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
 import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
+import { NFT_ABI } from '@/constants/abi/NFTAbi'
+import { ENS_V2_STATUS, getEnsV2, getV2Name, isTransferable } from '@/utils/web3/ensv2'
 
 export type MarketplaceType = 'grails' | 'opensea'
 
@@ -794,11 +797,42 @@ export class SeaportClient {
       throw new Error('Seaport client not initialized')
     }
 
+    const publicClient = this.publicClient
+    const ensV2 = await getEnsV2(publicClient)
+    const v2Names = await Promise.all(
+      params.domains.map((domain) => (ensV2 ? getV2Name(publicClient, ensV2, domain.name) : null))
+    )
+    const v1Domains = params.domains.filter((_, index) => !v2Names[index])
+
+    if (
+      v2Names.some(
+        (v2Name) =>
+          v2Name &&
+          (v2Name.status !== ENS_V2_STATUS.REGISTERED ||
+            !isAddressEqual(v2Name.latestOwner, params.offererAddress as Address))
+      )
+    ) {
+      throw new Error('You are not the owner of all ENS names.')
+    }
+
+    if (
+      ensV2 &&
+      (
+        await Promise.all(
+          v2Names.map(
+            (v2Name) => !v2Name || isTransferable(publicClient, ensV2, v2Name, params.offererAddress as Address)
+          )
+        )
+      ).includes(false)
+    ) {
+      throw new Error('Some ENSv2 names have roles granted to other accounts. Revoke them before selling.')
+    }
+
     // First, check if the user owns all the ENS NFTs
     // ENS names can be either unwrapped (owned directly) or wrapped (owned through NameWrapper)
-    const wrappedResponses = await Promise.all(params.domains.map((domain) => checkIfWrapped(domain.name)))
-    const wrappedNames = params.domains.filter((domain, index) => wrappedResponses[index])
-    const unwrappedNames = params.domains.filter((domain, index) => !wrappedResponses[index])
+    const wrappedResponses = await Promise.all(v1Domains.map((domain) => checkIfWrapped(domain.name)))
+    const wrappedNames = v1Domains.filter((domain, index) => wrappedResponses[index])
+    const unwrappedNames = v1Domains.filter((domain, index) => !wrappedResponses[index])
     const isWrapped = wrappedResponses.some((response) => response)
     const areAllNamesWrapped = wrappedResponses.every((response) => response)
 
@@ -892,6 +926,7 @@ export class SeaportClient {
 
     let wrappedNamesApproved = true
     let unwrappedNamesApproved = true
+    let registryApproved = true
 
     try {
       if (isWrapped) {
@@ -942,7 +977,16 @@ export class SeaportClient {
         }
       }
 
-      if (!wrappedNamesApproved || !unwrappedNamesApproved) {
+      if (ensV2 && v2Names.some(Boolean)) {
+        registryApproved = await this.publicClient.readContract({
+          address: ensV2.ethRegistry,
+          abi: NFT_ABI,
+          functionName: 'isApprovedForAll',
+          args: [params.offererAddress as Address, operatorToApprove as Address],
+        })
+      }
+
+      if (!wrappedNamesApproved || !unwrappedNamesApproved || !registryApproved) {
         params.setStatus?.('approving')
         // console.log(
         //   `${approvalTarget} not approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}, requesting approval...`
@@ -991,6 +1035,22 @@ export class SeaportClient {
             confirmations: 1,
           })
           console.log('Approval for unwrapped names confirmed')
+        }
+
+        if (!registryApproved && ensV2) {
+          const approvalHash = await this.walletClient.writeContract({
+            account: this.walletClient.account,
+            chain: this.publicClient.chain,
+            address: ensV2.ethRegistry,
+            abi: NFT_ABI,
+            functionName: 'setApprovalForAll',
+            args: [operatorToApprove as Address, true],
+          })
+
+          params.setApproveTxHash?.(approvalHash)
+          await waitForTransaction(this.publicClient, approvalHash, undefined, {
+            confirmations: 1,
+          })
         }
       } else {
         console.log(`${approvalTarget} already approved`)
@@ -1134,12 +1194,14 @@ export class SeaportClient {
       })
 
       // Use the appropriate contract address and item type for the offer
+      const v2Name = v2Names[index]
       const isNameWrapped = wrappedNames.includes(domain)
-      const tokenContract = isNameWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+      const tokenContract =
+        ensV2 && v2Name ? ensV2.ethRegistry : isNameWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
       // console.log('Token contract:', tokenContract)
 
       // For wrapped names, use namehash; for unwrapped, use labelhash
-      const tokenIdentifier = domain.token_id
+      const tokenIdentifier = v2Name ? v2Name.tokenId.toString() : domain.token_id
 
       // console.log('Token details for offer:', {
       //   tokenContract,
@@ -1155,22 +1217,23 @@ export class SeaportClient {
         throw new Error('Token contract address is undefined')
       }
 
-      const offer: CreateInputItem[] = isNameWrapped
-        ? [
-            {
-              itemType: ItemType.ERC1155,
-              token: tokenContract,
-              identifier: tokenIdentifier,
-              amount: '1',
-            },
-          ]
-        : [
-            {
-              itemType: ItemType.ERC721,
-              token: tokenContract,
-              identifier: tokenIdentifier,
-            },
-          ]
+      const offer: CreateInputItem[] =
+        v2Name || isNameWrapped
+          ? [
+              {
+                itemType: ItemType.ERC1155,
+                token: tokenContract,
+                identifier: tokenIdentifier,
+                amount: '1',
+              },
+            ]
+          : [
+              {
+                itemType: ItemType.ERC721,
+                token: tokenContract,
+                identifier: tokenIdentifier,
+              },
+            ]
 
       // Include conduit key in order so Seaport knows to use the conduit
       const orderInput: CreateOrderInput = {
@@ -1750,9 +1813,12 @@ export class SeaportClient {
 
     const { tokenId, price, expiryDate, offererAddress, marketplace, ensName } = params
 
-    const isWrapped = await checkIfWrapped(ensName)
-    const tokenContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-    const tokenIdentifier = tokenId
+    const ensV2 = await getEnsV2(this.publicClient)
+    const v2Name = ensV2 ? await getV2Name(this.publicClient, ensV2, ensName) : null
+    const isWrapped = !v2Name && (await checkIfWrapped(ensName))
+    const tokenContract =
+      ensV2 && v2Name ? ensV2.ethRegistry : isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+    const tokenIdentifier = v2Name ? v2Name.tokenId.toString() : tokenId
 
     // Determine conduit key based on marketplace
     const useOpenseaConduit = marketplace === 'opensea'
@@ -1779,7 +1845,7 @@ export class SeaportClient {
     // Build consideration items (what the offerer wants - the NFT)
     const consideration: ConsiderationInputItem[] = [
       {
-        itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721, // ENS NFT
+        itemType: v2Name || isWrapped ? ItemType.ERC1155 : ItemType.ERC721, // ENS NFT
         token: tokenContract as `0x${string}`,
         identifier: tokenIdentifier,
         recipient: offererAddress as `0x${string}`,

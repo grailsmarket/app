@@ -28,9 +28,19 @@ interface NameImageProps {
   width?: number
   forceRegStatus?: RegistrationStatus
   forceRefreshKey?: number
+  ensVersion?: number | null
 }
 
-const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus, forceRefreshKey }: NameImageProps) => {
+const NameImage = ({
+  name,
+  expiryDate,
+  className,
+  height,
+  width,
+  forceRegStatus,
+  forceRefreshKey,
+  ensVersion,
+}: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
@@ -63,10 +73,10 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   const expireTime = expiryDate ? new Date(expiryDate).getTime() : ''
   const fallbackSrc = `/api/og/ens-name/${hexToBigInt(nameHash).toString()}?name=${encodeURIComponent(
     name
-  )}&expires=${encodeURIComponent(expireTime)}${refreshKey ? `&v=${refreshKey}` : ''}`
+  )}&expires=${encodeURIComponent(expireTime)}&version=${ensVersion ?? ''}${refreshKey ? `&v=${refreshKey}` : ''}`
 
   // Subtract 400ms to ensure the state changes at the same time as the other components
-  const status = forceRegStatus ?? getRegistrationStatus(expiryDate)
+  const status = forceRegStatus ?? getRegistrationStatus(expiryDate, ensVersion)
 
   // 0 = try wrapped SVG, 1 = try unwrapped SVG, 2 = give up on SVG and show PNG fallback.
   const [attempt, setAttempt] = useState(0)

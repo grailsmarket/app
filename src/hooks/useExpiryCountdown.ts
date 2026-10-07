@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import PremiumPriceOracle from '@/utils/web3/premiumPriceOracle'
 import { DAY_IN_SECONDS, ONE_HOUR } from '@/constants/time'
-
-const PREMIUM_PERIOD_DAYS = 111
-const GRACE_PERIOD_DAYS = 90
+import { getGracePeriod, PREMIUM_PERIOD } from '@/utils/getRegistrationStatus'
 
 type CountdownType = 'premium' | 'grace' | null
 
@@ -21,7 +19,11 @@ const defaultResult = {
   isActive: false,
 }
 
-export const useExpiryCountdown = (expiryDate: string | null, type: CountdownType): UseExpiryCountdownResult => {
+export const useExpiryCountdown = (
+  expiryDate: string | null,
+  type: CountdownType,
+  ensVersion?: number | null
+): UseExpiryCountdownResult => {
   const [tick, setTick] = useState(0)
 
   const calculateValues = useCallback(() => {
@@ -30,9 +32,9 @@ export const useExpiryCountdown = (expiryDate: string | null, type: CountdownTyp
       return { ...defaultResult, remainingSeconds: 0 }
     }
 
-    const periodDays = type === 'premium' ? PREMIUM_PERIOD_DAYS : GRACE_PERIOD_DAYS
+    const periodSeconds = type === 'premium' ? getGracePeriod(ensVersion) + PREMIUM_PERIOD : getGracePeriod(ensVersion)
     const expiryTime = new Date(expiryDate).getTime()
-    const endTime = expiryTime + periodDays * DAY_IN_SECONDS * 1000
+    const endTime = expiryTime + periodSeconds * 1000
     const now = Date.now()
     const remainingMs = endTime - now
 
@@ -46,7 +48,7 @@ export const useExpiryCountdown = (expiryDate: string | null, type: CountdownTyp
     // Only calculate premium price for premium type
     let premiumPrice = 0
     if (type === 'premium') {
-      const premiumPriceOracle = new PremiumPriceOracle(expiryTime / 1000)
+      const premiumPriceOracle = new PremiumPriceOracle(expiryTime / 1000, ensVersion)
       premiumPrice = premiumPriceOracle.getOptimalPrecisionPremiumAmount(now / 1000)
     }
 
@@ -73,7 +75,7 @@ export const useExpiryCountdown = (expiryDate: string | null, type: CountdownTyp
       isActive: true,
       remainingSeconds,
     }
-  }, [expiryDate, type])
+  }, [expiryDate, type, ensVersion])
 
   const values = calculateValues()
 

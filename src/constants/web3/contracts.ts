@@ -32,3 +32,12 @@ export const OPENSEA_FEE_RECIPIENT = '0x0000a26b00c1F0DF003000390027140000fAa719
 export const OPENSEA_FEE_BASIS_POINTS = 100 // 1% = 100 basis points
 
 export const USE_CONDUIT = process.env.NEXT_PUBLIC_USE_CONDUIT !== 'false'
+
+export const ENS_V2_CONTRACTS = {
+  ethRegistry: process.env.NEXT_PUBLIC_ENS_V2_ETH_REGISTRY,
+  ethRegistrar: process.env.NEXT_PUBLIC_ENS_V2_ETH_REGISTRAR,
+  ethRenewerV1: process.env.NEXT_PUBLIC_ENS_V2_ETH_RENEWER_V1,
+  verifiableFactory: process.env.NEXT_PUBLIC_ENS_V2_VERIFIABLE_FACTORY,
+  permissionedResolverImpl: process.env.NEXT_PUBLIC_ENS_V2_PERMISSIONED_RESOLVER_IMPL,
+  migrationHelper: process.env.NEXT_PUBLIC_ENS_V2_MIGRATION_HELPER,
+}

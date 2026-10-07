@@ -20,7 +20,7 @@ interface DomainItemProps {
 const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
   const { modifyCart } = useModifyCart()
   const { modifyingCartTokenIds } = useAppSelector(selectMarketplaceDomains)
-  const registrationStatus = getRegistrationStatus(domain.expiry_date)
+  const registrationStatus = getRegistrationStatus(domain.expiry_date, domain.ens_version)
   const isRegistered = registrationStatus === REGISTERED
   const hasListing = isRegistered && domain.listings[0]
 
@@ -39,6 +39,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
           name={domain.name}
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
+          ensVersion={domain.ens_version}
           className='h-8 w-8 rounded-sm sm:h-9 sm:w-9'
         />
         <p className='text-md line-clamp-2 truncate font-bold sm:text-lg' style={{ maxWidth: 'calc(100% - 40px)' }}>

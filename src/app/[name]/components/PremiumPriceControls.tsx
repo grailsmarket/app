@@ -24,6 +24,7 @@ import CalendarWhiteIcon from 'public/icons/calendar-white.svg'
 
 interface PremiumPriceControlsProps {
   expiryDate: string
+  ensVersion?: number | null
   ethPrice: number
   domainName: string
   priceInput: string
@@ -41,6 +42,7 @@ interface CalendarOption {
 
 const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
   expiryDate,
+  ensVersion,
   domainName,
   priceInput,
   targetDate,
@@ -55,7 +57,7 @@ const PremiumPriceControls: React.FC<PremiumPriceControlsProps> = ({
 
   // Create oracle instance for bounds
   const expiryTimestamp = Math.floor(new Date(expiryDate).getTime() / 1000)
-  const oracle = new PremiumPriceOracle(expiryTimestamp)
+  const oracle = new PremiumPriceOracle(expiryTimestamp, ensVersion)
 
   // Premium period bounds
   const premiumStartDate = new Date(oracle.releasedDate * 1000)

@@ -7,8 +7,8 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { MarketplaceDomainType, RegistrationStatus } from '@/types/domains'
 import useETHPrice from '@/hooks/useETHPrice'
 import { GRACE_PERIOD, PREMIUM } from '@/constants/domains/registrationStatuses'
-import { DAY_IN_SECONDS } from '@/constants/time'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { getGraceEnd } from '@/utils/getRegistrationStatus'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { openRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { useUserContext } from '@/context/user'
@@ -17,6 +17,9 @@ import { usePublicClient } from 'wagmi'
 import { mainnet } from 'wagmi/chains'
 import { useQuery } from '@tanstack/react-query'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
+import { ENS_V2_REGISTRAR_ABI } from '@/constants/abi/ENSv2'
+import { useEnsV2 } from '@/hooks/useEnsV2'
+import { formatUnits } from 'viem'
 import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT, ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { formatPrice } from '@/utils/formatPrice'
 import PremiumPriceGraph from './PremiumPriceGraph'
@@ -37,6 +40,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const { openConnectModal } = useConnectModal()
   const publicClient = usePublicClient({ chainId: mainnet.id })
   const registrationState = useAppSelector(selectRegistration)
+  const ensV2 = useEnsV2()
 
   // Lifted state for premium price controls
   const [priceInput, setPriceInput] = useState<string>('')
@@ -46,8 +50,8 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const oracle = useMemo(() => {
     if (!nameDetails?.expiry_date) return null
     const expiryTimestamp = Math.floor(new Date(nameDetails.expiry_date).getTime() / 1000)
-    return new PremiumPriceOracle(expiryTimestamp)
-  }, [nameDetails?.expiry_date])
+    return new PremiumPriceOracle(expiryTimestamp, nameDetails.ens_version)
+  }, [nameDetails?.expiry_date, nameDetails?.ens_version])
 
   // Calculate target point for the graph
   const targetPoint = useMemo(() => {
@@ -100,11 +104,20 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
 
   // Fetch rent price (including premium) directly from ENS contract
   const { data: rentPriceData, isLoading: isLoadingRentPrice } = useQuery({
-    queryKey: ['rentPrice', nameDetails?.name],
+    queryKey: ['rentPrice', nameDetails?.name, !!ensV2],
     queryFn: async () => {
       if (!publicClient || !nameDetails?.name) return null
 
       const label = nameDetails.name.replace('.eth', '')
+      if (ensV2) {
+        const [base, premium] = await publicClient.readContract({
+          address: ensV2.ethRegistrar,
+          abi: ENS_V2_REGISTRAR_ABI,
+          functionName: 'getRegisterPrice',
+          args: [label, ONE_YEAR_SECONDS, TOKEN_ADDRESSES.USDC],
+        })
+        return { base, premium, currencyAddress: TOKEN_ADDRESSES.USDC }
+      }
       const result = await publicClient.readContract({
         address: ENS_HOLIDAY_REGISTRAR_ADDRESS as `0x${string}`,
         abi: ENS_HOLIDAY_REGISTRAR_ABI,
@@ -112,7 +125,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
         args: [label, ONE_YEAR_SECONDS],
       })
 
-      return result as { base: bigint; premium: bigint }
+      return { ...(result as { base: bigint; premium: bigint }), currencyAddress: TOKEN_ADDRESSES.ETH }
     },
     enabled: !!publicClient && !!nameDetails?.name,
     refetchInterval: 10000, // Refresh every 10 seconds
@@ -121,8 +134,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   })
 
   if (registrationStatus === GRACE_PERIOD) {
-    const expiryDateTimestamp = nameDetails?.expiry_date ? new Date(nameDetails.expiry_date).getTime() : 0
-    const gracePeriodEndDate = new Date(expiryDateTimestamp + 90 * DAY_IN_SECONDS * 1000).toISOString()
+    const gracePeriodEndDate = getGraceEnd(nameDetails?.expiry_date, nameDetails?.ens_version)
 
     return (
       <div className='p-lg @[64rem]/app:p-xl bg-secondary @[40rem]/app:border-tertiary flex w-full flex-col gap-6 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
@@ -149,7 +161,10 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
 
   const name = nameDetails?.name
   const baseRentPrice = rentPriceData?.base?.toString() || '0'
-  const price = Math.round(Number(formatPrice(baseRentPrice, 'ETH', true)) * (ethPrice || 3000)) || 0
+  const price =
+    rentPriceData?.currencyAddress === TOKEN_ADDRESSES.USDC
+      ? Math.round(Number(formatUnits(rentPriceData.base, 6)))
+      : Math.round(Number(formatPrice(baseRentPrice, 'ETH', true)) * (ethPrice || 3000)) || 0
 
   if (registrationStatus === PREMIUM) {
     const premiumPriceWei = rentPriceData?.premium?.toString() || '0'
@@ -164,7 +179,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             ) : (
               <Price
                 price={premiumPriceWei}
-                currencyAddress={TOKEN_ADDRESSES.ETH}
+                currencyAddress={rentPriceData?.currencyAddress ?? TOKEN_ADDRESSES.ETH}
                 iconSize='28px'
                 fontSize='font-bold pl-0.5'
               />
@@ -215,6 +230,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <>
             <PremiumPriceControls
               expiryDate={nameDetails.expiry_date}
+              ensVersion={nameDetails.ens_version}
               ethPrice={ethPrice}
               domainName={nameDetails.name || ''}
               priceInput={priceInput}
@@ -224,6 +240,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
             />
             <PremiumPriceGraph
               expiryDate={nameDetails.expiry_date}
+              ensVersion={nameDetails.ens_version}
               ethPrice={ethPrice}
               targetPoint={targetPoint}
               onPointClick={handleDateChange}

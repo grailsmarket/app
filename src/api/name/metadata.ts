@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@/constants/analytics'
 import { normalizeName } from '@/lib/ens'
 import { APIResponseType, MetadataType } from '@/types/api'
+import { Hex } from 'viem'
 
 type NameMetadataValue =
   | string
@@ -8,8 +9,8 @@ type NameMetadataValue =
   | boolean
   | null
   | undefined
-  | { protocol?: string; value?: string }
-  | { chainName: string; address: string }[]
+  | { protocol?: string; value?: string; raw?: Hex }
+  | { coinType: number; chainName: string; address: string }[]
 
 type NameMetadataResponse = Record<string, NameMetadataValue>
 
@@ -55,13 +56,15 @@ export const formatNameMetadataRecord = (metadata: NameMetadataResponse): Record
   )
 }
 
-export const fetchNameMetadata = async (name: string) => {
+export const fetchNameMetadata = async (name: string, strict = false) => {
   const response = await fetch(`${API_BASE_URL}/names/${normalizeName(name)}/metadata`)
   const results = (await response.json()) as APIResponseType<{
     metadata: NameMetadataResponse
   }>
 
   if (!results.success) {
+    if (strict && results.error?.code !== 'NAME_NOT_FOUND')
+      throw new Error(results.error?.message ?? 'Failed to load records')
     return {}
   }
 

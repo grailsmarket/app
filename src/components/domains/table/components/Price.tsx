@@ -12,12 +12,13 @@ import Tooltip from '@/components/ui/tooltip'
 import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
 import { useQuery } from '@tanstack/react-query'
 import { beautifyName } from '@/lib/ens'
-import { DAY_IN_SECONDS } from '@/constants/time'
+import { getGraceEnd } from '@/utils/getRegistrationStatus'
 import { accountQueryKey } from '@/utils/queryKeys'
 
 interface PriceProps {
   name: string
   expiry_date: string | null
+  ens_version?: number | null
   listing: DomainListingType
   registrationStatus: RegistrationStatus
   columnCount: number
@@ -28,6 +29,7 @@ interface PriceProps {
 const Price: React.FC<PriceProps> = ({
   name,
   expiry_date,
+  ens_version,
   listing,
   registrationStatus,
   columnCount,
@@ -38,7 +40,7 @@ const Price: React.FC<PriceProps> = ({
   // Only use 'premium' type for premium names, null for others (no grace period in table Price component)
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD && showGracePeriod ? 'grace' : null
-  const { premiumPrice, timeLeftString } = useExpiryCountdown(expiry_date, countdownType)
+  const { premiumPrice, timeLeftString } = useExpiryCountdown(expiry_date, countdownType, ens_version)
   const regPrice = calculateRegistrationPrice(name, ethPrice)
 
   const { data: brokerAccount } = useQuery({
@@ -98,7 +100,7 @@ const Price: React.FC<PriceProps> = ({
     return (
       <div className={cn(ALL_MARKETPLACE_COLUMNS['price'].getWidth(columnCount), 'text-md flex flex-col gap-px')}>
         <Tooltip
-          label={`Ends ${formatExpiryDate(new Date(new Date(expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+          label={`Ends ${formatExpiryDate(getGraceEnd(expiry_date, ens_version), { includeTime: true, dateDivider: '/' })}`}
           align='left'
           position='top'
         >

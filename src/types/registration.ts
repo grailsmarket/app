@@ -34,4 +34,5 @@ export interface CalculationResults {
   priceETH: number
   isBelowMinimum: boolean
   isLoadingPrice: boolean
+  paymentToken?: string
 }

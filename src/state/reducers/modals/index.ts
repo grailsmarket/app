@@ -16,6 +16,7 @@ import shareModal from './shareModal'
 import editRecordsModal from './editRecordsModal'
 import bulkEditRecordsModal from './bulkEditRecordsModal'
 import listSettingsModal from './listSettingsModal'
+import migrationModal from './migrationModal'
 
 const modalReducer = combineReducers({
   searchReducer: searchModal,
@@ -34,6 +35,7 @@ const modalReducer = combineReducers({
   editRecordsReducer: editRecordsModal,
   bulkEditRecordsReducer: bulkEditRecordsModal,
   listSettingsReducer: listSettingsModal,
+  migrationReducer: migrationModal,
 })
 
 export default modalReducer

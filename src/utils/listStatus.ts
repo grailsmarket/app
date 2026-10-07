@@ -7,6 +7,6 @@ export const formatListStatus = (expiry_date: string | null) => {
   )
 }
 
-export const hasRegistrationPrice = (expiry_date: string | null) => {
-  return [UNREGISTERED, PREMIUM].includes(getRegistrationStatus(expiry_date) || '')
+export const hasRegistrationPrice = (expiry_date: string | null, ensVersion?: number | null) => {
+  return [UNREGISTERED, PREMIUM].includes(getRegistrationStatus(expiry_date, ensVersion) || '')
 }

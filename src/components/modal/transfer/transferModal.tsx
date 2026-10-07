@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
+import { useEnsV2 } from '@/hooks/useEnsV2'
 import {
   ENS_REGISTRAR_ADDRESS,
   ENS_NAME_WRAPPER_ADDRESS,
@@ -31,6 +32,8 @@ import { BULK_TRANSFER_ABI } from '@/constants/abi/BulkTransfer'
 import { ItemType } from '@/types/seaport'
 import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
 import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
+import { NFT_ABI } from '@/constants/abi/NFTAbi'
+import { getV2Name, isTransferable } from '@/utils/web3/ensv2'
 
 interface TransferModalProps {
   domains: TransferDomainType[]
@@ -48,6 +51,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   const debouncedRecipientInput = useDebounce(recipientInput, 200)
   const [needsRegistrarApproval, setNeedsRegistrarApproval] = useState(false)
   const [needsWrapperApproval, setNeedsWrapperApproval] = useState(false)
+  const [needsRegistryApproval, setNeedsRegistryApproval] = useState(false)
   const [approvingContract, setApprovingContract] = useState<string | null>(null)
 
   const { address } = useAccount()
@@ -55,6 +59,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
   const { isSelecting } = useAppSelector(selectBulkSelect)
+  const ensV2 = useEnsV2()
+
+  const getV2Names = () =>
+    Promise.all(domains.map((domain) => (ensV2 && publicClient ? getV2Name(publicClient, ensV2, domain.name) : null)))
 
   const handleClose = () => {
     // Clear bulk selection only on success
@@ -96,8 +104,11 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
     if (!address || !publicClient || !domains.length) return
 
     try {
+      const v2Names = await getV2Names()
       // Check which contracts we need (wrapped vs unwrapped)
-      const wrappedStatuses = await Promise.all(domains.map(async (domain) => checkIfWrapped(domain.name)))
+      const wrappedStatuses = await Promise.all(
+        domains.filter((_, i) => !v2Names[i]).map(async (domain) => checkIfWrapped(domain.name))
+      )
 
       const hasUnwrapped = wrappedStatuses.some((isWrapped) => !isWrapped)
       const hasWrapped = wrappedStatuses.some((isWrapped) => isWrapped)
@@ -127,6 +138,18 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       } else {
         setNeedsWrapperApproval(false)
       }
+
+      if (ensV2 && v2Names.some(Boolean)) {
+        const isApproved = await publicClient.readContract({
+          address: ensV2.ethRegistry,
+          abi: NFT_ABI,
+          functionName: 'isApprovedForAll',
+          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
+        })
+        setNeedsRegistryApproval(!isApproved)
+      } else {
+        setNeedsRegistryApproval(false)
+      }
     } catch (err) {
       console.error('Error checking approvals:', err)
     }
@@ -135,7 +158,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   // Check approvals when domains change
   useEffect(() => {
     checkApprovals()
-  }, [domains, address])
+  }, [domains, address, ensV2])
 
   const handleApprove = async (contractAddress: Address, contractName: string) => {
     if (!address || !publicClient) return
@@ -150,7 +173,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
 
       const hash = await walletClient.writeContract({
         address: contractAddress,
-        abi: contractName === 'ENS Registrar' ? BaseRegistrarAbi : NAME_WRAPPER_ABI,
+        abi: NFT_ABI,
         functionName: 'setApprovalForAll',
         args: [OPENSEA_CONDUIT_ADDRESS as Address, true],
         chain: mainnet,
@@ -184,8 +207,27 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
 
     try {
       const recipientAddress = account.address as Address
+      const v2Names = await getV2Names()
+      if (
+        ensV2 &&
+        (
+          await Promise.all(v2Names.map((v2Name) => !v2Name || isTransferable(publicClient, ensV2, v2Name, address)))
+        ).includes(false)
+      ) {
+        throw new Error(
+          'Some ENSv2 names cannot be transferred from this wallet. Make sure you own them and no other account holds roles on them.'
+        )
+      }
       const items = await Promise.all(
-        domains.map(async (domain) => {
+        domains.map(async (domain, i) => {
+          const v2Name = v2Names[i]
+          if (ensV2 && v2Name)
+            return {
+              itemType: ItemType.ERC1155,
+              token: ensV2.ethRegistry,
+              identifier: v2Name.tokenId,
+              amount: BigInt(1),
+            }
           const isWrapped = await checkIfWrapped(domain.name)
           const normalizedName = normalizeName(domain.name)
           const tokenId = isWrapped ? namehash(normalizedName) : labelhash(normalizedName.replace('.eth', ''))
@@ -342,21 +384,18 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
             <div className='flex flex-col gap-2'>
               <PrimaryButton
                 onClick={async () => {
-                  if (needsRegistrarApproval && needsWrapperApproval) {
-                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
-                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
-                  } else if (needsRegistrarApproval) {
-                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
-                  } else if (needsWrapperApproval) {
-                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
-                  }
+                  if (needsRegistrarApproval) await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
+                  if (needsWrapperApproval) await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
+                  if (needsRegistryApproval && ensV2) await handleApprove(ensV2.ethRegistry, 'ENS Registry')
 
                   handleTransfer()
                 }}
                 disabled={!account?.address || isResolving || !!error}
                 className='w-full'
               >
-                {needsRegistrarApproval || needsWrapperApproval ? 'Approve Transfer' : 'Transfer'}
+                {needsRegistrarApproval || needsWrapperApproval || needsRegistryApproval
+                  ? 'Approve Transfer'
+                  : 'Transfer'}
               </PrimaryButton>
               <SecondaryButton onClick={handleClose} className='w-full'>
                 Cancel

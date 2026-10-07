@@ -95,7 +95,7 @@ const MigrationModal: React.FC<MigrationModalProps> = ({ names, onClose }) => {
       case 'review':
         return (
           <>
-            <p className='text-neutral text-md bg-secondary rounded-md p-3 border border-tertiary'>
+            <p className='text-neutral text-md bg-secondary border-tertiary rounded-md border p-3'>
               Upgrading moves your names to ENSv2. Your records keep resolving; editing them later moves them to your
               own ENSv2 resolver. Active listings and offers for these names stop working, so relist after upgrading.
             </p>

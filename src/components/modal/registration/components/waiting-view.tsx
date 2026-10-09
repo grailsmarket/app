@@ -78,11 +78,11 @@ const WaitingView: React.FC<WaitingViewProps> = ({
         </>
       ) : (
         <div className='flex flex-col items-center justify-center gap-4 pb-4'>
-          <p className='flex items-center gap-1.5 font-medium'>
+          <p className='flex flex-wrap items-center justify-center gap-1.5 font-medium'>
             {isBulk ? (
               <>
                 <CollapsibleNameList names={availableEntries.map((e) => beautifyName(e.name))} />
-                <span>are ready for registration.</span>
+                <span className='text-nowrap'>are ready for registration.</span>
               </>
             ) : (
               <>

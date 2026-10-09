@@ -34,7 +34,7 @@ import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { beautifyName } from '@/lib/ens'
-import { mainnet } from 'viem/chains'
+import { activeChain, EXPLORER_URL } from '@/constants/web3/chain'
 import { formatUnits } from 'viem'
 
 interface ExtendModalProps {
@@ -52,7 +52,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const { extend, extendV2 } = useExtendDomains()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const ensV2 = useEnsV2()
   const { paymentToken, paymentBalance, selectPaymentToken } = usePaymentToken(!!ensV2)
   const queryClient = useQueryClient()
@@ -86,7 +86,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   // Get ETH balance
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   // Time unit options
@@ -437,7 +437,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       {completedTxHashes.map((hash, index) => (
                         <a
                           key={hash}
-                          href={`https://etherscan.io/tx/${hash}`}
+                          href={`${EXPLORER_URL}/tx/${hash}`}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -450,7 +450,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     </div>
                   ) : txHash ? (
                     <a
-                      href={`https://etherscan.io/tx/${txHash}`}
+                      href={`${EXPLORER_URL}/tx/${txHash}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -479,7 +479,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   </div>
                   {txHash && (
                     <a
-                      href={`https://etherscan.io/tx/${txHash}`}
+                      href={`${EXPLORER_URL}/tx/${txHash}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -493,7 +493,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       {completedTxHashes.map((hash, index) => (
                         <a
                           key={hash}
-                          href={`https://etherscan.io/tx/${hash}`}
+                          href={`${EXPLORER_URL}/tx/${hash}`}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-primary/70 hover:text-primary text-sm underline transition-colors'
@@ -681,7 +681,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                           {completedTxHashes.map((hash, index) => (
                             <a
                               key={hash}
-                              href={`https://etherscan.io/tx/${hash}`}
+                              href={`${EXPLORER_URL}/tx/${hash}`}
                               target='_blank'
                               rel='noopener noreferrer'
                               className='text-primary/70 hover:text-primary text-xs underline transition-colors'

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { usePublicClient } from 'wagmi'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { seaportClient } from '@/lib/seaport/seaportClient'
@@ -18,7 +18,7 @@ export function useSeaportClient() {
   const queryClient = useQueryClient()
   const { userAddress: address, authStatus } = useUserContext()
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -93,7 +93,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -376,7 +376,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -500,7 +500,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -592,7 +592,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       setIsLoading(true)
       setError(null)

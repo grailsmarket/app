@@ -13,9 +13,10 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
 import { RegistrationStatus } from '@/types/domains'
+import { ENS_NETWORK } from '@/constants/web3/chain'
 
-export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/${ENS_NETWORK}/${ENS_NAME_WRAPPER_ADDRESS}`
+export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/${ENS_NETWORK}/${APP_ENS_ADDRESS}`
 
 const INTRINSIC_SIZE = 540
 

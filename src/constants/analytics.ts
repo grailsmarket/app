@@ -1,6 +1,7 @@
 import OpenSea from 'public/logos/opensea.svg'
 import Grails from 'public/logo.svg'
 import { DropdownOption } from '@/components/ui/dropdown'
+import { API_URL } from '@/constants/api'
 
 export const PERIOD_OPTIONS: DropdownOption[] = [
   { value: '24h', label: '1 Day' },
@@ -16,4 +17,4 @@ export const SOURCE_OPTIONS: DropdownOption[] = [
   { value: 'opensea', label: 'OpenSea', icon: OpenSea },
 ]
 
-export const API_BASE_URL = 'https://api.grails.app/api/v1'
+export const API_BASE_URL = API_URL

@@ -2,6 +2,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import type { BatchState, NameRegistrationEntry } from '@/types/registration'
 import CollapsibleNameList from './collapsible-name-list'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 interface RegisteringViewProps {
   totalBatches: number
@@ -48,7 +49,7 @@ const RegisteringView: React.FC<RegisteringViewProps> = ({
         <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
         {currentBatch?.registerTxHash ? (
           <a
-            href={`https://etherscan.io/tx/${currentBatch.registerTxHash}`}
+            href={`${EXPLORER_URL}/tx/${currentBatch.registerTxHash}`}
             target='_blank'
             rel='noopener noreferrer'
             className='text-primary hover:text-primary/80 text-lg underline transition-colors'

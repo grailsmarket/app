@@ -1,7 +1,7 @@
 import { Address, Hex, toHex } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import {
   ENS_BULK_REGISTRAR_ADDRESS,
   ENS_HOLIDAY_REGISTRAR_ADDRESS,
@@ -13,7 +13,7 @@ import { ensureChain } from '@/utils/web3/ensureChain'
 
 const useBulkRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
 
   const generateSecret = (): Hex => {
     const randomBytes = new Uint8Array(32)
@@ -107,14 +107,14 @@ const useBulkRegisterDomains = () => {
     const walletClient = await getWalletClient()
 
     try {
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const tx = await walletClient.writeContract({
         address: ENS_BULK_REGISTRAR_ADDRESS,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'multiCommit',
         args: [commitmentHashes],
-        chain: mainnet,
+        chain: activeChain,
       })
       return tx
     } catch (error) {
@@ -134,7 +134,7 @@ const useBulkRegisterDomains = () => {
     const walletClient = await getWalletClient()
 
     try {
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       let gasLimit = BigInt(500_000) * BigInt(labels.length)
 
@@ -180,7 +180,7 @@ const useBulkRegisterDomains = () => {
         ],
         value,
         gas: gasLimit,
-        chain: mainnet,
+        chain: activeChain,
       })
       return tx
     } catch (error) {

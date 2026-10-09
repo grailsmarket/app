@@ -6,7 +6,7 @@ import { useAppSelector } from '../state/hooks'
 
 import { selectMarketplaceDomains } from '../state/reducers/domains/marketplaceDomains'
 import { WETH_ADDRESS } from '@/constants/web3/tokens'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 
 const useSufficientBalance = () => {
   const [isBalanceSufficient, setIsBalanceSufficient] = useState(false)
@@ -15,11 +15,11 @@ const useSufficientBalance = () => {
 
   // const { getRegistrationPriceEstimate } = useRegisterDomain()
   const { address } = useAccount()
-  const { data: ethBalance } = useBalance({ address, chainId: mainnet.id })
+  const { data: ethBalance } = useBalance({ address, chainId: activeChain.id })
   const { data: wethBalance } = useBalance({
     address,
     token: WETH_ADDRESS as `0x${string}`,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const sufficientBalance = () => {

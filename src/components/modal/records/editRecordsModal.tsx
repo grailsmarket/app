@@ -20,6 +20,7 @@ import { ENS_METADATA_URL } from '@/constants/ens'
 import { useAppDispatch } from '@/state/hooks'
 import { markImageForRefresh } from '@/state/reducers/imageRefresh'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
+import { EXPLORER_URL, ENS_NETWORK } from '@/constants/web3/chain'
 
 interface EditRecordsModalProps {
   name: string
@@ -82,12 +83,12 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
       ? records.avatar
-      : `${ENS_METADATA_URL}/mainnet/avatar/${name}`
+      : `${ENS_METADATA_URL}/${ENS_NETWORK}/avatar/${name}`
     : DEFAULT_FALLBACK_AVATAR
   const headerUrl = records.header
     ? records.header.startsWith('http')
       ? records.header
-      : `${ENS_METADATA_URL}/mainnet/header/${name}`
+      : `${ENS_METADATA_URL}/${ENS_NETWORK}/header/${name}`
     : DEFAULT_FALLBACK_HEADER
 
   const handleImageSave = (url: string) => {
@@ -135,7 +136,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                 )}
                 {txHash && (
                   <a
-                    href={`https://etherscan.io/tx/${txHash}`}
+                    href={`${EXPLORER_URL}/tx/${txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -158,7 +159,7 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
                 <p className='text-xl font-bold'>Changes Saved Successfully!</p>
                 {txHash && (
                   <a
-                    href={`https://etherscan.io/tx/${txHash}`}
+                    href={`${EXPLORER_URL}/tx/${txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary hover:text-primary/80 text-lg underline transition-colors'

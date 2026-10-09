@@ -50,6 +50,7 @@ import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 import { markImageForRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
+import { EXPLORER_URL, ENS_APP_URL } from '@/constants/web3/chain'
 
 interface NameDetailsProps {
   name: string
@@ -360,7 +361,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
-              window.open(`https://app.ens.domains/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+              window.open(`${ENS_APP_URL}/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
             }}
           >
             <Image
@@ -406,7 +407,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://etherscan.io/token/${nftContract.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                `${EXPLORER_URL}/token/${nftContract.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
                 '_blank'
               )
             }}

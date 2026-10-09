@@ -10,7 +10,7 @@ import {
   isAddressEqual,
   zeroAddress,
 } from 'viem'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useEnsV2 } from '@/hooks/useEnsV2'
@@ -40,7 +40,7 @@ export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'er
 
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
   const ensV2 = useEnsV2()
@@ -388,7 +388,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           const plan = await planRecordWrite(publicClient, ensV2, owned, address, name, changes)
           setIsMovingRecords(plan.move)
           for (const tx of recordWriteTransactions(ensV2, owned, address, [plan])) {
-            await send(() => walletClient.sendTransaction({ to: tx.to, data: tx.data, chain: mainnet }))
+            await send(() => walletClient.sendTransaction({ to: tx.to, data: tx.data, chain: activeChain }))
           }
         }
       } else if (changes.length > 0) {
@@ -398,7 +398,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
             abi: PublicResolverAbi,
             functionName: 'multicall',
             args: [encodeRecordCalls('node', name, changes)],
-            chain: mainnet,
+            chain: activeChain,
           })
         )
       }
@@ -422,7 +422,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
               abi: RegistryAbi,
               functionName: 'setOwner',
               args: [node, effectiveManager],
-              chain: mainnet,
+              chain: activeChain,
             })
           )
         } else {
@@ -433,7 +433,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
               abi: BaseRegistrarAbi,
               functionName: 'reclaim',
               args: [tokenId, effectiveManager],
-              chain: mainnet,
+              chain: activeChain,
             })
           )
         }
@@ -455,7 +455,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
               abi: ENS_V2_REGISTRY_ABI,
               functionName: 'safeTransferFrom',
               args: [ownerAddress as Address, effectiveOwner, tokenId, BigInt(1), '0x'],
-              chain: mainnet,
+              chain: activeChain,
             })
           )
         } else {
@@ -467,7 +467,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
               abi: BaseRegistrarAbi,
               functionName: 'safeTransferFrom',
               args: [ownerAddress, effectiveOwner, tokenId],
-              chain: mainnet,
+              chain: activeChain,
             })
           )
         }

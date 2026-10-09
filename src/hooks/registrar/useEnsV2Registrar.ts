@@ -1,6 +1,6 @@
 import { type Address, type Hex, zeroAddress } from 'viem'
 import { usePublicClient } from 'wagmi'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ENS_V2_REGISTRAR_ABI } from '@/constants/abi/ENSv2'
 import { ENS_HOLIDAY_REFERRER_ADDRESS } from '@/constants/web3/contracts'
@@ -9,7 +9,7 @@ import { type EnsV2Contracts, ensureAllowance, getOwnedResolver } from '@/utils/
 
 const useEnsV2Registrar = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
 
   const client = () => {
     if (!publicClient) throw new Error('Public client not available')
@@ -56,13 +56,13 @@ const useEnsV2Registrar = () => {
 
   const commit = async (v2: EnsV2Contracts, commitment: Hex) => {
     const walletClient = await getWalletClient()
-    await ensureChain(walletClient, mainnet.id)
+    await ensureChain(walletClient, activeChain.id)
     return walletClient.writeContract({
       address: v2.ethRegistrar,
       abi: ENS_V2_REGISTRAR_ABI,
       functionName: 'commit',
       args: [commitment],
-      chain: mainnet,
+      chain: activeChain,
     })
   }
 
@@ -75,7 +75,7 @@ const useEnsV2Registrar = () => {
     token: Address
   ) => {
     const walletClient = await getWalletClient()
-    await ensureChain(walletClient, mainnet.id)
+    await ensureChain(walletClient, activeChain.id)
     await ensureAllowance(client(), walletClient, token, v2.ethRegistrar, await getPrice(v2, label, duration, token))
     const resolver = (await getOwnedResolver(client(), v2, owner)).address
     return walletClient.writeContract({
@@ -83,7 +83,7 @@ const useEnsV2Registrar = () => {
       abi: ENS_V2_REGISTRAR_ABI,
       functionName: 'register',
       args: [label, owner, secret, zeroAddress, resolver, duration, token, ENS_HOLIDAY_REFERRER_ADDRESS],
-      chain: mainnet,
+      chain: activeChain,
     })
   }
 

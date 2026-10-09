@@ -7,11 +7,12 @@ import {
   walletConnectWallet,
   safeWallet,
 } from '@rainbow-me/rainbowkit/wallets'
-import { mainnet, optimism, base } from 'wagmi/chains'
+import { mainnet, sepolia, optimism, base } from 'wagmi/chains'
 import { type Chain, connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { http, fallback, createStorage, cookieStorage, createConfig } from 'wagmi'
 import { APP_DESCRIPTION, APP_ICON, APP_NAME, APP_URL } from '@/constants'
 import { safe } from 'wagmi/connectors'
+import { activeChain } from '@/constants/web3/chain'
 
 coinbaseWallet.preference = 'all'
 // Define the connectors for the app
@@ -57,22 +58,12 @@ export type ChainWithDetails = Chain & {
 // `chainDetail` and `gasFeeDetail` are custom fields to be used in the ChainList component
 export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   {
-    ...mainnet,
+    ...activeChain,
     iconBackground: 'bg-zinc-300',
     iconUrl: '/chains/ethereum.svg',
     custom: {
       chainDetail: '',
       gasFeeDetail: 'High gas fees',
-    },
-    blockExplorers: {
-      default: {
-        name: 'Blockscout',
-        url: 'https://explorer.base.org',
-      },
-      blockscout: {
-        name: 'Blockscout',
-        url: 'https://eth.blockscout.com/',
-      },
     },
   },
   {
@@ -122,6 +113,14 @@ export const transports = {
       batch: true,
     }),
     http('https://eth.llamarpc.com', {
+      batch: true,
+    }),
+  ]),
+  [sepolia.id]: fallback([
+    http(`https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID}`, {
+      batch: true,
+    }),
+    http('https://ethereum-sepolia-rpc.publicnode.com', {
       batch: true,
     }),
   ]),

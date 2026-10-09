@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { API_URL as DEFAULT_API_URL } from '@/constants/api'
 
-const API_URL = process.env.GRAILS_API_URL || 'https://api.grails.app/api/v1'
+const API_URL = process.env.GRAILS_API_URL || DEFAULT_API_URL
 
 export async function POST(request: NextRequest) {
   try {

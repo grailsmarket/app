@@ -4,6 +4,7 @@ import { YEAR_IN_SECONDS } from '@/constants/time'
 import { BatchState, CalculationResults, NameRegistrationEntry } from '@/types/registration'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import NameCarousel from './name-carousel'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 interface SuccessViewProps {
   isBulk: boolean
@@ -55,7 +56,7 @@ const SuccessView: React.FC<SuccessViewProps> = ({
           .map((b, i) => (
             <a
               key={b.batchIndex}
-              href={`https://etherscan.io/tx/${b.registerTxHash}`}
+              href={`${EXPLORER_URL}/tx/${b.registerTxHash}`}
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:text-primary/80 text-lg underline transition-colors'

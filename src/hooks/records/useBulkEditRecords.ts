@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { type Hex, encodeFunctionData, isAddressEqual, toHex, zeroAddress } from 'viem'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useEnsV2 } from '@/hooks/useEnsV2'
@@ -104,7 +104,7 @@ export const runTransactions = async (
 
 export function useBulkEditRecords(names: string[]) {
   const { address } = useAccount()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
   const ensV2 = useEnsV2()
@@ -413,7 +413,7 @@ export function useBulkEditRecords(names: string[]) {
       if (!publicClient) return
 
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const update = (index: number, patch: Partial<TransactionStatus>) =>
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, ...patch } : s)))
@@ -425,7 +425,7 @@ export function useBulkEditRecords(names: string[]) {
           const hash = await walletClient.sendTransaction({
             to: statuses[index].to,
             data: statuses[index].data,
-            chain: mainnet,
+            chain: activeChain,
           })
           update(index, { status: 'processing', txHash: hash })
           setStep('processing')

@@ -1,6 +1,14 @@
-export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' // Mainnet
-export const USDC_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // Mainnet
-export const DAI_ADDRESS = '0x6b175474e89094c44da98b954eedeac495271d0f' // Mainnet
+import { type Address } from 'viem'
+
+export const WETH_ADDRESS = (
+  process.env.NEXT_PUBLIC_WETH_ADDRESS || '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+).toLowerCase() as Address
+export const USDC_ADDRESS = (
+  process.env.NEXT_PUBLIC_USDC_ADDRESS || '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+).toLowerCase() as Address
+export const DAI_ADDRESS = (
+  process.env.NEXT_PUBLIC_DAI_ADDRESS || '0x6b175474e89094c44da98b954eedeac495271d0f'
+).toLowerCase() as Address
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000' // Mainnet
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' // Mainnet
 export const ENS_ADDRESS = '0xc18360217d8f7ab5e7c516566761ea12ce7f9d72' // Mainnet

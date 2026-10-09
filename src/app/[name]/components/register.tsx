@@ -14,7 +14,7 @@ import { openRegistrationModal, selectRegistration } from '@/state/reducers/regi
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { usePublicClient } from 'wagmi'
-import { mainnet } from 'wagmi/chains'
+import { activeChain, ENS_APP_URL } from '@/constants/web3/chain'
 import { useQuery } from '@tanstack/react-query'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
 import { ENS_V2_REGISTRAR_ABI } from '@/constants/abi/ENSv2'
@@ -38,7 +38,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const registrationState = useAppSelector(selectRegistration)
   const ensV2 = useEnsV2()
 
@@ -143,7 +143,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
           <PrimaryButton
             onClick={() => {
               window.open(
-                `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                `${ENS_APP_URL}/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
                 '_blank'
               )
             }}
@@ -200,7 +200,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                     dispatch(openRegistrationModal({ name: nameDetails?.name || '', domain: nameDetails }))
                   } else {
                     window.open(
-                      `https://app.ens.domains/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                      `${ENS_APP_URL}/${nameDetails?.name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
                       '_blank'
                     )
                   }
@@ -274,7 +274,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
                   dispatch(openRegistrationModal({ name: name || '', domain: nameDetails }))
                 } else {
                   window.open(
-                    `https://app.ens.domains/${name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
+                    `${ENS_APP_URL}/${name}/register?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`,
                     '_blank'
                   )
                 }

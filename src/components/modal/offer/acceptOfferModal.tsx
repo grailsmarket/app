@@ -21,7 +21,7 @@ import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
 import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
-import { mainnet } from 'viem/chains'
+import { activeChain, EXPLORER_URL } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
 import ClaimPoap from '../poap/claimPoap'
@@ -202,7 +202,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       console.log('Args:', [conduitAddress, true])
 
       // Ensure we're on mainnet before approving
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({
@@ -210,7 +210,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         abi: NFT_ABI,
         functionName: 'setApprovalForAll',
         args: [conduitAddress, true],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setApproveTxHash(approveTx)
@@ -301,7 +301,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setStep('processing')
 
       // Ensure we're on mainnet before executing the transaction
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Execute the transaction
       const tx = await walletClient.writeContract({
@@ -316,7 +316,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         ],
         value: BigInt(0),
         gas: gasEstimate || undefined,
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setTxHash(tx)
@@ -431,7 +431,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
               {approveTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  href={`${EXPLORER_URL}/tx/${approveTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -463,7 +463,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <p className='text-neutral text-lg'>Transaction submitted</p>
               {txHash && (
                 <a
-                  href={`https://etherscan.io/tx/${txHash}`}
+                  href={`${EXPLORER_URL}/tx/${txHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'

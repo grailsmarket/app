@@ -11,6 +11,7 @@ import { API_URL } from '@/constants/api'
 import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
+import { ENS_NETWORK } from '@/constants/web3/chain'
 
 const size = {
   width: 1600,
@@ -18,8 +19,8 @@ const size = {
 }
 
 const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/${ENS_NETWORK}/${ENS_NAME_WRAPPER_ADDRESS}`
+const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/${ENS_NETWORK}/${APP_ENS_ADDRESS}`
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
@@ -222,7 +223,7 @@ export async function GET(req: NextRequest) {
       if (categories.length !== 1) return {}
       const entries = await Promise.all(
         categories.map(async (category) => {
-          const dataUri = await fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${category}/avatar`)
+          const dataUri = await fetchImageAsDataUri(`${API_URL}/clubs/${category}/avatar`)
           return [category, dataUri || ''] as const
         })
       )

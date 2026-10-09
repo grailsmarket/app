@@ -41,7 +41,7 @@ import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useDebounce } from '@/hooks/useDebounce'
 import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
@@ -59,7 +59,7 @@ const useRegistrationModal = () => {
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const queryClient = useQueryClient()
   const {
     generateSecret,
@@ -124,7 +124,7 @@ const useRegistrationModal = () => {
 
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const entryDurations = useMemo(() => {
@@ -241,6 +241,10 @@ const useRegistrationModal = () => {
     let cancelled = false
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
+      console.log('labels', labels)
+      console.log('ensV2', ensV2)
+      console.log('v2Registrar', v2Registrar)
+      console.log('checkBulkAvailable', checkBulkAvailable)
       const results = await (ensV2
         ? v2Registrar.checkAvailable(ensV2, labels).catch(() => labels.map(() => false))
         : checkBulkAvailable(labels))

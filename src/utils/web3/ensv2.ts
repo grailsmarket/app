@@ -22,7 +22,7 @@ import {
   toHex,
   zeroAddress,
 } from 'viem'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { packetToBytes } from 'viem/ens'
 import { fetchNameMetadata } from '@/api/name/metadata'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
@@ -55,7 +55,7 @@ const ROLE_CAN_TRANSFER_ADMIN = BigInt(1) << BigInt(156)
 const NAME_SETTER_INTERFACE = toFunctionSelector('setAddress(bytes,uint256,bytes)')
 const NAMES_PER_TX = 50
 
-let isLive = false
+let isLive = true
 
 const reverted = (error: unknown) =>
   error instanceof BaseError &&
@@ -72,7 +72,7 @@ export const getEnsV2 = async (client: PublicClient) => {
   if (!isLive) {
     isLive = await client
       .readContract({
-        address: getChainContractAddress({ chain: mainnet, contract: 'ensUniversalResolver' }),
+        address: getChainContractAddress({ chain: activeChain, contract: 'ensUniversalResolver' }),
         abi: ENS_V2_UNIVERSAL_RESOLVER_ABI,
         functionName: 'isENSv2',
       })
@@ -418,7 +418,7 @@ export const ensureAllowance = async (
     abi: erc20Abi,
     functionName: 'approve',
     args: [spender, amount],
-    chain: mainnet,
+    chain: activeChain,
   })
   await waitForTransaction(client, hash)
 }

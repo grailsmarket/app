@@ -4,21 +4,21 @@ import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
 import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
 import { ENS_V2_REGISTRAR_ABI } from '@/constants/abi/ENSv2'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForSuccess } from '@/utils/web3/safeTransaction'
 import { type EnsV2Contracts, ensureAllowance, planRenewals } from '@/utils/web3/ensv2'
 
 const useExtendDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
 
   const extend = async (names: string[], durations: bigint[], totalPrice: bigint) => {
     try {
       const walletClient = await getWalletClient()
 
       // Ensure we're on mainnet before executing the transaction
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const tx = await walletClient.writeContract({
         address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
@@ -26,7 +26,7 @@ const useExtendDomains = () => {
         functionName: 'bulkRenew',
         args: [names, durations],
         value: totalPrice,
-        chain: mainnet,
+        chain: activeChain,
       })
 
       return tx
@@ -39,7 +39,7 @@ const useExtendDomains = () => {
   const extendV2 = async (v2: EnsV2Contracts, labels: string[], durations: bigint[], token: Address) => {
     if (!publicClient) throw new Error('Public client not available')
     const walletClient = await getWalletClient()
-    await ensureChain(walletClient, mainnet.id)
+    await ensureChain(walletClient, activeChain.id)
     const hashes: Hex[] = []
     for (const group of await planRenewals(publicClient, v2, labels, durations, token)) {
       await ensureAllowance(publicClient, walletClient, token, group.address, group.total)
@@ -48,7 +48,7 @@ const useExtendDomains = () => {
         abi: ENS_V2_REGISTRAR_ABI,
         functionName: 'renewBatch',
         args: [group.rds, token],
-        chain: mainnet,
+        chain: activeChain,
       })
       await waitForSuccess(publicClient, hash)
       hashes.push(hash)

@@ -21,7 +21,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { Check } from 'ethereum-identity-kit'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import useModifyCart from '@/hooks/useModifyCart'
-import { mainnet } from 'viem/chains'
+import { activeChain, EXPLORER_URL } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -131,13 +131,13 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
   // Get balances
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const { data: usdcBalance } = useBalance({
     address,
     token: USDC_ADDRESS as `0x${string}`,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   // Check if listing uses ETH or USDC
@@ -317,7 +317,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       })
 
       // Ensure we're on mainnet before approving
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Approve the conduit (or Seaport) to spend USDC
       const approveTx = await walletClient.writeContract({
@@ -325,7 +325,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [approvalTarget as `0x${string}`, BigInt(listing.price)],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setApproveTxHash(approveTx)
@@ -421,7 +421,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         setStep('processing')
 
         // Ensure we're on mainnet before executing the transaction
-        await ensureChain(walletClient, mainnet.id)
+        await ensureChain(walletClient, activeChain.id)
 
         // Execute with fulfillAdvancedOrder
         tx = await walletClient.writeContract({
@@ -436,7 +436,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           ],
           value: usesETH ? totalPayment : BigInt(0),
           gas: gasEstimate || undefined, // Use estimated gas if available
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTxHash(tx)
@@ -463,7 +463,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         setStep('processing')
 
         // Ensure we're on mainnet before executing the transaction
-        await ensureChain(walletClient, mainnet.id)
+        await ensureChain(walletClient, activeChain.id)
 
         tx = await walletClient.writeContract({
           address: SEAPORT_ADDRESS as `0x${string}`,
@@ -472,7 +472,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           args: [basicOrderParams],
           value: totalPayment,
           gas: gasEstimate || undefined, // Use estimated gas if available
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTxHash(tx)
@@ -596,7 +596,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
               <p className='mt-4 text-gray-400'>Approving USDC for Seaport</p>
               {approveTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  href={`${EXPLORER_URL}/tx/${approveTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -628,7 +628,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
               <p className='text-neutral text-lg'>Transaction submitted</p>
               {txHash && (
                 <a
-                  href={`https://etherscan.io/tx/${txHash}`}
+                  href={`${EXPLORER_URL}/tx/${txHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'

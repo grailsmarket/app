@@ -38,6 +38,7 @@ import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { APP_ENS_ADDRESS } from '@/constants'
+import { ENS_NETWORK } from '@/constants/web3/chain'
 
 const formatCategoryName = (category: string) =>
   category
@@ -219,7 +220,7 @@ const Card: React.FC<CardProps> = ({
       <div className='relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-[206px]'>
         {isHomeCarousel ? (
           <Image
-            src={`${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
+            src={`${ENS_METADATA_URL}/${ENS_NETWORK}/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
             alt={domain.name}
             unoptimized
             width={500}

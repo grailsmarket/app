@@ -20,7 +20,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { formatAddress } from '@/utils/formatAddress'
 import { isAddress, Address, labelhash, namehash } from 'viem'
 import Input from '@/components/ui/input'
-import { mainnet } from 'viem/chains'
+import { activeChain, EXPLORER_URL } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { beautifyName, normalizeName } from '@/lib/ens'
@@ -55,7 +55,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   const [approvingContract, setApprovingContract] = useState<string | null>(null)
 
   const { address } = useAccount()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
   const { isSelecting } = useAppSelector(selectBulkSelect)
@@ -169,14 +169,14 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
     setApprovingContract(contractName)
 
     try {
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const hash = await walletClient.writeContract({
         address: contractAddress,
         abi: NFT_ABI,
         functionName: 'setApprovalForAll',
         args: [OPENSEA_CONDUIT_ADDRESS as Address, true],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       await waitForTransaction(publicClient, hash)
@@ -255,7 +255,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         },
       ]
 
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Simulate first to get detailed error
       try {
@@ -275,7 +275,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         abi: BULK_TRANSFER_ABI,
         functionName: 'bulkTransfer',
         args: [transferItems, OPENSEA_CONDUIT_KEY],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setTxHash(hash) // Store the first transaction hash
@@ -435,7 +435,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               {txHash && (
                 <div className='mx-auto flex w-full items-center justify-center'>
                   <a
-                    href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`}
+                    href={`${EXPLORER_URL}/tx/${txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary hover:underline'
@@ -465,7 +465,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               {txHash && (
                 <div className='flex w-full items-center justify-center'>
                   <a
-                    href={`https://${mainnet.id === 1 ? '' : 'sepolia.'}etherscan.io/tx/${txHash}`}
+                    href={`${EXPLORER_URL}/tx/${txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary hover:text-primary/80 underline'

@@ -1,5 +1,6 @@
 import { type TransactionStatus } from '@/hooks/records/useBulkEditRecords'
 import { Check } from 'ethereum-identity-kit'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 const TransactionStatusRow: React.FC<{
   status: TransactionStatus
@@ -48,7 +49,7 @@ const TransactionStatusRow: React.FC<{
       )}
       {status.txHash && (
         <a
-          href={`https://etherscan.io/tx/${status.txHash}`}
+          href={`${EXPLORER_URL}/tx/${status.txHash}`}
           target='_blank'
           rel='noopener noreferrer'
           className='text-primary text-md hover:underline'

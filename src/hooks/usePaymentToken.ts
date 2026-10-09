@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { erc20Abi, formatUnits, zeroAddress } from 'viem'
 import { useAccount, useReadContracts } from 'wagmi'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { ENS_PAYMENT_TOKENS } from '@/constants/web3/tokens'
 
 export const PAYMENT_TOKEN_OPTIONS = ENS_PAYMENT_TOKENS.map(({ symbol }) => ({ value: symbol, label: symbol }))
@@ -15,7 +15,7 @@ export const usePaymentToken = (enabled: boolean) => {
       abi: erc20Abi,
       functionName: 'balanceOf' as const,
       args: [address ?? zeroAddress] as const,
-      chainId: mainnet.id,
+      chainId: activeChain.id,
     })),
     query: { enabled: enabled && !!address },
   })

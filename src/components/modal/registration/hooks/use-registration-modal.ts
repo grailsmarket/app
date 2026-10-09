@@ -27,18 +27,21 @@ import {
   resetRegistrationModal,
 } from '@/state/reducers/registration'
 import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
+import useEnsV2Registrar from '@/hooks/registrar/useEnsV2Registrar'
+import { useEnsV2 } from '@/hooks/useEnsV2'
+import { usePaymentToken } from '@/hooks/usePaymentToken'
 import useETHPrice from '@/hooks/useETHPrice'
 import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Hex, isAddress } from 'viem'
+import { Hex, formatUnits, isAddress } from 'viem'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useDebounce } from '@/hooks/useDebounce'
 import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
@@ -56,7 +59,7 @@ const useRegistrationModal = () => {
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const queryClient = useQueryClient()
   const {
     generateSecret,
@@ -70,6 +73,10 @@ const useRegistrationModal = () => {
     getCommitmentAges,
     checkCommitmentAge,
   } = useBulkRegisterDomains()
+  const ensV2 = useEnsV2()
+  const v2Registrar = useEnsV2Registrar()
+  const { paymentToken, paymentBalance, selectPaymentToken } = usePaymentToken(!!ensV2)
+  const loadCommitmentAges = () => (ensV2 ? v2Registrar.getCommitmentAges(ensV2) : getCommitmentAges())
 
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
@@ -113,10 +120,11 @@ const useRegistrationModal = () => {
   const allAvailabilityChecked = entries.length > 0 && entries.every((e) => e.isAvailable !== null)
   const availableEntries = useMemo(() => entries.filter((e) => e.isAvailable !== false), [entries])
   const unavailableEntries = useMemo(() => entries.filter((e) => e.isAvailable === false), [entries])
+  const bulkUnavailable = !!ensV2 && availableEntries.length > 1
 
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const entryDurations = useMemo(() => {
@@ -144,9 +152,18 @@ const useRegistrationModal = () => {
   const shouldFetchRegistrationPrices = registrationState.isOpen && registrationState.flowState === 'review'
 
   const { data: totalPriceData, isLoading: isLoadingPrice } = useQuery({
-    queryKey: ['bulkTotalPrice', availableLabels.join(','), availableDurations.map(String).join(',')],
+    queryKey: [
+      'bulkTotalPrice',
+      availableLabels.join(','),
+      availableDurations.map(String).join(','),
+      ensV2 ? paymentToken.symbol : 'ETH',
+    ],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
+      if (ensV2)
+        return bulkUnavailable
+          ? null
+          : v2Registrar.getPrice(ensV2, availableLabels[0], availableDurations[0], paymentToken.address)
       return getBulkTotalPrice(availableLabels, availableDurations)
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
@@ -161,7 +178,7 @@ const useRegistrationModal = () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
       return getBulkRentPrices(availableLabels, availableDurations)
     },
-    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid && isBulk,
+    enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid && isBulk && !ensV2,
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
     refetchOnWindowFocus: false,
     staleTime: 5000,
@@ -176,7 +193,10 @@ const useRegistrationModal = () => {
     let totalPriceETH: number
     let totalPriceUSD: number
 
-    if (totalPriceData) {
+    if (ensV2) {
+      totalPriceUSD = Number(formatUnits(totalPriceData ?? BigInt(0), paymentToken.decimals))
+      totalPriceETH = totalPriceUSD / (ethPrice || 3300)
+    } else if (totalPriceData) {
       totalPriceETH = Number(totalPriceData) / 10 ** 18
       totalPriceUSD = totalPriceETH * (ethPrice || 3300)
     } else {
@@ -197,32 +217,45 @@ const useRegistrationModal = () => {
       priceUSD: totalPriceUSD,
       priceETH: totalPriceETH,
       isBelowMinimum: anyBelowMinimum,
-      isLoadingPrice,
+      isLoadingPrice: ensV2 ? !totalPriceData : isLoadingPrice,
+      paymentToken: ensV2 ? paymentToken.symbol : undefined,
     }
-  }, [entries, entryDurations, ethPrice, totalPriceData, isLoadingPrice, availableEntries])
+  }, [entries, entryDurations, ethPrice, totalPriceData, isLoadingPrice, availableEntries, ensV2, paymentToken])
 
   const hasSufficientBalance = useMemo(() => {
     if (!ethBalance || !calculationResults || !gasPrice || !gasEstimate) return false
 
-    const totalPriceWei = BigInt(Math.floor(calculationResults.priceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
     const gasWei = gasEstimate * gasPrice
+    if (ensV2) return !!totalPriceData && paymentBalance >= totalPriceData && ethBalance.value >= gasWei
+
+    const totalPriceWei = BigInt(Math.floor(calculationResults.priceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
     const totalRequired = totalPriceWei + gasWei
 
     return ethBalance.value >= totalRequired
-  }, [ethBalance, calculationResults, gasPrice, gasEstimate])
+  }, [ethBalance, calculationResults, gasPrice, gasEstimate, ensV2, totalPriceData, paymentBalance])
 
   useEffect(() => {
     if (!isClient || !registrationState.isOpen || entries.length === 0) return
     if (registrationState.flowState === 'success' || registrationState.flowState === 'registering') return
 
+    let cancelled = false
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
-      const results = await checkBulkAvailable(labels)
-      dispatch(setBulkAvailability(results))
+      console.log('labels', labels)
+      console.log('ensV2', ensV2)
+      console.log('v2Registrar', v2Registrar)
+      console.log('checkBulkAvailable', checkBulkAvailable)
+      const results = await (ensV2
+        ? v2Registrar.checkAvailable(ensV2, labels).catch(() => labels.map(() => false))
+        : checkBulkAvailable(labels))
+      if (!cancelled) dispatch(setBulkAvailability(results))
     }
 
     checkAvailability()
-  }, [isClient, registrationState.isOpen, entries.length, registrationState.flowState])
+    return () => {
+      cancelled = true
+    }
+  }, [isClient, registrationState.isOpen, entries.length, registrationState.flowState, ensV2])
 
   useEffect(() => {
     entryDurations.forEach((d, i) => {
@@ -259,7 +292,7 @@ const useRegistrationModal = () => {
       }
     }
 
-    getCommitmentAges().then((ages) => {
+    loadCommitmentAges().then((ages) => {
       if (cancelled) return
       updateRemainingTime(ages.min)
       interval = setInterval(() => updateRemainingTime(ages.min), 1000)
@@ -269,7 +302,7 @@ const useRegistrationModal = () => {
       cancelled = true
       if (interval) clearInterval(interval)
     }
-  }, [registrationState.flowState, batches, getCommitmentAges])
+  }, [registrationState.flowState, batches, loadCommitmentAges])
 
   // Auto-reopen removed: when the user minimizes an active registration,
   // we show a toast instead of forcing the modal back open.
@@ -320,9 +353,11 @@ const useRegistrationModal = () => {
         }
 
         if (lastCommittedBatch.commitmentHashes?.[0]) {
-          const commitTimestamp = await checkCommitmentAge(lastCommittedBatch.commitmentHashes[0])
+          const commitTimestamp = await (ensV2
+            ? v2Registrar.checkCommitmentAge(ensV2, lastCommittedBatch.commitmentHashes[0])
+            : checkCommitmentAge(lastCommittedBatch.commitmentHashes[0]))
           if (commitTimestamp && commitTimestamp > 0) {
-            const ages = await getCommitmentAges()
+            const ages = await loadCommitmentAges()
             const age = Math.floor(Date.now() / 1000) - commitTimestamp
             if (age >= ages.min && age <= ages.max) {
               dispatch(setRegistrationFlowState('waiting'))
@@ -360,7 +395,7 @@ const useRegistrationModal = () => {
     }
 
     checkResume()
-  }, [address, entries.length, secret])
+  }, [address, entries.length, secret, ensV2])
 
   const handleClose = useCallback(() => {
     if (
@@ -406,7 +441,7 @@ const useRegistrationModal = () => {
   }, [showCustomOwner, debouncedCustomOwner, account, address])
 
   const handleCommit = useCallback(async () => {
-    if (!address || entries.length === 0 || !calculationResults) return
+    if (!address || entries.length === 0 || !calculationResults || bulkUnavailable) return
 
     const owner = getOwnerAddress()
     if (!owner) {
@@ -461,16 +496,12 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const hashes = await makeBulkCommitments(
-          batchLabels,
-          owner,
-          batchDurations,
-          commitSecret,
-          reverseRecord ? 1 : 0
-        )
+        const hashes = ensV2
+          ? [await v2Registrar.makeCommitment(ensV2, batchLabels[0], owner, commitSecret, batchDurations[0])]
+          : await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret, reverseRecord ? 1 : 0)
         dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
 
-        const tx = await submitMultiCommit(hashes)
+        const tx = await (ensV2 ? v2Registrar.commit(ensV2, hashes[0]) : submitMultiCommit(hashes))
         dispatch(setBatchCommitTxHash({ batchIndex, txHash: tx }))
 
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
@@ -508,6 +539,9 @@ const useRegistrationModal = () => {
     submitMultiCommit,
     publicClient,
     dispatch,
+    bulkUnavailable,
+    ensV2,
+    v2Registrar,
   ])
 
   const handleRegister = useCallback(async () => {
@@ -536,21 +570,26 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
-        if (!batchPrice) {
-          dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
-          return
-        }
-        const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
+        let tx: Hex
+        if (ensV2) {
+          tx = await v2Registrar.register(ensV2, batchLabels[0], owner, secret, batchDurations[0], paymentToken.address)
+        } else {
+          const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
+          if (!batchPrice) {
+            dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
+            return
+          }
+          const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
 
-        const tx = await submitMultiRegister(
-          batchLabels,
-          owner,
-          batchDurations,
-          secret,
-          valueWithBuffer,
-          reverseRecord ? 1 : 0
-        )
+          tx = await submitMultiRegister(
+            batchLabels,
+            owner,
+            batchDurations,
+            secret,
+            valueWithBuffer,
+            reverseRecord ? 1 : 0
+          )
+        }
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
@@ -599,6 +638,9 @@ const useRegistrationModal = () => {
     modifyCart,
     refetchQueries,
     dispatch,
+    ensV2,
+    v2Registrar,
+    paymentToken,
   ])
 
   const onTimeUnitChange = useCallback(
@@ -724,6 +766,10 @@ const useRegistrationModal = () => {
     allDurationsValid,
     calculationResults,
     hasSufficientBalance,
+    isEnsV2: !!ensV2,
+    paymentToken,
+    selectPaymentToken,
+    bulkUnavailable,
     currentBatch: batches[registrationState.currentBatchIndex],
     perNamePrices,
     gasEstimate,

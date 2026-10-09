@@ -17,7 +17,7 @@ import { DAY_IN_SECONDS } from '@/constants/time'
 import { Check } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { useSeaportContext } from '@/context/seaport'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, useBalance } from 'wagmi'
 import { parseUnits } from 'viem'
 import { WETH_ADDRESS, USDC_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
@@ -66,13 +66,13 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const { data: wethBalance } = useBalance({
     address,
     token: WETH_ADDRESS as `0x${string}`,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const { data: usdcBalance } = useBalance({
     address,
     token: USDC_ADDRESS as `0x${string}`,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   // Check if user has sufficient balance

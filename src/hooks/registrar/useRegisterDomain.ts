@@ -1,7 +1,7 @@
 import { Address, Hex, toHex } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import {
   ENS_HOLIDAY_REFERRER_ADDRESS,
   ENS_HOLIDAY_REGISTRAR_ADDRESS,
@@ -23,7 +23,7 @@ type RegistrationParams = {
 
 const useRegisterDomain = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
 
   const generateSecret = (): `0x${string}` => {
     const randomBytes = new Uint8Array(32)
@@ -109,14 +109,14 @@ const useRegisterDomain = () => {
 
     try {
       // Ensure we're on mainnet before submitting the commitment
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const tx = await walletClient.writeContract({
         address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
         abi: ENS_HOLIDAY_REGISTRAR_ABI,
         functionName: 'commit',
         args: [commitmentHash],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       console.log('Transaction hash:', tx)
@@ -183,7 +183,7 @@ const useRegisterDomain = () => {
 
     try {
       // Ensure we're on mainnet before submitting the registration
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Estimate gas and add 25% buffer for safety (seems that registering emoji names needs more gas)
       let gasLimit = BigInt(500000) // Safe fallback if estimation fails
@@ -213,7 +213,7 @@ const useRegisterDomain = () => {
         args: [registrationData],
         value,
         gas: gasLimit,
-        chain: mainnet,
+        chain: activeChain,
       })
       return tx
     } catch (error) {

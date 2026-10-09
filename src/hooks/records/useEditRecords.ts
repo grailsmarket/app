@@ -1,25 +1,49 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
-import { mainnet } from 'viem/chains'
+import {
+  type Address,
+  type Hex,
+  namehash,
+  labelhash,
+  hexToBigInt,
+  toHex,
+  isAddress,
+  isAddressEqual,
+  zeroAddress,
+} from 'viem'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
+import { useEnsV2 } from '@/hooks/useEnsV2'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { RegistryAbi } from '@/constants/abi/RegistryAbi'
 import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
+import { ENS_V2_REGISTRY_ABI } from '@/constants/abi/ENSv2'
 import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
 import { resolveEnsAddress } from '@/utils/web3/ens'
+import {
+  type EnsRecord,
+  ENS_V2_STATUS,
+  encodeRecordCalls,
+  getEthLabel,
+  getOwnedResolver,
+  getV2Name,
+  getV2State,
+  planRecordWrite,
+  recordWriteTransactions,
+} from '@/utils/web3/ensv2'
 import { fetchNameRoles } from '@/api/name/roles'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
-import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { waitForSuccess } from '@/utils/web3/safeTransaction'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
+  const ensV2 = useEnsV2()
 
   const { data: roles } = useQuery({
     queryKey: ['name', 'roles', name],
@@ -30,7 +54,12 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     },
     enabled: !!name,
   })
-  const ownerAddress = roles?.owner || ''
+  const { data: v2Name } = useQuery({
+    queryKey: ['name', 'v2', name],
+    queryFn: () => (ensV2 && name && publicClient ? getV2Name(publicClient, ensV2, name) : null),
+    enabled: !!ensV2 && !!name && !!publicClient,
+  })
+  const ownerAddress = v2Name?.latestOwner || roles?.owner || ''
   const managerAddress = roles?.manager || ''
   const resolverAddress = roles?.resolver || ''
   const ethAddress = roles?.ethAddress || ''
@@ -46,6 +75,10 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     setRoleManagerState(roles.manager)
     setRoleEthRecordState(roles.ethAddress)
   }, [roles])
+
+  useEffect(() => {
+    if (v2Name) setRoleOwnerState(v2Name.latestOwner)
+  }, [v2Name])
 
   // Text records state
   const [records, setRecords] = useState<Record<string, string>>({})
@@ -78,6 +111,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [imageUploadTarget, setImageUploadTarget] = useState<'avatar' | 'header' | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
+  const [isMovingRecords, setIsMovingRecords] = useState(false)
 
   // Initialize state from metadata
   useEffect(() => {
@@ -203,9 +237,10 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Permission checks (based on on-chain values, not edited values)
   const isManager = useMemo(() => {
-    if (!address || !managerAddress) return false
-    return address.toLowerCase() === managerAddress.toLowerCase()
-  }, [address, managerAddress])
+    if (!address) return false
+    if (v2Name) return v2Name.status === ENS_V2_STATUS.REGISTERED && isAddressEqual(v2Name.latestOwner, address)
+    return !!managerAddress && address.toLowerCase() === managerAddress.toLowerCase()
+  }, [address, managerAddress, v2Name])
 
   const isOwner = useMemo(() => {
     if (!address || !ownerAddress) return false
@@ -293,15 +328,15 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const setRoleManager = useCallback((value: string) => setRoleManagerState(value), [])
   const setRoleEthRecord = useCallback((value: string) => setRoleEthRecordState(value), [])
 
-  // Save all changed records and roles
   const saveRecords = useCallback(async () => {
-    if (!name || !resolverAddress || !publicClient) return
+    if (!name || !publicClient || (v2Name ? !ensV2 || !address : !resolverAddress)) return
 
     const walletClient = await getWalletClient()
 
     setStep('confirming')
     setErrorMessage(null)
     setTxHash(null)
+    setIsMovingRecords(false)
 
     // Helper: resolve an input value to an effective address
     const resolveRole = (value: string, resolved: string | null): `0x${string}` | null => {
@@ -310,130 +345,101 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
       return null
     }
 
+    const send = async (transaction: () => Promise<Hex>) => {
+      setStep('confirming')
+      const hash = await transaction()
+      setTxHash(hash)
+      setStep('processing')
+      await waitForSuccess(publicClient, hash)
+    }
+
     try {
       const node = namehash(name)
+      const changes: EnsRecord[] = [
+        ...TEXT_RECORD_KEYS.filter((key) => (records[key] || '') !== (initialRecords[key] || '')).map((key) => ({
+          type: 'text' as const,
+          key,
+          value: records[key] || '',
+        })),
+        ...ADDRESS_RECORD_KEYS.filter((key) => (addressRecords[key] || '') !== (initialAddressRecords[key] || '')).map(
+          (key) => ({
+            type: 'addr' as const,
+            coinType: COIN_TYPES[key],
+            value: addressRecords[key] ? toHex(new TextEncoder().encode(addressRecords[key])) : ('0x' as const),
+          })
+        ),
+        ...[...new Set([...Object.keys(customRecords), ...Object.keys(initialCustomRecords)])]
+          .filter((key) => (customRecords[key] ?? '') !== (initialCustomRecords[key] ?? ''))
+          .map((key) => ({ type: 'text' as const, key, value: customRecords[key] ?? '' })),
+        ...(roleEthRecord !== ethAddress
+          ? [
+              {
+                type: 'addr' as const,
+                coinType: 60,
+                value: resolveRole(roleEthRecord, resolvedRoleEthRecord) || zeroAddress,
+              },
+            ]
+          : []),
+      ]
 
-      // --- Step 1: Resolver multicall (text records + address records + custom records + ETH record) ---
-      const calls: `0x${string}`[] = []
-
-      // Encode changed text records
-      for (const key of TEXT_RECORD_KEYS) {
-        const current = records[key] || ''
-        const initial = initialRecords[key] || ''
-        if (current !== initial) {
-          calls.push(
-            encodeFunctionData({
-              abi: PublicResolverAbi,
-              functionName: 'setText',
-              args: [node, key, current],
-            })
-          )
+      if (v2Name && ensV2 && address) {
+        if (changes.length > 0) {
+          const owned = await getOwnedResolver(publicClient, ensV2, address)
+          const plan = await planRecordWrite(publicClient, ensV2, owned, address, name, changes)
+          setIsMovingRecords(plan.move)
+          for (const tx of recordWriteTransactions(ensV2, owned, address, [plan])) {
+            await send(() => walletClient.sendTransaction({ to: tx.to, data: tx.data, chain: activeChain }))
+          }
         }
-      }
-
-      // Encode changed address records (BTC etc, not ETH)
-      for (const key of ADDRESS_RECORD_KEYS) {
-        const current = addressRecords[key] || ''
-        const initial = initialAddressRecords[key] || ''
-        if (current !== initial) {
-          const coinType = BigInt(COIN_TYPES[key])
-          const addressBytes = current
-            ? (toHex(new TextEncoder().encode(current)) as `0x${string}`)
-            : ('0x' as `0x${string}`)
-          calls.push(
-            encodeFunctionData({
-              abi: PublicResolverAbi,
-              functionName: 'setAddr',
-              args: [node, coinType, addressBytes],
-            })
-          )
-        }
-      }
-
-      // Encode changed custom records
-      const allCustomKeys = new Set([...Object.keys(customRecords), ...Object.keys(initialCustomRecords)])
-      for (const key of allCustomKeys) {
-        const current = customRecords[key] ?? ''
-        const initial = initialCustomRecords[key] ?? ''
-        if (current !== initial) {
-          calls.push(
-            encodeFunctionData({
-              abi: PublicResolverAbi,
-              functionName: 'setText',
-              args: [node, key, current],
-            })
-          )
-        }
-      }
-
-      // Encode ETH record change from Roles tab
-      if (roleEthRecord !== ethAddress) {
-        const effectiveEthAddr =
-          resolveRole(roleEthRecord, resolvedRoleEthRecord) ||
-          ('0x0000000000000000000000000000000000000000' as `0x${string}`)
-        calls.push(
-          encodeFunctionData({
+      } else if (changes.length > 0) {
+        await send(() =>
+          walletClient.writeContract({
+            address: resolverAddress as Address,
             abi: PublicResolverAbi,
-            functionName: 'setAddr',
-            args: [node, effectiveEthAddr],
+            functionName: 'multicall',
+            args: [encodeRecordCalls('node', name, changes)],
+            chain: activeChain,
           })
         )
       }
 
-      // Submit multicall if there are resolver changes
-      if (calls.length > 0) {
-        const hash = await walletClient.writeContract({
-          address: resolverAddress,
-          abi: PublicResolverAbi,
-          functionName: 'multicall',
-          args: [calls],
-          chain: mainnet,
-        })
-
-        setTxHash(hash)
-        setStep('processing')
-        await waitForTransaction(publicClient, hash)
-      }
-
-      // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
+      // --- Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
       const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
-      if (managerChanged && roleManager) {
+      if (!v2Name && managerChanged && roleManager) {
         const effectiveManager = resolveRole(roleManager, resolvedRoleManager)
         if (!effectiveManager) {
           throw new Error(`Could not resolve "${roleManager}" to an address`)
         }
 
-        setStep('confirming')
         const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
         const tokenId = hexToBigInt(labelhash(label))
 
-        let hash: `0x${string}`
         if (isManager) {
           // Current manager can use setOwner on the Registry
-          hash = await walletClient.writeContract({
-            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
-            abi: RegistryAbi,
-            functionName: 'setOwner',
-            args: [node, effectiveManager],
-            chain: mainnet,
-          })
+          await send(() =>
+            walletClient.writeContract({
+              address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
+              abi: RegistryAbi,
+              functionName: 'setOwner',
+              args: [node, effectiveManager],
+              chain: activeChain,
+            })
+          )
         } else {
           // NFT owner can use reclaim on the BaseRegistrar
-          hash = await walletClient.writeContract({
-            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-            abi: BaseRegistrarAbi,
-            functionName: 'reclaim',
-            args: [tokenId, effectiveManager],
-            chain: mainnet,
-          })
+          await send(() =>
+            walletClient.writeContract({
+              address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+              abi: BaseRegistrarAbi,
+              functionName: 'reclaim',
+              args: [tokenId, effectiveManager],
+              chain: activeChain,
+            })
+          )
         }
-
-        setTxHash(hash)
-        setStep('processing')
-        await waitForTransaction(publicClient, hash)
       }
 
-      // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
+      // --- Owner transfer ---
       const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
       if (ownerChanged && roleOwner && ownerAddress) {
         const effectiveOwner = resolveRole(roleOwner, resolvedRoleOwner)
@@ -441,27 +447,37 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           throw new Error(`Could not resolve "${roleOwner}" to an address`)
         }
 
-        setStep('confirming')
-        const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
-        const tokenId = hexToBigInt(labelhash(label))
-
-        const hash = await walletClient.writeContract({
-          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
-          abi: BaseRegistrarAbi,
-          functionName: 'safeTransferFrom',
-          args: [ownerAddress, effectiveOwner, tokenId],
-          chain: mainnet,
-        })
-
-        setTxHash(hash)
-        setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        if (v2Name && ensV2) {
+          const { tokenId } = await getV2State(publicClient, ensV2, getEthLabel(name)!)
+          await send(() =>
+            walletClient.writeContract({
+              address: ensV2.ethRegistry,
+              abi: ENS_V2_REGISTRY_ABI,
+              functionName: 'safeTransferFrom',
+              args: [ownerAddress as Address, effectiveOwner, tokenId, BigInt(1), '0x'],
+              chain: activeChain,
+            })
+          )
+        } else {
+          const label = name.endsWith('.eth') ? name.slice(0, -4) : name.split('.')[0]
+          const tokenId = hexToBigInt(labelhash(label))
+          await send(() =>
+            walletClient.writeContract({
+              address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+              abi: BaseRegistrarAbi,
+              functionName: 'safeTransferFrom',
+              args: [ownerAddress, effectiveOwner, tokenId],
+              chain: activeChain,
+            })
+          )
+        }
       }
 
       // Invalidate caches
       queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
       queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
       queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
+      queryClient.invalidateQueries({ queryKey: ['name', 'v2', name] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       queryClient.invalidateQueries({ queryKey: ['profileMetadata', name] })
 
@@ -475,6 +491,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     getWalletClient,
     resolverAddress,
     publicClient,
+    v2Name,
+    ensV2,
+    address,
     records,
     initialRecords,
     addressRecords,
@@ -540,5 +559,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     address,
     isManager,
     isOwner,
+    isV2: !!v2Name,
+    isMovingRecords,
   }
 }

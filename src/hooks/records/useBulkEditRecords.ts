@@ -1,14 +1,25 @@
 import { useState, useCallback, useMemo } from 'react'
-import { namehash, encodeFunctionData, toHex } from 'viem'
-import { mainnet } from 'viem/chains'
+import { type Hex, encodeFunctionData, isAddressEqual, toHex, zeroAddress } from 'viem'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
+import { useEnsV2 } from '@/hooks/useEnsV2'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { fetchNameRoles } from '@/api/name/roles'
 import { ensureChain } from '@/utils/web3/ensureChain'
-import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { waitForSuccess } from '@/utils/web3/safeTransaction'
+import {
+  type EnsRecord,
+  type PlannedTx,
+  ENS_V2_STATUS,
+  encodeRecordCalls,
+  getOwnedResolver,
+  getV2Name,
+  planRecordWrite,
+  recordWriteTransactions,
+} from '@/utils/web3/ensv2'
 
 const MAX_NAMES_PER_MULTICALL = 50
 
@@ -22,9 +33,8 @@ export type BulkRecordSet = {
   customRecords: Record<string, string>
 }
 
-export type TransactionStatus = {
-  resolverAddress: `0x${string}`
-  names: string[]
+export type TransactionStatus = PlannedTx & {
+  ordered: boolean
   status: 'pending' | 'confirming' | 'processing' | 'success' | 'error'
   txHash: string | null
   error: string | null
@@ -52,11 +62,52 @@ function encodeContenthash(input: string): `0x${string}` {
   return toHex(new TextEncoder().encode(input)) as `0x${string}`
 }
 
+export const buildRecords = (records: BulkRecordSet, customKeys: string[], clearedFields: Set<string>): EnsRecord[] => [
+  ...TEXT_RECORD_KEYS.filter((key) => records.textRecords[key] || clearedFields.has(`text:${key}`)).map((key) => ({
+    type: 'text' as const,
+    key,
+    value: records.textRecords[key] || '',
+  })),
+  ...[...new Set(customKeys)]
+    .filter((key) => records.customRecords[key] || clearedFields.has(`custom:${key}`))
+    .map((key) => ({ type: 'text' as const, key, value: records.customRecords[key] || '' })),
+  ...ADDRESS_RECORD_KEYS.filter((key) => records.addressRecords[key] || clearedFields.has(`addr:${key}`)).map(
+    (key) => ({
+      type: 'addr' as const,
+      coinType: COIN_TYPES[key],
+      value: records.addressRecords[key]
+        ? toHex(new TextEncoder().encode(records.addressRecords[key]))
+        : ('0x' as const),
+    })
+  ),
+  ...(records.ethAddress || clearedFields.has('ethAddress')
+    ? [{ type: 'addr' as const, coinType: 60, value: (records.ethAddress || zeroAddress) as Hex }]
+    : []),
+  ...(records.contenthash || clearedFields.has('contenthash')
+    ? [{ type: 'contenthash' as const, value: encodeContenthash(records.contenthash) }]
+    : []),
+]
+
+export const runTransactions = async (
+  statuses: Pick<TransactionStatus, 'ordered' | 'status'>[],
+  start: number,
+  end: number,
+  send: (index: number) => Promise<boolean>
+) => {
+  const succeeded = statuses.map(({ status }) => status === 'success')
+  for (let index = start; index < end; index++) {
+    if (statuses[index].ordered && statuses.some((s, i) => i < index && s.ordered && !succeeded[i])) continue
+    succeeded[index] = await send(index)
+  }
+  return succeeded
+}
+
 export function useBulkEditRecords(names: string[]) {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
+  const ensV2 = useEnsV2()
 
   // Fetch roles for all names in parallel
   const rolesQueries = useQueries({
@@ -67,37 +118,39 @@ export function useBulkEditRecords(names: string[]) {
     })),
   })
 
-  const isLoadingRoles = rolesQueries.some((q) => q.isLoading)
+  const v2Queries = useQueries({
+    queries: names.map((name) => ({
+      queryKey: ['name', 'v2', name],
+      queryFn: () => (ensV2 && publicClient ? getV2Name(publicClient, ensV2, name) : null),
+      enabled: !!ensV2 && !!name && !!publicClient,
+    })),
+  })
+
+  const isLoadingRoles = rolesQueries.some((q) => q.isLoading) || v2Queries.some((q) => q.isLoading)
+
+  const canEdit = useCallback(
+    (index: number) => {
+      if (!address) return false
+      const v2Name = v2Queries[index]?.data
+      if (v2Name) return v2Name.status === ENS_V2_STATUS.REGISTERED && isAddressEqual(v2Name.latestOwner, address)
+      return rolesQueries[index]?.data?.manager.toLowerCase() === address.toLowerCase()
+    },
+    [address, v2Queries, rolesQueries]
+  )
 
   // Names where user is the manager
-  const managedNames = useMemo(() => {
-    if (!address) return []
-    return names.filter((_, i) => {
-      const roles = rolesQueries[i]?.data
-      if (!roles) return false
-      return roles.manager.toLowerCase() === address.toLowerCase()
-    })
-  }, [names, rolesQueries, address])
+  const managedNames = useMemo(() => names.filter((_, i) => canEdit(i)), [names, canEdit])
 
   // Names where user is NOT the manager
-  const skippedNames = useMemo(() => {
-    if (!address) return names
-    return names.filter((_, i) => {
-      const roles = rolesQueries[i]?.data
-      if (!roles) return true
-      return roles.manager.toLowerCase() !== address.toLowerCase()
-    })
-  }, [names, rolesQueries, address])
+  const skippedNames = useMemo(() => names.filter((_, i) => !canEdit(i)), [names, canEdit])
 
   // Group names by resolver address
   const resolverGroups = useMemo((): ResolverGroup[] => {
-    if (!address) return []
     const groupMap = new Map<string, string[]>()
 
     names.forEach((name, i) => {
       const roles = rolesQueries[i]?.data
-      if (!roles) return
-      if (roles.manager.toLowerCase() !== address.toLowerCase()) return
+      if (!roles || v2Queries[i]?.data || !canEdit(i)) return
 
       const resolver = roles.resolver.toLowerCase()
       if (!groupMap.has(resolver)) {
@@ -110,7 +163,7 @@ export function useBulkEditRecords(names: string[]) {
       resolverAddress: resolverAddress as `0x${string}`,
       names: groupNames,
     }))
-  }, [names, rolesQueries, address])
+  }, [names, rolesQueries, v2Queries, canEdit])
 
   // Shared records (apply-to-all)
   const [sharedRecords, setSharedRecords] = useState<BulkRecordSet>(createEmptyRecordSet)
@@ -355,245 +408,130 @@ export function useBulkEditRecords(names: string[]) {
     return false
   }, [sharedRecords, clearedFields, perNameOverrides])
 
-  // Build multicall calldata for a list of names on a given resolver
-  const buildCallsForGroup = useCallback(
-    (groupNames: string[]): `0x${string}`[] => {
-      const calls: `0x${string}`[] = []
+  const execute = useCallback(
+    async (statuses: TransactionStatus[], start: number, end: number) => {
+      if (!publicClient) return
 
-      for (const name of groupNames) {
-        const records = getEffectiveRecords(name)
-        const node = namehash(name)
+      const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
-        // Text records
-        for (const key of TEXT_RECORD_KEYS) {
-          const value = records.textRecords[key]
-          if (value || clearedFields.has(`text:${key}`)) {
-            calls.push(
-              encodeFunctionData({
-                abi: PublicResolverAbi,
-                functionName: 'setText',
-                args: [node, key, value || ''],
-              })
-            )
-          }
+      const update = (index: number, patch: Partial<TransactionStatus>) =>
+        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, ...patch } : s)))
+
+      const succeeded = await runTransactions(statuses, start, end, async (index) => {
+        try {
+          update(index, { status: 'confirming', error: null })
+          setStep('confirming')
+          const hash = await walletClient.sendTransaction({
+            to: statuses[index].to,
+            data: statuses[index].data,
+            chain: activeChain,
+          })
+          update(index, { status: 'processing', txHash: hash })
+          setStep('processing')
+          await waitForSuccess(publicClient, hash)
+          update(index, { status: 'success' })
+          return true
+        } catch (err: unknown) {
+          update(index, { status: 'error', error: err instanceof Error ? err.message : 'Transaction failed' })
+          return false
         }
+      })
 
-        // Custom records (shared + per-name)
-        const nameCustomKeys = perNameCustomKeys.get(name) || []
-        const allCustomKeys = new Set([...customRecordKeys, ...nameCustomKeys])
-        for (const key of allCustomKeys) {
-          const value = records.customRecords[key]
-          if (value || clearedFields.has(`custom:${key}`)) {
-            calls.push(
-              encodeFunctionData({
-                abi: PublicResolverAbi,
-                functionName: 'setText',
-                args: [node, key, value || ''],
-              })
-            )
-          }
-        }
-
-        // Address records (BTC etc, not ETH)
-        for (const key of ADDRESS_RECORD_KEYS) {
-          const value = records.addressRecords[key]
-          if (value || clearedFields.has(`addr:${key}`)) {
-            const coinType = BigInt(COIN_TYPES[key])
-            const addressBytes = value
-              ? (toHex(new TextEncoder().encode(value)) as `0x${string}`)
-              : ('0x' as `0x${string}`)
-            calls.push(
-              encodeFunctionData({
-                abi: PublicResolverAbi,
-                functionName: 'setAddr',
-                args: [node, coinType, addressBytes],
-              })
-            )
-          }
-        }
-
-        // ETH address
-        if (records.ethAddress || clearedFields.has('ethAddress')) {
-          const ethAddr = records.ethAddress
-            ? (records.ethAddress as `0x${string}`)
-            : ('0x0000000000000000000000000000000000000000' as `0x${string}`)
-          calls.push(
-            encodeFunctionData({
-              abi: PublicResolverAbi,
-              functionName: 'setAddr',
-              args: [node, ethAddr],
-            })
-          )
-        }
-
-        // Contenthash
-        if (records.contenthash || clearedFields.has('contenthash')) {
-          calls.push(
-            encodeFunctionData({
-              abi: PublicResolverAbi,
-              functionName: 'setContenthash',
-              args: [node, encodeContenthash(records.contenthash)],
-            })
-          )
-        }
+      for (const name of new Set(statuses.flatMap((s) => s.names))) {
+        queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
+        queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
+        queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
+        queryClient.invalidateQueries({ queryKey: ['name', 'v2', name] })
       }
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
 
-      return calls
+      const hasError = succeeded.includes(false)
+      setStep(hasError ? 'error' : 'success')
+      setErrorMessage(hasError ? 'One or more transactions failed. See details above.' : null)
     },
-    [getEffectiveRecords, clearedFields, customRecordKeys, perNameCustomKeys]
+    [publicClient, getWalletClient, queryClient]
   )
 
   // Execute all transactions
   const saveRecords = useCallback(async () => {
-    if (!publicClient || resolverGroups.length === 0) return
-
-    const walletClient = await getWalletClient()
-    await ensureChain(walletClient, mainnet.id)
+    if (!publicClient || !address) return
 
     setStep('confirming')
     setErrorMessage(null)
 
-    // Build transaction plan: split large groups into batches
-    const txPlan: { resolverAddress: `0x${string}`; names: string[]; calls: `0x${string}`[] }[] = []
+    const recordsFor = (name: string) =>
+      buildRecords(
+        getEffectiveRecords(name),
+        [...customRecordKeys, ...(perNameCustomKeys.get(name) || [])],
+        clearedFields
+      )
+    const pending = { status: 'pending' as const, txHash: null, error: null }
 
-    for (const group of resolverGroups) {
-      // Split into batches if group is too large
-      for (let i = 0; i < group.names.length; i += MAX_NAMES_PER_MULTICALL) {
-        const batchNames = group.names.slice(i, i + MAX_NAMES_PER_MULTICALL)
-        const calls = buildCallsForGroup(batchNames)
-        if (calls.length > 0) {
-          txPlan.push({
-            resolverAddress: group.resolverAddress,
-            names: batchNames,
-            calls,
-          })
+    try {
+      // Build transaction plan: split large groups into batches
+      const statuses: TransactionStatus[] = []
+      for (const group of resolverGroups) {
+        for (let i = 0; i < group.names.length; i += MAX_NAMES_PER_MULTICALL) {
+          const batchNames = group.names.slice(i, i + MAX_NAMES_PER_MULTICALL)
+          const calls = batchNames.flatMap((name) => encodeRecordCalls('node', name, recordsFor(name)))
+          if (calls.length > 0) {
+            statuses.push({
+              to: group.resolverAddress,
+              data: encodeFunctionData({ abi: PublicResolverAbi, functionName: 'multicall', args: [calls] }),
+              names: batchNames,
+              kind: 'write',
+              ordered: false,
+              ...pending,
+            })
+          }
         }
       }
-    }
 
-    if (txPlan.length === 0) return
-
-    // Initialize transaction statuses
-    const statuses: TransactionStatus[] = txPlan.map((tx) => ({
-      resolverAddress: tx.resolverAddress,
-      names: tx.names,
-      status: 'pending',
-      txHash: null,
-      error: null,
-    }))
-    setTransactionStatuses(statuses)
-
-    let hasError = false
-
-    // Execute sequentially (one per resolver group batch)
-    for (let i = 0; i < txPlan.length; i++) {
-      const tx = txPlan[i]
-
-      try {
-        // Update status to confirming
-        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'confirming' } : s)))
-        setStep('confirming')
-
-        const hash = await walletClient.writeContract({
-          address: tx.resolverAddress,
-          abi: PublicResolverAbi,
-          functionName: 'multicall',
-          args: [tx.calls],
-          chain: mainnet,
-        })
-
-        // Update status to processing with hash
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === i ? { ...s, status: 'processing', txHash: hash } : s))
+      const v2Changes = names
+        .filter((_, i) => v2Queries[i]?.data && canEdit(i))
+        .map((name) => ({ name, changes: recordsFor(name) }))
+        .filter(({ changes }) => changes.length > 0)
+      if (ensV2 && v2Changes.length > 0) {
+        const owned = await getOwnedResolver(publicClient, ensV2, address)
+        const plans = await Promise.all(
+          v2Changes.map(({ name, changes }) => planRecordWrite(publicClient, ensV2, owned, address, name, changes))
         )
-        setStep('processing')
-
-        await waitForTransaction(publicClient, hash)
-
-        // Update status to success
-        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'success' } : s)))
-      } catch (err: unknown) {
-        hasError = true
-        const message = err instanceof Error ? err.message : 'Transaction failed'
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === i ? { ...s, status: 'error', error: message } : s))
+        statuses.push(
+          ...recordWriteTransactions(ensV2, owned, address, plans).map((tx) => ({ ...tx, ordered: true, ...pending }))
         )
-        // Continue with remaining transactions
       }
-    }
 
-    // Invalidate caches for all affected names
-    const allAffectedNames = txPlan.flatMap((tx) => tx.names)
-    for (const name of allAffectedNames) {
-      queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
+      if (statuses.length === 0) return setStep('editing')
+      setTransactionStatuses(statuses)
+      await execute(statuses, 0, statuses.length)
+    } catch (err: unknown) {
+      setStep('error')
+      setErrorMessage(err instanceof Error ? err.message : 'Transaction failed')
     }
-    queryClient.invalidateQueries({ queryKey: ['profile'] })
-
-    setStep(hasError ? 'error' : 'success')
-    if (hasError) {
-      setErrorMessage('One or more transactions failed. See details above.')
-    }
-  }, [publicClient, resolverGroups, getWalletClient, buildCallsForGroup, queryClient])
+  }, [
+    publicClient,
+    address,
+    names,
+    resolverGroups,
+    v2Queries,
+    canEdit,
+    ensV2,
+    getEffectiveRecords,
+    customRecordKeys,
+    perNameCustomKeys,
+    clearedFields,
+    execute,
+  ])
 
   // Retry a specific failed transaction
   const retryTransaction = useCallback(
     async (index: number) => {
-      if (!publicClient) return
-
       const status = transactionStatuses[index]
       if (!status || status.status !== 'error') return
-
-      const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
-
-      const calls = buildCallsForGroup(status.names)
-      if (calls.length === 0) return
-
-      try {
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === index ? { ...s, status: 'confirming', error: null } : s))
-        )
-
-        const hash = await walletClient.writeContract({
-          address: status.resolverAddress,
-          abi: PublicResolverAbi,
-          functionName: 'multicall',
-          args: [calls],
-          chain: mainnet,
-        })
-
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === index ? { ...s, status: 'processing', txHash: hash } : s))
-        )
-
-        await waitForTransaction(publicClient, hash)
-
-        setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, status: 'success' } : s)))
-
-        // Invalidate caches
-        for (const name of status.names) {
-          queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-          queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-          queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-        }
-        queryClient.invalidateQueries({ queryKey: ['profile'] })
-
-        // Check if all are now success
-        const allSuccess = transactionStatuses.every((s, idx) => (idx === index ? true : s.status === 'success'))
-        if (allSuccess) {
-          setStep('success')
-          setErrorMessage(null)
-        }
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Transaction failed'
-        setTransactionStatuses((prev) =>
-          prev.map((s, idx) => (idx === index ? { ...s, status: 'error', error: message } : s))
-        )
-      }
+      await execute(transactionStatuses, index, status.ordered ? transactionStatuses.length : index + 1)
     },
-    [publicClient, transactionStatuses, getWalletClient, buildCallsForGroup, queryClient]
+    [transactionStatuses, execute]
   )
 
   const resetToEditing = useCallback(() => {

@@ -1,5 +1,6 @@
 import { type TransactionStatus } from '@/hooks/records/useBulkEditRecords'
 import { Check } from 'ethereum-identity-kit'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 const TransactionStatusRow: React.FC<{
   status: TransactionStatus
@@ -9,7 +10,11 @@ const TransactionStatusRow: React.FC<{
   <div className='border-tertiary flex items-center justify-between rounded-md border p-3'>
     <div className='flex flex-col gap-1'>
       <p className='text-md font-semibold'>
-        Resolver {status.resolverAddress.slice(0, 6)}...{status.resolverAddress.slice(-4)}
+        {status.kind === 'deploy'
+          ? 'Create resolver'
+          : status.kind === 'repoint'
+            ? 'Set resolver'
+            : `Resolver ${status.to.slice(0, 6)}...${status.to.slice(-4)}`}
       </p>
       <p className='text-neutral text-md'>
         {status.names.length} name{status.names.length !== 1 ? 's' : ''}
@@ -44,7 +49,7 @@ const TransactionStatusRow: React.FC<{
       )}
       {status.txHash && (
         <a
-          href={`https://etherscan.io/tx/${status.txHash}`}
+          href={`${EXPLORER_URL}/tx/${status.txHash}`}
           target='_blank'
           rel='noopener noreferrer'
           className='text-primary text-md hover:underline'

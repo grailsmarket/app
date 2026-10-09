@@ -36,9 +36,9 @@ const useCartDomains = () => {
   )
 
   const toggleCart = async (domain: MarketplaceDomainType, expireTime: string | null) => {
-    if (getRegistrationStatus(expireTime) === GRACE_PERIOD) return
+    if (getRegistrationStatus(expireTime, domain.ens_version) === GRACE_PERIOD) return
 
-    const registered = getRegistrationStatus(expireTime) === REGISTERED
+    const registered = getRegistrationStatus(expireTime, domain.ens_version) === REGISTERED
     const domainInCart =
       cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
       cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)

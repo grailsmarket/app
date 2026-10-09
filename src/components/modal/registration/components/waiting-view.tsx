@@ -3,6 +3,7 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import type { NameRegistrationEntry } from '@/types/registration'
 import CollapsibleNameList from './collapsible-name-list'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 interface WaitingViewProps {
   waitTimeRemaining: number
@@ -65,7 +66,7 @@ const WaitingView: React.FC<WaitingViewProps> = ({
               .map((b, i) => (
                 <a
                   key={b.batchIndex}
-                  href={`https://etherscan.io/tx/${b.commitTxHash}`}
+                  href={`${EXPLORER_URL}/tx/${b.commitTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-md underline transition-colors'
@@ -77,11 +78,11 @@ const WaitingView: React.FC<WaitingViewProps> = ({
         </>
       ) : (
         <div className='flex flex-col items-center justify-center gap-4 pb-4'>
-          <p className='flex items-center gap-1.5 font-medium'>
+          <p className='flex flex-wrap items-center justify-center gap-1.5 font-medium'>
             {isBulk ? (
               <>
                 <CollapsibleNameList names={availableEntries.map((e) => beautifyName(e.name))} />
-                <span>are ready for registration.</span>
+                <span className='text-nowrap'>are ready for registration.</span>
               </>
             ) : (
               <>

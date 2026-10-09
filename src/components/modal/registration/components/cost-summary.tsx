@@ -32,13 +32,24 @@ const CostSummary: React.FC<CostSummaryProps> = ({
                 <p className='font-medium'>{calculationResults.durationYears.toFixed(2)} years</p>
               </div>
             )}
-            <div className='flex items-center justify-between'>
-              <p>Total Cost (ETH):</p>
-              <div className='flex flex-col items-end'>
-                <p className='font-medium'>{calculationResults.priceETH.toFixed(6)} ETH</p>
-                <p className='text-neutral text-xs'>(${calculationResults.priceUSD.toFixed(2)})</p>
+            {calculationResults.paymentToken ? (
+              <div className='flex items-center justify-between'>
+                <p>Total Cost:</p>
+                <p className='font-medium'>
+                  {calculationResults.isLoadingPrice
+                    ? 'Loading...'
+                    : `${calculationResults.priceUSD.toFixed(2)} ${calculationResults.paymentToken}`}
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className='flex items-center justify-between'>
+                <p>Total Cost (ETH):</p>
+                <div className='flex flex-col items-end'>
+                  <p className='font-medium'>{calculationResults.priceETH.toFixed(6)} ETH</p>
+                  <p className='text-neutral text-xs'>(${calculationResults.priceUSD.toFixed(2)})</p>
+                </div>
+              </div>
+            )}
             {gasEstimate && gasPrice && (
               <div className='flex justify-between'>
                 <span>Estimated Gas:</span>
@@ -67,14 +78,17 @@ const CostSummary: React.FC<CostSummaryProps> = ({
         <p className='text-md text-neutral'>
           {totalBatches > 1
             ? `This registration requires ${totalBatches} commit + ${totalBatches} register transactions.`
-            : 'Note: You will have to make 2 transactions to complete your registration.'}
+            : calculationResults?.paymentToken
+              ? `You will make 2 transactions, plus a one-time ${calculationResults.paymentToken} approval if needed.`
+              : 'Note: You will have to make 2 transactions to complete your registration.'}
         </p>
       </div>
-      {calculationResults && !hasSufficientBalance && (
+      {calculationResults && !calculationResults.isLoadingPrice && !hasSufficientBalance && (
         <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
           <p className='text-md text-red-400'>
-            Insufficient ETH balance. You need approximately {(calculationResults.priceETH + 0.01).toFixed(4)} ETH to
-            complete this registration (including gas costs).
+            {calculationResults.paymentToken
+              ? `Insufficient ${calculationResults.paymentToken} balance. You need ${calculationResults.priceUSD.toFixed(2)} ${calculationResults.paymentToken} plus ETH for gas.`
+              : `Insufficient ETH balance. You need approximately ${(calculationResults.priceETH + 0.01).toFixed(4)} ETH to complete this registration (including gas costs).`}
           </p>
         </div>
       )}

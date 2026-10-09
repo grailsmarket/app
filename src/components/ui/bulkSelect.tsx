@@ -7,6 +7,8 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import { setBulkEditRecordsModalNames, setBulkEditRecordsModalOpen } from '@/state/reducers/modals/bulkEditRecordsModal'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
+import { openMigrationModal } from '@/state/reducers/modals/migrationModal'
+import { useEnsV2 } from '@/hooks/useEnsV2'
 import {
   clearBulkSelect,
   selectBulkSelect,
@@ -27,7 +29,6 @@ import {
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectCategory } from '@/state/reducers/category/category'
 import { useSelectAll } from '@/context/selectAll'
-import { DAY_IN_SECONDS } from '@/constants/time'
 import { useUserContext } from '@/context/user'
 import useCartDomains from '@/hooks/useCartDomains'
 import { cn } from '@/utils/tailwind'
@@ -36,7 +37,7 @@ import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
 import { useQueryClient } from '@tanstack/react-query'
 import Label from './label'
 import { REGISTERED, REGISTERABLE_STATUSES } from '@/constants/domains/registrationStatuses'
-import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
+import { getGracePeriod, getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/registration'
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
@@ -109,22 +110,25 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
 
   const namesExtend = selectedDomains.filter(
     (domain) =>
-      domain.expiry_date && new Date(domain.expiry_date).getTime() + 90 * DAY_IN_SECONDS * 1000 > new Date().getTime()
+      domain.expiry_date &&
+      new Date(domain.expiry_date).getTime() + getGracePeriod(domain.ens_version) * 1000 > new Date().getTime()
   )
   const namesList = userAddress
     ? selectedDomains.filter(
         (domain) =>
           domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          getRegistrationStatus(domain.expiry_date) === REGISTERED
+          getRegistrationStatus(domain.expiry_date, domain.ens_version) === REGISTERED
       )
     : []
   const namesTransfer = userAddress
     ? selectedDomains.filter(
         (domain) =>
           domain.owner?.toLowerCase() === userAddress.toLowerCase() &&
-          getRegistrationStatus(domain.expiry_date) === REGISTERED
+          getRegistrationStatus(domain.expiry_date, domain.ens_version) === REGISTERED
       )
     : []
+  const ensV2 = useEnsV2()
+  const namesUpgrade = ensV2 ? namesTransfer.filter((domain) => domain.ens_version !== 2) : []
   const namesCancel = userAddress
     ? selectedDomains.filter(
         (domain) =>
@@ -135,7 +139,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )
     : []
   const namesRegister = selectedDomains.filter((domain) =>
-    REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date))
+    REGISTERABLE_STATUSES.includes(getRegistrationStatus(domain.expiry_date, domain.ens_version))
   )
 
   const handleBulkSelect = () => {
@@ -181,7 +185,9 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }, [isSelecting, selectAllContext, handleCancelBulkSelect, pageType])
 
   const handleListAction = () => {
-    const namesToList = namesList.filter((domain) => getRegistrationStatus(domain.expiry_date) === REGISTERED)
+    const namesToList = namesList.filter(
+      (domain) => getRegistrationStatus(domain.expiry_date, domain.ens_version) === REGISTERED
+    )
     dispatch(setMakeListingModalDomains(namesToList))
     dispatch(setMakeListingModalPreviousListings(previousListings))
     dispatch(setMakeListingModalOpen(true))
@@ -389,13 +395,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const isMobile = responsiveWidth && responsiveWidth < 640
 
   const bulkSelectWidth = showOwnedActionButtons
-    ? canRegisterDomains
-      ? isMobile
-        ? 'min(800px,95cqw)'
-        : 'min(1110px,95cqw)'
-      : isMobile
-        ? 'min(650px,95cqw)'
-        : 'min(980px,95cqw)'
+    ? `min(${(canRegisterDomains ? (isMobile ? 800 : 1110) : isMobile ? 650 : 980) + (ensV2 ? 130 : 0)}px,95cqw)`
     : showWatchlistButton
       ? canRegisterDomains
         ? isMobile
@@ -577,6 +577,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                     <p>Cancel&nbsp;Listings</p>
                     <Label label={namesCancel.length} className='bg-tertiary w-7 min-w-fit text-white' />
                   </PrimaryButton>
+                  {ensV2 && (
+                    <PrimaryButton
+                      onClick={() => dispatch(openMigrationModal(namesUpgrade.map((domain) => domain.name)))}
+                      disabled={selectedDomains.length === 0 || !canTransferDomains || namesUpgrade.length === 0}
+                      className='flex items-center gap-1.5'
+                    >
+                      <p>Upgrade</p>
+                      <Label label={namesUpgrade.length} className='bg-tertiary w-7 min-w-fit text-white' />
+                    </PrimaryButton>
+                  )}
                 </>
               )}
             </div>

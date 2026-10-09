@@ -79,19 +79,27 @@ Open <http://localhost:3000>.
 
 Copy `.env.example` to `.env.local` and fill in the values. Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser.
 
+### Network
+
+| Variable               | Required | Description                                                                                                      |
+| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_CHAIN_ID` | optional | `11155111` runs the app on Sepolia (transactions, RPC, explorer and ENS links, name images); unset means mainnet |
+
+`.env.sepolia.example` holds every value for a full Sepolia environment: chain, Grails API, ENS metadata and all contract addresses.
+
 ### Wallet & RPC
 
-| Variable                                | Required    | Description                                                |
-| --------------------------------------- | ----------- | ---------------------------------------------------------- |
-| `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | yes         | WalletConnect Cloud project ID for client-side connections |
-| `WALLET_CONNECT_PROJECT_ID`             | yes         | Same value, used server-side                               |
-| `NEXT_PUBLIC_QUICKNODE_ID`              | recommended | QuickNode endpoint ID (fallback RPC across all chains)     |
-| `NEXT_PUBLIC_MAINNET_ALCHEMY_ID`        | recommended | Alchemy app key for Ethereum mainnet                       |
-| `NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID`        | optional    | Alchemy app key for Sepolia                                |
-| `NEXT_PUBLIC_BASE_ALCHEMY_ID`           | recommended | Alchemy app key for Base                                   |
-| `NEXT_PUBLIC_BASE_SEPOLIA_ALCHEMY_ID`   | optional    | Alchemy app key for Base Sepolia                           |
-| `NEXT_PUBLIC_OPTIMISM_ALCHEMY_ID`       | recommended | Alchemy app key for Optimism                               |
-| `NEXT_PUBLIC_OP_SEPOLIA_ALCHEMY_ID`     | optional    | Alchemy app key for Optimism Sepolia                       |
+| Variable                                | Required    | Description                                                  |
+| --------------------------------------- | ----------- | ------------------------------------------------------------ |
+| `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` | yes         | WalletConnect Cloud project ID for client-side connections   |
+| `WALLET_CONNECT_PROJECT_ID`             | yes         | Same value, used server-side                                 |
+| `NEXT_PUBLIC_QUICKNODE_ID`              | recommended | QuickNode endpoint ID (fallback RPC across all chains)       |
+| `NEXT_PUBLIC_MAINNET_ALCHEMY_ID`        | recommended | Alchemy app key for Ethereum mainnet                         |
+| `NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID`        | optional    | Alchemy app key for Sepolia (used when the chain is Sepolia) |
+| `NEXT_PUBLIC_BASE_ALCHEMY_ID`           | recommended | Alchemy app key for Base                                     |
+| `NEXT_PUBLIC_BASE_SEPOLIA_ALCHEMY_ID`   | optional    | Alchemy app key for Base Sepolia                             |
+| `NEXT_PUBLIC_OPTIMISM_ALCHEMY_ID`       | recommended | Alchemy app key for Optimism                                 |
+| `NEXT_PUBLIC_OP_SEPOLIA_ALCHEMY_ID`     | optional    | Alchemy app key for Optimism Sepolia                         |
 
 Public RPCs are used as a final fallback, but reliable Alchemy / QuickNode keys are strongly recommended.
 
@@ -110,6 +118,31 @@ Public RPCs are used as a final fallback, but reliable Alchemy / QuickNode keys 
 | --------------------------------------- | -------- | ------------------------------------- |
 | `ENS_METADATA_URL`                      | optional | Base URL of the ENS metadata service  |
 | `ENS_METADATA_CACHE_INVALIDATION_TOKEN` | optional | Token used to bust the metadata cache |
+
+### ENSv2
+
+ENSv2 flows switch on automatically once all six addresses are set and the ENS Universal Resolver reports ENSv2. Leave them empty until ENS publishes the mainnet deployment; Sepolia values are in `.env.sepolia.example`.
+
+| Variable                                        | Required | Description                            |
+| ----------------------------------------------- | -------- | -------------------------------------- |
+| `NEXT_PUBLIC_ENS_V2_ETH_REGISTRY`               | optional | ENSv2 `.eth` registry (ETHRegistry)    |
+| `NEXT_PUBLIC_ENS_V2_ETH_REGISTRAR`              | optional | ENSv2 ETHRegistrar                     |
+| `NEXT_PUBLIC_ENS_V2_ETH_RENEWER_V1`             | optional | ETHRenewerV1 (renews unmigrated names) |
+| `NEXT_PUBLIC_ENS_V2_VERIFIABLE_FACTORY`         | optional | VerifiableFactory                      |
+| `NEXT_PUBLIC_ENS_V2_PERMISSIONED_RESOLVER_IMPL` | optional | PermissionedResolver implementation    |
+| `NEXT_PUBLIC_ENS_V2_MIGRATION_HELPER`           | optional | MigrationHelper (v1 to v2 upgrades)    |
+
+### Contract overrides
+
+Optional. Each defaults to its mainnet address, so only set them to point the app at another network or deployment.
+
+| Variable                                                                                                      | Contract                                  |
+| ------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `NEXT_PUBLIC_ENS_REGISTRY`, `NEXT_PUBLIC_ENS_REGISTRAR`, `NEXT_PUBLIC_ENS_NAME_WRAPPER`                       | ENS registry, base registrar, NameWrapper |
+| `NEXT_PUBLIC_SEAPORT_ADDRESS`, `NEXT_PUBLIC_BULK_TRANSFER_ADDRESS`                                            | Seaport, TransferHelper                   |
+| `NEXT_PUBLIC_CONDUIT_ADDRESS`, `NEXT_PUBLIC_CONDUIT_KEY`                                                      | Grails conduit                            |
+| `NEXT_PUBLIC_OPENSEA_CONDUIT_ADDRESS`, `NEXT_PUBLIC_OPENSEA_CONDUIT_KEY`, `NEXT_PUBLIC_OPENSEA_FEE_RECIPIENT` | OpenSea conduit and fee recipient         |
+| `NEXT_PUBLIC_WETH_ADDRESS`, `NEXT_PUBLIC_USDC_ADDRESS`, `NEXT_PUBLIC_DAI_ADDRESS`                             | WETH, USDC, DAI                           |
 
 ### Misc
 

@@ -8,6 +8,7 @@ import User from '@/components/ui/user'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 import { formatExpiryDate } from '@/utils/time/formatExpiryDate'
+import { getGraceEnd } from '@/utils/getRegistrationStatus'
 import {
   PREMIUM,
   GRACE_PERIOD,
@@ -22,6 +23,8 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setBulkRenewalModalDomains, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
 import { setTransferModalDomains, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
+import { openMigrationModal } from '@/state/reducers/modals/migrationModal'
+import { useEnsV2 } from '@/hooks/useEnsV2'
 import { useUserContext } from '@/context/user'
 import { accountQueryKey } from '@/utils/queryKeys'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
@@ -42,12 +45,12 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Tooltip from '@/components/ui/tooltip'
 import { useRouter } from 'next/navigation'
-import { DAY_IN_SECONDS } from '@/constants/time'
 import CartIcon from '@/components/domains/table/components/CartIcon'
 import useCartDomains from '@/hooks/useCartDomains'
 import RefreshIcon from 'public/icons/refresh.svg'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 import { markImageForRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
+import { EXPLORER_URL, ENS_APP_URL } from '@/constants/web3/chain'
 
 interface NameDetailsProps {
   name: string
@@ -72,7 +75,11 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   // Determine countdown type based on registration status
   const countdownType =
     registrationStatus === PREMIUM ? 'premium' : registrationStatus === GRACE_PERIOD ? 'grace' : null
-  const { timeLeftString } = useExpiryCountdown(nameDetails?.expiry_date ?? null, countdownType)
+  const { timeLeftString } = useExpiryCountdown(
+    nameDetails?.expiry_date ?? null,
+    countdownType,
+    nameDetails?.ens_version
+  )
 
   const { data: isWrapped } = useQuery({
     queryKey: ['isWrapped', name],
@@ -125,6 +132,13 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
   }
 
   const isOwner = userAddress?.toLowerCase() === nameDetails?.owner?.toLowerCase()
+  const ensV2 = useEnsV2()
+  const nftContract =
+    ensV2 && nameDetails?.ens_version === 2
+      ? ensV2.ethRegistry
+      : isWrapped
+        ? ENS_NAME_WRAPPER_ADDRESS
+        : ENS_REGISTRAR_ADDRESS
 
   const refreshMetadata = async () => {
     if (isRefreshingMetadata) return
@@ -153,6 +167,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
             expiryDate={nameDetails.expiry_date}
+            ensVersion={nameDetails.ens_version}
             forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'
           />
@@ -204,6 +219,20 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             )}
           </div>
         )}
+        {ensV2 &&
+          nameDetails &&
+          isOwner &&
+          !isSubname &&
+          registrationStatus === REGISTERED &&
+          nameDetails.ens_version !== 2 && (
+            <SecondaryButton
+              onClick={() => dispatch(openMigrationModal([nameDetails.name]))}
+              className='w-full text-lg'
+              disabled={authStatus !== 'authenticated'}
+            >
+              Upgrade to ENSv2
+            </SecondaryButton>
+          )}
         <div className='flex w-full flex-row items-center justify-between gap-2'>
           <CopyValue
             value={nameDetails?.name ? beautifyName(nameDetails.name) : name}
@@ -301,7 +330,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
                 <>
                   {registrationStatus === GRACE_PERIOD ? (
                     <Tooltip
-                      label={`Ends ${formatExpiryDate(new Date(new Date(nameDetails?.expiry_date || '').getTime() + 90 * DAY_IN_SECONDS * 1000).toISOString(), { includeTime: true, dateDivider: '/' })}`}
+                      label={`Ends ${formatExpiryDate(getGraceEnd(nameDetails?.expiry_date, nameDetails?.ens_version), { includeTime: true, dateDivider: '/' })}`}
                       align='right'
                       position='top'
                     >
@@ -332,7 +361,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <button
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0080BC] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
-              window.open(`https://app.ens.domains/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
+              window.open(`${ENS_APP_URL}/${name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`, '_blank')
             }}
           >
             <Image
@@ -347,7 +376,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#0086FF] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://opensea.io/item/ethereum/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}/${nameDetails?.token_id}`,
+                `https://opensea.io/item/ethereum/${nftContract.toLowerCase()}/${nameDetails?.token_id}`,
                 '_blank'
               )
             }}
@@ -378,7 +407,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://etherscan.io/token/${isWrapped ? ENS_NAME_WRAPPER_ADDRESS.toLowerCase() : ENS_REGISTRAR_ADDRESS.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                `${EXPLORER_URL}/token/${nftContract.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
                 '_blank'
               )
             }}

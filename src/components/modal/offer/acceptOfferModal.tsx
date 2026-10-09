@@ -6,8 +6,6 @@ import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import {
   SEAPORT_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-  ENS_NAME_WRAPPER_ADDRESS,
   OPENSEA_CONDUIT_ADDRESS,
   OPENSEA_CONDUIT_KEY,
   MARKETPLACE_CONDUIT_KEY,
@@ -23,17 +21,16 @@ import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
 import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
-import { mainnet } from 'viem/chains'
+import { activeChain, EXPLORER_URL } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
 import ClaimPoap from '../poap/claimPoap'
 import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
-import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { beautifyName } from '@/lib/ens'
 import { CAN_CLAIM_POAP } from '@/constants'
-import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
 import { NFT_ABI } from '@/constants/abi/NFTAbi'
+import { ItemType } from '@/types/seaport'
 import { TOKENS } from '@/constants/web3/tokens'
 import useETHPrice from '@/hooks/useETHPrice'
 import { cn } from '@/utils/tailwind'
@@ -135,16 +132,14 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
     try {
       if (!address || !publicClient || !domain) return
 
-      // Determine which NFT contract to check based on if the name is wrapped
-      const isWrapped = await checkIfWrapped(ensName)
-      const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-
       console.log('Parameters:', offer)
       // Read the conduitKey from the normalized order rather than the raw order_data.
       // Grails offers nest under `protocol_data`, but Vision offers store the bare
       // `{ parameters, signature }` shape; parseStoredOrder handles both and defaults
       // a missing conduitKey to zero (which routes to the Seaport contract below).
       const parsedOrder = orderBuilder.parseStoredOrder(offer)
+      const nftContract = parsedOrder?.parameters.consideration.find((item) => item.itemType >= ItemType.ERC721)?.token
+      if (!nftContract) throw new Error('Offer is missing the name token')
       const conduitKey =
         parsedOrder?.parameters.conduitKey ?? '0x0000000000000000000000000000000000000000000000000000000000000000'
       const conduitAddress =
@@ -158,8 +153,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       // Check if Seaport is approved to transfer the NFT
       const isApproved = await publicClient.readContract({
-        address: nftContract as `0x${string}`,
-        abi: isWrapped ? NAME_WRAPPER_ABI : NFT_ABI,
+        address: nftContract,
+        abi: NFT_ABI,
         functionName: 'isApprovedForAll',
         args: [address, conduitAddress],
       })
@@ -184,14 +179,13 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       const walletClient = await getWalletClient()
 
-      // Determine which NFT contract to approve based on if the name is wrapped
-      const isWrapped = await checkIfWrapped(ensName)
-      const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
       // Read the conduitKey from the normalized order rather than the raw order_data.
       // Grails offers nest under `protocol_data`, but Vision offers store the bare
       // `{ parameters, signature }` shape; parseStoredOrder handles both and defaults
       // a missing conduitKey to zero (which routes to the Seaport contract below).
       const parsedOrder = orderBuilder.parseStoredOrder(offer)
+      const nftContract = parsedOrder?.parameters.consideration.find((item) => item.itemType >= ItemType.ERC721)?.token
+      if (!nftContract) throw new Error('Offer is missing the name token')
       const conduitKey =
         parsedOrder?.parameters.conduitKey ?? '0x0000000000000000000000000000000000000000000000000000000000000000'
       const conduitAddress =
@@ -204,20 +198,19 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       console.log('Conduit key:', conduitKey)
       console.log('Conduit address:', conduitAddress)
       console.log('NFT contract:', nftContract)
-      console.log('Is wrapped:', isWrapped)
       console.log('Function name:', 'setApprovalForAll')
       console.log('Args:', [conduitAddress, true])
 
       // Ensure we're on mainnet before approving
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({
-        address: nftContract as `0x${string}`,
-        abi: isWrapped ? NAME_WRAPPER_ABI : NFT_ABI,
+        address: nftContract,
+        abi: NFT_ABI,
         functionName: 'setApprovalForAll',
         args: [conduitAddress, true],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setApproveTxHash(approveTx)
@@ -308,7 +301,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       setStep('processing')
 
       // Ensure we're on mainnet before executing the transaction
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Execute the transaction
       const tx = await walletClient.writeContract({
@@ -323,7 +316,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         ],
         value: BigInt(0),
         gas: gasEstimate || undefined,
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setTxHash(tx)
@@ -438,7 +431,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
               {approveTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  href={`${EXPLORER_URL}/tx/${approveTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -470,7 +463,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <p className='text-neutral text-lg'>Transaction submitted</p>
               {txHash && (
                 <a
-                  href={`https://etherscan.io/tx/${txHash}`}
+                  href={`${EXPLORER_URL}/tx/${txHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'

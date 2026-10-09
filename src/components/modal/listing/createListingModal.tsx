@@ -38,6 +38,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { beautifyName } from '@/lib/ens'
 import useETHPrice from '@/hooks/useETHPrice'
 import LoadingCell from '@/components/ui/loadingCell'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 export type ListingStatus =
   | 'review'
@@ -872,7 +873,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
               {approveTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  href={`${EXPLORER_URL}/tx/${approveTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -893,7 +894,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='text-neutral text-lg'>Submitting listing to the blockchain</p>
               {createListingTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${createListingTxHash}`}
+                  href={`${EXPLORER_URL}/tx/${createListingTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'

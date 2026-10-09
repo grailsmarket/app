@@ -11,6 +11,9 @@ import {
 } from '@/state/reducers/modals/bulkRenewalModal'
 import { clearBulkSelect, selectBulkSelect, removeBulkSelectDomain } from '@/state/reducers/modals/bulkSelectModal'
 import useExtendDomains from '@/hooks/registrar/useExtendDomains'
+import { useEnsV2 } from '@/hooks/useEnsV2'
+import { PAYMENT_TOKEN_OPTIONS, usePaymentToken } from '@/hooks/usePaymentToken'
+import { planRenewals } from '@/utils/web3/ensv2'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import useETHPrice from '@/hooks/useETHPrice'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -31,7 +34,8 @@ import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { beautifyName } from '@/lib/ens'
-import { mainnet } from 'viem/chains'
+import { activeChain, EXPLORER_URL } from '@/constants/web3/chain'
+import { formatUnits } from 'viem'
 
 interface ExtendModalProps {
   onClose: () => void
@@ -45,10 +49,12 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const { domains } = useAppSelector(selectBulkRenewalModal)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { address } = useAccount()
-  const { extend } = useExtendDomains()
+  const { extend, extendV2 } = useExtendDomains()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
+  const ensV2 = useEnsV2()
+  const { paymentToken, paymentBalance, selectPaymentToken } = usePaymentToken(!!ensV2)
   const queryClient = useQueryClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
 
@@ -80,7 +86,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   // Get ETH balance
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   // Time unit options
@@ -142,6 +148,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     totalPriceUSD: number
     totalPriceETH: number
     extensionDetails: { domain: string; currentExpiry: number; duration: number }[]
+    totalRaw?: bigint
   } | null>(null)
 
   useEffect(() => {
@@ -180,6 +187,21 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       const names = domains.map((item) => item.name.replace('.eth', ''))
       const durations = extensionDetails.map((detail) => BigInt(detail.duration))
 
+      if (ensV2) {
+        const totalRaw = (await planRenewals(publicClient, ensV2, names, durations, paymentToken.address)).reduce(
+          (sum, group) => sum + group.total,
+          BigInt(0)
+        )
+        const totalPriceUSD = Number(formatUnits(totalRaw, paymentToken.decimals))
+        setCalculationResults({
+          totalPriceUSD,
+          totalPriceETH: totalPriceUSD / (ethPrice || 3300),
+          extensionDetails,
+          totalRaw,
+        })
+        return
+      }
+
       const rentPrice = (await publicClient?.readContract({
         address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
         abi: ENS_HOLIDAY_RENEWAL_ABI,
@@ -203,8 +225,19 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       })
     }
 
-    calculate()
-  }, [domains, extensionMode, quantity, timeUnit, customDate, longestExpirationDate, ethPrice, publicClient])
+    calculate().catch(() => setCalculationResults(null))
+  }, [
+    domains,
+    extensionMode,
+    quantity,
+    timeUnit,
+    customDate,
+    longestExpirationDate,
+    ethPrice,
+    publicClient,
+    ensV2,
+    paymentToken,
+  ])
 
   // Calculate gas estimate (rough estimate for bulk renewal)
   const gasEstimate = useMemo(() => {
@@ -217,12 +250,15 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
   const hasSufficientBalance = useMemo(() => {
     if (!ethBalance || !calculationResults || !gasPrice) return false
 
-    const totalPriceWei = BigInt(Math.floor(calculationResults.totalPriceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
     const gasWei = gasEstimate * gasPrice
+    if (calculationResults.totalRaw !== undefined)
+      return paymentBalance >= calculationResults.totalRaw && ethBalance.value >= gasWei
+
+    const totalPriceWei = BigInt(Math.floor(calculationResults.totalPriceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
     const totalRequired = totalPriceWei + gasWei
 
     return ethBalance.value >= totalRequired
-  }, [ethBalance, calculationResults, gasPrice, gasEstimate])
+  }, [ethBalance, calculationResults, gasPrice, gasEstimate, paymentBalance])
 
   // Helper function to split array into chunks
   const chunkArray = <T,>(array: T[], size: number): T[][] => {
@@ -296,28 +332,33 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
 
         const names = batch.map((item) => item.name.replace('.eth', ''))
 
-        const rentPrice = (await publicClient?.readContract({
-          address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
-          abi: ENS_HOLIDAY_RENEWAL_ABI,
-          functionName: 'bulkRentPrice',
-          args: [names, durations],
-        })) as bigint
+        if (ensV2) {
+          txHashes.push(...(await extendV2(ensV2, names, durations, paymentToken.address)))
+        } else {
+          const rentPrice = (await publicClient?.readContract({
+            address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+            abi: ENS_HOLIDAY_RENEWAL_ABI,
+            functionName: 'bulkRentPrice',
+            args: [names, durations],
+          })) as bigint
 
-        const tx = await extend(names, durations, rentPrice)
+          const tx = await extend(names, durations, rentPrice)
 
-        if (!tx) {
-          throw new Error(`Transaction ${batchIndex + 1} failed`)
-        }
+          if (!tx) {
+            throw new Error(`Transaction ${batchIndex + 1} failed`)
+          }
 
-        setTxHash(tx)
-        const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
+          setTxHash(tx)
+          const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
 
-        if (receipt?.status !== 'success') {
-          throw new Error(`Transaction ${batchIndex + 1} failed`)
+          if (receipt?.status !== 'success') {
+            throw new Error(`Transaction ${batchIndex + 1} failed`)
+          }
+
+          txHashes.push(tx)
         }
 
         // Batch succeeded
-        txHashes.push(tx)
         setCompletedTxHashes([...txHashes])
         successfullyExtendedDomains.push(...batch)
         setNamesProcessed(successfullyExtendedDomains.length)
@@ -396,7 +437,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       {completedTxHashes.map((hash, index) => (
                         <a
                           key={hash}
-                          href={`https://etherscan.io/tx/${hash}`}
+                          href={`${EXPLORER_URL}/tx/${hash}`}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -409,7 +450,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                     </div>
                   ) : txHash ? (
                     <a
-                      href={`https://etherscan.io/tx/${txHash}`}
+                      href={`${EXPLORER_URL}/tx/${txHash}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -438,7 +479,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   </div>
                   {txHash && (
                     <a
-                      href={`https://etherscan.io/tx/${txHash}`}
+                      href={`${EXPLORER_URL}/tx/${txHash}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -452,7 +493,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       {completedTxHashes.map((hash, index) => (
                         <a
                           key={hash}
-                          href={`https://etherscan.io/tx/${hash}`}
+                          href={`${EXPLORER_URL}/tx/${hash}`}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='text-primary/70 hover:text-primary text-sm underline transition-colors'
@@ -583,18 +624,35 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                 </div>
 
                 <div className='flex flex-col gap-2'>
+                  {ensV2 && (
+                    <Dropdown
+                      label='Pay with'
+                      options={PAYMENT_TOKEN_OPTIONS}
+                      value={paymentToken.symbol}
+                      onSelect={(value) => selectPaymentToken(String(value))}
+                    />
+                  )}
                   {/* Pricing display */}
                   {calculationResults && (
                     <div className='bg-secondary border-tertiary rounded-lg border p-3'>
                       {/* <h3 className='mb-2 text-lg font-medium'>Cost Breakdown</h3> */}
                       <div className='text-md space-y-2'>
-                        <div className='flex items-center justify-between'>
-                          <p>Total Cost (ETH):</p>
-                          <div className='flex flex-col items-end'>
-                            <p className='font-medium'>{calculationResults.totalPriceETH.toFixed(6)} ETH</p>
-                            <p className='text-neutral text-xs'>(${calculationResults.totalPriceUSD.toFixed(2)})</p>
+                        {calculationResults.totalRaw !== undefined ? (
+                          <div className='flex items-center justify-between'>
+                            <p>Total Cost:</p>
+                            <p className='font-medium'>
+                              {`${calculationResults.totalPriceUSD.toFixed(2)} ${paymentToken.symbol}`}
+                            </p>
                           </div>
-                        </div>
+                        ) : (
+                          <div className='flex items-center justify-between'>
+                            <p>Total Cost (ETH):</p>
+                            <div className='flex flex-col items-end'>
+                              <p className='font-medium'>{calculationResults.totalPriceETH.toFixed(6)} ETH</p>
+                              <p className='text-neutral text-xs'>(${calculationResults.totalPriceUSD.toFixed(2)})</p>
+                            </div>
+                          </div>
+                        )}
                         {gasEstimate && gasPrice && (
                           <div className='flex justify-between'>
                             <span>Estimated Gas:</span>
@@ -623,7 +681,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                           {completedTxHashes.map((hash, index) => (
                             <a
                               key={hash}
-                              href={`https://etherscan.io/tx/${hash}`}
+                              href={`${EXPLORER_URL}/tx/${hash}`}
                               target='_blank'
                               rel='noopener noreferrer'
                               className='text-primary/70 hover:text-primary text-xs underline transition-colors'
@@ -640,9 +698,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                   {calculationResults && !hasSufficientBalance && (
                     <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
                       <p className='text-md text-red-400'>
-                        Insufficient ETH balance. You need approximately{' '}
-                        {(calculationResults.totalPriceETH + 0.01).toFixed(4)} ETH to complete this renewal (including
-                        gas costs).
+                        {calculationResults.totalRaw !== undefined
+                          ? `Insufficient ${paymentToken.symbol} balance. You need ${calculationResults.totalPriceUSD.toFixed(2)} ${paymentToken.symbol} plus ETH for gas.`
+                          : `Insufficient ETH balance. You need approximately ${(calculationResults.totalPriceETH + 0.01).toFixed(4)} ETH to complete this renewal (including gas costs).`}
                       </p>
                     </div>
                   )}
@@ -668,7 +726,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       ? `Extending... (${currentBatch}/${totalBatches})`
                       : 'Extending...'
                     : !hasSufficientBalance
-                      ? 'Insufficient ETH Balance'
+                      ? `Insufficient ${ensV2 ? paymentToken.symbol : 'ETH'} Balance`
                       : error && remainingDomains.length > 0
                         ? `Try Again (${remainingDomains.length} name${remainingDomains.length > 1 ? 's' : ''} remaining)`
                         : remainingDomains.length === 1

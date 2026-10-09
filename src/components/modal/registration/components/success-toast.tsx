@@ -13,6 +13,7 @@ export interface SuccessSummary {
   entries: SuccessSummaryEntry[]
   priceETH: number
   priceUSD: number
+  paymentToken?: string
 }
 
 interface SuccessToastProps {
@@ -72,8 +73,14 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
       </div>
 
       <div className='border-tertiary text-text-secondary mx-4 mt-1 border-t pt-2 pb-3 text-sm'>
-        {summary.priceETH.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} ETH{' '}
-        <span className='text-neutral'>(~${summary.priceUSD.toFixed(2)})</span>
+        {summary.paymentToken ? (
+          `${summary.priceUSD.toFixed(2)} ${summary.paymentToken}`
+        ) : (
+          <>
+            {summary.priceETH.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} ETH{' '}
+            <span className='text-neutral'>(~${summary.priceUSD.toFixed(2)})</span>
+          </>
+        )}
       </div>
     </div>
   )

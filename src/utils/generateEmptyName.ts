@@ -1,6 +1,7 @@
+import { MarketplaceDomainType } from '@/types/domains'
 import { nameHasEmoji, nameHasNumbers } from './nameCharacters'
 
-export const generateEmptyName = (name: string, tokenId: string) => ({
+export const generateEmptyName = (name: string, tokenId: string): MarketplaceDomainType => ({
   id: 0,
   name,
   token_id: tokenId,

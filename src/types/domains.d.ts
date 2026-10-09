@@ -7,6 +7,7 @@ export type MarketplaceDomainType = {
   token_id: string
   owner: Address | null
   expiry_date: string | null
+  ens_version?: 1 | 2
   registration_date: string | null
   creation_date: string | null
   metadata: Record<string, string>

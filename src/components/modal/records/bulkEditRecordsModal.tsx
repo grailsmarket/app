@@ -19,6 +19,7 @@ import ImageUploadModal from './components/imageUploadModal'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TransactionStatusRow from './components/TransactionStatusRow'
 import TabSelector from '@/components/ui/tabSelector'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 interface BulkEditRecordsModalProps {
   names: string[]
@@ -166,7 +167,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                   .map((s, i) => (
                     <a
                       key={i}
-                      href={`https://etherscan.io/tx/${s.txHash}`}
+                      href={`${EXPLORER_URL}/tx/${s.txHash}`}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='text-primary hover:text-primary/80 text-lg underline transition-colors'

@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
+import { API_URL } from '@/constants/api'
 import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash, isAddress } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
@@ -9,14 +10,15 @@ import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { fetchKeywordMetrics } from '@/api/domains/fetchKeywordMetrics'
 import { toSteppedPercent } from '@/utils/metrics'
 import { getInterFonts } from '../_lib/inter'
+import { ENS_NETWORK } from '@/constants/web3/chain'
 
 const size = {
   width: 1600,
   height: 836,
 }
 const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/${ENS_NETWORK}/${ENS_NAME_WRAPPER_ADDRESS}`
+const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/${ENS_NETWORK}/${APP_ENS_ADDRESS}`
 
 const MONTH_TO_INDEX: Record<string, number> = {
   JANUARY: 0,
@@ -345,7 +347,7 @@ export async function GET(req: NextRequest) {
 
     const getCategoryAvatarDataUri = async (): Promise<string | null> => {
       if (categories.length !== 1) return null
-      return fetchImageAsDataUri(`https://api.grails.app/api/v1/clubs/${categories[0]}/avatar`)
+      return fetchImageAsDataUri(`${API_URL}/clubs/${categories[0]}/avatar`)
     }
 
     const [ownerProfile, ensImage, googleAnalyticsData, categoryAvatarDataUri, defaultAvatarDataUri, interFonts] =

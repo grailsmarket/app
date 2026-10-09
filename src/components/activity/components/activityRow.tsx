@@ -12,6 +12,7 @@ import Image from 'next/image'
 import ExternalLinkIcon from 'public/logos/etherscan.svg'
 import Link from 'next/link'
 import { ETH_ADDRESS } from '@/constants/web3/tokens'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 interface ActivityRowProps {
   activity: ActivityType
@@ -111,7 +112,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           <div className='flex items-center gap-1 pl-4'>
             {activity.transaction_hash && (
               <Link
-                href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                href={`${EXPLORER_URL}/tx/${activity.transaction_hash}`}
                 target='_blank'
                 className='cursor-pointer hover:opacity-80'
               >
@@ -146,7 +147,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
           <div className='ml-2 flex min-h-5 w-5 min-w-5 items-center gap-1'>
             {activity.transaction_hash && (
               <Link
-                href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                href={`${EXPLORER_URL}/tx/${activity.transaction_hash}`}
                 target='_blank'
                 className='cursor-pointer hover:opacity-80'
               >
@@ -164,7 +165,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
       <div className='hidden min-h-4! max-w-6 min-w-6! items-center justify-end gap-1 @[40rem]/app:flex'>
         {activity.transaction_hash && (
           <Link
-            href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+            href={`${EXPLORER_URL}/tx/${activity.transaction_hash}`}
             target='_blank'
             className='cursor-pointer hover:opacity-80'
           >

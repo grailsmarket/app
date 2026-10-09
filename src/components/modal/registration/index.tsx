@@ -131,6 +131,7 @@ const RegistrationModal: React.FC = () => {
         })),
         priceETH: modal.calculationResults?.priceETH ?? 0,
         priceUSD: modal.calculationResults?.priceUSD ?? 0,
+        paymentToken: modal.calculationResults?.paymentToken,
       })
       dispatch(clearBulkSelect())
     }
@@ -376,6 +377,9 @@ const RegistrationModal: React.FC = () => {
           totalBatches={modal.totalBatches}
           gasEstimate={modal.gasEstimate}
           gasPrice={modal.gasPrice}
+          paymentToken={modal.isEnsV2 ? modal.paymentToken.symbol : undefined}
+          onPaymentTokenChange={modal.selectPaymentToken}
+          bulkUnavailable={modal.bulkUnavailable}
           onTimeUnitChange={modal.onTimeUnitChange}
           onQuantityChange={modal.onQuantityChange}
           onCustomDateSelect={modal.onCustomDateSelect}

@@ -22,6 +22,7 @@ import Image from 'next/image'
 import ETHERSCAN_ICON from 'public/logos/etherscan.svg'
 import { formatDuration } from '@/utils/time/formatDuration'
 import { cn } from '@/utils/tailwind'
+import { EXPLORER_URL } from '@/constants/web3/chain'
 
 interface FeedActivityCardProps {
   activity: ActivityType
@@ -210,7 +211,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
               <>
                 <span className='text-neutral'>·</span>
                 <Link
-                  href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                  href={`${EXPLORER_URL}/tx/${activity.transaction_hash}`}
                   target='_blank'
                   onClick={(e) => e.stopPropagation()}
                   className='text-neutral hover:text-foreground flex items-center gap-1 transition-colors'

@@ -1,5 +1,6 @@
 import { normalizeName } from '@/lib/ens'
 import { NextRequest, NextResponse } from 'next/server'
+import { ENS_NETWORK } from '@/constants/web3/chain'
 
 const CACHE_INVALIDATION_TOKEN =
   process.env.ENS_METADATA_CACHE_INVALIDATION_TOKEN || process.env.CACHE_INVALIDATION_TOKEN
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({
       items: [
         {
-          network: 'mainnet',
+          network: ENS_NETWORK,
           name,
         },
       ],

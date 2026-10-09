@@ -49,11 +49,11 @@ const formatTokenPrice = (price: string | number | null | undefined, currencyAdd
   return formatted ? `${formatted} ${asset}` : '-'
 }
 
-const getNameImageUrl = (name: string, expiryDate: string | null | undefined) => {
+const getNameImageUrl = (name: string, expiryDate: string | null | undefined, ensVersion?: number | null) => {
   const tokenId = hexToBigInt(namehash(name)).toString()
   const expires = expiryDate ? new Date(expiryDate).getTime() : ''
 
-  return `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expires)}`
+  return `/api/og/ens-name/${tokenId}?name=${encodeURIComponent(name)}&expires=${encodeURIComponent(expires)}&version=${ensVersion ?? ''}`
 }
 
 const CopyableText = ({ value, truncate = true }: { value: string; truncate?: boolean }) => (
@@ -65,7 +65,7 @@ export default function ServerPanels({ name, nameDetails, offers = [], metadata 
   const registrationStatus: RegistrationStatus = nameDetails
     ? isSubname
       ? REGISTERED
-      : getRegistrationStatus(nameDetails.expiry_date)
+      : getRegistrationStatus(nameDetails.expiry_date, nameDetails.ens_version)
     : UNREGISTERED
   const isRegistered = registrationStatus === REGISTERED
 
@@ -154,7 +154,7 @@ const ServerPrimaryDetails = ({
   <div className='bg-secondary border-tertiary flex flex-col @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
     <div className='bg-tertiary h-fit w-full'>
       <Image
-        src={getNameImageUrl(name, nameDetails?.expiry_date)}
+        src={getNameImageUrl(name, nameDetails?.expiry_date, nameDetails?.ens_version)}
         alt={`${name} preview`}
         width={1024}
         height={1024}
@@ -300,7 +300,7 @@ const ServerSecondaryDetails = ({
       label: 'Last Sale',
       value: formatTokenPrice(nameDetails?.last_sale_price, nameDetails?.last_sale_currency as Address | null),
     },
-    { label: 'Token ID', value: nameDetails?.token_id || null },
+    { label: 'Token ID', value: nameDetails?.token_id ?? null },
     { label: 'Namehash', value: nameDetails?.token_id ? numberToHex(BigInt(nameDetails.token_id)).toString() : null },
     { label: 'Creation Date', value: formatSummaryDate(nameDetails?.creation_date) },
   ].filter((row) => row.value)

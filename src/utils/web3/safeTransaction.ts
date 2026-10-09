@@ -78,3 +78,8 @@ export async function waitForTransaction(
     confirmations: options?.confirmations ?? 1,
   })
 }
+
+export async function waitForSuccess(publicClient: PublicClient, hash: `0x${string}`) {
+  const { status } = await waitForTransaction(publicClient, hash)
+  if (status === 'reverted') throw new Error('Transaction reverted')
+}

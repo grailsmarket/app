@@ -46,6 +46,7 @@ const DomainSearchResult: React.FC<DomainSearchResultProps> = ({ domain, categor
           name={domain.name}
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
+          ensVersion={domain.ens_version}
           className='h-9 w-9 rounded-sm sm:h-[34px] sm:w-[34px]'
         />
         <div className='flex flex-col gap-px truncate' style={{ maxWidth: 'calc(100% - 60px)' }}>

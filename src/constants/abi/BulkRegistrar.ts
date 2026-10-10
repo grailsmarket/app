@@ -59,6 +59,7 @@ export const BULK_REGISTRAR_ABI = [
       { name: 'names', type: 'string[]', internalType: 'string[]' },
       { name: 'owner', type: 'address', internalType: 'address' },
       { name: 'durations', type: 'uint256[]', internalType: 'uint256[]' },
+      { name: 'prices', type: 'uint256[]', internalType: 'uint256[]' },
       { name: 'secret', type: 'bytes32', internalType: 'bytes32' },
       { name: 'resolver', type: 'address', internalType: 'address' },
       { name: 'data', type: 'bytes[][]', internalType: 'bytes[][]' },

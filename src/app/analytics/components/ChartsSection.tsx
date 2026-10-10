@@ -7,12 +7,12 @@ import AnalyticsChart from './AnalyticsChart'
 import { useOffersChart, useRegistrationsChart, useSalesChart } from '../hooks/useAnalyticsData'
 
 interface ChartsSectionProps {
-  category?: string
+  categories?: string[]
 }
 
-const ChartsSection: React.FC<ChartsSectionProps> = ({ category }) => {
+const ChartsSection: React.FC<ChartsSectionProps> = ({ categories }) => {
   const { source } = useAppSelector(selectAnalytics)
-  const hookOptions = category ? { categoryOverride: category } : undefined
+  const hookOptions = categories ? { categoriesOverride: categories } : undefined
   // const { data: listingsData, isLoading: listingsLoading } = useListingsChart(hookOptions)
   const { data: offersData, isLoading: offersLoading } = useOffersChart(hookOptions)
   const { data: salesData, isLoading: salesLoading } = useSalesChart(hookOptions)

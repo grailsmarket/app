@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Cross, useIsClient } from 'ethereum-identity-kit'
-import { useResponsiveSize } from '@/hooks/useResponsiveSize'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Cross } from 'ethereum-identity-kit'
 import PrimaryButton from './buttons/primary'
 import SecondaryButton from './buttons/secondary'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -29,7 +28,6 @@ import { selectCategory } from '@/state/reducers/category/category'
 import { useSelectAll } from '@/context/selectAll'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { useUserContext } from '@/context/user'
-import useCartDomains from '@/hooks/useCartDomains'
 import { cn } from '@/utils/tailwind'
 import { useShiftKeyListener } from '@/hooks/useShiftKey'
 import { removeFromWatchlist } from '@/api/watchlist/removeFromWatchlist'
@@ -41,6 +39,7 @@ import { openBulkRegistrationModal, selectRegistration } from '@/state/reducers/
 import { selectWatchlistFilters } from '@/state/reducers/filters/watchlistFilters'
 import { selectMarketplace } from '@/state/reducers/marketplace/marketplace'
 import { selectCategoriesPage } from '@/state/reducers/categoriesPage/categoriesPage'
+import { useFilterRouter } from '@/hooks/filters/useFilterRouter'
 
 interface BulkSelectProps {
   isMyProfile?: boolean
@@ -49,10 +48,7 @@ interface BulkSelectProps {
 
 const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType = 'profile' }) => {
   const [isRemovingFromWatchlist, setIsRemovingFromWatchlist] = useState(false)
-  // Delayed state for content switch - keeps expanded content visible during close animation
-  const [showExpandedContent, setShowExpandedContent] = useState(false)
 
-  const isClient = useIsClient()
   const dispatch = useAppDispatch()
   const {
     isSelecting,
@@ -63,30 +59,16 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   } = useAppSelector(selectBulkSelect)
   const registrationState = useAppSelector(selectRegistration)
 
-  // Handle delayed content switch for smooth close animation
-  useEffect(() => {
-    if (isSelecting) {
-      // When opening, show expanded content immediately
-      setShowExpandedContent(true)
-    } else {
-      // When closing, delay hiding expanded content until after transition completes
-      const timeout = setTimeout(() => {
-        setShowExpandedContent(false)
-      }, 300) // match transition duration
-      return () => clearTimeout(timeout)
-    }
-  }, [isSelecting])
-
-  const { width: responsiveWidth } = useResponsiveSize()
   const profileState = useAppSelector(selectUserProfile)
   const categoryState = useAppSelector(selectCategory)
   const marketplaceState = useAppSelector(selectMarketplace)
   const categoriesState = useAppSelector(selectCategoriesPage)
   const selectAllContext = useSelectAll()
-  const { userAddress } = useUserContext()
-  const { cartIsEmpty } = useCartDomains()
+  const { userAddress, setIsCartOpen } = useUserContext()
   const queryClient = useQueryClient()
   const watchlistFilters = useAppSelector(selectWatchlistFilters)
+  const { selectors } = useFilterRouter()
+  const filtersOpen = selectors.filters.open
 
   // Get the selected tab based on page type
   const marketplaceTab = marketplaceState.selectedTab
@@ -240,20 +222,6 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
         watchlistFilters.textMatch,
         watchlistFilters.market,
       ],
-      // (old: any) => {
-      //   const newData = old.pages.map((page: any) => {
-      //     return {
-      //       ...page,
-      //       domains: page.domains.filter((item: any) => !selectedWatchlistIds.includes(item.watchlist_record_id)),
-      //       total: page.total - selectedWatchlistIds.length,
-      //     }
-      //   })
-
-      //   return {
-      //     ...old,
-      //     pages: newData,
-      //   }
-      // }
     })
 
     setIsRemovingFromWatchlist(false)
@@ -325,14 +293,6 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const isProfileTab = pageType === 'profile'
   const isCategoryTab = pageType === 'category'
   const isCategoriesTab = pageType === 'categories'
-  const isActionButtonsVisible =
-    (isCategoryTab
-      ? selectedTab?.value === 'names'
-      : isCategoriesTab
-        ? selectedTab?.value === 'names'
-        : isMarketplaceTab
-          ? selectedTab?.value !== 'activity'
-          : selectedTab?.value === 'watchlist') && !cartIsEmpty
 
   // Define which tabs support bulk select for each page type
   const marketplaceBulkSelectTabs = ['names', 'listings', 'available', 'premium']
@@ -386,57 +346,18 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   const selectAllProgress = selectAll?.progress
   const selectAllError = selectAll?.error
 
-  const isMobile = responsiveWidth && responsiveWidth < 640
-
-  const bulkSelectWidth = showOwnedActionButtons
-    ? canRegisterDomains
-      ? isMobile
-        ? 'min(800px,95cqw)'
-        : 'min(1110px,95cqw)'
-      : isMobile
-        ? 'min(650px,95cqw)'
-        : 'min(980px,95cqw)'
-    : showWatchlistButton
-      ? canRegisterDomains
-        ? isMobile
-          ? 'min(490px,95cqw)'
-          : 'min(780px,95cqw)'
-        : isMobile
-          ? 'min(370px,95cqw)'
-          : 'min(650px,95cqw)'
-      : canRegisterDomains
-        ? canExtendDomains
-          ? isMobile
-            ? 'min(260px,95cqw)'
-            : 'min(550px,95cqw)'
-          : isMobile
-            ? 'min(240px,95cqw)'
-            : 'min(430px,95cqw)'
-        : isMobile
-          ? 'min(130px,95cqw)'
-          : 'min(420px,95cqw)'
-
-  const componentWidth = useMemo(() => {
-    if (!isClient) return '136px'
-    if (isSelecting) return bulkSelectWidth
-    if (responsiveWidth && responsiveWidth < 640) return '130px'
-    return '136px'
-  }, [isSelecting, responsiveWidth, bulkSelectWidth, isClient])
-
   if (!isBulkSelectSupportedTab) return null
 
   return (
     <div
-      className={cn(
-        'bulk-select-container fixed z-10 flex max-w-[calc(100cqw-8px)] flex-col items-end justify-end gap-1.5 bg-transparent px-1 transition-all',
-        isActionButtonsVisible
-          ? 'right-[calc(var(--chat-sidebar-width,0)+0.25rem)] bottom-15 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)] @[48rem]/app:bottom-18'
-          : 'right-[calc(var(--chat-sidebar-width,0)+0.25rem)] bottom-1 @[48rem]/app:right-[calc(var(--chat-sidebar-width,0)+1rem)] @[48rem]/app:bottom-4'
-      )}
+      className='bulk-select-container bg-background border-tertiary px-sm fixed right-0 bottom-0 z-10 flex w-full items-center justify-end border-t-2 transition-all sm:gap-2 sm:px-3 @[1280px]/app:justify-between'
+      style={{
+        paddingLeft: filtersOpen ? '308px' : undefined,
+      }}
     >
       {isSelecting && selectAllError && (
         <div
-          className='shadow-bulk bg-secondary text-grace flex flex-row items-center justify-between gap-2 rounded-md p-2 @[40rem]/app:p-3'
+          className='bg-secondary text-grace flex flex-row items-center justify-between gap-2 rounded-md p-2 @[40rem]/app:p-3'
           onAnimationEnd={() => {
             setTimeout(() => {
               handleDismissError()
@@ -451,61 +372,45 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
       )}
 
       {isSelecting && isSelectAllLoading && selectAllProgress && (
-        <div className='shadow-bulk bg-background flex flex-row items-center gap-3 rounded-md p-2 @[40rem]/app:p-3'>
+        <div className='bg-secondary p-md flex flex-row items-center gap-3 rounded-md'>
           <div className='flex items-center gap-2'>
             <div className='h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white' />
             <p className='text-lg text-nowrap'>
               Loading names... {selectAllProgress.loaded}/{selectAllProgress.total}
             </p>
           </div>
-          <SecondaryButton onClick={handleCancelSelectAll} className='h-9 @[48rem]/app:h-10'>
-            Cancel
-          </SecondaryButton>
         </div>
       )}
 
-      {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk hidden flex-row gap-1.5 rounded-md p-2 @[64rem]/app:flex'>
-          <p className='text-md text-neutral text-end font-semibold'>Hold ⇧SHIFT to select range</p>
-          <div className='bg-neutral h-4 w-px' />
-          <p className='text-md text-neutral text-end font-semibold'>⇧SHIFT + A to Select All</p>
-          <div className='bg-neutral h-4 w-px' />
-          <p className='text-md text-neutral text-end font-semibold'>ESC to Close</p>
-        </div>
-      )}
+      {!isSelectAllLoading &&
+        (isSelecting ? (
+          <div className='border-tertiary hidden flex-col justify-start border-l-2 p-1.5 @[1280px]/app:flex'>
+            <p className='text-neutral -translate-y-0.75 text-sm font-semibold text-nowrap'>
+              Select a domain & Hold{' '}
+              <span className='bg-secondary rounded-md py-0.75 pr-1.5 pl-1 text-white'>⇧SHIFT</span> to select range
+            </p>
+            <p className='text-neutral translate-y-0.75 text-sm font-semibold text-nowrap'>
+              <span className='bg-secondary rounded-md py-0.75 pr-1.5 pl-1 text-white'>⇧SHIFT</span> + A to Select All
+            </p>
+          </div>
+        ) : (
+          <div className='border-tertiary hidden flex-col justify-start border-l-2 p-1.5 @[1280px]/app:flex'>
+            <p className='text-neutral text-sm font-semibold text-nowrap'>
+              Press <span className='bg-secondary rounded-md py-0.75 pr-1.5 pl-1 text-white'>⇧SHIFT</span> to start
+              selecting domains
+            </p>
+          </div>
+        ))}
 
-      {isSelecting && !isSelectAllLoading && (
-        <div className='bg-background shadow-bulk flex flex-row gap-1.5 rounded-md p-2 @[40rem]/app:hidden'>
-          <SecondaryButton className='hover:bg-background-hover flex h-9 min-w-9 cursor-auto items-center justify-center bg-transparent p-0! text-2xl text-nowrap @[48rem]/app:h-10 @[48rem]/app:min-w-10'>
-            {selectedDomains.length}
-          </SecondaryButton>
-          <SecondaryButton onClick={handleSelectAll} disabled={!selectAllContext?.canSelectAll}>
-            Select All
-          </SecondaryButton>
-          <SecondaryButton
-            onClick={handleCancelBulkSelect}
-            className='flex w-9 min-w-9 items-center justify-center p-0! @[48rem]/app:w-10'
-          >
-            <Cross className='h-3 w-3' />
-          </SecondaryButton>
-        </div>
-      )}
-
-      <div
-        className='shadow-bulk bg-background overflow-hidden rounded-md transition-[width] duration-200'
-        style={{
-          width: componentWidth,
-          // transitionTimingFunction: 'cubic-bezier(.8,.95,.44,.02)'
-        }}
-      >
-        {showExpandedContent ? (
+      <div className='bg-background overflow-hidden rounded-md'>
+        {isSelecting ? (
           <div
             className={cn(
-              'flex max-w-full flex-row overflow-x-scroll transition-opacity duration-300',
+              'scrollbar-custom flex max-w-full flex-row overflow-x-auto',
               isSelecting ? 'opacity-100' : 'opacity-0'
             )}
           >
-            <div className='flex flex-row gap-1.5 p-2 @[40rem]/app:p-3'>
+            <div className='flex flex-row gap-1.5 p-1 py-1.5 @[40rem]/app:px-2 @[40rem]/app:py-2.5'>
               {showWatchlistButton && (
                 <PrimaryButton
                   className='flex items-center gap-2'
@@ -580,7 +485,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 </>
               )}
             </div>
-            <div className='bg-background border-tertiary hidden flex-col gap-1 border-l-2 p-3 pl-1.5 @[40rem]/app:flex'>
+            <div className='bg-background border-tertiary sticky top-0 right-0 hidden flex-col gap-1 border-l-2 px-1 py-2.5 @[40rem]/app:flex @[40rem]/app:px-2'>
               <div className='flex flex-row gap-1.5'>
                 <SecondaryButton
                   className={cn(
@@ -590,24 +495,41 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 >
                   {selectedDomains.length}
                 </SecondaryButton>
-                <SecondaryButton
-                  className='hidden @[40rem]/app:block'
-                  onClick={handleSelectAll}
-                  disabled={!selectAllContext?.canSelectAll}
-                >
-                  Select&nbsp;All
-                </SecondaryButton>
+                {isSelectAllLoading ? (
+                  <SecondaryButton onClick={handleCancelSelectAll} className='h-9 @[48rem]/app:h-10'>
+                    Cancel
+                  </SecondaryButton>
+                ) : (
+                  <SecondaryButton
+                    className='hidden @[40rem]/app:block'
+                    onClick={handleSelectAll}
+                    disabled={!selectAllContext?.canSelectAll}
+                  >
+                    Select&nbsp;All
+                  </SecondaryButton>
+                )}
                 <SecondaryButton
                   onClick={handleCancelBulkSelect}
-                  className='hidden w-28 items-center justify-center @[40rem]/app:flex'
+                  className='hidden w-24 items-center justify-center @[40rem]/app:flex'
                 >
                   Close
                 </SecondaryButton>
               </div>
             </div>
+            <div className='bg-background border-tertiary sticky top-0 right-0 flex flex-row gap-1.5 border-l-2 p-1 py-1.5 pr-0 @[40rem]/app:hidden'>
+              <SecondaryButton
+                onClick={handleCancelBulkSelect}
+                className='flex w-9 min-w-9 items-center justify-center p-0! @[48rem]/app:w-10'
+              >
+                <Cross className='h-3 w-3' />
+              </SecondaryButton>
+            </div>
           </div>
         ) : (
-          <div className='p-2 @[40rem]/app:p-3'>
+          <div className='flex flex-row gap-1.5 py-2.5'>
+            <SecondaryButton onClick={() => setIsCartOpen(true)} className='w-28'>
+              Open Cart
+            </SecondaryButton>
             <PrimaryButton onClick={handleBulkSelect} className='w-28'>
               Bulk&nbsp;Select
             </PrimaryButton>

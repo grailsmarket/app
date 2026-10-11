@@ -485,7 +485,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
                 </>
               )}
             </div>
-            <div className='bg-background border-tertiary sticky top-0 right-0 hidden flex-col gap-1 border-l-2 px-1 py-2.5 @[40rem]/app:flex @[40rem]/app:px-2'>
+            <div className='bg-background border-tertiary sticky top-0 right-0 hidden flex-col gap-1 border-l-2 px-1 py-2.5 @[40rem]/app:flex @[40rem]/app:pr-0 @[40rem]/app:pl-2'>
               <div className='flex flex-row gap-1.5'>
                 <SecondaryButton
                   className={cn(
@@ -526,7 +526,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
             </div>
           </div>
         ) : (
-          <div className='flex flex-row gap-1.5 py-2.5'>
+          <div className='flex flex-row gap-1.5 py-1.5 sm:py-2.5'>
             <SecondaryButton onClick={() => setIsCartOpen(true)} className='w-28'>
               Open Cart
             </SecondaryButton>

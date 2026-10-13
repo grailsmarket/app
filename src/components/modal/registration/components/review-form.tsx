@@ -1,4 +1,6 @@
 import Image from 'next/image'
+import ResolverPicker from '@/components/ens-v2/resolverPicker'
+import { Notice } from '@/components/ens-v2/ui'
 import { AccountResponseType } from 'ethereum-identity-kit'
 import Dropdown from '@/components/ui/dropdown'
 import Input from '@/components/ui/input'
@@ -51,6 +53,12 @@ interface ReviewFormProps {
   gasPrice: bigint | undefined
   paymentToken?: string
   onPaymentTokenChange?: (symbol: string) => void
+  resolverValue: string
+  onResolverChange: (value: string) => void
+  resolverReady: boolean
+  networkReady: boolean
+  resolverError?: string
+  resolverWarning?: string
   bulkUnavailable?: boolean
   onTimeUnitChange: (value: string) => void
   onQuantityChange: (value: number) => void
@@ -100,6 +108,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   paymentToken,
   onPaymentTokenChange,
   bulkUnavailable,
+  resolverValue,
+  onResolverChange,
+  resolverReady,
+  networkReady,
+  resolverError,
+  resolverWarning,
   onTimeUnitChange,
   onQuantityChange,
   onCustomDateSelect,
@@ -195,6 +209,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         account={account}
         isResolving={isResolving}
       />
+      {paymentToken && (
+        <div className='my-2 flex flex-col gap-2'>
+          <ResolverPicker value={resolverValue} onChange={onResolverChange} />
+          {resolverError && <Notice error>{resolverError}</Notice>}
+          {resolverWarning && <Notice>{resolverWarning}</Notice>}
+          {isBulk && (
+            <Notice>
+              This resolver applies to every name in the batch. Each name requires its own commitment and registration
+              transaction.
+            </Notice>
+          )}
+        </div>
+      )}
       {bulkUnavailable ? (
         <div className='rounded-lg border border-amber-500/20 bg-amber-900/20 p-3'>
           <p className='text-md text-amber-400'>
@@ -228,6 +255,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         <PrimaryButton
           onClick={handleCommit}
           disabled={
+            !networkReady ||
+            !resolverReady ||
             bulkUnavailable ||
             !calculationResults ||
             !hasSufficientBalance ||

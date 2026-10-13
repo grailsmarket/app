@@ -58,6 +58,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
     errorMessage,
     transactionStatuses,
     saveRecords,
+    confirmRecords,
     retryTransaction,
     resetToEditing,
   } = useBulkEditRecords(names)
@@ -131,6 +132,19 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
             </div>
           )}
 
+          {step === 'reviewing' && (
+            <div className='flex flex-col gap-4 overflow-y-auto p-6'>
+              <h2 className='text-2xl font-bold'>Review record changes</h2>
+              {transactionStatuses.map((transaction, index) => (
+                <div className='border-tertiary rounded-md border p-3' key={index}>
+                  <p>{transaction.names.join(', ')}</p>
+                  {transaction.impact && <p className='text-neutral mt-2'>{transaction.impact}</p>}
+                </div>
+              ))}
+              <PrimaryButton onClick={confirmRecords}>Confirm {transactionStatuses.length} transactions</PrimaryButton>
+              <SecondaryButton onClick={resetToEditing}>Back to editing</SecondaryButton>
+            </div>
+          )}
           {/* Confirming / Processing state */}
           {(step === 'confirming' || step === 'processing') && (
             <div className='flex flex-col gap-4 p-6'>

@@ -1,11 +1,13 @@
-import { type Address, type Hex, zeroAddress } from 'viem'
+import { type Address, type Hex } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { activeChain } from '@/constants/web3/chain'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ENS_V2_REGISTRAR_ABI } from '@/constants/abi/ENSv2'
-import { ENS_HOLIDAY_REFERRER_ADDRESS } from '@/constants/web3/contracts'
 import { ensureChain } from '@/utils/web3/ensureChain'
-import { type EnsV2Contracts, ensureAllowance, getOwnedResolver } from '@/utils/web3/ensv2'
+import { type EnsV2Contracts, ensureAllowance } from '@/utils/web3/ensv2'
+
+import type { V2RegistrationSnapshot } from '@/types/registration'
+import { assertRegistrationSnapshot, commitmentArguments } from '@/utils/web3/registration-snapshot'
 
 const useEnsV2Registrar = () => {
   const getWalletClient = useGetWalletClient()
@@ -38,24 +40,17 @@ const useEnsV2Registrar = () => {
     return base + premium
   }
 
-  const makeCommitment = async (v2: EnsV2Contracts, label: string, owner: Address, secret: Hex, duration: bigint) =>
+  const makeCommitment = (snapshot: V2RegistrationSnapshot, index: number, secret: Hex) =>
     client().readContract({
-      address: v2.ethRegistrar,
+      address: snapshot.registrar,
       abi: ENS_V2_REGISTRAR_ABI,
       functionName: 'makeCommitment',
-      args: [
-        label,
-        owner,
-        secret,
-        zeroAddress,
-        (await getOwnedResolver(client(), v2, owner)).address,
-        duration,
-        ENS_HOLIDAY_REFERRER_ADDRESS,
-      ],
+      args: commitmentArguments(snapshot, index, secret),
     })
 
-  const commit = async (v2: EnsV2Contracts, commitment: Hex) => {
+  const commit = async (v2: EnsV2Contracts, commitment: Hex, snapshot: V2RegistrationSnapshot) => {
     const walletClient = await getWalletClient()
+    assertRegistrationSnapshot(snapshot, activeChain.id, walletClient.account.address, v2.ethRegistrar)
     await ensureChain(walletClient, activeChain.id)
     return walletClient.writeContract({
       address: v2.ethRegistrar,
@@ -68,21 +63,33 @@ const useEnsV2Registrar = () => {
 
   const register = async (
     v2: EnsV2Contracts,
-    label: string,
-    owner: Address,
+    snapshot: V2RegistrationSnapshot,
+    index: number,
     secret: Hex,
-    duration: bigint,
     token: Address
   ) => {
     const walletClient = await getWalletClient()
+    assertRegistrationSnapshot(snapshot, activeChain.id, walletClient.account.address, v2.ethRegistrar)
     await ensureChain(walletClient, activeChain.id)
-    await ensureAllowance(client(), walletClient, token, v2.ethRegistrar, await getPrice(v2, label, duration, token))
-    const resolver = (await getOwnedResolver(client(), v2, owner)).address
-    return walletClient.writeContract({
-      address: v2.ethRegistrar,
+    const [label, owner, savedSecret, subregistry, resolver, duration, referrer] = commitmentArguments(
+      snapshot,
+      index,
+      secret
+    )
+    await ensureAllowance(client(), walletClient, token, snapshot.registrar, await getPrice(v2, label, duration, token))
+    const args = [label, owner, savedSecret, subregistry, resolver, duration, token, referrer] as const
+    await client().simulateContract({
+      address: snapshot.registrar,
       abi: ENS_V2_REGISTRAR_ABI,
       functionName: 'register',
-      args: [label, owner, secret, zeroAddress, resolver, duration, token, ENS_HOLIDAY_REFERRER_ADDRESS],
+      args,
+      account: walletClient.account,
+    })
+    return walletClient.writeContract({
+      address: snapshot.registrar,
+      abi: ENS_V2_REGISTRAR_ABI,
+      functionName: 'register',
+      args,
       chain: activeChain,
     })
   }
@@ -99,7 +106,7 @@ const useEnsV2Registrar = () => {
         abi: ENS_V2_REGISTRAR_ABI,
         functionName: 'MAX_COMMITMENT_AGE',
       }),
-    ]).catch(() => [60, 86_400])
+    ])
     return { min: Number(min), max: Number(max) }
   }
 

@@ -17,7 +17,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { track } from '@/lib/analytics'
 
-export const useSettings = () => {
+export const useSettings = (section?: 'profile' | 'notifications') => {
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
   const {
@@ -49,14 +49,20 @@ export const useSettings = () => {
   } = useMutation({
     mutationFn: async () => {
       const result = await updateSettings({
-        email: emailAddress,
-        discord: discordUsername,
-        telegram: telegramUsername,
-        offerNotificationThreshold: offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null,
-        notifyOnListingSold: notifyOnListingSoldValue,
-        notifyOnOfferReceived: notifyOnOfferReceivedValue,
-        notifyOnCommentReceived: notifyOnCommentReceivedValue,
+        email: section === 'notifications' ? email.address : emailAddress,
+        discord: section === 'notifications' ? discord : discordUsername,
+        telegram: section === 'notifications' ? telegram : telegramUsername,
+        offerNotificationThreshold:
+          section === 'profile'
+            ? offerNotificationThreshold
+            : offerNotificationThresholdValue
+              ? Number(offerNotificationThresholdValue)
+              : null,
+        notifyOnListingSold: section === 'profile' ? notifyOnListingSold : notifyOnListingSoldValue,
+        notifyOnOfferReceived: section === 'profile' ? notifyOnOfferReceived : notifyOnOfferReceivedValue,
+        notifyOnCommentReceived: section === 'profile' ? notifyOnCommentReceived : notifyOnCommentReceivedValue,
       })
+      if (!result.success) throw new Error('Could not save your settings.')
       return result
     },
     onSuccess: (result) => {
@@ -142,8 +148,19 @@ export const useSettings = () => {
       }
     }
 
+    if (section === 'profile')
+      return emailAddress !== email.address || discordUsername !== discord || telegramUsername !== telegram
+    if (section === 'notifications')
+      return (
+        (offerNotificationThresholdValue ? Number(offerNotificationThresholdValue) : null) !==
+          offerNotificationThreshold ||
+        notifyOnListingSoldValue !== notifyOnListingSold ||
+        notifyOnOfferReceivedValue !== notifyOnOfferReceived ||
+        notifyOnCommentReceivedValue !== notifyOnCommentReceived
+      )
     return hasFieldChanges
   }, [
+    section,
     emailAddress,
     discordUsername,
     telegramUsername,

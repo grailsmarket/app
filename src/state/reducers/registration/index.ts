@@ -8,6 +8,7 @@ import {
   RegistrationFlowState,
   RegistrationMode,
   TimeUnit,
+  V2RegistrationSnapshot,
 } from '@/types/registration'
 import { MAX_BATCH_SIZE } from '@/constants/registration'
 
@@ -21,6 +22,7 @@ export interface RegistrationModalState {
   quantity: number
   timeUnit: TimeUnit
   customDuration: number
+  v2Snapshot: V2RegistrationSnapshot | null
   batches: BatchState[]
   currentBatchIndex: number
 }
@@ -35,6 +37,7 @@ const initialState: RegistrationModalState = {
   quantity: 1,
   timeUnit: 'years',
   customDuration: 0,
+  v2Snapshot: null,
   batches: [],
   currentBatchIndex: 0,
 }
@@ -52,12 +55,12 @@ function createDefaultEntry(name: string, domain: MarketplaceDomainType): NameRe
   }
 }
 
-function computeBatches(entries: NameRegistrationEntry[]): BatchState[] {
+function computeBatches(entries: NameRegistrationEntry[], batchSize = MAX_BATCH_SIZE): BatchState[] {
   const availableIndices = entries.map((e, i) => (e.isAvailable !== false ? i : -1)).filter((i) => i !== -1)
 
   const batches: BatchState[] = []
-  for (let i = 0; i < availableIndices.length; i += MAX_BATCH_SIZE) {
-    const chunk = availableIndices.slice(i, i + MAX_BATCH_SIZE)
+  for (let i = 0; i < availableIndices.length; i += batchSize) {
+    const chunk = availableIndices.slice(i, i + batchSize)
     batches.push({
       batchIndex: batches.length,
       nameIndices: chunk,
@@ -77,12 +80,19 @@ const registrationSlice = createSlice({
   initialState,
   reducers: {
     openRegistrationModal: (state, action: PayloadAction<{ name: string; domain: MarketplaceDomainType }>) => {
+      if (state.batches.some((batch) => !batch.registered)) {
+        state.isOpen = true
+        return
+      }
       const { name, domain } = action.payload
 
       // Check if reopening for same entries
       const isSameEntry = state.entries.length === 1 && state.entries[0].name === name
 
       if (!isSameEntry) {
+        state.v2Snapshot = null
+        state.flowState = 'review'
+        state.secret = null
         state.entries = [createDefaultEntry(name, domain)]
         state.batches = []
         state.currentBatchIndex = 0
@@ -90,9 +100,11 @@ const registrationSlice = createSlice({
 
       state.isOpen = true
 
-      if (state.flowState === 'success' || state.flowState === 'error') {
+      if (state.flowState === 'success' || (state.flowState === 'error' && !state.batches.length)) {
         state.flowState = 'review'
         state.batches = []
+        state.v2Snapshot = null
+        state.secret = null
         state.currentBatchIndex = 0
         state.errorMessage = null
       }
@@ -108,10 +120,15 @@ const registrationSlice = createSlice({
       state,
       action: PayloadAction<{ entries: { name: string; domain: MarketplaceDomainType }[] }>
     ) => {
+      if (state.batches.some((batch) => !batch.registered)) {
+        state.isOpen = true
+        return
+      }
       state.entries = action.payload.entries.map((e) => createDefaultEntry(e.name, e.domain))
       state.isOpen = true
       state.flowState = 'review'
       state.secret = null
+      state.v2Snapshot = null
       state.errorMessage = null
       state.batches = []
       state.currentBatchIndex = 0
@@ -189,11 +206,14 @@ const registrationSlice = createSlice({
         state.entries[action.payload.index].calculatedDuration = action.payload.duration
       }
     },
-    initializeBatches: (state) => {
-      state.batches = computeBatches(state.entries)
+    setV2Snapshot: (state, action: PayloadAction<V2RegistrationSnapshot>) => {
+      if (!state.v2Snapshot) state.v2Snapshot = action.payload
+    },
+    initializeBatches: (state, action: PayloadAction<number | undefined>) => {
+      state.batches = computeBatches(state.entries, action.payload)
       state.currentBatchIndex = 0
     },
-    setBatchCommitTxHash: (state, action: PayloadAction<{ batchIndex: number; txHash: Hex }>) => {
+    setBatchCommitTxHash: (state, action: PayloadAction<{ batchIndex: number; txHash: Hex | null }>) => {
       const batch = state.batches[action.payload.batchIndex]
       if (batch) {
         batch.commitTxHash = action.payload.txHash
@@ -215,7 +235,7 @@ const registrationSlice = createSlice({
         batch.committed = true
       }
     },
-    setBatchRegisterTxHash: (state, action: PayloadAction<{ batchIndex: number; txHash: Hex }>) => {
+    setBatchRegisterTxHash: (state, action: PayloadAction<{ batchIndex: number; txHash: Hex | null }>) => {
       const batch = state.batches[action.payload.batchIndex]
       if (batch) {
         batch.registerTxHash = action.payload.txHash
@@ -256,6 +276,7 @@ export const {
   setBulkAvailability,
   setEntryCalculatedDuration,
   initializeBatches,
+  setV2Snapshot,
   setBatchCommitTxHash,
   setBatchCommitmentData,
   setBatchCommitted,

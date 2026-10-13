@@ -23,6 +23,10 @@ import imageRefreshReducer from './imageRefresh'
 const PERSISTED_KEYS: string[] = ['registration', 'view', 'profile']
 
 const migrations: Record<string, (state: any) => any> = {
+  3: (state: any) =>
+    state?.registration
+      ? { ...state, registration: { ...state.registration, v2Snapshot: state.registration.v2Snapshot ?? null } }
+      : state,
   2: (state: any) => {
     const reg = state?.registration
     if (!reg) return state
@@ -78,7 +82,7 @@ const migrations: Record<string, (state: any) => any> = {
 const persistConfig = {
   key: 'root',
   whitelist: PERSISTED_KEYS,
-  version: 2,
+  version: 3,
   storage,
   migrate: createMigrate(migrations, { debug: false }),
 }

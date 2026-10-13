@@ -7,26 +7,21 @@ import {
   ContractFunctionRevertedError,
   ContractFunctionZeroDataError,
   ExecutionRevertedError,
-  decodeFunctionResult,
   encodeAbiParameters,
   encodeFunctionData,
   erc20Abi,
   getChainContractAddress,
   hexToBigInt,
-  isAddressEqual,
   keccak256,
   labelhash,
   namehash,
   stringToHex,
-  toFunctionSelector,
   toHex,
   zeroAddress,
 } from 'viem'
 import { activeChain } from '@/constants/web3/chain'
 import { packetToBytes } from 'viem/ens'
-import { fetchNameMetadata } from '@/api/name/metadata'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
-import { ADDRESS_RECORD_KEYS, COIN_TYPES, TEXT_RECORD_KEYS } from '@/constants/ens/records'
 import {
   ENS_V2_REGISTRAR_ABI,
   ENS_V2_REGISTRY_ABI,
@@ -52,8 +47,6 @@ const CONTRACTS = Object.values(ENS_V2_CONTRACTS).every(Boolean) ? (ENS_V2_CONTR
 const OWNED_RESOLVER_ID = keccak256(stringToHex('OwnedResolver'))
 const ALL_ROLES = BigInt(`0x${'1'.repeat(64)}`)
 const ROLE_CAN_TRANSFER_ADMIN = BigInt(1) << BigInt(156)
-const NAME_SETTER_INTERFACE = toFunctionSelector('setAddress(bytes,uint256,bytes)')
-const NAMES_PER_TX = 50
 
 let isLive = true
 
@@ -67,7 +60,6 @@ const reverted = (error: unknown) =>
   )
 
 export const getEnsV2 = async (client: PublicClient) => {
-  console.log('CONTRACTS', CONTRACTS)
   if (!CONTRACTS) return null
   if (!isLive) {
     isLive = await client
@@ -106,7 +98,7 @@ export const getV2Name = async (client: PublicClient, v2: EnsV2Contracts, name: 
   return state.latestOwner === zeroAddress ? null : state
 }
 
-const ownedResolverSalt = (owner: Address) =>
+export const ownedResolverSalt = (owner: Address) =>
   hexToBigInt(
     keccak256(
       encodeAbiParameters(
@@ -167,171 +159,6 @@ export const encodeRecordCalls = (kind: 'name' | 'node', name: string, records: 
       args: [node, BigInt(record.coinType), record.value],
     })
   })
-
-const multicall = (calls: Hex[]) =>
-  encodeFunctionData({ abi: ENS_V2_RESOLVER_ABI, functionName: 'multicall', args: [calls] })
-
-const unlinkRecord = (name: string) =>
-  encodeFunctionData({ abi: ENS_V2_RESOLVER_ABI, functionName: 'linkToRecord', args: [dnsEncode(name), BigInt(0)] })
-
-const getResolverKind = (client: PublicClient, resolver: Address) =>
-  client
-    .readContract({
-      address: resolver,
-      abi: ENS_V2_RESOLVER_ABI,
-      functionName: 'supportsInterface',
-      args: [NAME_SETTER_INTERFACE],
-    })
-    .then((supportsNames): 'name' | 'node' => (supportsNames ? 'name' : 'node'))
-    .catch((): 'name' | 'node' => 'node')
-
-const canWrite = async (client: PublicClient, account: Address, to: Address, data: Hex) => {
-  if (to === zeroAddress || !(await client.getCode({ address: to }))) return false
-  try {
-    await client.call({ account, to, data })
-    return true
-  } catch (error) {
-    if (reverted(error)) return false
-    throw error
-  }
-}
-
-const recordKey = (record: EnsRecord) =>
-  record.type === 'text' ? `text:${record.key}` : record.type === 'addr' ? `addr:${record.coinType}` : 'contenthash'
-
-const hasValue = (record: EnsRecord) => (record.type === 'text' ? record.value !== '' : !/^0x0*$/.test(record.value))
-
-const getContenthash = (client: PublicClient, name: string) =>
-  client
-    .readContract({
-      address: getChainContractAddress({ chain: client.chain!, contract: 'ensUniversalResolver' }),
-      abi: ENS_V2_UNIVERSAL_RESOLVER_ABI,
-      functionName: 'resolve',
-      args: [
-        dnsEncode(name),
-        encodeFunctionData({ abi: PublicResolverAbi, functionName: 'contenthash', args: [namehash(name)] }),
-      ],
-    })
-    .then(
-      ([data]) => decodeFunctionResult({ abi: PublicResolverAbi, functionName: 'contenthash', data }),
-      (error): Hex => {
-        if (reverted(error)) return '0x'
-        throw error
-      }
-    )
-
-const getCurrentRecords = async (client: PublicClient, name: string): Promise<EnsRecord[]> => {
-  const { chains, ...metadata } = await fetchNameMetadata(name, true)
-  const keys = new Set([
-    ...TEXT_RECORD_KEYS,
-    ...Object.keys(metadata).filter((key) => typeof metadata[key] === 'string' && key !== 'resolverAddress'),
-  ])
-  const coinTypes = new Set([
-    60,
-    ...ADDRESS_RECORD_KEYS.map((key) => COIN_TYPES[key]),
-    ...(Array.isArray(chains) ? chains.map(({ coinType }) => coinType) : []),
-  ])
-  const [texts, addresses, contenthash] = await Promise.all([
-    Promise.all(
-      [...keys].map(async (key) => ({
-        type: 'text' as const,
-        key,
-        value: (await client.getEnsText({ name, key })) ?? '',
-      }))
-    ),
-    Promise.all(
-      [...coinTypes].map(async (coinType) => ({
-        type: 'addr' as const,
-        coinType,
-        value: (await client.getEnsAddress({ name, coinType: BigInt(coinType) })) ?? ('0x' as const),
-      }))
-    ),
-    getContenthash(client, name),
-  ])
-  return [...texts, ...addresses, { type: 'contenthash', value: contenthash }]
-}
-
-export const planRecordWrite = async (
-  client: PublicClient,
-  v2: EnsV2Contracts,
-  owned: OwnedResolver,
-  account: Address,
-  name: string,
-  changes: EnsRecord[]
-) => {
-  const resolver = await client.readContract({
-    address: v2.ethRegistry,
-    abi: ENS_V2_REGISTRY_ABI,
-    functionName: 'getResolver',
-    args: [getEthLabel(name)!],
-  })
-  const isOwned = isAddressEqual(resolver, owned.address)
-  if (isOwned && owned.deployed)
-    return { name, target: owned.address, calls: encodeRecordCalls('name', name, changes), move: false }
-  if (!isOwned) {
-    const calls = encodeRecordCalls(await getResolverKind(client, resolver), name, changes)
-    if (await canWrite(client, account, resolver, multicall(calls)))
-      return { name, target: resolver, calls, move: false }
-  }
-  const records = [
-    ...new Map(
-      [...(await getCurrentRecords(client, name)), ...changes].map((record) => [recordKey(record), record])
-    ).values(),
-  ].filter(hasValue)
-  const calls = encodeRecordCalls('name', name, records)
-  return { name, target: owned.address, calls: owned.deployed ? [unlinkRecord(name), ...calls] : calls, move: !isOwned }
-}
-
-export type RecordPlan = Awaited<ReturnType<typeof planRecordWrite>>
-
-export const recordWriteTransactions = (
-  v2: EnsV2Contracts,
-  owned: OwnedResolver,
-  account: Address,
-  plans: RecordPlan[]
-): PlannedTx[] => {
-  const writes = [...new Set(plans.map((plan) => plan.target))].flatMap((target) => {
-    const group = plans.filter((plan) => plan.target === target)
-    return Array.from({ length: Math.ceil(group.length / NAMES_PER_TX) }, (_, index) => {
-      const batch = group.slice(index * NAMES_PER_TX, (index + 1) * NAMES_PER_TX)
-      const calls = batch.flatMap((plan) => plan.calls)
-      const names = batch.map((plan) => plan.name)
-      if (index > 0 || target !== owned.address || owned.deployed)
-        return { to: target, data: multicall(calls), names, kind: 'write' as const }
-      return {
-        to: v2.verifiableFactory,
-        data: encodeFunctionData({
-          abi: VERIFIABLE_FACTORY_ABI,
-          functionName: 'deployProxy',
-          args: [
-            v2.permissionedResolverImpl,
-            ownedResolverSalt(account),
-            encodeFunctionData({
-              abi: ENS_V2_RESOLVER_ABI,
-              functionName: 'initialize',
-              args: [[{ account, roleBitmap: ALL_ROLES }], calls],
-            }),
-          ],
-        }),
-        names,
-        kind: 'deploy' as const,
-      }
-    })
-  })
-  const repoints = plans
-    .filter((plan) => plan.move)
-    .map((plan) => ({
-      to: v2.ethRegistry,
-      data: encodeFunctionData({
-        abi: ENS_V2_REGISTRY_ABI,
-        functionName: 'setResolver',
-        args: [hexToBigInt(labelhash(getEthLabel(plan.name)!)), owned.address],
-      }),
-      names: [plan.name],
-      kind: 'repoint' as const,
-    }))
-  return [...writes, ...repoints]
-}
 
 export const isTransferable = async (
   client: PublicClient,

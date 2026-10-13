@@ -1,29 +1,27 @@
 import { useState, useCallback, useMemo } from 'react'
-import { type Hex, encodeFunctionData, isAddressEqual, toHex, zeroAddress } from 'viem'
+import { type Hex, encodeFunctionData, zeroAddress } from 'viem'
 import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { useEnsV2 } from '@/hooks/useEnsV2'
+import { useEnsV2Status } from '@/hooks/useEnsV2'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { fetchNameRoles } from '@/api/name/roles'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForSuccess } from '@/utils/web3/safeTransaction'
-import {
-  type EnsRecord,
-  type PlannedTx,
-  ENS_V2_STATUS,
-  encodeRecordCalls,
-  getOwnedResolver,
-  getV2Name,
-  planRecordWrite,
-  recordWriteTransactions,
-} from '@/utils/web3/ensv2'
+import { type EnsRecord, type PlannedTx, encodeRecordCalls, getV2Name } from '@/utils/web3/ensv2'
+
+import { ensApi } from '@/api/ens-v2'
+import { encodeAddressValue, encodeContenthash } from '@/utils/web3/resolver-records'
+import { prepareConfigurationEdit, requireSupportedResolver } from '@/utils/web3/resolver-transactions'
+import { canEditRecord } from '@/utils/web3/resolver-permissions'
+import { ENS_V2_RESOLVER_ABI } from '@/constants/abi/ENSv2'
+import { recordIdentity, type RecordValue } from '@/types/ens-v2'
 
 const MAX_NAMES_PER_MULTICALL = 50
 
-export type BulkEditStep = 'loading_roles' | 'editing' | 'confirming' | 'processing' | 'success' | 'error'
+export type BulkEditStep = 'loading_roles' | 'reviewing' | 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
 export type BulkRecordSet = {
   textRecords: Record<string, string>
@@ -34,6 +32,7 @@ export type BulkRecordSet = {
 }
 
 export type TransactionStatus = PlannedTx & {
+  impact?: string
   ordered: boolean
   status: 'pending' | 'confirming' | 'processing' | 'success' | 'error'
   txHash: string | null
@@ -55,13 +54,6 @@ function createEmptyRecordSet(): BulkRecordSet {
   }
 }
 
-function encodeContenthash(input: string): `0x${string}` {
-  // Simple encoding: store as UTF-8 hex for protocol-prefixed URIs
-  // In production you'd use content-hash library for proper IPFS/Arweave encoding
-  if (!input) return '0x'
-  return toHex(new TextEncoder().encode(input)) as `0x${string}`
-}
-
 export const buildRecords = (records: BulkRecordSet, customKeys: string[], clearedFields: Set<string>): EnsRecord[] => [
   ...TEXT_RECORD_KEYS.filter((key) => records.textRecords[key] || clearedFields.has(`text:${key}`)).map((key) => ({
     type: 'text' as const,
@@ -75,9 +67,7 @@ export const buildRecords = (records: BulkRecordSet, customKeys: string[], clear
     (key) => ({
       type: 'addr' as const,
       coinType: COIN_TYPES[key],
-      value: records.addressRecords[key]
-        ? toHex(new TextEncoder().encode(records.addressRecords[key]))
-        : ('0x' as const),
+      value: encodeAddressValue(String(COIN_TYPES[key]), records.addressRecords[key] || ''),
     })
   ),
   ...(records.ethAddress || clearedFields.has('ethAddress')
@@ -107,7 +97,8 @@ export function useBulkEditRecords(names: string[]) {
   const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
-  const ensV2 = useEnsV2()
+  const network = useEnsV2Status()
+  const ensV2 = network.data ?? null
 
   // Fetch roles for all names in parallel
   const rolesQueries = useQueries({
@@ -120,22 +111,36 @@ export function useBulkEditRecords(names: string[]) {
 
   const v2Queries = useQueries({
     queries: names.map((name) => ({
-      queryKey: ['name', 'v2', name],
-      queryFn: () => (ensV2 && publicClient ? getV2Name(publicClient, ensV2, name) : null),
+      queryKey: ['name', 'v2-bulk-records', activeChain.id, address, name],
+      queryFn: async () => {
+        if (!ensV2 || !publicClient || !(await getV2Name(publicClient, ensV2, name))) return null
+        const context = await ensApi.name(activeChain.id, name)
+        const resolver = await ensApi.resolver(activeChain.id, context.resolver)
+        return { context, resolver }
+      },
+      retry: false,
       enabled: !!ensV2 && !!name && !!publicClient,
     })),
   })
 
-  const isLoadingRoles = rolesQueries.some((q) => q.isLoading) || v2Queries.some((q) => q.isLoading)
+  const isLoadingRoles =
+    network.isPending || rolesQueries.some((q) => q.isLoading) || v2Queries.some((q) => q.isLoading)
 
   const canEdit = useCallback(
     (index: number) => {
       if (!address) return false
       const v2Name = v2Queries[index]?.data
-      if (v2Name) return v2Name.status === ENS_V2_STATUS.REGISTERED && isAddressEqual(v2Name.latestOwner, address)
+      if (network.isPending || network.error || v2Queries[index]?.error) return false
+      if (v2Name)
+        return (
+          v2Name.resolver.supported &&
+          v2Name.resolver.grants.some(
+            (grant) => grant.account.toLowerCase() === address.toLowerCase() && BigInt(grant.roles) !== BigInt(0)
+          )
+        )
       return rolesQueries[index]?.data?.manager.toLowerCase() === address.toLowerCase()
     },
-    [address, v2Queries, rolesQueries]
+    [address, v2Queries, rolesQueries, network.isPending, network.error]
   )
 
   // Names where user is the manager
@@ -422,11 +427,14 @@ export function useBulkEditRecords(names: string[]) {
         try {
           update(index, { status: 'confirming', error: null })
           setStep('confirming')
-          const hash = await walletClient.sendTransaction({
-            to: statuses[index].to,
-            data: statuses[index].data,
-            chain: activeChain,
-          })
+          await publicClient.call({ account: walletClient.account, to: statuses[index].to, data: statuses[index].data })
+          const hash =
+            (statuses[index].txHash as Hex | null) ||
+            (await walletClient.sendTransaction({
+              to: statuses[index].to,
+              data: statuses[index].data,
+              chain: activeChain,
+            }))
           update(index, { status: 'processing', txHash: hash })
           setStep('processing')
           await waitForSuccess(publicClient, hash)
@@ -442,9 +450,10 @@ export function useBulkEditRecords(names: string[]) {
         queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
         queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
         queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-        queryClient.invalidateQueries({ queryKey: ['name', 'v2', name] })
+        queryClient.invalidateQueries({ queryKey: ['name', 'v2-bulk-records', activeChain.id, address, name] })
       }
       queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.invalidateQueries({ queryKey: ['ens-v2'] })
 
       const hasError = succeeded.includes(false)
       setStep(hasError ? 'error' : 'success')
@@ -493,18 +502,57 @@ export function useBulkEditRecords(names: string[]) {
         .map((name) => ({ name, changes: recordsFor(name) }))
         .filter(({ changes }) => changes.length > 0)
       if (ensV2 && v2Changes.length > 0) {
-        const owned = await getOwnedResolver(publicClient, ensV2, address)
-        const plans = await Promise.all(
-          v2Changes.map(({ name, changes }) => planRecordWrite(publicClient, ensV2, owned, address, name, changes))
-        )
-        statuses.push(
-          ...recordWriteTransactions(ensV2, owned, address, plans).map((tx) => ({ ...tx, ordered: true, ...pending }))
-        )
+        const bundleWrites = new Map<
+          string,
+          {
+            records: Map<string, RecordValue>
+            names: string[]
+            context: NonNullable<(typeof v2Queries)[number]['data']>
+          }
+        >()
+        for (const { name, changes } of v2Changes) {
+          const context = v2Queries[names.indexOf(name)].data!
+          if (!context.context.effectiveRecordId)
+            throw new Error(`${name} has no configuration. Create one in its record editor first.`)
+          const key = `${context.resolver.address.toLowerCase()}:${context.context.effectiveRecordId}`
+          const bundle = bundleWrites.get(key) ?? { records: new Map<string, RecordValue>(), names: [], context }
+          for (const change of changes) {
+            const record: RecordValue =
+              change.type === 'addr'
+                ? { type: 'address', coinType: String(change.coinType), value: change.value }
+                : change
+            if (!canEditRecord(context.resolver.grants, address, record))
+              throw new Error(`You cannot edit ${recordIdentity(record)} in the resolver used by ${name}.`)
+            const existing = bundle.records.get(recordIdentity(record))
+            if (existing && existing.value !== record.value)
+              throw new Error(
+                `${name} shares its configuration with another selected name with conflicting changes. Create a separate configuration before applying different values.`
+              )
+            bundle.records.set(recordIdentity(record), record)
+          }
+          bundle.names.push(name)
+          bundleWrites.set(key, bundle)
+        }
+        for (const bundle of bundleWrites.values()) {
+          const resolver = bundle.context.resolver.address
+          await requireSupportedResolver(publicClient, ensV2, resolver)
+          const config = await ensApi.configuration(activeChain.id, resolver, bundle.context.context.effectiveRecordId!)
+          const calls = await prepareConfigurationEdit(publicClient, address, config, [...bundle.records.values()])
+          statuses.push({
+            to: resolver,
+            data: encodeFunctionData({ abi: ENS_V2_RESOLVER_ABI, functionName: 'multicall', args: [calls] }),
+            names: bundle.names,
+            kind: 'write',
+            ordered: false,
+            impact: `Configuration ${config.recordId}: affects ${config.nameCount} known names, including names outside this selection.`,
+            ...pending,
+          })
+        }
       }
 
       if (statuses.length === 0) return setStep('editing')
       setTransactionStatuses(statuses)
-      await execute(statuses, 0, statuses.length)
+      setStep('reviewing')
     } catch (err: unknown) {
       setStep('error')
       setErrorMessage(err instanceof Error ? err.message : 'Transaction failed')
@@ -581,6 +629,7 @@ export function useBulkEditRecords(names: string[]) {
     transactionStatuses,
     // Actions
     saveRecords,
+    confirmRecords: () => execute(transactionStatuses, 0, transactionStatuses.length),
     retryTransaction,
     resetToEditing,
   }

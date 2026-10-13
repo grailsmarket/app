@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useAccount, useBalance, useGasPrice, usePublicClient } from 'wagmi'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
@@ -16,6 +16,7 @@ import {
   setBulkAvailability,
   setEntryCalculatedDuration,
   initializeBatches,
+  setV2Snapshot,
   setBatchCommitTxHash,
   setBatchCommitmentData,
   setBatchCommitted,
@@ -28,7 +29,7 @@ import {
 } from '@/state/reducers/registration'
 import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
 import useEnsV2Registrar from '@/hooks/registrar/useEnsV2Registrar'
-import { useEnsV2 } from '@/hooks/useEnsV2'
+import { useEnsV2Status } from '@/hooks/useEnsV2'
 import { usePaymentToken } from '@/hooks/usePaymentToken'
 import useETHPrice from '@/hooks/useETHPrice'
 import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
@@ -36,7 +37,7 @@ import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Hex, formatUnits, isAddress } from 'viem'
+import { Hex, Address, formatUnits, isAddress, zeroAddress } from 'viem'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -48,6 +49,11 @@ import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { accountQueryKey } from '@/utils/queryKeys'
+
+import { useResolverPreferences } from '@/hooks/ens-v2/useResolverData'
+import { getOwnedResolver } from '@/utils/web3/ensv2'
+import { ENS_HOLIDAY_REFERRER_ADDRESS } from '@/constants/web3/contracts'
+import { assertRegistrationSnapshot } from '@/utils/web3/registration-snapshot'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -73,7 +79,8 @@ const useRegistrationModal = () => {
     getCommitmentAges,
     checkCommitmentAge,
   } = useBulkRegisterDomains()
-  const ensV2 = useEnsV2()
+  const network = useEnsV2Status()
+  const ensV2 = network.data ?? null
   const v2Registrar = useEnsV2Registrar()
   const { paymentToken, paymentBalance, selectPaymentToken } = usePaymentToken(!!ensV2)
   const loadCommitmentAges = () => (ensV2 ? v2Registrar.getCommitmentAges(ensV2) : getCommitmentAges())
@@ -103,7 +110,8 @@ const useRegistrationModal = () => {
   const entries = registrationState.entries
   const batches = registrationState.batches
   const isBulk = entries.length > 1
-  const totalBatches = batches.length
+  const totalBatches =
+    batches.length || Math.ceil(entries.filter((entry) => entry.isAvailable !== false).length / (ensV2 ? 1 : 100))
   const secret = registrationState.secret
   const { registrationMode, quantity, timeUnit, customDuration } = registrationState
 
@@ -120,7 +128,9 @@ const useRegistrationModal = () => {
   const allAvailabilityChecked = entries.length > 0 && entries.every((e) => e.isAvailable !== null)
   const availableEntries = useMemo(() => entries.filter((e) => e.isAvailable !== false), [entries])
   const unavailableEntries = useMemo(() => entries.filter((e) => e.isAvailable === false), [entries])
-  const bulkUnavailable = !!ensV2 && availableEntries.length > 1
+  const bulkUnavailable = false
+  const snapshot = registrationState.v2Snapshot
+  const running = useRef(false)
 
   const { data: ethBalance } = useBalance({
     address,
@@ -161,9 +171,13 @@ const useRegistrationModal = () => {
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
       if (ensV2)
-        return bulkUnavailable
-          ? null
-          : v2Registrar.getPrice(ensV2, availableLabels[0], availableDurations[0], paymentToken.address)
+        return (
+          await Promise.all(
+            availableLabels.map((label, index) =>
+              v2Registrar.getPrice(ensV2, label, availableDurations[index], paymentToken.address)
+            )
+          )
+        ).reduce((total, price) => total + price, BigInt(0))
       return getBulkTotalPrice(availableLabels, availableDurations)
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
@@ -235,16 +249,12 @@ const useRegistrationModal = () => {
   }, [ethBalance, calculationResults, gasPrice, gasEstimate, ensV2, totalPriceData, paymentBalance])
 
   useEffect(() => {
-    if (!isClient || !registrationState.isOpen || entries.length === 0) return
+    if (!isClient || !registrationState.isOpen || entries.length === 0 || !network.isSuccess || batches.length) return
     if (registrationState.flowState === 'success' || registrationState.flowState === 'registering') return
 
     let cancelled = false
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
-      console.log('labels', labels)
-      console.log('ensV2', ensV2)
-      console.log('v2Registrar', v2Registrar)
-      console.log('checkBulkAvailable', checkBulkAvailable)
       const results = await (ensV2
         ? v2Registrar.checkAvailable(ensV2, labels).catch(() => labels.map(() => false))
         : checkBulkAvailable(labels))
@@ -255,7 +265,15 @@ const useRegistrationModal = () => {
     return () => {
       cancelled = true
     }
-  }, [isClient, registrationState.isOpen, entries.length, registrationState.flowState, ensV2])
+  }, [
+    isClient,
+    registrationState.isOpen,
+    entries.length,
+    registrationState.flowState,
+    ensV2,
+    network.isSuccess,
+    batches.length,
+  ])
 
   useEffect(() => {
     entryDurations.forEach((d, i) => {
@@ -292,17 +310,24 @@ const useRegistrationModal = () => {
       }
     }
 
-    loadCommitmentAges().then((ages) => {
-      if (cancelled) return
-      updateRemainingTime(ages.min)
-      interval = setInterval(() => updateRemainingTime(ages.min), 1000)
-    })
+    loadCommitmentAges()
+      .then((ages) => {
+        if (cancelled) return
+        updateRemainingTime(ages.min)
+        interval = setInterval(() => updateRemainingTime(ages.min), 1000)
+      })
+      .catch(() => {
+        if (!cancelled)
+          dispatch(
+            setRegistrationError('Could not load commitment timing. Your registration is saved; continue to retry.')
+          )
+      })
 
     return () => {
       cancelled = true
       if (interval) clearInterval(interval)
     }
-  }, [registrationState.flowState, batches, loadCommitmentAges])
+  }, [registrationState.flowState, batches, ensV2, dispatch])
 
   // Auto-reopen removed: when the user minimizes an active registration,
   // we show a toast instead of forcing the modal back open.
@@ -310,6 +335,12 @@ const useRegistrationModal = () => {
   useEffect(() => {
     const checkResume = async () => {
       if (
+        running.current ||
+        !network.isSuccess ||
+        (snapshot &&
+          (!ensV2 ||
+            snapshot.sender.toLowerCase() !== address?.toLowerCase() ||
+            snapshot.chainId !== activeChain.id)) ||
         entries.length === 0 ||
         !entries[0]?.domain ||
         !address ||
@@ -317,6 +348,17 @@ const useRegistrationModal = () => {
         registrationState.flowState === 'success'
       )
         return
+
+      if (snapshot) {
+        if (registrationState.flowState !== 'review' && registrationState.flowState !== 'error')
+          dispatch(setRegistrationFlowState('error'))
+        dispatch(
+          setRegistrationError(
+            'Registration is saved. Continue to check pending transactions and resume with the original parameters.'
+          )
+        )
+        return
+      }
 
       // Check if any batch has a pending register tx
       const pendingRegisterBatch = batches.find((b) => b.registerTxHash && !b.registered)
@@ -395,13 +437,14 @@ const useRegistrationModal = () => {
     }
 
     checkResume()
-  }, [address, entries.length, secret, ensV2])
+  }, [address, entries.length, ensV2, network.isSuccess])
 
   const handleClose = useCallback(() => {
     if (
       registrationState.flowState === 'committing' ||
       registrationState.flowState === 'registering' ||
-      registrationState.flowState === 'waiting'
+      registrationState.flowState === 'waiting' ||
+      (registrationState.flowState === 'error' && batches.length > 0)
     ) {
       // Minimize to toast — preserves all state
       dispatch(closeRegistrationModal())
@@ -440,35 +483,99 @@ const useRegistrationModal = () => {
     return address ?? null
   }, [showCustomOwner, debouncedCustomOwner, account, address])
 
-  const handleCommit = useCallback(async () => {
-    if (!address || entries.length === 0 || !calculationResults || bulkUnavailable) return
+  const recipient = getOwnerAddress()
+  const preferences = useResolverPreferences()
+  const [resolverOverride, setResolverOverride] = useState<{ recipient: string; value: string } | null>(null)
+  const predictedResolver = useQuery({
+    queryKey: ['ens-v2-predicted', activeChain.id, recipient, ensV2?.verifiableFactory],
+    enabled: !!publicClient && !!ensV2 && !!recipient,
+    queryFn: () => getOwnedResolver(publicClient!, ensV2!, recipient!),
+  })
+  const resolverValue =
+    snapshot?.resolver ??
+    (resolverOverride?.recipient === recipient
+      ? resolverOverride.value
+      : recipient?.toLowerCase() === address?.toLowerCase() && preferences.data?.preferredResolver
+        ? preferences.data.preferredResolver
+        : (predictedResolver.data?.address ?? ''))
+  const setResolverValue = (value: string) => setResolverOverride({ recipient: recipient ?? '', value })
+  const resolverReady =
+    !ensV2 || (isAddress(resolverValue) && !!recipient && (!showCustomOwner || customOwner === debouncedCustomOwner))
 
-    const owner = getOwnerAddress()
+  const selectedResolverCode = useQuery({
+    queryKey: ['resolver-code', activeChain.id, resolverValue],
+    enabled: !!publicClient && !!ensV2 && isAddress(resolverValue),
+    queryFn: async () => (await publicClient!.getBytecode({ address: resolverValue as Address })) ?? null,
+    retry: false,
+  })
+
+  const handleCommit = useCallback(async () => {
+    if (!address || !publicClient || entries.length === 0 || !network.isSuccess || running.current) return
+
+    const owner = snapshot?.owner ?? getOwnerAddress()
     if (!owner) {
       dispatch(setRegistrationError('Invalid owner address'))
       return
     }
 
+    running.current = true
     dispatch(setRegistrationFlowState('committing'))
 
     try {
       const commitSecret = secret || generateSecret()
       if (!secret) dispatch(setSecret(commitSecret))
 
-      if (batches.length === 0) {
-        dispatch(initializeBatches())
-      }
-
+      let saved = snapshot
+      if (ensV2) {
+        if (!saved && batches.length)
+          throw new Error(
+            'This older commitment has no saved resolver parameters. Cancel it and start a new registration.'
+          )
+        if (!saved) {
+          if (!resolverReady || !isAddress(resolverValue))
+            throw new Error('Select a valid resolver address before committing.')
+          saved = {
+            version: 1,
+            chainId: activeChain.id,
+            registrar: ensV2.ethRegistrar,
+            sender: address,
+            owner,
+            resolver: resolverValue as Address,
+            subregistry: zeroAddress,
+            referrer: ENS_HOLIDAY_REFERRER_ADDRESS,
+            names: entries.flatMap((entry, entryIndex) =>
+              entry.isAvailable !== false
+                ? [
+                    {
+                      label: normalizeName(entry.name.replace(/\.eth$/, '')),
+                      duration: String(entryDurations[entryIndex]),
+                      entryIndex,
+                    },
+                  ]
+                : []
+            ),
+          }
+          if (
+            saved.names.some(
+              (entry) => !/^\d+$/.test(entry.duration) || BigInt(entry.duration) < BigInt(MIN_REGISTRATION_DURATION)
+            )
+          )
+            throw new Error('Review all registration durations.')
+          dispatch(setV2Snapshot(saved))
+        }
+        assertRegistrationSnapshot(saved, activeChain.id, address, ensV2.ethRegistrar)
+      } else if (saved) throw new Error('The ENSv2 network is unavailable. Your commitment has been preserved.')
+      const batchSize = ensV2 ? 1 : 100
       const localBatches =
         batches.length > 0
           ? batches
           : (() => {
               const availableIndices = entries.map((e, i) => (e.isAvailable !== false ? i : -1)).filter((i) => i !== -1)
               const result = []
-              for (let i = 0; i < availableIndices.length; i += 100) {
+              for (let i = 0; i < availableIndices.length; i += batchSize) {
                 result.push({
                   batchIndex: result.length,
-                  nameIndices: availableIndices.slice(i, i + 100),
+                  nameIndices: availableIndices.slice(i, i + batchSize),
                   commitmentHashes: null as Hex[] | null,
                   commitTxHash: null as Hex | null,
                   commitmentTimestamp: null as number | null,
@@ -481,12 +588,19 @@ const useRegistrationModal = () => {
             })()
 
       if (batches.length === 0) {
-        dispatch(initializeBatches())
+        dispatch(initializeBatches(batchSize))
       }
 
       for (let batchIndex = 0; batchIndex < localBatches.length; batchIndex++) {
         const batch = localBatches[batchIndex]
-        if (batch.committed) continue
+        if (batch.registered) continue
+        if (batch.committed) {
+          if (!ensV2 || !batch.commitmentHashes?.[0]) continue
+          const at = await v2Registrar.checkCommitmentAge(ensV2, batch.commitmentHashes[0])
+          if (at === null) throw new Error('Could not verify this commitment. Try continuing again.')
+          const ages = await v2Registrar.getCommitmentAges(ensV2)
+          if (at > 0 && Date.now() / 1000 - at <= ages.max) continue
+        }
 
         dispatch(setCurrentBatchIndex(batchIndex))
 
@@ -497,16 +611,20 @@ const useRegistrationModal = () => {
         })
 
         const hashes = ensV2
-          ? [await v2Registrar.makeCommitment(ensV2, batchLabels[0], owner, commitSecret, batchDurations[0])]
+          ? [await v2Registrar.makeCommitment(saved!, batchIndex, commitSecret)]
           : await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret, reverseRecord ? 1 : 0)
         dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
 
-        const tx = await (ensV2 ? v2Registrar.commit(ensV2, hashes[0]) : submitMultiCommit(hashes))
+        const tx =
+          batch.commitTxHash && !batch.committed
+            ? batch.commitTxHash
+            : await (ensV2 ? v2Registrar.commit(ensV2, hashes[0], saved!) : submitMultiCommit(hashes))
         dispatch(setBatchCommitTxHash({ batchIndex, txHash: tx }))
 
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
 
         if (receipt?.status === 'reverted') {
+          dispatch(setBatchCommitTxHash({ batchIndex, txHash: null }))
           dispatch(setRegistrationError(`Commitment transaction failed for batch ${batchIndex + 1}`))
           return
         }
@@ -516,7 +634,7 @@ const useRegistrationModal = () => {
           return
         }
 
-        const timestamp = Math.floor(Date.now() / 1000)
+        const timestamp = Number((await publicClient.getBlock({ blockNumber: receipt.blockNumber })).timestamp)
         dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp }))
         dispatch(setBatchCommitted(batchIndex))
       }
@@ -525,6 +643,8 @@ const useRegistrationModal = () => {
     } catch (error: any) {
       console.error('Failed to commit:', error)
       dispatch(setRegistrationError(error.message || 'Failed to submit commitment'))
+    } finally {
+      running.current = false
     }
   }, [
     address,
@@ -539,21 +659,39 @@ const useRegistrationModal = () => {
     submitMultiCommit,
     publicClient,
     dispatch,
-    bulkUnavailable,
+    snapshot,
+    resolverValue,
+    resolverReady,
+    network.isSuccess,
     ensV2,
     v2Registrar,
   ])
 
   const handleRegister = useCallback(async () => {
-    if (!address || entries.length === 0 || !secret) return
+    if (!address || !publicClient || entries.length === 0 || !secret || running.current) return
 
-    const owner = getOwnerAddress()
+    const owner = snapshot?.owner ?? getOwnerAddress()
     if (!owner) {
       dispatch(setRegistrationError('Invalid owner address'))
       return
     }
 
+    running.current = true
     dispatch(setRegistrationFlowState('registering'))
+
+    try {
+      if (ensV2) {
+        if (!snapshot)
+          throw new Error(
+            'This commitment is missing its saved parameters. Start a new commitment instead of revealing with changed values.'
+          )
+        assertRegistrationSnapshot(snapshot, activeChain.id, address, ensV2.ethRegistrar)
+      } else if (snapshot) throw new Error('The ENSv2 network is unavailable. Your commitment has been preserved.')
+    } catch (error) {
+      running.current = false
+      dispatch(setRegistrationError(error instanceof Error ? error.message : 'Could not resume registration.'))
+      return
+    }
 
     try {
       const currentBatches = batches.length > 0 ? batches : []
@@ -571,8 +709,28 @@ const useRegistrationModal = () => {
         })
 
         let tx: Hex
-        if (ensV2) {
-          tx = await v2Registrar.register(ensV2, batchLabels[0], owner, secret, batchDurations[0], paymentToken.address)
+        if (batch.registerTxHash) {
+          tx = batch.registerTxHash
+        } else if (ensV2) {
+          if (!batch.committed || !batch.commitmentHashes?.[0])
+            throw new Error('Finish committing all names before registration.')
+          const expected = await v2Registrar.makeCommitment(snapshot!, batchIndex, secret)
+          if (expected !== batch.commitmentHashes[0])
+            throw new Error(
+              'The saved commitment does not match. Registration was stopped to preserve the original parameters.'
+            )
+          const at = await v2Registrar.checkCommitmentAge(ensV2, expected)
+          const ages = await v2Registrar.getCommitmentAges(ensV2)
+          const now = Number((await publicClient.getBlock()).timestamp)
+          if (!at || now - at > ages.max)
+            throw new Error(
+              'This commitment expired. Continue to recommit the remaining names using their saved parameters.'
+            )
+          if (now - at < ages.min) {
+            dispatch(setRegistrationFlowState('waiting'))
+            return
+          }
+          tx = await v2Registrar.register(ensV2, snapshot!, batchIndex, secret, paymentToken.address)
         } else {
           const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
           if (!batchPrice) {
@@ -595,6 +753,7 @@ const useRegistrationModal = () => {
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
 
         if (receipt?.status === 'reverted') {
+          dispatch(setBatchRegisterTxHash({ batchIndex, txHash: null }))
           dispatch(setRegistrationError(`Registration transaction failed for batch ${batchIndex + 1}`))
           return
         }
@@ -622,6 +781,8 @@ const useRegistrationModal = () => {
     } catch (error: any) {
       console.error('Failed to register:', error)
       dispatch(setRegistrationError(error.message || 'Failed to register name'))
+    } finally {
+      running.current = false
     }
   }, [
     address,
@@ -641,6 +802,7 @@ const useRegistrationModal = () => {
     ensV2,
     v2Registrar,
     paymentToken,
+    snapshot,
   ])
 
   const onTimeUnitChange = useCallback(
@@ -735,9 +897,40 @@ const useRegistrationModal = () => {
     [perNameDatePickerIndex, entries, quantity, dispatch]
   )
 
-  const onRetry = useCallback(() => {
-    dispatch(setRegistrationFlowState('review'))
-  }, [dispatch])
+  const onRetry = useCallback(async () => {
+    if (!snapshot) {
+      dispatch(setRegistrationFlowState('review'))
+      return
+    }
+    try {
+      if (!ensV2 || !publicClient || !address)
+        throw new Error('Reconnect the original registration wallet and network.')
+      assertRegistrationSnapshot(snapshot, activeChain.id, address, ensV2.ethRegistrar)
+      if (batches.some((batch) => batch.registerTxHash && !batch.registered)) {
+        await handleRegister()
+        return
+      }
+      const ages = await v2Registrar.getCommitmentAges(ensV2)
+      const now = Number((await publicClient.getBlock()).timestamp)
+      let needsCommit = batches.length === 0
+      for (const batch of batches.filter((item) => !item.registered)) {
+        if (!batch.committed || !batch.commitmentHashes?.[0]) {
+          needsCommit = true
+          break
+        }
+        const at = await v2Registrar.checkCommitmentAge(ensV2, batch.commitmentHashes[0])
+        if (at === null) throw new Error('Could not verify the saved commitment. Try continuing again.')
+        if (at === 0 || now - at > ages.max) {
+          needsCommit = true
+          break
+        }
+      }
+      if (needsCommit) await handleCommit()
+      else await handleRegister()
+    } catch (cause) {
+      dispatch(setRegistrationError(cause instanceof Error ? cause.message : 'Could not resume registration.'))
+    }
+  }, [dispatch, snapshot, batches, handleRegister, handleCommit, ensV2, publicClient, address, v2Registrar])
 
   const onResetModal = useCallback(() => {
     dispatch(resetRegistrationModal())
@@ -770,8 +963,17 @@ const useRegistrationModal = () => {
     paymentToken,
     selectPaymentToken,
     bulkUnavailable,
+    resolverValue,
+    setResolverValue,
+    resolverReady,
+    networkReady: network.isSuccess,
+    resolverError: predictedResolver.error?.message,
+    resolverWarning:
+      selectedResolverCode.isSuccess && !selectedResolverCode.data
+        ? 'This resolver is not deployed. Names can be registered to it, but records will not resolve until the resolver is deployed and configured.'
+        : undefined,
     currentBatch: batches[registrationState.currentBatchIndex],
-    perNamePrices,
+    perNamePrices: ensV2 ? null : perNamePrices,
     gasEstimate,
     gasPrice,
     showCustomOwner,

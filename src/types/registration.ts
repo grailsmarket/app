@@ -1,4 +1,4 @@
-import { Hex } from 'viem'
+import { Address, Hex } from 'viem'
 import { MarketplaceDomainType } from './domains'
 
 export type RegistrationFlowState = 'review' | 'committing' | 'waiting' | 'registering' | 'success' | 'error'
@@ -35,4 +35,17 @@ export interface CalculationResults {
   isBelowMinimum: boolean
   isLoadingPrice: boolean
   paymentToken?: string
+}
+
+// Persisted before submitting a V2 commitment. Reveal must only use these parameters.
+export interface V2RegistrationSnapshot {
+  version: 1
+  chainId: number
+  registrar: Address
+  sender: Address
+  owner: Address
+  resolver: Address
+  subregistry: Address
+  referrer: Hex
+  names: { label: string; duration: string; entryIndex: number }[]
 }

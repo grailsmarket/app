@@ -3,17 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3100",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "checks": "bun run format:check && bun run lint && bun run typecheck"
+    "checks": "bun run format:check && bun run lint && bun run typecheck",
+    "test:ens-v2": "bun test tests/ens-v2"
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.1",
+    "@ensdomains/address-encoder": "^1.1.4",
+    "@ensdomains/content-hash": "^3.1.1",
     "@ethersproject/bignumber": "^5.8.0",
     "@opensea/seaport-js": "^4.0.5",
     "@rainbow-me/rainbowkit": "^2.2.10",

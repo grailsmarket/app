@@ -15,7 +15,12 @@ const CANNOT_APPROVE = 64
 const NAMES_PER_TX = 50
 
 type MigrationData = { label: string; owner: Address; subregistry: Address; resolver: Address }
-export type MigrationCandidate = { name: string; kind: 'unwrapped' | 'unlocked' | 'locked'; data: MigrationData }
+export type MigrationCandidate = {
+  name: string
+  kind: 'unwrapped' | 'unlocked' | 'locked'
+  data: MigrationData
+  resolverLocked?: boolean
+}
 export type MigrationIssue = { name: string; issue: string }
 
 const checkName = async (
@@ -25,7 +30,12 @@ const checkName = async (
   name: string
 ): Promise<MigrationCandidate | MigrationIssue> => {
   const label = getEthLabel(name)
-  if (!label) return { name, issue: 'Only .eth names can be upgraded' }
+  if (!label)
+    return {
+      name,
+      issue:
+        'Subnames require their parent to migrate first and a transfer to its WrapperRegistry. This assistant currently supports .eth second-level names.',
+    }
   const { status } = await getV2State(client, v2, label)
   if (status !== ENS_V2_STATUS.RESERVED)
     return { name, issue: status === ENS_V2_STATUS.REGISTERED ? 'Already on ENSv2' : 'Not eligible for upgrade' }
@@ -68,7 +78,7 @@ const checkName = async (
     })
     if (approved !== zeroAddress) return { name, issue: 'Locked name with a frozen approval' }
   }
-  return { name, kind: 'locked', data }
+  return { name, kind: 'locked', data, resolverLocked: !!(fuses & 8) }
 }
 
 export const checkMigration = (client: PublicClient, v2: EnsV2Contracts, account: Address, names: string[]) =>

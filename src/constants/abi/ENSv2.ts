@@ -23,6 +23,7 @@ export const ENS_V2_REGISTRY_ABI = parseAbi([
   'struct State { uint8 status; uint64 expiry; address latestOwner; uint256 tokenId; uint256 resource; }',
   'function getState(uint256 anyId) view returns (State)',
   'function getResolver(string label) view returns (address)',
+  'function getSubregistry(string label) view returns (address)',
   'function setResolver(uint256 anyId, address resolver)',
   'function hasRoles(uint256 anyId, uint256 roleBitmap, address account) view returns (bool)',
   'function isOnlyAssignee(uint256 resource, uint256 roleBitmap, address account) view returns (bool)',
@@ -31,15 +32,31 @@ export const ENS_V2_REGISTRY_ABI = parseAbi([
 
 export const ENS_V2_RESOLVER_ABI = parseAbi([
   'function supportsInterface(bytes4 interfaceId) view returns (bool)',
+  'function getRecordId(bytes32 node) view returns (uint256)',
+  'function getRecordCount() view returns (uint256)',
+  'function resolve(bytes name, bytes data) view returns (bytes)',
+  'function hasRoles(uint256 resource, uint256 roleBitmap, address account) view returns (bool)',
+  'function roles(uint256 resource, address account) view returns (uint256)',
+  'function grantRootRoles(uint256 roleBitmap, address account) returns (bool)',
+  'function revokeRootRoles(uint256 roleBitmap, address account) returns (bool)',
+  'function grantSetterRoles(bytes setter, address account) returns (bool)',
+  'function revokeRoles(uint256 resource, uint256 roleBitmap, address account) returns (bool)',
+  'function setABI(bytes name, uint256 contentType, bytes data)',
+  'function setData(bytes name, string key, bytes value)',
+  'function setInterface(bytes name, bytes4 interfaceId, address implementer)',
+  'function setName(bytes name, string primaryName)',
   'function setText(bytes name, string key, string value)',
   'function setAddress(bytes name, uint256 coinType, bytes addressBytes)',
   'function setContenthash(bytes name, bytes hash)',
   'function linkToRecord(bytes name, uint256 recordId)',
+  'function linkToNode(bytes name, bytes32 targetNode)',
   'function multicall(bytes[] calls) returns (bytes[])',
   'function initialize((address account, uint256 roleBitmap)[] grants, bytes[] calls)',
+  'event Linked(uint256 indexed recordId, bytes32 indexed node, bytes name)',
 ])
 
 export const VERIFIABLE_FACTORY_ABI = parseAbi([
+  'function verifyContract(address proxy) view returns (address implementation)',
   'function predictProxyAddress(address deployer, uint256 salt) view returns (address)',
   'function deployProxy(address implementation, uint256 salt, bytes data) returns (address)',
 ])

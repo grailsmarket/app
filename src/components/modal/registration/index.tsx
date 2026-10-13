@@ -312,7 +312,12 @@ const RegistrationModal: React.FC = () => {
           }}
         />
       ) : registrationState.flowState === 'error' ? (
-        <ErrorView errorMessage={registrationState.errorMessage} onRetry={modal.onRetry} onClose={handleClose} />
+        <>
+          <ErrorView errorMessage={registrationState.errorMessage} onRetry={modal.onRetry} onClose={handleClose} />
+          {modal.batches.length > 0 && (
+            <SecondaryButton onClick={() => setShowCancelWarning(true)}>Cancel saved registration</SecondaryButton>
+          )}
+        </>
       ) : registrationState.flowState === 'committing' ? (
         <CommittingView
           totalBatches={modal.totalBatches}
@@ -380,6 +385,12 @@ const RegistrationModal: React.FC = () => {
           paymentToken={modal.isEnsV2 ? modal.paymentToken.symbol : undefined}
           onPaymentTokenChange={modal.selectPaymentToken}
           bulkUnavailable={modal.bulkUnavailable}
+          resolverValue={modal.resolverValue}
+          onResolverChange={modal.setResolverValue}
+          resolverReady={modal.resolverReady}
+          networkReady={modal.networkReady}
+          resolverError={modal.resolverError}
+          resolverWarning={modal.resolverWarning}
           onTimeUnitChange={modal.onTimeUnitChange}
           onQuantityChange={modal.onQuantityChange}
           onCustomDateSelect={modal.onCustomDateSelect}

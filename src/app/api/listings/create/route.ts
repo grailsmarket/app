@@ -5,6 +5,7 @@ import { API_URL } from '@/constants/api'
 import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
 import { captureListingCreated } from '@/lib/posthog-server'
+import { config } from '@/lib/config'
 
 const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
@@ -222,7 +223,7 @@ async function submitOrderToOpenSea(order_data: any) {
       counter: orderParameters.counter?.toString(),
     },
     signature: orderSignature,
-    protocol_address: process.env.NEXT_PUBLIC_SEAPORT_ADDRESS || '0x0000000000000068F116a894984e2DB1123eB395',
+    protocol_address: config.seaportAddress,
   }
 
   const url = `${OPENSEA_API_URL}/v2/orders/ethereum/seaport/listings`

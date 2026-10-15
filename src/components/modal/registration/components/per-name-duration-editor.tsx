@@ -13,7 +13,7 @@ interface PerNameDurationEditorProps {
   entries: NameRegistrationEntry[]
   availableEntries: NameRegistrationEntry[]
   entryDurations: (number | null)[]
-  perNamePrices: (bigint | null)[] | null | undefined
+  perNamePrices: readonly bigint[] | null | undefined
   timeUnit: TimeUnit
   quantity: number
   customDuration: number

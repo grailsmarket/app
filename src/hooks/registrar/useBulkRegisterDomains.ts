@@ -2,14 +2,11 @@ import { Address, Hex, toHex } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { mainnet } from 'wagmi/chains'
-import {
-  ENS_BULK_REGISTRAR_ADDRESS,
-  ENS_HOLIDAY_REGISTRAR_ADDRESS,
-  ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
-} from '@/constants/web3/contracts'
-import { BULK_REGISTRAR_ABI } from '@/constants/abi/BulkRegistrar'
-import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
+import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { activeChain } from '@/constants/web3/chain'
+import { config } from '@/lib/config'
+import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
 
 const useBulkRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
@@ -26,7 +23,7 @@ const useBulkRegisterDomains = () => {
 
     try {
       const result = await publicClient.readContract({
-        address: ENS_BULK_REGISTRAR_ADDRESS,
+        address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'available',
         args: [labels],
@@ -38,36 +35,30 @@ const useBulkRegisterDomains = () => {
     }
   }
 
-  const getBulkRentPrices = async (labels: string[], durations: bigint[]): Promise<bigint[] | null> => {
+  const getRegistrationsPrice = async (
+    labels: string[],
+    durations: bigint[],
+    token: Address
+  ): Promise<{
+    prices: readonly bigint[]
+    total: bigint
+  } | null> => {
     if (!publicClient) return null
 
     try {
       const result = await publicClient.readContract({
-        address: ENS_BULK_REGISTRAR_ADDRESS,
+        address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
-        functionName: 'rentPrices',
-        args: [labels, durations],
+        functionName: 'registerQuote',
+        args: [labels, durations, token],
       })
-      return result as bigint[]
+
+      return {
+        prices: result[0],
+        total: result[1],
+      }
     } catch (error) {
       console.error('Error getting bulk rent prices:', error)
-      return null
-    }
-  }
-
-  const getBulkTotalPrice = async (labels: string[], durations: bigint[]): Promise<bigint | null> => {
-    if (!publicClient) return null
-
-    try {
-      const result = await publicClient.readContract({
-        address: ENS_BULK_REGISTRAR_ADDRESS,
-        abi: BULK_REGISTRAR_ABI,
-        functionName: 'totalPrice',
-        args: [labels, durations],
-      })
-      return result as bigint
-    } catch (error) {
-      console.error('Error getting bulk total price:', error)
       return null
     }
   }
@@ -83,18 +74,10 @@ const useBulkRegisterDomains = () => {
 
     try {
       const result = await publicClient.readContract({
-        address: ENS_BULK_REGISTRAR_ADDRESS,
+        address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'makeCommitments',
-        args: [
-          labels,
-          owner,
-          durations,
-          secret,
-          ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
-          labels.map(() => []) as `0x${string}`[][],
-          reverseRecord,
-        ],
+        args: [labels, owner, durations, secret, toHex(0, { size: 20 }), config.ensPublicResolver],
       })
       return result as Hex[]
     } catch (error) {
@@ -107,14 +90,14 @@ const useBulkRegisterDomains = () => {
     const walletClient = await getWalletClient()
 
     try {
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const tx = await walletClient.writeContract({
-        address: ENS_BULK_REGISTRAR_ADDRESS,
+        address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'multiCommit',
         args: [commitmentHashes],
-        chain: mainnet,
+        chain: activeChain,
       })
       return tx
     } catch (error) {
@@ -129,32 +112,27 @@ const useBulkRegisterDomains = () => {
     durations: bigint[],
     secret: Hex,
     value: bigint,
-    reverseRecord: number = 0
+    reverseRecord: number = 0,
+    token: Address
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()
 
+    const args = {
+      address: config.ensBulkRegistrar,
+      abi: BULK_REGISTRAR_ABI,
+      functionName: 'multiRegister',
+      args: [labels, owner, durations, secret, toHex(0, { size: 20 }), config.ensPublicResolver, token, value],
+      account: walletClient.account,
+      chain: activeChain,
+    } as const
+
     try {
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       let gasLimit = BigInt(500_000) * BigInt(labels.length)
 
       try {
-        const estimatedGas = await publicClient?.estimateContractGas({
-          address: ENS_BULK_REGISTRAR_ADDRESS,
-          abi: BULK_REGISTRAR_ABI,
-          functionName: 'multiRegister',
-          args: [
-            labels,
-            owner,
-            durations,
-            secret,
-            ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
-            labels.map(() => []) as `0x${string}`[][],
-            reverseRecord,
-          ],
-          value,
-          account: walletClient.account,
-        })
+        const estimatedGas = await publicClient?.estimateContractGas(args)
         if (estimatedGas) {
           // Add 25% buffer, 50% if batch > 50 names
           const bufferMultiplier = labels.length > 50 ? BigInt(150) : BigInt(125)
@@ -166,21 +144,9 @@ const useBulkRegisterDomains = () => {
       }
 
       const tx = await walletClient.writeContract({
-        address: ENS_BULK_REGISTRAR_ADDRESS,
-        abi: BULK_REGISTRAR_ABI,
-        functionName: 'multiRegister',
-        args: [
-          labels,
-          owner,
-          durations,
-          secret,
-          ENS_PUBLIC_RESOLVER_FALLBACK_ADDRESS,
-          labels.map(() => []) as `0x${string}`[][],
-          reverseRecord,
-        ],
-        value,
+        ...args,
         gas: gasLimit,
-        chain: mainnet,
+        chain: activeChain,
       })
       return tx
     } catch (error) {
@@ -201,14 +167,14 @@ const useBulkRegisterDomains = () => {
     try {
       const [min, max] = await Promise.all([
         publicClient.readContract({
-          address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
-          abi: ENS_HOLIDAY_REGISTRAR_ABI,
-          functionName: 'minCommitmentAge',
+          address: config.ensV2Registrar,
+          abi: ENS_V2_REGISTRAR,
+          functionName: 'MIN_COMMITMENT_AGE',
         }),
         publicClient.readContract({
-          address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
-          abi: ENS_HOLIDAY_REGISTRAR_ABI,
-          functionName: 'maxCommitmentAge',
+          address: config.ensV2Registrar,
+          abi: ENS_V2_REGISTRAR,
+          functionName: 'MAX_COMMITMENT_AGE',
         }),
       ])
       return { min: Number(min), max: Number(max) }
@@ -223,9 +189,9 @@ const useBulkRegisterDomains = () => {
 
     try {
       const timestamp = await publicClient.readContract({
-        address: ENS_HOLIDAY_REGISTRAR_ADDRESS,
-        abi: ENS_HOLIDAY_REGISTRAR_ABI,
-        functionName: 'commitments',
+        address: config.ensV2Registrar,
+        abi: ENS_V2_REGISTRAR,
+        functionName: 'commitmentAt',
         args: [commitmentHash],
       })
       return Number(timestamp)
@@ -238,8 +204,7 @@ const useBulkRegisterDomains = () => {
   return {
     generateSecret,
     checkBulkAvailable,
-    getBulkRentPrices,
-    getBulkTotalPrice,
+    getRegistrationsPrice,
     makeBulkCommitments,
     submitMultiCommit,
     submitMultiRegister,

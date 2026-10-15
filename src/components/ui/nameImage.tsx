@@ -5,7 +5,6 @@ import Image from 'next/image'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { ENS_METADATA_URL } from '@/constants/ens'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
@@ -13,8 +12,9 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
 import { RegistrationStatus } from '@/types/domains'
+import { config } from '@/lib/config'
 
-export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${config.ensNameWrapper}`
 export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 const INTRINSIC_SIZE = 540

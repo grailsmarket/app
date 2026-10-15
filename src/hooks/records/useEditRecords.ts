@@ -4,14 +4,14 @@ import { mainnet } from 'viem/chains'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { PublicResolverAbi } from '@/constants/abi/PublicResolverAbi'
-import { RegistryAbi } from '@/constants/abi/RegistryAbi'
-import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import { ENS_REGISTRY_CONTRACT_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { PublicResolverAbi } from '@/constants/web3/abi/PublicResolverAbi'
+import { RegistryAbi } from '@/constants/web3/abi/RegistryAbi'
+import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
 import { resolveEnsAddress } from '@/utils/web3/ens'
 import { fetchNameRoles } from '@/api/name/roles'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { config } from '@/lib/config'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
@@ -411,7 +411,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         if (isManager) {
           // Current manager can use setOwner on the Registry
           hash = await walletClient.writeContract({
-            address: ENS_REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
+            address: config.ensRegistry,
             abi: RegistryAbi,
             functionName: 'setOwner',
             args: [node, effectiveManager],
@@ -420,7 +420,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         } else {
           // NFT owner can use reclaim on the BaseRegistrar
           hash = await walletClient.writeContract({
-            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+            address: config.ensRegistrar,
             abi: BaseRegistrarAbi,
             functionName: 'reclaim',
             args: [tokenId, effectiveManager],
@@ -446,7 +446,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         const tokenId = hexToBigInt(labelhash(label))
 
         const hash = await walletClient.writeContract({
-          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+          address: config.ensRegistrar,
           abi: BaseRegistrarAbi,
           functionName: 'safeTransferFrom',
           args: [ownerAddress, effectiveOwner, tokenId],

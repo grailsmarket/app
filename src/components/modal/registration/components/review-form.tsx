@@ -31,7 +31,7 @@ interface ReviewFormProps {
   setPerNameDatePickerIndex: (index: number | null) => void
   showPerNameDurations: boolean
   setShowPerNameDurations: (show: boolean) => void
-  perNamePrices: (bigint | null)[] | null | undefined
+  perNamePrices: readonly bigint[] | null | undefined
   showCustomOwner: boolean
   setShowCustomOwner: (show: boolean) => void
   customOwner: string

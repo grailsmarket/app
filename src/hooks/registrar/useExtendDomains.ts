@@ -1,8 +1,8 @@
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
-import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
+import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/web3/abi/ENSHolidayRenewal'
 import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { config } from '@/lib/config'
 
 const useExtendDomains = () => {
   const getWalletClient = useGetWalletClient()
@@ -15,7 +15,7 @@ const useExtendDomains = () => {
       await ensureChain(walletClient, mainnet.id)
 
       const tx = await walletClient.writeContract({
-        address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+        address: config.bulkRenewalContract,
         abi: ENS_HOLIDAY_RENEWAL_ABI,
         functionName: 'bulkRenew',
         args: [names, durations],

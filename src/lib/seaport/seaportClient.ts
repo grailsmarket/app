@@ -22,25 +22,14 @@ import {
   CreateInputItem,
   OrderComponents,
 } from '@opensea/seaport-js/lib/types'
-import {
-  ENS_NAME_WRAPPER_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-  MARKETPLACE_CONDUIT_ADDRESS,
-  MARKETPLACE_CONDUIT_KEY,
-  OPENSEA_CONDUIT_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-  OPENSEA_FEE_BASIS_POINTS,
-  OPENSEA_FEE_RECIPIENT,
-  SEAPORT_ADDRESS,
-  USE_CONDUIT,
-} from '@/constants/web3/contracts'
 import { TOKEN_DECIMALS, USDC_ADDRESS, WETH_ADDRESS } from '@/constants/web3/tokens'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { MarketplaceDomainType } from '@/types/domains'
-import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
+import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
+import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
+import { config } from '../config'
 
 export type MarketplaceType = 'grails' | 'opensea'
 
@@ -156,11 +145,11 @@ export class SeaportClient {
         // @ts-expect-error the signer does exist
         this.seaport = new Seaport(signer, {
           overrides: {
-            contractAddress: SEAPORT_ADDRESS,
+            contractAddress: config.seaportAddress,
           },
           conduitKeyToConduit: {
-            [MARKETPLACE_CONDUIT_KEY]: MARKETPLACE_CONDUIT_ADDRESS,
-            [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
+            [config.conduitKey]: config.conduitAddress,
+            [config.openseaConduitKey]: config.openseaConduitAddress,
           },
         })
       } else {
@@ -169,11 +158,11 @@ export class SeaportClient {
         // @ts-expect-error the provider does exist
         this.seaport = new Seaport(provider, {
           overrides: {
-            contractAddress: SEAPORT_ADDRESS,
+            contractAddress: config.seaportAddress,
           },
           conduitKeyToConduit: {
-            [MARKETPLACE_CONDUIT_KEY]: MARKETPLACE_CONDUIT_ADDRESS,
-            [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
+            [config.conduitKey]: config.conduitAddress,
+            [config.openseaConduitKey]: config.openseaConduitAddress,
           },
         })
       }
@@ -185,11 +174,11 @@ export class SeaportClient {
         // @ts-expect-error the signer does exist
         this.seaport = new Seaport(signer, {
           overrides: {
-            contractAddress: SEAPORT_ADDRESS,
+            contractAddress: config.seaportAddress,
           },
           conduitKeyToConduit: {
-            [MARKETPLACE_CONDUIT_KEY]: MARKETPLACE_CONDUIT_ADDRESS,
-            [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
+            [config.conduitKey]: config.conduitAddress,
+            [config.openseaConduitKey]: config.openseaConduitAddress,
           },
         })
       } else {
@@ -197,11 +186,11 @@ export class SeaportClient {
         // @ts-expect-error the provider does exist
         this.seaport = new Seaport(provider, {
           overrides: {
-            contractAddress: SEAPORT_ADDRESS,
+            contractAddress: config.seaportAddress,
           },
           conduitKeyToConduit: {
-            [MARKETPLACE_CONDUIT_KEY]: MARKETPLACE_CONDUIT_ADDRESS,
-            [OPENSEA_CONDUIT_KEY]: OPENSEA_CONDUIT_ADDRESS,
+            [config.conduitKey]: config.conduitAddress,
+            [config.openseaConduitKey]: config.openseaConduitAddress,
           },
         })
       }
@@ -678,11 +667,11 @@ export class SeaportClient {
    */
   getConduitConfig() {
     return {
-      enabled: USE_CONDUIT,
-      conduitAddress: USE_CONDUIT ? MARKETPLACE_CONDUIT_ADDRESS : null,
-      conduitKey: USE_CONDUIT ? MARKETPLACE_CONDUIT_KEY : ZERO_HASH,
-      approvalTarget: USE_CONDUIT ? MARKETPLACE_CONDUIT_ADDRESS : SEAPORT_ADDRESS,
-      targetName: USE_CONDUIT ? 'marketplace conduit' : 'Seaport',
+      enabled: config.useConduit,
+      conduitAddress: config.useConduit ? config.conduitAddress : null,
+      conduitKey: config.useConduit ? config.conduitKey : ZERO_HASH,
+      approvalTarget: config.useConduit ? config.conduitAddress : config.seaportAddress,
+      targetName: config.useConduit ? 'marketplace conduit' : 'Seaport',
     }
   }
 
@@ -696,7 +685,7 @@ export class SeaportClient {
 
     try {
       const registrarOwner = (await this.publicClient.readContract({
-        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+        address: config.ensRegistrar,
         abi: [
           {
             name: 'ownerOf',
@@ -710,7 +699,7 @@ export class SeaportClient {
         args: [BigInt(tokenId)],
       })) as Address
 
-      return registrarOwner.toLowerCase() === ENS_NAME_WRAPPER_ADDRESS.toLowerCase()
+      return registrarOwner.toLowerCase() === config.ensNameWrapper.toLowerCase()
     } catch (error) {
       console.error('Error checking if name is wrapped:', error)
       return false
@@ -806,7 +795,7 @@ export class SeaportClient {
       // If the NameWrapper owns it, check the wrapper for the actual owner
       if (isWrapped) {
         const multicallContracts = wrappedNames.map((domain) => ({
-          address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
+          address: config.ensNameWrapper,
           abi: NAME_WRAPPER_ABI as Abi,
           functionName: 'ownerOf',
           args: [BigInt(domain.token_id)],
@@ -832,7 +821,7 @@ export class SeaportClient {
       }
 
       const multicallContracts = unwrappedNames.map((domain) => ({
-        address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+        address: config.ensRegistrar,
         abi: BaseRegistrarAbi,
         functionName: 'ownerOf',
         args: [BigInt(domain.token_id)],
@@ -863,23 +852,14 @@ export class SeaportClient {
     let operatorToApprove: string
     let approvalTarget: string
 
-    // console.log('Determining approval target:', {
-    //   marketplace: params.marketplace,
-    //   USE_CONDUIT,
-    //   MARKETPLACE_CONDUIT_ADDRESS,
-    //   SEAPORT_ADDRESS,
-    //   OPENSEA_CONDUIT_ADDRESS,
-    // })
-
     if (params.marketplace === 'opensea') {
-      operatorToApprove = OPENSEA_CONDUIT_ADDRESS
+      operatorToApprove = config.openseaConduitAddress
       approvalTarget = 'OpenSea conduit'
     } else if (params.marketplace === 'grails') {
       // Force using the conduit for Grails marketplace
       // The conduit at 0x73E9cD721a79C208E2F944910c27196307a2a05D is deployed and ready
-      operatorToApprove = MARKETPLACE_CONDUIT_ADDRESS // Always use conduit for Grails
+      operatorToApprove = config.conduitAddress // Always use conduit for Grails
       approvalTarget = 'Grails conduit'
-      // console.log('Forcing Grails conduit usage:', MARKETPLACE_CONDUIT_ADDRESS)
     } else {
       throw new Error('Invalid marketplace specified')
     }
@@ -887,7 +867,7 @@ export class SeaportClient {
     console.log('Selected operator to approve:', {
       operatorToApprove,
       approvalTarget,
-      isSeaportAddress: operatorToApprove.toLowerCase() === SEAPORT_ADDRESS.toLowerCase(),
+      isSeaportAddress: operatorToApprove.toLowerCase() === config.seaportAddress.toLowerCase(),
     })
 
     let wrappedNamesApproved = true
@@ -896,7 +876,7 @@ export class SeaportClient {
     try {
       if (isWrapped) {
         const areWrappedNamesApproved = (await this.publicClient.readContract({
-          address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
+          address: config.ensNameWrapper,
           abi: [
             {
               name: 'isApprovedForAll',
@@ -920,7 +900,7 @@ export class SeaportClient {
 
       if (!areAllNamesWrapped) {
         const areUnwrappedNamesApproved = (await this.publicClient.readContract({
-          address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+          address: config.ensRegistrar,
           abi: [
             {
               name: 'isApprovedForAll',
@@ -944,12 +924,6 @@ export class SeaportClient {
 
       if (!wrappedNamesApproved || !unwrappedNamesApproved) {
         params.setStatus?.('approving')
-        // console.log(
-        //   `${approvalTarget} not approved on ${isWrapped ? 'NameWrapper' : 'ENS Registrar'}, requesting approval...`
-        // )
-        // if (USE_CONDUIT) {
-        //   console.log(`Approving conduit at: ${operatorToApprove}`)
-        // }
 
         if (!this.walletClient.account) {
           throw new Error('No account connected')
@@ -959,7 +933,7 @@ export class SeaportClient {
           const approvalHash = await this.walletClient.writeContract({
             account: this.walletClient.account,
             chain: this.publicClient.chain,
-            address: ENS_NAME_WRAPPER_ADDRESS as `0x${string}`,
+            address: config.ensNameWrapper,
             abi: NAME_WRAPPER_ABI,
             functionName: 'setApprovalForAll',
             args: [operatorToApprove as Address, true],
@@ -978,7 +952,7 @@ export class SeaportClient {
           const approvalHash = await this.walletClient.writeContract({
             account: this.walletClient.account,
             chain: this.publicClient.chain,
-            address: ENS_REGISTRAR_ADDRESS as `0x${string}`,
+            address: config.ensRegistrar,
             abi: BaseRegistrarAbi,
             functionName: 'setApprovalForAll',
             args: [operatorToApprove as Address, true],
@@ -1063,9 +1037,9 @@ export class SeaportClient {
     // Determine conduit key based on marketplace
     let conduitKey: string | undefined
     if (params.marketplace === 'opensea') {
-      conduitKey = OPENSEA_CONDUIT_KEY
-    } else if (params.marketplace === 'grails' && USE_CONDUIT) {
-      conduitKey = MARKETPLACE_CONDUIT_KEY
+      conduitKey = config.openseaConduitKey
+    } else if (params.marketplace === 'grails' && config.useConduit) {
+      conduitKey = config.conduitKey
     }
 
     const orderInputs = params.domains.map((domain, index) => {
@@ -1085,7 +1059,7 @@ export class SeaportClient {
 
       // Calculate OpenSea fee if listing on OpenSea
       if (params.marketplace === 'opensea') {
-        const openSeaFee = (priceInSmallestUnit * BigInt(OPENSEA_FEE_BASIS_POINTS)) / BigInt(10000)
+        const openSeaFee = (priceInSmallestUnit * BigInt(config.openseaFeeBasisPoints)) / BigInt(10000)
         sellerAmount = sellerAmount - openSeaFee
 
         // Add OpenSea fee consideration
@@ -1093,7 +1067,7 @@ export class SeaportClient {
           token: currencyToken,
           amount: openSeaFee.toString(),
           endAmount: openSeaFee.toString(),
-          recipient: OPENSEA_FEE_RECIPIENT,
+          recipient: config.openseaFeeRecipient,
         })
       }
 
@@ -1135,20 +1109,10 @@ export class SeaportClient {
 
       // Use the appropriate contract address and item type for the offer
       const isNameWrapped = wrappedNames.includes(domain)
-      const tokenContract = isNameWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
-      // console.log('Token contract:', tokenContract)
+      const tokenContract = isNameWrapped ? config.ensNameWrapper : config.ensRegistrar
 
       // For wrapped names, use namehash; for unwrapped, use labelhash
       const tokenIdentifier = domain.token_id
-
-      // console.log('Token details for offer:', {
-      //   tokenContract,
-      //   tokenIdentifier,
-      //   isNameWrapped,
-      //   originalTokenId: domain.token_id,
-      //   ENS_REGISTRAR_ADDRESS,
-      //   ENS_NAME_WRAPPER_ADDRESS,
-      // })
 
       // Validate token contract address
       if (!tokenContract) {
@@ -1305,7 +1269,7 @@ export class SeaportClient {
     ]
 
     // Determine contract and item type based on whether name is wrapped
-    const tokenContract = params.isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+    const tokenContract = params.isWrapped ? config.ensNameWrapper : config.ensRegistrar
     // For wrapped names, use namehash; for unwrapped, use labelhash
     const tokenIdentifier = params.isWrapped ? this.labelhashToNamehash(params.tokenId) : params.tokenId
 
@@ -1333,7 +1297,7 @@ export class SeaportClient {
       endTime,
       allowPartialFills: false,
       // Include conduit key if using conduits
-      ...(USE_CONDUIT && { conduitKey: MARKETPLACE_CONDUIT_KEY }),
+      ...(config.useConduit && { conduitKey: config.conduitKey }),
       // If we know the current owner, we can restrict the order
       ...(params.currentOwner && {
         zone: ZERO_ADDRESS,
@@ -1383,7 +1347,7 @@ export class SeaportClient {
     const consideration: ConsiderationInputItem[] = [
       {
         itemType: ItemType.ERC721,
-        token: ENS_REGISTRAR_ADDRESS,
+        token: config.ensRegistrar,
         // For collection offers, we'll use identifiers array or criteria
         identifiers: [], // This would be populated with valid token IDs
         recipient: params.offererAddress,
@@ -1650,11 +1614,11 @@ export class SeaportClient {
       let conduitAddress = null
 
       if (marketplace === 'opensea') {
-        conduitKey = OPENSEA_CONDUIT_KEY
-        conduitAddress = OPENSEA_CONDUIT_ADDRESS
-      } else if (marketplace === 'grails' && USE_CONDUIT) {
-        conduitKey = MARKETPLACE_CONDUIT_KEY
-        conduitAddress = MARKETPLACE_CONDUIT_ADDRESS
+        conduitKey = config.openseaConduitKey
+        conduitAddress = config.openseaConduitAddress
+      } else if (marketplace === 'grails' && config.useConduit) {
+        conduitKey = config.conduitKey
+        conduitAddress = config.conduitAddress
       }
 
       // Use stored conduit key if available
@@ -1751,15 +1715,15 @@ export class SeaportClient {
     const { tokenId, price, expiryDate, offererAddress, marketplace, ensName } = params
 
     const isWrapped = await checkIfWrapped(ensName)
-    const tokenContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+    const tokenContract = isWrapped ? config.ensNameWrapper : config.ensRegistrar
     const tokenIdentifier = tokenId
 
     // Determine conduit key based on marketplace
     const useOpenseaConduit = marketplace === 'opensea'
     const conduitKey = useOpenseaConduit
-      ? OPENSEA_CONDUIT_KEY
-      : USE_CONDUIT
-        ? MARKETPLACE_CONDUIT_KEY
+      ? config.openseaConduitKey
+      : config.useConduit
+        ? config.conduitKey
         : '0x0000000000000000000000000000000000000000000000000000000000000000'
 
     // Calculate timestamps
@@ -1804,14 +1768,14 @@ export class SeaportClient {
 
     // Add OpenSea fee if using OpenSea marketplace
     if (marketplace === 'opensea') {
-      const openseaFee = (priceInSmallestUnit * BigInt(OPENSEA_FEE_BASIS_POINTS)) / BigInt(10000)
+      const openseaFee = (priceInSmallestUnit * BigInt(config.openseaFeeBasisPoints)) / BigInt(10000)
       additionalRecipients.push({
         // @ts-expect-error ERC20 is allowed
         itemType: ItemType.ERC20, // Fee also paid in same currency
         token: currencyToken as `0x${string}`,
         amount: openseaFee.toString(),
         endAmount: openseaFee.toString(),
-        recipient: OPENSEA_FEE_RECIPIENT as `0x${string}`,
+        recipient: config.openseaFeeRecipient,
       })
     }
 
@@ -1844,9 +1808,9 @@ export class SeaportClient {
     const approvalTarget =
       conduitKey !== '0x0000000000000000000000000000000000000000000000000000000000000000'
         ? marketplace === 'opensea'
-          ? OPENSEA_CONDUIT_ADDRESS
-          : MARKETPLACE_CONDUIT_ADDRESS
-        : SEAPORT_ADDRESS
+          ? config.openseaConduitAddress
+          : config.conduitAddress
+        : config.seaportAddress
 
     // Check token approval for Seaport/Conduit
     const tokenAllowance = (await this.publicClient.readContract({

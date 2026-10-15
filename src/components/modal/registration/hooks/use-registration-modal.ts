@@ -28,23 +28,23 @@ import {
 } from '@/state/reducers/registration'
 import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
 import useETHPrice from '@/hooks/useETHPrice'
-import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Hex, isAddress } from 'viem'
+import { Address, Hex, isAddress } from 'viem'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import { mainnet } from 'viem/chains'
 import { useDebounce } from '@/hooks/useDebounce'
 import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { accountQueryKey } from '@/utils/queryKeys'
+import { activeChain } from '@/constants/web3/chain'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -61,8 +61,7 @@ const useRegistrationModal = () => {
   const {
     generateSecret,
     checkBulkAvailable,
-    getBulkTotalPrice,
-    getBulkRentPrices,
+    getRegistrationsPrice,
     makeBulkCommitments,
     submitMultiCommit,
     submitMultiRegister,
@@ -71,6 +70,7 @@ const useRegistrationModal = () => {
     checkCommitmentAge,
   } = useBulkRegisterDomains()
 
+  const [token, setToken] = useState<Address>(TOKEN_ADDRESSES.USDC)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
@@ -116,7 +116,7 @@ const useRegistrationModal = () => {
 
   const { data: ethBalance } = useBalance({
     address,
-    chainId: mainnet.id,
+    chainId: activeChain.id,
   })
 
   const entryDurations = useMemo(() => {
@@ -147,7 +147,8 @@ const useRegistrationModal = () => {
     queryKey: ['bulkTotalPrice', availableLabels.join(','), availableDurations.map(String).join(',')],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      return getBulkTotalPrice(availableLabels, availableDurations)
+      const result = await getRegistrationsPrice(availableLabels, availableDurations, token)
+      return result?.total
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
@@ -159,7 +160,8 @@ const useRegistrationModal = () => {
     queryKey: ['bulkRentPrices', availableLabels.join(','), availableDurations.map(String).join(',')],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      return getBulkRentPrices(availableLabels, availableDurations)
+      const prices = await getRegistrationsPrice(availableLabels, availableDurations, token)
+      return prices?.prices
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid && isBulk,
     refetchInterval: shouldFetchRegistrationPrices ? 10000 : false,
@@ -536,12 +538,13 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const batchPrice = await getBulkTotalPrice(batchLabels, batchDurations)
-        if (!batchPrice) {
+        const registrationPrice = await getRegistrationsPrice(batchLabels, batchDurations, token)
+        const totalPrice = registrationPrice?.total
+        if (!totalPrice) {
           dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
           return
         }
-        const valueWithBuffer = (batchPrice * BigInt(105)) / BigInt(100)
+        const valueWithBuffer = (totalPrice * BigInt(105)) / BigInt(100)
 
         const tx = await submitMultiRegister(
           batchLabels,
@@ -549,7 +552,8 @@ const useRegistrationModal = () => {
           batchDurations,
           secret,
           valueWithBuffer,
-          reverseRecord ? 1 : 0
+          reverseRecord ? 1 : 0,
+          token
         )
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
@@ -591,7 +595,6 @@ const useRegistrationModal = () => {
     getOwnerAddress,
     batches,
     entryDurations,
-    getBulkTotalPrice,
     submitMultiRegister,
     publicClient,
     cartRegisteredDomains,

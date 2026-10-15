@@ -3,12 +3,12 @@ import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { mainnet } from 'wagmi/chains'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
-import { SEAPORT_ADDRESS } from '@/constants/web3/contracts'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import { Address } from 'viem'
 import { DomainListingType } from '@/types/domains'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { config } from '@/lib/config'
 
 export function useSeaportOrder() {
   const { address } = useAccount()
@@ -55,7 +55,7 @@ export function useSeaportOrder() {
 
       // Execute the transaction using the efficient function
       const tx = await walletClient.writeContract({
-        address: SEAPORT_ADDRESS as `0x${string}`,
+        address: config.seaportAddress,
         abi: SEAPORT_ABI,
         functionName: 'fulfillBasicOrder_efficient_6GL6yc',
         args: [basicOrderParams],
@@ -101,7 +101,7 @@ export function useSeaportOrder() {
 
       // Simulate the transaction to estimate gas
       const gasEstimate = await publicClient.estimateContractGas({
-        address: SEAPORT_ADDRESS as `0x${string}`,
+        address: config.seaportAddress,
         abi: SEAPORT_ABI,
         functionName: 'fulfillBasicOrder_efficient_6GL6yc',
         args: [basicOrderParams],

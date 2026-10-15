@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { APP_ENS_ADDRESS } from '@/constants'
-import { ENS_NAME_WRAPPER_ADDRESS } from '@/constants/web3/contracts'
 import { labelhash, namehash, isAddress } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { beautifyName } from '@/lib/ens'
@@ -9,13 +8,14 @@ import { CATEGORY_LABELS } from '@/constants/domains/marketplaceDomains'
 import { fetchKeywordMetrics } from '@/api/domains/fetchKeywordMetrics'
 import { toSteppedPercent } from '@/utils/metrics'
 import { getInterFonts } from '../_lib/inter'
+import { config } from '@/lib/config'
 
 const size = {
   width: 1600,
   height: 836,
 }
 const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${ENS_NAME_WRAPPER_ADDRESS}`
+const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${config.ensNameWrapper}`
 const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 const MONTH_TO_INDEX: Record<string, number> = {

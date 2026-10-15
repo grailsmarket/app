@@ -13,7 +13,6 @@ const useSufficientBalance = () => {
 
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
-  // const { getRegistrationPriceEstimate } = useRegisterDomain()
   const { address } = useAccount()
   const { data: ethBalance } = useBalance({ address, chainId: mainnet.id })
   const { data: wethBalance } = useBalance({

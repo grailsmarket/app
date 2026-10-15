@@ -23,15 +23,15 @@ import { TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { useQueryClient } from '@tanstack/react-query'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
-import { ENS_HOLIDAY_BULK_RENEWAL_ADDRESS } from '@/constants/web3/contracts'
 import { BigNumber } from '@ethersproject/bignumber'
 import { cn } from '@/utils/tailwind'
-import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/abi/ENSHolidayRenewal'
+import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/web3/abi/ENSHolidayRenewal'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { beautifyName } from '@/lib/ens'
 import { mainnet } from 'viem/chains'
+import { config } from '@/lib/config'
 
 interface ExtendModalProps {
   onClose: () => void
@@ -181,7 +181,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       const durations = extensionDetails.map((detail) => BigInt(detail.duration))
 
       const rentPrice = (await publicClient?.readContract({
-        address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+        address: config.bulkRenewalContract,
         abi: ENS_HOLIDAY_RENEWAL_ABI,
         functionName: 'bulkRentPrice',
         args: [names, durations],
@@ -297,7 +297,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
         const names = batch.map((item) => item.name.replace('.eth', ''))
 
         const rentPrice = (await publicClient?.readContract({
-          address: ENS_HOLIDAY_BULK_RENEWAL_ADDRESS,
+          address: config.bulkRenewalContract,
           abi: ENS_HOLIDAY_RENEWAL_ABI,
           functionName: 'bulkRentPrice',
           args: [names, durations],

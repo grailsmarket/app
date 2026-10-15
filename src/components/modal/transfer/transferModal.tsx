@@ -3,13 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import {
-  ENS_REGISTRAR_ADDRESS,
-  ENS_NAME_WRAPPER_ADDRESS,
-  BULK_TRANSFER_CONTRACT_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-  OPENSEA_CONDUIT_ADDRESS,
-} from '@/constants/web3/contracts'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -27,10 +20,11 @@ import { accountQueryKey } from '@/utils/queryKeys'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import { useDebounce } from '@/hooks/useDebounce'
-import { BULK_TRANSFER_ABI } from '@/constants/abi/BulkTransfer'
+import { BULK_TRANSFER_ABI } from '@/constants/web3/abi/BulkTransfer'
 import { ItemType } from '@/types/seaport'
-import { BaseRegistrarAbi } from '@/constants/abi/BaseRegistrar'
-import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
+import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
+import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
+import { config } from '@/lib/config'
 
 interface TransferModalProps {
   domains: TransferDomainType[]
@@ -105,10 +99,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       // Check registrar approval (for unwrapped names)
       if (hasUnwrapped) {
         const isApproved = await publicClient.readContract({
-          address: ENS_REGISTRAR_ADDRESS as Address,
+          address: config.ensRegistrar,
           abi: BaseRegistrarAbi,
           functionName: 'isApprovedForAll',
-          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
+          args: [address, config.openseaConduitAddress],
         })
         setNeedsRegistrarApproval(!isApproved)
       } else {
@@ -118,10 +112,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       // Check wrapper approval (for wrapped names)
       if (hasWrapped) {
         const isApproved = await publicClient.readContract({
-          address: ENS_NAME_WRAPPER_ADDRESS as Address,
+          address: config.ensNameWrapper,
           abi: NAME_WRAPPER_ABI,
           functionName: 'isApprovedForAll',
-          args: [address, OPENSEA_CONDUIT_ADDRESS as Address],
+          args: [address, config.openseaConduitAddress],
         })
         setNeedsWrapperApproval(!isApproved)
       } else {
@@ -152,7 +146,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
         address: contractAddress,
         abi: contractName === 'ENS Registrar' ? BaseRegistrarAbi : NAME_WRAPPER_ABI,
         functionName: 'setApprovalForAll',
-        args: [OPENSEA_CONDUIT_ADDRESS as Address, true],
+        args: [config.openseaConduitAddress, true],
         chain: mainnet,
       })
 
@@ -192,7 +186,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
 
           return {
             itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721,
-            token: isWrapped ? ENS_NAME_WRAPPER_ADDRESS : (ENS_REGISTRAR_ADDRESS as Address),
+            token: isWrapped ? config.ensNameWrapper : config.ensRegistrar,
             identifier: BigInt(tokenId),
             amount: BigInt(1),
           }
@@ -218,10 +212,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       // Simulate first to get detailed error
       try {
         await publicClient.simulateContract({
-          address: BULK_TRANSFER_CONTRACT_ADDRESS as Address,
+          address: config.bulkTransferContract,
           abi: BULK_TRANSFER_ABI,
           functionName: 'bulkTransfer',
-          args: [transferItems, OPENSEA_CONDUIT_KEY],
+          args: [transferItems, config.openseaConduitKey],
           account: address,
         })
       } catch (simError: any) {
@@ -229,10 +223,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       }
 
       const hash = await walletClient.writeContract({
-        address: BULK_TRANSFER_CONTRACT_ADDRESS as Address,
+        address: config.bulkTransferContract,
         abi: BULK_TRANSFER_ABI,
         functionName: 'bulkTransfer',
-        args: [transferItems, OPENSEA_CONDUIT_KEY],
+        args: [transferItems, config.openseaConduitKey],
         chain: mainnet,
       })
 
@@ -317,38 +311,16 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
               )}
               {error && !isResolving && <p className='text-sm text-red-500'>{error}</p>}
             </div>
-            {/* Show approval buttons if needed */}
-            {/* {(needsRegistrarApproval || needsWrapperApproval) && (
-              <div className='bg-secondary space-y-2 rounded-md p-3'>
-                <p className='text-neutral text-sm'>Approval required before transfer:</p>
-                {needsRegistrarApproval && (
-                  <SecondaryButton
-                    onClick={() => handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')}
-                    className='w-full'
-                  >
-                    Approve ENS Registrar
-                  </SecondaryButton>
-                )}
-                {needsWrapperApproval && (
-                  <SecondaryButton
-                    onClick={() => handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')}
-                    className='w-full'
-                  >
-                    Approve Name Wrapper
-                  </SecondaryButton>
-                )}
-              </div>
-            )} */}
             <div className='flex flex-col gap-2'>
               <PrimaryButton
                 onClick={async () => {
                   if (needsRegistrarApproval && needsWrapperApproval) {
-                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
-                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
+                    await handleApprove(config.ensRegistrar, 'ENS Registrar')
+                    await handleApprove(config.ensNameWrapper, 'Name Wrapper')
                   } else if (needsRegistrarApproval) {
-                    await handleApprove(ENS_REGISTRAR_ADDRESS as Address, 'ENS Registrar')
+                    await handleApprove(config.ensRegistrar, 'ENS Registrar')
                   } else if (needsWrapperApproval) {
-                    await handleApprove(ENS_NAME_WRAPPER_ADDRESS as Address, 'Name Wrapper')
+                    await handleApprove(config.ensNameWrapper, 'Name Wrapper')
                   }
 
                   handleTransfer()

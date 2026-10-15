@@ -1,14 +1,11 @@
-import { Address, Hex, toHex } from 'viem'
+import { Address, Hex, pad, toHex } from 'viem'
 import { usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { mainnet } from 'wagmi/chains'
-import {
-  ENS_HOLIDAY_REFERRER_ADDRESS,
-  ENS_HOLIDAY_REGISTRAR_ADDRESS,
-  ENS_PUBLIC_RESOLVER_ADDRESS,
-} from '@/constants/web3/contracts'
-import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/abi/ENSHolidayRegistrar'
+import { ENS_HOLIDAY_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/web3/abi/ENSHolidayRegistrar'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { config } from '@/lib/config'
+import { mainnet } from 'viem/chains'
 
 type RegistrationParams = {
   label: string
@@ -39,10 +36,10 @@ const useRegisterDomain = () => {
       owner: params.owner,
       duration: params.duration,
       secret: params.secret,
-      resolver: params.resolver || ENS_PUBLIC_RESOLVER_ADDRESS,
+      resolver: params.resolver || config.ensPublicResolver,
       data: params.data || ([] as `0x${string}`[]),
       reverseRecord: params.reverseRecord ? 1 : 0,
-      referrer: params.referrer || ENS_HOLIDAY_REFERRER_ADDRESS,
+      referrer: params.referrer || pad(config.ensReferrerAddress),
     }
 
     try {
@@ -175,10 +172,10 @@ const useRegisterDomain = () => {
       owner: params.owner,
       duration: params.duration,
       secret: params.secret,
-      resolver: params.resolver || ENS_PUBLIC_RESOLVER_ADDRESS,
+      resolver: params.resolver || config.ensPublicResolver,
       data: params.data || ([] as `0x${string}`[]),
       reverseRecord: params.reverseRecord ? 1 : 0,
-      referrer: params.referrer || ENS_HOLIDAY_REFERRER_ADDRESS,
+      referrer: params.referrer || pad(config.ensReferrerAddress),
     }
 
     try {

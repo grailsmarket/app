@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 3100",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint .",
@@ -46,8 +46,9 @@
     "redux-persist": "^6.0.0",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.3.1",
-    "viem": "2.47.12",
-    "wagmi": "^2.19.4"
+    "viem": "2.57.0",
+    "wagmi": "^2.19.4",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

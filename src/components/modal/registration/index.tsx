@@ -250,7 +250,7 @@ const RegistrationModal: React.FC = () => {
   return (
     <ModalBackdrop
       onClose={handleClose}
-      className={cn((showDatePicker || perNameDatePickerIndex !== null) && 'min-h-[480px]')}
+      className={cn((showDatePicker || perNameDatePickerIndex !== null) && 'min-h-120')}
     >
       <div className='z-10 flex min-h-6 items-center justify-center pb-2'>
         <h2 className='font-sedan-sc text-center text-3xl'>{isBulk ? 'Register Names' : 'Register Name'}</h2>

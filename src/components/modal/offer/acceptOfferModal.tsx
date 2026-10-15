@@ -4,15 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import {
-  SEAPORT_ADDRESS,
-  ENS_REGISTRAR_ADDRESS,
-  ENS_NAME_WRAPPER_ADDRESS,
-  OPENSEA_CONDUIT_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-  MARKETPLACE_CONDUIT_KEY,
-  MARKETPLACE_CONDUIT_ADDRESS,
-} from '@/constants/web3/contracts'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import Price from '@/components/ui/price'
@@ -32,8 +23,8 @@ import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { beautifyName } from '@/lib/ens'
 import { CAN_CLAIM_POAP } from '@/constants'
-import { NAME_WRAPPER_ABI } from '@/constants/abi/NameWrapper'
-import { NFT_ABI } from '@/constants/abi/NFTAbi'
+import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
+import { NFT_ABI } from '@/constants/web3/abi/NFTAbi'
 import { TOKENS } from '@/constants/web3/tokens'
 import useETHPrice from '@/hooks/useETHPrice'
 import { cn } from '@/utils/tailwind'
@@ -41,6 +32,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { formatPrice } from '@/utils/formatPrice'
 import { AssetType } from '@/types/assets'
 import { track } from '@/lib/analytics'
+import { config } from '@/lib/config'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -105,7 +97,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           advancedOrder.parameters.conduitKey || '0x0000000000000000000000000000000000000000000000000000000000000000'
 
         const estimatedGas = await publicClient.estimateContractGas({
-          address: SEAPORT_ADDRESS as `0x${string}`,
+          address: config.seaportAddress,
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
@@ -137,7 +129,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       // Determine which NFT contract to check based on if the name is wrapped
       const isWrapped = await checkIfWrapped(ensName)
-      const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+      const nftContract = isWrapped ? config.ensNameWrapper : config.ensRegistrar
 
       console.log('Parameters:', offer)
       // Read the conduitKey from the normalized order rather than the raw order_data.
@@ -148,11 +140,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const conduitKey =
         parsedOrder?.parameters.conduitKey ?? '0x0000000000000000000000000000000000000000000000000000000000000000'
       const conduitAddress =
-        conduitKey === OPENSEA_CONDUIT_KEY
-          ? OPENSEA_CONDUIT_ADDRESS
-          : conduitKey === MARKETPLACE_CONDUIT_KEY
-            ? (MARKETPLACE_CONDUIT_ADDRESS as `0x${string}`)
-            : (SEAPORT_ADDRESS as `0x${string}`)
+        conduitKey === config.openseaConduitKey
+          ? config.openseaConduitAddress
+          : conduitKey === config.conduitKey
+            ? config.conduitAddress
+            : config.seaportAddress
 
       // console.log('Conduit address:', conduitAddress)
 
@@ -186,7 +178,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       // Determine which NFT contract to approve based on if the name is wrapped
       const isWrapped = await checkIfWrapped(ensName)
-      const nftContract = isWrapped ? ENS_NAME_WRAPPER_ADDRESS : ENS_REGISTRAR_ADDRESS
+      const nftContract = isWrapped ? config.ensNameWrapper : config.ensRegistrar
       // Read the conduitKey from the normalized order rather than the raw order_data.
       // Grails offers nest under `protocol_data`, but Vision offers store the bare
       // `{ parameters, signature }` shape; parseStoredOrder handles both and defaults
@@ -195,11 +187,11 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const conduitKey =
         parsedOrder?.parameters.conduitKey ?? '0x0000000000000000000000000000000000000000000000000000000000000000'
       const conduitAddress =
-        conduitKey === OPENSEA_CONDUIT_KEY
-          ? OPENSEA_CONDUIT_ADDRESS
-          : conduitKey === MARKETPLACE_CONDUIT_KEY
-            ? (MARKETPLACE_CONDUIT_ADDRESS as `0x${string}`)
-            : (SEAPORT_ADDRESS as `0x${string}`)
+        conduitKey === config.openseaConduitKey
+          ? config.openseaConduitAddress
+          : conduitKey === config.conduitKey
+            ? config.conduitAddress
+            : config.seaportAddress
 
       console.log('Conduit key:', conduitKey)
       console.log('Conduit address:', conduitAddress)
@@ -288,7 +280,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       // Simulate the transaction
       try {
         await publicClient.simulateContract({
-          address: SEAPORT_ADDRESS as `0x${string}`,
+          address: config.seaportAddress,
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
@@ -312,7 +304,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       // Execute the transaction
       const tx = await walletClient.writeContract({
-        address: SEAPORT_ADDRESS as `0x${string}`,
+        address: config.seaportAddress,
         abi: SEAPORT_ABI,
         functionName: 'fulfillAdvancedOrder',
         args: [

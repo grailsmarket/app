@@ -4,13 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient, useBalance, useGasPrice } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import {
-  SEAPORT_ADDRESS,
-  MARKETPLACE_CONDUIT_ADDRESS,
-  MARKETPLACE_CONDUIT_KEY,
-  OPENSEA_CONDUIT_ADDRESS,
-  OPENSEA_CONDUIT_KEY,
-} from '@/constants/web3/contracts'
 import { USDC_ADDRESS, ETH_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
@@ -37,6 +30,7 @@ import {
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil-primary.svg'
 import { track } from '@/lib/analytics'
+import { config } from '@/lib/config'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -76,21 +70,21 @@ const ERC20_ABI = [
 function getApprovalTarget(conduitKey: string | undefined): string {
   if (!conduitKey || conduitKey === '0x0000000000000000000000000000000000000000000000000000000000000000') {
     // No conduit key or zero hash means approve Seaport directly
-    return SEAPORT_ADDRESS
+    return config.seaportAddress
   }
 
   // Match against known conduit keys
-  if (conduitKey.toLowerCase() === OPENSEA_CONDUIT_KEY.toLowerCase()) {
-    return OPENSEA_CONDUIT_ADDRESS
+  if (conduitKey.toLowerCase() === config.openseaConduitKey.toLowerCase()) {
+    return config.openseaConduitAddress
   }
 
-  if (conduitKey.toLowerCase() === MARKETPLACE_CONDUIT_KEY.toLowerCase()) {
-    return MARKETPLACE_CONDUIT_ADDRESS
+  if (conduitKey.toLowerCase() === config.conduitKey.toLowerCase()) {
+    return config.conduitAddress
   }
 
   // Default to Seaport if unknown conduit key
   console.warn('Unknown conduit key:', conduitKey, '- defaulting to Seaport')
-  return SEAPORT_ADDRESS
+  return config.seaportAddress
 }
 
 const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) => {
@@ -204,7 +198,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           const advancedOrder = orderBuilder.buildAdvancedOrder(order)
 
           estimatedGas = await publicClient.estimateContractGas({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
@@ -221,7 +215,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           const basicOrderParams = orderBuilder.buildBasicOrderParameters(order)
 
           estimatedGas = await publicClient.estimateContractGas({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillBasicOrder_efficient_6GL6yc',
             args: [basicOrderParams],
@@ -401,7 +395,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         // Simulate with fulfillAdvancedOrder
         try {
           await publicClient.simulateContract({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillAdvancedOrder',
             args: [
@@ -425,7 +419,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
         // Execute with fulfillAdvancedOrder
         tx = await walletClient.writeContract({
-          address: SEAPORT_ADDRESS as `0x${string}`,
+          address: config.seaportAddress,
           abi: SEAPORT_ABI,
           functionName: 'fulfillAdvancedOrder',
           args: [
@@ -448,7 +442,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         // ETH orders use the efficient basic route
         try {
           await publicClient.simulateContract({
-            address: SEAPORT_ADDRESS as `0x${string}`,
+            address: config.seaportAddress,
             abi: SEAPORT_ABI,
             functionName: 'fulfillBasicOrder_efficient_6GL6yc',
             args: [basicOrderParams],
@@ -466,7 +460,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         await ensureChain(walletClient, mainnet.id)
 
         tx = await walletClient.writeContract({
-          address: SEAPORT_ADDRESS as `0x${string}`,
+          address: config.seaportAddress,
           abi: SEAPORT_ABI,
           functionName: 'fulfillBasicOrder_efficient_6GL6yc',
           args: [basicOrderParams],

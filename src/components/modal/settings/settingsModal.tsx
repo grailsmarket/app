@@ -17,7 +17,7 @@ import CheckCircle from 'public/icons/check-circle.svg'
 import { cn } from '@/utils/tailwind'
 import { beautifyName } from '@/lib/ens'
 import { useUserContext } from '@/context/user'
-import { ENS_HOLIDAY_REFERRER_ADDRESS_SHORT } from '@/constants/web3/contracts'
+import { config } from '@/lib/config'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -134,7 +134,7 @@ const SettingsModalContent: React.FC<SettingsModalProps & { userAddress: Address
               </p>
             </div>
             <Link
-              href={`https://app.ens.domains/name/${ensProfile.name}?referrer=${ENS_HOLIDAY_REFERRER_ADDRESS_SHORT}`}
+              href={`https://app.ens.domains/name/${ensProfile.name}?referrer=${config.ensReferrerAddress}`}
               target='_blank'
               className='sm:px-md relative z-10 flex h-9 min-w-[92px] items-center justify-center gap-1 rounded-md bg-[#0080bc] transition-opacity hover:opacity-80 sm:h-10 sm:gap-1.5'
             >

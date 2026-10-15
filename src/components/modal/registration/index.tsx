@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
-import { CAN_CLAIM_POAP } from '@/constants'
 import ClaimPoap from '../poap/claimPoap'
 import useRegistrationModal from './hooks/use-registration-modal'
 import ModalBackdrop from './components/modal-backdrop'
@@ -19,6 +18,7 @@ import SuccessToast, { type SuccessSummary } from './components/success-toast'
 import { useAppDispatch } from '@/state/hooks'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { track } from '@/lib/analytics'
+import { config } from '@/lib/config'
 
 const RegistrationModal: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -171,11 +171,13 @@ const RegistrationModal: React.FC = () => {
     const currentBatch = modal.currentBatch
     const hasTxHash = !!(
       (registrationState.flowState === 'committing' && currentBatch?.commitTxHash) ||
-      (registrationState.flowState === 'registering' && currentBatch?.registerTxHash)
+      (registrationState.flowState === 'registering' &&
+        (modal.isApproving ? modal.approvalTxHash : currentBatch?.registerTxHash))
     )
     return (
       <RegistrationToast
         flowState={registrationState.flowState}
+        isApproving={modal.isApproving}
         waitTimeRemaining={modal.waitTimeRemaining}
         currentBatchIndex={registrationState.currentBatchIndex}
         totalBatches={modal.totalBatches}
@@ -239,7 +241,7 @@ const RegistrationModal: React.FC = () => {
     )
   }
 
-  if (registrationState.flowState === 'success' && CAN_CLAIM_POAP && !poapClaimed && !isBulk) {
+  if (registrationState.flowState === 'success' && config.canClaimPoap && !poapClaimed && !isBulk) {
     return (
       <ModalBackdrop preventClose>
         <ClaimPoap />
@@ -334,6 +336,8 @@ const RegistrationModal: React.FC = () => {
         />
       ) : registrationState.flowState === 'registering' ? (
         <RegisteringView
+          isApproving={modal.isApproving}
+          approvalTxHash={modal.approvalTxHash}
           totalBatches={modal.totalBatches}
           currentBatchIndex={registrationState.currentBatchIndex}
           currentBatch={modal.currentBatch}
@@ -353,6 +357,8 @@ const RegistrationModal: React.FC = () => {
           customDuration={modal.customDuration}
           entryDurations={modal.entryDurations}
           allDurationsValid={modal.allDurationsValid}
+          asset={modal.asset}
+          setAsset={modal.setAsset}
           showDatePicker={showDatePicker}
           setShowDatePicker={modal.setShowDatePicker}
           perNameDatePickerIndex={perNameDatePickerIndex}

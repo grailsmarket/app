@@ -1,2 +1,0 @@
-// ENS Holiday constants
-export const ENS_HOLIDAY_REGISTRAR_ADDRESS = '0x59E16fcCd424Cc24e280Be16E11Bcd56fb0CE547'

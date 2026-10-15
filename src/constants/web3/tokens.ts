@@ -1,5 +1,7 @@
 import { config } from '@/lib/config'
 import { Address } from 'viem'
+import usdc from 'public/tokens/usdc.svg'
+import dai from 'public/tokens/dai.svg'
 
 export const WETH_ADDRESS = config.wethAddress
 export const USDC_ADDRESS = config.usdcAddress
@@ -34,3 +36,16 @@ export const TOKEN_DECIMALS = {
 } as const
 
 export const MAX_ETH_SUPPLY = 120700000
+
+export const registrationAssets = [
+  {
+    value: USDC_ADDRESS,
+    label: 'USDC',
+    icon: usdc,
+  },
+  {
+    value: DAI_ADDRESS,
+    label: 'DAI',
+    icon: dai,
+  },
+]

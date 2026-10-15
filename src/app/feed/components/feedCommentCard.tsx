@@ -63,6 +63,7 @@ const FeedCommentCard: React.FC<FeedCommentCardProps> = ({ comment, onReply }) =
             >
               <NameImage
                 name={normalizedName}
+                version={comment.version}
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}

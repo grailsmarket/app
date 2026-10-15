@@ -22,7 +22,6 @@ import { useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { beautifyName } from '@/lib/ens'
-import { CAN_CLAIM_POAP } from '@/constants'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
 import { NFT_ABI } from '@/constants/web3/abi/NFTAbi'
 import { TOKENS } from '@/constants/web3/tokens'
@@ -533,7 +532,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         }}
         className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
-        {step === 'success' && CAN_CLAIM_POAP && !poapClaimed ? (
+        {step === 'success' && config.canClaimPoap && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

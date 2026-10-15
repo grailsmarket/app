@@ -3,9 +3,10 @@ import { useClickAway } from '@/hooks/useClickAway'
 import { cn } from '@/utils/tailwind'
 import { ShortArrow } from 'ethereum-identity-kit'
 import Image from 'next/image'
+import { Address } from 'viem'
 
 export interface DropdownOption {
-  value: string | number
+  value: string | number | Address
   label: string
   icon?: string
 }
@@ -15,7 +16,7 @@ interface DropdownProps {
   hideLabel?: boolean
   options: DropdownOption[]
   value: string | number
-  onSelect: (value: string | number) => void
+  onSelect: (value: string | number | Address) => void
   className?: string
   placeholder?: string
   dropdownPosition?: 'top' | 'bottom'
@@ -56,7 +57,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       <div className='flex'>
         {/* Label section */}
         {!hideLabel && (
-          <div className='bg-background border-tertiary flex min-w-[100px] items-center rounded-l-md border border-r-0 px-4 py-3'>
+          <div className='bg-background border-tertiary flex min-w-25 items-center rounded-l-md border border-r-0 px-4 py-3'>
             <span className='text-lg font-semibold'>{label}</span>
           </div>
         )}
@@ -84,7 +85,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           {isOpen && (
             <div
               className={cn(
-                'bg-background border-tertiary absolute right-0 left-0 z-50 mt-2 max-h-[240px] overflow-y-auto rounded-md border-2 shadow-lg',
+                'bg-background border-tertiary absolute right-0 left-0 z-50 mt-2 max-h-60 overflow-y-auto rounded-md border-2 shadow-lg',
                 dropdownPosition === 'top' ? 'bottom-14' : 'top-12'
               )}
             >

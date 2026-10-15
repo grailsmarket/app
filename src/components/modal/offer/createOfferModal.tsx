@@ -27,8 +27,8 @@ import { useAppSelector } from '@/state/hooks'
 import { beautifyName } from '@/lib/ens'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
 import Calendar from 'public/icons/calendar.svg'
-import { CAN_CLAIM_POAP } from '@/constants'
 import { track } from '@/lib/analytics'
+import { config } from '@/lib/config'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -174,7 +174,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         }}
         className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 transition-all duration-300 md:max-h-none md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0'
       >
-        {success && CAN_CLAIM_POAP && !poapClaimed ? (
+        {success && config.canClaimPoap && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

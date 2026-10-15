@@ -1,8 +1,8 @@
-import { ENS_METADATA_URL } from '@/constants/ens'
-import { normalizeName } from '@/lib/ens'
-import { transports } from '@/lib/wagmi'
 import { createPublicClient, hexToBigInt, labelhash } from 'viem'
 import { mainnet } from 'viem/chains'
+import { config } from '@/lib/config'
+import { normalizeName } from '@/lib/ens'
+import { transports } from '@/lib/wagmi'
 
 export const resolveEnsAddress = async (name: string) => {
   try {
@@ -21,7 +21,7 @@ export const resolveEnsAddress = async (name: string) => {
 }
 
 export const getMetadataAssetUrl = (name: string, type: 'avatar' | 'header') => {
-  return `${ENS_METADATA_URL}/mainnet/${type}/${name}`
+  return `${config.ensMetadataUrl}/mainnet/${type}/${name}`
 }
 
 export const getNameTokenId = (name: string) => hexToBigInt(labelhash(name.replace(/\.eth$/i, ''))).toString()

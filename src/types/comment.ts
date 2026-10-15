@@ -18,6 +18,7 @@ export interface CommentFeedItem {
   id: number
   ens_name_id: number
   name: string
+  version: number
   body: string
   created_at: string
   author_address: string

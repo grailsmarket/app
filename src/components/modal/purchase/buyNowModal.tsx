@@ -20,7 +20,6 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import ClaimPoap from '../poap/claimPoap'
 import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDomains'
-import { CAN_CLAIM_POAP } from '@/constants'
 import { fetchNameMetadata, formatNameMetadataRecord } from '@/api/name/metadata'
 import Image from 'next/image'
 import {
@@ -702,7 +701,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         }}
         className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
-        {CAN_CLAIM_POAP && !poapClaimed && step === 'success' ? (
+        {config.canClaimPoap && !poapClaimed && step === 'success' ? (
           <ClaimPoap />
         ) : (
           <>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import { useAccount, useBalance, useGasPrice, usePublicClient } from 'wagmi'
+import { useAccount, useGasPrice } from 'wagmi'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectRegistration,
@@ -26,14 +26,14 @@ import {
   reopenRegistrationModal,
   resetRegistrationModal,
 } from '@/state/reducers/registration'
-import useBulkRegisterDomains from '@/hooks/registrar/useBulkRegisterDomains'
+import useRegisterDomains from '@/hooks/registrar/useRegisterDomains'
 import useETHPrice from '@/hooks/useETHPrice'
-import { TOKEN_ADDRESSES, TOKEN_DECIMALS } from '@/constants/web3/tokens'
+import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS, ZERO_ADDRESS } from '@/constants/web3/tokens'
 import { YEAR_IN_SECONDS } from '@/constants/time'
 import { normalizeName } from '@/lib/ens'
 import { checkNameValidity } from '@/utils/checkNameValidity'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Address, Hex, isAddress } from 'viem'
+import { Address, createPublicClient, Hex, http, isAddress } from 'viem'
 import { fetchAccount, useIsClient } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
@@ -45,6 +45,7 @@ import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { accountQueryKey } from '@/utils/queryKeys'
 import { activeChain } from '@/constants/web3/chain'
+import { BigNumber } from '@ethersproject/bignumber'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -56,9 +57,12 @@ const useRegistrationModal = () => {
   const { address } = useAccount()
   const { ethPrice } = useETHPrice()
   const { data: gasPrice } = useGasPrice()
-  const publicClient = usePublicClient()
+  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
+
   const queryClient = useQueryClient()
   const {
+    isApproving,
+    approvalTxHash,
     generateSecret,
     checkBulkAvailable,
     getRegistrationsPrice,
@@ -68,9 +72,9 @@ const useRegistrationModal = () => {
     calculateDomainPriceUSD,
     getCommitmentAges,
     checkCommitmentAge,
-  } = useBulkRegisterDomains()
+  } = useRegisterDomains()
 
-  const [token, setToken] = useState<Address>(TOKEN_ADDRESSES.USDC)
+  const [asset, setAsset] = useState<Address>(TOKEN_ADDRESSES.USDC)
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const [waitTimeRemaining, setWaitTimeRemaining] = useState<number>(60)
@@ -114,9 +118,29 @@ const useRegistrationModal = () => {
   const availableEntries = useMemo(() => entries.filter((e) => e.isAvailable !== false), [entries])
   const unavailableEntries = useMemo(() => entries.filter((e) => e.isAvailable === false), [entries])
 
-  const { data: ethBalance } = useBalance({
-    address,
-    chainId: activeChain.id,
+  const { data: ethBalance } = useQuery({
+    queryKey: [address, 'balance', asset],
+    queryFn: async () => {
+      if (!address) return
+      const balance = await publicClient.token.getBalance({
+        account: address,
+        token: ZERO_ADDRESS,
+      })
+
+      return balance.amount
+    },
+  })
+  const { data: assetBalance } = useQuery({
+    queryKey: [address, 'balance', asset],
+    queryFn: async () => {
+      if (!address) return
+      const balance = await publicClient.token.getBalance({
+        account: address,
+        token: asset,
+      })
+
+      return Number(balance.formatted)
+    },
   })
 
   const entryDurations = useMemo(() => {
@@ -147,7 +171,7 @@ const useRegistrationModal = () => {
     queryKey: ['bulkTotalPrice', availableLabels.join(','), availableDurations.map(String).join(',')],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      const result = await getRegistrationsPrice(availableLabels, availableDurations, token)
+      const result = await getRegistrationsPrice(availableLabels, availableDurations, asset)
       return result?.total
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid,
@@ -160,7 +184,7 @@ const useRegistrationModal = () => {
     queryKey: ['bulkRentPrices', availableLabels.join(','), availableDurations.map(String).join(',')],
     queryFn: async () => {
       if (availableLabels.length === 0 || !allDurationsValid) return null
-      const prices = await getRegistrationsPrice(availableLabels, availableDurations, token)
+      const prices = await getRegistrationsPrice(availableLabels, availableDurations, asset)
       return prices?.prices
     },
     enabled: shouldFetchRegistrationPrices && availableLabels.length > 0 && allDurationsValid && isBulk,
@@ -175,12 +199,14 @@ const useRegistrationModal = () => {
     const baseDurationSeconds = entryDurations[0]
     if (!baseDurationSeconds) return null
 
-    let totalPriceETH: number
     let totalPriceUSD: number
+    console.log(totalPriceData)
 
     if (totalPriceData) {
-      totalPriceETH = Number(totalPriceData) / 10 ** 18
-      totalPriceUSD = totalPriceETH * (ethPrice || 3300)
+      // BigNumber return only integers, so for decimals we multiply by 100 and then divide the returned number
+      totalPriceUSD =
+        BigNumber.from(totalPriceData).mul(100).div(BigNumber.from(10).pow(TOKEN_DECIMALS[TOKENS[asset]])).toNumber() /
+        100
     } else {
       // Fallback estimate
       totalPriceUSD = availableEntries.reduce((sum, entry) => {
@@ -188,7 +214,6 @@ const useRegistrationModal = () => {
         const years = (dur || 0) / YEAR_IN_SECONDS
         return sum + calculateDomainPriceUSD(entry.name, years)
       }, 0)
-      totalPriceETH = Math.floor((totalPriceUSD / (ethPrice || 3300)) * 10 ** 6) / 10 ** 6
     }
 
     const anyBelowMinimum = entryDurations.some((d) => d !== null && d < MIN_REGISTRATION_DURATION)
@@ -196,22 +221,30 @@ const useRegistrationModal = () => {
     return {
       durationSeconds: BigInt(baseDurationSeconds),
       durationYears: baseDurationSeconds / YEAR_IN_SECONDS,
+      priceETH: 0,
       priceUSD: totalPriceUSD,
-      priceETH: totalPriceETH,
       isBelowMinimum: anyBelowMinimum,
       isLoadingPrice,
     }
   }, [entries, entryDurations, ethPrice, totalPriceData, isLoadingPrice, availableEntries])
 
   const hasSufficientBalance = useMemo(() => {
-    if (!ethBalance || !calculationResults || !gasPrice || !gasEstimate) return false
+    if (!ethBalance || !assetBalance || !calculationResults || !gasPrice || !gasEstimate)
+      return {
+        hasSufficientAssets: false,
+        hasSufficientEth: false,
+      }
 
-    const totalPriceWei = BigInt(Math.floor(calculationResults.priceETH * Math.pow(10, TOKEN_DECIMALS.ETH)))
+    const hasSufficientAssets = assetBalance >= calculationResults.priceUSD
+
     const gasWei = gasEstimate * gasPrice
-    const totalRequired = totalPriceWei + gasWei
+    const hasSufficientEth = ethBalance >= gasWei
 
-    return ethBalance.value >= totalRequired
-  }, [ethBalance, calculationResults, gasPrice, gasEstimate])
+    return {
+      hasSufficientAssets,
+      hasSufficientEth,
+    }
+  }, [assetBalance, calculationResults, gasPrice, gasEstimate])
 
   useEffect(() => {
     if (!isClient || !registrationState.isOpen || entries.length === 0) return
@@ -240,18 +273,19 @@ const useRegistrationModal = () => {
     setGasEstimate(BigInt(500_000) * BigInt(availableLabels.length))
   }, [calculationResults, availableLabels.length])
 
-  useEffect(() => {
-    if (registrationState.flowState !== 'waiting') return
+  const lastCommitmentTimestamp = [...batches]
+    .reverse()
+    .find((b) => b.committed && b.commitmentTimestamp)?.commitmentTimestamp
 
-    const lastCommittedBatch = [...batches].reverse().find((b) => b.committed && b.commitmentTimestamp)
-    if (!lastCommittedBatch?.commitmentTimestamp) return
+  useEffect(() => {
+    if (registrationState.flowState !== 'waiting' || !lastCommitmentTimestamp) return
 
     let interval: ReturnType<typeof setInterval> | undefined
     let cancelled = false
 
     const updateRemainingTime = (minCommitmentAge: number) => {
       const currentTime = Math.floor(Date.now() / 1000)
-      const timePassed = currentTime - (lastCommittedBatch.commitmentTimestamp || 0)
+      const timePassed = currentTime - lastCommitmentTimestamp
       const timeRemaining = Math.max(0, minCommitmentAge - timePassed)
 
       setWaitTimeRemaining(timeRemaining)
@@ -263,15 +297,15 @@ const useRegistrationModal = () => {
 
     getCommitmentAges().then((ages) => {
       if (cancelled) return
-      updateRemainingTime(ages.min)
       interval = setInterval(() => updateRemainingTime(ages.min), 1000)
+      updateRemainingTime(ages.min)
     })
 
     return () => {
       cancelled = true
       if (interval) clearInterval(interval)
     }
-  }, [registrationState.flowState, batches, getCommitmentAges])
+  }, [registrationState.flowState, lastCommitmentTimestamp, getCommitmentAges])
 
   // Auto-reopen removed: when the user minimizes an active registration,
   // we show a toast instead of forcing the modal back open.
@@ -538,7 +572,7 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const registrationPrice = await getRegistrationsPrice(batchLabels, batchDurations, token)
+        const registrationPrice = await getRegistrationsPrice(batchLabels, batchDurations, asset)
         const totalPrice = registrationPrice?.total
         if (!totalPrice) {
           dispatch(setRegistrationError(`Failed to get price for batch ${batchIndex + 1}`))
@@ -553,7 +587,7 @@ const useRegistrationModal = () => {
           secret,
           valueWithBuffer,
           reverseRecord ? 1 : 0,
-          token
+          asset
         )
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
@@ -706,6 +740,8 @@ const useRegistrationModal = () => {
 
   return {
     isClient,
+    isApproving,
+    approvalTxHash,
     registrationState,
     poapClaimed,
     entries,
@@ -717,6 +753,8 @@ const useRegistrationModal = () => {
     quantity,
     timeUnit,
     customDuration,
+    asset,
+    setAsset,
     firstName,
     firstDomain,
     allNamesValid,

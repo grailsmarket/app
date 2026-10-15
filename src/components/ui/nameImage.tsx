@@ -1,27 +1,23 @@
 'use client'
 
-import { APP_ENS_ADDRESS } from '@/constants'
 import Image from 'next/image'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { hexToBigInt, labelhash, namehash } from 'viem'
 import { cn } from '@/utils/tailwind'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { getRegistrationStatus } from '@/utils/getRegistrationStatus'
 import { applyStateGradient } from '@/utils/ensImage/applyStateGradient'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
 import { RegistrationStatus } from '@/types/domains'
-import { config } from '@/lib/config'
-
-export const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${config.ensNameWrapper}`
-export const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants'
 
 const INTRINSIC_SIZE = 540
 
 interface NameImageProps {
   name: string
   tokenId: string
+  version: number
   expiryDate: string | null
   className?: string
   height?: number
@@ -30,7 +26,16 @@ interface NameImageProps {
   forceRefreshKey?: number
 }
 
-const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus, forceRefreshKey }: NameImageProps) => {
+const NameImage = ({
+  name,
+  version,
+  expiryDate,
+  className,
+  height,
+  width,
+  forceRegStatus,
+  forceRefreshKey,
+}: NameImageProps) => {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
@@ -56,7 +61,11 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
     [nameHash, cacheParam]
   )
   const unwrappedSrc = useMemo(
-    () => `${UNWRAPPED_DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
+    () => `${DOMAIN_IMAGE_URL}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
+    [labelHash, cacheParam]
+  )
+  const v2Src = useMemo(
+    () => `${DOMAIN_IMAGE_URL_V2}/${hexToBigInt(labelHash).toString()}/image${cacheParam}`,
     [labelHash, cacheParam]
   )
 
@@ -103,6 +112,15 @@ const NameImage = ({ name, expiryDate, className, height, width, forceRegStatus,
   }, [refreshKey])
 
   useEffect(() => {
+    if (version === 2) {
+      ;(async () => {
+        const res = await fetch(v2Src, refreshKey !== undefined ? { cache: 'reload' } : undefined)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const text = await res.text()
+        setSvg(applyStateGradient(text, status))
+      })()
+    }
+
     if (attempt > 1) return
     // reverse for now to only use unwrapped because the graph subgraph returns correct reccord no matter what
     const url = attempt === 1 ? wrappedSrc : unwrappedSrc

@@ -225,6 +225,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
       <div className='flex w-2/5 items-center gap-1.5 sm:gap-2'>
         <NameImage
           name={notification.ensName ?? ''}
+          version={notification.version}
           tokenId={notification.ensTokenId ?? ''}
           expiryDate={new Date().toISOString()}
           height={32}

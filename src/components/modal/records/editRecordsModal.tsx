@@ -16,7 +16,7 @@ import { useClickAway } from '@/hooks/useClickAway'
 import InputWithResolution from './components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TabSelector from '@/components/ui/tabSelector'
-import { ENS_METADATA_URL } from '@/constants/ens'
+import { config } from '@/lib/config'
 import { useAppDispatch } from '@/state/hooks'
 import { markImageForRefresh } from '@/state/reducers/imageRefresh'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
@@ -80,12 +80,12 @@ const EditRecordsModal: React.FC<EditRecordsModalProps> = ({ name, metadata, def
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
       ? records.avatar
-      : `${ENS_METADATA_URL}/mainnet/avatar/${name}`
+      : `${config.ensMetadataUrl}/mainnet/avatar/${name}`
     : DEFAULT_FALLBACK_AVATAR
   const headerUrl = records.header
     ? records.header.startsWith('http')
       ? records.header
-      : `${ENS_METADATA_URL}/mainnet/header/${name}`
+      : `${config.ensMetadataUrl}/mainnet/header/${name}`
     : DEFAULT_FALLBACK_HEADER
 
   const handleImageSave = (url: string) => {

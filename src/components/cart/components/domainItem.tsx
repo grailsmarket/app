@@ -37,6 +37,7 @@ const DomainItem: React.FC<DomainItemProps> = ({ domain }) => {
       >
         <NameImage
           name={domain.name}
+          version={domain.version}
           tokenId={domain.token_id}
           expiryDate={domain.expiry_date}
           className='h-8 w-8 rounded-sm sm:h-9 sm:w-9'

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/constants/analytics'
+import { API_URL } from '@/constants/api'
 import {
   AnalyticsPeriod,
   AnalyticsSource,
@@ -39,7 +39,7 @@ export const fetchTopListings = async ({
     params.append('clubs[]', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/analytics/listings?${params}`)
+  const response = await fetch(`${API_URL}/analytics/listings?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch top listings')
@@ -70,7 +70,7 @@ export const fetchTopOffers = async ({
     params.append('clubs[]', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/analytics/offers?${params}`)
+  const response = await fetch(`${API_URL}/analytics/offers?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch top offers')
@@ -100,7 +100,7 @@ export const fetchTopSales = async ({
     params.append('clubs[]', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/analytics/sales?${params}`)
+  const response = await fetch(`${API_URL}/analytics/sales?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch top sales')
@@ -136,7 +136,7 @@ export const fetchTopRegistrations = async ({
     params.append('clubs[]', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/analytics/registrations?${params}`)
+  const response = await fetch(`${API_URL}/analytics/registrations?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch top registrations')
@@ -159,7 +159,7 @@ export const fetchListingsChart = async ({ period, category }: FetchChartParams)
     params.append('club', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/charts/listings?${params}`)
+  const response = await fetch(`${API_URL}/charts/listings?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch listings chart data')
@@ -177,7 +177,7 @@ export const fetchOffersChart = async ({ period, category }: FetchChartParams): 
     params.append('club', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/charts/offers?${params}`)
+  const response = await fetch(`${API_URL}/charts/offers?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch offers chart data')
@@ -195,7 +195,7 @@ export const fetchSalesChart = async ({ period, category }: FetchChartParams): P
     params.append('club', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/charts/sales?${params}`)
+  const response = await fetch(`${API_URL}/charts/sales?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch sales chart data')
@@ -213,7 +213,7 @@ export const fetchRegistrationsChart = async ({ period, category }: FetchChartPa
     params.append('club', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/charts/registrations?${params}`)
+  const response = await fetch(`${API_URL}/charts/registrations?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch registrations chart data')
@@ -246,7 +246,7 @@ export const fetchVolumeChart = async ({ period, category }: FetchChartParams): 
     params.append('club', category)
   }
 
-  const response = await fetch(`${API_BASE_URL}/charts/volume?${params}`)
+  const response = await fetch(`${API_URL}/charts/volume?${params}`)
 
   if (!response.ok) {
     throw new Error('Failed to fetch volume chart data')

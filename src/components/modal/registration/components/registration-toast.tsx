@@ -7,6 +7,7 @@ import { cn } from '@/utils/tailwind'
 
 interface RegistrationToastProps {
   flowState: RegistrationFlowState
+  isApproving: boolean
   waitTimeRemaining: number
   currentBatchIndex: number
   totalBatches: number
@@ -16,6 +17,7 @@ interface RegistrationToastProps {
 
 const RegistrationToast: React.FC<RegistrationToastProps> = ({
   flowState,
+  isApproving,
   waitTimeRemaining,
   currentBatchIndex,
   totalBatches,
@@ -40,20 +42,24 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
     ? 'Registration Error'
     : pendingWallet
       ? 'Confirm in Wallet'
-      : isCommitting
-        ? 'Submitting Commitment...'
-        : waitReady
-          ? 'Ready to Register'
-          : isWaiting
-            ? 'Waiting Period'
-            : 'Completing Registration...'
+      : isApproving
+        ? 'Approving Token Spending...'
+        : isCommitting
+          ? 'Submitting Commitment...'
+          : waitReady
+            ? 'Ready to Register'
+            : isWaiting
+              ? 'Waiting Period'
+              : 'Completing Registration...'
 
   const subtitle = isError
     ? 'Click to view details'
     : pendingWallet
-      ? isCommitting
-        ? 'Commitment transaction'
-        : 'Registration transaction'
+      ? isApproving
+        ? 'Token spending approval'
+        : isCommitting
+          ? 'Commitment transaction'
+          : 'Registration transaction'
       : waitReady
         ? 'Click to continue'
         : isWaiting

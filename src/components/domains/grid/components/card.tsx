@@ -37,8 +37,7 @@ import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
-import { ENS_METADATA_URL } from '@/constants/ens'
-import { APP_ENS_ADDRESS } from '@/constants'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2 } from '@/constants'
 
 const formatCategoryName = (category: string) =>
   category
@@ -220,7 +219,7 @@ const Card: React.FC<CardProps> = ({
       <div className='relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-[206px]'>
         {isHomeCarousel ? (
           <Image
-            src={`${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
+            src={`${domain.version === 2 ? DOMAIN_IMAGE_URL_V2 : DOMAIN_IMAGE_URL}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
             alt={domain.name}
             unoptimized
             width={500}
@@ -230,6 +229,7 @@ const Card: React.FC<CardProps> = ({
         ) : (
           <NameImage
             name={domain.name}
+            version={domain.version}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
             className='h-full w-full rounded-t-sm rounded-b-none object-cover'

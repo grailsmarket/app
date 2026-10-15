@@ -4,12 +4,12 @@ import { formatAddress } from '@/utils/formatAddress'
 import { FollowingResponse } from '@/api/efp/getUserFollowing'
 import { Avatar, HeaderImage } from 'ethereum-identity-kit'
 import { beautifyName } from '@/lib/ens'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { Address } from 'viem'
 import LoadingCell from '@/components/ui/loadingCell'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useUserContext } from '@/context/user'
+import { config } from '@/lib/config'
 
 interface EFPFriendsProps {
   submit: (address: Address) => void
@@ -82,7 +82,7 @@ const FriendRow: React.FC<FriendRowProps> = ({ friend, submit, createChatIsPendi
       {friend.ens?.records?.['header'] && (
         <HeaderImage
           name={displayName}
-          src={`${ENS_METADATA_URL}/mainnet/header/${accountENSName}`}
+          src={`${config.ensMetadataUrl}/mainnet/header/${accountENSName}`}
           isLoading={false}
           style={{
             width: '100%',
@@ -99,7 +99,7 @@ const FriendRow: React.FC<FriendRowProps> = ({ friend, submit, createChatIsPendi
       )}
       <Avatar
         address={friend.address}
-        src={`${ENS_METADATA_URL}/mainnet/avatar/${accountENSName}`}
+        src={`${config.ensMetadataUrl}/mainnet/avatar/${accountENSName}`}
         name={displayName}
         style={{ width: '40px', height: '40px', zIndex: 10 }}
       />

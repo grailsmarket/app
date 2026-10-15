@@ -1,14 +1,17 @@
-import type { CalculationResults, NameRegistrationEntry } from '@/types/registration'
+import { TOKENS } from '@/constants/web3/tokens'
+import type { CalculationResults, NameRegistrationEntry, SufficientBalanceResults } from '@/types/registration'
+import { Address } from 'viem'
 
 interface CostSummaryProps {
   calculationResults: CalculationResults | null
   isBulk: boolean
   availableEntries: NameRegistrationEntry[]
   totalBatches: number
-  hasSufficientBalance: boolean
+  hasSufficientBalance: SufficientBalanceResults
   allNamesValid: boolean
   gasEstimate: bigint | null
   gasPrice: bigint | undefined
+  asset: Address
 }
 
 const CostSummary: React.FC<CostSummaryProps> = ({
@@ -20,6 +23,7 @@ const CostSummary: React.FC<CostSummaryProps> = ({
   allNamesValid,
   gasEstimate,
   gasPrice,
+  asset,
 }) => {
   return (
     <div className='flex flex-col gap-2'>
@@ -28,15 +32,16 @@ const CostSummary: React.FC<CostSummaryProps> = ({
           <div className='text-md space-y-2'>
             {!isBulk && (
               <div className='flex items-center justify-between'>
-                <p>Registration Duration:</p>
+                <p>Total Duration:</p>
                 <p className='font-medium'>{calculationResults.durationYears.toFixed(2)} years</p>
               </div>
             )}
             <div className='flex items-center justify-between'>
               <p>Total Cost (ETH):</p>
               <div className='flex flex-col items-end'>
-                <p className='font-medium'>{calculationResults.priceETH.toFixed(6)} ETH</p>
-                <p className='text-neutral text-xs'>(${calculationResults.priceUSD.toFixed(2)})</p>
+                <p className='font-medium'>
+                  {calculationResults.priceUSD.toFixed(2)} {TOKENS[asset]}
+                </p>
               </div>
             </div>
             {gasEstimate && gasPrice && (

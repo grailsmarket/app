@@ -148,6 +148,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
           <NameImage
             name={nameDetails.name}
             tokenId={nameDetails.token_id}
+            version={nameDetails.version}
             expiryDate={nameDetails.expiry_date}
             forceRefreshKey={pendingRefreshKey}
             className='bg-tertiary mx-auto aspect-square w-full max-w-lg'

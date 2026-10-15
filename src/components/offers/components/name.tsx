@@ -19,6 +19,7 @@ const Name: React.FC<NameProps> = ({ offer }) => {
     >
       <NameImage
         name={name}
+        version={offer.version}
         tokenId={offer.token_id}
         expiryDate={new Date().toISOString()}
         className='h-8 w-8 rounded-sm'

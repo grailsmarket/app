@@ -47,6 +47,7 @@ const NameCarousel: React.FC<NameCarouselProps> = ({ entries, calculationResults
           >
             <NameImage
               name={entry.name}
+              version={entry.domain.version}
               tokenId={entry.domain?.token_id}
               expiryDate={getExpiryDate(entry, fallbackDuration)}
               className='h-36 w-36 rounded-lg'

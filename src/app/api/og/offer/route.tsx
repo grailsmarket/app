@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
 import { labelhash, namehash, isAddress } from 'viem'
 import { formatUnits } from 'viem'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
@@ -11,15 +10,12 @@ import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
 import { config } from '@/lib/config'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants'
 
 const size = {
   width: 1600,
   height: 836,
 }
-
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${config.ensNameWrapper}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
 
 const SOURCE_LOGO_URLS: Record<string, string> = {
   opensea: 'https://grails.app/logos/opensea.svg',
@@ -62,6 +58,7 @@ export async function GET(req: NextRequest) {
     const offer_id = searchParams.get('offer_id')
     const owner_address = searchParams.get('owner')
     const categories = searchParams.get('categories')?.split(',') || []
+    const version = Number(searchParams.get('version')) || 1
 
     if (!name || !offer_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -159,8 +156,11 @@ export async function GET(req: NextRequest) {
         const nameHash = namehash(displayName)
         const labelHash = labelhash(displayName.replace('.eth', ''))
 
+        const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${nameHash}/image/png`
         const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
-        const unwrappedImageUrl = `${UNWRAPPED_DOMAIN_IMAGE_URL}/${labelHash}/image/png`
+        const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
+
+        if (version === 2) return v2ImageUrl
 
         const wrappedResult = await fetch(wrappedImageUrl)
           .then((res) => res.ok)
@@ -232,7 +232,7 @@ export async function GET(req: NextRequest) {
     // Metadata avatar endpoint expects an actual ENS name; truncated addresses won't resolve.
     const avatarUrlForProfile = (profile: { avatar: string; displayName: string }) =>
       profile.displayName.endsWith('.eth')
-        ? `${ENS_METADATA_URL}/mainnet/avatar/${profile.displayName}`
+        ? `${config.ensMetadataUrl}/mainnet/avatar/${profile.displayName}`
         : profile.avatar
 
     const [ownerProfile, offerrerProfile, ensImage, categoryAvatars, interFonts] = await Promise.all([

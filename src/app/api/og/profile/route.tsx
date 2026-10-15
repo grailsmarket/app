@@ -1,11 +1,9 @@
 import { Address, isAddress } from 'viem'
 import { ImageResponse } from 'next/og'
 import type { NextRequest } from 'next/server'
-
 import { ens_beautify } from '@adraffy/ens-normalize'
 import { truncateAddress, fetchAccount } from 'ethereum-identity-kit/utils'
-
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
+import { config } from '@/lib/config'
 
 export async function GET(req: NextRequest) {
   const user = req.url.split('user=')[1] || ''
@@ -52,8 +50,12 @@ export async function GET(req: NextRequest) {
     : isAddress(address)
       ? truncateAddress(address)
       : ens_beautify(address)
-  const fetchedAvatar = response.ens?.name ? `${ENS_METADATA_URL}/mainnet/avatar/${response.ens?.name}` : defaultAvatar
-  const fetchedHeader = response.ens?.name ? `${ENS_METADATA_URL}/mainnet/header/${response.ens?.name}` : defaultHeader
+  const fetchedAvatar = response.ens?.name
+    ? `${config.ensMetadataUrl}/mainnet/avatar/${response.ens?.name}`
+    : defaultAvatar
+  const fetchedHeader = response.ens?.name
+    ? `${config.ensMetadataUrl}/mainnet/header/${response.ens?.name}`
+    : defaultHeader
 
   return new ImageResponse(
     <div

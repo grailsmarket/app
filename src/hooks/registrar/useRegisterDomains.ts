@@ -1,16 +1,18 @@
-import { Address, Hex, toHex } from 'viem'
-import { usePublicClient } from 'wagmi'
+import { useCallback, useMemo, useState } from 'react'
+import { Address, createPublicClient, erc20Abi, Hex, http, maxUint256, toHex } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { mainnet } from 'wagmi/chains'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
-const useBulkRegisterDomains = () => {
+const useRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: http() }), [])
+  const [isApproving, setIsApproving] = useState(false)
+  const [approvalTxHash, setApprovalTxHash] = useState<Hex | null>(null)
 
   const generateSecret = (): Hex => {
     const randomBytes = new Uint8Array(32)
@@ -19,6 +21,7 @@ const useBulkRegisterDomains = () => {
   }
 
   const checkBulkAvailable = async (labels: string[]): Promise<boolean[]> => {
+    console.log(publicClient)
     if (!publicClient) return labels.map(() => false)
 
     try {
@@ -28,6 +31,7 @@ const useBulkRegisterDomains = () => {
         functionName: 'available',
         args: [labels],
       })
+      console.log(result)
       return result as boolean[]
     } catch (error) {
       console.error('Error checking bulk availability:', error)
@@ -129,6 +133,71 @@ const useBulkRegisterDomains = () => {
     try {
       await ensureChain(walletClient, activeChain.id)
 
+      const allowanceArgs = {
+        address: token,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [walletClient.account.address, config.ensBulkRegistrar],
+      } as const
+      const allowance = await publicClient.readContract(allowanceArgs)
+
+      if (allowance < value) {
+        setApprovalTxHash(null)
+        setIsApproving(true)
+
+        try {
+          const approvalTx = await walletClient.writeContract({
+            address: token,
+            abi: erc20Abi,
+            functionName: 'approve',
+            args: [config.ensBulkRegistrar, maxUint256],
+            chain: activeChain,
+          })
+          setApprovalTxHash(approvalTx)
+
+          const receipt = await waitForTransaction(publicClient, approvalTx)
+          if (receipt.status !== 'success') throw new Error('Asset approval failed')
+          if ((await publicClient.readContract(allowanceArgs)) < value)
+            throw new Error('Asset allowance is insufficient')
+        } finally {
+          setIsApproving(false)
+        }
+      }
+
+      const registrar = await publicClient.readContract({
+        address: config.ensBulkRegistrar,
+        abi: BULK_REGISTRAR_ABI,
+        functionName: 'REGISTRAR',
+      })
+      const registrarAllowanceArgs = {
+        ...allowanceArgs,
+        args: [config.ensBulkRegistrar, registrar],
+      } as const
+      const registrarAllowance = await publicClient.readContract(registrarAllowanceArgs)
+
+      if (registrarAllowance < value) {
+        setApprovalTxHash(null)
+        setIsApproving(true)
+
+        try {
+          const approvalTx = await walletClient.writeContract({
+            address: config.ensBulkRegistrar,
+            abi: BULK_REGISTRAR_ABI,
+            functionName: 'approveToken',
+            args: [token],
+            chain: activeChain,
+          })
+          setApprovalTxHash(approvalTx)
+
+          const receipt = await waitForTransaction(publicClient, approvalTx)
+          if (receipt.status !== 'success') throw new Error('Registrar asset approval failed')
+          if ((await publicClient.readContract(registrarAllowanceArgs)) < value)
+            throw new Error('Registrar asset allowance is insufficient')
+        } finally {
+          setIsApproving(false)
+        }
+      }
+
       let gasLimit = BigInt(500_000) * BigInt(labels.length)
 
       try {
@@ -161,7 +230,7 @@ const useBulkRegisterDomains = () => {
     return yearlyPrice * years
   }
 
-  const getCommitmentAges = async () => {
+  const getCommitmentAges = useCallback(async () => {
     if (!publicClient) return { min: 60, max: 86400 }
 
     try {
@@ -182,7 +251,7 @@ const useBulkRegisterDomains = () => {
       console.error('Error getting commitment ages:', error)
       return { min: 60, max: 86400 }
     }
-  }
+  }, [publicClient])
 
   const checkCommitmentAge = async (commitmentHash: Hex): Promise<number | null> => {
     if (!publicClient) return null
@@ -202,6 +271,8 @@ const useBulkRegisterDomains = () => {
   }
 
   return {
+    isApproving,
+    approvalTxHash,
     generateSecret,
     checkBulkAvailable,
     getRegistrationsPrice,
@@ -214,4 +285,4 @@ const useBulkRegisterDomains = () => {
   }
 }
 
-export default useBulkRegisterDomains
+export default useRegisterDomains

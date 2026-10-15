@@ -28,7 +28,6 @@ import { cn } from '@/utils/tailwind'
 import { ENS_HOLIDAY_RENEWAL_ABI } from '@/constants/web3/abi/ENSHolidayRenewal'
 import Image from 'next/image'
 import Calendar from 'public/icons/calendar.svg'
-import { CAN_CLAIM_POAP } from '@/constants'
 import { beautifyName } from '@/lib/ens'
 import { mainnet } from 'viem/chains'
 import { config } from '@/lib/config'
@@ -373,7 +372,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           showDatePicker && 'min-h-[480px]'
         )}
       >
-        {success && CAN_CLAIM_POAP && !poapClaimed ? (
+        {success && config.canClaimPoap && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

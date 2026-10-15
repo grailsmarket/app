@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/constants/analytics'
+import { API_URL } from '@/constants/api'
 import { normalizeName } from '@/lib/ens'
 import { APIResponseType, MetadataType } from '@/types/api'
 
@@ -56,7 +56,7 @@ export const formatNameMetadataRecord = (metadata: NameMetadataResponse): Record
 }
 
 export const fetchNameMetadata = async (name: string) => {
-  const response = await fetch(`${API_BASE_URL}/names/${normalizeName(name)}/metadata`)
+  const response = await fetch(`${API_URL}/names/${normalizeName(name)}/metadata`)
   const results = (await response.json()) as APIResponseType<{
     metadata: NameMetadataResponse
   }>

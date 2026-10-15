@@ -13,9 +13,9 @@ import { isAddress } from 'viem'
 import { MetadataType } from '@/types/api'
 import { RegistrationStatus } from '@/types/domains'
 import { REGISTERED } from '@/constants/domains/registrationStatuses'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
+import { config } from '@/lib/config'
 
 interface NameDetailsProps {
   name: string
@@ -107,7 +107,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'avatar') && (
               <div key='avatar' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`${ENS_METADATA_URL}/mainnet/avatar/${name}${cacheParam}`}
+                  src={`${config.ensMetadataUrl}/mainnet/avatar/${name}${cacheParam}`}
                   alt='Avatar'
                   width={40}
                   height={40}
@@ -121,7 +121,7 @@ const Metadata: React.FC<NameDetailsProps> = ({
             {metadata.find((row) => row.label === 'header') && (
               <div key='header' className='bg-secondary border-neutral pl-md flex h-fit w-full flex-col border-l-2'>
                 <Image
-                  src={`${ENS_METADATA_URL}/mainnet/header/${name}${cacheParam}`}
+                  src={`${config.ensMetadataUrl}/mainnet/header/${name}${cacheParam}`}
                   alt='Header'
                   width={120}
                   height={40}

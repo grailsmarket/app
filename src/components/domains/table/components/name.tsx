@@ -42,6 +42,7 @@ const Name: React.FC<NameProps> = ({ domain, registrationStatus, domainIsValid, 
         >
           <NameImage
             name={domain.name}
+            version={domain.version}
             tokenId={domain.token_id}
             expiryDate={domain.expiry_date}
             className='pointer-events-none aspect-square h-[42px] min-h-[42px] w-[42px] min-w-[42px] rounded-sm'

@@ -38,6 +38,7 @@ const SuccessView: React.FC<SuccessViewProps> = ({
           >
             <NameImage
               name={firstName}
+              version={firstDomain.version}
               tokenId={firstDomain?.token_id}
               expiryDate={new Date(
                 Number(calculationResults?.durationSeconds ?? BigInt(YEAR_IN_SECONDS)) * 1000 + Date.now()

@@ -35,3 +35,8 @@ export interface CalculationResults {
   isBelowMinimum: boolean
   isLoadingPrice: boolean
 }
+
+export interface SufficientBalanceResults {
+  hasSufficientAssets: boolean
+  hasSufficientEth: boolean
+}

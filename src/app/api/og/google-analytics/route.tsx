@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
-import { APP_ENS_ADDRESS } from '@/constants'
 import { labelhash, namehash, isAddress } from 'viem'
 import { truncateAddress as truncateAddr, fetchAccount } from 'ethereum-identity-kit/utils'
 import { beautifyName } from '@/lib/ens'
@@ -14,9 +13,8 @@ const size = {
   width: 1600,
   height: 836,
 }
-const ENS_METADATA_URL = process.env.ENS_METADATA_URL || 'https://metadata.ethid.org'
-const WRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${config.ensNameWrapper}`
-const UNWRAPPED_DOMAIN_IMAGE_URL = `${ENS_METADATA_URL}/mainnet/${APP_ENS_ADDRESS}`
+const WRAPPED_DOMAIN_IMAGE_URL = `${config.ensMetadataUrl}/mainnet/${config.ensNameWrapper}`
+const UNWRAPPED_DOMAIN_IMAGE_URL = `${config.ensMetadataUrl}/mainnet/${config.ensRegistrar}`
 
 const MONTH_TO_INDEX: Record<string, number> = {
   JANUARY: 0,
@@ -359,7 +357,7 @@ export async function GET(req: NextRequest) {
       ])
 
     const ownerAvatarDataUri = ownerProfile.displayName
-      ? await fetchImageAsDataUri(`${ENS_METADATA_URL}/mainnet/avatar/${ownerProfile.displayName}`)
+      ? await fetchImageAsDataUri(`${config.ensMetadataUrl}/mainnet/avatar/${ownerProfile.displayName}`)
       : null
     const ownerAvatar = ownerAvatarDataUri || defaultAvatarDataUri
 

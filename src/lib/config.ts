@@ -4,12 +4,13 @@ const address = () => z.templateLiteral(['0x', z.string()])
 
 const configSchema = z.object({
   publicChainId: z.enum(['1', '11155111']),
-  grailsApiUrl: z.string(),
-  ensMetadataUrl: z.string(),
   walletConnectId: z.string(),
 
-  quicknodeId: z.string(),
+  grailsApiUrl: z.string(),
+  ensMetadataUrl: z.string(),
+  metadataCacheInvalidationToken: z.string(),
 
+  quicknodeId: z.string(),
   alchemy: z.object({
     mainnet: z.string(),
     sepolia: z.string(),
@@ -60,12 +61,13 @@ const configSchema = z.object({
 
 export const config = configSchema.parse({
   publicChainId: process.env.NEXT_PUBLIC_CHAIN_ID,
-  grailsApiUrl: process.env.NEXT_PUBLIC_GRAILS_API_URL,
-  ensMetadataUrl: process.env.NEXT_PUBLIC_ENS_METADATA_URL,
   walletConnectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
 
-  quicknodeId: process.env.NEXT_PUBLIC_QUICKNODE_ID,
+  grailsApiUrl: process.env.NEXT_PUBLIC_GRAILS_API_URL,
+  ensMetadataUrl: process.env.NEXT_PUBLIC_ENS_METADATA_URL,
+  metadataCacheInvalidationToken: process.env.NEXT_PUBLIC_METADATA_CACHE_INVALIDATION_TOKEN,
 
+  quicknodeId: process.env.NEXT_PUBLIC_QUICKNODE_ID,
   alchemy: {
     mainnet: process.env.NEXT_PUBLIC_MAINNET_ALCHEMY_ID,
     sepolia: process.env.NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID,
@@ -103,9 +105,10 @@ export const config = configSchema.parse({
   openseaConduitAddress: process.env.NEXT_PUBLIC_OPENSEA_CONDUIT_ADDRESS,
   openseaConduitKey: process.env.NEXT_PUBLIC_OPENSEA_CONDUIT_KEY,
   openseaFeeRecipient: process.env.NEXT_PUBLIC_OPENSEA_FEE_RECIPIENT,
+  openseaFeeBasisPoints: Number(process.env.NEXT_PUBLIC_OPENSEA_FEE_BASIS_POINTS),
 
-  useConduit: process.env.NEXT_PUBLIC_USE_CONDUIT,
-  canClaimPoap: process.env.NEXT_PUBLIC_CAN_CLAIM_POAP,
+  useConduit: Boolean(process.env.NEXT_PUBLIC_USE_CONDUIT),
+  canClaimPoap: Boolean(process.env.NEXT_PUBLIC_CAN_CLAIM_POAP),
 
   // Tokens
   wethAddress: process.env.NEXT_PUBLIC_WETH_ADDRESS,

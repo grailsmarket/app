@@ -8,8 +8,8 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { beautifyName } from '@/lib/ens'
 import { formatAddress } from '@/utils/formatAddress'
 import { cn } from '@/utils/tailwind'
-import { ENS_METADATA_URL } from '@/constants/ens'
 import Image from 'next/image'
+import { config } from '@/lib/config'
 
 interface Props {
   query: string
@@ -92,7 +92,7 @@ const MentionDropdown: React.FC<Props> = ({
               )}
             >
               <Image
-                src={`${ENS_METADATA_URL}/mainnet/header/${profile.name}`}
+                src={`${config.ensMetadataUrl}/mainnet/header/${profile.name}`}
                 alt={profile.name}
                 width={500}
                 height={200}

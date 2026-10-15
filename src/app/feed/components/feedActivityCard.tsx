@@ -156,6 +156,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
             >
               <NameImage
                 name={normalizedName}
+                version={activity.version}
                 tokenId={tokenId}
                 expiryDate={null}
                 forceRegStatus={REGISTERED}

@@ -6,12 +6,19 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import DatePicker from '@/components/ui/datepicker'
 import { beautifyName } from '@/lib/ens'
-import type { NameRegistrationEntry, TimeUnit, CalculationResults } from '@/types/registration'
+import type {
+  NameRegistrationEntry,
+  TimeUnit,
+  CalculationResults,
+  SufficientBalanceResults,
+} from '@/types/registration'
 import { timeUnitOptions } from '@/constants/registration'
 import PerNameDurationEditor from './per-name-duration-editor'
 import CustomOwnerSection from './custom-owner-section'
 import CostSummary from './cost-summary'
 import Calendar from 'public/icons/calendar.svg'
+import { Address } from 'viem'
+import { registrationAssets } from '@/constants/web3/tokens'
 // import ReverseRecordSection from './reverse-record'
 
 interface ReviewFormProps {
@@ -25,6 +32,8 @@ interface ReviewFormProps {
   customDuration: number
   entryDurations: (number | null)[]
   allDurationsValid: boolean
+  asset: Address
+  setAsset: (newasset: Address) => void
   showDatePicker: boolean
   setShowDatePicker: (show: boolean) => void
   perNameDatePickerIndex: number | null
@@ -42,7 +51,7 @@ interface ReviewFormProps {
   setReverseRecord: (reverseRecord: boolean) => void
   isResolving: boolean
   calculationResults: CalculationResults | null
-  hasSufficientBalance: boolean
+  hasSufficientBalance: SufficientBalanceResults
   allNamesValid: boolean
   allAvailabilityChecked: boolean
   totalBatches: number
@@ -70,6 +79,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   customDuration,
   entryDurations,
   allDurationsValid,
+  asset,
+  setAsset,
   showDatePicker,
   setShowDatePicker,
   perNameDatePickerIndex,
@@ -179,6 +190,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           />
         </div>
       )}
+      <Dropdown
+        label='Currency'
+        options={registrationAssets}
+        value={asset}
+        onSelect={(value) => setAsset(value as Address)}
+      />
       <CustomOwnerSection
         showCustomOwner={showCustomOwner}
         setShowCustomOwner={setShowCustomOwner}
@@ -197,6 +214,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         allNamesValid={allNamesValid}
         gasEstimate={gasEstimate}
         gasPrice={gasPrice}
+        asset={asset}
       />
       {/* <ReverseRecordSection reverseRecord={reverseRecord} setReverseRecord={setReverseRecord} /> */}
       <div className='flex flex-col gap-2'>

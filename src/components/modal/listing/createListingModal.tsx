@@ -33,11 +33,11 @@ import Calendar from 'public/icons/calendar.svg'
 import { formatUnits, isAddress } from 'viem'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { CAN_CLAIM_POAP } from '@/constants'
 import { useDebounce } from '@/hooks/useDebounce'
 import { beautifyName } from '@/lib/ens'
 import useETHPrice from '@/hooks/useETHPrice'
 import LoadingCell from '@/components/ui/loadingCell'
+import { config } from '@/lib/config'
 
 export type ListingStatus =
   | 'review'
@@ -968,7 +968,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
         }}
         className='border-tertiary bg-background p-lg sm:p-xl relative flex max-h-[calc(100dvh-70px)] w-full flex-col gap-4 overflow-y-auto border-t transition-all duration-300 md:max-h-none md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
       >
-        {status === 'success' && CAN_CLAIM_POAP && !poapClaimed ? (
+        {status === 'success' && config.canClaimPoap && !poapClaimed ? (
           <ClaimPoap />
         ) : (
           <>

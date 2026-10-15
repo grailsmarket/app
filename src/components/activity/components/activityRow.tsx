@@ -51,7 +51,7 @@ const ActivityRow: React.FC<ActivityRowProps> = ({ activity, displayedColumns, d
         duration={activity.metadata?.duration_seconds as number}
       />
     ),
-    name: <Name name={activity.name} tokenId={activity.token_id} clubs={activity.clubs} />,
+    name: <Name name={activity.name} version={activity.version} tokenId={activity.token_id} clubs={activity.clubs} />,
     price: (
       <Price
         price={activity.price_wei}

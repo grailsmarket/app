@@ -36,6 +36,7 @@ export interface Notification {
   type: NotificationType
   ensName: string | null
   ensTokenId: string | null
+  version: number
   metadata: NotificationMetadata
   sentAt: string
   readAt: string | null

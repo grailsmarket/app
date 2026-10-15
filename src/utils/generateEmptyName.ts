@@ -4,6 +4,7 @@ export const generateEmptyName = (name: string, tokenId: string) => ({
   id: 0,
   name,
   token_id: tokenId,
+  version: 2,
   expiry_date: null,
   registration_date: null,
   creation_date: null,

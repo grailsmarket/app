@@ -11,12 +11,16 @@ import { authFetch } from '@/api/authFetch'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
 import { MarketplaceType } from '@/lib/seaport/seaportClient'
+import { getListingTokenId } from '@/lib/seaport/ensv2'
+import { USDC_ADDRESS } from '@/constants/web3/tokens'
+import { activeChain } from '@/constants/web3/chain'
+import { ensureChain } from '@/utils/web3/ensureChain'
 
 export function useSeaportClient() {
   const queryClient = useQueryClient()
   const { userAddress: address, authStatus } = useUserContext()
   const getWalletClient = useGetWalletClient()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -91,6 +95,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -174,15 +179,13 @@ export function useSeaportClient() {
                     .toString()
                   const currency = params.currencies?.[index] || 'ETH'
                   const currencyAddress =
-                    currency === 'USDC'
-                      ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-                      : '0x0000000000000000000000000000000000000000'
+                    currency === 'USDC' ? USDC_ADDRESS : '0x0000000000000000000000000000000000000000'
 
                   return authFetch('/api/brokered-listings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      token_id: domain.token_id,
+                      token_id: getListingTokenId(order, domain.token_id),
                       price_wei: priceWei,
                       currency_address: currencyAddress,
                       order_data: JSON.stringify(order),
@@ -273,16 +276,13 @@ export function useSeaportClient() {
                 .reduce((sum: bigint, item: any) => sum + BigInt(item.startAmount || '0'), BigInt(0))
                 .toString()
               const currency = params.currencies?.[index] || 'ETH'
-              const currencyAddress =
-                currency === 'USDC'
-                  ? '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' // USDC address
-                  : '0x0000000000000000000000000000000000000000' // ETH
+              const currencyAddress = currency === 'USDC' ? USDC_ADDRESS : '0x0000000000000000000000000000000000000000' // ETH
 
               return authFetch('/api/brokered-listings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  token_id: domain.token_id,
+                  token_id: getListingTokenId(order, domain.token_id),
                   price_wei: priceWei,
                   currency_address: currencyAddress,
                   order_data: JSON.stringify(order),
@@ -357,6 +357,7 @@ export function useSeaportClient() {
     async (params: {
       tokenId: string
       ensName: string
+      version?: number
       ensNameId: number
       price: number
       currency: 'WETH' | 'USDC'
@@ -373,6 +374,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -393,6 +395,7 @@ export function useSeaportClient() {
         const result = await seaportClient.createOffer({
           tokenId: params.tokenId,
           ensName: params.ensName,
+          version: params.version,
           price: params.price,
           currency: params.currency,
           expiryDate: params.expiryDate,
@@ -457,6 +460,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -496,6 +500,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       if (!isInitialized) {
         // We attempt to initialize the seaport client again
@@ -587,6 +592,7 @@ export function useSeaportClient() {
       }
 
       const walletClient = await getWalletClient()
+      await ensureChain(walletClient, activeChain.id)
 
       setIsLoading(true)
       setError(null)

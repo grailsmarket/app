@@ -10,3 +10,6 @@ const availableChains = {
 
 const activeChainId = config.publicChainId
 export const activeChain = availableChains[activeChainId] || mainnet
+
+// Network name used in ENS metadata service URLs (`/{network}/{contract}/...`)
+export const activeChainSlug = activeChain.id === sepolia.id ? 'sepolia' : 'mainnet'

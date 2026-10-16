@@ -7,10 +7,11 @@ import {
   walletConnectWallet,
   safeWallet,
 } from '@rainbow-me/rainbowkit/wallets'
-import { mainnet, optimism, base } from 'wagmi/chains'
+import { mainnet, optimism, base, sepolia } from 'wagmi/chains'
 import { type Chain, connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { http, fallback, createStorage, cookieStorage, createConfig } from 'wagmi'
 import { APP_DESCRIPTION, APP_ICON, APP_NAME, APP_URL } from '@/constants'
+import { activeChain } from '@/constants/web3/chain'
 import { safe } from 'wagmi/connectors'
 
 coinbaseWallet.preference = 'all'
@@ -52,10 +53,22 @@ export type ChainWithDetails = Chain & {
   }
 }
 
+const sepoliaChain: ChainWithDetails = {
+  ...sepolia,
+  iconBackground: 'bg-zinc-300',
+  iconUrl: '/chains/ethereum.svg',
+  custom: {
+    chainDetail: 'Testnet',
+    gasFeeDetail: 'Test ETH',
+  },
+}
+
 // Define the chains for rainbow/wagmi and their respective icons
 // These are the current supported chains for this app
 // `chainDetail` and `gasFeeDetail` are custom fields to be used in the ChainList component
-export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
+// The ENS chain (NEXT_PUBLIC_CHAIN_ID) comes first so it's wagmi's default chain; Sepolia is only
+// included when it's the ENS chain.
+const supportedChains: ChainWithDetails[] = [
   {
     ...mainnet,
     iconBackground: 'bg-zinc-300',
@@ -113,7 +126,20 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
   },
 ]
 
+export const chains = (activeChain.id === sepolia.id ? [sepoliaChain, ...supportedChains] : supportedChains) as [
+  ChainWithDetails,
+  ...ChainWithDetails[],
+]
+
 export const transports = {
+  [sepolia.id]: fallback([
+    http(`https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID}`, {
+      batch: true,
+    }),
+    http('https://sepolia.gateway.tenderly.co', {
+      batch: true,
+    }),
+  ]),
   [mainnet.id]: fallback([
     http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_MAINNET_ALCHEMY_ID}`, {
       batch: true,

@@ -33,6 +33,7 @@ type SeaportContextValue = {
   createOffer: (params: {
     tokenId: string
     ensName: string
+    version?: number
     ensNameId: number
     price: number
     currency: 'WETH' | 'USDC'

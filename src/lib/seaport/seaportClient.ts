@@ -29,7 +29,9 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { MarketplaceDomainType } from '@/types/domains'
 import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
+import { ETH_REGISTRY_ABI } from '@/constants/web3/abi/ETHRegistry'
 import { config } from '../config'
+import { checkEnsV2Transferable, isEnsV2Name, isEnsV2OperatorApproved } from './ensv2'
 
 export type MarketplaceType = 'grails' | 'opensea'
 
@@ -783,11 +785,34 @@ export class SeaportClient {
       throw new Error('Seaport client not initialized')
     }
 
+    // ENSv2 names are ERC1155 tokens on the ETHRegistry; v1 names are on the BaseRegistrar or NameWrapper
+    const v2Names = params.domains.filter((domain) => isEnsV2Name(domain))
+    const v1Names = params.domains.filter((domain) => !isEnsV2Name(domain))
+
+    if (v2Names.length > 0 && params.marketplace === 'opensea') {
+      throw new Error('ENSv2 names can only be listed on Grails for now')
+    }
+
+    // v2 names: the registry must allow the sale, and the order uses each name's current token ID
+    const v2TokenIds = new Map<MarketplaceDomainType, string>()
+    if (v2Names.length > 0) {
+      const checks = await checkEnsV2Transferable(
+        this.publicClient,
+        v2Names.map((domain) => ({ name: domain.name, tokenId: domain.token_id })),
+        params.offererAddress as Address
+      )
+      const problems = checks.flatMap((check) => (check.ok ? [] : [check.message]))
+      if (problems.length > 0) {
+        throw new Error(problems.join('. '))
+      }
+      v2Names.forEach((domain, index) => v2TokenIds.set(domain, checks[index].tokenId.toString()))
+    }
+
     // First, check if the user owns all the ENS NFTs
     // ENS names can be either unwrapped (owned directly) or wrapped (owned through NameWrapper)
-    const wrappedResponses = await Promise.all(params.domains.map((domain) => checkIfWrapped(domain.name)))
-    const wrappedNames = params.domains.filter((domain, index) => wrappedResponses[index])
-    const unwrappedNames = params.domains.filter((domain, index) => !wrappedResponses[index])
+    const wrappedResponses = await Promise.all(v1Names.map((domain) => checkIfWrapped(domain.name)))
+    const wrappedNames = v1Names.filter((domain, index) => wrappedResponses[index])
+    const unwrappedNames = v1Names.filter((domain, index) => !wrappedResponses[index])
     const isWrapped = wrappedResponses.some((response) => response)
     const areAllNamesWrapped = wrappedResponses.every((response) => response)
 
@@ -872,8 +897,17 @@ export class SeaportClient {
 
     let wrappedNamesApproved = true
     let unwrappedNamesApproved = true
+    let v2NamesApproved = true
 
     try {
+      if (v2Names.length > 0) {
+        v2NamesApproved = await isEnsV2OperatorApproved(
+          this.publicClient,
+          params.offererAddress as Address,
+          operatorToApprove as Address
+        )
+      }
+
       if (isWrapped) {
         const areWrappedNamesApproved = (await this.publicClient.readContract({
           address: config.ensNameWrapper,
@@ -922,11 +956,29 @@ export class SeaportClient {
         }
       }
 
-      if (!wrappedNamesApproved || !unwrappedNamesApproved) {
+      if (!wrappedNamesApproved || !unwrappedNamesApproved || !v2NamesApproved) {
         params.setStatus?.('approving')
 
         if (!this.walletClient.account) {
           throw new Error('No account connected')
+        }
+
+        if (!v2NamesApproved) {
+          const approvalHash = await this.walletClient.writeContract({
+            account: this.walletClient.account,
+            chain: this.publicClient.chain,
+            address: config.ensV2Registry,
+            abi: ETH_REGISTRY_ABI,
+            functionName: 'setApprovalForAll',
+            args: [operatorToApprove as Address, true],
+          })
+
+          params.setApproveTxHash?.(approvalHash)
+          // The listing is refused until the approval is on-chain, so wait for it
+          await waitForTransaction(this.publicClient, approvalHash, undefined, {
+            confirmations: 1,
+          })
+          console.log('Approval for ENSv2 names confirmed')
         }
 
         if (!wrappedNamesApproved) {
@@ -1108,33 +1160,39 @@ export class SeaportClient {
       })
 
       // Use the appropriate contract address and item type for the offer
+      const v2TokenId = v2TokenIds.get(domain)
       const isNameWrapped = wrappedNames.includes(domain)
-      const tokenContract = isNameWrapped ? config.ensNameWrapper : config.ensRegistrar
+      const tokenContract = v2TokenId
+        ? config.ensV2Registry
+        : isNameWrapped
+          ? config.ensNameWrapper
+          : config.ensRegistrar
 
-      // For wrapped names, use namehash; for unwrapped, use labelhash
-      const tokenIdentifier = domain.token_id
+      // For wrapped names, use namehash; for unwrapped, use labelhash; v2 names use the current token ID
+      const tokenIdentifier = v2TokenId ?? domain.token_id
 
       // Validate token contract address
       if (!tokenContract) {
         throw new Error('Token contract address is undefined')
       }
 
-      const offer: CreateInputItem[] = isNameWrapped
-        ? [
-            {
-              itemType: ItemType.ERC1155,
-              token: tokenContract,
-              identifier: tokenIdentifier,
-              amount: '1',
-            },
-          ]
-        : [
-            {
-              itemType: ItemType.ERC721,
-              token: tokenContract,
-              identifier: tokenIdentifier,
-            },
-          ]
+      const offer: CreateInputItem[] =
+        v2TokenId || isNameWrapped
+          ? [
+              {
+                itemType: ItemType.ERC1155,
+                token: tokenContract,
+                identifier: tokenIdentifier,
+                amount: '1',
+              },
+            ]
+          : [
+              {
+                itemType: ItemType.ERC721,
+                token: tokenContract,
+                identifier: tokenIdentifier,
+              },
+            ]
 
       // Include conduit key in order so Seaport knows to use the conduit
       const orderInput: CreateOrderInput = {
@@ -1657,6 +1715,7 @@ export class SeaportClient {
   async createOffer(params: {
     tokenId: string
     ensName: string
+    version?: number
     price: number
     currency: 'WETH' | 'USDC'
     expiryDate: number
@@ -1702,6 +1761,7 @@ export class SeaportClient {
   private async createOfferForMarketplace(params: {
     tokenId: string
     ensName: string
+    version?: number
     price: number
     expiryDate: number
     offererAddress: string
@@ -1714,9 +1774,23 @@ export class SeaportClient {
 
     const { tokenId, price, expiryDate, offererAddress, marketplace, ensName } = params
 
-    const isWrapped = await checkIfWrapped(ensName)
-    const tokenContract = isWrapped ? config.ensNameWrapper : config.ensRegistrar
-    const tokenIdentifier = tokenId
+    // ENSv2 names: ask for the ETHRegistry ERC1155 at the name's current token ID
+    const isV2 = isEnsV2Name(params)
+    if (isV2 && marketplace === 'opensea') {
+      throw new Error('Offers on ENSv2 names can only be made on Grails for now')
+    }
+    const isWrapped = isV2 ? false : await checkIfWrapped(ensName)
+    const tokenContract = isV2 ? config.ensV2Registry : isWrapped ? config.ensNameWrapper : config.ensRegistrar
+    const tokenIdentifier = isV2
+      ? (
+          await this.publicClient.readContract({
+            address: config.ensV2Registry,
+            abi: ETH_REGISTRY_ABI,
+            functionName: 'getTokenId',
+            args: [BigInt(tokenId)],
+          })
+        ).toString()
+      : tokenId
 
     // Determine conduit key based on marketplace
     const useOpenseaConduit = marketplace === 'opensea'
@@ -1743,7 +1817,7 @@ export class SeaportClient {
     // Build consideration items (what the offerer wants - the NFT)
     const consideration: ConsiderationInputItem[] = [
       {
-        itemType: isWrapped ? ItemType.ERC1155 : ItemType.ERC721, // ENS NFT
+        itemType: isV2 || isWrapped ? ItemType.ERC1155 : ItemType.ERC721, // ENS NFT
         token: tokenContract as `0x${string}`,
         identifier: tokenIdentifier,
         recipient: offererAddress as `0x${string}`,

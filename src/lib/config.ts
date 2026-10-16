@@ -107,12 +107,13 @@ export const config = configSchema.parse({
   openseaFeeRecipient: process.env.NEXT_PUBLIC_OPENSEA_FEE_RECIPIENT,
   openseaFeeBasisPoints: Number(process.env.NEXT_PUBLIC_OPENSEA_FEE_BASIS_POINTS),
 
-  useConduit: Boolean(process.env.NEXT_PUBLIC_USE_CONDUIT),
-  canClaimPoap: Boolean(process.env.NEXT_PUBLIC_CAN_CLAIM_POAP),
+  // Boolean('false') is true, so compare the strings (USE_CONDUIT defaulted to on before this config)
+  useConduit: process.env.NEXT_PUBLIC_USE_CONDUIT !== 'false',
+  canClaimPoap: process.env.NEXT_PUBLIC_CAN_CLAIM_POAP === 'true',
 
   // Tokens
   wethAddress: process.env.NEXT_PUBLIC_WETH_ADDRESS,
   usdcAddress: process.env.NEXT_PUBLIC_USDC_ADDRESS,
   daiAddress: process.env.NEXT_PUBLIC_DAI_ADDRESS,
-  ensAddress: process.env.NEXT_PUBLIC_DAI_ADDRESS,
+  ensAddress: process.env.NEXT_PUBLIC_ENS_ADDRESS,
 })

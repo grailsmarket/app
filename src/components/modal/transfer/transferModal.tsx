@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAccount, usePublicClient } from 'wagmi'
+import { useState } from 'react'
+import { useAccount } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -10,7 +10,7 @@ import { setTransferModalDomains, TransferDomainType } from '@/state/reducers/mo
 import { clearBulkSelect, selectBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { formatAddress } from '@/utils/formatAddress'
-import { isAddress, Address, labelhash, namehash } from 'viem'
+import { isAddress, Address, labelhash, namehash, createPublicClient, http } from 'viem'
 import Input from '@/components/ui/input'
 import { mainnet } from 'viem/chains'
 import { ensureChain } from '@/utils/web3/ensureChain'
@@ -20,11 +20,11 @@ import { accountQueryKey } from '@/utils/queryKeys'
 import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { Avatar, Check, fetchAccount } from 'ethereum-identity-kit'
 import { useDebounce } from '@/hooks/useDebounce'
-import { BULK_TRANSFER_ABI } from '@/constants/web3/abi/BulkTransfer'
 import { ItemType } from '@/types/seaport'
 import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
 import { config } from '@/lib/config'
+import { activeChain } from '@/constants/web3/chain'
 
 interface TransferModalProps {
   domains: TransferDomainType[]
@@ -45,7 +45,7 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
   const [approvingContract, setApprovingContract] = useState<string | null>(null)
 
   const { address } = useAccount()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
   const { isSelecting } = useAppSelector(selectBulkSelect)
@@ -126,10 +126,10 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
     }
   }
 
-  // Check approvals when domains change
-  useEffect(() => {
-    checkApprovals()
-  }, [domains, address])
+  // // Check approvals when domains change
+  // useEffect(() => {
+  //   checkApprovals()
+  // }, [domains, address])
 
   const handleApprove = async (contractAddress: Address, contractName: string) => {
     if (!address || !publicClient) return
@@ -199,35 +199,38 @@ const TransferModal: React.FC<TransferModalProps> = ({ domains, onClose }) => {
       }
 
       // Structure matches TransferHelperItemsWithRecipient[]
-      const transferItems = [
-        {
-          items,
-          recipient: recipientAddress,
-          validateERC721Receiver: true,
-        },
-      ]
+      // const transferItems = [
+      //   {
+      //     items,
+      //     recipient: recipientAddress,
+      //     validateERC721Receiver: true,
+      //   },
+      // ]
 
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       // Simulate first to get detailed error
+      const item = items[0].identifier
       try {
         await publicClient.simulateContract({
-          address: config.bulkTransferContract,
-          abi: BULK_TRANSFER_ABI,
-          functionName: 'bulkTransfer',
-          args: [transferItems, config.openseaConduitKey],
+          address: config.ensRegistrar,
+          abi: BaseRegistrarAbi,
+          functionName: 'safeTransferFrom',
+          args: [address, recipientAddress, item],
           account: address,
+          chain: activeChain,
         })
       } catch (simError: any) {
         throw new Error(simError?.shortMessage || simError?.message || 'Transaction simulation failed')
       }
 
       const hash = await walletClient.writeContract({
-        address: config.bulkTransferContract,
-        abi: BULK_TRANSFER_ABI,
-        functionName: 'bulkTransfer',
-        args: [transferItems, config.openseaConduitKey],
-        chain: mainnet,
+        address: config.ensRegistrar,
+        abi: BaseRegistrarAbi,
+        functionName: 'safeTransferFrom',
+        args: [address, recipientAddress, item],
+        account: address,
+        chain: activeChain,
       })
 
       setTxHash(hash) // Store the first transaction hash

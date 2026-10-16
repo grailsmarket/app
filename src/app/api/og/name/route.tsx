@@ -1,4 +1,4 @@
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { labelhash, namehash } from 'viem'

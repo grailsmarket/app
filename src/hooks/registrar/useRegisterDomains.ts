@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Address, createPublicClient, erc20Abi, Hex, http, maxUint256, toHex } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
@@ -10,7 +10,7 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 
 const useRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: http() }), [])
+  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
   const [isApproving, setIsApproving] = useState(false)
   const [approvalTxHash, setApprovalTxHash] = useState<Hex | null>(null)
 
@@ -42,7 +42,7 @@ const useRegisterDomains = () => {
   const getRegistrationsPrice = async (
     labels: string[],
     durations: bigint[],
-    token: Address
+    asset: Address
   ): Promise<{
     prices: readonly bigint[]
     total: bigint
@@ -54,7 +54,7 @@ const useRegisterDomains = () => {
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'registerQuote',
-        args: [labels, durations, token],
+        args: [labels, durations, asset],
       })
 
       return {
@@ -159,40 +159,6 @@ const useRegisterDomains = () => {
           if (receipt.status !== 'success') throw new Error('Asset approval failed')
           if ((await publicClient.readContract(allowanceArgs)) < value)
             throw new Error('Asset allowance is insufficient')
-        } finally {
-          setIsApproving(false)
-        }
-      }
-
-      const registrar = await publicClient.readContract({
-        address: config.ensBulkRegistrar,
-        abi: BULK_REGISTRAR_ABI,
-        functionName: 'REGISTRAR',
-      })
-      const registrarAllowanceArgs = {
-        ...allowanceArgs,
-        args: [config.ensBulkRegistrar, registrar],
-      } as const
-      const registrarAllowance = await publicClient.readContract(registrarAllowanceArgs)
-
-      if (registrarAllowance < value) {
-        setApprovalTxHash(null)
-        setIsApproving(true)
-
-        try {
-          const approvalTx = await walletClient.writeContract({
-            address: config.ensBulkRegistrar,
-            abi: BULK_REGISTRAR_ABI,
-            functionName: 'approveToken',
-            args: [token],
-            chain: activeChain,
-          })
-          setApprovalTxHash(approvalTx)
-
-          const receipt = await waitForTransaction(publicClient, approvalTx)
-          if (receipt.status !== 'success') throw new Error('Registrar asset approval failed')
-          if ((await publicClient.readContract(registrarAllowanceArgs)) < value)
-            throw new Error('Registrar asset allowance is insufficient')
         } finally {
           setIsApproving(false)
         }

@@ -252,6 +252,7 @@ const useRegistrationModal = () => {
 
     const checkAvailability = async () => {
       const labels = entries.map((e) => e.name.replace('.eth', ''))
+      console.log(labels)
       const results = await checkBulkAvailable(labels)
       dispatch(setBulkAvailability(results))
     }

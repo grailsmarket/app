@@ -37,7 +37,7 @@ import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2 } from '@/constants'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2 } from '@/constants/ens'
 
 const formatCategoryName = (category: string) =>
   category
@@ -216,7 +216,7 @@ const Card: React.FC<CardProps> = ({
         className
       )}
     >
-      <div className='relative flex max-h-[340px] w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-[206px]'>
+      <div className='relative flex max-h-85 w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-51.5'>
         {isHomeCarousel ? (
           <Image
             src={`${domain.version === 2 ? DOMAIN_IMAGE_URL_V2 : DOMAIN_IMAGE_URL}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
@@ -242,7 +242,7 @@ const Card: React.FC<CardProps> = ({
               label='Name contains invalid character(s)'
               align={isFirstInRow ? 'left' : 'right'}
             >
-              <p className='pl-[6px]'>⚠️</p>
+              <p className='pl-1.5'>⚠️</p>
             </Tooltip>
           </div>
         )}
@@ -259,7 +259,7 @@ const Card: React.FC<CardProps> = ({
       </div>
       <div
         className={cn(
-          'flex w-full flex-1 flex-col justify-between gap-[3px] rounded-b-sm pt-3 text-lg',
+          'flex w-full flex-1 flex-col justify-between gap-0.75 rounded-b-sm pt-3 text-lg',
           isBulkSelecting && 'pointer-events-none'
         )}
       >
@@ -296,7 +296,7 @@ const Card: React.FC<CardProps> = ({
                 )}
               </div>
             ) : (
-              <p className='leading-[18px] font-bold'>Unlisted</p>
+              <p className='leading-4.5 font-bold'>Unlisted</p>
             )
           ) : (
             <div className='flex flex-col gap-px'>

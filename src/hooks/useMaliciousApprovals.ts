@@ -1,0 +1,134 @@
+import { useState } from 'react'
+import { useAccount, usePublicClient } from 'wagmi'
+import { useQuery } from '@tanstack/react-query'
+import { Address } from 'viem'
+import { mainnet } from 'viem/chains'
+import { ENS_NAME_WRAPPER_ADDRESS, ENS_REGISTRAR_ADDRESS } from '@/constants/web3/contracts'
+import { fetchCompromiseIncidents } from '@/api/compromised/incidents'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
+import { ensureChain } from '@/utils/web3/ensureChain'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
+
+// Same signature on the ENS registrar (ERC-721) and NameWrapper (ERC-1155)
+const APPROVAL_ABI = [
+  {
+    inputs: [
+      { name: 'owner', type: 'address' },
+      { name: 'operator', type: 'address' },
+    ],
+    name: 'isApprovedForAll',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { name: 'operator', type: 'address' },
+      { name: 'approved', type: 'bool' },
+    ],
+    name: 'setApprovalForAll',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const
+
+const ENS_CONTRACTS = [
+  { address: ENS_REGISTRAR_ADDRESS as Address, label: 'ENS Registrar' },
+  { address: ENS_NAME_WRAPPER_ADDRESS as Address, label: 'ENS Name Wrapper' },
+]
+
+export type MaliciousApproval = {
+  contract: Address
+  contractLabel: string
+  operator: Address
+  incident: string
+}
+
+/**
+ * Checks whether the connected wallet still has an ENS approval (setApprovalForAll) granted to an
+ * operator that was abused in a known exploit (backend compromise_incidents). Anything it receives
+ * — e.g. a stolen name bought back — could be drained again, so buy/offer flows ask the user to
+ * revoke first.
+ */
+const useMaliciousApprovals = () => {
+  const account = useAccount()
+  const { address } = account
+  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const getWalletClient = useGetWalletClient()
+  const [isRevoking, setIsRevoking] = useState(false)
+  const [revokeError, setRevokeError] = useState<string | null>(null)
+
+  const { data: incidents } = useQuery({
+    queryKey: ['compromise', 'incidents'],
+    queryFn: fetchCompromiseIncidents,
+    staleTime: 10 * 60 * 1000,
+  })
+
+  const operators = (incidents || []).flatMap((incident) =>
+    incident.malicious_operators.map((operator) => ({ operator, incident: incident.title }))
+  )
+
+  const {
+    data: approvals = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['compromise', 'approvals', address, operators.map((o) => o.operator).join(',')],
+    queryFn: async (): Promise<MaliciousApproval[]> => {
+      if (!address || !publicClient) return []
+      const checks = ENS_CONTRACTS.flatMap((contract) =>
+        operators.map(async ({ operator, incident }) => {
+          const approved = await publicClient.readContract({
+            address: contract.address,
+            abi: APPROVAL_ABI,
+            functionName: 'isApprovedForAll',
+            args: [address, operator],
+          })
+          return approved ? { contract: contract.address, contractLabel: contract.label, operator, incident } : null
+        })
+      )
+      const results = await Promise.all(checks)
+      return results.filter((r): r is MaliciousApproval => r !== null)
+    },
+    enabled: !!address && !!publicClient && operators.length > 0,
+    staleTime: 60 * 1000,
+  })
+
+  const revoke = async () => {
+    if (!publicClient || approvals.length === 0) return
+    setRevokeError(null)
+    setIsRevoking(true)
+    try {
+      const walletClient = await getWalletClient()
+      await ensureChain(walletClient, mainnet.id)
+      for (const approval of approvals) {
+        const tx = await walletClient.writeContract({
+          address: approval.contract,
+          abi: APPROVAL_ABI,
+          functionName: 'setApprovalForAll',
+          args: [approval.operator, false],
+          chain: mainnet,
+        })
+        const receipt = await waitForTransaction(publicClient, tx, account)
+        if (receipt.status !== 'success') throw new Error(`Revoking approval on ${approval.contractLabel} failed`)
+      }
+    } catch (err: any) {
+      setRevokeError(err?.shortMessage || err?.message || 'Failed to revoke approval')
+    } finally {
+      setIsRevoking(false)
+      refetch()
+    }
+  }
+
+  return {
+    approvals,
+    hasMaliciousApprovals: approvals.length > 0,
+    isChecking: isLoading,
+    revoke,
+    isRevoking,
+    revokeError,
+  }
+}
+
+export default useMaliciousApprovals

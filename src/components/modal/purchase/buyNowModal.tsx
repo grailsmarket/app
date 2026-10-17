@@ -37,6 +37,10 @@ import {
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil-primary.svg'
 import { track } from '@/lib/analytics'
+import { fetchListingOrderData } from '@/api/listings/fetchListing'
+import useMaliciousApprovals from '@/hooks/useMaliciousApprovals'
+import RevokeApprovalsNotice from '@/components/compromised/revokeApprovalsNotice'
+import { COMPROMISED_LISTING_TOOLTIP, isBlockedByCompromise } from '@/utils/compromised'
 
 interface BuyNowModalProps {
   listing: DomainListingType | null
@@ -177,13 +181,38 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     return Number((gasEstimate * gasPrice) / BigInt(10 ** 12)) / 10 ** 6
   }, [gasPrice, gasEstimate])
 
-  if (!listing || !domain) return null
+  // Unsafe approvals from known exploits (e.g. the Magic Eden PPv2 drain) must be revoked first
+  const approvalCheck = useMaliciousApprovals()
+
+  // Stolen names: the public API withholds order_data; an allowed wallet fetches it authenticated
+  const isCompromiseBlocked = isBlockedByCompromise(domain?.compromised, address)
+  const needsOrderData = !!listing && !!domain?.compromised && !isCompromiseBlocked && !listing.order_data
+  const { data: fetchedOrderData, isLoading: isOrderDataLoading } = useQuery({
+    queryKey: ['listing', 'order-data', listing?.id, address],
+    queryFn: () => fetchListingOrderData(listing!.id),
+    enabled: needsOrderData,
+  })
+  const orderListing = useMemo(
+    () => (listing && fetchedOrderData ? { ...listing, order_data: fetchedOrderData } : listing),
+    [listing, fetchedOrderData]
+  )
+  const isOrderUnavailable = isCompromiseBlocked || !orderListing?.order_data
+
+  useEffect(() => {
+    // Re-run once the authenticated order data arrives
+    if (fetchedOrderData) {
+      estimateGas()
+      checkApproval()
+    }
+  }, [fetchedOrderData])
+
+  if (!listing || !domain || !orderListing) return null
 
   const estimateGas = async () => {
     try {
       if (!address || !publicClient) return
 
-      const order = orderBuilder.parseStoredOrder(listing)
+      const order = orderBuilder.parseStoredOrder(orderListing)
       if (!order) {
         setError('Invalid order data')
         return
@@ -257,7 +286,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       }
 
       // Parse the order to get the conduitKey
-      const order = orderBuilder.parseStoredOrder(listing)
+      const order = orderBuilder.parseStoredOrder(orderListing)
       if (!order) {
         console.error('Failed to parse order for approval check')
         return
@@ -301,7 +330,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       const walletClient = await getWalletClient()
 
       // Parse the order to get the conduitKey
-      const order = orderBuilder.parseStoredOrder(listing)
+      const order = orderBuilder.parseStoredOrder(orderListing)
       if (!order) {
         throw new Error('Invalid order data')
       }
@@ -363,11 +392,18 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
         throw new Error('Wallet not connected')
       }
 
+      if (isCompromiseBlocked) {
+        throw new Error(COMPROMISED_LISTING_TOOLTIP)
+      }
+      if (approvalCheck.hasMaliciousApprovals) {
+        throw new Error('Revoke the unsafe ENS approval before purchasing')
+      }
+
       const walletClient = await getWalletClient()
 
       // Parse the stored order
       console.log('Listing:', listing)
-      const order = orderBuilder.parseStoredOrder(listing)
+      const order = orderBuilder.parseStoredOrder(orderListing)
       if (!order) {
         throw new Error('Invalid order data')
       }
@@ -548,6 +584,22 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
               </div> */}
             </div>
 
+            {isOrderUnavailable && (
+              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+                <p className='text-md text-red-400'>
+                  {isCompromiseBlocked
+                    ? COMPROMISED_LISTING_TOOLTIP
+                    : isOrderDataLoading
+                      ? 'Loading order…'
+                      : domain.compromised
+                        ? 'Sign in with the original owner wallet to buy this name back.'
+                        : 'This listing is not available.'}
+                </p>
+              </div>
+            )}
+
+            {!isOrderUnavailable && <RevokeApprovalsNotice approvalCheck={approvalCheck} />}
+
             {needsApproval && (
               <div className='bg-secondary border-tertiary mt-4 rounded-lg border p-3'>
                 <p className='text-sm'>
@@ -572,7 +624,12 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
               <PrimaryButton
                 onClick={needsApproval ? handleApprove : handlePurchase}
                 className='w-full'
-                disabled={!hasSufficientBalance && !needsApproval}
+                disabled={
+                  (!hasSufficientBalance && !needsApproval) ||
+                  isOrderUnavailable ||
+                  approvalCheck.hasMaliciousApprovals ||
+                  approvalCheck.isRevoking
+                }
               >
                 {!hasSufficientBalance && !needsApproval
                   ? `Insufficient ${isETHListing ? 'ETH' : 'USDC'} Balance`

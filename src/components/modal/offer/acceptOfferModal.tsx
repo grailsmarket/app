@@ -41,6 +41,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { formatPrice } from '@/utils/formatPrice'
 import { AssetType } from '@/types/assets'
 import { track } from '@/lib/analytics'
+import { COMPROMISED_OFFER_TOOLTIP, isCompromisedCounterparty } from '@/utils/compromised'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -77,6 +78,10 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   if (!offer || !domain) return null
 
   const ensName = beautifyName(domain.name)
+  // Stolen name: only an offer from the original owner may be accepted
+  const compromised = domain.compromised ?? offer.compromised ?? null
+  const isBlockedByCompromise = !!compromised && !isCompromisedCounterparty(compromised, offer.buyer_address)
+  const isOrderUnavailable = isBlockedByCompromise || !offer.order_data
 
   const estimateGas = async () => {
     try {
@@ -256,6 +261,10 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         throw new Error('Wallet not connected')
       }
 
+      if (isBlockedByCompromise) {
+        throw new Error(COMPROMISED_OFFER_TOOLTIP)
+      }
+
       const walletClient = await getWalletClient()
 
       // Parse the stored order from offer data
@@ -408,16 +417,25 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <PriceBreakdown offer={offer} />
             </div>
 
-            {needsApproval && (
-              <div className='text-md p-sm mb-2 rounded-lg text-center'>
-                You need to approve Seaport to transfer your NFT. This is a one time approval.
+            {isOrderUnavailable ? (
+              <div className='mb-2 rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+                <p className='text-md text-red-400'>
+                  {isBlockedByCompromise ? COMPROMISED_OFFER_TOOLTIP : 'This offer is not available.'}
+                </p>
               </div>
+            ) : (
+              needsApproval && (
+                <div className='text-md p-sm mb-2 rounded-lg text-center'>
+                  You need to approve Seaport to transfer your NFT. This is a one time approval.
+                </div>
+              )
             )}
 
             <div className='flex w-full flex-col gap-2'>
               <PrimaryButton
                 onClick={needsApproval ? handleApprove : handleAcceptOffer}
                 className='w-full'
+                disabled={isOrderUnavailable}
                 // disabled={isCorrectChain ? needsApproval : false}
               >
                 {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}

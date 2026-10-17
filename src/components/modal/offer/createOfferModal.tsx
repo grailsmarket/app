@@ -29,6 +29,9 @@ import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDo
 import Calendar from 'public/icons/calendar.svg'
 import { CAN_CLAIM_POAP } from '@/constants'
 import { track } from '@/lib/analytics'
+import useMaliciousApprovals from '@/hooks/useMaliciousApprovals'
+import RevokeApprovalsNotice from '@/components/compromised/revokeApprovalsNotice'
+import { isBlockedByCompromise } from '@/utils/compromised'
 
 interface CreateOfferModalProps {
   onClose: () => void
@@ -47,6 +50,10 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const [currency, setCurrency] = useState<'WETH' | 'USDC'>('WETH')
   const [price, setPrice] = useState<number | ''>('')
   const [success, setSuccess] = useState(false)
+
+  // Stolen names only accept offers from the original owner; unsafe exploit approvals must be revoked first
+  const isCompromiseBlocked = isBlockedByCompromise(domain?.compromised, address)
+  const approvalCheck = useMaliciousApprovals()
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 7)
@@ -332,9 +339,27 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                   be signed with your wallet.
                 </div>
 
+                {isCompromiseBlocked && (
+                  <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+                    <p className='text-md text-red-400'>
+                      This name was reported stolen. Only the original owner can make offers on it.
+                    </p>
+                  </div>
+                )}
+
+                {!isCompromiseBlocked && <RevokeApprovalsNotice approvalCheck={approvalCheck} />}
+
                 <div className='flex flex-col gap-2'>
                   <PrimaryButton
-                    disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
+                    disabled={
+                      isLoading ||
+                      !price ||
+                      selectedMarketplace.length === 0 ||
+                      !hasSufficientBalance ||
+                      isCompromiseBlocked ||
+                      approvalCheck.hasMaliciousApprovals ||
+                      approvalCheck.isRevoking
+                    }
                     onClick={handleSubmit}
                     className='h-10 w-full'
                   >

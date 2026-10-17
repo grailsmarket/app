@@ -235,6 +235,13 @@ const Card: React.FC<CardProps> = ({
             className='h-full w-full rounded-t-sm rounded-b-none object-cover'
           />
         )}
+        {domain.compromised && (
+          <div className='absolute top-0 left-0 z-10 flex flex-row items-center rounded-tl-[3px] rounded-br-sm bg-red-900/80 px-1.5 py-0.5'>
+            <Tooltip position='bottom' label='Reported stolen — only the original owner can trade it' align='left'>
+              <p className='text-xs font-bold text-red-300'>🚨 Stolen</p>
+            </Tooltip>
+          </div>
+        )}
         {domainIsValid ? null : (
           <div className='bg-secondary absolute top-0 right-0 z-10 flex flex-row items-center gap-0 rounded-tr-[3px] rounded-bl-sm'>
             <Tooltip

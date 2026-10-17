@@ -74,6 +74,19 @@ export default function ServerPanels({ name, nameDetails, offers = [], metadata 
       <div className='px-md flex w-full flex-row justify-between'>
         <ServerActions nameDetails={nameDetails} />
       </div>
+      {nameDetails?.compromised && (
+        <div className='px-md w-full'>
+          <div className='flex w-full flex-col gap-2 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
+            <p className='text-lg font-bold text-red-400'>⚠️ This name was reported stolen</p>
+            <p className='text-md text-red-400'>
+              {nameDetails.compromised.incident.description ||
+                `This name was taken from its owner in the ${nameDetails.compromised.incident.title}.`}{' '}
+              Listings can only be bought, and offers only accepted, by the original owner (
+              {truncateAddress(nameDetails.compromised.original_owner)}).
+            </p>
+          </div>
+        </div>
+      )}
       <div className='flex w-full flex-col gap-1 @[40rem]/app:gap-4 @[64rem]/app:flex-row'>
         <div className='flex h-fit flex-col gap-1 @[40rem]/app:gap-4 @[40rem]/app:rounded-lg @[64rem]/app:w-2/5'>
           <ServerPrimaryDetails

@@ -30,6 +30,8 @@ import {
 } from '@/state/reducers/modals/shareModal'
 import ShareIconWhite from 'public/icons/image.svg'
 import { cn } from '@/utils/tailwind'
+import Tooltip from '@/components/ui/tooltip'
+import { COMPROMISED_OFFER_TOOLTIP, isBlockedByCompromise, isCompromisedCounterparty } from '@/utils/compromised'
 
 interface OffersProps {
   domain?: MarketplaceDomainType
@@ -72,7 +74,18 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
     <div className='p-lg @[64rem]/app:px-xl @[40rem]/app:border-tertiary bg-secondary flex w-full flex-col gap-4 @[40rem]/app:rounded-lg @[40rem]/app:border-2'>
       <div className='flex w-full items-center justify-between'>
         <h3 className='font-sedan-sc text-3xl'>Offers</h3>
-        {!isMyDomain && <PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton>}
+        {!isMyDomain &&
+          (userAddress && isBlockedByCompromise(domain?.compromised, userAddress) ? (
+            <Tooltip
+              label='This name was reported stolen. Only the original owner can make offers on it.'
+              position='top'
+              align='right'
+            >
+              <PrimaryButton disabled>Make Offer</PrimaryButton>
+            </Tooltip>
+          ) : (
+            <PrimaryButton onClick={openOfferModal}>Make Offer</PrimaryButton>
+          ))}
       </div>
       {offersLoading ? (
         <LoadingCell height='60px' width='100%' />
@@ -89,10 +102,14 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
             }
           }
           const fee = getFee()
+          // Stolen name: only offers from the original owner can be accepted
+          const isBlocked = !!domain?.compromised && !isCompromisedCounterparty(domain.compromised, offer.buyer_address)
 
           return (
             <div key={offer.id} className='flex flex-row items-center justify-between gap-3'>
-              <div className='flex min-w-0 flex-row items-center gap-2 @[40rem]/app:gap-4'>
+              <div
+                className={cn('flex min-w-0 flex-row items-center gap-2 @[40rem]/app:gap-4', isBlocked && 'opacity-40')}
+              >
                 <div className='flex flex-row items-center gap-2'>
                   <Image
                     src={SOURCE_ICONS[offer.source as keyof typeof SOURCE_ICONS]}
@@ -117,7 +134,13 @@ const Offers: React.FC<OffersProps> = ({ offers, offersLoading, domain }) => {
                   <p className='@[40rem]/app:text-md text-neutral text-sm'>{formatExpiryDate(offer.expires_at)}</p>
                 </div>
               </div>
-              <ActionButtons offer={offer} userAddress={userAddress} isMyDomain={isMyDomain} domain={domain} />
+              <ActionButtons
+                offer={offer}
+                userAddress={userAddress}
+                isMyDomain={isMyDomain}
+                domain={domain}
+                isBlocked={isBlocked}
+              />
             </div>
           )
         })
@@ -141,14 +164,15 @@ interface ActionButtonsProps {
   userAddress?: Address
   isMyDomain: boolean
   domain?: MarketplaceDomainType
+  isBlocked: boolean
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyDomain, domain }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyDomain, domain, isBlocked }) => {
   const isMyOffer = offer.buyer_address.toLowerCase() === userAddress?.toLowerCase()
 
   const dispatch = useAppDispatch()
   const openAcceptOfferModal = () => {
-    if (!domain) return
+    if (!domain || isBlocked) return
 
     if (offer.source === 'opensea') {
       window.open(
@@ -165,6 +189,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
         name: domain.name,
         tokenId: domain.token_id,
         isWrapped: domain.metadata?.is_wrapped === 'true',
+        compromised: domain.compromised ?? null,
       })
     )
   }
@@ -195,7 +220,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ offer, userAddress, isMyD
       <div className='flex flex-col items-end gap-2 @[40rem]/app:w-auto @[40rem]/app:flex-row @[40rem]/app:items-center'>
         <User address={offer.buyer_address} className='max-w-full' wrapperClassName='justify-start! max-w-40' />
         <div className='flex flex-row items-center gap-2'>
-          <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
+          {isBlocked ? (
+            <Tooltip label={COMPROMISED_OFFER_TOOLTIP} position='top' align='right'>
+              <PrimaryButton disabled>Accept</PrimaryButton>
+            </Tooltip>
+          ) : (
+            <PrimaryButton onClick={openAcceptOfferModal}>Accept</PrimaryButton>
+          )}
           <SecondaryButton
             onClick={openShareModal}
             className='flex min-h-9 min-w-9 items-center justify-center p-0! @[48rem]/app:min-h-10! @[48rem]/app:min-w-10!'

@@ -1,12 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../index'
-import { DomainOfferType } from '@/types/domains'
+import { CompromisedInfoType, DomainOfferType } from '@/types/domains'
 
 // Types --------------------------------------------
 export type AcceptOfferDomain = {
   name: string
   tokenId: string
   isWrapped: boolean
+  compromised?: CompromisedInfoType | null
 }
 
 type AcceptOfferModalState = {
@@ -33,10 +34,7 @@ export const AcceptOfferModalSlice = createSlice({
     setAcceptOfferModalOffer(state, { payload }: PayloadAction<DomainOfferType | null>) {
       state.offer = payload
     },
-    setAcceptOfferModalDomain(
-      state,
-      { payload }: PayloadAction<{ name: string; tokenId: string; isWrapped: boolean } | null>
-    ) {
+    setAcceptOfferModalDomain(state, { payload }: PayloadAction<AcceptOfferDomain | null>) {
       state.domain = payload
     },
   },

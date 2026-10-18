@@ -11,7 +11,34 @@ interface Props {
 
 // Shown in buy / offer flows while the connected wallet still approves an exploited operator.
 const RevokeApprovalsNotice: React.FC<Props> = ({ approvalCheck }) => {
-  const { approvals, hasMaliciousApprovals, revoke, isRevoking, revokeError } = approvalCheck
+  const {
+    approvals,
+    hasMaliciousApprovals,
+    isCheckComplete,
+    checkFailed,
+    retryCheck,
+    revoke,
+    isRevoking,
+    revokeError,
+  } = approvalCheck
+
+  if (checkFailed) {
+    return (
+      <div className='flex flex-col gap-2 rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
+        <p className='text-md text-red-400'>
+          We couldn&apos;t verify your wallet&apos;s ENS approvals, so this action is paused for your safety.
+        </p>
+        <PrimaryButton onClick={retryCheck} className='w-full'>
+          Retry Check
+        </PrimaryButton>
+      </div>
+    )
+  }
+
+  if (!isCheckComplete) {
+    return <p className='text-md text-neutral text-center'>Checking wallet approvals…</p>
+  }
+
   if (!hasMaliciousApprovals) return null
 
   return (

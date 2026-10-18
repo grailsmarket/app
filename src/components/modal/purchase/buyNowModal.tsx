@@ -37,6 +37,7 @@ import {
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil-primary.svg'
 import { track } from '@/lib/analytics'
+import { useUserContext } from '@/context/user'
 import { fetchListingOrderData } from '@/api/listings/fetchListing'
 import useMaliciousApprovals from '@/hooks/useMaliciousApprovals'
 import RevokeApprovalsNotice from '@/components/compromised/revokeApprovalsNotice'
@@ -186,11 +187,16 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
   // Stolen names: the public API withholds order_data; an allowed wallet fetches it authenticated
   const isCompromiseBlocked = isBlockedByCompromise(domain?.compromised, address)
+  // Only fetch once signed in (the API returns order_data solely to an authenticated allowed wallet);
+  // authStatus is in the key so completing sign-in triggers a fresh request.
+  const { authStatus } = useUserContext()
+  const isAuthenticated = authStatus === 'authenticated'
   const needsOrderData = !!listing && !!domain?.compromised && !isCompromiseBlocked && !listing.order_data
   const { data: fetchedOrderData, isLoading: isOrderDataLoading } = useQuery({
-    queryKey: ['listing', 'order-data', listing?.id, address],
+    queryKey: ['listing', 'order-data', listing?.id, address, authStatus],
     queryFn: () => fetchListingOrderData(listing!.id),
-    enabled: needsOrderData,
+    enabled: needsOrderData && isAuthenticated,
+    staleTime: 0,
   })
   const orderListing = useMemo(
     () => (listing && fetchedOrderData ? { ...listing, order_data: fetchedOrderData } : listing),
@@ -395,8 +401,12 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
       if (isCompromiseBlocked) {
         throw new Error(COMPROMISED_LISTING_TOOLTIP)
       }
-      if (approvalCheck.hasMaliciousApprovals) {
-        throw new Error('Revoke the unsafe ENS approval before purchasing')
+      if (approvalCheck.blocksTrading) {
+        throw new Error(
+          approvalCheck.hasMaliciousApprovals
+            ? 'Revoke the unsafe ENS approval before purchasing'
+            : 'Wallet approval check has not completed'
+        )
       }
 
       const walletClient = await getWalletClient()
@@ -592,7 +602,9 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
                     : isOrderDataLoading
                       ? 'Loading order…'
                       : domain.compromised
-                        ? 'Sign in with the original owner wallet to buy this name back.'
+                        ? isAuthenticated
+                          ? 'This listing is not available.'
+                          : 'Sign in with the original owner wallet to buy this name back.'
                         : 'This listing is not available.'}
                 </p>
               </div>
@@ -625,10 +637,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
                 onClick={needsApproval ? handleApprove : handlePurchase}
                 className='w-full'
                 disabled={
-                  (!hasSufficientBalance && !needsApproval) ||
-                  isOrderUnavailable ||
-                  approvalCheck.hasMaliciousApprovals ||
-                  approvalCheck.isRevoking
+                  (!hasSufficientBalance && !needsApproval) || isOrderUnavailable || approvalCheck.blocksTrading
                 }
               >
                 {!hasSufficientBalance && !needsApproval

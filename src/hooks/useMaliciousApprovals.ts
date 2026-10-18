@@ -59,21 +59,17 @@ const useMaliciousApprovals = () => {
   const [isRevoking, setIsRevoking] = useState(false)
   const [revokeError, setRevokeError] = useState<string | null>(null)
 
-  const { data: incidents } = useQuery({
+  const incidentsQuery = useQuery({
     queryKey: ['compromise', 'incidents'],
     queryFn: fetchCompromiseIncidents,
     staleTime: 10 * 60 * 1000,
   })
 
-  const operators = (incidents || []).flatMap((incident) =>
+  const operators = (incidentsQuery.data || []).flatMap((incident) =>
     incident.malicious_operators.map((operator) => ({ operator, incident: incident.title }))
   )
 
-  const {
-    data: approvals = [],
-    isLoading,
-    refetch,
-  } = useQuery({
+  const approvalsQuery = useQuery({
     queryKey: ['compromise', 'approvals', address, operators.map((o) => o.operator).join(',')],
     queryFn: async (): Promise<MaliciousApproval[]> => {
       if (!address || !publicClient) return []
@@ -94,6 +90,17 @@ const useMaliciousApprovals = () => {
     enabled: !!address && !!publicClient && operators.length > 0,
     staleTime: 60 * 1000,
   })
+  const approvals = approvalsQuery.data ?? []
+
+  // Fail closed: trading stays blocked until the check has actually succeeded for this wallet.
+  // A pending or failed incidents fetch / approval read must never count as "no unsafe approvals".
+  const isCheckComplete = !!address && incidentsQuery.isSuccess && (operators.length === 0 || approvalsQuery.isSuccess)
+  const checkFailed = !!address && (incidentsQuery.isError || approvalsQuery.isError)
+
+  const retryCheck = () => {
+    if (incidentsQuery.isError) incidentsQuery.refetch()
+    else approvalsQuery.refetch()
+  }
 
   const revoke = async () => {
     if (!publicClient || approvals.length === 0) return
@@ -117,14 +124,20 @@ const useMaliciousApprovals = () => {
       setRevokeError(err?.shortMessage || err?.message || 'Failed to revoke approval')
     } finally {
       setIsRevoking(false)
-      refetch()
+      approvalsQuery.refetch()
     }
   }
 
+  const hasMaliciousApprovals = approvals.length > 0
+
   return {
     approvals,
-    hasMaliciousApprovals: approvals.length > 0,
-    isChecking: isLoading,
+    hasMaliciousApprovals,
+    isCheckComplete,
+    checkFailed,
+    retryCheck,
+    // True while buying / offering must stay disabled
+    blocksTrading: !isCheckComplete || hasMaliciousApprovals || isRevoking,
     revoke,
     isRevoking,
     revokeError,

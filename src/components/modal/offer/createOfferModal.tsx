@@ -114,6 +114,8 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
     e.preventDefault()
     setSuccess(false)
 
+    if (isCompromiseBlocked || approvalCheck.blocksTrading) return
+
     if (!currentOwner) {
       console.error('Domain is not registered')
       return
@@ -357,8 +359,7 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
                       selectedMarketplace.length === 0 ||
                       !hasSufficientBalance ||
                       isCompromiseBlocked ||
-                      approvalCheck.hasMaliciousApprovals ||
-                      approvalCheck.isRevoking
+                      approvalCheck.blocksTrading
                     }
                     onClick={handleSubmit}
                     className='h-10 w-full'

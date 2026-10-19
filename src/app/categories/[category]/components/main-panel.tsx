@@ -93,8 +93,8 @@ const CategoryContent: React.FC<CategoryContentProps> = ({ category }) => {
       return (
         <div className='w-full'>
           <AnalyticsFilters hideTitle hideCategory />
-          <TopListsSection category={category} />
-          <ChartsSection category={category} />
+          <TopListsSection categories={[category]} />
+          <ChartsSection categories={[category]} />
         </div>
       )
     }

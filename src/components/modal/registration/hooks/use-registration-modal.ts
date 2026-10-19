@@ -46,6 +46,7 @@ import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { accountQueryKey } from '@/utils/queryKeys'
 import { activeChain } from '@/constants/web3/chain'
 import { BigNumber } from '@ethersproject/bignumber'
+import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -73,6 +74,7 @@ const useRegistrationModal = () => {
     getCommitmentAges,
     checkCommitmentAge,
   } = useRegisterDomains()
+  const { isUserResolverDeployed, deployResolver } = usePermissionedResolver()
 
   const [asset, setAsset] = useState<Address>(TOKEN_ADDRESSES.USDC)
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -83,7 +85,6 @@ const useRegistrationModal = () => {
   const [customOwner, setCustomOwner] = useState<string>('')
   const [showPerNameDurations, setShowPerNameDurations] = useState(false)
   const [perNameDatePickerIndex, setPerNameDatePickerIndex] = useState<number | null>(null)
-  const [reverseRecord, setReverseRecord] = useState(false)
   const debouncedCustomOwner = useDebounce(customOwner, 500)
 
   const { data: account, isLoading: isResolving } = useQuery({
@@ -498,13 +499,7 @@ const useRegistrationModal = () => {
           return BigInt(d || YEAR_IN_SECONDS)
         })
 
-        const hashes = await makeBulkCommitments(
-          batchLabels,
-          owner,
-          batchDurations,
-          commitSecret,
-          reverseRecord ? 1 : 0
-        )
+        const hashes = await makeBulkCommitments(batchLabels, owner, batchDurations, commitSecret)
         dispatch(setBatchCommitmentData({ batchIndex, hashes, timestamp: 0 }))
 
         const tx = await submitMultiCommit(hashes)
@@ -581,15 +576,7 @@ const useRegistrationModal = () => {
         }
         const valueWithBuffer = (totalPrice * BigInt(105)) / BigInt(100)
 
-        const tx = await submitMultiRegister(
-          batchLabels,
-          owner,
-          batchDurations,
-          secret,
-          valueWithBuffer,
-          reverseRecord ? 1 : 0,
-          asset
-        )
+        const tx = await submitMultiRegister(batchLabels, owner, batchDurations, secret, valueWithBuffer, asset)
         dispatch(setBatchRegisterTxHash({ batchIndex, txHash: tx }))
 
         const receipt = publicClient ? await waitForTransaction(publicClient, tx) : undefined
@@ -777,8 +764,6 @@ const useRegistrationModal = () => {
     debouncedCustomOwner,
     account,
     isResolving,
-    reverseRecord,
-    setReverseRecord,
     showDatePicker,
     setShowDatePicker,
     showCancelWarning,

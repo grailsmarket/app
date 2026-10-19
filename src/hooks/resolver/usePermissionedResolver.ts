@@ -7,14 +7,16 @@ import {
   getCreate2Address,
   http,
   keccak256,
+  parseEventLogs,
   stringToHex,
 } from 'viem'
-import { useAccount } from 'wagmi'
+import { useAccount, useWalletClient } from 'wagmi'
 import { ALL_ROLES } from '@/constants/ens/resolver'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
+import { ensureChain } from '@/utils/web3/ensureChain'
 
 interface PredictProxyAddressProps {
   factoryAddress: Address
@@ -25,6 +27,7 @@ interface PredictProxyAddressProps {
 
 export const usePermissionedResolver = () => {
   const { address } = useAccount()
+  const { data: wallet } = useWalletClient()
   const publicClient = createPublicClient({ chain: activeChain, transport: http() })
 
   const predictProxyAddress = ({ factoryAddress, proxyLogic, deployer, salt }: PredictProxyAddressProps) => {
@@ -45,10 +48,7 @@ export const usePermissionedResolver = () => {
   }
 
   const getResolverData = (version: bigint) => {
-    if (!address) {
-      console.error('No wallet detected. Connect your wallet!')
-      return
-    }
+    if (!address) throw new Error('No wallet detected. Connect your wallet!')
 
     const resolverSalt = BigInt(
       keccak256(
@@ -91,18 +91,45 @@ export const usePermissionedResolver = () => {
 
     if (!proxyAddress) return false
 
-    const isDeployed = await publicClient.readContract({
+    const resolverAddress = await publicClient.readContract({
       address: config.ensV2VerifiableFactory,
       abi: VERIFIABLE_FACTORY_ABI,
       functionName: 'verifyContract',
       args: [proxyAddress],
     })
 
-    return Boolean(isDeployed)
+    return resolverAddress
   }
 
   const deployResolver = async (version: number = 0) => {
+    if (!wallet) throw new Error('No wallet connected!')
+
     const resolverData = getResolverData(BigInt(version))
+    if (!resolverData) throw new Error('missing salt or initial data')
+
+    ensureChain(wallet, activeChain.id)
+
+    const resolverTx = await wallet.writeContract({
+      address: config.ensV2VerifiableFactory,
+      abi: VERIFIABLE_FACTORY_ABI,
+      functionName: 'deployProxy',
+      args: [config.ensV2PermissionedResolverImpl, resolverData.resolverSalt, resolverData.resolverInitData],
+      chain: activeChain,
+    })
+
+    const resolverReceipt = await publicClient.waitForTransactionReceipt({
+      hash: resolverTx,
+    })
+
+    const [resolverLog] = parseEventLogs({
+      abi: VERIFIABLE_FACTORY_ABI,
+      eventName: 'ProxyDeployed',
+      logs: resolverReceipt.logs,
+    })
+
+    const resolverAddress = resolverLog.args.proxyAddress
+
+    return resolverAddress
   }
 
   return {

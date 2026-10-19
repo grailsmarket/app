@@ -30,9 +30,8 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
 
   return (
     <div
-      className={`border-tertiary bg-background fixed right-6 bottom-6 z-50 flex max-w-[380px] min-w-[300px] flex-col overflow-hidden rounded-lg border-2 shadow-lg transition-all duration-300 ${
-        visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-      }`}
+      className={`border-tertiary bg-background fixed right-6 bottom-6 z-50 flex max-w-95 min-w-75 flex-col overflow-hidden rounded-lg border-2 shadow-lg transition-all duration-300 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+        }`}
     >
       <div className='flex items-center gap-2.5 px-4 pt-3 pb-2'>
         <svg
@@ -62,7 +61,7 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
         </button>
       </div>
 
-      <div className='max-h-[200px] overflow-y-auto px-4'>
+      <div className='max-h-50 overflow-y-auto px-4'>
         {summary.entries.map((entry) => (
           <div key={entry.name} className='text-text-secondary flex items-center justify-between gap-4 py-1 text-sm'>
             <span className='truncate font-medium'>{entry.name}</span>

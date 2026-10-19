@@ -373,8 +373,6 @@ const RegistrationModal: React.FC = () => {
           debouncedCustomOwner={modal.debouncedCustomOwner}
           account={modal.account}
           isResolving={modal.isResolving}
-          reverseRecord={modal.reverseRecord}
-          setReverseRecord={modal.setReverseRecord}
           calculationResults={modal.calculationResults}
           hasSufficientBalance={modal.hasSufficientBalance}
           allNamesValid={modal.allNamesValid}

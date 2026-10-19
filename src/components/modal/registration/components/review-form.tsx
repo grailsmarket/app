@@ -19,7 +19,6 @@ import CostSummary from './cost-summary'
 import Calendar from 'public/icons/calendar.svg'
 import { Address } from 'viem'
 import { registrationAssets } from '@/constants/web3/tokens'
-// import ReverseRecordSection from './reverse-record'
 
 interface ReviewFormProps {
   isBulk: boolean
@@ -47,8 +46,6 @@ interface ReviewFormProps {
   setCustomOwner: (value: string) => void
   debouncedCustomOwner: string
   account: AccountResponseType | null | undefined
-  reverseRecord: boolean
-  setReverseRecord: (reverseRecord: boolean) => void
   isResolving: boolean
   calculationResults: CalculationResults | null
   hasSufficientBalance: SufficientBalanceResults
@@ -95,8 +92,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   debouncedCustomOwner,
   account,
   isResolving,
-  // reverseRecord,
-  // setReverseRecord,
   calculationResults,
   hasSufficientBalance,
   allNamesValid,
@@ -141,9 +136,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
               {customDuration
                 ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
                 : 'Select Date'}
             </PrimaryButton>
             {showDatePicker && (
@@ -216,7 +211,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         gasPrice={gasPrice}
         asset={asset}
       />
-      {/* <ReverseRecordSection reverseRecord={reverseRecord} setReverseRecord={setReverseRecord} /> */}
       <div className='flex flex-col gap-2'>
         <PrimaryButton
           onClick={handleCommit}

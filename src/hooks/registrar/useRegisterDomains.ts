@@ -71,8 +71,7 @@ const useRegisterDomains = () => {
     labels: string[],
     owner: Address,
     durations: bigint[],
-    secret: Hex,
-    reverseRecord: number = 0
+    secret: Hex
   ): Promise<Hex[]> => {
     if (!publicClient) throw new Error('Public client not available')
 
@@ -116,7 +115,6 @@ const useRegisterDomains = () => {
     durations: bigint[],
     secret: Hex,
     value: bigint,
-    reverseRecord: number = 0,
     token: Address
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()

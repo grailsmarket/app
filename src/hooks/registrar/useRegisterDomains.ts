@@ -7,9 +7,11 @@ import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { useRentPriceOracle } from './useRentPriceOracle'
 
 const useRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
+  const getRegistrationPricing = useRentPriceOracle()
   const publicClient = createPublicClient({ chain: activeChain, transport: http() })
   const [isApproving, setIsApproving] = useState(false)
   const [approvalTxHash, setApprovalTxHash] = useState<Hex | null>(null)
@@ -71,7 +73,8 @@ const useRegisterDomains = () => {
     labels: string[],
     owner: Address,
     durations: bigint[],
-    secret: Hex
+    secret: Hex,
+    resolver: Address
   ): Promise<Hex[]> => {
     if (!publicClient) throw new Error('Public client not available')
 
@@ -80,7 +83,7 @@ const useRegisterDomains = () => {
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'makeCommitments',
-        args: [labels, owner, durations, secret, toHex(0, { size: 20 }), config.ensPublicResolver],
+        args: [labels, owner, durations, secret, toHex(0, { size: 20 }), resolver],
       })
       return result as Hex[]
     } catch (error) {
@@ -115,7 +118,8 @@ const useRegisterDomains = () => {
     durations: bigint[],
     secret: Hex,
     value: bigint,
-    token: Address
+    token: Address,
+    resolver: Address
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()
 
@@ -123,7 +127,7 @@ const useRegisterDomains = () => {
       address: config.ensBulkRegistrar,
       abi: BULK_REGISTRAR_ABI,
       functionName: 'multiRegister',
-      args: [labels, owner, durations, secret, toHex(0, { size: 20 }), config.ensPublicResolver, token, value],
+      args: [labels, owner, durations, secret, toHex(0, { size: 20 }), resolver, token, value],
       account: walletClient.account,
       chain: activeChain,
     } as const
@@ -189,8 +193,8 @@ const useRegisterDomains = () => {
   }
 
   const calculateDomainPriceUSD = (name: string, years: number): number => {
-    const nameLength = name.replace('.eth', '').length
-    const yearlyPrice = nameLength === 3 ? 640 : nameLength === 4 ? 160 : 5
+    const nameLength = Array.from(name.replace(/\.eth$/, '')).length
+    const yearlyPrice = nameLength === 3 ? 640 : nameLength === 4 ? 160 : 8
     return yearlyPrice * years
   }
 
@@ -240,6 +244,7 @@ const useRegisterDomains = () => {
     generateSecret,
     checkBulkAvailable,
     getRegistrationsPrice,
+    getRegistrationPricing,
     makeBulkCommitments,
     submitMultiCommit,
     submitMultiRegister,

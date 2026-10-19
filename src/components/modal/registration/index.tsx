@@ -14,6 +14,7 @@ import WaitingView from './components/waiting-view'
 import RegisteringView from './components/registering-view'
 import ReviewForm from './components/review-form'
 import RegistrationToast from './components/registration-toast'
+import ResolverSetupView from './components/resolver-setup-view'
 import SuccessToast, { type SuccessSummary } from './components/success-toast'
 import { useAppDispatch } from '@/state/hooks'
 import { clearBulkSelect } from '@/state/reducers/modals/bulkSelectModal'
@@ -161,6 +162,7 @@ const RegistrationModal: React.FC = () => {
   if (entries.length === 0 || !firstDomain) return null
 
   const isActiveFlow =
+    registrationState.flowState === 'resolver' ||
     registrationState.flowState === 'committing' ||
     registrationState.flowState === 'waiting' ||
     registrationState.flowState === 'registering'
@@ -170,6 +172,7 @@ const RegistrationModal: React.FC = () => {
   if (!registrationState.isOpen && showMinimizedToast) {
     const currentBatch = modal.currentBatch
     const hasTxHash = !!(
+      (registrationState.flowState === 'resolver' && registrationState.resolverDeploymentTxHash) ||
       (registrationState.flowState === 'committing' && currentBatch?.commitTxHash) ||
       (registrationState.flowState === 'registering' &&
         (modal.isApproving ? modal.approvalTxHash : currentBatch?.registerTxHash))
@@ -178,6 +181,7 @@ const RegistrationModal: React.FC = () => {
       <RegistrationToast
         flowState={registrationState.flowState}
         isApproving={modal.isApproving}
+        isDeployingResolver={modal.isDeployingResolver}
         waitTimeRemaining={modal.waitTimeRemaining}
         currentBatchIndex={registrationState.currentBatchIndex}
         totalBatches={modal.totalBatches}
@@ -314,6 +318,14 @@ const RegistrationModal: React.FC = () => {
         />
       ) : registrationState.flowState === 'error' ? (
         <ErrorView errorMessage={registrationState.errorMessage} onRetry={modal.onRetry} onClose={handleClose} />
+      ) : registrationState.flowState === 'resolver' ? (
+        <ResolverSetupView
+          isDeploying={modal.isDeployingResolver || !!registrationState.resolverDeploymentTxHash}
+          txHash={registrationState.resolverDeploymentTxHash ?? null}
+          onDeploy={modal.handleDeployResolver}
+          onSkip={modal.handleSkipResolver}
+          onBack={modal.handleResolverBack}
+        />
       ) : registrationState.flowState === 'committing' ? (
         <CommittingView
           totalBatches={modal.totalBatches}
@@ -373,6 +385,11 @@ const RegistrationModal: React.FC = () => {
           debouncedCustomOwner={modal.debouncedCustomOwner}
           account={modal.account}
           isResolving={modal.isResolving}
+          resolver={modal.resolver}
+          setResolver={modal.setResolver}
+          resolverError={modal.resolverError}
+          isCheckingResolver={modal.isCheckingResolver}
+          hasRegistrationParameters={modal.hasRegistrationParameters}
           calculationResults={modal.calculationResults}
           hasSufficientBalance={modal.hasSufficientBalance}
           allNamesValid={modal.allNamesValid}

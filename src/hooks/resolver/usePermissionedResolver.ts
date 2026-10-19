@@ -1,5 +1,6 @@
 import {
   Address,
+  Hex,
   concat,
   createPublicClient,
   encodeAbiParameters,
@@ -10,13 +11,17 @@ import {
   parseEventLogs,
   stringToHex,
 } from 'viem'
-import { useAccount, useWalletClient } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ALL_ROLES } from '@/constants/ens/resolver'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { ensureChain } from '@/utils/web3/ensureChain'
+import { waitForTransaction } from '@/utils/web3/safeTransaction'
+
+const publicClient = createPublicClient({ chain: activeChain, transport: http() })
 
 interface PredictProxyAddressProps {
   factoryAddress: Address
@@ -27,8 +32,7 @@ interface PredictProxyAddressProps {
 
 export const usePermissionedResolver = () => {
   const { address } = useAccount()
-  const { data: wallet } = useWalletClient()
-  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
+  const getWalletClient = useGetWalletClient()
 
   const predictProxyAddress = ({ factoryAddress, proxyLogic, deployer, salt }: PredictProxyAddressProps) => {
     const outerSalt = keccak256(encodeAbiParameters([{ type: 'address' }, { type: 'uint256' }], [deployer, salt]))
@@ -71,7 +75,7 @@ export const usePermissionedResolver = () => {
     }
   }
 
-  const isUserResolverDeployed = async (version: number = 0) => {
+  const isUserResolverDeployed = async (version: number = 0): Promise<Address | false> => {
     const resolverData = getResolverData(BigInt(version))
 
     const proxyLogic = await publicClient.readContract({
@@ -89,25 +93,42 @@ export const usePermissionedResolver = () => {
       salt: resolverData.resolverSalt,
     })
 
-    if (!proxyAddress) return false
+    const code = await publicClient.getCode({ address: proxyAddress })
+    if (!code || code === '0x') return false
 
-    const resolverAddress = await publicClient.readContract({
+    // just checks if resolver is deployed
+    await publicClient.readContract({
       address: config.ensV2VerifiableFactory,
       abi: VERIFIABLE_FACTORY_ABI,
       functionName: 'verifyContract',
       args: [proxyAddress],
     })
 
-    return resolverAddress
+    return proxyAddress
   }
 
-  const deployResolver = async (version: number = 0) => {
-    if (!wallet) throw new Error('No wallet connected!')
+  const getDeployedResolver = async (hash: Hex): Promise<Address> => {
+    const receipt = await waitForTransaction(publicClient, hash)
+    if (receipt.status !== 'success') throw new Error('Resolver deployment failed')
+
+    const [resolverLog] = parseEventLogs({
+      abi: VERIFIABLE_FACTORY_ABI,
+      eventName: 'ProxyDeployed',
+      logs: receipt.logs.filter((log) => log.address.toLowerCase() === config.ensV2VerifiableFactory.toLowerCase()),
+    })
+
+    if (!resolverLog) throw new Error('Resolver deployment address was not found')
+    return resolverLog.args.proxyAddress
+  }
+
+  const deployResolver = async (version: number = 0, onSubmitted?: (hash: Hex) => void): Promise<Address> => {
+    const wallet = await getWalletClient()
+    if (wallet.account.address.toLowerCase() !== address?.toLowerCase()) throw new Error('Connected wallet changed')
 
     const resolverData = getResolverData(BigInt(version))
     if (!resolverData) throw new Error('missing salt or initial data')
 
-    ensureChain(wallet, activeChain.id)
+    await ensureChain(wallet, activeChain.id)
 
     const resolverTx = await wallet.writeContract({
       address: config.ensV2VerifiableFactory,
@@ -117,19 +138,8 @@ export const usePermissionedResolver = () => {
       chain: activeChain,
     })
 
-    const resolverReceipt = await publicClient.waitForTransactionReceipt({
-      hash: resolverTx,
-    })
-
-    const [resolverLog] = parseEventLogs({
-      abi: VERIFIABLE_FACTORY_ABI,
-      eventName: 'ProxyDeployed',
-      logs: resolverReceipt.logs,
-    })
-
-    const resolverAddress = resolverLog.args.proxyAddress
-
-    return resolverAddress
+    onSubmitted?.(resolverTx)
+    return getDeployedResolver(resolverTx)
   }
 
   return {
@@ -137,5 +147,6 @@ export const usePermissionedResolver = () => {
     getResolverData,
     isUserResolverDeployed,
     deployResolver,
+    getDeployedResolver,
   }
 }

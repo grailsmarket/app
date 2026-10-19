@@ -8,12 +8,15 @@ import { timeUnitOptions, MIN_REGISTRATION_DURATION } from '@/constants/registra
 import Image from 'next/image'
 import ArrowDownIcon from 'public/icons/arrow-down.svg'
 import CalendarBlackIcon from 'public/icons/calendar-black.svg'
+import { Address, formatUnits } from 'viem'
+import { TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
 
 interface PerNameDurationEditorProps {
   entries: NameRegistrationEntry[]
   availableEntries: NameRegistrationEntry[]
   entryDurations: (number | null)[]
   perNamePrices: readonly bigint[] | null | undefined
+  asset: Address
   timeUnit: TimeUnit
   quantity: number
   customDuration: number
@@ -29,6 +32,7 @@ const PerNameDurationEditor: React.FC<PerNameDurationEditorProps> = ({
   availableEntries,
   entryDurations,
   perNamePrices,
+  asset,
   timeUnit,
   quantity,
   customDuration,
@@ -83,9 +87,9 @@ const PerNameDurationEditor: React.FC<PerNameDurationEditorProps> = ({
                     {entry.isAvailable === null && (
                       <span className='text-neutral text-sm font-medium'>Checking...</span>
                     )}
-                    {perNamePrice && (
+                    {perNamePrice !== null && perNamePrice !== undefined && (
                       <span className='text-neutral text-sm font-medium'>
-                        {(Number(perNamePrice) / 10 ** 18).toFixed(4)} ETH
+                        {Number(formatUnits(perNamePrice, TOKEN_DECIMALS[TOKENS[asset]])).toFixed(2)} {TOKENS[asset]}
                       </span>
                     )}
                   </div>

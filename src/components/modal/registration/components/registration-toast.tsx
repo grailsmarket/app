@@ -8,6 +8,7 @@ import { cn } from '@/utils/tailwind'
 interface RegistrationToastProps {
   flowState: RegistrationFlowState
   isApproving: boolean
+  isDeployingResolver: boolean
   waitTimeRemaining: number
   currentBatchIndex: number
   totalBatches: number
@@ -18,6 +19,7 @@ interface RegistrationToastProps {
 const RegistrationToast: React.FC<RegistrationToastProps> = ({
   flowState,
   isApproving,
+  isDeployingResolver,
   waitTimeRemaining,
   currentBatchIndex,
   totalBatches,
@@ -36,37 +38,49 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
   const isCommitting = flowState === 'committing'
   const isError = flowState === 'error'
   const waitReady = isWaiting && waitTimeRemaining === 0
-  const pendingWallet = (isCommitting || flowState === 'registering') && !hasTxHash
+  const pendingWallet = (isCommitting || flowState === 'registering' || isDeployingResolver) && !hasTxHash
 
-  const label = isError
-    ? 'Registration Error'
-    : pendingWallet
-      ? 'Confirm in Wallet'
-      : isApproving
-        ? 'Approving Token Spending...'
-        : isCommitting
-          ? 'Submitting Commitment...'
+  const label =
+    flowState === 'resolver'
+      ? isDeployingResolver
+        ? 'Deploying Resolver...'
+        : 'Set Up a Resolver'
+      : isError
+        ? 'Registration Error'
+        : pendingWallet
+          ? 'Confirm in Wallet'
+          : isApproving
+            ? 'Approving Token Spending...'
+            : isCommitting
+              ? 'Submitting Commitment...'
+              : waitReady
+                ? 'Ready to Register'
+                : isWaiting
+                  ? 'Waiting Period'
+                  : 'Completing Registration...'
+
+  const subtitle =
+    flowState === 'resolver'
+      ? isDeployingResolver
+        ? pendingWallet
+          ? 'Confirm deployment in your wallet'
+          : 'Waiting for confirmation'
+        : 'Deploy a resolver or skip for now'
+      : isError
+        ? 'Click to view details'
+        : pendingWallet
+          ? isApproving
+            ? 'Token spending approval'
+            : isCommitting
+              ? 'Commitment transaction'
+              : 'Registration transaction'
           : waitReady
-            ? 'Ready to Register'
+            ? 'Click to continue'
             : isWaiting
-              ? 'Waiting Period'
-              : 'Completing Registration...'
-
-  const subtitle = isError
-    ? 'Click to view details'
-    : pendingWallet
-      ? isApproving
-        ? 'Token spending approval'
-        : isCommitting
-          ? 'Commitment transaction'
-          : 'Registration transaction'
-      : waitReady
-        ? 'Click to continue'
-        : isWaiting
-          ? `${waitTimeRemaining}s remaining`
-          : totalBatches > 1
-            ? `Batch ${currentBatchIndex + 1} of ${totalBatches}`
-            : undefined
+              ? `${waitTimeRemaining}s remaining`
+              : totalBatches > 1
+                ? `Batch ${currentBatchIndex + 1} of ${totalBatches}`
+                : undefined
 
   const WAIT_TOTAL = 60
   const progressPercent = isWaiting ? Math.min(100, ((WAIT_TOTAL - waitTimeRemaining) / WAIT_TOTAL) * 100) : 0
@@ -79,7 +93,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
       onPointerUp={onPointerUp}
       style={position ? { left: position.x, top: position.y } : undefined}
       className={cn(
-        'fixed z-50 flex min-w-[260px] touch-none flex-col overflow-hidden rounded-lg border-2 shadow-lg select-none',
+        'fixed z-50 flex min-w-65 touch-none flex-col overflow-hidden rounded-lg border-2 shadow-lg select-none',
         isDragging ? 'cursor-grabbing' : 'cursor-grab hover:scale-[1.02]',
         isDragging ? '' : 'transition-all duration-300',
         isError
@@ -99,7 +113,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
           />
         </div>
       )}
-      <div className={cn('flex items-center gap-3 px-4 py-3', !position && 'pb-1')}>
+      <div className='flex items-center gap-3 px-4 py-3'>
         {isError ? (
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -131,11 +145,6 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
           )}
         </div>
       </div>
-      {!position && (
-        <p className={`pb-1.5 text-center text-[10px] ${waitReady ? 'text-background/40' : 'text-neutral'}`}>
-          (drag to move around)
-        </p>
-      )}
     </div>
   )
 }

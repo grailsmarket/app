@@ -37,4 +37,4 @@ export const BulkRenewalAbi = [
     stateMutability: 'pure',
     type: 'function',
   },
-]
+] as const

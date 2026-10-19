@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from '@/utils/tailwind'
 import { formatDuration } from '@/utils/time/formatDuration'
 import { Cross } from 'ethereum-identity-kit'
 import { useEffect, useState } from 'react'
@@ -30,8 +31,10 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
 
   return (
     <div
-      className={`border-tertiary bg-background fixed right-6 bottom-6 z-50 flex max-w-95 min-w-75 flex-col overflow-hidden rounded-lg border-2 shadow-lg transition-all duration-300 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}
+      className={cn(
+        'border-tertiary bg-background fixed right-6 bottom-6 z-50 flex max-w-95 min-w-75 flex-col overflow-hidden rounded-lg border-2 shadow-lg transition-all duration-300',
+        visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+      )}
     >
       <div className='flex items-center gap-2.5 px-4 pt-3 pb-2'>
         <svg

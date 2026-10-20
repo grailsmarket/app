@@ -7,7 +7,7 @@ import {
   walletConnectWallet,
   safeWallet,
 } from '@rainbow-me/rainbowkit/wallets'
-import { mainnet, optimism, base } from 'wagmi/chains'
+import { mainnet, optimism, base, sepolia } from 'wagmi/chains'
 import { type Chain, connectorsForWallets } from '@rainbow-me/rainbowkit'
 import { http, fallback, createStorage, cookieStorage, createConfig } from 'wagmi'
 import { APP_DESCRIPTION, APP_ICON, APP_NAME, APP_URL } from '@/constants'
@@ -75,6 +75,19 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
       },
     },
   },
+  ...(process.env.NEXT_PUBLIC_CHAIN_ID === String(sepolia.id)
+    ? [
+        {
+          ...sepolia,
+          iconBackground: 'bg-zinc-300',
+          iconUrl: '/chains/ethereum.svg',
+          custom: {
+            chainDetail: 'Testnet',
+            gasFeeDetail: '',
+          },
+        },
+      ]
+    : []),
   {
     ...base,
     iconUrl: '/chains/base.svg',
@@ -114,6 +127,16 @@ export const chains: [ChainWithDetails, ...ChainWithDetails[]] = [
 ]
 
 export const transports = {
+  [sepolia.id]: fallback([
+    ...(process.env.NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID
+      ? [
+          http(`https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_SEPOLIA_ALCHEMY_ID}`, {
+            batch: true,
+          }),
+        ]
+      : []),
+    http(sepolia.rpcUrls.default.http[0], { batch: true }),
+  ]),
   [mainnet.id]: fallback([
     http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_MAINNET_ALCHEMY_ID}`, {
       batch: true,

@@ -19,6 +19,7 @@ const Textarea: React.FC<TextareaProps> = ({
   hideLabel = false,
   labelClassName,
   disabled = false,
+  ...textareaProps
 }) => {
   return (
     <div className={cn('w-full', className)}>
@@ -34,10 +35,12 @@ const Textarea: React.FC<TextareaProps> = ({
           </div>
         )}
         <textarea
+          aria-label={label}
+          {...textareaProps}
           value={value}
           onChange={onChange}
           className={cn(
-            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full resize-y items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
+            'bg-secondary border-tertiary hover:bg-tertiary focus:bg-tertiary flex min-h-12 w-full min-w-0 resize-y items-center justify-between rounded-r-md border px-4 py-3 text-left transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none',
             hideLabel && 'rounded-md',
             disabled && 'cursor-not-allowed opacity-50'
           )}

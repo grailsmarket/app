@@ -53,7 +53,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           type='button'
           onClick={() => setIsPeriodOpen(!isPeriodOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[110px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-27.5 cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
           <p className='text-md font-medium whitespace-nowrap @[40rem]/app:text-lg'>{selectedPeriodLabel}</p>
@@ -87,7 +87,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
           type='button'
           onClick={() => setIsSourceOpen(!isSourceOpen)}
           className={cn(
-            'border-tertiary hover:border-foreground/50 flex h-9 w-[130px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
+            'border-tertiary hover:border-foreground/50 flex h-9 w-32.5 cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
           )}
         >
           <div className='flex items-center gap-2'>
@@ -136,7 +136,7 @@ const AnalyticsFilters: React.FC<AnalyticsFiltersProps> = ({ hideTitle = false, 
             type='button'
             onClick={() => setIsCategoryOpen(!isCategoryOpen)}
             className={cn(
-              'border-tertiary hover:border-foreground/50 flex h-9 w-[200px] cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
+              'border-tertiary hover:border-foreground/50 flex h-9 w-50 cursor-pointer items-center justify-between gap-1.5 rounded-sm border-2 bg-transparent px-3 transition-all @[40rem]/app:h-10'
             )}
           >
             <div className='flex items-center gap-2'>

@@ -23,7 +23,7 @@ const InputWithResolution: React.FC<{
 
   const resolvedProfile = resolvedAccount?.ens || { name: null, avatar: null }
 
-  const showResolution = value.includes('.') || (isAddress(value) && resolvedProfile?.name)
+  const showResolution = value?.includes('.') || (isAddress(value) && resolvedProfile?.name)
 
   if (!showResolution && !isResolving) return null
 

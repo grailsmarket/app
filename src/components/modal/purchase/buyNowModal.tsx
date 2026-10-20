@@ -25,6 +25,7 @@ import Image from 'next/image'
 import {
   setEditRecordsModalMetadata,
   setEditRecordsModalName,
+  setEditRecordsModalVersion,
   setEditRecordsModalOpen,
 } from '@/state/reducers/modals/editRecordsModal'
 import PencilIcon from 'public/icons/pencil-primary.svg'
@@ -651,6 +652,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
                   onClick={() => {
                     if (!nameMetadata || !domain?.name) return
                     dispatch(setEditRecordsModalName(domain.name))
+                    dispatch(setEditRecordsModalVersion(domain.version))
                     dispatch(setEditRecordsModalMetadata(nameMetadata))
                     dispatch(setEditRecordsModalOpen(true))
                   }}

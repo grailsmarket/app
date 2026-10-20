@@ -86,6 +86,7 @@ const Modals: React.FC = () => {
   const {
     open: editRecordsModalOpen,
     name: editRecordsModalName,
+    version: editRecordsModalVersion,
     metadata: editRecordsModalMetadata,
     defaultTab: editRecordsModalDefaultTab,
   } = useAppSelector(selectEditRecordsModal)
@@ -199,6 +200,7 @@ const Modals: React.FC = () => {
       {editRecordsModalOpen && editRecordsModalName && (
         <EditRecordsModal
           name={editRecordsModalName}
+          version={editRecordsModalVersion}
           metadata={editRecordsModalMetadata}
           defaultTab={editRecordsModalDefaultTab}
           onClose={() => dispatch(setEditRecordsModalOpen(false))}

@@ -1,19 +1,19 @@
 'use client'
 
-import Link from 'next/link'
-import { Avatar, ShortArrow, truncateAddress } from 'ethereum-identity-kit'
-import NameImage from '@/components/ui/nameImage'
-import { useUserContext } from '@/context/user'
 import { useSettings } from '@/components/modal/settings/useSettings'
 import Input from '@/components/ui/input'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
 import { useSettingsDirty } from './navigationGuard'
-import { QueryError, SettingsHeading, SettingsNotice, secondaryLinkClass } from './shared'
+import PrimaryNameSettings from './primaryNameSettings'
+import { QueryError, SettingsNotice } from './shared'
 
-export default function ProfileSettings({ notifications = false }: { notifications?: boolean }) {
-  const { userAddress } = useUserContext()
+interface ProfileSettingsProps {
+  notifications?: boolean
+}
+
+const ProfileSettings: React.FC<ProfileSettingsProps> = ({ notifications = false }) => {
   const settings = useSettings()
   const validThreshold =
     !settings.offerNotificationThresholdValue ||
@@ -48,53 +48,19 @@ export default function ProfileSettings({ notifications = false }: { notificatio
 
   return (
     <div className='flex max-w-2xl flex-col gap-4'>
-      <SettingsHeading
-        title={notifications ? 'Notifications' : 'Profile details'}
-        description={
-          notifications
+      <div className='flex flex-col gap-2'>
+        <h2 className='hidden text-2xl font-semibold md:block'>
+          {notifications ? 'Notifications' : 'Profile details'}
+        </h2>
+        <p className='text-neutral text-kg'>
+          {notifications
             ? 'Choose which updates you receive from Grails.'
-            : 'Manage the details associated with your signed-in wallet.'
-        }
-      />
+            : 'Manage the details associated with your signed-in wallet.'}
+        </p>
+      </div>
       {!notifications ? (
         <>
-          <div className='border-tertiary flex flex-wrap items-center justify-between gap-4 rounded-md border p-4'>
-            <div className='flex min-w-0 items-center gap-3'>
-              {settings.ensProfile.name ? (
-                <NameImage
-                  name={settings.ensProfile.name}
-                  tokenId=''
-                  version={1}
-                  expiryDate={null}
-                  forceRegStatus='Registered'
-                  width={48}
-                  height={48}
-                  className='shrink-0'
-                />
-              ) : (
-                <Avatar
-                  address={userAddress}
-                  name={settings.ensProfile.name}
-                  src={settings.ensProfile.avatar}
-                  style={{ width: 48, height: 48, minWidth: 48 }}
-                />
-              )}
-              <div className='min-w-0'>
-                <p className='truncate text-xl font-semibold'>
-                  {settings.ensProfile.name || truncateAddress(userAddress!)}
-                </p>
-                <p className='text-neutral text-lg'>Primary ENS name · onchain</p>
-              </div>
-            </div>
-            <Link
-              className={`${secondaryLinkClass} gap-2`}
-              target='_blank'
-              rel='noreferrer'
-              href='https://app.ens.domains/my/names'
-            >
-              Manage primary name <ShortArrow className='h-3.5 w-3.5 rotate-45' />
-            </Link>
-          </div>
+          <PrimaryNameSettings />
           <SettingsNotice>
             Your email is used for Grails notifications. Your labels and preferences belong to this wallet.
           </SettingsNotice>
@@ -202,3 +168,5 @@ export default function ProfileSettings({ notifications = false }: { notificatio
     </div>
   )
 }
+
+export default ProfileSettings

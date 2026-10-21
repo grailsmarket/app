@@ -21,22 +21,19 @@ import {
   QueryError,
   ResolverAddress,
   SettingsNotice,
-  TransactionStatus,
   configurationPath,
   resolverPath,
   secondaryLinkClass,
 } from './shared'
 import ConfigurationNames from './configurationNames'
 
-const ConfigurationRecords = ({
-  resolver,
-  id,
-  mode,
-}: {
+interface ConfigurationRecordsProps {
   resolver: Address
   id: bigint
   mode: 'edit' | 'new' | 'copy'
-}) => {
+}
+
+const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, id, mode }) => {
   const editor = useConfigurationEditor(resolver, id, mode)
   const transaction = editor.transaction
   const busy = transaction.busy || transaction.pending
@@ -65,7 +62,6 @@ const ConfigurationRecords = ({
         >
           {editor.createdId > BigInt(0) ? `Open Configuration ${editor.createdId}` : 'View configurations'}
         </Link>
-        <TransactionStatus transaction={transaction} />
       </div>
     )
 
@@ -120,7 +116,6 @@ const ConfigurationRecords = ({
         />
       </fieldset>
       {editor.error && <SettingsNotice error>{editor.error}</SettingsNotice>}
-      <TransactionStatus transaction={transaction} />
       <div className='border-tertiary flex items-center gap-3'>
         <PrimaryButton
           className='w-1/2'
@@ -140,22 +135,22 @@ const ConfigurationRecords = ({
   )
 }
 
-const SetDefault = ({
-  resolver,
-  id,
-  review,
-  setReview,
-}: {
+interface SetDefaultProps {
   resolver: Address
   id: bigint
   review: boolean
   setReview: (review: boolean) => void
-}) => {
+}
+
+const SetDefault: React.FC<SetDefaultProps> = ({ resolver, id, review, setReview }) => {
   const { catalog, client } = useResolverCatalog(resolver)
   const transaction = useSettingsTransaction()
+
   useSettingsDirty(review, transaction.busy || transaction.submitted)
+
   if (!catalog?.canLink || id === BigInt(0) || id === catalog.defaultRecordId) return null
   if (!review && transaction.phase === 'idle') return null
+
   const save = () =>
     transaction.run([
       {
@@ -177,6 +172,7 @@ const SetDefault = ({
         confirmed: () => setReview(false),
       },
     ])
+
   return (
     <div className='flex flex-col gap-3'>
       {review && (
@@ -195,22 +191,18 @@ const SetDefault = ({
           </div>
         </SettingsNotice>
       )}
-      <TransactionStatus transaction={transaction} />
     </div>
   )
 }
 
-export default function ConfigurationDetail({
-  resolver,
-  id,
-  mode = 'edit',
-  tab = 'records',
-}: {
+interface ConfigurationDetailProps {
   resolver: Address
   id: bigint
   mode?: 'edit' | 'new' | 'copy'
   tab?: string
-}) {
+}
+
+const ConfigurationDetail: React.FC<ConfigurationDetailProps> = ({ resolver, id, mode = 'edit', tab = 'records' }) => {
   const [reviewDefault, setReviewDefault] = useState(false)
 
   const { catalog } = useResolverCatalog(resolver)
@@ -225,7 +217,7 @@ export default function ConfigurationDetail({
           : `Configuration ${id}`
 
   return (
-    <div className='flex flex-col gap-6'>
+    <div className='flex flex-col gap-4'>
       <Link
         className='text-neutral hover:text-primary flex w-fit items-center gap-2 text-lg'
         href={resolverPath(resolver)}
@@ -266,22 +258,17 @@ export default function ConfigurationDetail({
           Names with no explicit link use this default.
         </p>
       )}
-      <div className='flex min-w-0 flex-col gap-6 xl:flex-row'>
+      <div className='flex min-w-0 flex-col gap-4'>
         {mode === 'edit' && (
-          <nav
-            aria-label='Configuration sections'
-            className='border-tertiary flex shrink-0 overflow-x-auto xl:w-32 xl:flex-col xl:gap-2 xl:border-r xl:pr-3 xl:pb-3'
-          >
+          <nav aria-label='Configuration sections' className='border-tertiary flex gap-5 overflow-x-auto border-b'>
             {['records', 'names'].map((item) => (
               <Link
                 key={item}
                 href={`${base}${item === 'records' ? '' : '/names'}`}
                 aria-current={tab === item ? 'page' : undefined}
                 className={cn(
-                  'border-tertiary flex-1 shrink-0 border-b-2 px-3 py-2 text-center text-lg font-semibold whitespace-nowrap capitalize transition-colors xl:flex-none xl:rounded-sm xl:border-b-0 xl:text-left',
-                  tab === item
-                    ? 'border-primary text-primary xl:bg-secondary font-bold xl:font-semibold'
-                    : 'text-neutral hover:border-foreground hover:text-foreground xl:hover:bg-secondary'
+                  'border-b-2 px-3 pb-2 text-lg font-semibold capitalize',
+                  tab === item ? 'border-primary text-primary' : 'text-neutral hover:text-foreground border-transparent'
                 )}
               >
                 {item}
@@ -300,3 +287,5 @@ export default function ConfigurationDetail({
     </div>
   )
 }
+
+export default ConfigurationDetail

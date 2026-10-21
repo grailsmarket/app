@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { isAddress, zeroAddress } from 'viem'
 import { useUserContext } from '@/context/user'
+import { SettingsTransactionProvider } from '@/context/settingsTransaction'
 import SignInButton from '@/components/ui/buttons/signInButton'
 import { cn } from '@/utils/tailwind'
 import { SettingsNavigationGuard } from './navigationGuard'
@@ -20,7 +21,12 @@ const sections = [
   { id: 'resolvers', label: 'Resolvers' },
   { id: 'records', label: 'Records' },
 ]
-const Content = ({ section }: { section: string[] }) => {
+
+interface SettingsPageProps {
+  section: string[]
+}
+
+const Content: React.FC<SettingsPageProps> = ({ section }) => {
   const { profileIsLoading } = useUserContext()
   const [root = 'profile', resolver, id, tab] = section
 
@@ -66,7 +72,7 @@ const Content = ({ section }: { section: string[] }) => {
   )
 }
 
-export default function SettingsPage({ section }: { section: string[] }) {
+const SettingsPage: React.FC<SettingsPageProps> = ({ section }) => {
   const { userAddress, authStatus, authStatusIsLoading } = useUserContext()
   const selected = section[0] || 'profile'
   const navigation = useRef<HTMLElement>(null)
@@ -78,8 +84,7 @@ export default function SettingsPage({ section }: { section: string[] }) {
   }, [selected, authStatus])
 
   return (
-    <main className='mx-auto w-full max-w-7xl p-4 md:px-8 md:py-12'>
-      <h1 className='mb-2 text-3xl font-bold md:mb-8 md:text-4xl'>Settings</h1>
+    <main className='mx-auto w-full max-w-7xl px-3 py-3 md:px-8 md:py-8'>
       {authStatusIsLoading ? (
         <SettingsNotice>Checking your wallet…</SettingsNotice>
       ) : !userAddress || authStatus !== 'authenticated' ? (
@@ -88,35 +93,41 @@ export default function SettingsPage({ section }: { section: string[] }) {
           <SignInButton />
         </div>
       ) : (
-        <SettingsNavigationGuard key={userAddress}>
-          <div className='flex min-w-0 flex-col gap-4 md:flex-row md:gap-8'>
-            <nav
-              ref={navigation}
-              aria-label='Settings sections'
-              className='border-tertiary flex shrink-0 overflow-x-auto md:h-[calc(90vh-200px)] md:w-48 md:flex-col md:gap-2 md:border-r md:pr-6 md:pb-4'
-            >
-              {sections.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/settings/${item.id}`}
-                  aria-current={selected === item.id ? 'page' : undefined}
-                  className={cn(
-                    'border-tertiary flex-1 shrink-0 border-b-2 px-2 py-2 text-center text-lg font-semibold whitespace-nowrap transition-colors md:flex-none md:rounded-sm md:border-b-0 md:px-3 md:text-left',
-                    selected === item.id
-                      ? 'border-primary text-primary md:bg-secondary font-bold md:font-semibold'
-                      : 'text-neutral hover:border-foreground hover:text-foreground md:hover:bg-secondary'
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className='min-w-0 flex-1'>
-              <Content key={section.join('/')} section={section} />
+        <SettingsTransactionProvider key={userAddress}>
+          <SettingsNavigationGuard>
+            <div className='flex min-w-0 flex-col gap-4 md:flex-row md:gap-6 xl:gap-8'>
+              <nav
+                ref={navigation}
+                aria-label='Settings sections'
+                className='border-tertiary flex shrink-0 overflow-x-auto md:h-[calc(100vh-160px)] md:w-48 md:flex-col md:gap-2 md:border-r md:pr-6 md:pb-4'
+              >
+                <h1 className='mb-2 hidden pt-2 text-3xl font-bold md:block'>Settings</h1>
+
+                {sections.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={`/settings/${item.id}`}
+                    aria-current={selected === item.id ? 'page' : undefined}
+                    className={cn(
+                      'border-tertiary flex-1 shrink-0 border-b-2 px-2 py-2 text-center text-lg font-semibold whitespace-nowrap transition-colors md:flex-none md:rounded-sm md:border-b-0 md:px-3 md:text-left',
+                      selected === item.id
+                        ? 'border-primary text-primary md:bg-secondary font-bold md:font-semibold'
+                        : 'text-neutral hover:border-foreground hover:text-foreground md:hover:bg-secondary'
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className='min-w-0 flex-1'>
+                <Content key={section.join('/')} section={section} />
+              </div>
             </div>
-          </div>
-        </SettingsNavigationGuard>
+          </SettingsNavigationGuard>
+        </SettingsTransactionProvider>
       )}
     </main>
   )
 }
+
+export default SettingsPage

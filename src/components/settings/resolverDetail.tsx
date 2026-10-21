@@ -14,7 +14,7 @@ import ResolverPermissions from './resolverPermissions'
 
 export default function ResolverDetail({ resolver, tab = 'configurations' }: { resolver: Address; tab?: string }) {
   const { width: windowWidth } = useWindowSize()
-  const isMobile = (windowWidth ?? 0) < 786
+  const isMobile = (windowWidth ?? 0) < 1024
 
   const directory = useResolverDirectory()
   const { state } = useResolverCatalog(resolver)
@@ -24,7 +24,7 @@ export default function ResolverDetail({ resolver, tab = 'configurations' }: { r
   }, [resolver, !!state.data])
 
   return (
-    <div className='flex flex-col gap-6'>
+    <div className='flex flex-col gap-4 md:gap-6'>
       <Link
         href='/settings/resolvers'
         className='text-neutral hover:text-primary flex w-fit items-center gap-2 text-lg'
@@ -48,7 +48,7 @@ export default function ResolverDetail({ resolver, tab = 'configurations' }: { r
               href={`${resolverPath(resolver)}${item === 'configurations' ? '' : `/${item}`}`}
               aria-current={tab === item ? 'page' : undefined}
               className={cn(
-                'border-b-2 px-1 pb-3 text-lg font-semibold capitalize',
+                'border-b-2 px-3 pb-2 text-lg font-semibold capitalize',
                 tab === item ? 'border-primary text-primary' : 'text-neutral hover:text-foreground border-transparent'
               )}
             >

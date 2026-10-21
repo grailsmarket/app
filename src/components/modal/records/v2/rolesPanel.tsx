@@ -22,10 +22,10 @@ import {
   type RoleDefinition,
   type RoleKind,
 } from '@/utils/records/v2Roles'
-import { activeChain } from '@/constants/web3/chain'
 import { cn } from '@/utils/tailwind'
 import { accountQueryKey } from '@/utils/queryKeys'
 import { beautifyName } from '@/lib/ens'
+import Link from 'next/link'
 
 export type EditorRoleAssignment = RoleAssignment & { roleId?: string; roleIds?: string[] }
 
@@ -50,15 +50,13 @@ const Account = ({ address, resolvePrimaryName = false }: { address: Address; re
           style={{ height: '26px', width: '26px', minWidth: '26px' }}
         />
       )}
-      <a
+      <Link
         className='hover:text-primary truncate text-lg font-semibold transition-colors'
-        href={`${activeChain.blockExplorers.default.url}/address/${address}`}
-        target='_blank'
-        rel='noreferrer'
+        href={`/profile/${address}`}
         title={primaryName ? `${primaryName} (${address})` : address}
       >
         {primaryName || `${address.slice(0, 6)}…${address.slice(-4)}`}
-      </a>
+      </Link>
       <CopyButton value={address} />
     </div>
   )

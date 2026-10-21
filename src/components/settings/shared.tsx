@@ -8,7 +8,6 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import CopyButton from '@/components/ui/copyButton'
 import EtherscanLogo from 'public/logos/etherscan.svg'
 import { roleErrorText } from '@/hooks/records/useV2Roles'
-import type { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
 import { cn } from '@/utils/tailwind'
 
 export const resolverPath = (address: string) => `/settings/resolvers/${address}`
@@ -18,24 +17,8 @@ export const shortAddress = (address: string) => `${address.slice(0, 6)}…${add
 export const SettingsNotice = ({ children, error = false }: { children: React.ReactNode; error?: boolean }) => (
   <div
     role={error ? 'alert' : 'status'}
-    className={`bg-secondary border-tertiary rounded-md border p-4 text-lg ${error ? 'text-red-400' : 'text-neutral'}`}
+    className={`bg-secondary border-tertiary rounded-md border p-3 text-lg ${error ? 'text-red-400' : 'text-neutral'}`}
   >
-    {children}
-  </div>
-)
-
-interface SettingsHeadingProps {
-  title: string
-  description?: string
-  children?: React.ReactNode
-}
-
-export const SettingsHeading: React.FC<SettingsHeadingProps> = ({ title, description, children }) => (
-  <div className='flex flex-wrap items-center justify-between gap-4'>
-    <div className='flex min-w-0 flex-col gap-2'>
-      <h2 className='text-2xl font-bold'>{title}</h2>
-      {description && <p className='text-neutral max-w-2xl text-lg'>{description}</p>}
-    </div>
     {children}
   </div>
 )
@@ -106,38 +89,6 @@ export const QueryError = ({ error, retry }: { error: unknown; retry?: () => voi
     </div>
   </SettingsNotice>
 )
-
-export const TransactionStatus = ({ transaction }: { transaction: ReturnType<typeof useSettingsTransaction> }) => {
-  if (transaction.phase === 'idle') return null
-  return (
-    <SettingsNotice error={transaction.phase === 'error'}>
-      <div className='flex flex-col gap-3'>
-        <p>
-          {transaction.phase === 'error'
-            ? transaction.error
-            : transaction.phase === 'success'
-              ? 'Changes saved.'
-              : `${transaction.label ?? 'Saving changes'} · ${transaction.phase === 'confirming' ? 'Confirm in your wallet' : 'Waiting for confirmation'}`}
-        </p>
-        {transaction.explorerUrl && (
-          <a className='text-primary underline' href={transaction.explorerUrl} target='_blank' rel='noreferrer'>
-            View transaction
-          </a>
-        )}
-        {transaction.phase === 'error' && transaction.pending && (
-          <div className='flex flex-wrap gap-2'>
-            <SecondaryButton onClick={() => transaction.run()}>
-              {transaction.submitted ? 'Check transaction' : 'Retry remaining steps'}
-            </SecondaryButton>
-            {!transaction.submitted && (
-              <SecondaryButton onClick={transaction.reset}>Cancel remaining steps</SecondaryButton>
-            )}
-          </div>
-        )}
-      </div>
-    </SettingsNotice>
-  )
-}
 
 export const tableClass = 'w-full text-left text-lg [&>tbody>tr:last-child>td]:border-b-0'
 export const thClass = 'text-neutral border-tertiary border-b px-2.5 sm:px-4 pb-3 font-medium whitespace-nowrap'

@@ -14,7 +14,6 @@ import { activeChain } from '@/constants/web3/chain'
 import {
   QueryError,
   ResolverAddress,
-  SettingsHeading,
   SettingsNotice,
   configurationPath,
   tableClass,
@@ -78,8 +77,8 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index
       className={cn(trClass(index, list), 'group hover:bg-secondary transition-colors')}
       onClick={() => router.push(configurationPath(resolver, id))}
     >
-      <td className={cn(tdClass, 'flex gap-2')}>
-        <p className='font-medium'>{label}</p>
+      <td className={cn(tdClass, 'flew-wrap flex gap-2')}>
+        <p className='font-medium text-nowrap'>{label}</p>
         {!defaultEntry && id === catalog?.defaultRecordId && (
           <Label label='Default' className='bg-tertiary text-foreground text-sm font-medium' />
         )}
@@ -100,14 +99,12 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index
           {knownNames ? knownNames.length : '—'}
         </Link>
       </td>
-      <td className={`${tdClass} text-neutral`}>
-        {actualId === BigInt(0) ? 'Not created' : (actualId?.toString() ?? '—')}
-      </td>
+      <td className={`${tdClass} text-neutral`}>{actualId === BigInt(0) ? '-' : (actualId?.toString() ?? '—')}</td>
       <td className={tdClass}>
         <Link
           aria-label={`Open ${label}`}
           href={configurationPath(resolver, id)}
-          className='text-neutral hover:text-primary md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100'
+          className='text-neutral hover:text-primary hidden md:block md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100'
         >
           <ShortArrow className='h-3.5 w-3.5 rotate-90' />
         </Link>
@@ -129,7 +126,7 @@ export const ConfigurationTable = ({ resolver }: { resolver: Address }) => {
 
   return (
     <div className='flex flex-col gap-4'>
-      <div className='flex flex-wrap items-center justify-between gap-3'>
+      <div className='flex flex-wrap items-center justify-between gap-3 p-3 pb-0'>
         <p className='text-neutral text-lg'>{catalog.recordCount.toString()} configurations</p>
         <Link href={configurationPath(resolver, 'new')} className={primaryLinkClass}>
           Add New +
@@ -146,8 +143,8 @@ export const ConfigurationTable = ({ resolver }: { resolver: Address }) => {
       <div className='overflow-x-auto'>
         <table className={tableClass}>
           <thead>
-            <tr>
-              {['Configuration', 'Records', 'Names', 'ID', ''].map((label) => (
+            <tr className='border-tertiary border-b'>
+              {['Configuration', 'Records', 'Names', 'ID'].map((label) => (
                 <th key={label} className={thClass}>
                   {label}
                 </th>
@@ -192,11 +189,7 @@ const ResolverConfigurations = ({ resolver }: { resolver: Address }) => {
         <ResolverAddress address={resolver} truncate={false} textColor='text-foreground!' />
         <ShortArrow className={`h-3.5 w-3.5 ${open ? '' : 'rotate-180'}`} />
       </div>
-      {open && (
-        <div className='p-4'>
-          <ConfigurationTable resolver={resolver} />
-        </div>
-      )}
+      {open && <ConfigurationTable resolver={resolver} />}
     </section>
   )
 }
@@ -205,11 +198,13 @@ export default function ConfigurationList() {
   const directory = useResolverDirectory()
 
   return (
-    <div className='flex flex-col gap-6'>
-      <SettingsHeading
-        title='Records'
-        description='Manage configurations shared by your ENS names. Each configuration belongs to one resolver.'
-      />
+    <div className='flex flex-col gap-4 md:gap-6'>
+      <div className='flex flex-col gap-1'>
+        <h2 className='hidden text-2xl font-semibold md:block'>Records</h2>
+        <p className='text-neutral text-lg font-medium'>
+          Manage configurations shared by your ENS names. Each configuration belongs to one resolver.
+        </p>
+      </div>
       <ResolverLookup />
       {directory.owned.isError && <QueryError error={directory.owned.error} retry={() => directory.owned.refetch()} />}
       {directory.delegated.isLoading && <p className='text-neutral text-lg'>Checking shared resolvers…</p>}

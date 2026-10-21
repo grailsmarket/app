@@ -27,7 +27,6 @@ import { useSettingsDirty } from './navigationGuard'
 import {
   QueryError,
   SettingsNotice,
-  TransactionStatus,
   resolverPath,
   tableClass,
   thClass,
@@ -107,7 +106,7 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
         {resolver.name && <p className='mb-1 font-semibold'>{resolver.name}</p>}
         <ResolverAddress
           address={resolver.address}
-          truncate={(width || 0) < 768}
+          truncate={(width || 0) < 1024}
           canCopy={false}
           etherscan={false}
           textColor='text-foreground!'
@@ -129,7 +128,7 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
       >
         {activity.data ? formatTimeAgo(activity.data) : '—'}
       </td>
-      <td className='opacity-0 transition-opacity group-hover/resolver:opacity-100'>
+      <td className='px-2 opacity-0 transition-opacity group-hover/resolver:opacity-100'>
         <ShortArrow className='h-3.5 w-3.5 rotate-90' />
       </td>
     </tr>
@@ -180,7 +179,7 @@ export const ResolverLookup = () => {
   )
 }
 
-export default function ResolverList() {
+const ResolverList = () => {
   const directory = useResolverDirectory()
   const transaction = useSettingsTransaction()
   const { getResolverData } = usePermissionedResolver()
@@ -190,19 +189,22 @@ export default function ResolverList() {
 
   const deploy = () => {
     const version = directory.predicted.data === false ? 0 : newResolverVersion()
-    const { resolverSalt, resolverInitData } = getResolverData(BigInt(version))
 
     void transaction.run([
       {
         label: 'Deploy resolver',
-        prepare: async () => ({
-          to: config.ensV2VerifiableFactory,
-          data: encodeFunctionData({
-            abi,
-            functionName: 'deployProxy',
-            args: [config.ensV2PermissionedResolverImpl, resolverSalt, resolverInitData],
-          }),
-        }),
+        prepare: async () => {
+          const { resolverSalt, resolverInitData } = getResolverData(BigInt(version))
+
+          return {
+            to: config.ensV2VerifiableFactory,
+            data: encodeFunctionData({
+              abi,
+              functionName: 'deployProxy',
+              args: [config.ensV2PermissionedResolverImpl, resolverSalt, resolverInitData],
+            }),
+          }
+        },
         confirmed: (receipt) => {
           const log = parseEventLogs({
             abi,
@@ -230,17 +232,16 @@ export default function ResolverList() {
           Deploy resolver
         </PrimaryButton>
       </div>
-      <TransactionStatus transaction={transaction} />
       {deployed && (
         <Link className='text-primary flex w-fit items-center gap-2 text-lg underline' href={resolverPath(deployed)}>
           Open deployed resolver <ShortArrow className='h-3.5 w-3.5 rotate-90' />
         </Link>
       )}
       <ResolverLookup />
-      <p className='text-neutral text-lg'>
+      {/* <p className='text-neutral text-lg'>
         Deployed resolvers and delegated access are discovered onchain. You can also open a resolver by address.
         Personal labels and saved registration defaults are not available yet.
-      </p>
+      </p> */}
       {directory.owned.isError && <QueryError error={directory.owned.error} retry={() => directory.owned.refetch()} />}
       {directory.delegated.isLoading && <p className='text-neutral text-lg'>Checking shared resolvers…</p>}
       {directory.delegated.isError && (
@@ -258,8 +259,8 @@ export default function ResolverList() {
         <div className='overflow-x-auto'>
           <table className={tableClass}>
             <thead>
-              <tr>
-                {['Resolver', 'Your access', 'Configurations', 'Names', 'Last activity', ''].map((label) => (
+              <tr className='border-tertiary border-b'>
+                {['Resolver', 'Your access', 'Configs.', 'Names', 'Updated'].map((label) => (
                   <th key={label} className={thClass}>
                     {label}
                   </th>
@@ -279,3 +280,5 @@ export default function ResolverList() {
     </div>
   )
 }
+
+export default ResolverList

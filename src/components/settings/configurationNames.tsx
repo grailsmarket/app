@@ -23,9 +23,14 @@ import {
 } from '@/utils/settings/nameAssignments'
 import { config } from '@/lib/config'
 import { useSettingsDirty } from './navigationGuard'
-import { QueryError, SettingsNotice, TransactionStatus, tableClass, tdClass, thClass, trClass } from './shared'
+import { QueryError, SettingsNotice, tableClass, tdClass, thClass, trClass } from './shared'
 
-export default function ConfigurationNames({ resolver, id }: { resolver: Address; id?: bigint }) {
+interface ConfigurationNamesProps {
+  resolver: Address
+  id?: bigint
+}
+
+const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id }) => {
   const { address } = useAccount()
   const data = useConfigurationNames(resolver)
   const transaction = useSettingsTransaction()
@@ -166,17 +171,8 @@ export default function ConfigurationNames({ resolver, id }: { resolver: Address
         <p className='text-neutral px-3 py-2 text-lg'>No known names use this configuration.</p>
       )}
       {data.catalog.canLink ? (
-        <div className='border-tertiary flex flex-col gap-4 border-t pt-5'>
-          <h3 className='text-xl font-semibold'>Assign names</h3>
+        <div className='border-tertiary flex flex-col gap-4 pt-2'>
           <div className='flex flex-col gap-2'>
-            <Textarea
-              label='Names'
-              rows={1}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              disabled={locked || checking}
-              placeholder={'name.eth, sub.name.eth'}
-            />
             {id === undefined && (
               <Input
                 label='Configuration ID'
@@ -189,8 +185,26 @@ export default function ConfigurationNames({ resolver, id }: { resolver: Address
                 placeholder='0 for resolver default'
               />
             )}
+            <div className='flex items-center gap-2'>
+              <Textarea
+                label='Names'
+                rows={1}
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                disabled={locked || checking}
+                placeholder={'name.eth, sub.name.eth'}
+              />
+              <SecondaryButton
+                className='hidden h-12! w-28 items-center justify-center text-nowrap sm:flex'
+                disabled={!input.trim() || !targetId || checking || locked}
+                onClick={() => queue(input.split(/[\s,]+/).filter(Boolean), BigInt(targetId), true)}
+              >
+                {checking ? 'Checking names…' : 'Add names'}
+              </SecondaryButton>
+            </div>
           </div>
           <SecondaryButton
+            className='sm:hidden'
             disabled={!input.trim() || !targetId || checking || locked}
             onClick={() => queue(input.split(/[\s,]+/).filter(Boolean), BigInt(targetId), true)}
           >
@@ -201,15 +215,20 @@ export default function ConfigurationNames({ resolver, id }: { resolver: Address
         <SettingsNotice>You need the resolver’s Link permission to change name assignments.</SettingsNotice>
       )}
       {error && <SettingsNotice error>{error}</SettingsNotice>}
-      <TransactionStatus transaction={transaction} />
-      <div className='flex flex-wrap gap-3 pt-4'>
-        <PrimaryButton onClick={save} disabled={!changes.length || locked || checking}>
+      <div className='border-tertiary mt-4 flex gap-3 border-t pt-4'>
+        <PrimaryButton className='w-1/2' onClick={save} disabled={!changes.length || locked || checking}>
           {transaction.busy ? 'Saving changes…' : 'Save changes'}
         </PrimaryButton>
-        <SecondaryButton disabled={!changes.length || locked || checking} onClick={() => setChanges([])}>
+        <SecondaryButton
+          className='w-1/2'
+          disabled={!changes.length || locked || checking}
+          onClick={() => setChanges([])}
+        >
           Reset changes
         </SecondaryButton>
       </div>
     </div>
   )
 }
+
+export default ConfigurationNames

@@ -5,6 +5,7 @@ import { RootState } from '../../index'
 type EditRecordsModalState = {
   open: boolean
   name: string | null
+  version: number | null
   metadata: Record<string, string> | null
   defaultTab: 'records' | 'roles'
 }
@@ -13,6 +14,7 @@ type EditRecordsModalState = {
 const initialState: EditRecordsModalState = {
   open: false,
   name: null,
+  version: null,
   metadata: null,
   defaultTab: 'records',
 }
@@ -27,6 +29,11 @@ export const EditRecordsModalSlice = createSlice({
     },
     setEditRecordsModalName(state, { payload }: PayloadAction<string | null>) {
       state.name = payload
+      state.version = null
+      state.defaultTab = 'records'
+    },
+    setEditRecordsModalVersion(state, { payload }: PayloadAction<number | null>) {
+      state.version = payload
     },
     setEditRecordsModalMetadata(state, { payload }: PayloadAction<Record<string, string> | null>) {
       state.metadata = payload
@@ -41,6 +48,7 @@ export const EditRecordsModalSlice = createSlice({
 export const {
   setEditRecordsModalOpen,
   setEditRecordsModalName,
+  setEditRecordsModalVersion,
   setEditRecordsModalMetadata,
   setEditRecordsModalDefaultTab,
 } = EditRecordsModalSlice.actions

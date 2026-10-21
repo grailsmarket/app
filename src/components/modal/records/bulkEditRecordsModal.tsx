@@ -408,7 +408,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                     <div className='grid grid-cols-2 gap-3 px-4 sm:px-6'>
                       {SOCIAL_RECORDS.map((social) => (
                         <div key={social.key} className='flex'>
-                          <div className='bg-background border-tertiary flex h-12 min-w-[48px] items-center justify-center rounded-l-md border border-r-0'>
+                          <div className='bg-background border-tertiary flex h-12 min-w-12 items-center justify-center rounded-l-md border border-r-0'>
                             <Image src={social.icon} alt={social.label} width={20} height={20} />
                           </div>
                           <input
@@ -705,7 +705,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
                               <div className='grid grid-cols-2 gap-3'>
                                 {SOCIAL_RECORDS.map((social) => (
                                   <div key={social.key} className='flex'>
-                                    <div className='bg-background border-tertiary flex h-12 min-w-[48px] items-center justify-center rounded-l-md border border-r-0'>
+                                    <div className='bg-background border-tertiary flex h-12 min-w-12 items-center justify-center rounded-l-md border border-r-0'>
                                       <Image src={social.icon} alt={social.label} width={20} height={20} />
                                     </div>
                                     <input

@@ -597,4 +597,4 @@ export const NAME_WRAPPER_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-]
+] as const

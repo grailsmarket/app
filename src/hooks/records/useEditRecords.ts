@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
-import { mainnet } from 'viem/chains'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,6 +11,7 @@ import { fetchNameRoles } from '@/api/name/roles'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { config } from '@/lib/config'
+import { activeChain } from '@/constants/web3/chain'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
 
@@ -387,7 +387,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           abi: PublicResolverAbi,
           functionName: 'multicall',
           args: [calls],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTxHash(hash)
@@ -415,7 +415,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
             abi: RegistryAbi,
             functionName: 'setOwner',
             args: [node, effectiveManager],
-            chain: mainnet,
+            chain: activeChain,
           })
         } else {
           // NFT owner can use reclaim on the BaseRegistrar
@@ -424,7 +424,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
             abi: BaseRegistrarAbi,
             functionName: 'reclaim',
             args: [tokenId, effectiveManager],
-            chain: mainnet,
+            chain: activeChain,
           })
         }
 
@@ -450,7 +450,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
           abi: BaseRegistrarAbi,
           functionName: 'safeTransferFrom',
           args: [ownerAddress, effectiveOwner, tokenId],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTxHash(hash)

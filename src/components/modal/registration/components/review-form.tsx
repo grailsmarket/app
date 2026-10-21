@@ -15,11 +15,11 @@ import type {
 import { timeUnitOptions } from '@/constants/registration'
 import PerNameDurationEditor from './per-name-duration-editor'
 import CustomOwnerSection from './custom-owner-section'
+import ResolverSection from './resolver-section'
 import CostSummary from './cost-summary'
 import Calendar from 'public/icons/calendar.svg'
 import { Address } from 'viem'
 import { registrationAssets } from '@/constants/web3/tokens'
-// import ReverseRecordSection from './reverse-record'
 
 interface ReviewFormProps {
   isBulk: boolean
@@ -47,9 +47,12 @@ interface ReviewFormProps {
   setCustomOwner: (value: string) => void
   debouncedCustomOwner: string
   account: AccountResponseType | null | undefined
-  reverseRecord: boolean
-  setReverseRecord: (reverseRecord: boolean) => void
   isResolving: boolean
+  resolver: string
+  setResolver: (value: string) => void
+  resolverError: string | null
+  isCheckingResolver: boolean
+  hasRegistrationParameters: boolean
   calculationResults: CalculationResults | null
   hasSufficientBalance: SufficientBalanceResults
   allNamesValid: boolean
@@ -95,8 +98,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   debouncedCustomOwner,
   account,
   isResolving,
-  // reverseRecord,
-  // setReverseRecord,
+  resolver,
+  setResolver,
+  resolverError,
+  isCheckingResolver,
+  hasRegistrationParameters,
   calculationResults,
   hasSufficientBalance,
   allNamesValid,
@@ -116,95 +122,107 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 }) => {
   return (
     <div className='flex w-full flex-col gap-2 sm:gap-2'>
-      <div className='flex w-full flex-row gap-2'>
-        <Dropdown
-          label='Unit'
-          hideLabel={true}
-          options={timeUnitOptions}
-          value={timeUnit}
-          onSelect={(value) => onTimeUnitChange(String(value))}
-          className='h-12! w-2/5'
-        />
-        {registrationMode === 'register_for' ? (
-          <Input
-            type='number'
-            label='Quantity'
-            placeholder='Number'
-            min={1}
+      {hasRegistrationParameters && (
+        <p className='text-neutral text-sm'>These settings are fixed for your pending registration.</p>
+      )}
+      <fieldset disabled={hasRegistrationParameters} className='flex min-w-0 flex-col gap-2 disabled:opacity-70'>
+        <div className='flex w-full flex-row gap-2'>
+          <Dropdown
+            label='Unit'
             hideLabel={true}
-            className='w-3/5'
-            value={quantity || ''}
-            onChange={(e) => onQuantityChange(Number(e.target.value))}
+            options={timeUnitOptions}
+            value={timeUnit}
+            onSelect={(value) => onTimeUnitChange(String(value))}
+            className='h-12! w-2/5'
           />
-        ) : (
-          <>
-            <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
-              {customDuration
-                ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                : 'Select Date'}
-            </PrimaryButton>
-            {showDatePicker && (
-              <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
-                <DatePicker
-                  onSelect={onCustomDateSelect}
-                  onClose={() => setShowDatePicker(false)}
-                  className='w-full max-w-sm'
-                />
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      <button
-        onClick={onSelectCustomDate}
-        className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
-      >
-        <p>Select a custom date</p>
-        <Image src={Calendar} alt='calendar' width={18} height={18} />
-      </button>
-      {isBulk && (
-        <PerNameDurationEditor
-          entries={entries}
-          availableEntries={availableEntries}
-          entryDurations={entryDurations}
-          perNamePrices={perNamePrices}
-          timeUnit={timeUnit}
-          quantity={quantity}
-          customDuration={customDuration}
-          showPerNameDurations={showPerNameDurations}
-          setShowPerNameDurations={setShowPerNameDurations}
-          setPerNameDatePickerIndex={setPerNameDatePickerIndex}
-          onEntryDurationChange={onEntryDurationChange}
-          onEntryQuantityChange={onEntryQuantityChange}
-        />
-      )}
-      {perNameDatePickerIndex !== null && (
-        <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
-          <DatePicker
-            onSelect={onEntryDateSelect}
-            onClose={() => setPerNameDatePickerIndex(null)}
-            className='w-full max-w-sm'
-          />
+          {registrationMode === 'register_for' ? (
+            <Input
+              type='number'
+              label='Quantity'
+              placeholder='Number'
+              min={1}
+              hideLabel={true}
+              className='w-3/5'
+              value={quantity || ''}
+              onChange={(e) => onQuantityChange(Number(e.target.value))}
+            />
+          ) : (
+            <>
+              <PrimaryButton onClick={() => setShowDatePicker(true)} className='h-12! w-full'>
+                {customDuration
+                  ? new Date(customDuration * 1000 + Date.now()).toLocaleDateString(navigator.language || 'en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : 'Select Date'}
+              </PrimaryButton>
+              {showDatePicker && (
+                <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+                  <DatePicker
+                    onSelect={onCustomDateSelect}
+                    onClose={() => setShowDatePicker(false)}
+                    className='w-full max-w-sm'
+                  />
+                </div>
+              )}
+            </>
+          )}
         </div>
-      )}
-      <Dropdown
-        label='Currency'
-        options={registrationAssets}
-        value={asset}
-        onSelect={(value) => setAsset(value as Address)}
-      />
-      <CustomOwnerSection
-        showCustomOwner={showCustomOwner}
-        setShowCustomOwner={setShowCustomOwner}
-        customOwner={customOwner}
-        setCustomOwner={setCustomOwner}
-        debouncedCustomOwner={debouncedCustomOwner}
-        account={account}
-        isResolving={isResolving}
-      />
+        <button
+          onClick={onSelectCustomDate}
+          className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
+        >
+          <p>Select a custom date</p>
+          <Image src={Calendar} alt='calendar' width={18} height={18} />
+        </button>
+        {isBulk && (
+          <PerNameDurationEditor
+            entries={entries}
+            availableEntries={availableEntries}
+            entryDurations={entryDurations}
+            perNamePrices={perNamePrices}
+            asset={asset}
+            timeUnit={timeUnit}
+            quantity={quantity}
+            customDuration={customDuration}
+            showPerNameDurations={showPerNameDurations}
+            setShowPerNameDurations={setShowPerNameDurations}
+            setPerNameDatePickerIndex={setPerNameDatePickerIndex}
+            onEntryDurationChange={onEntryDurationChange}
+            onEntryQuantityChange={onEntryQuantityChange}
+          />
+        )}
+        {perNameDatePickerIndex !== null && (
+          <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-center justify-center bg-black/40 p-3 backdrop-blur-sm md:p-6'>
+            <DatePicker
+              onSelect={onEntryDateSelect}
+              onClose={() => setPerNameDatePickerIndex(null)}
+              className='w-full max-w-sm'
+            />
+          </div>
+        )}
+        <Dropdown
+          label='Currency'
+          options={registrationAssets}
+          value={asset}
+          onSelect={(value) => setAsset(value as Address)}
+        />
+        <CustomOwnerSection
+          showCustomOwner={showCustomOwner}
+          setShowCustomOwner={setShowCustomOwner}
+          customOwner={customOwner}
+          setCustomOwner={setCustomOwner}
+          debouncedCustomOwner={debouncedCustomOwner}
+          account={account}
+          isResolving={isResolving}
+        />
+        <ResolverSection
+          resolver={resolver}
+          setResolver={setResolver}
+          isLoading={isCheckingResolver}
+          error={resolverError}
+        />
+      </fieldset>
       <CostSummary
         calculationResults={calculationResults}
         isBulk={isBulk}
@@ -216,12 +234,13 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         gasPrice={gasPrice}
         asset={asset}
       />
-      {/* <ReverseRecordSection reverseRecord={reverseRecord} setReverseRecord={setReverseRecord} /> */}
       <div className='flex flex-col gap-2'>
         <PrimaryButton
           onClick={handleCommit}
           disabled={
             !calculationResults ||
+            isCheckingResolver ||
+            (!!resolver.trim() && !!resolverError) ||
             !hasSufficientBalance ||
             !allNamesValid ||
             !allDurationsValid ||

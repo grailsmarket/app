@@ -25,6 +25,9 @@ const CostSummary: React.FC<CostSummaryProps> = ({
   gasPrice,
   asset,
 }) => {
+  const durationDiscount = calculationResults?.durationDiscount
+  const hasDurationDiscount = !!durationDiscount && durationDiscount.amount > 0
+
   return (
     <div className='flex flex-col gap-2'>
       {calculationResults && (
@@ -36,8 +39,17 @@ const CostSummary: React.FC<CostSummaryProps> = ({
                 <p className='font-medium'>{calculationResults.durationYears.toFixed(2)} years</p>
               </div>
             )}
+            {hasDurationDiscount && (
+              <div className='flex items-center justify-between gap-2 text-green-400'>
+                <p>Duration discount:</p>
+                <p className='text-right font-medium'>
+                  -{durationDiscount.amount.toFixed(2)} {TOKENS[asset]} (
+                  {Number(durationDiscount.percentage.toFixed(2))}%)
+                </p>
+              </div>
+            )}
             <div className='flex items-center justify-between'>
-              <p>Total Cost (ETH):</p>
+              <p>Registration cost:</p>
               <div className='flex flex-col items-end'>
                 <p className='font-medium'>
                   {calculationResults.priceUSD.toFixed(2)} {TOKENS[asset]}

@@ -23,6 +23,7 @@ const configSchema = z.object({
   openseaApiKey: z.string(),
   openseaApiUrl: z.string(),
 
+  // V2 contracts
   ensV2Registry: address(),
   ensV2Registrar: address(),
   ensV2RenewerV1: address(),
@@ -31,6 +32,7 @@ const configSchema = z.object({
   ensV2MigrationHelper: address(),
   ensV2BatchRegistrar: address(),
 
+  // V1 contracts
   ensRegistry: address(),
   ensRegistrar: address(),
   ensRegistrarController: address(),

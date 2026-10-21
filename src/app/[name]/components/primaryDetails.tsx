@@ -112,6 +112,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
         {
           name: nameDetails.name,
           tokenId: nameDetails.token_id,
+          version: nameDetails.version,
           owner: nameDetails.owner,
           expiry_date: nameDetails.expiry_date,
         },

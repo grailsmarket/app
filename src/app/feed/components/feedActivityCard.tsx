@@ -142,7 +142,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
                 <User
                   address={activity.actor_address}
                   wrapperClassName='justify-start'
-                  className='max-w-full py-[3px] @[40rem]/app:py-1'
+                  className='py-0.75] max-w-full @[40rem]/app:py-1'
                   avatarSize={width && width < 768 ? '20px' : '24px'}
                   alignTooltip='left'
                 />

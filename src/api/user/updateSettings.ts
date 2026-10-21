@@ -38,6 +38,7 @@ export const updateSettings = async ({
       notifyOnCommentReceived: notifyOnCommentReceived || false,
     }),
   })
+  if (!response.ok) throw new Error('Could not save your settings. Please try again.')
 
   const json = (await response.json()) as APIResponseType<ProfileResponseType>
   return json

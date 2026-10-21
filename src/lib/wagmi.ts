@@ -88,6 +88,19 @@ const supportedChains: ChainWithDetails[] = [
       },
     },
   },
+  ...(process.env.NEXT_PUBLIC_CHAIN_ID === String(sepolia.id)
+    ? [
+        {
+          ...sepolia,
+          iconBackground: 'bg-zinc-300',
+          iconUrl: '/chains/ethereum.svg',
+          custom: {
+            chainDetail: 'Testnet',
+            gasFeeDetail: '',
+          },
+        },
+      ]
+    : []),
   {
     ...base,
     iconUrl: '/chains/base.svg',

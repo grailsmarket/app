@@ -88,4 +88,4 @@ export const BULK_TRANSFER_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-]
+] as const

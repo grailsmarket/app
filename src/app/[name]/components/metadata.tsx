@@ -19,6 +19,7 @@ import { config } from '@/lib/config'
 
 interface NameDetailsProps {
   name: string
+  version?: number
   registrationStatus: RegistrationStatus
   nameOwner?: string | null
   metadata?: MetadataType[]
@@ -28,6 +29,7 @@ interface NameDetailsProps {
 
 const Metadata: React.FC<NameDetailsProps> = ({
   name,
+  version,
   registrationStatus,
   nameOwner,
   metadata = [],
@@ -37,7 +39,9 @@ const Metadata: React.FC<NameDetailsProps> = ({
   const [isMetadataOpen, setIsMetadataOpen] = useState(true)
   const { userAddress, authStatus } = useUserContext()
   const isNameOwner = authStatus === 'authenticated' && nameOwner?.toLowerCase() === userAddress?.toLowerCase()
-  const canEditMetadata = isNameOwner && registrationStatus === REGISTERED
+  // Resolver delegates can edit V2 records without owning the name; the modal checks their onchain roles.
+  const canEditMetadata =
+    (isNameOwner || (version === 2 && authStatus === 'authenticated')) && registrationStatus === REGISTERED
 
   // Mirror the cache-busting flow used by `NameImage` so a metadata refresh
   // also blows past any cached avatar/header image bytes. See `imageRefresh`

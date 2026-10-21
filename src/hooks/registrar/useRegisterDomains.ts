@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Address, createPublicClient, erc20Abi, Hex, http, maxUint256, toHex } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
@@ -7,10 +7,12 @@ import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { ENS_V2_REGISTRAR } from '@/constants/web3/abi/RegistrarV2'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { useRentPriceOracle } from './useRentPriceOracle'
 
 const useRegisterDomains = () => {
   const getWalletClient = useGetWalletClient()
-  const publicClient = useMemo(() => createPublicClient({ chain: activeChain, transport: http() }), [])
+  const getRegistrationPricing = useRentPriceOracle()
+  const publicClient = createPublicClient({ chain: activeChain, transport: http() })
   const [isApproving, setIsApproving] = useState(false)
   const [approvalTxHash, setApprovalTxHash] = useState<Hex | null>(null)
 
@@ -42,7 +44,7 @@ const useRegisterDomains = () => {
   const getRegistrationsPrice = async (
     labels: string[],
     durations: bigint[],
-    token: Address
+    asset: Address
   ): Promise<{
     prices: readonly bigint[]
     total: bigint
@@ -54,7 +56,7 @@ const useRegisterDomains = () => {
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'registerQuote',
-        args: [labels, durations, token],
+        args: [labels, durations, asset],
       })
 
       return {
@@ -72,7 +74,7 @@ const useRegisterDomains = () => {
     owner: Address,
     durations: bigint[],
     secret: Hex,
-    reverseRecord: number = 0
+    resolver: Address
   ): Promise<Hex[]> => {
     if (!publicClient) throw new Error('Public client not available')
 
@@ -81,7 +83,7 @@ const useRegisterDomains = () => {
         address: config.ensBulkRegistrar,
         abi: BULK_REGISTRAR_ABI,
         functionName: 'makeCommitments',
-        args: [labels, owner, durations, secret, toHex(0, { size: 20 }), config.ensPublicResolver],
+        args: [labels, owner, durations, secret, toHex(0, { size: 20 }), resolver],
       })
       return result as Hex[]
     } catch (error) {
@@ -116,8 +118,8 @@ const useRegisterDomains = () => {
     durations: bigint[],
     secret: Hex,
     value: bigint,
-    reverseRecord: number = 0,
-    token: Address
+    token: Address,
+    resolver: Address
   ): Promise<Hex> => {
     const walletClient = await getWalletClient()
 
@@ -125,7 +127,7 @@ const useRegisterDomains = () => {
       address: config.ensBulkRegistrar,
       abi: BULK_REGISTRAR_ABI,
       functionName: 'multiRegister',
-      args: [labels, owner, durations, secret, toHex(0, { size: 20 }), config.ensPublicResolver, token, value],
+      args: [labels, owner, durations, secret, toHex(0, { size: 20 }), resolver, token, value],
       account: walletClient.account,
       chain: activeChain,
     } as const
@@ -164,40 +166,6 @@ const useRegisterDomains = () => {
         }
       }
 
-      const registrar = await publicClient.readContract({
-        address: config.ensBulkRegistrar,
-        abi: BULK_REGISTRAR_ABI,
-        functionName: 'REGISTRAR',
-      })
-      const registrarAllowanceArgs = {
-        ...allowanceArgs,
-        args: [config.ensBulkRegistrar, registrar],
-      } as const
-      const registrarAllowance = await publicClient.readContract(registrarAllowanceArgs)
-
-      if (registrarAllowance < value) {
-        setApprovalTxHash(null)
-        setIsApproving(true)
-
-        try {
-          const approvalTx = await walletClient.writeContract({
-            address: config.ensBulkRegistrar,
-            abi: BULK_REGISTRAR_ABI,
-            functionName: 'approveToken',
-            args: [token],
-            chain: activeChain,
-          })
-          setApprovalTxHash(approvalTx)
-
-          const receipt = await waitForTransaction(publicClient, approvalTx)
-          if (receipt.status !== 'success') throw new Error('Registrar asset approval failed')
-          if ((await publicClient.readContract(registrarAllowanceArgs)) < value)
-            throw new Error('Registrar asset allowance is insufficient')
-        } finally {
-          setIsApproving(false)
-        }
-      }
-
       let gasLimit = BigInt(500_000) * BigInt(labels.length)
 
       try {
@@ -225,8 +193,8 @@ const useRegisterDomains = () => {
   }
 
   const calculateDomainPriceUSD = (name: string, years: number): number => {
-    const nameLength = name.replace('.eth', '').length
-    const yearlyPrice = nameLength === 3 ? 640 : nameLength === 4 ? 160 : 5
+    const nameLength = Array.from(name.replace(/\.eth$/, '')).length
+    const yearlyPrice = nameLength === 3 ? 640 : nameLength === 4 ? 160 : 8
     return yearlyPrice * years
   }
 
@@ -276,6 +244,7 @@ const useRegisterDomains = () => {
     generateSecret,
     checkBulkAvailable,
     getRegistrationsPrice,
+    getRegistrationPricing,
     makeBulkCommitments,
     submitMultiCommit,
     submitMultiRegister,

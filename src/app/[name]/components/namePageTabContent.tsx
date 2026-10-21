@@ -67,21 +67,23 @@ const NamePageTabContent: React.FC<Props> = ({
         <>
           <Metadata
             name={name}
+            version={nameDetails?.version}
             registrationStatus={registrationStatus}
             nameOwner={nameDetails?.owner}
             metadata={metadata}
             isMetadataLoading={isMetadataLoading}
             openEditMetadataModal={openEditMetadataModal}
           />
+          <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
           <Roles
             name={name}
+            version={nameDetails?.version}
             registrationStatus={registrationStatus}
             nameOwner={nameDetails?.owner}
             metadata={metadata}
             roles={roles}
             isRolesLoading={isRolesLoading}
           />
-          <SecondaryDetails nameDetails={nameDetails} nameDetailsIsLoading={nameDetailsIsLoading} roles={roles} />
         </>
       )
     default:

@@ -10,7 +10,7 @@ import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
 import { config } from '@/lib/config'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 
 const size = {
   width: 1600,

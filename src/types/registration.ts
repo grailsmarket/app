@@ -1,7 +1,23 @@
-import { Hex } from 'viem'
+import { Address, Hex } from 'viem'
 import { MarketplaceDomainType } from './domains'
 
-export type RegistrationFlowState = 'review' | 'committing' | 'waiting' | 'registering' | 'success' | 'error'
+export type RegistrationFlowState =
+  | 'review'
+  | 'resolver'
+  | 'committing'
+  | 'waiting'
+  | 'registering'
+  | 'success'
+  | 'error'
+
+export interface RegistrationParameters {
+  account: Address
+  chainId: number
+  owner: Address
+  resolver: Address | null
+  durations: string[]
+  asset: Address
+}
 export type RegistrationMode = 'register_for' | 'register_to'
 export type TimeUnit = 'days' | 'weeks' | 'months' | 'years' | 'custom'
 
@@ -32,6 +48,7 @@ export interface CalculationResults {
   durationYears: number
   priceUSD: number
   priceETH: number
+  durationDiscount: { amount: number; percentage: number } | null
   isBelowMinimum: boolean
   isLoadingPrice: boolean
 }

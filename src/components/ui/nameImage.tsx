@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { consumeImageRefresh, selectImageRefreshKey } from '@/state/reducers/imageRefresh'
 import LoadingCell from './loadingCell'
 import { RegistrationStatus } from '@/types/domains'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants'
+import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
 
 const INTRINSIC_SIZE = 540
 

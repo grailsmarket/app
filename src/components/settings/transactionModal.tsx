@@ -98,7 +98,7 @@ const SettingsTransactionModal: React.FC<SettingsTransactionModalProps> = ({
           }
         }}
       >
-        <h2 id={titleId} className='text-xl font-bold'>
+        <h2 id={titleId} className='text-center text-xl font-bold'>
           {title}
         </h2>
         <div className='flex flex-col items-center gap-4 text-center' aria-live='polite'>

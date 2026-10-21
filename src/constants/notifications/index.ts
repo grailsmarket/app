@@ -1,10 +1,11 @@
-import plus from '/icons/listed.svg'
-import cartSold from '/icons/sold.svg'
-import alarmClock from '/icons/expiring.svg'
-import cartAccepted from '/icons/offer-accepted.svg'
-import { NotificationType } from '@/types/notifications'
+import plus from 'public/icons/listed.svg'
+import cartSold from 'public/icons/sold.svg'
+import alarmClock from 'public/icons/expiring.svg'
+import cartAccepted from 'public/icons/offer-accepted.svg'
 import Bell from 'public/icons/bell.svg'
 import AlarmClock from 'public/icons/expiring.svg'
+import Cancelled from 'public/icons/cancelled.svg'
+import { NotificationType } from '@/types/notifications'
 
 export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.ReactNode> = {
   'new-listing': plus,
@@ -18,8 +19,8 @@ export const NOTIFICATION_CATEGORY_TO_ICON_MAP: Record<NotificationType, React.R
   'admin-broadcast': Bell,
   chat_reply: Bell,
   chat_mention: Bell,
-  listing_cancelled: AlarmClock,
-  offer_cancelled: AlarmClock,
+  listing_cancelled: Cancelled,
+  offer_cancelled: Cancelled,
   listing_unfunded: AlarmClock,
   offer_unfunded: AlarmClock,
   listing_refunded: plus,

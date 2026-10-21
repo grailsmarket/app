@@ -47,9 +47,11 @@ export const prepareNameAssignment = async (
 ): Promise<NameAssignment> => {
   const name = normalize(input.trim())
   const binding = await readNameResolver(client, name, registry, account)
+
   if (!binding.registered) throw new Error(`${name} is not registered on this network.`)
   if (binding.resolver.toLowerCase() !== resolver.toLowerCase() && !binding.canSetResolver)
     throw new Error(`You do not have permission to change the resolver for ${name}.`)
+
   const initialId = await client.readContract({
     address: resolver,
     abi,

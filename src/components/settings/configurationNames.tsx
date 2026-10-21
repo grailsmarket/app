@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
@@ -22,6 +22,8 @@ import {
   type NameAssignment,
 } from '@/utils/settings/nameAssignments'
 import { config } from '@/lib/config'
+import { cn } from '@/utils/tailwind'
+import OwnedNamePicker from './ownedNamePicker'
 import { useSettingsDirty } from './navigationGuard'
 import { QueryError, SettingsNotice, tableClass, tdClass, thClass, trClass } from './shared'
 
@@ -35,18 +37,21 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
   const data = useConfigurationNames(resolver)
   const transaction = useSettingsTransaction()
   const [input, setInput] = useState('')
+  const [source, setSource] = useState<'owned' | 'manual'>('owned')
   const [resolverTargetId, setResolverTargetId] = useState('0')
   const targetId = id?.toString() ?? resolverTargetId
   const [changes, setChanges] = useState<NameAssignment[]>([])
   const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string>()
+  const checkingNames = useRef(false)
   const locked = transaction.busy || transaction.pending
 
   useSettingsDirty(!!input.trim() || changes.length > 0, transaction.busy || transaction.submitted, changes.length)
 
   const queue = async (names: string[], target: bigint, clearInput = false) => {
-    if (!address || !data.catalog) return
+    if (!address || !data.catalog || checkingNames.current || locked) return false
 
+    checkingNames.current = true
     setChecking(true)
     setError(undefined)
 
@@ -55,16 +60,30 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
         throw new Error('Enter an existing configuration ID, or 0 to use the resolver default.')
 
       const added: NameAssignment[] = []
-      for (const name of [...new Set(names)])
-        added.push(await prepareNameAssignment(data.client, resolver, config.ensV2Registry, address, name, target))
+      const uniqueNames = [...new Set(names)]
+
+      for (let offset = 0; offset < uniqueNames.length; offset += 5) {
+        const batch = await Promise.all(
+          uniqueNames
+            .slice(offset, offset + 5)
+            .map((name) => prepareNameAssignment(data.client, resolver, config.ensV2Registry, address, name, target))
+        )
+
+        added.push(...batch)
+      }
 
       data.rememberNames(added.map((item) => item.name))
       setChanges((previous) => mergeNameAssignments(previous, added, resolver))
 
       if (clearInput) setInput('')
+
+      return true
     } catch (error) {
       setError(roleErrorText(error))
+
+      return false
     } finally {
+      checkingNames.current = false
       setChecking(false)
     }
   }
@@ -78,7 +97,9 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
   if (data.state.isError) return <QueryError error={data.state.error} retry={() => data.state.refetch()} />
   if (!data.catalog) return <SettingsNotice>Loading name links…</SettingsNotice>
 
-  const visible = previewNameAssignments(data.names.data?.names ?? [], changes, data.catalog.defaultRecordId).filter(
+  const preview = previewNameAssignments(data.names.data?.names ?? [], changes, data.catalog.defaultRecordId)
+  const assignedNames = preview.filter((name) => name.recordId.toString() === targetId).map((name) => name.name)
+  const visible = preview.filter(
     (name) => id === undefined || (id === BigInt(0) ? name.recordId === BigInt(0) : name.effectiveId === id)
   )
 
@@ -185,7 +206,37 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
                 placeholder='0 for resolver default'
               />
             )}
-            <div className='flex items-center gap-2'>
+            <div className='border-tertiary mb-2 flex gap-5 border-b' aria-label='Add names from'>
+              {(['owned', 'manual'] as const).map((item) => (
+                <button
+                  key={item}
+                  type='button'
+                  aria-pressed={source === item}
+                  disabled={locked || checking}
+                  onClick={() => setSource(item)}
+                  className={cn(
+                    'cursor-pointer border-b-2 px-3 pb-2 text-lg font-semibold disabled:cursor-not-allowed',
+                    source === item
+                      ? 'border-primary text-primary'
+                      : 'text-neutral hover:text-foreground border-transparent'
+                  )}
+                >
+                  {item === 'owned' ? 'Your names' : 'Enter names'}
+                </button>
+              ))}
+            </div>
+            {address && (
+              <div hidden={source !== 'owned'}>
+                <OwnedNamePicker
+                  address={address}
+                  assignedNames={assignedNames}
+                  disabled={locked || checking || !targetId}
+                  checking={checking}
+                  onAdd={(names) => queue(names, BigInt(targetId))}
+                />
+              </div>
+            )}
+            <div className={cn('flex items-center gap-2', source !== 'manual' && 'hidden')}>
               <Textarea
                 label='Names'
                 rows={1}
@@ -204,7 +255,7 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
             </div>
           </div>
           <SecondaryButton
-            className='sm:hidden'
+            className={cn('sm:hidden', source !== 'manual' && 'hidden')}
             disabled={!input.trim() || !targetId || checking || locked}
             onClick={() => queue(input.split(/[\s,]+/).filter(Boolean), BigInt(targetId), true)}
           >

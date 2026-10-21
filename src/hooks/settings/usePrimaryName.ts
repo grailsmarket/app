@@ -4,7 +4,7 @@ import { normalize } from 'viem/ens'
 import { mainnet } from 'viem/chains'
 import { useUserContext } from '@/context/user'
 import { activeChain } from '@/constants/web3/chain'
-import { fetchPrimaryNameOptions } from '@/api/user/primaryNameOptions'
+import { fetchOwnedNames } from '@/api/user/ownedNames'
 import { useDebounce } from '@/hooks/useDebounce'
 import { accountQueryKey } from '@/utils/queryKeys'
 import {
@@ -45,7 +45,7 @@ export const usePrimaryName = () => {
     queryKey: ['settings', 'primary-name-options', userAddress, debouncedSearch],
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) =>
-      fetchPrimaryNameOptions({ address: userAddress!, search: debouncedSearch, page: pageParam, signal }),
+      fetchOwnedNames({ address: userAddress!, search: debouncedSearch, page: pageParam, signal }),
     getNextPageParam: (last) => last.nextPage,
     enabled: authenticated && editing,
     retry: false,

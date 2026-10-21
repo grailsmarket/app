@@ -5,14 +5,14 @@ import type { Address } from 'viem'
 import type { MarketplaceDomainType } from '@/types/domains'
 import type { APIResponseType, PaginationType } from '@/types/api'
 
-interface PrimaryNameOptionsParams {
+interface OwnedNamesParams {
   address: Address
   search: string
   page: number
   signal?: AbortSignal
 }
 
-export const fetchPrimaryNameOptions = async ({ address, search, page, signal }: PrimaryNameOptionsParams) => {
+export const fetchOwnedNames = async ({ address, search, page, signal }: OwnedNamesParams) => {
   const params = buildQueryParamString({
     'filters[owner]': address,
     q:

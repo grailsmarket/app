@@ -9,6 +9,7 @@ import Link from 'next/link'
 import HoverPrefetchLink from '@/components/ui/hoverPrefetchLink'
 import Price from '@/components/ui/price'
 import { TOKEN_ADDRESSES } from '@/constants/web3/tokens'
+import { NOTIFICATION_CATEGORY_TO_MESSAGE } from '@/constants/notifications'
 // Icons
 import Listed from 'public/icons/listed.svg'
 import OfferMade from 'public/icons/bid.svg'
@@ -67,6 +68,13 @@ const NotificationRow: React.FC<NotificationRowProps> = ({ notification, onClick
         return 'Price changed'
       case 'comment-received':
         return 'New Comment'
+      case 'listing_cancelled':
+      case 'offer_cancelled':
+      case 'listing_unfunded':
+      case 'offer_unfunded':
+      case 'listing_refunded':
+      case 'offer_refunded':
+        return NOTIFICATION_CATEGORY_TO_MESSAGE[type]
       default:
         return type
     }

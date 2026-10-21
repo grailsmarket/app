@@ -14,7 +14,7 @@ import { Check } from 'ethereum-identity-kit'
 import { useQueryClient } from '@tanstack/react-query'
 import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { AcceptOfferDomain } from '@/state/reducers/modals/acceptOfferModal'
 import ClaimPoap from '../poap/claimPoap'
@@ -24,6 +24,8 @@ import { checkIfWrapped } from '@/api/domains/checkIfWrapped'
 import { beautifyName } from '@/lib/ens'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
 import { NFT_ABI } from '@/constants/web3/abi/NFTAbi'
+import { ETH_REGISTRY_ABI } from '@/constants/web3/abi/ETHRegistry'
+import { checkEnsV2Transferable, isEnsV2Name } from '@/lib/seaport/ensv2'
 import { TOKENS } from '@/constants/web3/tokens'
 import useETHPrice from '@/hooks/useETHPrice'
 import { cn } from '@/utils/tailwind'
@@ -44,7 +46,7 @@ type TransactionStep = 'review' | 'approving' | 'confirming' | 'processing' | 's
 const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onClose }) => {
   const { address } = useAccount()
   const queryClient = useQueryClient()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const [step, setStep] = useState<TransactionStep>('review')
@@ -68,6 +70,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   if (!offer || !domain) return null
 
   const ensName = beautifyName(domain.name)
+  // ENSv2 names are ERC1155 tokens on the ETHRegistry
+  const isV2 = isEnsV2Name(offer)
 
   const estimateGas = async () => {
     try {
@@ -127,8 +131,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       if (!address || !publicClient || !domain) return
 
       // Determine which NFT contract to check based on if the name is wrapped
-      const isWrapped = await checkIfWrapped(ensName)
-      const nftContract = isWrapped ? config.ensNameWrapper : config.ensRegistrar
+      const isWrapped = isV2 ? false : await checkIfWrapped(ensName)
+      const nftContract = isV2 ? config.ensV2Registry : isWrapped ? config.ensNameWrapper : config.ensRegistrar
 
       console.log('Parameters:', offer)
       // Read the conduitKey from the normalized order rather than the raw order_data.
@@ -150,7 +154,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       // Check if Seaport is approved to transfer the NFT
       const isApproved = await publicClient.readContract({
         address: nftContract as `0x${string}`,
-        abi: isWrapped ? NAME_WRAPPER_ABI : NFT_ABI,
+        abi: isV2 ? ETH_REGISTRY_ABI : isWrapped ? NAME_WRAPPER_ABI : NFT_ABI,
         functionName: 'isApprovedForAll',
         args: [address, conduitAddress],
       })
@@ -176,8 +180,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       const walletClient = await getWalletClient()
 
       // Determine which NFT contract to approve based on if the name is wrapped
-      const isWrapped = await checkIfWrapped(ensName)
-      const nftContract = isWrapped ? config.ensNameWrapper : config.ensRegistrar
+      const isWrapped = isV2 ? false : await checkIfWrapped(ensName)
+      const nftContract = isV2 ? config.ensV2Registry : isWrapped ? config.ensNameWrapper : config.ensRegistrar
       // Read the conduitKey from the normalized order rather than the raw order_data.
       // Grails offers nest under `protocol_data`, but Vision offers store the bare
       // `{ parameters, signature }` shape; parseStoredOrder handles both and defaults
@@ -199,16 +203,16 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       console.log('Function name:', 'setApprovalForAll')
       console.log('Args:', [conduitAddress, true])
 
-      // Ensure we're on mainnet before approving
-      await ensureChain(walletClient, mainnet.id)
+      // Ensure we're on the ENS chain before approving
+      await ensureChain(walletClient, activeChain.id)
 
       // Approve Seaport to transfer the NFT
       const approveTx = await walletClient.writeContract({
         address: nftContract as `0x${string}`,
-        abi: isWrapped ? NAME_WRAPPER_ABI : NFT_ABI,
+        abi: isV2 ? ETH_REGISTRY_ABI : isWrapped ? NAME_WRAPPER_ABI : NFT_ABI,
         functionName: 'setApprovalForAll',
         args: [conduitAddress, true],
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setApproveTxHash(approveTx)
@@ -265,6 +269,30 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         throw new Error(validation.errors[0] || 'Invalid offer')
       }
 
+      // ENSv2 names: the offer must be for the name's current token ID, and the registry must
+      // allow the sale (otherwise the transaction reverts)
+      if (isV2) {
+        const nftItem = order.parameters.consideration.find(
+          (item) => item.token.toLowerCase() === config.ensV2Registry.toLowerCase()
+        )
+        if (!nftItem) {
+          throw new Error('This offer is not for an ENSv2 name')
+        }
+        const [check] = await checkEnsV2Transferable(
+          publicClient,
+          [{ name: ensName, tokenId: nftItem.identifierOrCriteria.toString() }],
+          address
+        )
+        if (check.tokenId.toString() !== BigInt(nftItem.identifierOrCriteria).toString()) {
+          throw new Error(
+            "This offer can't be accepted: it was made before the name's roles changed, which gave it a new token ID"
+          )
+        }
+        if (!check.ok) {
+          throw new Error(check.message)
+        }
+      }
+
       const isOpenseaOrder = offer.source === 'opensea'
       // Build advanced order for offer acceptance
       const advancedOrder = orderBuilder.buildAdvancedOrder(order, isOpenseaOrder, address)
@@ -298,8 +326,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       setStep('processing')
 
-      // Ensure we're on mainnet before executing the transaction
-      await ensureChain(walletClient, mainnet.id)
+      // Ensure we're on the ENS chain before executing the transaction
+      await ensureChain(walletClient, activeChain.id)
 
       // Execute the transaction
       const tx = await walletClient.writeContract({
@@ -314,7 +342,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         ],
         value: BigInt(0),
         gas: gasEstimate || undefined,
-        chain: mainnet,
+        chain: activeChain,
       })
 
       setTxHash(tx)

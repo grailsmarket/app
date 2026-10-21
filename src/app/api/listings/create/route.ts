@@ -6,6 +6,7 @@ import { SeaportStoredOrder } from '@/lib/seaport/seaportClient'
 import { APIResponseType, CreateListingsResultType } from '@/types/api'
 import { captureListingCreated } from '@/lib/posthog-server'
 import { config } from '@/lib/config'
+import { getListingTokenId } from '@/lib/seaport/ensv2'
 
 const OPENSEA_API_URL = process.env.OPENSEA_API_URL || 'https://api.opensea.io'
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY
@@ -101,7 +102,8 @@ export async function POST(request: NextRequest) {
 
             return {
               type,
-              token_id: domains[index * CREATE_BATCH_SIZE + orderIndex].token_id,
+              // ENSv2 names: the token ID the order was signed for (the name's current one)
+              token_id: getListingTokenId(order, domains[index * CREATE_BATCH_SIZE + orderIndex].token_id),
               price_wei: priceInSmallestUnit,
               currency_address: currencyAddress.toLowerCase(),
               order_data: JSON.stringify(order),
@@ -173,7 +175,24 @@ export async function POST(request: NextRequest) {
           )
         }
       }
-      return NextResponse.json({ grails: responses })
+      // Listings the backend refused (e.g. an ENSv2 name that isn't approved or can't be transferred)
+      const failures: string[] = []
+      for (let batchIdx = 0; batchIdx < responses.length; batchIdx++) {
+        const r = responses[batchIdx]
+        if (r instanceof Response) continue
+        for (const item of r?.data?.results ?? []) {
+          if (item?.status !== 'failed') continue
+          const domain = domains[batchIdx * CREATE_BATCH_SIZE + (typeof item.index === 'number' ? item.index : 0)]
+          failures.push(`${domain?.name ?? item.token_id}: ${item.error?.message ?? 'not created'}`)
+        }
+      }
+
+      return NextResponse.json({
+        grails: responses,
+        ...(failures.length > 0 && {
+          warning: `${failures.length} listing${failures.length === 1 ? ' was' : 's were'} not created. ${failures.join('; ')}`,
+        }),
+      })
     } catch (error: any) {
       console.error('Error creating orders on Grails marketplace:', error)
       return NextResponse.json(

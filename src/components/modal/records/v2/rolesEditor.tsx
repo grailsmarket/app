@@ -5,8 +5,14 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchAccount } from 'ethereum-identity-kit'
 import { type Address, type Hex, encodeAbiParameters, isAddress, stringToHex, zeroAddress } from 'viem'
 import Input from '@/components/ui/input'
+import Dropdown from '@/components/ui/dropdown'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-import { roleErrorText, type V2RoleEditor, type V2RoleTransaction } from '@/hooks/records/useV2Roles'
+import {
+  roleErrorText,
+  type RoleSectionData,
+  type V2RoleEditor,
+  type V2RoleTransaction,
+} from '@/hooks/records/useV2Roles'
 import { type RoleKind, readRoleAccess, RESOLVER_ROLE_DEFINITIONS } from '@/utils/records/v2Roles'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { recordPermission, validateRecordField } from '@/utils/records/v2Records'
@@ -16,16 +22,20 @@ import { accountQueryKey } from '@/utils/queryKeys'
 import InputWithResolution from '../components/inputWithResolution'
 import { RoleSection, type EditorRoleAssignment } from './rolesPanel'
 
-const AddAccount = ({
+export const AddRoleAccount = ({
   kind,
-  editor,
+  section,
+  viewer,
   onAdd,
   disabled,
+  showNameImage = false,
 }: {
   kind: RoleKind
-  editor: V2RoleEditor
+  section: RoleSectionData
+  viewer?: Address
   onAdd: (assignment: EditorRoleAssignment) => void
   disabled: boolean
+  showNameImage?: boolean
 }) => {
   const [open, setOpen] = useState(false)
   const [account, setAccount] = useState('')
@@ -60,7 +70,6 @@ const AddAccount = ({
       ? 'Enter a valid address or an ENS name that resolves to a non-zero address.'
       : null
   const client = useMemo(createV2RecordsClient, [])
-  const section = kind === 'name' ? editor.data.nameRoles : editor.data.resolverRoles
   const snapshot = section.snapshot.data
   const definition = RESOLVER_ROLE_DEFINITIONS.find((role) => role.id === scope)
   const add = async () => {
@@ -109,7 +118,7 @@ const AddAccount = ({
       setLoading(false)
     }
   }
-  if (!editor.data.address) return null
+  if (!viewer) return null
   if (!open)
     return (
       <SecondaryButton disabled={disabled} className='w-full' onClick={() => setOpen(true)}>
@@ -131,31 +140,30 @@ const AddAccount = ({
           autoComplete='off'
           spellCheck={false}
         />
-        <InputWithResolution value={input} resolvedAddress={targetAddress} isResolving={isResolving} />
+        <InputWithResolution
+          value={input}
+          resolvedAddress={targetAddress}
+          isResolving={isResolving}
+          showNameImage={showNameImage}
+        />
       </div>
       {kind === 'resolver' && (
-        <label className='flex'>
-          <span className='border-tertiary flex min-h-12 min-w-25 items-center rounded-l-md border border-r-0 px-4 py-3 text-lg font-semibold'>
-            Scope
-          </span>
-          <select
-            aria-label='Permission scope'
-            className='bg-secondary border-tertiary hover:bg-tertiary min-h-12 w-full min-w-0 rounded-r-md border px-4 text-lg outline-none focus:border-white/70'
-            value={scope}
-            disabled={disabled || loading}
-            onChange={(event) => {
-              setScope(event.target.value)
-              setKey('')
-            }}
-          >
-            <option value='root'>All records</option>
-            {RESOLVER_ROLE_DEFINITIONS.filter((role) => role.argument).map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.argument}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Dropdown
+          label='Scope'
+          value={scope}
+          disabled={disabled || loading}
+          options={[
+            { value: 'root', label: 'All records' },
+            ...RESOLVER_ROLE_DEFINITIONS.filter((role) => role.argument).map((role) => ({
+              value: role.id,
+              label: role.argument!,
+            })),
+          ]}
+          onSelect={(value) => {
+            setScope(String(value))
+            setKey('')
+          }}
+        />
       )}
       {definition?.argument && (
         <Input
@@ -226,10 +234,11 @@ const RolesEditor = ({ editor, transaction }: { editor: V2RoleEditor; transactio
             collapsible
           >
             {kind === 'name' ? (
-              <AddAccount
+              <AddRoleAccount
                 key={key}
                 kind={kind}
-                editor={editor}
+                section={data.nameRoles}
+                viewer={data.address}
                 disabled={disabled}
                 onAdd={(assignment) => editor.addAccount(key, assignment)}
               />

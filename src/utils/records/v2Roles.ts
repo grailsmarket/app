@@ -148,22 +148,22 @@ export const readRoleAccess = async (
 
 export const prepareRoleChange = async (
   client: PublicClient,
-  name: string,
+  name: string | null,
   ethRegistry: Address,
   account: Address,
   change: RoleChange
 ) => {
   const data = encodeRoleChange(change)
   const { resource, role } = roleChangeDetails(change)
-  const fresh = await readNameResolver(client, name, ethRegistry, account)
+  const fresh = name ? await readNameResolver(client, name, ethRegistry, account) : undefined
   if (change.kind === 'name') {
     if (
-      !fresh.registered ||
+      !fresh?.registered ||
       fresh.registry.toLowerCase() !== change.contract.toLowerCase() ||
       fresh.resource !== change.nameResource
     )
       throw new Error('This name’s registration changed. Reload its permissions before continuing.')
-  } else if (fresh.resolver.toLowerCase() !== change.contract.toLowerCase())
+  } else if (fresh && fresh.resolver.toLowerCase() !== change.contract.toLowerCase())
     throw new Error('This name’s resolver changed. Reload its permissions before continuing.')
   const access = await readRoleAccess(client, change.contract, resource, account)
   if (!hasRole(access.effective, adminRole(role.bit)))

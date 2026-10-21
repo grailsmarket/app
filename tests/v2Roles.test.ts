@@ -229,6 +229,17 @@ test('write preparation rechecks Admin authority and permits delegated non-owner
   )
 })
 
+test('standalone resolver settings verify authority without requiring a name, and reject name-role writes', async () => {
+  const client = {
+    readContract: async ({ functionName }: { functionName: string }) => {
+      assert.equal(functionName, 'roles')
+      return adminRole(setText)
+    },
+  } as unknown as PublicClient
+  assert.equal(await prepareRoleChange(client, null, registry, owner, resolverChange), encodeRoleChange(resolverChange))
+  await assert.rejects(prepareRoleChange(client, null, registry, owner, change), /registration changed/)
+})
+
 test('initial snapshots expose owner roles and effective operator access without inventing a direct grant', async () => {
   const client = {
     getBlockNumber: async () => BigInt(10),

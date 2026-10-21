@@ -27,7 +27,7 @@ const Textarea: React.FC<TextareaProps> = ({
         {!hideLabel && (
           <div
             className={cn(
-              'bg-background border-tertiary flex min-w-[100px] items-start rounded-l-md border border-r-0 px-4 py-3',
+              'bg-background border-tertiary flex min-w-25 items-start rounded-l-md border border-r-0 px-4 py-3',
               labelClassName
             )}
           >
@@ -45,7 +45,6 @@ const Textarea: React.FC<TextareaProps> = ({
             disabled && 'cursor-not-allowed opacity-50'
           )}
           placeholder={placeholder}
-          rows={3}
           disabled={disabled}
         />
       </div>

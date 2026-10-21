@@ -223,6 +223,7 @@ const discoverResolverHistory = async (
   const fields = new Map<string, V2RecordField[]>()
   const names: V2ResolverCatalog['names'] = new Map()
   const interfaces: V2ResolverCatalog['interfaces'] = new Map()
+  let lastActivityBlock: bigint | undefined
   if (recordCount > BigInt(0)) {
     const start = await findDeploymentBlock(client, resolver, blockNumber, signal)
     // Keep ranges within the configured public RPC's 1,000-block limit, with bounded concurrency.
@@ -243,6 +244,7 @@ const discoverResolverHistory = async (
               : 1
         )
       for (const log of parseEventLogs({ abi: resolverAbi, logs })) {
+        if (log.blockNumber !== null) lastActivityBlock = log.blockNumber
         if (!log.args || !('recordId' in log.args)) continue
         const id = log.args.recordId.toString()
         if (log.eventName === 'Linked') {
@@ -290,7 +292,7 @@ const discoverResolverHistory = async (
   if (BigInt(fields.size) !== recordCount) {
     throw new Error('The RPC returned incomplete configuration history.')
   }
-  return { ...state, historyComplete: true, fields, names, interfaces }
+  return { ...state, historyComplete: true, fields, names, interfaces, lastActivityBlock }
 }
 
 export const readResolverHistory = async (

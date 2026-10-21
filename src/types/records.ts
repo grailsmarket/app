@@ -31,6 +31,7 @@ export type V2ResolverCatalog = {
   linkedRecordId: bigint
   canLink: boolean
   historyComplete: boolean
+  lastActivityBlock?: bigint
   fields: Map<string, V2RecordField[]>
   // The latest links include internal placeholder names, so they are not name counts.
   names: Map<Hex, { recordId: bigint; dnsName: Hex }>

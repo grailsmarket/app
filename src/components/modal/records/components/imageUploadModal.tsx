@@ -18,17 +18,25 @@ interface ImageUploadModalProps {
   currentValue?: string
   onSave: (url: string) => void
   onClose: () => void
+  allowUpload?: boolean
 }
 
 type UploadMode = 'file' | 'url'
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error'
 
-const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, currentValue, onSave, onClose }) => {
+const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
+  name,
+  imageType,
+  currentValue,
+  onSave,
+  onClose,
+  allowUpload = true,
+}) => {
   const { address } = useAccount()
   const { signTypedDataAsync } = useSignTypedData()
 
   const hasExistingUrl = currentValue && currentValue.startsWith('http')
-  const [mode, setMode] = useState<UploadMode>(hasExistingUrl ? 'url' : 'file')
+  const [mode, setMode] = useState<UploadMode>(hasExistingUrl || !allowUpload ? 'url' : 'file')
   const [dataURL, setDataURL] = useState<string | null>(null)
   const [manualUrl, setManualUrl] = useState(hasExistingUrl ? currentValue : '')
   const [previewUrl, setPreviewUrl] = useState<string | null>(hasExistingUrl ? currentValue : null)
@@ -176,14 +184,16 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({ name, imageType, cu
       >
         <h2 className='font-sedan-sc text-foreground text-2xl capitalize'>{imageType} Image</h2>
 
-        <TabSelector
-          tabs={[
-            { label: 'Upload File', value: 'file' },
-            { label: 'Enter URL', value: 'url' },
-          ]}
-          selectedTab={mode}
-          setSelectedTab={(tab) => setMode(tab as 'file' | 'url')}
-        />
+        {allowUpload && (
+          <TabSelector
+            tabs={[
+              { label: 'Upload File', value: 'file' },
+              { label: 'Enter URL', value: 'url' },
+            ]}
+            selectedTab={mode}
+            setSelectedTab={(tab) => setMode(tab as 'file' | 'url')}
+          />
+        )}
 
         {mode === 'file' ? (
           <>

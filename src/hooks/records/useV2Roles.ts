@@ -37,7 +37,7 @@ export const roleErrorText = (error: unknown) =>
       ? error.message
       : 'Could not load permissions.'
 
-const useRoleSection = (kind: RoleKind, contract?: Address, resource = BigInt(0), enabled = true) => {
+export const useRoleSection = (kind: RoleKind, contract?: Address, resource = BigInt(0), enabled = true) => {
   const { address } = useAccount()
   const client = useMemo(createV2RecordsClient, [])
   const snapshot = useQuery({
@@ -136,6 +136,11 @@ export const useV2RoleAuthority = (change?: RoleChange) => {
 
 export const useV2RoleEditor = (name: string, enabled: boolean) => {
   const data = useV2Roles(name, enabled)
+  const editor = useRoleDraftEditor(data.address)
+  return { ...editor, data }
+}
+
+export const useRoleDraftEditor = (address?: Address) => {
   const [drafts, setDrafts] = useState<RoleDrafts>({})
   const [confirmed, setConfirmed] = useState<Record<string, boolean>>({})
   const [accounts, setAccounts] = useState<Record<string, (RoleAssignment & { roleId?: string })[]>>({})
@@ -147,7 +152,7 @@ export const useV2RoleEditor = (name: string, enabled: boolean) => {
   const checked = (change: RoleChange, value: boolean) =>
     drafts[roleChangeKey(change)]?.current ?? initial(change, value)
   const toggle = (change: RoleChange, value: boolean, next: boolean) => {
-    if (!Object.keys(drafts).length) draftWallet.current = data.address
+    if (!Object.keys(drafts).length) draftWallet.current = address
     setDrafts((previous) => updateRoleDraft(previous, change, initial(change, value), next))
   }
   const onConfirmed = (changes: RoleChange[]) => {
@@ -159,7 +164,6 @@ export const useV2RoleEditor = (name: string, enabled: boolean) => {
   }
   const changes = Object.values(drafts).map((draft) => draft.change)
   return {
-    data,
     accounts,
     addAccount: (key: string, assignment: RoleAssignment & { roleId?: string }) =>
       setAccounts((previous) => ({
@@ -180,14 +184,16 @@ export const useV2RoleEditor = (name: string, enabled: boolean) => {
     toggle,
     onConfirmed,
     hasChanges: changes.length > 0,
-    walletChanged: changes.length > 0 && draftWallet.current?.toLowerCase() !== data.address?.toLowerCase(),
+    walletChanged: changes.length > 0 && draftWallet.current?.toLowerCase() !== address?.toLowerCase(),
     reset: () => setDrafts({}),
   }
 }
 
 export type V2RoleEditor = ReturnType<typeof useV2RoleEditor>
+export type RoleDraftEditor = ReturnType<typeof useRoleDraftEditor>
+export type RoleSectionData = ReturnType<typeof useRoleSection>
 
-export const useV2RoleTransaction = (name: string, onConfirmed: (changes: RoleChange[]) => void) => {
+export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes: RoleChange[]) => void) => {
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
   const client = useMemo(createV2RecordsClient, [])
@@ -212,6 +218,7 @@ export const useV2RoleTransaction = (name: string, onConfirmed: (changes: RoleCh
       throw new Error('The transaction reverted. Its permission changes have not been saved.')
     setHash(receipt.transactionHash)
     onConfirmed(write.batch.changes)
+    void queryClient.invalidateQueries({ queryKey: ['settings'] })
     // Registry role changes regenerate token IDs; records also need fresh permission checks.
     for (const key of [['v2-roles'], ['v2-records'], ['name'], ['profile'], ['user', 'resolvers']])
       void queryClient.invalidateQueries({ queryKey: key })

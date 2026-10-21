@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Image from 'next/image'
-import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
+import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER, ShortArrow } from 'ethereum-identity-kit'
 import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import { SOCIAL_RECORDS } from '@/constants/ens/records'
@@ -38,12 +38,14 @@ const RecordForm = ({
   updateRecord,
   addRecord,
   isAdding,
+  allowImageUpload = true,
 }: {
   name: string
   records: V2Record[]
   updateRecord: (key: string, value: string) => void
   addRecord: (field: V2RecordField) => Promise<boolean>
   isAdding: boolean
+  allowImageUpload?: boolean
 }) => {
   const [imageTarget, setImageTarget] = useState<'avatar' | 'header' | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -248,13 +250,13 @@ const RecordForm = ({
                 <div className='flex flex-col gap-2 px-3 py-2'>
                   <button
                     type='button'
-                    className='text-neutral cursor-pointer self-start text-sm hover:underline'
+                    className='text-neutral flex cursor-pointer items-center gap-1 self-start text-sm hover:underline'
                     onClick={() => {
                       setKind(null)
                       setKey('')
                     }}
                   >
-                    ← Record types
+                    <ShortArrow className='h-3 w-3 -rotate-90' /> Record types
                   </button>
                   <label className='text-lg font-semibold' htmlFor='v2-record-key'>
                     {kind === 'address'
@@ -335,6 +337,7 @@ const RecordForm = ({
       {imageTarget && (
         <ImageUploadModal
           name={name}
+          allowUpload={allowImageUpload}
           imageType={imageTarget}
           currentValue={getImage(imageTarget)?.value || ''}
           onClose={() => setImageTarget(null)}

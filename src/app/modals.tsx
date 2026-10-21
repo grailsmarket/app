@@ -20,8 +20,6 @@ import NotificationModal from '@/components/modal/notifications'
 import { selectNotificationModal, setNotificationModalOpen } from '@/state/reducers/modals/notificationModal'
 import ExtendModal from '@/components/modal/renewal/extendModal'
 import { selectBulkRenewalModal, setBulkRenewalModalOpen } from '@/state/reducers/modals/bulkRenewalModal'
-import SettingsModal from '@/components/modal/settings/settingsModal'
-import { useUserContext } from '@/context/user'
 import TransferModal from '@/components/modal/transfer/transferModal'
 import { selectTransferModal, setTransferModalOpen } from '@/state/reducers/modals/transferModal'
 import RegistrationModal from '@/components/modal/registration'
@@ -90,7 +88,6 @@ const Modals: React.FC = () => {
     metadata: editRecordsModalMetadata,
     defaultTab: editRecordsModalDefaultTab,
   } = useAppSelector(selectEditRecordsModal)
-  const { isSettingsOpen, setIsSettingsOpen } = useUserContext()
   const { open: bulkEditRecordsModalOpen, names: bulkEditRecordsModalNames } =
     useAppSelector(selectBulkEditRecordsModal)
   const {
@@ -113,7 +110,6 @@ const Modals: React.FC = () => {
     transferModalOpen ||
     shareModalOpen ||
     editRecordsModalOpen ||
-    isSettingsOpen ||
     listSettingsModalOpen ||
     registrationModalOpen
 
@@ -212,7 +208,6 @@ const Modals: React.FC = () => {
           onClose={() => dispatch(setBulkEditRecordsModalOpen(false))}
         />
       )}
-      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
       {listSettingsModalOpen && listSettingsModalUser && listSettingsModalList && (
         <ListSettings
           onClose={() => dispatch(setListSettingsModalOpen(false))}

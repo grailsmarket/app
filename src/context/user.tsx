@@ -38,8 +38,6 @@ type userContextType = {
   refetchWatchlist: () => void
   cartDomains: CartDomainType[] | null | undefined
   isCartDomainsLoading: boolean
-  isSettingsOpen: boolean
-  setIsSettingsOpen: Dispatch<SetStateAction<boolean>>
   isPoapClaimed: boolean
   claimedPoapLink?: string
   poapClaimedYear?: string
@@ -56,7 +54,6 @@ type Props = {
 const userContext = createContext<userContextType | undefined>(undefined)
 
 export const UserProvider: React.FC<Props> = ({ children }) => {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const signInRef = useRef<(() => void) | null>(null)
@@ -173,8 +170,6 @@ export const UserProvider: React.FC<Props> = ({ children }) => {
         refetchWatchlist,
         cartDomains,
         isCartDomainsLoading,
-        isSettingsOpen,
-        setIsSettingsOpen,
         isPoapClaimed,
         claimedPoapLink,
         poapClaimedYear,

@@ -26,7 +26,6 @@ const SignInButton = () => {
     isPoapClaimed,
     claimedPoapLink,
     poapClaimedYear,
-    setIsSettingsOpen,
     handleSignOut,
     handleGetNonce,
     verify,
@@ -75,12 +74,13 @@ const SignInButton = () => {
             </button>
           </Link>
         )}
-        <button
-          onClick={() => setIsSettingsOpen(true)}
+        <Link
+          href='/settings/profile'
+          onClick={() => setIsDropdownOpen(false)}
           className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'
         >
           Settings
-        </button>
+        </Link>
         <button
           onClick={() => window.open(`https://revoke.cash/address/${userAddress}?chainId=1`, '_blank')}
           className='flex cursor-pointer items-center gap-2 rounded-sm px-1 transition-opacity hover:opacity-80'

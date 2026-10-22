@@ -6,6 +6,7 @@ import { useAccount, usePublicClient, useBalance, useGasPrice } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { USDC_ADDRESS, ETH_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
+import { estimateGasOr, withGasBuffer, FILL_GAS_FALLBACK_ERC20, FILL_GAS_FALLBACK_ETH } from '@/lib/seaport/gas'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import Price from '@/components/ui/price'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
@@ -233,18 +234,15 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           })
         }
 
-        // Add 20% buffer to the estimated gas to ensure transaction success
-        const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100)
-        setGasEstimate(gasWithBuffer)
+        setGasEstimate(withGasBuffer(estimatedGas))
       } catch (estimateError) {
+        // Usually means the USDC approval isn't in place yet; handlePurchase re-estimates before sending
         console.warn('Failed to estimate gas, using fallback:', estimateError)
-        // Fallback to reasonable defaults if estimation fails
-        setGasEstimate(isERC20Order ? BigInt(400000) : BigInt(250000))
+        setGasEstimate(isERC20Order ? FILL_GAS_FALLBACK_ERC20 : FILL_GAS_FALLBACK_ETH)
       }
     } catch (err) {
       console.error('Failed to estimate gas:', err)
-      // Set a reasonable fallback
-      setGasEstimate(BigInt(300000))
+      setGasEstimate(FILL_GAS_FALLBACK_ERC20)
     }
   }
 
@@ -431,6 +429,21 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           throw new Error(`Transaction would fail: ${simulateError.shortMessage || simulateError.message}`)
         }
 
+        // Re-estimate now that any USDC approval has landed; the estimate from when the
+        // modal opened may have failed and fallen back to a fixed limit.
+        const gas = await estimateGasOr(
+          () =>
+            publicClient.estimateContractGas({
+              address: config.seaportAddress,
+              abi: SEAPORT_ABI,
+              functionName: 'fulfillAdvancedOrder',
+              args: [advancedOrder, [], fulfillerConduitKey, address],
+              value: usesETH ? totalPayment : BigInt(0),
+              account: address,
+            }),
+          FILL_GAS_FALLBACK_ERC20
+        )
+
         setStep('processing')
 
         // Ensure we're on the ENS chain before executing the transaction
@@ -448,7 +461,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
             address, // recipient
           ],
           value: usesETH ? totalPayment : BigInt(0),
-          gas: gasEstimate || undefined, // Use estimated gas if available
+          gas,
           chain: activeChain,
         })
 
@@ -473,6 +486,19 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           throw new Error(`Transaction would fail: ${simulateError.shortMessage || simulateError.message}`)
         }
 
+        const gas = await estimateGasOr(
+          () =>
+            publicClient.estimateContractGas({
+              address: config.seaportAddress,
+              abi: SEAPORT_ABI,
+              functionName: 'fulfillBasicOrder_efficient_6GL6yc',
+              args: [basicOrderParams],
+              value: totalPayment,
+              account: address,
+            }),
+          FILL_GAS_FALLBACK_ETH
+        )
+
         setStep('processing')
 
         // Ensure we're on the ENS chain before executing the transaction
@@ -484,7 +510,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           functionName: 'fulfillBasicOrder_efficient_6GL6yc',
           args: [basicOrderParams],
           value: totalPayment,
-          gas: gasEstimate || undefined, // Use estimated gas if available
+          gas,
           chain: activeChain,
         })
 

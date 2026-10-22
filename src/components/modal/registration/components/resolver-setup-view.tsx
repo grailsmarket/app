@@ -1,54 +1,42 @@
-import PrimaryButton from '@/components/ui/buttons/primary'
-import SecondaryButton from '@/components/ui/buttons/secondary'
-import { activeChain } from '@/constants/web3/chain'
+import StatusOrb from '@/components/ui/modal/statusOrb'
+import TxStatus from '@/components/ui/modal/txStatus'
+import TxLink from '@/components/ui/modal/txLink'
+import Notice from '@/components/ui/modal/notice'
 
 interface ResolverSetupViewProps {
   isDeploying: boolean
   txHash: string | null
-  onDeploy: () => void
-  onSkip: () => void
-  onBack: () => void
 }
 
-const ResolverSetupView: React.FC<ResolverSetupViewProps> = ({ isDeploying, txHash, onDeploy, onSkip, onBack }) => (
-  <div className='flex flex-col gap-4'>
-    <h2 className='mt-4 text-center text-xl font-bold'>{isDeploying ? 'Deploying Resolver' : 'Set Up a Resolver'}</h2>
-    <p className='text-neutral text-center'>
-      {isDeploying
-        ? 'Your registration will continue once the resolver is ready.'
-        : 'A resolver lets you manage your names’ addresses and records. Deploy one now, or add one later.'}
-    </p>
-    {isDeploying ? (
-      <div className='flex flex-col items-center gap-6 py-6'>
-        <div className='border-primary h-12 w-12 animate-spin rounded-full border-b-2' />
-        {txHash ? (
-          <a
-            href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='text-primary underline'
-          >
-            View transaction
-          </a>
-        ) : (
-          <p className='text-neutral'>Confirm the deployment in your wallet.</p>
-        )}
+const ResolverSetupView: React.FC<ResolverSetupViewProps> = ({ isDeploying, txHash }) => {
+  if (isDeploying) {
+    return (
+      <TxStatus
+        state={txHash ? 'pending' : 'wallet'}
+        title='Deploying Resolver'
+        message={
+          txHash
+            ? 'Your registration will continue once the resolver is ready.'
+            : 'Confirm the deployment in your wallet.'
+        }
+      >
+        {txHash && <TxLink hash={txHash} label='View transaction' />}
+      </TxStatus>
+    )
+  }
+
+  return (
+    <>
+      <div className='flex flex-col items-center gap-2 pt-5 pb-1 text-center'>
+        <StatusOrb state='ready' className='mb-3' />
+        <h3 className='text-2xl font-bold'>Set Up a Resolver</h3>
+        <p className='text-neutral max-w-80 text-lg'>
+          A resolver lets you manage your names’ addresses and records. Deploy one now, or add one later.
+        </p>
       </div>
-    ) : (
-      <>
-        <p className='text-neutral text-center text-sm'>Deploying requires an additional transaction and gas fee.</p>
-        <PrimaryButton onClick={onDeploy} className='w-full'>
-          Deploy resolver
-        </PrimaryButton>
-        <SecondaryButton onClick={onSkip} className='w-full'>
-          Skip for now
-        </SecondaryButton>
-        <button type='button' onClick={onBack} className='text-neutral cursor-pointer text-sm hover:underline'>
-          Back
-        </button>
-      </>
-    )}
-  </div>
-)
+      <Notice tone='info'>Deploying requires an additional transaction and gas fee.</Notice>
+    </>
+  )
+}
 
 export default ResolverSetupView

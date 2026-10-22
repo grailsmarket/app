@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Suspense, useEffect } from 'react'
+import { AnimatePresence } from 'motion/react'
 import CreateListingModal from '@/components/modal/listing/createListingModal'
 import BuyNowModal from '@/components/modal/purchase/buyNowModal'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
@@ -152,13 +153,16 @@ const Modals: React.FC = () => {
           listings={cancelListingModalListings}
         />
       )}
-      {buyNowModalOpen && (
-        <BuyNowModal
-          onClose={() => dispatch(setBuyNowModalOpen(false))}
-          listing={buyNowModalListing}
-          domain={buyNowModalDomain}
-        />
-      )}
+      <AnimatePresence>
+        {buyNowModalOpen && (
+          <BuyNowModal
+            key='buy-now-modal'
+            onClose={() => dispatch(setBuyNowModalOpen(false))}
+            listing={buyNowModalListing}
+            domain={buyNowModalDomain}
+          />
+        )}
+      </AnimatePresence>
       {acceptOfferModalOpen && (
         <AcceptOfferModal
           onClose={() => dispatch(setAcceptOfferModalOpen(false))}

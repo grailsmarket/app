@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import ExpandableSection from './expandable-section'
+import Disclosure from '@/components/ui/modal/disclosure'
+import TextInput from '@/components/ui/modal/textInput'
 
 interface ResolverSectionProps {
   resolver: string
@@ -12,30 +13,23 @@ const ResolverSection: React.FC<ResolverSectionProps> = ({ resolver, setResolver
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <ExpandableSection
+    <Disclosure
       title='Resolver'
       preview={resolver || (isLoading ? 'Checking…' : 'Not set')}
       isOpen={isOpen}
       onToggle={() => setIsOpen(!isOpen)}
+      description='Stores your name’s addresses and records.'
     >
-      <p className='text-neutral text-sm'>Stores your name’s addresses and records.</p>
-      <input
+      <TextInput
         aria-label='Resolver address'
-        type='text'
-        className='bg-background border-tertiary hover:bg-secondary focus:bg-secondary h-10 w-full rounded-md border px-3 py-2 text-lg transition-colors hover:border-white/70 focus:border-white/70 focus:outline-none'
         placeholder='Resolver address (0x…)'
         value={resolver}
         onChange={(e) => setResolver(e.target.value)}
         autoComplete='off'
         spellCheck={false}
-        aria-invalid={!!error}
+        error={error}
       />
-      {error && (
-        <p className='text-sm text-red-400' role='alert'>
-          {error}
-        </p>
-      )}
-    </ExpandableSection>
+    </Disclosure>
   )
 }
 

@@ -2,7 +2,7 @@
 
 import { cn } from '@/utils/tailwind'
 import { formatDuration } from '@/utils/time/formatDuration'
-import { Cross } from 'ethereum-identity-kit'
+import { Check, Cross } from 'ethereum-identity-kit'
 import { useEffect, useState } from 'react'
 
 export interface SuccessSummaryEntry {
@@ -32,26 +32,15 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
   return (
     <div
       className={cn(
-        'border-tertiary bg-background fixed right-6 bottom-6 z-50 flex max-w-95 min-w-75 flex-col overflow-hidden rounded-lg border-2 shadow-lg transition-all duration-300',
+        'border-tertiary bg-background shadow-modal fixed right-6 bottom-6 z-50 flex max-w-95 min-w-75 flex-col overflow-hidden rounded-xl border transition-all duration-300',
         visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
       )}
     >
-      <div className='flex items-center gap-2.5 px-4 pt-3 pb-2'>
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          width='20'
-          height='20'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='2.5'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          className='text-primary shrink-0'
-        >
-          <polyline points='20 6 9 17 4 12' />
-        </svg>
-        <span className='text-md flex-1 font-semibold'>Registration Successful</span>
+      <div className='flex items-center gap-3 px-3 pt-3 pb-2'>
+        <span className='bg-primary text-background shadow-bulk grid h-8 w-8 shrink-0 place-items-center rounded-full'>
+          <Check className='h-3.5 w-3.5' />
+        </span>
+        <span className='flex-1 text-lg font-bold'>Registration Successful</span>
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -66,14 +55,14 @@ const SuccessToast: React.FC<SuccessToastProps> = ({ summary, onClose }) => {
 
       <div className='max-h-50 overflow-y-auto px-4'>
         {summary.entries.map((entry) => (
-          <div key={entry.name} className='text-text-secondary flex items-center justify-between gap-4 py-1 text-sm'>
+          <div key={entry.name} className='text-md flex items-center justify-between gap-4 py-1'>
             <span className='truncate font-medium'>{entry.name}</span>
-            <span className='shrink-0'>{formatDuration(entry.durationSeconds)}</span>
+            <span className='text-neutral shrink-0'>{formatDuration(entry.durationSeconds)}</span>
           </div>
         ))}
       </div>
 
-      <div className='border-tertiary text-text-secondary mx-4 mt-1 border-t pt-2 pb-3 text-sm'>
+      <div className='border-line-subtle text-md mx-4 mt-1 border-t pt-2 pb-3 font-semibold'>
         {summary.priceETH.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')} ETH{' '}
         <span className='text-neutral'>(~${summary.priceUSD.toFixed(2)})</span>
       </div>

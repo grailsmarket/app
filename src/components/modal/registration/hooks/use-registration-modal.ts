@@ -15,6 +15,7 @@ import {
   setTimeUnit,
   setCustomDuration,
   setEntryDuration,
+  clearEntryDuration,
   setBulkAvailability,
   setEntryCalculatedDuration,
   initializeBatches,
@@ -871,6 +872,14 @@ const useRegistrationModal = () => {
     [entries, timeUnit, customDuration, dispatch]
   )
 
+  // Drops a name's own duration so it follows the base duration again
+  const onEntryDurationReset = useCallback(
+    (index: number) => {
+      dispatch(clearEntryDuration(index))
+    },
+    [dispatch]
+  )
+
   const onEntryDateSelect = useCallback(
     (timestamp: number) => {
       if (perNameDatePickerIndex === null) return
@@ -971,6 +980,7 @@ const useRegistrationModal = () => {
     onEntryDurationChange,
     onEntryQuantityChange,
     onEntryDateSelect,
+    onEntryDurationReset,
     onRetry,
     onResetModal,
   }

@@ -44,6 +44,15 @@
   --shadow-footer: 0 -4px 40px 4px #ffdfc0;
   --shadow-homeCard: -2px 0 12px 0 #111a;
 
+  /* Modal system */
+  --primary-hover: #dcc0a5;
+  --primary-soft: #ffdfc01a;
+  --primary-glow: #ffdfc029;
+  --primary-line: #ffdfc047;
+  --line-subtle: #ffffff14;
+  --scrim: #0a0a0ab8;
+  --shadow-modal: 0 32px 80px -24px #000000cc, 0 0 0 1px #ffffff0a;
+
   /* Custom Ethereum Identity Kit colors */
   --ethereum-identity-kit-sign-in-button: #ffdfc0;
   --ethereum-identity-kit-sign-in-button-dark: #ffdfc0;
@@ -66,6 +75,12 @@
   --color-premium: var(--premium);
   --color-grace: var(--grace);
   --color-available: var(--available);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-glow: var(--primary-glow);
+  --color-primary-line: var(--primary-line);
+  --color-line-subtle: var(--line-subtle);
+  --color-scrim: var(--scrim);
   --font-inter: var(--font-inter);
   --font-sedan-sc: var(--font-sedan-sc);
   --padding-sm: var(--padding-sm);
@@ -99,6 +114,7 @@
   --shadow-bulk: var(--shadow-bulk);
   --shadow-footer: var(--shadow-footer);
   --shadow-homeCard: var(--shadow-homeCard);
+  --shadow-modal: var(--shadow-modal);
 }
 
 body {

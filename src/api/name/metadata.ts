@@ -56,7 +56,7 @@ export const formatNameMetadataRecord = (metadata: NameMetadataResponse): Record
 }
 
 export const fetchNameMetadata = async (name: string) => {
-  const response = await fetch(`${API_URL}/names/${normalizeName(name)}/metadata`)
+  const response = await fetch(`${API_URL}/names/${normalizeName(name)}/metadata`, { cache: 'no-store' })
   const results = (await response.json()) as APIResponseType<{
     metadata: NameMetadataResponse
   }>

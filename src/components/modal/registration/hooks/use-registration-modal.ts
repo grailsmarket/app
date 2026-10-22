@@ -45,6 +45,7 @@ import { MIN_REGISTRATION_DURATION } from '@/constants/registration'
 import { CalculationResults, TimeUnit } from '@/types/registration'
 import { computeDurationForEntry } from '@/utils/registration'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import { accountQueryKey } from '@/utils/queryKeys'
 import { activeChain } from '@/constants/web3/chain'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
@@ -395,13 +396,13 @@ const useRegistrationModal = () => {
             ? await waitForTransaction(publicClient, pendingRegisterBatch.registerTxHash!)
             : undefined
           if (receipt?.status === 'success') {
+            refreshEnsQueries(queryClient, receipt)
             dispatch(setBatchRegistered(pendingRegisterBatch.batchIndex))
             const allRegistered = batches.every((b) =>
               b.batchIndex === pendingRegisterBatch.batchIndex ? true : b.registered
             )
             if (allRegistered) {
               dispatch(setRegistrationFlowState('success'))
-              refetchQueries()
             }
           }
         } catch (error) {
@@ -481,22 +482,6 @@ const useRegistrationModal = () => {
   const handleReopen = useCallback(() => {
     dispatch(reopenRegistrationModal())
   }, [dispatch])
-
-  const refetchQueries = useCallback(() => {
-    setTimeout(() => {
-      queryClient.invalidateQueries({ queryKey: ['marketplace', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['marketplace', 'listings', 'count'] })
-      queryClient.invalidateQueries({ queryKey: ['bulkSearch'] })
-      queryClient.invalidateQueries({ queryKey: ['categoriesPage', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['categoriesPage', 'listings', 'count'] })
-      queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
-      queryClient.invalidateQueries({ queryKey: ['profile', 'activity', address] })
-      entries.forEach((entry) => {
-        queryClient.refetchQueries({ queryKey: ['name', 'details', entry.name] })
-        queryClient.refetchQueries({ queryKey: ['name', 'activity', entry.name] })
-      })
-    }, 2000)
-  }, [queryClient, address, entries])
 
   const getOwnerAddress = useCallback((): `0x${string}` | null => {
     const value = customOwner.trim()
@@ -762,6 +747,7 @@ const useRegistrationModal = () => {
           return
         }
 
+        refreshEnsQueries(queryClient, receipt)
         dispatch(setBatchRegistered(batchIndex))
       }
 
@@ -775,8 +761,6 @@ const useRegistrationModal = () => {
           modifyCart({ domain: cartDomain, inCart: true, cartType: cartDomain.cartType })
         }
       })
-
-      refetchQueries()
     } catch (error: any) {
       console.error('Failed to register:', error)
       dispatch(setRegistrationError(error.message || 'Failed to register name'))
@@ -795,7 +779,7 @@ const useRegistrationModal = () => {
     cartRegisteredDomains,
     cartUnregisteredDomains,
     modifyCart,
-    refetchQueries,
+    queryClient,
     dispatch,
   ])
 

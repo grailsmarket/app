@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import Image from 'next/image'
 import React, { useState } from 'react'
 import LoadingCell from '@/components/ui/loadingCell'
@@ -376,7 +377,7 @@ const PrimaryDetails: React.FC<NameDetailsProps> = ({
             className='flex h-9 w-1/4 cursor-pointer items-center justify-center rounded-sm bg-[#293e70] hover:opacity-80 @[40rem]/app:h-10'
             onClick={() => {
               window.open(
-                `https://etherscan.io/token/${isWrapped ? config.ensNameWrapper.toLowerCase() : config.ensRegistrar.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
+                `${activeChain.blockExplorers.default.url}/token/${isWrapped ? config.ensNameWrapper.toLowerCase() : config.ensRegistrar.toLowerCase()}?a=${nameDetails?.token_id as `0x${string}`}`,
                 '_blank'
               )
             }}

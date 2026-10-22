@@ -190,7 +190,7 @@ export const readResolverState = async (
   name: string,
   account?: Address
 ): Promise<V2ResolverCatalog> => {
-  const blockNumber = await client.getBlockNumber()
+  const blockNumber = await client.getBlockNumber({ cacheTime: 0 })
   const code = await client.getCode({ address: resolver, blockNumber })
   if (!code || code === '0x') throw new Error('This resolver address has no deployed contract on this network.')
   const read = { address: resolver, abi: resolverAbi, blockNumber } as const

@@ -1,5 +1,4 @@
 import { BaseError, ContractFunctionRevertedError } from 'viem'
-import { mainnet } from 'viem/chains'
 import { activeChain } from '@/constants/web3/chain'
 import type { TransferTransaction } from '@/types/transfer'
 import type { TransferDomainType } from '@/state/reducers/modals/transferModal'
@@ -8,10 +7,8 @@ import { normalizeName } from '@/lib/ens'
 export const getTransferDomainKey = (domain: Pick<TransferDomainType, 'name' | 'version'>) =>
   `${domain.version}:${normalizeName(domain.name)}`
 
-export const getTransferChain = (version: 1 | 2) => (version === 1 ? mainnet : activeChain)
-
-export const getTransferTransactionUrl = ({ hash, version }: TransferTransaction) =>
-  `${getTransferChain(version).blockExplorers.default.url}/tx/${hash}`
+export const getTransferTransactionUrl = ({ hash }: TransferTransaction) =>
+  `${activeChain.blockExplorers.default.url}/tx/${hash}`
 
 export const getTransferError = (error: unknown) => {
   if (error instanceof BaseError) {

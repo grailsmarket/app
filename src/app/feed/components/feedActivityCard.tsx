@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -211,7 +212,7 @@ const FeedActivityCard: React.FC<FeedActivityCardProps> = ({ activity, onReply }
               <>
                 <span className='text-neutral'>·</span>
                 <Link
-                  href={`https://etherscan.io/tx/${activity.transaction_hash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${activity.transaction_hash}`}
                   target='_blank'
                   onClick={(e) => e.stopPropagation()}
                   className='text-neutral hover:text-foreground flex items-center gap-1 transition-colors'

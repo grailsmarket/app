@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useQueryClient } from '@tanstack/react-query'
-import type { Address, Chain, Hex, PublicClient } from 'viem'
+import type { Address, Hex } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { roleErrorText } from '@/hooks/records/useV2Roles'
 import { createV2RecordsClient } from '@/utils/records/client'
@@ -9,20 +9,14 @@ import { prepareSettingsTransaction, type SettingsTransactionStep } from '@/util
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { activeChain } from '@/constants/web3/chain'
 import { useSettingsTransactionDialog } from '@/context/settingsTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
 export type { SettingsTransactionStep } from '@/utils/settings/transaction'
 
-interface SettingsTransactionOptions {
-  client: PublicClient
-  chain: Chain
-}
-
-export const useSettingsTransaction = (options?: SettingsTransactionOptions) => {
+export const useSettingsTransaction = () => {
   const { address } = useAccount()
   const getWallet = useGetWalletClient()
-  const defaultClient = useMemo(createV2RecordsClient, [])
-  const client = options?.client ?? defaultClient
-  const chain = options?.chain ?? activeChain
+  const client = useMemo(createV2RecordsClient, [])
   const queries = useQueryClient()
   const locked = useRef(false)
   const requestedSteps = useRef<SettingsTransactionStep[]>([])
@@ -30,8 +24,6 @@ export const useSettingsTransaction = (options?: SettingsTransactionOptions) => 
     steps: SettingsTransactionStep[]
     index: number
     account: Address
-    client: PublicClient
-    chain: Chain
     hash?: Hex
   } | null>(null)
   const [state, setState] = useState<{
@@ -53,7 +45,7 @@ export const useSettingsTransaction = (options?: SettingsTransactionOptions) => 
 
     try {
       if (!address) throw new Error('Connect your wallet before continuing.')
-      if (!queue.current) queue.current = { steps: requestedSteps.current, index: 0, account: address, client, chain }
+      if (!queue.current) queue.current = { steps: requestedSteps.current, index: 0, account: address }
 
       const work = queue.current
       if (work.account.toLowerCase() !== address.toLowerCase())
@@ -67,8 +59,8 @@ export const useSettingsTransaction = (options?: SettingsTransactionOptions) => 
           const prepared = await prepareSettingsTransaction({
             step,
             account: work.account,
-            client: work.client,
-            chain: work.chain,
+            client,
+            chain: activeChain,
             getWallet,
             onStatus: (status) => setState({ phase: 'preparing', status, label: step.label, progress }),
           })
@@ -80,23 +72,16 @@ export const useSettingsTransaction = (options?: SettingsTransactionOptions) => 
 
           const { request, wallet } = prepared
           setState({ phase: 'confirming', label: step.label, progress })
-          work.hash = await wallet.sendTransaction({ ...request, account: wallet.account!, chain: work.chain })
+          work.hash = await wallet.sendTransaction({ ...request, account: wallet.account!, chain: activeChain })
         }
 
         setState({ phase: 'processing', label: step.label, hash: work.hash, progress })
-        const receipt = await waitForTransaction(work.client, work.hash)
+        const receipt = await waitForTransaction(client, work.hash)
         work.hash = undefined
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
         work.index++
         // Receipt callbacks update local UI only; indexing and preference failures must never resubmit a confirmed write.
-        for (const key of [
-          ['settings'],
-          ['v2-records'],
-          ['v2-roles'],
-          ['user', 'resolvers'],
-          ['registration', 'resolver'],
-        ])
-          void queries.invalidateQueries({ queryKey: key })
+        refreshEnsQueries(queries, receipt)
         step.confirmed?.(receipt)
       }
 
@@ -124,17 +109,13 @@ export const useSettingsTransaction = (options?: SettingsTransactionOptions) => 
     setState({ phase: 'idle' })
   }
 
-  const transactionChain = queue.current?.chain ?? chain
-  const explorerUrl =
-    state.hash && transactionChain.blockExplorers
-      ? `${transactionChain.blockExplorers.default.url}/tx/${state.hash}`
-      : null
+  const explorerUrl = state.hash ? `${activeChain.blockExplorers.default.url}/tx/${state.hash}` : null
 
   useSettingsTransactionDialog({
     open: state.phase !== 'idle',
     phase: state.phase === 'idle' ? 'confirming' : state.phase,
     title: state.label ?? 'Save changes',
-    networkName: transactionChain.name,
+    networkName: activeChain.name,
     status: state.status,
     error: state.error,
     explorerUrl,

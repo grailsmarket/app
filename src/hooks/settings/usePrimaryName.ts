@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import { normalize } from 'viem/ens'
-import { mainnet } from 'viem/chains'
 import { useUserContext } from '@/context/user'
 import { activeChain } from '@/constants/web3/chain'
 import { fetchOwnedNames } from '@/api/user/ownedNames'
 import { useDebounce } from '@/hooks/useDebounce'
 import { accountQueryKey } from '@/utils/queryKeys'
+import { createV2RecordsClient } from '@/utils/records/client'
 import {
   type PrimaryNameOption,
-  createPrimaryNameClient,
   preparePrimaryAddress,
   preparePrimaryName,
-  primaryNameChain,
   readPrimaryNameReview,
   verifyPrimaryNameOwner,
 } from '@/utils/settings/primaryName'
@@ -26,23 +24,20 @@ export const usePrimaryName = () => {
   const [selected, setSelected] = useState<PrimaryNameOption | null>(null)
   const [addressConsent, setAddressConsent] = useState<string | null>(null)
   const debouncedSearch = useDebounce(search.trim(), 250)
-  const clients = useMemo(() => ({ 1: createPrimaryNameClient(1), 2: createPrimaryNameClient(2) }), [])
-  const version = selected?.version ?? (activeChain.id === mainnet.id ? 1 : 2)
-  const chain = primaryNameChain(version)
-  const client = clients[version]
+  const client = useMemo(createV2RecordsClient, [])
   const authenticated = !!userAddress && authStatus === 'authenticated'
-  const transaction = useSettingsTransaction({ client, chain })
+  const transaction = useSettingsTransaction()
   const busy = transaction.busy || transaction.pending
 
   const primary = useQuery({
-    queryKey: ['settings', 'primary-name', chain.id, userAddress],
+    queryKey: ['settings', 'primary-name', activeChain.id, userAddress],
     queryFn: () => client.getEnsName({ address: userAddress! }),
     enabled: authenticated,
     retry: false,
   })
 
   const names = useInfiniteQuery({
-    queryKey: ['settings', 'primary-name-options', userAddress, debouncedSearch],
+    queryKey: ['settings', 'primary-name-options', activeChain.id, userAddress, debouncedSearch],
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) =>
       fetchOwnedNames({ address: userAddress!, search: debouncedSearch, page: pageParam, signal }),
@@ -66,7 +61,7 @@ export const usePrimaryName = () => {
         ([1, 2] as const).map(async (nameVersion) => {
           const option: PrimaryNameOption = { name: exactName!, version: nameVersion, token_id: '', expiry_date: null }
 
-          await verifyPrimaryNameOwner(clients[nameVersion], option, userAddress!)
+          await verifyPrimaryNameOwner(client, option, userAddress!)
 
           return option
         })
@@ -93,7 +88,7 @@ export const usePrimaryName = () => {
   }
 
   const review = useQuery({
-    queryKey: ['settings', 'primary-name-review', userAddress, selected?.name, selected?.version],
+    queryKey: ['settings', 'primary-name-review', activeChain.id, userAddress, selected?.name, selected?.version],
     queryFn: () => readPrimaryNameReview(client, selected!, userAddress!),
     enabled: authenticated && editing && !!selected && !busy,
     retry: false,
@@ -177,10 +172,8 @@ export const usePrimaryName = () => {
         setAddressConsent(null)
         void queries.invalidateQueries({ queryKey: ['settings', 'primary-name'] })
 
-        if (chain.id === mainnet.id) {
-          void queries.invalidateQueries({ queryKey: accountQueryKey(userAddress) })
-          void queries.invalidateQueries({ queryKey: ['profile'] })
-        }
+        void queries.invalidateQueries({ queryKey: accountQueryKey(userAddress) })
+        void queries.invalidateQueries({ queryKey: ['profile'] })
       },
     })
 
@@ -199,8 +192,7 @@ export const usePrimaryName = () => {
     selected,
     select,
     review,
-    version,
-    chain,
+    chain: activeChain,
     transaction,
     changed,
     busy,

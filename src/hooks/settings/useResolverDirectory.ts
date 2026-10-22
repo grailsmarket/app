@@ -53,7 +53,7 @@ export const useResolverDirectory = () => {
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
       const deadline = AbortSignal.any([signal, AbortSignal.timeout(25_000)])
-      const latest = await client.getBlockNumber()
+      const latest = await client.getBlockNumber({ cacheTime: 0 })
       const from = await findDeploymentBlock(client, config.ensV2VerifiableFactory, latest, deadline)
       const logs = await readLogs(client, config.ensV2VerifiableFactory, from, latest, deadline, (fromBlock, toBlock) =>
         client.getLogs<typeof deploymentEvent>({
@@ -92,7 +92,7 @@ export const useResolverDirectory = () => {
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
       const deadline = AbortSignal.any([signal, AbortSignal.timeout(25_000)])
-      const latest = await client.getBlockNumber()
+      const latest = await client.getBlockNumber({ cacheTime: 0 })
       const from = await findDeploymentBlock(client, config.ensV2VerifiableFactory, latest, deadline)
       const logs = await readLogs(client, config.ensV2VerifiableFactory, from, latest, deadline, (fromBlock, toBlock) =>
         client.getLogs<typeof accessEvent>({ event: accessEvent, args: { account: address! }, fromBlock, toBlock })

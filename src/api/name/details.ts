@@ -6,7 +6,10 @@ import { normalizeName } from '@/lib/ens'
 import { generateEmptyName } from '@/utils/generateEmptyName'
 
 export const fetchNameVersion = async (name: string): Promise<1 | 2> => {
-  const response = await fetch(`${API_URL}/names/${normalizeName(name)}`, { signal: AbortSignal.timeout(5_000) })
+  const response = await fetch(`${API_URL}/names/${normalizeName(name)}`, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(5_000),
+  })
   if (!response.ok) throw new Error('Could not verify this name’s ENS version.')
   const result = (await response.json()) as APIResponseType<MarketplaceDomainType>
   const version = result.data?.version
@@ -17,6 +20,7 @@ export const fetchNameVersion = async (name: string): Promise<1 | 2> => {
 export const fetchNameDetails = async (name: string) => {
   try {
     const response = await fetch(`${API_URL}/names/${normalizeName(name)}`, {
+      cache: 'no-store',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',

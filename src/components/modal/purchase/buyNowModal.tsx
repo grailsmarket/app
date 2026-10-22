@@ -6,8 +6,14 @@ import { useAccount, usePublicClient, useBalance, useGasPrice } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { USDC_ADDRESS, ETH_ADDRESS, TOKEN_DECIMALS } from '@/constants/web3/tokens'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
-import { estimateGasOr, withGasBuffer, FILL_GAS_FALLBACK_ERC20, FILL_GAS_FALLBACK_ETH } from '@/lib/seaport/gas'
+import {
+  estimateGasWithFallback,
+  withGasBuffer,
+  FILL_GAS_FALLBACK_ERC20,
+  FILL_GAS_FALLBACK_ETH,
+} from '@/lib/seaport/gas'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import Price from '@/components/ui/price'
 import { DomainListingType, MarketplaceDomainType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -358,12 +364,6 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
     }
   }
 
-  const refetchDomainQueries = () => {
-    queryClient.refetchQueries({ queryKey: ['name', 'details'] })
-    queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
-    queryClient.refetchQueries({ queryKey: ['sent_offers'] })
-  }
-
   const handlePurchase = async () => {
     try {
       setError(null)
@@ -431,7 +431,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
 
         // Re-estimate now that any USDC approval has landed; the estimate from when the
         // modal opened may have failed and fallen back to a fixed limit.
-        const gas = await estimateGasOr(
+        const gas = await estimateGasWithFallback(
           () =>
             publicClient.estimateContractGas({
               address: config.seaportAddress,
@@ -486,7 +486,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           throw new Error(`Transaction would fail: ${simulateError.shortMessage || simulateError.message}`)
         }
 
-        const gas = await estimateGasOr(
+        const gas = await estimateGasWithFallback(
           () =>
             publicClient.estimateContractGas({
               address: config.seaportAddress,
@@ -530,7 +530,7 @@ const BuyNowModal: React.FC<BuyNowModalProps> = ({ listing, domain, onClose }) =
           tx_hash: tx,
         })
         refetchNameMetadata()
-        refetchDomainQueries()
+        refreshEnsQueries(queryClient, receipt)
         const cartDomain =
           cartRegisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id) ||
           cartUnregisteredDomains.find((cartDomain) => cartDomain.token_id === domain.token_id)

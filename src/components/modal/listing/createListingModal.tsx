@@ -1,5 +1,6 @@
 'use client'
 
+import { activeChain } from '@/constants/web3/chain'
 import { useEffect, useState } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -872,7 +873,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
               {approveTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${approveTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -893,7 +894,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ onClose, domain
               <p className='text-neutral text-lg'>Submitting listing to the blockchain</p>
               {createListingTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${createListingTxHash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${createListingTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'

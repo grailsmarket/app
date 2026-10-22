@@ -100,11 +100,6 @@ export const useMigration = (name: string) => {
     !transaction.busy &&
     !migrated
 
-  const invalidate = () => {
-    for (const key of [['name'], ['profile'], ['profileMetadata'], ['user'], ['migration'], ['settings']])
-      void queries.invalidateQueries({ queryKey: key })
-  }
-
   const migrate = async () => {
     if (!canMigrate || !info || !deployment.data || !address) return
 
@@ -276,7 +271,6 @@ export const useMigration = (name: string) => {
         setMigrated(true)
         queries.setQueryData(['name', 'recordEditorVersion', activeChain.id, config.ensV2Registry, name], 2)
         if (!snapshot.replacesResolver || selectedMode !== 'copy' || !captured.length) setComplete(true)
-        invalidate()
       },
     })
 
@@ -307,7 +301,6 @@ export const useMigration = (name: string) => {
               },
               confirmed: () => {
                 setComplete(true)
-                invalidate()
               },
             },
           ]
@@ -316,14 +309,12 @@ export const useMigration = (name: string) => {
 
     if (await transaction.run(steps)) {
       setComplete(true)
-      invalidate()
     }
   }
 
   const finishRecords = async () => {
     if (await transaction.run(postMigration.current)) {
       setComplete(true)
-      invalidate()
     }
   }
 

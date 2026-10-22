@@ -11,10 +11,12 @@ import { clearBulkSelect, removeBulkSelectDomain, selectBulkSelect } from '@/sta
 import useTransferDomains from '@/hooks/registrar/useTransferDomains'
 import { useDebounce } from '@/hooks/useDebounce'
 import { accountQueryKey } from '@/utils/queryKeys'
-import { getTransferChain, getTransferDomainKey, getTransferError } from '@/utils/transfer'
+import { getTransferDomainKey, getTransferError } from '@/utils/transfer'
+import { activeChain } from '@/constants/web3/chain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
-import { ENS_V1_MAINNET_CONTRACTS } from '@/constants/web3/ens'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TransferBatch, TransferStep, TransferTransaction } from '@/types/transfer'
+import { config } from '@/lib/config'
 
 type PendingTransaction = TransferTransaction & ({ kind: 'approval' } | { kind: 'transfer'; batch: TransferBatch })
 
@@ -23,7 +25,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
   const { address } = useAccount()
   const { isSelecting, domains: selectedDomains } = useAppSelector(selectBulkSelect)
   const queryClient = useQueryClient()
-  const { prepareBatches, getRequiredApprovals, approve, simulate, transfer, getPublicClient } = useTransferDomains()
+  const { prepareBatches, getRequiredApprovals, approve, simulate, transfer, publicClient } = useTransferDomains()
   const [step, setStep] = useState<TransferStep>('review')
   const [error, setError] = useState<string | null>(null)
   const [recipientInput, setRecipientInput] = useState('')
@@ -34,7 +36,6 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
   const [completedTransactions, setCompletedTransactions] = useState<TransferTransaction[]>([])
   const [completedNames, setCompletedNames] = useState<Set<string>>(new Set())
   const [approvingContract, setApprovingContract] = useState('')
-  const [currentVersion, setCurrentVersion] = useState<1 | 2>(1)
   const [currentBatch, setCurrentBatch] = useState(1)
   const [totalBatches, setTotalBatches] = useState(1)
   const [hasPendingTransaction, setHasPendingTransaction] = useState(false)
@@ -86,11 +87,10 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
       const current = pending.current
       if (!current) return
 
-      setCurrentVersion(current.version)
       setTransaction(current)
       setStep('processing')
 
-      const receipt = await waitForTransaction(getPublicClient(current.version), current.hash)
+      const receipt = await waitForTransaction(publicClient, current.hash)
       pending.current = null
 
       setHasPendingTransaction(false)
@@ -100,6 +100,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
       }
 
       if (current.kind === 'transfer') {
+        refreshEnsQueries(queryClient, receipt)
         setCompletedTransactions((transactions) => [
           ...transactions,
           { version: current.version, hash: receipt.transactionHash },
@@ -112,12 +113,6 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
         })
 
         setCompletedNames(new Set(succeeded))
-        setTimeout(() => {
-          current.batch.entries.forEach(({ domain }) =>
-            queryClient.invalidateQueries({ queryKey: ['name', 'details', domain.name] })
-          )
-          queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
-        }, 2000)
       }
     }
 
@@ -133,12 +128,11 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
         const batch = batches[index]
 
         setCurrentBatch(index + 1)
-        setCurrentVersion(batch.version)
 
         const approvals = await getRequiredApprovals(batch, transferTarget.sender)
 
         for (const contract of approvals) {
-          setApprovingContract(contract === ENS_V1_MAINNET_CONTRACTS.nameWrapper ? 'Name Wrapper' : 'ENS Registrar')
+          setApprovingContract(contract === config.ensNameWrapper ? 'Name Wrapper' : 'ENS Registrar')
           setTransaction(null)
           setStep('approving')
 
@@ -201,7 +195,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     completedNames,
     remainingDomains,
     approvingContract,
-    currentNetwork: getTransferChain(currentVersion).name,
+    currentNetwork: activeChain.name,
     currentBatch,
     totalBatches,
     hasPendingTransaction,

@@ -5,8 +5,9 @@ import { SeaportOrderBuilder } from '@/lib/seaport/orderBuilder'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
-import { estimateGasOr, withGasBuffer, FILL_GAS_FALLBACK_ERC20 } from '@/lib/seaport/gas'
+import { estimateGasWithFallback, withGasBuffer, FILL_GAS_FALLBACK_ERC20 } from '@/lib/seaport/gas'
 import Price from '@/components/ui/price'
 import { DomainOfferType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -235,13 +236,6 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
     }
   }
 
-  const refetchDomainQueries = () => {
-    queryClient.refetchQueries({ queryKey: ['name', 'details'] })
-    queryClient.refetchQueries({ queryKey: ['profile', 'domains'] })
-    queryClient.refetchQueries({ queryKey: ['received_offers'] })
-    queryClient.refetchQueries({ queryKey: ['name', 'offers'] })
-  }
-
   const handleAcceptOffer = async () => {
     try {
       setError(null)
@@ -326,7 +320,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
 
       // Re-estimate now that any NFT approval has landed; the estimate from when the
       // modal opened may have failed and fallen back to a fixed limit.
-      const gas = await estimateGasOr(
+      const gas = await estimateGasWithFallback(
         () =>
           publicClient.estimateContractGas({
             address: config.seaportAddress,
@@ -385,7 +379,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           amount_wei: offer.offer_amount_wei ?? null,
           tx_hash: tx,
         })
-        refetchDomainQueries()
+        refreshEnsQueries(queryClient, receipt)
 
         // TODO: Call API to update offer status
         // await updateOfferStatus(offer.id, 'accepted')
@@ -472,7 +466,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
               {approveTxHash && (
                 <a
-                  href={`https://etherscan.io/tx/${approveTxHash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${approveTxHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -504,7 +498,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
               <p className='text-neutral text-lg'>Transaction submitted</p>
               {txHash && (
                 <a
-                  href={`https://etherscan.io/tx/${txHash}`}
+                  href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary hover:text-primary/80 text-lg underline transition-colors'

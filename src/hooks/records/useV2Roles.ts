@@ -29,6 +29,7 @@ import {
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
 export const roleErrorText = (error: unknown) =>
   error instanceof BaseError
@@ -217,11 +218,8 @@ export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes:
     if (receipt.status !== 'success')
       throw new Error('The transaction reverted. Its permission changes have not been saved.')
     setHash(receipt.transactionHash)
+    refreshEnsQueries(queryClient, receipt)
     onConfirmed(write.batch.changes)
-    void queryClient.invalidateQueries({ queryKey: ['settings'] })
-    // Registry role changes regenerate token IDs; records also need fresh permission checks.
-    for (const key of [['v2-roles'], ['v2-records'], ['name'], ['profile'], ['user', 'resolvers']])
-      void queryClient.invalidateQueries({ queryKey: key })
     return write.batch.changes
   }
 

@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { namehash, encodeFunctionData, toHex } from 'viem'
-import { mainnet } from 'viem/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
@@ -9,6 +9,7 @@ import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/e
 import { fetchNameRoles } from '@/api/name/roles'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
 const MAX_NAMES_PER_MULTICALL = 50
 
@@ -54,7 +55,7 @@ function encodeContenthash(input: string): `0x${string}` {
 
 export function useBulkEditRecords(names: string[]) {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
 
@@ -448,7 +449,7 @@ export function useBulkEditRecords(names: string[]) {
     if (!publicClient || resolverGroups.length === 0) return
 
     const walletClient = await getWalletClient()
-    await ensureChain(walletClient, mainnet.id)
+    await ensureChain(walletClient, activeChain.id)
 
     setStep('confirming')
     setErrorMessage(null)
@@ -499,7 +500,7 @@ export function useBulkEditRecords(names: string[]) {
           abi: PublicResolverAbi,
           functionName: 'multicall',
           args: [tx.calls],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         // Update status to processing with hash
@@ -508,7 +509,9 @@ export function useBulkEditRecords(names: string[]) {
         )
         setStep('processing')
 
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
 
         // Update status to success
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === i ? { ...s, status: 'success' } : s)))
@@ -521,15 +524,6 @@ export function useBulkEditRecords(names: string[]) {
         // Continue with remaining transactions
       }
     }
-
-    // Invalidate caches for all affected names
-    const allAffectedNames = txPlan.flatMap((tx) => tx.names)
-    for (const name of allAffectedNames) {
-      queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-    }
-    queryClient.invalidateQueries({ queryKey: ['profile'] })
 
     setStep(hasError ? 'error' : 'success')
     if (hasError) {
@@ -546,7 +540,7 @@ export function useBulkEditRecords(names: string[]) {
       if (!status || status.status !== 'error') return
 
       const walletClient = await getWalletClient()
-      await ensureChain(walletClient, mainnet.id)
+      await ensureChain(walletClient, activeChain.id)
 
       const calls = buildCallsForGroup(status.names)
       if (calls.length === 0) return
@@ -561,24 +555,18 @@ export function useBulkEditRecords(names: string[]) {
           abi: PublicResolverAbi,
           functionName: 'multicall',
           args: [calls],
-          chain: mainnet,
+          chain: activeChain,
         })
 
         setTransactionStatuses((prev) =>
           prev.map((s, idx) => (idx === index ? { ...s, status: 'processing', txHash: hash } : s))
         )
 
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
 
         setTransactionStatuses((prev) => prev.map((s, idx) => (idx === index ? { ...s, status: 'success' } : s)))
-
-        // Invalidate caches
-        for (const name of status.names) {
-          queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-          queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-          queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-        }
-        queryClient.invalidateQueries({ queryKey: ['profile'] })
 
         // Check if all are now success
         const allSuccess = transactionStatuses.every((s, idx) => (idx === index ? true : s.status === 'success'))

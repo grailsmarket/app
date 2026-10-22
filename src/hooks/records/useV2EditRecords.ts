@@ -12,6 +12,7 @@ import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import { readConfiguration, readNameResolver, readResolverHistory, readResolverState } from '@/utils/records/v2Resolver'
 import { buildRecordCalls, dnsEncodeName, recordKey, uint256, validateRecordField } from '@/utils/records/v2Records'
 import type { V2Record, V2RecordField, V2RecordMode } from '@/types/records'
@@ -290,21 +291,16 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
   const completed = async (kind: PendingWrite['kind']) => {
     track(null)
-    // Shared configurations can affect names other than the one that opened this modal.
-    for (const key of [['name'], ['profile'], ['profileMetadata'], ['user', 'resolvers']] as const) {
-      void queryClient.invalidateQueries({ queryKey: key })
-    }
     void invalidateNameMetadataCache(name).catch(() => {})
     if (kind === 'records') {
       setDraft(null)
       setSelection(null)
       setMode('shared')
       dispatch(markImageForRefresh(name))
-      void queryClient.invalidateQueries({ queryKey: ['v2-records'] })
       setStep('success')
     } else if (kind === 'resolver') {
       setResolverInput(null)
-      await refresh()
+      discardChanges()
       setStep('editing')
     } else {
       // A deployment does not replace the name's resolver or discard drafts in other tabs.
@@ -331,6 +327,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
         track(null)
         throw new Error('The transaction reverted. No changes from this transaction were saved.')
       }
+      refreshEnsQueries(queryClient, receipt)
       await completed(write.kind)
     }
   }

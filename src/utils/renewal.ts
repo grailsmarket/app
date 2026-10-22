@@ -1,16 +1,14 @@
 import { parseEventLogs, TransactionReceipt } from 'viem'
-import { mainnet } from 'viem/chains'
-import { activeChain } from '@/constants/web3/chain'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
 import { config } from '@/lib/config'
 import type { RenewalBatch, RenewalEntry } from '@/types/renewal'
 
-export const getRenewalChain = (version: 1 | 2) => (version === 1 ? mainnet : activeChain)
-
 export const createRenewalBatches = (entries: RenewalEntry[], batchSize = 100): RenewalBatch[] => {
   const batches: RenewalBatch[] = []
+
   for (const version of [1, 2] as const) {
     const groups = new Map<string, RenewalEntry[]>()
+
     for (const entry of entries.filter((entry) => entry.version === version)) {
       // The V1 bulk renewer accepts a single duration for all names in a transaction.
       const key = version === 1 ? entry.duration.toString() : 'v2'
@@ -18,6 +16,7 @@ export const createRenewalBatches = (entries: RenewalEntry[], batchSize = 100): 
       group.push(entry)
       groups.set(key, group)
     }
+
     for (const group of groups.values()) {
       for (let index = 0; index < group.length; index += batchSize) {
         batches.push({ version, entries: group.slice(index, index + batchSize) })

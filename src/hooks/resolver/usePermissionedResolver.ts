@@ -12,6 +12,7 @@ import {
   stringToHex,
 } from 'viem'
 import { useAccount } from 'wagmi'
+import { useQueryClient } from '@tanstack/react-query'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { ALL_ROLES } from '@/constants/ens/resolver'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
@@ -20,6 +21,7 @@ import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
 const publicClient = createPublicClient({ chain: activeChain, transport: http() })
 
@@ -33,6 +35,7 @@ interface PredictProxyAddressProps {
 export const usePermissionedResolver = () => {
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
+  const queryClient = useQueryClient()
 
   const predictProxyAddress = ({ factoryAddress, proxyLogic, deployer, salt }: PredictProxyAddressProps) => {
     const outerSalt = keccak256(encodeAbiParameters([{ type: 'address' }, { type: 'uint256' }], [deployer, salt]))
@@ -110,6 +113,8 @@ export const usePermissionedResolver = () => {
   const getDeployedResolver = async (hash: Hex): Promise<Address> => {
     const receipt = await waitForTransaction(publicClient, hash)
     if (receipt.status !== 'success') throw new Error('Resolver deployment failed')
+
+    refreshEnsQueries(queryClient, receipt)
 
     const [resolverLog] = parseEventLogs({
       abi: VERIFIABLE_FACTORY_ABI,

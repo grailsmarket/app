@@ -2,9 +2,8 @@
 
 import { useMemo, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Address, erc20Abi, formatEther, formatUnits, Hex } from 'viem'
-import { mainnet } from 'viem/chains'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import {
   selectBulkRenewalModal,
@@ -21,8 +20,9 @@ import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens
 import { normalizeName } from '@/lib/ens'
 import { getSecondsPerUnit } from '@/utils/registration'
 import { calculateDurationDiscount } from '@/utils/registrationPricing'
-import { createRenewalBatches, getFailedRenewalIndices, getRenewalChain } from '@/utils/renewal'
+import { createRenewalBatches, getFailedRenewalIndices } from '@/utils/renewal'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TimeUnit } from '@/types/registration'
 import type { RenewalBatch, RenewalEntry, RenewalStage, RenewalTransaction } from '@/types/renewal'
 
@@ -32,7 +32,7 @@ export const useRenewalModal = (onClose: () => void) => {
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { address } = useAccount()
-  const { extend, getRenewalQuote, getPublicClient } = useExtendDomains()
+  const { extend, getRenewalQuote, publicClient } = useExtendDomains()
   const getPricing = useRentPriceOracle()
   const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
@@ -47,7 +47,6 @@ export const useRenewalModal = (onClose: () => void) => {
   const [error, setError] = useState<string | null>(null)
   const [stage, setStage] = useState<RenewalStage>('confirming')
   const [transaction, setTransaction] = useState<RenewalTransaction | null>(null)
-  const [currentVersion, setCurrentVersion] = useState<1 | 2>(1)
   const [currentBatch, setCurrentBatch] = useState(1)
   const [processingBatches, setProcessingBatches] = useState(1)
   const [completedTransactions, setCompletedTransactions] = useState<RenewalTransaction[]>([])
@@ -111,7 +110,6 @@ export const useRenewalModal = (onClose: () => void) => {
   const quotes = useQuery({
     queryKey: [
       'renewalQuotes',
-      mainnet.id,
       activeChain.id,
       asset,
       remainingEntries.map((entry) => [entry.label, entry.version, entry.duration.toString()]),
@@ -144,34 +142,23 @@ export const useRenewalModal = (onClose: () => void) => {
     staleTime: 5000,
   })
 
-  const networkVersions = [
-    ...new Map(
-      ([1, 2] as const)
-        .filter((version) => (version === 1 ? v1Entries.length : v2Entries.length))
-        .map((version) => [getRenewalChain(version).id, version])
-    ).values(),
-  ]
-
-  const networkFunds = useQueries({
-    queries: networkVersions.map((version) => ({
-      queryKey: ['balance', address, getRenewalChain(version).id, 'renewal'],
-      queryFn: async () => {
-        if (!address) throw new Error('Connect your wallet to renew names.')
-        const client = getPublicClient(version)
-        const [balance, gasPrice] = await Promise.all([client.getBalance({ address }), client.getGasPrice()])
-        return { balance, gasPrice }
-      },
-      enabled: !!address && !isLoading && !success,
-      refetchInterval: isLoading || success ? (false as const) : 10000,
-      retry: false,
-    })),
+  const networkFunds = useQuery({
+    queryKey: ['balance', address, activeChain.id, 'renewal'],
+    queryFn: async () => {
+      if (!address) throw new Error('Connect your wallet to renew names.')
+      const [balance, gasPrice] = await Promise.all([publicClient.getBalance({ address }), publicClient.getGasPrice()])
+      return { balance, gasPrice }
+    },
+    enabled: !!address && batches.length > 0 && !isLoading && !success,
+    refetchInterval: isLoading || success ? false : 10000,
+    retry: false,
   })
 
   const assetBalance = useQuery({
     queryKey: ['balance', address, activeChain.id, asset],
     queryFn: async () => {
       if (!address) throw new Error('Connect your wallet to renew names.')
-      return getPublicClient(2).readContract({
+      return publicClient.readContract({
         address: asset,
         abi: erc20Abi,
         functionName: 'balanceOf',
@@ -202,61 +189,26 @@ export const useRenewalModal = (onClose: () => void) => {
         }
       : null
 
-  const networks = new Map<
-    number,
-    { name: string; balance: bigint | undefined; renewalCost: bigint; gasCost: bigint | undefined }
-  >()
-  for (const version of [1, 2] as const) {
-    const entries = version === 1 ? v1Entries : v2Entries
-    if (!entries.length) continue
-    const chain = getRenewalChain(version)
-    const funds = networkFunds[networkVersions.findIndex((version) => getRenewalChain(version).id === chain.id)]
-    const gasPrice = funds?.data?.gasPrice
-    const gasEstimate = BigInt(
-      batches.filter((batch) => batch.version === version).length * 150000 +
-        entries.length * (version === 1 ? 50000 : 150000)
-    )
-    const existing = networks.get(chain.id)
-    const gasCost = gasPrice === undefined ? undefined : gasEstimate * gasPrice
-    networks.set(chain.id, {
-      name: chain.name,
-      balance: funds?.isError ? undefined : funds?.data?.balance,
-      renewalCost: (existing?.renewalCost ?? BigInt(0)) + (version === 1 ? (quotes.data?.v1 ?? BigInt(0)) : BigInt(0)),
-      gasCost:
-        gasCost === undefined || (existing && existing.gasCost === undefined)
-          ? undefined
-          : (existing?.gasCost ?? BigInt(0)) + gasCost,
-    })
-  }
-
-  const insufficientNetworks = [...networks.values()]
-    .filter(
-      ({ balance, renewalCost, gasCost }) =>
-        balance === undefined || gasCost === undefined || balance < renewalCost + gasCost
-    )
-    .map(({ name }) => name)
-  const hasSufficientEth = !!quotes.data && insufficientNetworks.length === 0
-  const gasCosts = [...networks.entries()].map(([chainId, { name, gasCost }]) => ({
-    chainId,
-    name,
-    amount: gasCost === undefined ? null : Number(formatEther(gasCost)),
-  }))
+  const gasEstimate = BigInt(batches.length * 150000 + v1Entries.length * 50000 + v2Entries.length * 150000)
+  const gasPrice = networkFunds.data?.gasPrice
+  const gasCost = gasPrice === undefined ? undefined : gasEstimate * gasPrice
+  const estimatedGasCost = gasCost === undefined ? null : Number(formatEther(gasCost))
+  const hasSufficientEth =
+    !!quotes.data &&
+    !networkFunds.isError &&
+    networkFunds.data !== undefined &&
+    gasCost !== undefined &&
+    networkFunds.data.balance >= quotes.data.v1 + gasCost
   const hasSufficientAssets =
     v2Entries.length === 0 ||
     (!assetBalance.isError && assetBalance.data !== undefined && !!quotes.data && assetBalance.data >= quotes.data.v2)
   const hasSufficientBalance = hasSufficientEth && hasSufficientAssets
-  const isLoadingFunds = networkFunds.some((query) => query.isLoading) || assetBalance.isLoading
-  const fundingError = networkFunds.find((query) => query.error)?.error || assetBalance.error
+  const isLoadingFunds = networkFunds.isLoading || assetBalance.isLoading
+  const fundingError = networkFunds.error || assetBalance.error
   const quoteError =
     prepared.error ||
     (quotes.error ? `Could not quote renewals: ${quotes.error.message}` : null) ||
     (fundingError ? `Could not check renewal balances and fees: ${fundingError.message}` : null)
-
-  const refetchDomainQueries = (entries: RenewalEntry[]) => {
-    queryClient.invalidateQueries({ queryKey: ['profile', 'domains'] })
-    entries.forEach(({ domain }) => queryClient.invalidateQueries({ queryKey: ['name', 'details', domain.name] }))
-    queryClient.invalidateQueries({ queryKey: ['balance'] })
-  }
 
   const handleSubmit = async (event: React.MouseEvent) => {
     event.preventDefault()
@@ -281,7 +233,6 @@ export const useRenewalModal = (onClose: () => void) => {
         const batch = pendingBatch.current?.batch ?? batches[index]
 
         setCurrentBatch(index + 1)
-        setCurrentVersion(batch.version)
 
         let hash = pendingBatch.current?.hash
 
@@ -299,12 +250,14 @@ export const useRenewalModal = (onClose: () => void) => {
         setStage('processing')
         setTransaction({ hash, version: batch.version })
 
-        const receipt = await waitForTransaction(getPublicClient(batch.version), hash)
+        const receipt = await waitForTransaction(publicClient, hash)
         pendingBatch.current = null
 
         setHasPendingTransaction(false)
 
         if (receipt.status !== 'success') throw new Error(`Renewal transaction ${index + 1} reverted.`)
+
+        refreshEnsQueries(queryClient, receipt)
 
         setCompletedTransactions((transactions) => [
           ...transactions,
@@ -319,7 +272,6 @@ export const useRenewalModal = (onClose: () => void) => {
         })
 
         setCompletedNames(new Set(succeeded))
-        setTimeout(() => refetchDomainQueries(renewed), 2500)
 
         if (failedIndices.size) {
           const failedNames = batch.entries
@@ -379,7 +331,7 @@ export const useRenewalModal = (onClose: () => void) => {
     quoteError,
     stage,
     transaction,
-    currentNetwork: getRenewalChain(currentVersion).name,
+    currentNetwork: activeChain.name,
     currentBatch,
     totalBatches: isLoading ? processingBatches : batches.length,
     namesProcessed: completedNames.size,
@@ -388,8 +340,7 @@ export const useRenewalModal = (onClose: () => void) => {
     remainingDomains,
     longestExpirationDate,
     calculationResults,
-    gasCosts,
-    insufficientNetworks,
+    estimatedGasCost,
     hasSufficientBalance,
     hasSufficientEth,
     hasSufficientAssets,
@@ -402,7 +353,6 @@ export const useRenewalModal = (onClose: () => void) => {
     parametersLocked: !!lockedEntries,
     handleSubmit,
     handleClose,
-    transactionUrl: ({ hash, version }: RenewalTransaction) =>
-      `${getRenewalChain(version).blockExplorers.default.url}/tx/${hash}`,
+    transactionUrl: ({ hash }: RenewalTransaction) => `${activeChain.blockExplorers.default.url}/tx/${hash}`,
   }
 }

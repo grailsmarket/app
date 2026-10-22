@@ -9,6 +9,7 @@ const validateAddress = (address: Address) => {
 const readWorker = async <T>(path: string, signal?: AbortSignal): Promise<T> => {
   const response = await fetch(`${config.ensV2ApiUrl}${path}`, {
     credentials: 'omit',
+    cache: 'no-store',
     signal: AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(15_000)]),
   })
 

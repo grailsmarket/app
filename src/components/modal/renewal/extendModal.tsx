@@ -52,8 +52,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     remainingDomains,
     longestExpirationDate,
     calculationResults,
-    gasCosts,
-    insufficientNetworks,
+    estimatedGasCost,
     hasSufficientBalance,
     hasSufficientEth,
     hasSufficientAssets,
@@ -358,13 +357,11 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                             </div>
                           </>
                         )}
-                        {gasCosts.map(({ chainId, name, amount }) =>
-                          amount !== null ? (
-                            <div key={chainId} className='flex justify-between gap-2'>
-                              <span>{gasCosts.length > 1 ? `${name} gas (est.):` : 'Estimated gas:'}</span>
-                              <span className='text-right font-medium'>~{Number(amount.toFixed(8))} ETH</span>
-                            </div>
-                          ) : null
+                        {estimatedGasCost !== null && (
+                          <div className='flex justify-between gap-2'>
+                            <span>Estimated gas:</span>
+                            <span className='text-right font-medium'>~{Number(estimatedGasCost.toFixed(8))} ETH</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -420,7 +417,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
                         <p className='text-md text-red-400'>
                           {!hasSufficientEth &&
-                            `Insufficient ETH on ${insufficientNetworks.join(' and ')} for renewal costs and network fees. `}
+                            `Insufficient ETH on ${currentNetwork} for renewal costs and network fees. `}
                           {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for V2 renewals.`}
                         </p>
                       </div>

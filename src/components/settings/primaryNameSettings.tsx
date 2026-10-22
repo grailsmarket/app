@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Avatar, Check, ShortArrow, truncateAddress } from 'ethereum-identity-kit'
 import { useUserContext } from '@/context/user'
 import { usePrimaryName } from '@/hooks/settings/usePrimaryName'
-import { primaryNameChain } from '@/utils/settings/primaryName'
 import { beautifyName } from '@/lib/ens'
 import NameImage from '@/components/ui/nameImage'
 import Input from '@/components/ui/input'
@@ -78,7 +77,7 @@ const PrimaryNameSettings = () => {
                 />
                 <span className='min-w-0 flex-1 truncate'>{beautifyName(option.name)}</span>
                 <span className='text-neutral shrink-0 text-sm'>
-                  V{option.version} · {primaryNameChain(option.version).name}
+                  V{option.version} · {editor.chain.name}
                 </span>
                 {selected?.name === option.name && selected.version === option.version && (
                   <Check className='h-4 w-4 shrink-0' />

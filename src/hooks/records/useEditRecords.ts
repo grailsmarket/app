@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
@@ -10,6 +10,7 @@ import { resolveEnsAddress } from '@/utils/web3/ens'
 import { fetchNameRoles } from '@/api/name/roles'
 import { TEXT_RECORD_KEYS, ADDRESS_RECORD_KEYS, COIN_TYPES } from '@/constants/ens/records'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
+import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import { config } from '@/lib/config'
 import { activeChain } from '@/constants/web3/chain'
 
@@ -17,9 +18,11 @@ export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'er
 
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const getWalletClient = useGetWalletClient()
   const queryClient = useQueryClient()
+  // Keep background refreshes from replacing edits already made in this modal.
+  const editedFields = useRef(new Set<string>())
 
   const { data: roles } = useQuery({
     queryKey: ['name', 'roles', name],
@@ -42,9 +45,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   useEffect(() => {
     if (!roles) return
-    setRoleOwnerState(roles.owner)
-    setRoleManagerState(roles.manager)
-    setRoleEthRecordState(roles.ethAddress)
+    if (!editedFields.current.has('owner')) setRoleOwnerState(roles.owner)
+    if (!editedFields.current.has('manager')) setRoleManagerState(roles.manager)
+    if (!editedFields.current.has('eth')) setRoleEthRecordState(roles.ethAddress)
   }, [roles])
 
   // Text records state
@@ -81,7 +84,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Initialize state from metadata
   useEffect(() => {
-    if (!metadata) return
+    if (!metadata || editedFields.current.has('records')) return
 
     const textRecs: Record<string, string> = {}
     for (const key of TEXT_RECORD_KEYS) {
@@ -103,7 +106,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
     // ETH record for Roles tab (metadata key is 'Ethereum' from chains, or 'eth')
     const ethValue = metadata['Ethereum'] || metadata['ethereum'] || metadata['eth'] || ''
-    setRoleEthRecordState(ethValue)
+    if (!editedFields.current.has('eth')) setRoleEthRecordState(ethValue)
     // Custom records: any key not in predefined sets
     const knownKeys = new Set<string>([
       ...TEXT_RECORD_KEYS,
@@ -246,16 +249,19 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Update text record
   const setRecord = useCallback((key: string, value: string) => {
+    editedFields.current.add('records')
     setRecords((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   // Update address record
   const setAddressRecord = useCallback((key: string, value: string) => {
+    editedFields.current.add('records')
     setAddressRecords((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   // Add an address record to visible set
   const addVisibleAddressRecord = useCallback((key: string) => {
+    editedFields.current.add('records')
     setVisibleAddressRecords((prev) => new Set([...prev, key]))
   }, [])
 
@@ -266,15 +272,18 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
   // Custom record functions
   const setCustomRecord = useCallback((key: string, value: string) => {
+    editedFields.current.add('records')
     setCustomRecords((prev) => ({ ...prev, [key]: value }))
   }, [])
 
   const addCustomRecord = useCallback((key: string) => {
+    editedFields.current.add('records')
     setCustomRecords((prev) => ({ ...prev, [key]: '' }))
     setVisibleCustomRecords((prev) => new Set([...prev, key]))
   }, [])
 
   const removeCustomRecord = useCallback((key: string) => {
+    editedFields.current.add('records')
     setVisibleCustomRecords((prev) => {
       const next = new Set(prev)
       next.delete(key)
@@ -289,9 +298,18 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   }, [visibleCustomRecords])
 
   // Role setters
-  const setRoleOwner = useCallback((value: string) => setRoleOwnerState(value), [])
-  const setRoleManager = useCallback((value: string) => setRoleManagerState(value), [])
-  const setRoleEthRecord = useCallback((value: string) => setRoleEthRecordState(value), [])
+  const setRoleOwner = useCallback((value: string) => {
+    editedFields.current.add('owner')
+    setRoleOwnerState(value)
+  }, [])
+  const setRoleManager = useCallback((value: string) => {
+    editedFields.current.add('manager')
+    setRoleManagerState(value)
+  }, [])
+  const setRoleEthRecord = useCallback((value: string) => {
+    editedFields.current.add('eth')
+    setRoleEthRecordState(value)
+  }, [])
 
   // Save all changed records and roles
   const saveRecords = useCallback(async () => {
@@ -392,7 +410,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
         setTxHash(hash)
         setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
       }
 
       // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
@@ -430,7 +450,9 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
         setTxHash(hash)
         setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
       }
 
       // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
@@ -455,15 +477,10 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
 
         setTxHash(hash)
         setStep('processing')
-        await waitForTransaction(publicClient, hash)
+        const receipt = await waitForTransaction(publicClient, hash)
+        if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+        refreshEnsQueries(queryClient, receipt)
       }
-
-      // Invalidate caches
-      queryClient.invalidateQueries({ queryKey: ['name', 'metadata', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'details', name] })
-      queryClient.invalidateQueries({ queryKey: ['name', 'roles', name] })
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
-      queryClient.invalidateQueries({ queryKey: ['profileMetadata', name] })
 
       setStep('success')
     } catch (err: unknown) {

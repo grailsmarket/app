@@ -17,7 +17,8 @@ import { useClickAway } from '@/hooks/useClickAway'
 import InputWithResolution from '../components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TabSelector from '@/components/ui/tabSelector'
-import { config } from '@/lib/config'
+import { activeChain } from '@/constants/web3/chain'
+import { getMetadataAssetUrl } from '@/utils/web3/ens'
 import { useAppDispatch } from '@/state/hooks'
 import { markImageForRefresh } from '@/state/reducers/imageRefresh'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
@@ -83,12 +84,12 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
   const avatarUrl = records.avatar
     ? records.avatar.startsWith('http')
       ? records.avatar
-      : `${config.ensMetadataUrl}/mainnet/avatar/${name}`
+      : getMetadataAssetUrl(name, 'avatar')
     : DEFAULT_FALLBACK_AVATAR
   const headerUrl = records.header
     ? records.header.startsWith('http')
       ? records.header
-      : `${config.ensMetadataUrl}/mainnet/header/${name}`
+      : getMetadataAssetUrl(name, 'header')
     : DEFAULT_FALLBACK_HEADER
 
   const handleImageSave = (url: string) => {
@@ -137,7 +138,7 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
                 <p className='text-xl'>{step === 'confirming' ? 'Confirm in Wallet' : 'Processing Transaction'}</p>
                 {txHash && (
                   <a
-                    href={`https://etherscan.io/tx/${txHash}`}
+                    href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary hover:text-primary/80 text-lg underline transition-colors'
@@ -160,7 +161,7 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
                 <p className='text-xl font-bold'>Changes Saved Successfully!</p>
                 {txHash && (
                   <a
-                    href={`https://etherscan.io/tx/${txHash}`}
+                    href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='text-primary hover:text-primary/80 text-lg underline transition-colors'

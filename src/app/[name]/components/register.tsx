@@ -14,7 +14,7 @@ import { openRegistrationModal, selectRegistration } from '@/state/reducers/regi
 import { useUserContext } from '@/context/user'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { usePublicClient } from 'wagmi'
-import { mainnet } from 'wagmi/chains'
+import { activeChain } from '@/constants/web3/chain'
 import { useQuery } from '@tanstack/react-query'
 import { ENS_HOLIDAY_REGISTRAR_ABI } from '@/constants/web3/abi/ENSHolidayRegistrar'
 import { formatPrice } from '@/utils/formatPrice'
@@ -35,7 +35,7 @@ const Register: React.FC<RegisterProps> = ({ nameDetails, registrationStatus }) 
   const dispatch = useAppDispatch()
   const { userAddress } = useUserContext()
   const { openConnectModal } = useConnectModal()
-  const publicClient = usePublicClient({ chainId: mainnet.id })
+  const publicClient = usePublicClient({ chainId: activeChain.id })
   const registrationState = useAppSelector(selectRegistration)
 
   // Lifted state for premium price controls

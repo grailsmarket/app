@@ -2,19 +2,13 @@ import {
   type Address,
   type Hex,
   type PublicClient,
-  createPublicClient,
   encodeFunctionData,
   erc721Abi,
-  fallback,
-  http,
   labelhash,
   namehash,
   zeroAddress,
 } from 'viem'
 import { normalize } from 'viem/ens'
-import { mainnet } from 'viem/chains'
-import { activeChain } from '@/constants/web3/chain'
-import { ENS_V1_MAINNET_CONTRACTS } from '@/constants/web3/ens'
 import { RegistryAbi } from '@/constants/web3/abi/RegistryAbi'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
@@ -25,10 +19,6 @@ import { config } from '@/lib/config'
 import { readNameResolver, readResolverState } from '@/utils/records/v2Resolver'
 import { dnsEncodeName, ROOT_NAME } from '@/utils/records/v2Records'
 import type { MarketplaceDomainType } from '@/types/domains'
-
-// The v1 registry still owns addr.reverse on both Ethereum and the current V2 testnet.
-// Discover its registrar at runtime: https://docs.ens.domains/ensv2/reverse-resolution/
-const ENS_REGISTRY = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
 export interface PrimaryNameOption extends Pick<MarketplaceDomainType, 'name' | 'token_id' | 'expiry_date'> {
   version: 1 | 2
@@ -42,24 +32,6 @@ export interface PrimaryNameReview {
   configurationId?: bigint
   usesDefault?: boolean
   blocked?: string
-}
-
-export const primaryNameChain = (version: 1 | 2) => (version === 1 ? mainnet : activeChain)
-
-export const createPrimaryNameClient = (version: 1 | 2) => {
-  const chain = primaryNameChain(version)
-  const key = chain.id === mainnet.id ? config.alchemy.mainnet : config.alchemy.sepolia
-  const network = chain.id === mainnet.id ? 'eth-mainnet' : 'eth-sepolia'
-  const options = { batch: true, timeout: 10_000, retryCount: 0 } as const
-
-  return createPublicClient({
-    chain,
-    transport: key
-      ? fallback([http(`https://${network}.g.alchemy.com/v2/${key}`, options), http(undefined, options)], {
-          retryCount: 0,
-        })
-      : http(undefined, options),
-  })
 }
 
 export const verifyPrimaryNameOwner = async (client: PublicClient, option: PrimaryNameOption, account: Address) => {
@@ -80,7 +52,7 @@ export const verifyPrimaryNameOwner = async (client: PublicClient, option: Prima
     })
   } else {
     const wrapped = await client.readContract({
-      address: ENS_V1_MAINNET_CONTRACTS.nameWrapper,
+      address: config.ensNameWrapper,
       abi: NAME_WRAPPER_ABI,
       functionName: 'isWrapped',
       args: [namehash(name)],
@@ -88,14 +60,14 @@ export const verifyPrimaryNameOwner = async (client: PublicClient, option: Prima
 
     if (wrapped || (labels.length === 2 && labels[1] === 'eth')) {
       owner = await client.readContract({
-        address: wrapped ? ENS_V1_MAINNET_CONTRACTS.nameWrapper : ENS_V1_MAINNET_CONTRACTS.registrar,
+        address: wrapped ? config.ensNameWrapper : config.ensRegistrar,
         abi: erc721Abi,
         functionName: 'ownerOf',
         args: [BigInt(wrapped ? namehash(name) : labelhash(labels[0]))],
       })
     } else {
       owner = (await client.readContract({
-        address: ENS_REGISTRY,
+        address: config.ensRegistry,
         abi: RegistryAbi,
         functionName: 'owner',
         args: [namehash(name)],
@@ -189,7 +161,7 @@ export const preparePrimaryName = async (client: PublicClient, option: PrimaryNa
     )
 
   const registrar = (await client.readContract({
-    address: ENS_REGISTRY,
+    address: config.ensRegistry,
     abi: RegistryAbi,
     functionName: 'owner',
     args: [namehash('addr.reverse')],

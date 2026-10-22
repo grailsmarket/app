@@ -1,4 +1,5 @@
 import { config } from '@/lib/config'
+import { activeChainSlug } from '@/constants/web3/chain'
 import { normalizeName } from '@/lib/ens'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({
       items: [
         {
-          network: 'mainnet',
+          network: activeChainSlug,
           name,
         },
       ],

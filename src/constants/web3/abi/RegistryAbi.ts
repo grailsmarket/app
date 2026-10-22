@@ -199,4 +199,4 @@ export const RegistryAbi = [
     stateMutability: 'view',
     type: 'function',
   },
-]
+] as const

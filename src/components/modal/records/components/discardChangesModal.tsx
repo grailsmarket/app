@@ -3,17 +3,21 @@
 import { useEffect, useRef } from 'react'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 
+interface DiscardChangesModalProps {
+  onCancel: () => void
+  onDiscard: () => void
+  changingResolver?: boolean
+  pendingTransaction?: boolean
+  description?: string
+}
+
 const DiscardChangesModal = ({
   onCancel,
   onDiscard,
   changingResolver = false,
   pendingTransaction = false,
-}: {
-  onCancel: () => void
-  onDiscard: () => void
-  changingResolver?: boolean
-  pendingTransaction?: boolean
-}) => {
+  description,
+}: DiscardChangesModalProps) => {
   const dialog = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null
@@ -64,9 +68,10 @@ const DiscardChangesModal = ({
           Discard changes?
         </h2>
         <p id='discard-changes-description' className='text-neutral text-center text-lg'>
-          {changingResolver
-            ? 'Changing the resolver will discard your unsaved record and permission changes.'
-            : 'Closing this window will discard all unsaved changes.'}
+          {description ??
+            (changingResolver
+              ? 'Changing the resolver will discard your unsaved record and permission changes.'
+              : 'Closing this window will discard all unsaved changes.')}
         </p>
         {pendingTransaction && (
           <p className='text-neutral text-center text-lg'>Closing does not cancel transactions already submitted.</p>

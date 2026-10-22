@@ -79,8 +79,8 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
   const catalog = { data: history.data ?? snapshot.data }
   const resolvers = useQuery({
-    queryKey: ['user', 'resolvers', address],
-    queryFn: () => getUserResolvers({ userAddress: address! }),
+    queryKey: ['user', 'resolvers', activeChain.id, address],
+    queryFn: ({ signal }) => getUserResolvers({ userAddress: address!, signal }),
     enabled: !!address,
     retry: false,
   })

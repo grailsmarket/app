@@ -16,11 +16,11 @@ import {
 import { normalize } from 'viem/ens'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
+import { RESOLVER_PROFILES_ABI } from '@/constants/web3/abi/ResolverProfiles'
 import type { V2NameResolver, V2Record, V2RecordField, V2ResolverCatalog } from '@/types/records'
 import {
   DEFAULT_V2_FIELDS,
   LINK_ROLE,
-  RESOLVER_PROFILES_ABI,
   ROOT_NAME,
   SET_RESOLVER_ROLE,
   decodeRecordValue,

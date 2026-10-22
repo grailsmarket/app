@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchNameVersion } from '@/api/name/details'
 import { readNameResolver } from '@/utils/records/v2Resolver'
@@ -7,6 +8,7 @@ import { createV2RecordsClient } from '@/utils/records/client'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import MigrationModal from '@/components/modal/migration/migrationModal'
 import V1EditRecordsModal from './v1/editRecordsModal'
 import V2EditRecordsModal from './v2/editRecordsModal'
 
@@ -19,6 +21,8 @@ interface EditRecordsModalProps {
 }
 
 const EditRecordsModal = ({ name, version, metadata, defaultTab, onClose }: EditRecordsModalProps) => {
+  const [migratedName, setMigratedName] = useState<string>()
+  const [migrationName, setMigrationName] = useState<string>()
   const lookup = useQuery({
     queryKey: ['name', 'recordEditorVersion', activeChain.id, config.ensV2Registry, name],
     queryFn: async () => {
@@ -33,10 +37,35 @@ const EditRecordsModal = ({ name, version, metadata, defaultTab, onClose }: Edit
     enabled: version == null,
     retry: false,
   })
-  const resolvedVersion = version ?? lookup.data
+  const resolvedVersion = migratedName === name || lookup.data === 2 ? 2 : (version ?? lookup.data)
+
+  // Keep the migration mounted while its final record-copy transaction completes, even if the version cache updates.
+  if (migrationName === name) {
+    return (
+      <MigrationModal
+        key={name}
+        name={name}
+        onBack={() => setMigrationName(undefined)}
+        onComplete={() => {
+          setMigratedName(name)
+          setMigrationName(undefined)
+        }}
+        onClose={onClose}
+      />
+    )
+  }
 
   if (resolvedVersion === 1) {
-    return <V1EditRecordsModal key={name} name={name} metadata={metadata} defaultTab={defaultTab} onClose={onClose} />
+    return (
+      <V1EditRecordsModal
+        key={name}
+        name={name}
+        metadata={metadata}
+        defaultTab={defaultTab}
+        onClose={onClose}
+        onMigrate={() => setMigrationName(name)}
+      />
+    )
   }
 
   if (resolvedVersion === 2) {

@@ -82,4 +82,36 @@ export const PublicResolverAbi = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'string', name: 'value', type: 'string' },
+    ],
+    name: 'setName',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'uint256', name: 'contentType', type: 'uint256' },
+      { internalType: 'bytes', name: 'value', type: 'bytes' },
+    ],
+    name: 'setABI',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes4', name: 'interfaceId', type: 'bytes4' },
+      { internalType: 'address', name: 'value', type: 'address' },
+    ],
+    name: 'setInterface',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 ] as const

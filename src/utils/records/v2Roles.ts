@@ -8,7 +8,7 @@ import {
   isAddress,
   keccak256,
   parseEventLogs,
-  parseAbiItem,
+  getAbiItem,
   zeroAddress,
 } from 'viem'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
@@ -271,10 +271,8 @@ export const readRoleHistory = async (
       const { contract, blockNumber, resource, kind } = snapshot
       const start = await findDeploymentBlock(client, contract, blockNumber, controller.signal)
       const logs: Log[] = []
-      const roleEvent = parseAbiItem(
-        'event EACRolesChanged(uint256 indexed resource, address indexed account, uint256 oldRoleBitmap, uint256 newRoleBitmap)'
-      )
-      const argumentEvent = parseAbiItem('event ResourceArgument(uint256 indexed resource, bytes arg)')
+      const roleEvent = getAbiItem({ abi: PERMISSIONED_RESOLVER_ABI, name: 'EACRolesChanged' })
+      const argumentEvent = getAbiItem({ abi: PERMISSIONED_RESOLVER_ABI, name: 'ResourceArgument' })
       // Filtering at the RPC avoids downloading every registration and record update in the registry.
       const fetchLogs = (fromBlock: bigint, toBlock: bigint) =>
         kind === 'name'

@@ -7,7 +7,6 @@ import {
   hexToBytes,
   isAddress,
   keccak256,
-  parseAbi,
   stringToHex,
   zeroAddress,
   zeroHash,
@@ -16,6 +15,7 @@ import { normalize, packetToBytes } from 'viem/ens'
 import { getCoderByCoinType } from '@ensdomains/address-encoder'
 import { decode, encode, getCodec } from '@ensdomains/content-hash'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
+import { RESOLVER_PROFILES_ABI } from '@/constants/web3/abi/ResolverProfiles'
 import { TEXT_RECORD_KEYS } from '@/constants/ens/records'
 import type { V2Record, V2RecordField } from '@/types/records'
 
@@ -23,18 +23,6 @@ export const LINK_ROLE = BigInt(1) << BigInt(28)
 export const SET_RESOLVER_ROLE = BigInt(1) << BigInt(24)
 export const ROOT_NAME: Hex = '0x00'
 const MAX_UINT256 = (BigInt(1) << BigInt(256)) - BigInt(1)
-
-// These selectors are passed to resolve(); they are not standalone resolver getters.
-export const RESOLVER_PROFILES_ABI = parseAbi([
-  'function text(bytes32 node, string key) view returns (string)',
-  'function addr(bytes32 node, uint256 coinType) view returns (bytes)',
-  'function hasAddr(bytes32 node, uint256 coinType) view returns (bool)',
-  'function contenthash(bytes32 node) view returns (bytes)',
-  'function name(bytes32 node) view returns (string)',
-  'function ABI(bytes32 node, uint256 contentTypes) view returns (uint256, bytes)',
-  'function interfaceImplementer(bytes32 node, bytes4 interfaceId) view returns (address)',
-  'function data(bytes32 node, string key) view returns (bytes)',
-])
 
 export const recordKey = (field: V2RecordField) => `${field.kind}:${field.key}`
 export const dnsEncodeName = (name: string) => bytesToHex(packetToBytes(normalize(name)))

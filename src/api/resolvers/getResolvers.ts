@@ -1,24 +1,22 @@
-import { API_URL } from '@/constants/api'
-import { APIResponseType } from '@/types/api'
-import { Resolver } from '@/types/ens'
-import { Address } from 'viem'
+import type { Resolver, ResolverRole, ResolverAdminRole } from '@/types/ens'
+import type { Address } from 'viem'
+import { getWorkerAccountResolvers } from './worker'
 
 interface GetUserResolversParams {
   userAddress: Address
+  signal?: AbortSignal
 }
 
-export const getUserResolvers = async ({ userAddress }: GetUserResolversParams) => {
-  try {
-    const response = await fetch(`${API_URL}/users/${userAddress}/resolvers`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    const result = (await response.json()) as APIResponseType<{ resolvers: Resolver[] }>
-    return result.data.resolvers
-  } catch (error) {
-    console.error(error)
-    throw error
-  }
+export const getUserResolvers = async ({ userAddress, signal }: GetUserResolversParams): Promise<Resolver[]> => {
+  const result = await getWorkerAccountResolvers(userAddress, signal)
+
+  return result.resolvers.map((resolver) => ({
+    address: resolver.address,
+    nameCount: null,
+    isDefault: false,
+    roles: [
+      ...resolver.roles.map((role) => `ROLE_${role.toUpperCase()}` as ResolverRole),
+      ...resolver.admin_roles.map((role) => `ROLE_${role.toUpperCase()}_ADMIN` as ResolverAdminRole),
+    ],
+  }))
 }

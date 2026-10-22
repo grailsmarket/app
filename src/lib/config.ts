@@ -7,6 +7,7 @@ const configSchema = z.object({
   walletConnectId: z.string(),
 
   grailsApiUrl: z.string(),
+  ensV2ApiUrl: z.url({ protocol: /^https?$/ }).transform((url) => url.replace(/\/+$/, '')),
   ensMetadataUrl: z.string(),
   metadataCacheInvalidationToken: z.string(),
 
@@ -66,6 +67,7 @@ export const config = configSchema.parse({
   walletConnectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID,
 
   grailsApiUrl: process.env.NEXT_PUBLIC_GRAILS_API_URL,
+  ensV2ApiUrl: process.env.NEXT_PUBLIC_ENS_V2_API_URL,
   ensMetadataUrl: process.env.NEXT_PUBLIC_ENS_METADATA_URL,
   metadataCacheInvalidationToken: process.env.NEXT_PUBLIC_METADATA_CACHE_INVALIDATION_TOKEN,
 

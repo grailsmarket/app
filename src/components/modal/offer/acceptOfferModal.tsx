@@ -6,6 +6,7 @@ import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { SEAPORT_ABI } from '@/lib/seaport/abi'
+import { estimateGasOr, withGasBuffer, FILL_GAS_FALLBACK_ERC20 } from '@/lib/seaport/gas'
 import Price from '@/components/ui/price'
 import { DomainOfferType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -113,16 +114,15 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           account: address,
         })
 
-        // Add 20% buffer to the estimated gas
-        const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100)
-        setGasEstimate(gasWithBuffer)
+        setGasEstimate(withGasBuffer(estimatedGas))
       } catch (estimateError) {
+        // Usually means the NFT approval isn't in place yet; handleAcceptOffer re-estimates before sending
         console.warn('Failed to estimate gas, using fallback:', estimateError)
-        setGasEstimate(BigInt(400000))
+        setGasEstimate(FILL_GAS_FALLBACK_ERC20)
       }
     } catch (err) {
       console.error('Failed to estimate gas:', err)
-      setGasEstimate(BigInt(400000))
+      setGasEstimate(FILL_GAS_FALLBACK_ERC20)
     }
   }
 
@@ -324,6 +324,21 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
         throw new Error(`Transaction would fail: ${simulateError.shortMessage || simulateError.message}`)
       }
 
+      // Re-estimate now that any NFT approval has landed; the estimate from when the
+      // modal opened may have failed and fallen back to a fixed limit.
+      const gas = await estimateGasOr(
+        () =>
+          publicClient.estimateContractGas({
+            address: config.seaportAddress,
+            abi: SEAPORT_ABI,
+            functionName: 'fulfillAdvancedOrder',
+            args: [advancedOrder, [], fulfillerConduitKey, address],
+            value: BigInt(0),
+            account: address,
+          }),
+        FILL_GAS_FALLBACK_ERC20
+      )
+
       setStep('processing')
 
       // Ensure we're on the ENS chain before executing the transaction
@@ -341,7 +356,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
           address, // recipient
         ],
         value: BigInt(0),
-        gas: gasEstimate || undefined,
+        gas,
         chain: activeChain,
       })
 

@@ -14,6 +14,7 @@ interface RegistrationToastProps {
   flowState: RegistrationFlowState
   isApproving: boolean
   isDeployingResolver: boolean
+  isResolverDeployed: boolean
   waitTimeRemaining: number
   currentBatchIndex: number
   totalBatches: number
@@ -25,6 +26,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
   flowState,
   isApproving,
   isDeployingResolver,
+  isResolverDeployed,
   waitTimeRemaining,
   currentBatchIndex,
   totalBatches,
@@ -42,14 +44,17 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
   const isWaiting = flowState === 'waiting'
   const isCommitting = flowState === 'committing'
   const isError = flowState === 'error'
-  const waitReady = isWaiting && waitTimeRemaining === 0
+  const resolverReady = flowState === 'resolver' && !isDeployingResolver && isResolverDeployed
+  const isReady = (isWaiting && waitTimeRemaining === 0) || resolverReady
   const pendingWallet = (isCommitting || flowState === 'registering' || isDeployingResolver) && !hasTxHash
 
   const label =
     flowState === 'resolver'
       ? isDeployingResolver
         ? 'Deploying Resolver...'
-        : 'Set Up a Resolver'
+        : resolverReady
+          ? 'Resolver Deployed'
+          : 'Set Up a Resolver'
       : isError
         ? 'Registration Error'
         : pendingWallet
@@ -58,7 +63,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
             ? 'Approving Token Spending...'
             : isCommitting
               ? 'Submitting Commitment...'
-              : waitReady
+              : isReady
                 ? 'Ready to Register'
                 : isWaiting
                   ? 'Waiting Period'
@@ -70,7 +75,9 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
         ? pendingWallet
           ? 'Confirm deployment in your wallet'
           : 'Waiting for confirmation'
-        : 'Deploy a resolver or skip for now'
+        : resolverReady
+          ? 'Click to continue'
+          : 'Deploy a resolver or skip for now'
       : isError
         ? 'Click to view details'
         : pendingWallet
@@ -79,7 +86,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
             : isCommitting
               ? 'Commitment transaction'
               : 'Registration transaction'
-          : waitReady
+          : isReady
             ? 'Click to continue'
             : isWaiting
               ? `${waitTimeRemaining}s remaining`
@@ -105,7 +112,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
         isDragging ? '' : 'transition-all duration-300',
         isError
           ? 'bg-background border-red-500/30'
-          : waitReady
+          : isReady
             ? 'bg-primary text-background border-primary shadow-bulk'
             : 'border-tertiary bg-background',
         position ? '' : 'right-6 bottom-6',
@@ -116,14 +123,10 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
         aria-hidden='true'
         className={cn(
           'relative grid h-9 w-9 shrink-0 place-items-center rounded-full',
-          isError
-            ? 'bg-red-900/20 text-red-400'
-            : waitReady
-              ? 'bg-background text-primary'
-              : 'bg-secondary text-primary'
+          isError ? 'bg-red-900/20 text-red-400' : isReady ? 'bg-background text-primary' : 'bg-secondary text-primary'
         )}
       >
-        {!waitReady && !isError && (
+        {!isReady && !isError && (
           <svg
             viewBox='0 0 32 32'
             className={cn(
@@ -147,7 +150,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
         )}
         {isError ? (
           <BangIcon className='h-4 w-4' />
-        ) : waitReady ? (
+        ) : isReady ? (
           <Check className='h-3.5 w-3.5' />
         ) : isWaiting ? (
           <span className='text-foreground text-md relative font-bold tabular-nums'>{waitLeft}</span>
@@ -160,7 +163,7 @@ const RegistrationToast: React.FC<RegistrationToastProps> = ({
       <div className='flex flex-col'>
         <span className='text-lg font-bold'>{label}</span>
         {subtitle && (
-          <span className={cn('text-md', isError ? 'text-red-400' : waitReady ? 'text-background/75' : 'text-neutral')}>
+          <span className={cn('text-md', isError ? 'text-red-400' : isReady ? 'text-background/75' : 'text-neutral')}>
             {subtitle}
           </span>
         )}

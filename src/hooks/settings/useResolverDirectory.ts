@@ -17,14 +17,15 @@ import { config } from '@/lib/config'
 import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { createV2RecordsClient } from '@/utils/records/client'
-import { findDeploymentBlock, readLogs, readResolverHistory, readResolverState } from '@/utils/records/v2Resolver'
+import { findDeploymentBlock, readLogs } from '@/utils/records/v2Resolver'
+import { loadResolverCatalog, loadResolverState } from '@/utils/records/loadResolver'
 import type { SettingsResolver } from '@/types/ens'
 
 const deploymentEvent = getAbiItem({ abi: VERIFIABLE_FACTORY_ABI, name: 'ProxyDeployed' })
 
 const accessEvent = getAbiItem({ abi: PERMISSIONED_RESOLVER_ABI, name: 'EACRolesChanged' })
 
-export const useResolverDirectory = () => {
+export const useResolverDirectory = (includeDeployments = true) => {
   const { address } = useAccount()
   const queries = useQueryClient()
   const client: PublicClient = useMemo(createV2RecordsClient, [])
@@ -32,23 +33,25 @@ export const useResolverDirectory = () => {
   const key = ['settings', 'discovered-resolvers', activeChain.id, address]
   const remembered = useQuery<SettingsResolver[]>({ queryKey: key, queryFn: () => [], enabled: false, initialData: [] })
 
-  const indexed = useQuery({
+  const resolverData = useQuery({
     queryKey: ['user', 'resolvers', activeChain.id, address],
     queryFn: ({ signal }) => getUserResolvers({ userAddress: address!, signal }),
     enabled: !!address,
     retry: false,
     staleTime: 60_000,
   })
+
   const predicted = useQuery({
     queryKey: ['registration', 'resolver', activeChain.id, address],
     queryFn: () => isUserResolverDeployed(),
-    enabled: !!address,
+    enabled: !!address && includeDeployments,
     retry: false,
   })
 
+  // The account endpoint lists current roles, but not past deployments after all roles were given away.
   const owned = useQuery({
     queryKey: ['settings', 'owned-resolvers', activeChain.id, address],
-    enabled: !!address,
+    enabled: !!address && includeDeployments,
     retry: false,
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
@@ -64,6 +67,7 @@ export const useResolverDirectory = () => {
           toBlock,
         })
       )
+
       return parseEventLogs({ abi: VERIFIABLE_FACTORY_ABI, eventName: 'ProxyDeployed', logs })
         .filter(
           (log) =>
@@ -87,7 +91,7 @@ export const useResolverDirectory = () => {
   const entries = new Map<string, SettingsResolver>()
   const delegated = useQuery({
     queryKey: ['settings', 'delegated-resolvers', activeChain.id, address],
-    enabled: !!address,
+    enabled: !!address && resolverData.isError,
     retry: false,
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
@@ -97,6 +101,7 @@ export const useResolverDirectory = () => {
       const logs = await readLogs(client, config.ensV2VerifiableFactory, from, latest, deadline, (fromBlock, toBlock) =>
         client.getLogs<typeof accessEvent>({ event: accessEvent, args: { account: address! }, fromBlock, toBlock })
       )
+
       const candidates = new Map<Address, Set<bigint>>()
       for (const log of parseEventLogs({ abi: PERMISSIONED_RESOLVER_ABI, eventName: 'EACRolesChanged', logs })) {
         if (log.args.newRoleBitmap === BigInt(0)) continue
@@ -104,6 +109,7 @@ export const useResolverDirectory = () => {
         resources.add(log.args.resource)
         candidates.set(log.address, resources)
       }
+
       const resolvers: SettingsResolver[] = []
       for (const [contract, resources] of candidates) {
         deadline.throwIfAborted()
@@ -113,6 +119,7 @@ export const useResolverDirectory = () => {
             abi: PERMISSIONED_RESOLVER_ABI,
             functionName: 'getRecordCount',
           })
+
           for (const resource of resources) {
             deadline.throwIfAborted()
             const roles = await client.readContract({
@@ -121,6 +128,7 @@ export const useResolverDirectory = () => {
               functionName: 'roles',
               args: [resource, address!],
             })
+
             if (roles) {
               resolvers.push({ address: contract, nameCount: null, roles: [], isDefault: false, delegated: true })
               break
@@ -135,6 +143,7 @@ export const useResolverDirectory = () => {
                     item instanceof ContractFunctionZeroDataError || item instanceof ContractFunctionRevertedError
                 )
               : error
+
           if (!(cause instanceof ContractFunctionZeroDataError) && !(cause instanceof ContractFunctionRevertedError))
             throw error
         }
@@ -151,12 +160,12 @@ export const useResolverDirectory = () => {
       isDefault: false,
       deployedBy: address,
     })
-  // The worker currently omits scoped-only grants and former deployers. Keep those onchain discovery paths.
+  // Keep former deployers and locally discovered resolvers, even when they no longer hold roles.
   for (const item of [
-    ...(delegated.data ?? []),
+    ...(resolverData.isError ? (delegated.data ?? []) : []),
     ...(owned.data ?? []),
     ...(remembered.data ?? []),
-    ...(indexed.data ?? []),
+    ...(resolverData.data ?? []),
   ]) {
     entries.set(item.address.toLowerCase(), { ...entries.get(item.address.toLowerCase()), ...item })
   }
@@ -173,21 +182,22 @@ export const useResolverDirectory = () => {
   return {
     resolvers: [...entries.values()],
     remember,
-    indexed,
+    resolverData,
     owned,
     delegated,
     predicted,
-    loading: !entries.size && (indexed.isLoading || owned.isLoading || delegated.isLoading || predicted.isLoading),
+    loading: !entries.size && (resolverData.isLoading || owned.isLoading || delegated.isLoading || predicted.isLoading),
   }
 }
 
 export const useResolverCatalog = (resolver: Address, enabled = true) => {
   const { address } = useAccount()
+  const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
 
   const state = useQuery({
     queryKey: ['settings', 'resolver-state', activeChain.id, resolver, address],
-    queryFn: () => readResolverState(client, resolver, 'grails-settings.invalid', address),
+    queryFn: ({ signal }) => loadResolverState(queries, client, resolver, 'grails-settings.invalid', address, signal),
     enabled,
     retry: false,
     staleTime: 15_000,
@@ -195,7 +205,7 @@ export const useResolverCatalog = (resolver: Address, enabled = true) => {
 
   const history = useQuery({
     queryKey: ['settings', 'resolver-history', activeChain.id, resolver, address, state.data?.blockNumber.toString()],
-    queryFn: ({ signal }) => readResolverHistory(client, resolver, state.data!, signal),
+    queryFn: ({ signal }) => loadResolverCatalog(queries, client, resolver, state.data!, address, signal),
     enabled: enabled && !!state.data,
     retry: false,
     staleTime: Infinity,

@@ -5,20 +5,29 @@ import Notice from '@/components/ui/modal/notice'
 
 interface ResolverSetupViewProps {
   isDeploying: boolean
+  isDeployed: boolean
   txHash: string | null
 }
 
-const ResolverSetupView: React.FC<ResolverSetupViewProps> = ({ isDeploying, txHash }) => {
+const ResolverSetupView: React.FC<ResolverSetupViewProps> = ({ isDeploying, isDeployed, txHash }) => {
   if (isDeploying) {
     return (
       <TxStatus
         state={txHash ? 'pending' : 'wallet'}
         title='Deploying Resolver'
-        message={
-          txHash
-            ? 'Your registration will continue once the resolver is ready.'
-            : 'Confirm the deployment in your wallet.'
-        }
+        message={txHash ? 'Waiting for the deployment to confirm.' : 'Confirm the deployment in your wallet.'}
+      >
+        {txHash && <TxLink hash={txHash} label='View transaction' />}
+      </TxStatus>
+    )
+  }
+
+  if (isDeployed) {
+    return (
+      <TxStatus
+        state='success'
+        title='Resolver Deployed'
+        message='Your resolver is ready. Register to submit your commitment.'
       >
         {txHash && <TxLink hash={txHash} label='View transaction' />}
       </TxStatus>

@@ -9,6 +9,8 @@ import { ShortArrow } from 'ethereum-identity-kit'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useResolverCatalog, useResolverDirectory } from '@/hooks/settings/useResolverDirectory'
 import { useConfigurationNames } from '@/hooks/settings/useConfigurationNames'
+import { useResolverData } from '@/hooks/settings/useResolverData'
+import { configurationNameCount, configurationRecordCount } from '@/utils/settings/resolverData'
 import { readConfiguration } from '@/utils/records/v2Resolver'
 import { activeChain } from '@/constants/web3/chain'
 import {
@@ -38,7 +40,16 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index
   const { address } = useAccount()
   const router = useRouter()
   const { client, catalog } = useResolverCatalog(resolver)
-  const { names } = useConfigurationNames(resolver)
+  const resolverData = useResolverData(resolver)
+  const nameCount = configurationNameCount(id, resolverData.details.data, resolverData.configurations.data)
+  const { names } = useConfigurationNames(resolver, resolverData.details.isError || resolverData.configurations.isError)
+  const effectiveId = id === BigInt(0) ? catalog?.defaultRecordId : id
+  const configuration = catalog?.configurations?.find((record) => record.record_id === effectiveId?.toString())
+  const recordCount = configuration
+    ? configurationRecordCount(configuration)
+    : effectiveId === BigInt(0)
+      ? 0
+      : undefined
 
   const records = useQuery({
     queryKey: [
@@ -51,7 +62,7 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index
       catalog?.blockNumber.toString(),
       catalog?.historyComplete,
     ],
-    enabled: !!catalog,
+    enabled: !!catalog && !catalog.permissions,
     retry: false,
     staleTime: 30_000,
     queryFn: () =>
@@ -87,16 +98,24 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index
         className={tdClass}
         title={catalog?.historyComplete ? undefined : 'Additional keys are still being discovered.'}
       >
-        {records.data
-          ? `${records.data.filter((row) => row.value !== '').length}${catalog?.historyComplete ? '' : '+'}`
-          : '—'}
+        {recordCount !== undefined
+          ? recordCount
+          : records.data
+            ? `${records.data.filter((row) => row.value !== '').length}${catalog?.historyComplete ? '' : '+'}`
+            : '—'}
       </td>
       <td className={tdClass}>
         <Link
           href={`${configurationPath(resolver, id)}/names`}
-          title='Known current names; inherited and never-linked names may be absent.'
+          title={
+            nameCount === undefined
+              ? 'Known current names; inherited and never-linked names may be absent.'
+              : defaultEntry
+                ? 'Names using the resolver default.'
+                : 'Explicit links and names inheriting this configuration.'
+          }
         >
-          {knownNames ? knownNames.length : '—'}
+          {nameCount ?? knownNames?.length ?? '—'}
         </Link>
       </td>
       <td className={`${tdClass} text-neutral`}>{actualId === BigInt(0) ? '-' : (actualId?.toString() ?? '—')}</td>

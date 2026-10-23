@@ -275,7 +275,7 @@ const V2EditRecordsModal = ({
                   </div>
                 )}
                 {tab !== 'roles' && editor.isLoading && (
-                  <p className='text-neutral py-6 text-center'>Loading configurations and onchain permissions…</p>
+                  <p className='text-neutral py-6 text-center'>Loading configurations and permissions…</p>
                 )}
                 {tab !== 'roles' && editor.loadError && (
                   <div className='flex flex-col gap-2'>

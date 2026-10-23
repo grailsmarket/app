@@ -51,7 +51,7 @@ export const usePrimaryName = () => {
   try {
     if (debouncedSearch.includes('.')) exactName = normalize(debouncedSearch)
   } catch {
-    // Incomplete search strings can still match indexed names.
+    // Incomplete search strings can still match names from the API.
   }
 
   const exact = useQuery({
@@ -61,7 +61,7 @@ export const usePrimaryName = () => {
         ([1, 2] as const).map(async (nameVersion) => {
           const option: PrimaryNameOption = { name: exactName!, version: nameVersion, token_id: '', expiry_date: null }
 
-          await verifyPrimaryNameOwner(client, option, userAddress!)
+          await verifyPrimaryNameOwner(client, option, userAddress!, queries)
 
           return option
         })
@@ -89,7 +89,8 @@ export const usePrimaryName = () => {
 
   const review = useQuery({
     queryKey: ['settings', 'primary-name-review', activeChain.id, userAddress, selected?.name, selected?.version],
-    queryFn: () => readPrimaryNameReview(client, selected!, userAddress!),
+    queryFn: () => readPrimaryNameReview(client, selected!, userAddress!, queries),
+    meta: { ensApi: selected?.version === 2 },
     enabled: authenticated && editing && !!selected && !busy,
     retry: false,
   })

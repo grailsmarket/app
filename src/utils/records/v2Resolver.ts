@@ -18,17 +18,9 @@ import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { RESOLVER_PROFILES_ABI } from '@/constants/web3/abi/ResolverProfiles'
 import type { V2NameResolver, V2Record, V2RecordField, V2ResolverCatalog } from '@/types/records'
-import {
-  DEFAULT_V2_FIELDS,
-  LINK_ROLE,
-  ROOT_NAME,
-  SET_RESOLVER_ROLE,
-  decodeRecordValue,
-  dnsEncodeName,
-  encodeRecordGetter,
-  recordKey,
-  recordPermission,
-} from './v2Records'
+import { decodeRecordValue, dnsEncodeName, encodeRecordGetter, recordKey, recordPermission } from './v2Records'
+import { LINK_ROLE, ROOT_NAME, SET_RESOLVER_ROLE } from '@/constants/ens/resolver'
+import { DEFAULT_V2_FIELDS } from '@/constants/ens/records'
 
 const resolverAbi = PERMISSIONED_RESOLVER_ABI
 const deploymentBlocks = new Map<string, bigint>()
@@ -224,6 +216,7 @@ const discoverResolverHistory = async (
   const names: V2ResolverCatalog['names'] = new Map()
   const interfaces: V2ResolverCatalog['interfaces'] = new Map()
   let lastActivityBlock: bigint | undefined
+
   if (recordCount > BigInt(0)) {
     const start = await findDeploymentBlock(client, resolver, blockNumber, signal)
     // Keep ranges within the configured public RPC's 1,000-block limit, with bounded concurrency.
@@ -234,6 +227,7 @@ const discoverResolverHistory = async (
         const to = rangeStart + BigInt(999) > blockNumber ? blockNumber : rangeStart + BigInt(999)
         ranges.push(readLogs(client, resolver, rangeStart, to, signal))
       }
+
       const logs = (await Promise.all(ranges))
         .flat()
         .sort((left, right) =>
@@ -243,19 +237,24 @@ const discoverResolverHistory = async (
               ? -1
               : 1
         )
+
       for (const log of parseEventLogs({ abi: resolverAbi, logs })) {
         if (log.blockNumber !== null) lastActivityBlock = log.blockNumber
         if (!log.args || !('recordId' in log.args)) continue
+
         const id = log.args.recordId.toString()
+
         if (log.eventName === 'Linked') {
           names.set(log.args.node, { recordId: log.args.recordId, dnsName: log.args.name })
           continue
         }
+
         if (log.eventName === 'Cleared') {
           fields.set(id, [])
           for (const key of interfaces.keys()) if (key.startsWith(`${id}:`)) interfaces.delete(key)
           continue
         }
+
         let field: V2RecordField | undefined
         switch (log.eventName) {
           case 'TextUpdated':
@@ -281,6 +280,7 @@ const discoverResolverHistory = async (
             interfaces.set(`${id}:${log.args.interfaceId}`, log.args.implementer)
             break
         }
+
         if (field) {
           const existing = fields.get(id) ?? []
           if (!existing.some((item) => recordKey(item) === recordKey(field))) existing.push(field)
@@ -306,6 +306,7 @@ export const readResolverHistory = async (
   const abort = () => controller.abort(signal?.reason)
   signal?.addEventListener('abort', abort, { once: true })
   const timeout = setTimeout(() => controller.abort(new Error('Additional record discovery timed out.')), timeoutMs)
+
   try {
     checkAbort(signal)
     const aborted = new Promise<never>((_, reject) => {
@@ -337,6 +338,8 @@ export const readConfiguration = async ({
   selectedId,
   account,
   extraFields = [],
+  onlyFields,
+  readPermissions = true,
 }: {
   client: PublicClient
   resolver: Address
@@ -345,10 +348,16 @@ export const readConfiguration = async ({
   selectedId: bigint
   account?: Address
   extraFields?: V2RecordField[]
+  onlyFields?: V2RecordField[]
+  readPermissions?: boolean
 }): Promise<V2Record[]> => {
   const effectiveId = selectedId === BigInt(0) ? catalog.defaultRecordId : selectedId
   const unique = new Map<string, V2RecordField>()
-  for (const field of [...DEFAULT_V2_FIELDS, ...(catalog.fields.get(effectiveId.toString()) ?? []), ...extraFields]) {
+  for (const field of onlyFields ?? [
+    ...DEFAULT_V2_FIELDS,
+    ...(catalog.fields.get(effectiveId.toString()) ?? []),
+    ...extraFields,
+  ]) {
     unique.set(recordKey(field), field)
   }
   const fields = [...unique.values()]
@@ -402,22 +411,23 @@ export const readConfiguration = async ({
   }
   const values = decodeAbiParameters([{ type: 'bytes[]' }], result)[0]
   if (values.length !== calls.length) throw new Error('The resolver returned incomplete records.')
-  const permissions = account
-    ? await client.multicall({
-        contracts: fields.map((field) => {
-          const { resource, role } = recordPermission(field)
-          return {
-            address: resolver,
-            abi: resolverAbi,
-            functionName: 'hasRoles',
-            args: [resource, role, account],
-          } as const
-        }),
-        allowFailure: false,
-        batchSize: 32_768,
-        blockNumber: catalog.blockNumber,
-      })
-    : fields.map(() => false)
+  const permissions =
+    account && readPermissions
+      ? await client.multicall({
+          contracts: fields.map((field) => {
+            const { resource, role } = recordPermission(field)
+            return {
+              address: resolver,
+              abi: resolverAbi,
+              functionName: 'hasRoles',
+              args: [resource, role, account],
+            } as const
+          }),
+          allowFailure: false,
+          batchSize: 32_768,
+          blockNumber: catalog.blockNumber,
+        })
+      : fields.map(() => false)
   return fields.map((field, index) => {
     const editable = permissions[index]
     let value = decodeRecordValue(field, values[offsets[index]])

@@ -16,22 +16,13 @@ import { getCoderByCoinType } from '@ensdomains/address-encoder'
 import { decode, encode, getCodec } from '@ensdomains/content-hash'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { RESOLVER_PROFILES_ABI } from '@/constants/web3/abi/ResolverProfiles'
-import { TEXT_RECORD_KEYS } from '@/constants/ens/records'
 import type { V2Record, V2RecordField } from '@/types/records'
+import { ROOT_NAME } from '@/constants/ens/resolver'
 
-export const LINK_ROLE = BigInt(1) << BigInt(28)
-export const SET_RESOLVER_ROLE = BigInt(1) << BigInt(24)
-export const ROOT_NAME: Hex = '0x00'
 const MAX_UINT256 = (BigInt(1) << BigInt(256)) - BigInt(1)
 
 export const recordKey = (field: V2RecordField) => `${field.kind}:${field.key}`
 export const dnsEncodeName = (name: string) => bytesToHex(packetToBytes(normalize(name)))
-
-export const DEFAULT_V2_FIELDS: V2RecordField[] = [
-  { kind: 'address', key: '60' },
-  ...TEXT_RECORD_KEYS.map((key) => ({ kind: 'text' as const, key })),
-  { kind: 'contenthash', key: '' },
-]
 
 export const uint256 = (value: string) => {
   if (!/^\d+$/.test(value)) throw new Error('Enter a whole, non-negative number.')

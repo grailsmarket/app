@@ -1,4 +1,5 @@
 import type { Address, Hex } from 'viem'
+import type { RecordConfiguration, ResolverDetails } from './ens'
 
 export type V2RecordKind = 'text' | 'address' | 'contenthash' | 'name' | 'abi' | 'interface' | 'data'
 
@@ -36,6 +37,8 @@ export type V2ResolverCatalog = {
   // The latest links include internal placeholder names, so they are not name counts.
   names: Map<Hex, { recordId: bigint; dnsName: Hex }>
   interfaces: Map<string, Address>
+  configurations?: RecordConfiguration[]
+  permissions?: ResolverDetails
 }
 
 export type V2RecordMode = 'shared' | 'new' | 'copy'

@@ -370,6 +370,7 @@ const RegistrationModal: React.FC = () => {
 
     if (flowState === 'resolver') {
       const isDeploying = modal.isDeployingResolver || !!registrationState.resolverDeploymentTxHash
+      const isDeployed = !isDeploying && modal.isResolverDeployed
 
       return (
         <ModalShell
@@ -378,9 +379,13 @@ const RegistrationModal: React.FC = () => {
           onClose={handleClose}
           onMinimize={handleClose}
           subject={subject}
-          stageKey={isDeploying ? 'resolver-deploying' : 'resolver'}
+          stageKey={isDeploying ? 'resolver-deploying' : isDeployed ? 'resolver-deployed' : 'resolver'}
           footer={
-            isDeploying ? undefined : (
+            isDeploying ? undefined : isDeployed ? (
+              <PrimaryButton onClick={modal.handleCommit} className={modalPrimaryActionClassName}>
+                {isBulk ? `Register ${availableEntries.length} Names` : `Register ${beautifyName(firstName!)}`}
+              </PrimaryButton>
+            ) : (
               <>
                 <PrimaryButton onClick={modal.handleDeployResolver} className={modalPrimaryActionClassName}>
                   Deploy resolver
@@ -400,7 +405,11 @@ const RegistrationModal: React.FC = () => {
           }
           footerHint={isDeploying && registrationState.resolverDeploymentTxHash ? keepOpenHint : undefined}
         >
-          <ResolverSetupView isDeploying={isDeploying} txHash={registrationState.resolverDeploymentTxHash ?? null} />
+          <ResolverSetupView
+            isDeploying={isDeploying}
+            isDeployed={isDeployed}
+            txHash={isDeployed ? modal.resolverDeploymentHash : (registrationState.resolverDeploymentTxHash ?? null)}
+          />
         </ModalShell>
       )
     }
@@ -610,6 +619,7 @@ const RegistrationModal: React.FC = () => {
         flowState={flowState}
         isApproving={modal.isApproving}
         isDeployingResolver={modal.isDeployingResolver}
+        isResolverDeployed={modal.isResolverDeployed && !registrationState.resolverDeploymentTxHash}
         waitTimeRemaining={modal.waitTimeRemaining}
         currentBatchIndex={registrationState.currentBatchIndex}
         totalBatches={modal.totalBatches}

@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ShortArrow, useWindowSize } from 'ethereum-identity-kit'
 import { type Address, encodeFunctionData, isAddress, parseEventLogs, zeroAddress } from 'viem'
 import Input from '@/components/ui/input'
@@ -13,12 +13,14 @@ import SecondaryButton from '@/components/ui/buttons/secondary'
 import { useResolverCatalog, useResolverDirectory } from '@/hooks/settings/useResolverDirectory'
 import type { SettingsResolver } from '@/types/ens'
 import { useConfigurationNames } from '@/hooks/settings/useConfigurationNames'
+import { useResolverData } from '@/hooks/settings/useResolverData'
+import { resolverNameCount } from '@/utils/settings/resolverData'
 import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
 import { roleErrorText, useRoleSection } from '@/hooks/records/useV2Roles'
 import { RESOLVER_ROLE_DEFINITIONS, adminRole, hasRole } from '@/utils/records/v2Roles'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
-import { readResolverState } from '@/utils/records/v2Resolver'
+import { loadResolverState } from '@/utils/records/loadResolver'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { VERIFIABLE_FACTORY_ABI as abi } from '@/constants/web3/abi/VerifiableFactory'
 import { activeChain } from '@/constants/web3/chain'
@@ -37,7 +39,12 @@ import {
 } from './shared'
 import { cn } from '@/utils/tailwind'
 
-export const ResolverAccess = ({ resolver }: { resolver: Address }) => {
+interface ResolverAccessProps {
+  resolver: Address
+  access?: SettingsResolver
+}
+
+export const ResolverAccess: React.FC<ResolverAccessProps> = ({ resolver, access }) => {
   const { address } = useAccount()
   const section = useRoleSection('resolver', resolver)
 
@@ -50,9 +57,11 @@ export const ResolverAccess = ({ resolver }: { resolver: Address }) => {
   const setters = RESOLVER_ROLE_DEFINITIONS.filter(
     (role) => role.field || ['contenthash', 'name'].includes(role.id)
   ).reduce((bits, role) => bits | role.bit, BigInt(0))
-  const scoped = section.assignments.some(
-    (item) => item.account.toLowerCase() === address?.toLowerCase() && item.bitmap !== BigInt(0)
-  )
+  const scoped =
+    section.assignments.some(
+      (item) => item.account.toLowerCase() === address?.toLowerCase() && item.bitmap !== BigInt(0)
+    ) ||
+    (!section.history.data && !!access?.keyGrants?.length)
 
   return (
     <span>
@@ -80,16 +89,33 @@ interface ResolverRowProps {
 const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
   const { width } = useWindowSize()
   const { catalog, client } = useResolverCatalog(resolver.address)
+  const resolverData = useResolverData(resolver.address)
+  const nameCount = resolverNameCount(resolverData.details.data, resolverData.configurations.data)
+  const createdAt = resolverData.details.data?.created_at ?? resolver.createdAt
+  const changedAt = resolverData.details.data ? resolverData.details.data.updated_at : resolver.updatedAt
+  const changedBlock = resolverData.details.data?.updated_block ?? resolver.updatedBlock
+  const changedAtBlock = changedBlock === undefined ? undefined : BigInt(changedBlock)
+  const latestBlock =
+    catalog?.lastActivityBlock !== undefined &&
+    (changedAtBlock === undefined || catalog.lastActivityBlock > changedAtBlock)
+      ? catalog.lastActivityBlock
+      : changedAtBlock
+  const timestamp = changedAt && latestBlock === changedAtBlock ? Date.parse(changedAt) : undefined
+  const changedAtTimestamp = timestamp !== undefined && Number.isFinite(timestamp) ? timestamp : undefined
 
   const activity = useQuery({
-    queryKey: ['settings', 'block-time', activeChain.id, catalog?.lastActivityBlock?.toString()],
-    queryFn: async () => Number((await client.getBlock({ blockNumber: catalog!.lastActivityBlock! })).timestamp) * 1000,
-    enabled: catalog?.lastActivityBlock !== undefined,
+    queryKey: ['settings', 'block-time', activeChain.id, latestBlock?.toString()],
+    queryFn: async () => Number((await client.getBlock({ blockNumber: latestBlock! })).timestamp) * 1000,
+    enabled: changedAtTimestamp === undefined && latestBlock !== undefined,
     staleTime: Infinity,
     retry: false,
   })
 
-  const { names } = useConfigurationNames(resolver.address)
+  const updatedAt = changedAtTimestamp ?? activity.data
+  const { names } = useConfigurationNames(
+    resolver.address,
+    resolverData.details.isError || resolverData.configurations.isError
+  )
 
   return (
     <tr
@@ -98,7 +124,10 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
         'hover:bg-secondary focus-within:bg-secondary group/resolver relative transition-colors'
       )}
     >
-      <td className={cn(tdClass, 'text-foreground!')}>
+      <td
+        className={cn(tdClass, 'text-foreground!')}
+        title={createdAt ? `Created ${new Date(createdAt).toLocaleString()}` : undefined}
+      >
         <Link
           href={resolverPath(resolver.address)}
           aria-label={`Open resolver ${resolver.name || resolver.address}`}
@@ -114,20 +143,21 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
         />
       </td>
       <td className={tdClass}>
-        <ResolverAccess resolver={resolver.address} />
+        <ResolverAccess resolver={resolver.address} access={resolver} />
       </td>
-      <td className={tdClass}>{catalog?.recordCount.toString() ?? '—'}</td>
+      <td className={tdClass}>{catalog?.recordCount.toString() ?? resolverData.details.data?.record_count ?? '—'}</td>
       <td
         className={tdClass}
-        title='Known names from resolver links, checked against their current resolver. Inherited and never-linked names may not be discovered.'
+        title={
+          nameCount === undefined
+            ? 'Known names from resolver links, checked against their current resolver. Inherited and never-linked names may not be discovered.'
+            : 'Names assigned to this resolver, including names using its default configuration. Subnames inheriting an ancestor’s resolver may not be included.'
+        }
       >
-        {names.data ? names.data.names.length : '—'}
+        {nameCount ?? names.data?.names.length ?? '—'}
       </td>
-      <td
-        className={`${tdClass} text-neutral`}
-        title={activity.data ? new Date(activity.data).toLocaleString() : undefined}
-      >
-        {activity.data ? formatTimeAgo(activity.data) : '—'}
+      <td className={`${tdClass} text-neutral`} title={updatedAt ? new Date(updatedAt).toLocaleString() : undefined}>
+        {updatedAt ? formatTimeAgo(updatedAt) : '—'}
       </td>
       <td className='px-2 opacity-0 transition-opacity group-hover/resolver:opacity-100'>
         <ShortArrow className='h-3.5 w-3.5 rotate-90' />
@@ -138,6 +168,7 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
 
 export const ResolverLookup = () => {
   const router = useRouter()
+  const queries = useQueryClient()
   const { address } = useAccount()
   const directory = useResolverDirectory()
   const [input, setInput] = useState('')
@@ -152,7 +183,7 @@ export const ResolverLookup = () => {
       if (!isAddress(input, { strict: false }) || input.toLowerCase() === zeroAddress)
         throw new Error('Enter a valid resolver address.')
 
-      await readResolverState(createV2RecordsClient(), input, 'grails-settings.invalid', address)
+      await loadResolverState(queries, createV2RecordsClient(), input, 'grails-settings.invalid', address)
       directory.remember(input)
       router.push(resolverPath(input))
     } catch (error) {

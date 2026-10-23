@@ -1,3 +1,5 @@
+import { Hex } from 'viem'
+
 export const RESOLVER_ROLES = [
   'ROLE_SET_ADDRESS',
   'ROLE_SET_TEXT',
@@ -25,3 +27,6 @@ export const RESOLVER_ADMIN_ROLES = [
 ] as const
 
 export const ALL_ROLES = BigInt('0x1111111111111111111111111111111111111111111111111111111111111111')
+export const LINK_ROLE = BigInt(1) << BigInt(28)
+export const SET_RESOLVER_ROLE = BigInt(1) << BigInt(24)
+export const ROOT_NAME: Hex = '0x00'

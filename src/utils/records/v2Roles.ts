@@ -14,8 +14,10 @@ import {
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import type { V2RecordField } from '@/types/records'
-import { encodeRecordSetter, recordPermission, ROOT_NAME, validateRecordField } from './v2Records'
+import type { ResolverDetails } from '@/types/ens'
+import { encodeRecordSetter, recordPermission, validateRecordField } from './v2Records'
 import { findDeploymentBlock, readLogs, readNameResolver } from './v2Resolver'
+import { ROOT_NAME } from '@/constants/ens/resolver'
 
 export type RoleKind = 'name' | 'resolver'
 export type RoleDefinition = {
@@ -63,6 +65,7 @@ export type RoleSnapshot = {
   viewerRoles: bigint
   viewerRootRoles: bigint
   initialAssignments: RoleAssignment[]
+  permissions?: ResolverDetails
 }
 export type RoleChange = {
   kind: RoleKind

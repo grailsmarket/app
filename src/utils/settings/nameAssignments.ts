@@ -1,12 +1,16 @@
 import { type Address, type Hex, type PublicClient, encodeFunctionData, labelhash, namehash } from 'viem'
 import { normalize } from 'viem/ens'
+import type { QueryClient } from '@tanstack/react-query'
+import { ensNameQueryOptions } from '@/api/resolvers/queries'
 import { PERMISSIONED_RESOLVER_ABI as abi } from '@/constants/web3/abi/PermissionedResolver'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { readNameResolver } from '@/utils/records/v2Resolver'
-import { dnsEncodeName, LINK_ROLE } from '@/utils/records/v2Records'
+import { loadNameResolver } from '@/utils/records/loadResolver'
+import { dnsEncodeName } from '@/utils/records/v2Records'
 import type { SettingsTransactionStep } from '@/hooks/settings/useSettingsTransaction'
 import type { V2NameResolver } from '@/types/records'
 import type { ConfigurationName } from './configurations'
+import { LINK_ROLE } from '@/constants/ens/resolver'
 
 export type NameAssignment = { name: string; id: bigint; binding: V2NameResolver; initialId: bigint }
 
@@ -43,15 +47,29 @@ export const prepareNameAssignment = async (
   registry: Address,
   account: Address,
   input: string,
-  id: bigint
+  id: bigint,
+  queries?: QueryClient
 ): Promise<NameAssignment> => {
   const name = normalize(input.trim())
-  const binding = await readNameResolver(client, name, registry, account)
+  const binding = queries
+    ? await loadNameResolver(queries, client, name, account)
+    : await readNameResolver(client, name, registry, account)
 
   if (!binding.registered) throw new Error(`${name} is not registered on this network.`)
   if (binding.resolver.toLowerCase() !== resolver.toLowerCase() && !binding.canSetResolver)
     throw new Error(`You do not have permission to change the resolver for ${name}.`)
 
+  if (queries && binding.resolver.toLowerCase() === resolver.toLowerCase()) {
+    try {
+      const details = await queries.fetchQuery(ensNameQueryOptions(name))
+      if (details.resolver?.toLowerCase() === resolver.toLowerCase() && details.linked_record_id !== undefined)
+        return { name, id, binding, initialId: BigInt(details.linked_record_id ?? 0) }
+    } catch {
+      // Continue with an onchain lookup if the name API fails.
+    }
+  }
+
+  // The API does not expose dormant links in a resolver this name is not currently using.
   const initialId = await client.readContract({
     address: resolver,
     abi,

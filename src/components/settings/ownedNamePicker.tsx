@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import type { Address } from 'viem'
-import { activeChain } from '@/constants/web3/chain'
 import { useOwnedNameOptions } from '@/hooks/settings/useOwnedNameOptions'
 import { beautifyName } from '@/lib/ens'
 import { cn } from '@/utils/tailwind'
@@ -42,8 +41,7 @@ const OwnedNamePicker: React.FC<OwnedNamePickerProps> = ({ address, assignedName
         placeholder='Search your names'
         disabled={disabled}
       />
-      <p className='text-neutral text-sm'>Your V2 names on {activeChain.name}. Select one or more to add.</p>
-      <div className='border-tertiary max-h-64 overflow-y-auto rounded-md border' aria-label='Your names'>
+      <div className='border-tertiary max-h-80 overflow-y-auto rounded-md border' aria-label='Your names'>
         {picker.options.map((option) => {
           const assigned = assignedNames.includes(option.name)
           const checked = selected.includes(option.name)

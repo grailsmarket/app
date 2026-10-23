@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { type Address, encodeFunctionData, namehash } from 'viem'
 import { activeChain } from '@/constants/web3/chain'
 import { PERMISSIONED_RESOLVER_ABI as abi } from '@/constants/web3/abi/PermissionedResolver'
-import { readConfiguration, readResolverState } from '@/utils/records/v2Resolver'
+import { readConfiguration, readResolverHistory, readResolverState } from '@/utils/records/v2Resolver'
+import { loadConfiguration } from '@/utils/records/loadResolver'
 import { recordKey, validateRecordField } from '@/utils/records/v2Records'
 import { configurationWrite, createdConfigurationId, newConfigurationName } from '@/utils/settings/configurations'
 import type { V2Record, V2RecordField } from '@/types/records'
@@ -23,6 +24,7 @@ export const useConfigurationEditor = (resolver: Address, id: bigint, mode: 'edi
   const [createdId, setCreatedId] = useState<bigint>()
   const placeholder = useRef<string>(undefined)
   const recordsQuery = useQuery({
+    meta: { ensApi: !!data.catalog?.permissions },
     queryKey: [
       'settings',
       'configuration',
@@ -32,12 +34,16 @@ export const useConfigurationEditor = (resolver: Address, id: bigint, mode: 'edi
       address,
       data.catalog?.blockNumber.toString(),
       data.catalog?.historyComplete,
+      data.history.isError,
     ],
-    enabled: !!data.catalog && id <= data.catalog.recordCount,
+    enabled:
+      !!data.catalog &&
+      (!data.catalog.permissions || data.catalog.historyComplete || data.history.isError) &&
+      id <= data.catalog.recordCount,
     retry: false,
     refetchOnWindowFocus: false,
     queryFn: () =>
-      readConfiguration({
+      loadConfiguration({
         client: data.client,
         resolver,
         catalog: data.catalog!,
@@ -59,7 +65,7 @@ export const useConfigurationEditor = (resolver: Address, id: bigint, mode: 'edi
     setError(undefined)
     try {
       const valid = validateRecordField(field)
-      const loaded = await readConfiguration({
+      const loaded = await loadConfiguration({
         client: data.client,
         resolver,
         catalog: data.catalog,
@@ -91,7 +97,7 @@ export const useConfigurationEditor = (resolver: Address, id: bigint, mode: 'edi
           if (id === BigInt(0) && fresh.defaultRecordId !== snapshot.defaultRecordId)
             throw new Error('The default configuration changed. Reload before saving.')
           // Read through the original links, then let configurationWrite verify they still point to this bundle.
-          const catalog = {
+          let catalog = {
             ...snapshot,
             ...fresh,
             names: snapshot.names,
@@ -99,6 +105,21 @@ export const useConfigurationEditor = (resolver: Address, id: bigint, mode: 'edi
             interfaces: snapshot.interfaces,
             historyComplete: snapshot.historyComplete,
           }
+
+          const missingAnchor =
+            !catalog.canLink &&
+            id !== BigInt(0) &&
+            id !== catalog.defaultRecordId &&
+            ![...catalog.names.values()].some((link) => link.recordId === id)
+          const changesInterface =
+            mode === 'edit' && captured.some((row) => row.kind === 'interface' && row.value !== row.initialValue)
+
+          if (missingAnchor || changesInterface) {
+            // Internal placeholder links are not exposed by the API. Scoped editors need an existing anchor.
+            // Interface getters can return an address fallback, so fresh logs identify the stored value before writing.
+            catalog = await readResolverHistory(data.client, resolver, catalog)
+          }
+
           const current = await readConfiguration({
             client: data.client,
             resolver,

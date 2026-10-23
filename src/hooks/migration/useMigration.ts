@@ -8,8 +8,9 @@ import { PERMISSIONED_RESOLVER_ABI as resolverAbi } from '@/constants/web3/abi/P
 import { VERIFIABLE_FACTORY_ABI as factoryAbi } from '@/constants/web3/abi/VerifiableFactory'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { createV2RecordsClient } from '@/utils/records/client'
-import { DEFAULT_V2_FIELDS, buildRecordCalls, dnsEncodeName, recordPermission } from '@/utils/records/v2Records'
+import { buildRecordCalls, dnsEncodeName, recordPermission } from '@/utils/records/v2Records'
 import { readResolverState } from '@/utils/records/v2Resolver'
+import { loadResolverState } from '@/utils/records/loadResolver'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
 import { createdConfigurationId } from '@/utils/settings/configurations'
 import { migrationTransfer, readMigrationDeployment, readMigrationName } from '@/utils/migration/migration'
@@ -23,6 +24,7 @@ import { useResolverDirectory } from '@/hooks/settings/useResolverDirectory'
 import { useSettingsTransaction, type SettingsTransactionStep } from '@/hooks/settings/useSettingsTransaction'
 import type { V2Record } from '@/types/records'
 import { PublicResolverAbi } from '@/constants/web3/abi/PublicResolverAbi'
+import { DEFAULT_V2_FIELDS } from '@/constants/ens/records'
 
 export type MigrationRecordMode = 'copy' | 'existing' | 'empty' | 'none'
 
@@ -72,7 +74,7 @@ export const useMigration = (name: string) => {
 
   const catalog = useQuery({
     queryKey: ['migration', 'target', activeChain.id, resolver, name, address],
-    queryFn: () => readResolverState(client, resolver!, name, address),
+    queryFn: ({ signal }) => loadResolverState(queries, client, resolver!, 'grails-settings.invalid', address, signal),
     enabled: !!resolver && !info?.fixedResolver && mode !== 'none' && !migrated,
     retry: false,
   })

@@ -1,9 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAccount } from 'wagmi'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import TrashIcon from 'public/icons/trash.svg'
 import NameImage from '@/components/ui/nameImage'
@@ -11,7 +12,8 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import Textarea from '@/components/ui/textarea'
 import Input from '@/components/ui/input'
-import { useConfigurationNames } from '@/hooks/settings/useConfigurationNames'
+import { useConfigurationNamePage } from '@/hooks/settings/useConfigurationNamePage'
+import { useDebounce } from '@/hooks/useDebounce'
 import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
 import { roleErrorText } from '@/hooks/records/useV2Roles'
 import {
@@ -22,6 +24,7 @@ import {
   type NameAssignment,
 } from '@/utils/settings/nameAssignments'
 import { config } from '@/lib/config'
+import { matchesConfigurationName } from '@/utils/settings/resolverData'
 import { cn } from '@/utils/tailwind'
 import OwnedNamePicker from './ownedNamePicker'
 import { useSettingsDirty } from './navigationGuard'
@@ -34,7 +37,12 @@ interface ConfigurationNamesProps {
 
 const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id }) => {
   const { address } = useAccount()
-  const data = useConfigurationNames(resolver)
+  const queries = useQueryClient()
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const q = useDebounce(search.trim(), 250)
+  const pageSize = 20
+  const data = useConfigurationNamePage({ resolver, id, q, offset: page * pageSize, limit: pageSize })
   const transaction = useSettingsTransaction()
   const [input, setInput] = useState('')
   const [source, setSource] = useState<'owned' | 'manual'>('owned')
@@ -45,6 +53,12 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
   const [error, setError] = useState<string>()
   const checkingNames = useRef(false)
   const locked = transaction.busy || transaction.pending
+  const loading = data.loading || q !== search.trim()
+
+  useEffect(() => {
+    if (!loading && page > 0 && page * pageSize >= data.total)
+      setPage(Math.max(0, Math.ceil(data.total / pageSize) - 1))
+  }, [loading, data.total, page])
 
   useSettingsDirty(!!input.trim() || changes.length > 0, transaction.busy || transaction.submitted, changes.length)
 
@@ -66,7 +80,9 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
         const batch = await Promise.all(
           uniqueNames
             .slice(offset, offset + 5)
-            .map((name) => prepareNameAssignment(data.client, resolver, config.ensV2Registry, address, name, target))
+            .map((name) =>
+              prepareNameAssignment(data.client, resolver, config.ensV2Registry, address, name, target, queries)
+            )
         )
 
         added.push(...batch)
@@ -74,6 +90,11 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
 
       data.rememberNames(added.map((item) => item.name))
       setChanges((previous) => mergeNameAssignments(previous, added, resolver))
+
+      if (added.some((item) => !data.items.some((name) => name.name === item.name))) {
+        setPage(0)
+        if (added.some((item) => !item.name.toLowerCase().includes(q.toLowerCase()))) setSearch('')
+      }
 
       if (clearInput) setInput('')
 
@@ -97,17 +118,40 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
   if (data.state.isError) return <QueryError error={data.state.error} retry={() => data.state.refetch()} />
   if (!data.catalog) return <SettingsNotice>Loading name links…</SettingsNotice>
 
-  const preview = previewNameAssignments(data.names.data?.names ?? [], changes, data.catalog.defaultRecordId)
-  const assignedNames = preview.filter((name) => name.recordId.toString() === targetId).map((name) => name.name)
-  const visible = preview.filter(
-    (name) => id === undefined || (id === BigInt(0) ? name.recordId === BigInt(0) : name.effectiveId === id)
-  )
+  const pageChanges = changes.filter((change) => {
+    const wasAssigned =
+      change.binding.resolver.toLowerCase() === resolver.toLowerCase() &&
+      matchesConfigurationName(
+        {
+          name: change.name,
+          recordId: change.initialId,
+          effectiveId: change.initialId || data.catalog!.defaultRecordId,
+        },
+        id,
+        q
+      )
+
+    return data.items.some((name) => name.name === change.name) || (page === 0 && !wasAssigned)
+  })
+  const preview = previewNameAssignments(data.items, pageChanges, data.catalog.defaultRecordId)
+  const assignedNames = [
+    ...preview.filter((name) => name.recordId.toString() === targetId).map((name) => name.name),
+    ...changes.filter((change) => change.id.toString() === targetId).map((change) => change.name),
+  ]
+  const visible = preview.filter((name) => matchesConfigurationName(name, id, q))
 
   return (
     <div className='flex flex-col'>
-      {data.history.isError && <QueryError error={data.history.error} retry={() => data.history.refetch()} />}
-      {data.names.isError && <QueryError error={data.names.error} retry={() => data.names.refetch()} />}
-      {!!data.names.data?.failed && (
+      {data.fallback && (
+        <SettingsNotice>
+          The names API is unavailable. Showing names found onchain; some inherited names may be missing.{' '}
+          <button className='text-primary cursor-pointer underline' onClick={data.retry}>
+            Retry
+          </button>
+        </SettingsNotice>
+      )}
+      {data.fallback && data.names.isError && <QueryError error={data.names.error} retry={data.retry} />}
+      {data.fallback && !!data.names.data?.failed && (
         <SettingsNotice>
           Could not verify {data.names.data.failed} names. The list is incomplete.{' '}
           <button className='text-primary cursor-pointer underline' onClick={() => data.names.refetch()}>
@@ -115,9 +159,28 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
           </button>
         </SettingsNotice>
       )}
-      {data.names.isLoading || data.history.isLoading ? (
+      <Input
+        label='Search'
+        value={search}
+        maxLength={255}
+        onChange={(event) => {
+          setSearch(event.target.value)
+          setPage(0)
+        }}
+        placeholder={`Search names using this ${id === undefined ? 'resolver' : 'configuration'}`}
+        className='mb-3'
+      />
+      {loading && <p className='text-neutral text-lg'>Checking current name assignments…</p>}
+      {/* {loading ? (
         <p className='text-neutral text-lg'>Checking current name assignments…</p>
-      ) : null}
+      ) : (
+        <p className='text-neutral text-sm'>
+          {data.total} {data.fallback ? 'known ' : ''}
+          {data.total === 1 ? 'name' : 'names'}
+          {q ? ' matching your search' : ''}
+          {changes.length > 0 && ` · ${changes.length} unsaved ${changes.length === 1 ? 'change' : 'changes'}`}
+        </p>
+      )} */}
       <div className='overflow-x-auto'>
         <table className={tableClass}>
           <thead>
@@ -188,25 +251,28 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
           </tbody>
         </table>
       </div>
-      {!visible.length && !data.names.isLoading && (
-        <p className='text-neutral px-3 py-2 text-lg'>No known names use this configuration.</p>
+      {!visible.length && !loading && (
+        <p className='text-neutral px-3 py-2 text-lg'>
+          {q
+            ? 'No names match your search.'
+            : `No known names use this ${id === undefined ? 'resolver' : 'configuration'}.`}
+        </p>
+      )}
+      {(page > 0 || data.total > pageSize) && (
+        <div className='my-3 flex items-center justify-end gap-3'>
+          <SecondaryButton disabled={page === 0 || loading} onClick={() => setPage(page - 1)}>
+            Previous
+          </SecondaryButton>
+          <span className='text-neutral'>Page {page + 1}</span>
+          <SecondaryButton disabled={(page + 1) * pageSize >= data.total || loading} onClick={() => setPage(page + 1)}>
+            Next
+          </SecondaryButton>
+        </div>
       )}
       {data.catalog.canLink ? (
-        <div className='border-tertiary flex flex-col gap-4 pt-2'>
+        <div className='border-tertiary flex flex-col gap-4 border-t pt-4'>
           <div className='flex flex-col gap-2'>
-            {id === undefined && (
-              <Input
-                label='Configuration ID'
-                labelClassName='min-w-36'
-                value={resolverTargetId}
-                onChange={(event) => {
-                  if (/^\d*$/.test(event.target.value)) setResolverTargetId(event.target.value)
-                }}
-                disabled={locked || checking}
-                placeholder='0 for resolver default'
-              />
-            )}
-            <div className='border-tertiary mb-2 flex gap-5 border-b' aria-label='Add names from'>
+            <div className='border-tertiary mb-2 flex gap-2 border-b' aria-label='Add names from'>
               {(['owned', 'manual'] as const).map((item) => (
                 <button
                   key={item}
@@ -225,6 +291,18 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
                 </button>
               ))}
             </div>
+            {id === undefined && (
+              <Input
+                label='Configuration ID'
+                labelClassName='min-w-36'
+                value={resolverTargetId}
+                onChange={(event) => {
+                  if (/^\d*$/.test(event.target.value)) setResolverTargetId(event.target.value)
+                }}
+                disabled={locked || checking}
+                placeholder='0 for resolver default'
+              />
+            )}
             {address && (
               <div hidden={source !== 'owned'}>
                 <OwnedNamePicker

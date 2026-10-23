@@ -4,7 +4,18 @@ import type { TransactionReceipt } from 'viem'
 const pendingRefreshes = new WeakMap<QueryClient, ReturnType<typeof setTimeout>[]>()
 const refreshDelays = [2000, 5000, 10_000, 20_000]
 
-const isIndexedQuery = ({ queryKey: [section, detail] }: Query) => {
+const isApiQuery = (query: Query) => {
+  const {
+    queryKey: [section, detail],
+    state,
+    meta,
+  } = query
+
+  if (meta?.ensApi) return true
+  // Derived resolver snapshots must follow API refreshes too, without retrying successful RPC log scans.
+  if (state.data && typeof state.data === 'object' && 'permissions' in state.data && state.data.permissions) return true
+  if (section === 'v2-records' && detail === 'name') return true
+
   if (
     [
       'name',
@@ -20,14 +31,22 @@ const isIndexedQuery = ({ queryKey: [section, detail] }: Query) => {
     return true
 
   if (section === 'user') return detail === 'resolvers'
-  if (section === 'settings') return detail === 'owned-name-options' || detail === 'primary-name-options'
+  if (section === 'settings')
+    return [
+      'owned-name-options',
+      'primary-name-options',
+      'resolver',
+      'configurations',
+      'configuration-name-page',
+      'ens-name',
+    ].includes(String(detail))
   if (section === 'marketplace' || section === 'categoriesPage') return detail === 'domains' || detail === 'listings'
 
   return false
 }
 
 const isRelatedQuery = (query: Query) => {
-  if (isIndexedQuery(query)) return true
+  if (isApiQuery(query)) return true
 
   const [section, detail] = query.queryKey
   if (section === 'settings') return !['discovered-resolvers', 'name-candidates', 'block-time'].includes(String(detail))
@@ -55,7 +74,7 @@ export const refreshEnsQueries = (queries: QueryClient, receipt: Pick<Transactio
     setTimeout(() => {
       void queries
         .invalidateQueries(
-          { predicate: (query) => isIndexedQuery(query) || (isRelatedQuery(query) && query.state.status === 'error') },
+          { predicate: (query) => isApiQuery(query) || (isRelatedQuery(query) && query.state.status === 'error') },
           { cancelRefetch: false }
         )
         .catch(() => {})

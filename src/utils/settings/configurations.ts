@@ -10,9 +10,10 @@ import {
 } from 'viem'
 import { normalize } from 'viem/ens'
 import { PERMISSIONED_RESOLVER_ABI as abi } from '@/constants/web3/abi/PermissionedResolver'
-import { ROOT_NAME, buildRecordCalls, dnsEncodeName } from '@/utils/records/v2Records'
+import { buildRecordCalls, dnsEncodeName } from '@/utils/records/v2Records'
 import { readNameResolver } from '@/utils/records/v2Resolver'
 import type { V2Record, V2ResolverCatalog } from '@/types/records'
+import { ROOT_NAME } from '@/constants/ens/resolver'
 
 export const newConfigurationName = () => `${crypto.randomUUID().replaceAll('-', '')}.grails-config.invalid`
 export const isInternalConfigurationName = (name: string) => name.endsWith('.invalid')
@@ -57,13 +58,14 @@ export const configurationWrite = async ({
     throw new Error('Load all records before duplicating this configuration.')
   if (id < BigInt(0) || id > catalog.recordCount) throw new Error('This configuration does not exist.')
   const anchor = [...catalog.names.entries()].find(([, link]) => link.recordId === id)
-  let dnsName = creating ? dnsEncodeName(placeholder) : id === BigInt(0) ? ROOT_NAME : anchor?.[1].dnsName
+  const usesRoot = id === BigInt(0) || id === catalog.defaultRecordId
+  let dnsName = creating ? dnsEncodeName(placeholder) : usesRoot ? ROOT_NAME : anchor?.[1].dnsName
   const temporaryLink = !dnsName
   if (temporaryLink) {
     if (!catalog.canLink) throw new Error('This unused configuration requires Link permission before it can be edited.')
     dnsName = dnsEncodeName(placeholder)
   }
-  const node = creating || temporaryLink ? namehash(placeholder) : id === BigInt(0) ? zeroHash : anchor![0]
+  const node = creating || temporaryLink ? namehash(placeholder) : usesRoot ? zeroHash : anchor![0]
   const current = await client.readContract({ address: resolver, abi, functionName: 'getRecordId', args: [node] })
   const expected = creating || temporaryLink ? BigInt(0) : id === BigInt(0) ? catalog.defaultRecordId : id
   if (current !== expected) throw new Error('The configuration link changed. Reload before saving.')
@@ -100,8 +102,8 @@ export type ConfigurationName = {
   name: string
   recordId: bigint
   effectiveId: bigint
-  inherited: boolean
-  canSetResolver: boolean
+  inherited?: boolean
+  canSetResolver?: boolean
 }
 export const readConfigurationNames = async (
   client: PublicClient,
@@ -109,34 +111,38 @@ export const readConfigurationNames = async (
   catalog: V2ResolverCatalog,
   registry: Address,
   account?: Address,
-  indexedNames: string[] = [],
+  availableNames: string[] = [],
   signal?: AbortSignal
 ) => {
   const candidates = [
     ...new Set(
-      [...indexedNames, ...[...catalog.names.values()].map((link) => decodeDNSName(link.dnsName))].filter(
+      [...availableNames, ...[...catalog.names.values()].map((link) => decodeDNSName(link.dnsName))].filter(
         (name): name is string => !!name && !isInternalConfigurationName(name) && name.endsWith('.eth')
       )
     ),
   ]
   const names: ConfigurationName[] = []
   let failed = 0
+
   for (let offset = 0; offset < candidates.length; offset += 5) {
     if (signal?.aborted) {
       failed += candidates.length - offset
       break
     }
+
     await Promise.all(
       candidates.slice(offset, offset + 5).map(async (name) => {
         try {
           const binding = await readNameResolver(client, name, registry, account)
           if (!binding.registered || binding.resolver.toLowerCase() !== resolver.toLowerCase()) return
+
           const recordId = await client.readContract({
             address: resolver,
             abi,
             functionName: 'getRecordId',
             args: [namehash(normalize(name))],
           })
+
           names.push({
             name,
             recordId,

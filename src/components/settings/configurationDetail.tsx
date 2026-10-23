@@ -13,7 +13,6 @@ import { useConfigurationEditor } from '@/hooks/settings/useConfigurationEditor'
 import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
 import { useResolverCatalog } from '@/hooks/settings/useResolverDirectory'
 import { PERMISSIONED_RESOLVER_ABI as abi } from '@/constants/web3/abi/PermissionedResolver'
-import { ROOT_NAME } from '@/utils/records/v2Records'
 import { cn } from '@/utils/tailwind'
 import CheckCircle from 'public/icons/check-circle.svg'
 import { useSettingsDirty } from './navigationGuard'
@@ -26,6 +25,7 @@ import {
   secondaryLinkClass,
 } from './shared'
 import ConfigurationNames from './configurationNames'
+import { ROOT_NAME } from '@/constants/ens/resolver'
 
 interface ConfigurationRecordsProps {
   resolver: Address
@@ -49,7 +49,7 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
   if (editor.recordsQuery.isError)
     return <QueryError error={editor.recordsQuery.error} retry={() => editor.recordsQuery.refetch()} />
   if (!editor.recordsQuery.data || !editor.catalog)
-    return <SettingsNotice>Loading records and onchain permissions…</SettingsNotice>
+    return <SettingsNotice>Loading records and permissions…</SettingsNotice>
   if (editor.createdId !== undefined)
     return (
       <div className='flex flex-col items-center gap-4 py-8'>
@@ -260,7 +260,7 @@ const ConfigurationDetail: React.FC<ConfigurationDetailProps> = ({ resolver, id,
       )}
       <div className='flex min-w-0 flex-col gap-4'>
         {mode === 'edit' && (
-          <nav aria-label='Configuration sections' className='border-tertiary flex gap-5 overflow-x-auto border-b'>
+          <nav aria-label='Configuration sections' className='border-tertiary flex gap-2 overflow-x-auto border-b'>
             {['records', 'names'].map((item) => (
               <Link
                 key={item}

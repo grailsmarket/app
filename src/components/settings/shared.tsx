@@ -98,4 +98,4 @@ export const tdClass = 'px-2.5 sm:px-4 py-4 align-middle'
 export const secondaryLinkClass =
   'bg-tertiary text-foreground px-lg flex h-9 w-fit items-center justify-center rounded-sm text-lg font-bold transition-all hover:bg-[#4B4B4B] active:scale-95 @[48rem]/app:h-10'
 export const primaryLinkClass =
-  'bg-primary text-background px-lg flex h-9 w-fit items-center justify-center rounded-sm text-lg font-bold transition-all hover:opacity-70 active:scale-95 @[48rem]/app:h-10'
+  'bg-primary text-background px-lg flex h-9 w-fit items-center justify-center rounded-sm text-lg font-bold transition-all hover:opacity-70 active:scale-95'

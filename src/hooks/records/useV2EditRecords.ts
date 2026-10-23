@@ -6,14 +6,20 @@ import { normalize } from 'viem/ens'
 import { activeChain } from '@/constants/web3/chain'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
-import { getUserResolvers } from '@/api/resolvers/getResolvers'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
+import { useResolverDirectory } from '@/hooks/settings/useResolverDirectory'
 import { ensureChain } from '@/utils/web3/ensureChain'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
-import { readConfiguration, readNameResolver, readResolverHistory, readResolverState } from '@/utils/records/v2Resolver'
+import { readNameResolver } from '@/utils/records/v2Resolver'
+import {
+  loadConfiguration,
+  loadNameResolver,
+  loadResolverCatalog,
+  loadResolverState,
+} from '@/utils/records/loadResolver'
 import { buildRecordCalls, dnsEncodeName, recordKey, uint256, validateRecordField } from '@/utils/records/v2Records'
 import type { V2Record, V2RecordField, V2RecordMode } from '@/types/records'
 import type { EditStep } from './useEditRecords'
@@ -34,6 +40,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
   const { deployResolver, getDeployedResolver } = usePermissionedResolver()
+  const directory = useResolverDirectory(false)
   const client = useMemo(createV2RecordsClient, [])
   const queryClient = useQueryClient()
   const dispatch = useAppDispatch()
@@ -52,7 +59,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
   const binding = useQuery({
     queryKey: ['v2-records', 'name', activeChain.id, config.ensV2Registry, name, address],
-    queryFn: () => readNameResolver(client, name, config.ensV2Registry, address),
+    queryFn: ({ signal }) => loadNameResolver(queryClient, client, name, address, signal),
     staleTime: 0,
     refetchOnWindowFocus: false,
     retry: false,
@@ -62,7 +69,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const resolverExists = !!resolver && resolver !== zeroAddress
   const snapshot = useQuery({
     queryKey: ['v2-records', 'state', activeChain.id, resolver, name, address],
-    queryFn: () => readResolverState(client, resolver!, name, address),
+    queryFn: ({ signal }) => loadResolverState(queryClient, client, resolver!, name, address, signal),
     enabled: recordsEnabled && resolverExists,
     staleTime: 0,
     refetchOnWindowFocus: false,
@@ -71,7 +78,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
   const history = useQuery({
     queryKey: ['v2-records', 'history', activeChain.id, resolver, name, address, snapshot.data?.blockNumber.toString()],
-    queryFn: ({ signal }) => readResolverHistory(client, resolver!, snapshot.data!, signal),
+    queryFn: ({ signal }) => loadResolverCatalog(queryClient, client, resolver!, snapshot.data!, address, signal),
     enabled: recordsEnabled && !!snapshot.data && !snapshot.data.historyComplete,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
@@ -79,13 +86,6 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   })
 
   const catalog = { data: history.data ?? snapshot.data }
-  const resolvers = useQuery({
-    queryKey: ['user', 'resolvers', activeChain.id, address],
-    queryFn: ({ signal }) => getUserResolvers({ userAddress: address!, signal }),
-    enabled: !!address,
-    retry: false,
-  })
-
   const selected = selection ?? catalog.data?.linkedRecordId.toString() ?? '0'
   let selectedId = BigInt(0)
   let selectionError: string | null = null
@@ -106,36 +106,26 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       name,
       address,
       selected,
-      snapshot.data?.blockNumber.toString(),
+      catalog.data?.blockNumber.toString(),
+      catalog.data?.historyComplete,
+      history.isError,
     ],
     queryFn: () =>
-      readConfiguration({ client, resolver: resolver!, catalog: snapshot.data!, name, selectedId, account: address }),
-    enabled: recordsEnabled && !!snapshot.data && !selectionError && resolverExists,
+      loadConfiguration({ client, resolver: resolver!, catalog: catalog.data!, name, selectedId, account: address }),
+    meta: { ensApi: !!catalog.data?.permissions },
+    enabled:
+      recordsEnabled &&
+      !!catalog.data &&
+      (!catalog.data.permissions || catalog.data.historyComplete || history.isError) &&
+      !selectionError &&
+      resolverExists,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     retry: false,
   })
-  const discoveredRecords = useQuery({
-    queryKey: [
-      'v2-records',
-      'discoveredValues',
-      activeChain.id,
-      resolver,
-      name,
-      address,
-      selected,
-      history.data?.blockNumber.toString(),
-    ],
-    queryFn: () =>
-      readConfiguration({ client, resolver: resolver!, catalog: history.data!, name, selectedId, account: address }),
-    enabled: recordsEnabled && !!history.data && !selectionError && resolverExists,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    retry: false,
-  })
-  const recordData = discoveredRecords.data ?? recordQuery.data
-  const hasCompleteRecords = !!discoveredRecords.data || (!!snapshot.data?.historyComplete && !!recordQuery.data)
-  const discoveryError = history.error || discoveredRecords.error
+  const recordData = recordQuery.data
+  const hasCompleteRecords = !!recordData && !!catalog.data?.historyComplete
+  const discoveryError = history.error
   const viewKey = `${address}:${resolver}:${selected}:${mode}`
   const activeView = useRef(viewKey)
   activeView.current = viewKey
@@ -237,7 +227,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       if (records.some((row) => recordKey(row) === recordKey(valid))) throw new Error('That record is already shown.')
 
       setIsAdding(true)
-      const rows = await readConfiguration({
+      const rows = await loadConfiguration({
         client,
         resolver,
         catalog: catalog.data,
@@ -460,13 +450,13 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     binding: binding.data,
     catalog: catalog.data,
     resolvers:
-      resolverExists && !resolvers.data?.some((item) => item.address.toLowerCase() === resolver.toLowerCase())
-        ? [{ address: resolver, name: null }, ...(resolvers.data ?? [])]
-        : (resolvers.data ?? []),
+      resolverExists && !directory.resolvers.some((item) => item.address.toLowerCase() === resolver.toLowerCase())
+        ? [{ address: resolver, name: null }, ...directory.resolvers]
+        : directory.resolvers,
     hasCompleteRecords,
-    isDiscovering: history.isFetching || discoveredRecords.isFetching,
+    isDiscovering: history.isFetching || recordQuery.isFetching,
     discoveryError: discoveryError ? errorText(discoveryError) : null,
-    retryDiscovery: () => (history.isError ? history.refetch() : discoveredRecords.refetch()),
+    retryDiscovery: () => (history.isError ? history.refetch() : recordQuery.refetch()),
     resolverInput: effectiveResolverInput,
     setResolverInput,
     useResolver,

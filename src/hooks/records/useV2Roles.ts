@@ -5,7 +5,9 @@ import { BaseError, type Address, type Hex, zeroAddress } from 'viem'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { createV2RecordsClient } from '@/utils/records/client'
-import { readNameResolver } from '@/utils/records/v2Resolver'
+import { resolverQueryOptions } from '@/api/resolvers/queries'
+import { resolverRoleAccess, resolverRoleSnapshot } from '@/utils/records/resolverData'
+import { loadNameResolver } from '@/utils/records/loadResolver'
 import {
   adminRole,
   hasRole,
@@ -40,10 +42,21 @@ export const roleErrorText = (error: unknown) =>
 
 export const useRoleSection = (kind: RoleKind, contract?: Address, resource = BigInt(0), enabled = true) => {
   const { address } = useAccount()
+  const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
   const snapshot = useQuery({
     queryKey: ['v2-roles', 'snapshot', activeChain.id, kind, contract, resource.toString(), address],
-    queryFn: () => readRoleSnapshot(client, contract!, resource, kind, address),
+    queryFn: async ({ signal }) => {
+      if (kind === 'resolver') {
+        try {
+          return resolverRoleSnapshot(await queries.fetchQuery(resolverQueryOptions(contract!)), resource, address)
+        } catch {
+          signal.throwIfAborted()
+        }
+      }
+
+      return readRoleSnapshot(client, contract!, resource, kind, address)
+    },
     enabled: enabled && !!contract && contract !== zeroAddress,
     staleTime: 15_000,
     refetchOnWindowFocus: false,
@@ -59,7 +72,11 @@ export const useRoleSection = (kind: RoleKind, contract?: Address, resource = Bi
       resource.toString(),
       snapshot.data?.blockNumber.toString(),
     ],
-    queryFn: ({ signal }) => readRoleHistory(client, snapshot.data!, signal),
+    queryFn: ({ signal }) =>
+      snapshot.data!.permissions
+        ? Promise.resolve(snapshot.data!.initialAssignments)
+        : readRoleHistory(client, snapshot.data!, signal),
+    meta: { ensApi: !!snapshot.data?.permissions },
     enabled: enabled && !!snapshot.data,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
@@ -70,10 +87,11 @@ export const useRoleSection = (kind: RoleKind, contract?: Address, resource = Bi
 
 export const useV2Roles = (name: string, enabled = true) => {
   const { address } = useAccount()
+  const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
   const binding = useQuery({
     queryKey: ['v2-records', 'name', activeChain.id, config.ensV2Registry, name, address],
-    queryFn: () => readNameResolver(client, name, config.ensV2Registry, address),
+    queryFn: ({ signal }) => loadNameResolver(queries, client, name, address, signal),
     enabled,
     staleTime: 15_000,
     refetchOnWindowFocus: false,
@@ -93,6 +111,7 @@ export type V2RolesData = ReturnType<typeof useV2Roles>
 
 export const useV2RoleAuthority = (change?: RoleChange) => {
   const { address } = useAccount()
+  const queries = useQueryClient()
   const client = useMemo(createV2RecordsClient, [])
   let details: ReturnType<typeof roleChangeDetails> | undefined
   let validationError: string | undefined
@@ -108,12 +127,25 @@ export const useV2RoleAuthority = (change?: RoleChange) => {
       'v2-roles',
       'authority',
       activeChain.id,
+      change?.kind,
       change?.contract,
       details?.resource.toString(),
       address,
       change?.account.toLowerCase(),
     ],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (change!.kind === 'resolver') {
+        try {
+          const resolver = await queries.fetchQuery(resolverQueryOptions(change!.contract))
+          return {
+            ...resolverRoleAccess(resolver, details!.resource, address!),
+            target: resolverRoleAccess(resolver, details!.resource, change!.account as Address),
+          }
+        } catch {
+          signal.throwIfAborted()
+        }
+      }
+
       const [viewer, target] = await Promise.all([
         readRoleAccess(client, change!.contract, details!.resource, address!),
         readRoleAccess(client, change!.contract, details!.resource, change!.account as Address),
@@ -121,6 +153,7 @@ export const useV2RoleAuthority = (change?: RoleChange) => {
       return { ...viewer, target }
     },
     enabled: !!address && !!details,
+    meta: { ensApi: change?.kind === 'resolver' },
     staleTime: 10_000,
     refetchOnWindowFocus: false,
     retry: false,

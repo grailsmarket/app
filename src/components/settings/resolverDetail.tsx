@@ -41,7 +41,7 @@ export default function ResolverDetail({ resolver, tab = 'configurations' }: { r
         </div>
       </div>
       <div className='flex flex-col gap-4'>
-        <nav aria-label='Resolver sections' className='border-tertiary flex gap-5 overflow-x-auto border-b'>
+        <nav aria-label='Resolver sections' className='border-tertiary flex gap-2 overflow-x-auto border-b'>
           {['configurations', 'names', 'permissions'].map((item) => (
             <Link
               key={item}

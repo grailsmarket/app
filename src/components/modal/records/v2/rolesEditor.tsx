@@ -14,6 +14,7 @@ import {
   type V2RoleTransaction,
 } from '@/hooks/records/useV2Roles'
 import { type RoleKind, readRoleAccess, RESOLVER_ROLE_DEFINITIONS } from '@/utils/records/v2Roles'
+import { resolverRoleAccess } from '@/utils/records/resolverData'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { recordPermission, validateRecordField } from '@/utils/records/v2Records'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
@@ -91,7 +92,9 @@ export const AddRoleAccount = ({
               : encodeAbiParameters([{ type: 'uint256' }], [BigInt(field.key)])
       }
       const target = targetAddress as Address
-      let { roles: bitmap } = await readRoleAccess(client, snapshot.contract, resource, target)
+      let { roles: bitmap } = snapshot.permissions
+        ? resolverRoleAccess(snapshot.permissions, resource, target)
+        : await readRoleAccess(client, snapshot.contract, resource, target)
       if (kind === 'name' && snapshot.owner && target.toLowerCase() !== snapshot.owner.toLowerCase()) {
         const operator = await client.readContract({
           address: snapshot.contract,

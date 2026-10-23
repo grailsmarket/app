@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Address } from 'viem'
 import { normalize } from 'viem/ens'
 import { activeChain } from '@/constants/web3/chain'
@@ -9,6 +9,7 @@ import { createV2RecordsClient } from '@/utils/records/client'
 import { verifyPrimaryNameOwner, type PrimaryNameOption } from '@/utils/settings/primaryName'
 
 export const useOwnedNameOptions = (address: Address) => {
+  const queries = useQueryClient()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search.trim(), 250)
   const client = useMemo(createV2RecordsClient, [])
@@ -25,7 +26,7 @@ export const useOwnedNameOptions = (address: Address) => {
   try {
     if (debouncedSearch.includes('.')) exactName = normalize(debouncedSearch)
   } catch {
-    // Partial names can still match indexed results.
+    // Partial names can still match API results.
   }
 
   const exact = useQuery({
@@ -33,7 +34,7 @@ export const useOwnedNameOptions = (address: Address) => {
     queryFn: async () => {
       const option: PrimaryNameOption = { name: exactName!, version: 2, token_id: '', expiry_date: null }
 
-      await verifyPrimaryNameOwner(client, option, address)
+      await verifyPrimaryNameOwner(client, option, address, queries)
 
       return option
     },

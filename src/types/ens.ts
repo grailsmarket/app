@@ -11,6 +11,12 @@ export type Resolver = {
   nameCount: number | null
   roles: (ResolverRole | ResolverAdminRole)[]
   isDefault: boolean
+  managesRecords?: boolean
+  keyGrants?: ResolverKeyPermission[]
+  createdAt?: string | null
+  updatedAt?: string | null
+  createdBlock?: number
+  updatedBlock?: number
 }
 
 export type SettingsResolver = Resolver & { deployedBy?: Address; delegated?: boolean }
@@ -36,10 +42,16 @@ export interface ResolverPermissions {
 export interface ResolverSummary {
   address: Address
   created_block: number
+  created_at?: string | null
+  updated_block?: number
+  updated_at?: string | null
   record_count: number
 }
 
-export interface AccountResolver extends ResolverSummary, ResolverPermissions {}
+export interface AccountResolver extends ResolverSummary, ResolverPermissions {
+  manages_records?: boolean
+  key_grants?: ResolverKeyPermission[]
+}
 
 export interface AccountResolvers {
   account: Address
@@ -50,7 +62,7 @@ export interface ResolverAccount extends ResolverPermissions {
   account: Address
 }
 
-export interface ResolverKeyGrant extends ResolverAccount {
+export interface ResolverKeyPermission extends ResolverPermissions {
   resource: Hex
   arg: Hex | null
   key?: string
@@ -59,24 +71,34 @@ export interface ResolverKeyGrant extends ResolverAccount {
   interface_id?: string
 }
 
+export interface ResolverKeyGrant extends ResolverKeyPermission {
+  account: Address
+}
+
 export interface ResolverDetails extends ResolverSummary {
   default_record_id: string | null
+  unlinked_name_count?: number
   accounts: ResolverAccount[]
   key_grants: ResolverKeyGrant[]
 }
 
 // Keep the API's raw kind/key/value representation. `addr` is not our editor's `address` kind.
 export interface ResolverRecord {
-  kind: string
+  kind: 'text' | 'addr' | 'contenthash' | 'data' | 'name' | 'abi' | 'interface'
   key: string
   value: string
+  encoding?: 'utf8' | 'bytes' | 'address' | 'flag'
+  decoded?: string | null
 }
 
 export interface RecordConfiguration {
   record_id: string
-  // At most 100 explicit links; name_count contains the total. Inherited assignments are not included.
+  is_default?: boolean
+  // A preview of at most 100 names. Use the names endpoint for the complete list.
   names: string[]
   name_count: number
+  linked_name_count?: number
+  inherited_name_count?: number
   records: ResolverRecord[]
 }
 
@@ -89,7 +111,22 @@ export interface ResolverRecords {
   records: RecordConfiguration[]
 }
 
-export interface IndexedENSName {
+export interface RecordName {
+  name: string
+  linked: boolean
+}
+
+export interface RecordNames {
+  resolver: Address
+  record_id: string
+  is_default: boolean
+  total: number
+  limit: number
+  offset: number
+  names: RecordName[]
+}
+
+export interface ENSNameDetails {
   name: string
   node: Hex
   registry: Address
@@ -101,6 +138,8 @@ export interface IndexedENSName {
   resolver: Address | null
   subregistry: Address | null
   record_id: string | null
+  linked_record_id?: string | null
+  uses_default?: boolean
   records: ResolverRecord[]
   updated_block: number
 }

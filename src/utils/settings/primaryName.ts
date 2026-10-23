@@ -4,11 +4,14 @@ import {
   type PublicClient,
   encodeFunctionData,
   erc721Abi,
+  isAddress,
   labelhash,
   namehash,
   zeroAddress,
 } from 'viem'
 import { normalize } from 'viem/ens'
+import type { QueryClient } from '@tanstack/react-query'
+import { ensNameQueryOptions, resolverQueryOptions } from '@/api/resolvers/queries'
 import { RegistryAbi } from '@/constants/web3/abi/RegistryAbi'
 import { NAME_WRAPPER_ABI } from '@/constants/web3/abi/NameWrapper'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
@@ -17,8 +20,12 @@ import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedReso
 import { REVERSE_REGISTRAR_ABI } from '@/constants/web3/abi/ReverseRegistrar'
 import { config } from '@/lib/config'
 import { readNameResolver, readResolverState } from '@/utils/records/v2Resolver'
-import { dnsEncodeName, ROOT_NAME } from '@/utils/records/v2Records'
+import { loadNameResolver, loadResolverState } from '@/utils/records/loadResolver'
+import { resolverRecordValue } from '@/utils/records/resolverData'
+import type { V2NameResolver } from '@/types/records'
+import { dnsEncodeName } from '@/utils/records/v2Records'
 import type { MarketplaceDomainType } from '@/types/domains'
+import { ROOT_NAME } from '@/constants/ens/resolver'
 
 export interface PrimaryNameOption extends Pick<MarketplaceDomainType, 'name' | 'token_id' | 'expiry_date'> {
   version: 1 | 2
@@ -34,13 +41,21 @@ export interface PrimaryNameReview {
   blocked?: string
 }
 
-export const verifyPrimaryNameOwner = async (client: PublicClient, option: PrimaryNameOption, account: Address) => {
+export const verifyPrimaryNameOwner = async (
+  client: PublicClient,
+  option: PrimaryNameOption,
+  account: Address,
+  queries?: QueryClient
+) => {
   const name = normalize(option.name)
   const labels = name.split('.')
   let owner: Address
+  let binding: V2NameResolver | undefined
 
   if (option.version === 2) {
-    const binding = await readNameResolver(client, name, config.ensV2Registry, account)
+    binding = queries
+      ? await loadNameResolver(queries, client, name, account)
+      : await readNameResolver(client, name, config.ensV2Registry, account)
 
     if (!binding.registered) throw new Error('This name is not currently registered.')
 
@@ -77,23 +92,46 @@ export const verifyPrimaryNameOwner = async (client: PublicClient, option: Prima
 
   if (owner.toLowerCase() !== account.toLowerCase())
     throw new Error('The authenticated wallet no longer owns this name.')
+
+  return binding
+}
+
+const loadPrimaryAddress = async (queries: QueryClient, client: PublicClient, name: string) => {
+  try {
+    const details = await queries.fetchQuery(ensNameQueryOptions(name))
+
+    if (details.resolver && details.resolver !== zeroAddress) {
+      // Custom resolvers may not expose their records through this API.
+      await queries.fetchQuery(resolverQueryOptions(details.resolver))
+      const record = details.records.find((record) => record.kind === 'addr' && record.key === '60')
+      const value = record ? resolverRecordValue(record) : ''
+
+      return isAddress(value, { strict: false }) && value !== zeroAddress ? value : null
+    }
+  } catch {
+    // Fall back to resolution if the name API fails.
+  }
+
+  // Ancestor-resolver traversal is not available through the API yet.
+  return client.getEnsAddress({ name })
 }
 
 export const readPrimaryNameReview = async (
   client: PublicClient,
   option: PrimaryNameOption,
-  account: Address
+  account: Address,
+  queries?: QueryClient
 ): Promise<PrimaryNameReview> => {
   const name = normalize(option.name)
 
-  await verifyPrimaryNameOwner(client, option, account)
+  const binding = await verifyPrimaryNameOwner(client, option, account, queries)
 
-  const address = await client.getEnsAddress({ name })
+  const address =
+    queries && option.version === 2
+      ? await loadPrimaryAddress(queries, client, name)
+      : await client.getEnsAddress({ name })
   const needsAddress = address?.toLowerCase() !== account.toLowerCase()
-  const resolver =
-    option.version === 2
-      ? (await readNameResolver(client, name, config.ensV2Registry, account)).resolver
-      : ((await client.getEnsResolver({ name })) ?? zeroAddress)
+  const resolver = binding?.resolver ?? (await client.getEnsResolver({ name })) ?? zeroAddress
   const review: PrimaryNameReview = { address, resolver, needsAddress }
 
   if (!needsAddress) return review
@@ -104,7 +142,9 @@ export const readPrimaryNameReview = async (
     let data: Hex
 
     if (option.version === 2) {
-      const state = await readResolverState(client, resolver, name, account)
+      const state = queries
+        ? await loadResolverState(queries, client, resolver, name, account)
+        : await readResolverState(client, resolver, name, account)
       review.configurationId = state.linkedRecordId || state.defaultRecordId
       review.usesDefault = !state.linkedRecordId || state.linkedRecordId === state.defaultRecordId
       data = encodeFunctionData({

@@ -94,6 +94,7 @@ const useRegistrationModal = () => {
   }
   const [resolverInput, setResolverInput] = useState<{ wallet: Address; value: string } | null>(null)
   const [isDeployingResolver, setIsDeployingResolver] = useState(false)
+  const [resolverDeploymentHash, setResolverDeploymentHash] = useState<Hex | null>(null)
   const commitInFlight = useRef(false)
   const deploymentInFlight = useRef(false)
   const registrationRun = useRef(0)
@@ -656,20 +657,23 @@ const useRegistrationModal = () => {
     setIsDeployingResolver(true)
     dispatch(setRegistrationFlowState('resolver'))
     const run = registrationRun.current
+    let deploymentHash = registrationState.resolverDeploymentTxHash ?? null
 
     try {
       const deployedResolver = registrationState.resolverDeploymentTxHash
         ? await getDeployedResolver(registrationState.resolverDeploymentTxHash)
         : (await isUserResolverDeployed()) ||
           (await deployResolver(0, (hash) => {
+            deploymentHash = hash
             if (run === registrationRun.current) dispatch(setResolverDeploymentTxHash(hash))
           }))
       if (run !== registrationRun.current) return
       queryClient.setQueryData(resolverQueryKey, deployedResolver)
       setResolver(deployedResolver)
+      setResolverDeploymentHash(deploymentHash)
+      // Stays on the resolver step: it shows the deployment as done, and Register starts the commitment.
       dispatch(setRegistrationParameters({ ...parameters, resolver: deployedResolver }))
       dispatch(setResolverDeploymentTxHash(null))
-      await handleCommit(deployedResolver)
     } catch (error) {
       if (run !== registrationRun.current) return
       dispatch(setResolverDeploymentTxHash(null))
@@ -932,6 +936,9 @@ const useRegistrationModal = () => {
     resolverError,
     isCheckingResolver: resolverQuery.isLoading && !resolver.trim(),
     isDeployingResolver,
+    isResolverDeployed:
+      registrationState.flowState === 'resolver' && !!parameters?.resolver && parameters.resolver !== zeroAddress,
+    resolverDeploymentHash,
     handleDeployResolver,
     handleSkipResolver: () => {
       if (!deploymentInFlight.current) return handleCommit(zeroAddress)

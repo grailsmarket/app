@@ -13,16 +13,11 @@ import {
 } from 'viem'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
 import { findDeploymentBlock, readLogs } from '@/utils/records/v2Resolver'
-import {
-  DEFAULT_V2_FIELDS,
-  decodeRecordValue,
-  encodeRecordGetter,
-  encodeRecordSetter,
-  recordKey,
-} from '@/utils/records/v2Records'
+import { decodeRecordValue, encodeRecordGetter, encodeRecordSetter, recordKey } from '@/utils/records/v2Records'
 import type { V2Record, V2RecordField } from '@/types/records'
 import { migrationEventsAbi } from '@/constants/web3/abi/Migration'
 import { PublicResolverAbi } from '@/constants/web3/abi/PublicResolverAbi'
+import { DEFAULT_V2_FIELDS } from '@/constants/ens/records'
 
 export const migrationRecordField = (log: { data: Hex; topics: [] | [Hex, ...Hex[]] }): V2RecordField | null => {
   try {

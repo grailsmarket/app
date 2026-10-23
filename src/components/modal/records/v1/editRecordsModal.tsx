@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER, Check } from 'ethereum-identity-kit'
+import { DEFAULT_FALLBACK_AVATAR, DEFAULT_FALLBACK_HEADER } from 'ethereum-identity-kit'
 import { useEditRecords } from '@/hooks/records/useEditRecords'
 import ImageUploadModal from '../components/imageUploadModal'
+import { TxScreenPanel } from '../components/txScreen'
+import { getV1Screen } from '../components/recordsTxScreens'
 import DiscardChangesModal from '../components/discardChangesModal'
 import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
@@ -17,11 +19,11 @@ import { useClickAway } from '@/hooks/useClickAway'
 import InputWithResolution from '../components/inputWithResolution'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
 import TabSelector from '@/components/ui/tabSelector'
-import { activeChain } from '@/constants/web3/chain'
 import { getMetadataAssetUrl } from '@/utils/web3/ens'
 import { useAppDispatch } from '@/state/hooks'
 import { markImageForRefresh } from '@/state/reducers/imageRefresh'
 import { invalidateNameMetadataCache } from '@/api/name/invalidateMetadataCache'
+import { beautifyName } from '@/lib/ens'
 
 interface V1EditRecordsModalProps {
   name: string
@@ -65,7 +67,12 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
     saveRecords,
     resetToEditing,
     errorMessage,
-    txHash,
+    errorDetails,
+    txPlan,
+    currentTx,
+    txHashes,
+    confirmedTxs,
+    recordChangeCount,
     isManager,
     isOwner,
   } = useEditRecords(name, metadata)
@@ -116,6 +123,20 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
     onClose()
   }
 
+  const screen = getV1Screen({
+    name,
+    step,
+    plan: txPlan,
+    current: currentTx,
+    hashes: txHashes,
+    confirmed: confirmedTxs,
+    recordCount: recordChangeCount,
+    error: errorMessage,
+    errorDetails,
+    onTryAgain: resetToEditing,
+    onClose: handleClose,
+  })
+
   return (
     <>
       <div
@@ -129,70 +150,8 @@ const V1EditRecordsModal: React.FC<V1EditRecordsModalProps> = ({ name, metadata,
           className='bg-background border-tertiary relative flex max-h-[calc(100dvh-56px)] w-full flex-col rounded-md border-t shadow-lg transition-all duration-300 md:max-w-xl md:border-2 starting:translate-y-full md:starting:translate-y-0'
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Confirming / Processing state */}
-          {(step === 'confirming' || step === 'processing') && (
-            <div className='flex flex-col items-center gap-12 p-6'>
-              <h2 className='text-2xl font-bold'>Saving Changes</h2>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <div className='flex flex-col items-center gap-4'>
-                <p className='text-xl'>{step === 'confirming' ? 'Confirm in Wallet' : 'Processing Transaction'}</p>
-                {txHash && (
-                  <a
-                    href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                  >
-                    View on Etherscan
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Success state */}
-          {step === 'success' && (
-            <div className='flex flex-col items-center gap-8 p-6'>
-              <h2 className='text-2xl font-bold'>Saving Changes</h2>
-              <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <div className='flex w-full flex-col items-center gap-4'>
-                <p className='text-xl font-bold'>Changes Saved Successfully!</p>
-                {txHash && (
-                  <a
-                    href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                  >
-                    View on Etherscan
-                  </a>
-                )}
-                <SecondaryButton className='w-full' onClick={handleClose}>
-                  Close
-                </SecondaryButton>
-              </div>
-            </div>
-          )}
-
-          {/* Error state */}
-          {step === 'error' && (
-            <div className='flex flex-col gap-4 p-6'>
-              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-                <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
-                <p className='line-clamp-6 text-red-400'>{errorMessage || 'An unknown error occurred'}</p>
-              </div>
-              <div className='flex w-full flex-col gap-2'>
-                <PrimaryButton onClick={resetToEditing} className='w-full'>
-                  Try Again
-                </PrimaryButton>
-                <SecondaryButton onClick={handleClose} className='w-full'>
-                  Close
-                </SecondaryButton>
-              </div>
-            </div>
-          )}
+          {/* In-progress, success and error screens; the frame locks while a transaction runs (handleClose). */}
+          {screen && <TxScreenPanel screen={screen} title={`Edit ${beautifyName(name)}`} onClose={handleClose} />}
 
           {/* Editing state — form content */}
           {step === 'editing' && (

@@ -9,7 +9,7 @@ import { AddRoleAccount } from '@/components/modal/records/v2/rolesEditor'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { SettingsNotice } from './shared'
-import { useSettingsDirty } from './navigationGuard'
+import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import { useSettingsTransactionDialog } from '@/context/settingsTransaction'
 
 interface ResolverPermissionsProps {
@@ -35,7 +35,8 @@ const ResolverPermissions: React.FC<ResolverPermissionsProps> = ({ resolver }) =
   useSettingsTransactionDialog({
     open: transactionOpen,
     phase: transaction.step === 'editing' ? 'confirming' : transaction.step,
-    title: 'Save permissions',
+    title: 'Save Permissions',
+    successTitle: 'Permissions Saved',
     error: transaction.error,
     explorerUrl: transaction.explorerUrl,
     progress: transaction.progress,

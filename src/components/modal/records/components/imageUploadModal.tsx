@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { sha256 } from '@noble/hashes/sha256'
-import { bytesToHex } from 'viem'
+import { BaseError, bytesToHex } from 'viem'
 import { useAccount, useSignTypedData } from 'wagmi'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -11,6 +11,8 @@ import { cn } from '@/utils/tailwind'
 import Image from 'next/image'
 import { isLinkValid, Trash } from 'ethereum-identity-kit'
 import TabSelector from '@/components/ui/tabSelector'
+import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import { getUploadScreen } from './recordsTxScreens'
 
 interface ImageUploadModalProps {
   name: string
@@ -22,7 +24,8 @@ interface ImageUploadModalProps {
 }
 
 type UploadMode = 'file' | 'url'
-type UploadStatus = 'idle' | 'uploading' | 'success' | 'error'
+// signing: the EIP-712 upload signature is open in the wallet; uploading: the PUT to euc.li.
+type UploadStatus = 'idle' | 'signing' | 'uploading' | 'success' | 'error'
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   name,
@@ -42,10 +45,28 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(hasExistingUrl ? currentValue : null)
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
+  const [errorStatus, setErrorStatus] = useState<number | null>(null)
+  const [fileInfo, setFileInfo] = useState<{ name: string; size: number } | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const isBusy = uploadStatus === 'signing' || uploadStatus === 'uploading'
+
+  // Escape closes only this modal, not the editor under it, and does nothing while the upload runs.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      if (!isBusy) onClose()
+    }
+
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [isBusy, onClose])
 
   const handleFile = useCallback((file: File) => {
+    setFileInfo({ name: file.name, size: file.size })
     const reader = new FileReader()
     reader.onload = () => {
       const result = reader.result as string
@@ -112,8 +133,10 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
 
     if (!dataURL) return
 
-    setUploadStatus('uploading')
+    setUploadStatus('signing')
     setErrorMessage(null)
+    setErrorDetails(null)
+    setErrorStatus(null)
 
     try {
       const urlHash = bytesToHex(sha256(dataURLToBytes(dataURL)))
@@ -138,6 +161,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
         },
       })
 
+      setUploadStatus('uploading')
       const response = await fetch(`https://euc.li/${name}${imageType === 'header' ? '/h' : ''}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -150,13 +174,15 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
       })
 
       if (!response.ok) {
-        if (response.status === 413) {
-          setErrorMessage('File size is too large (max 500KB)')
-        }
-        if (response.status === 415) {
-          setErrorMessage('Unsupported file type. Use JPG/JPEG.')
-        }
-        throw new Error(`Upload failed: ${response.statusText}`)
+        setErrorStatus(response.status)
+        // Thrown, so the catch below keeps the specific message instead of overwriting it.
+        throw new Error(
+          response.status === 413
+            ? 'File size is too large (max 500KB)'
+            : response.status === 415
+              ? 'Unsupported file type. Use JPG/JPEG.'
+              : `Upload failed: ${response.statusText || response.status}`
+        )
       }
 
       const result = await response.json()
@@ -166,118 +192,152 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
       onSave(url)
     } catch (err: unknown) {
       setUploadStatus('error')
-      setErrorMessage(err instanceof Error ? err.message : 'Upload failed')
+      setErrorMessage(
+        err instanceof BaseError ? err.shortMessage : err instanceof Error ? err.message : 'Upload failed'
+      )
+      setErrorDetails(err instanceof BaseError && err.message !== err.shortMessage ? err.message : null)
     }
   }, [address, mode, manualUrl, dataURL, signTypedDataAsync, imageType, name, onSave, dataURLToBytes])
 
+  // File mode only: signing and uploading are busy screens, an error is its own screen. Success closes the modal.
+  const screen =
+    uploadStatus === 'signing' || uploadStatus === 'uploading' || uploadStatus === 'error'
+      ? getUploadScreen({
+          name,
+          imageType,
+          phase: uploadStatus,
+          fileName: fileInfo?.name ?? null,
+          fileSize: fileInfo?.size ?? null,
+          preview: previewUrl,
+          error: errorMessage,
+          errorDetails,
+          errorStatus,
+          onTryAgain: () => {
+            setUploadStatus('idle')
+            setErrorMessage(null)
+            setErrorDetails(null)
+            setErrorStatus(null)
+          },
+          onCancel: onClose,
+        })
+      : null
+
   return (
-    <div
-      className='fixed top-0 right-0 bottom-0 left-0 z-110 flex h-dvh w-screen items-center justify-center bg-black/60 px-4 backdrop-blur-sm'
-      onClick={(e) => {
-        e.stopPropagation()
-        onClose()
-      }}
-    >
-      <div
-        className='bg-background border-tertiary p-lg relative flex max-h-[calc(100dvh-56px)] w-full max-w-md flex-col gap-4 rounded-md border-2 shadow-lg'
-        onClick={(e) => e.stopPropagation()}
+    // Above the editor it opens from (z-100); clicks stay inside, as before.
+    <div className='fixed inset-0 z-110' onClick={(e) => e.stopPropagation()}>
+      <ModalShell
+        title={`${imageType === 'avatar' ? 'Avatar' : 'Header'} Image`}
+        onClose={onClose}
+        locked={screen?.locked}
+        stageKey={screen?.key ?? 'form'}
+        subject={screen?.subject}
+        footerHint={screen?.footerHint}
+        footer={
+          screen ? (
+            screen.footer
+          ) : (
+            <>
+              <PrimaryButton
+                className={modalPrimaryActionClassName}
+                onClick={handleUploadAndSave}
+                disabled={isBusy || (mode === 'file' && !dataURL) || (mode === 'url' && !manualUrl)}
+              >
+                Save
+              </PrimaryButton>
+              <SecondaryButton className={modalActionClassName} onClick={onClose}>
+                Cancel
+              </SecondaryButton>
+            </>
+          )
+        }
       >
-        <h2 className='font-sedan-sc text-foreground text-2xl capitalize'>{imageType} Image</h2>
-
-        {allowUpload && (
-          <TabSelector
-            tabs={[
-              { label: 'Upload File', value: 'file' },
-              { label: 'Enter URL', value: 'url' },
-            ]}
-            selectedTab={mode}
-            setSelectedTab={(tab) => setMode(tab as 'file' | 'url')}
-          />
-        )}
-
-        {mode === 'file' ? (
-          <>
-            {/* Drop zone */}
-            <div
-              className={cn(
-                'border-tertiary flex min-h-[160px] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed transition-colors',
-                isDragging ? 'border-primary bg-primary/10' : 'hover:border-white/70'
-              )}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {previewUrl ? (
-                <Image
-                  src={previewUrl}
-                  alt='Preview'
-                  className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
-                  width={512}
-                  height={512}
-                />
-              ) : (
-                <>
-                  <p className='text-neutral text-lg'>Drag & drop an image here</p>
-                  <p className='text-neutral text-md'>or click to select a file</p>
-                </>
-              )}
-            </div>
-            <input ref={fileInputRef} type='file' accept='image/*' className='hidden' onChange={handleFileSelect} />
-          </>
+        {screen ? (
+          screen.body
         ) : (
           <>
-            <div className='flex flex-row gap-2'>
-              <Input
-                label='URL'
-                value={manualUrl}
-                onChange={(e) => handleManualUrlChange(e.target.value)}
-                placeholder='https://example.com/image.png'
-                labelClassName='w-[60px] max-w-[60px] min-w-[60px]'
+            {allowUpload && (
+              <TabSelector
+                tabs={[
+                  { label: 'Upload File', value: 'file' },
+                  { label: 'Enter URL', value: 'url' },
+                ]}
+                selectedTab={mode}
+                setSelectedTab={(tab) => setMode(tab as 'file' | 'url')}
               />
-              {manualUrl && (
-                <button
-                  className='group flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-500 transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50'
-                  onClick={() => {
-                    setManualUrl('')
-                    setPreviewUrl(null)
-                    onSave('')
-                  }}
-                >
-                  <Trash className='h-5 w-5 text-red-500 transition-colors group-hover:text-white' />
-                </button>
-              )}
-            </div>
-            {previewUrl && isLinkValid(previewUrl) && URL.canParse(previewUrl) && (
-              <div className='flex justify-center'>
-                <Image
-                  src={previewUrl}
-                  alt='Preview'
-                  className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
-                  width={512}
-                  height={512}
-                  unoptimized
-                />
-              </div>
             )}
+
+            {mode === 'file' ? (
+              <>
+                {/* Drop zone */}
+                <div
+                  className={cn(
+                    'border-tertiary flex min-h-[160px] cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed transition-colors',
+                    isDragging ? 'border-primary bg-primary/10' : 'hover:border-white/70'
+                  )}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {previewUrl ? (
+                    <Image
+                      src={previewUrl}
+                      alt='Preview'
+                      className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
+                      width={512}
+                      height={512}
+                    />
+                  ) : (
+                    <>
+                      <p className='text-neutral text-lg'>Drag & drop an image here</p>
+                      <p className='text-neutral text-md'>or click to select a file</p>
+                    </>
+                  )}
+                </div>
+                <input ref={fileInputRef} type='file' accept='image/*' className='hidden' onChange={handleFileSelect} />
+              </>
+            ) : (
+              <>
+                <div className='flex flex-row gap-2'>
+                  <Input
+                    label='URL'
+                    value={manualUrl}
+                    onChange={(e) => handleManualUrlChange(e.target.value)}
+                    placeholder='https://example.com/image.png'
+                    labelClassName='w-[60px] max-w-[60px] min-w-[60px]'
+                  />
+                  {manualUrl && (
+                    <button
+                      className='group flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-md border border-red-500 transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50'
+                      onClick={() => {
+                        setManualUrl('')
+                        setPreviewUrl(null)
+                        onSave('')
+                      }}
+                    >
+                      <Trash className='h-5 w-5 text-red-500 transition-colors group-hover:text-white' />
+                    </button>
+                  )}
+                </div>
+                {previewUrl && isLinkValid(previewUrl) && URL.canParse(previewUrl) && (
+                  <div className='flex justify-center'>
+                    <Image
+                      src={previewUrl}
+                      alt='Preview'
+                      className={cn('rounded-md object-cover', imageType === 'avatar' ? 'h-24 w-24' : 'h-24 w-full')}
+                      width={512}
+                      height={512}
+                      unoptimized
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {errorMessage && <p className='text-md font-medium text-red-400'>{errorMessage}</p>}
           </>
         )}
-
-        {errorMessage && <p className='text-md font-medium text-red-400'>{errorMessage}</p>}
-
-        <div className='flex flex-col gap-2'>
-          <PrimaryButton
-            className='w-full'
-            onClick={handleUploadAndSave}
-            disabled={uploadStatus === 'uploading' || (mode === 'file' && !dataURL) || (mode === 'url' && !manualUrl)}
-          >
-            {uploadStatus === 'uploading' ? 'Uploading...' : 'Save'}
-          </PrimaryButton>
-          <SecondaryButton className='w-full' onClick={onClose}>
-            Cancel
-          </SecondaryButton>
-        </div>
-      </div>
+      </ModalShell>
     </div>
   )
 }

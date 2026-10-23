@@ -1,13 +1,18 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
-
-const NavigationContext = createContext<(id: string, dirty: boolean, pending: boolean, changes: number) => void>(
-  () => {}
-)
+import { useAppDispatch, useAppSelector, useAppStore } from '@/state/hooks'
+import {
+  resetSettingsNavigation,
+  selectSettingsNavigation,
+  selectSettingsNavigationBlocked,
+  selectSettingsNavigationPending,
+  selectSettingsNavigationChangeCount,
+  setSettingsNavigationDestination,
+} from '@/state/reducers/settings/navigation'
 
 type HistoryNavigation = EventTarget & {
   traverseTo: (key: string) => { committed: Promise<unknown>; finished: Promise<unknown> }
@@ -18,10 +23,17 @@ type HistoryNavigateEvent = Event & {
 }
 const historyNavigation = () => (window as Window & { navigation?: HistoryNavigation }).navigation
 
-export const SettingsNavigationGuard = ({ children }: { children: React.ReactNode }) => {
+interface SettingsNavigationGuardProps {
+  children: ReactNode
+}
+
+export const SettingsNavigationGuard = ({ children }: SettingsNavigationGuardProps) => {
   const router = useRouter()
-  const blocks = useRef(new Map<string, { dirty: boolean; pending: boolean; changes: number }>())
-  const [destination, setDestination] = useState<{ url: string; historyKey?: string } | null>(null)
+  const dispatch = useAppDispatch()
+  const store = useAppStore()
+  const { destination } = useAppSelector(selectSettingsNavigation)
+  const pending = useAppSelector(selectSettingsNavigationPending)
+  const changeCount = useAppSelector(selectSettingsNavigationChangeCount)
   const dialog = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -34,7 +46,7 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
       if (event.key === 'Escape') {
         event.preventDefault()
         event.stopImmediatePropagation()
-        setDestination(null)
+        dispatch(setSettingsNavigationDestination(null))
       }
 
       if (event.key === 'Tab') {
@@ -55,23 +67,21 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
       document.removeEventListener('keydown', keydown, true)
       previous?.focus()
     }
-  }, [destination])
-
-  const register = useCallback((id: string, dirty: boolean, pending: boolean, changes: number) => {
-    if (dirty || pending) blocks.current.set(id, { dirty, pending, changes })
-    else blocks.current.delete(id)
-  }, [])
+  }, [destination, dispatch])
 
   useEffect(() => {
+    // Read the store at event time so a recent edit or transaction update is never missed.
+    const isBlocked = () => selectSettingsNavigationBlocked(store.getState())
+
     const unload = (event: BeforeUnloadEvent) => {
-      if (!blocks.current.size) return
+      if (!isBlocked()) return
       event.preventDefault()
       event.returnValue = ''
     }
 
     const click = (event: MouseEvent) => {
       if (
-        !blocks.current.size ||
+        !isBlocked() ||
         event.defaultPrevented ||
         event.button ||
         event.metaKey ||
@@ -90,7 +100,7 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
 
       event.preventDefault()
       event.stopPropagation()
-      setDestination({ url: target.href })
+      dispatch(setSettingsNavigationDestination({ url: target.href }))
     }
 
     // Cancel same-document Back/Forward before the router unmounts the draft. Preserve the
@@ -99,7 +109,7 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
     const navigate = (event: Event) => {
       const entry = event as HistoryNavigateEvent
       if (
-        !blocks.current.size ||
+        !isBlocked() ||
         !event.cancelable ||
         entry.navigationType !== 'traverse' ||
         !entry.destination.sameDocument ||
@@ -107,7 +117,7 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
       )
         return
       event.preventDefault()
-      setDestination({ url: entry.destination.url, historyKey: entry.destination.key })
+      dispatch(setSettingsNavigationDestination({ url: entry.destination.url, historyKey: entry.destination.key }))
     }
     window.addEventListener('beforeunload', unload)
     document.addEventListener('click', click, true)
@@ -117,19 +127,35 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
       window.removeEventListener('beforeunload', unload)
       document.removeEventListener('click', click, true)
       navigation?.removeEventListener('navigate', navigate)
+      dispatch(resetSettingsNavigation())
     }
-  }, [])
+  }, [store, dispatch])
 
-  const pending = [...blocks.current.values()].some((block) => block.pending)
-  const changeCount = [...blocks.current.values()].reduce((total, block) => total + block.changes, 0)
+  const discardChanges = () => {
+    const state = store.getState()
+    const { destination } = selectSettingsNavigation(state)
+
+    if (!destination || selectSettingsNavigationPending(state)) return
+
+    const target = new URL(destination.url)
+    dispatch(resetSettingsNavigation())
+
+    const navigation = historyNavigation()
+
+    if (destination.historyKey && navigation) {
+      const result = navigation.traverseTo(destination.historyKey)
+      void Promise.all([result.committed, result.finished]).catch(() => window.location.assign(target.href))
+    } else if (target.origin === window.location.origin) router.push(`${target.pathname}${target.search}${target.hash}`)
+    else window.location.assign(target.href)
+  }
 
   return (
-    <NavigationContext.Provider value={register}>
+    <>
       {children}
       {destination && (
         <div
           className='fixed inset-0 z-110 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm'
-          onClick={() => setDestination(null)}
+          onClick={() => dispatch(setSettingsNavigationDestination(null))}
         >
           <div
             ref={dialog}
@@ -152,27 +178,11 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
                   : 'Leaving this page will discard your unsaved changes.'}
             </p>
             <div className='flex flex-col gap-2 pt-2'>
-              <SecondaryButton className='w-full' onClick={() => setDestination(null)}>
+              <SecondaryButton className='w-full' onClick={() => dispatch(setSettingsNavigationDestination(null))}>
                 Continue editing
               </SecondaryButton>
               {!pending && (
-                <PrimaryButton
-                  className='w-full'
-                  onClick={() => {
-                    const target = new URL(destination.url)
-                    blocks.current.clear()
-                    setDestination(null)
-                    const navigation = historyNavigation()
-                    if (destination.historyKey && navigation) {
-                      const result = navigation.traverseTo(destination.historyKey)
-                      void Promise.all([result.committed, result.finished]).catch(() =>
-                        window.location.assign(target.href)
-                      )
-                    } else if (target.origin === window.location.origin)
-                      router.push(`${target.pathname}${target.search}${target.hash}`)
-                    else window.location.assign(target.href)
-                  }}
-                >
+                <PrimaryButton className='w-full' onClick={discardChanges}>
                   Discard changes
                 </PrimaryButton>
               )}
@@ -180,16 +190,6 @@ export const SettingsNavigationGuard = ({ children }: { children: React.ReactNod
           </div>
         </div>
       )}
-    </NavigationContext.Provider>
+    </>
   )
-}
-
-export const useSettingsDirty = (dirty: boolean, pending = false, changes = 0) => {
-  const id = useId()
-  const register = useContext(NavigationContext)
-
-  useEffect(() => {
-    register(id, dirty, pending, changes)
-    return () => register(id, false, false, 0)
-  }, [id, dirty, pending, changes, register])
 }

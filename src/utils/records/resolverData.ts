@@ -78,6 +78,7 @@ export const resolverCatalog = (
       for (const name of configuration.names)
         names.set(namehash(name), { recordId: BigInt(configuration.record_id), dnsName: dnsEncodeName(name) })
     }
+
     for (const record of configuration.records) {
       if (record.kind === 'interface')
         interfaces.set(`${configuration.record_id}:${record.key}`, getAddress(record.value))

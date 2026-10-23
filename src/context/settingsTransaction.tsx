@@ -1,6 +1,17 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { AnimatePresence } from 'motion/react'
 import SettingsTransactionModal, { type SettingsTransactionModalProps } from '@/components/settings/transactionModal'
 
 interface SettingsTransactionContextValue {
@@ -8,6 +19,11 @@ interface SettingsTransactionContextValue {
 }
 
 interface SettingsTransactionProviderProps {
+  /**
+   * The host modal renders the transaction screens itself from useSettingsTransaction's state (the migration modal),
+   * so the provider neither stacks its own modal on top nor makes the host inert.
+   */
+  inline?: boolean
   children: React.ReactNode
 }
 
@@ -17,18 +33,25 @@ interface SettingsTransactionDialogOptions extends SettingsTransactionModalProps
 
 const SettingsTransactionContext = createContext<SettingsTransactionContextValue | null>(null)
 
-export const SettingsTransactionProvider: React.FC<SettingsTransactionProviderProps> = ({ children }) => {
+export const SettingsTransactionProvider: React.FC<SettingsTransactionProviderProps> = ({
+  inline = false,
+  children,
+}) => {
   const [active, setActive] = useState<{ id: string; transaction: SettingsTransactionModalProps } | null>(null)
   const publish = useCallback((id: string, transaction: SettingsTransactionModalProps | null) => {
     setActive((previous) => (transaction ? { id, transaction } : previous?.id === id ? null : previous))
   }, [])
+  const value = useMemo(() => ({ publish }), [publish])
+  const overlay = inline ? null : active
 
   return (
-    <SettingsTransactionContext.Provider value={{ publish }}>
-      <div className='contents' inert={!!active}>
+    <SettingsTransactionContext.Provider value={value}>
+      <div className='contents' inert={!!overlay}>
         {children}
       </div>
-      {active && <SettingsTransactionModal key={active.id} {...active.transaction} />}
+      <AnimatePresence>
+        {overlay && <SettingsTransactionModal key={overlay.id} {...overlay.transaction} />}
+      </AnimatePresence>
     </SettingsTransactionContext.Provider>
   )
 }
@@ -37,11 +60,19 @@ export const useSettingsTransactionDialog = ({
   open,
   phase,
   title,
+  label,
   networkName,
   status,
   error,
+  details,
+  hash,
   explorerUrl,
   progress,
+  steps,
+  index,
+  successTitle,
+  successMessage,
+  errorTitle,
   submitted,
   onRetry,
   onClose,
@@ -60,6 +91,7 @@ export const useSettingsTransactionDialog = ({
     callbacks.current = { onRetry, onClose }
   })
 
+  // `steps` must keep its identity between renders (it comes from state), or every render would publish again.
   useLayoutEffect(() => {
     publish(
       id,
@@ -67,18 +99,47 @@ export const useSettingsTransactionDialog = ({
         ? {
             phase,
             title,
+            label,
             networkName,
             status,
             error,
+            details,
+            hash,
             explorerUrl,
             progress: current !== undefined && total !== undefined ? { current, total } : undefined,
+            steps,
+            index,
+            successTitle,
+            successMessage,
+            errorTitle,
             submitted,
             onRetry: () => callbacks.current.onRetry(),
             onClose: () => callbacks.current.onClose(),
           }
         : null
     )
-  }, [publish, id, open, phase, title, networkName, status, error, explorerUrl, current, total, submitted])
+  }, [
+    publish,
+    id,
+    open,
+    phase,
+    title,
+    label,
+    networkName,
+    status,
+    error,
+    details,
+    hash,
+    explorerUrl,
+    current,
+    total,
+    steps,
+    index,
+    successTitle,
+    successMessage,
+    errorTitle,
+    submitted,
+  ])
 
   useEffect(() => () => publish(id, null), [publish, id])
 }

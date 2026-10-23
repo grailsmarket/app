@@ -7,8 +7,10 @@ import { fetchOwnedNames } from '@/api/user/ownedNames'
 import { useDebounce } from '@/hooks/useDebounce'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { verifyPrimaryNameOwner, type PrimaryNameOption } from '@/utils/settings/primaryName'
+import { readNameResolver } from '@/utils/records/v2Resolver'
+import { config } from '@/lib/config'
 
-export const useOwnedNameOptions = (address: Address) => {
+export const useOwnedNameOptions = (address: Address, excludeResolver?: Address) => {
   const queries = useQueryClient()
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search.trim(), 250)
@@ -51,11 +53,42 @@ export const useOwnedNameOptions = (address: Address) => {
     if (exact.data && !options.has(exact.data.name)) options.set(exact.data.name, exact.data)
   }
 
+  const candidates = [...options.keys()]
+  const exclusions = useQuery({
+    queryKey: ['settings', 'owned-name-resolvers', activeChain.id, address, excludeResolver, candidates],
+    enabled: !!excludeResolver && candidates.length > 0,
+    retry: false,
+    staleTime: 30_000,
+    queryFn: async ({ signal }) => {
+      const excluded: string[] = []
+
+      // Used only when the names API is unavailable or cannot list all resolver members.
+      for (let offset = 0; offset < candidates.length; offset += 5) {
+        signal.throwIfAborted()
+        const batch = candidates.slice(offset, offset + 5)
+        const bindings = await Promise.all(batch.map((name) => readNameResolver(client, name, config.ensV2Registry)))
+
+        for (const [index, binding] of bindings.entries()) {
+          if (!binding.registered || binding.resolver.toLowerCase() === excludeResolver!.toLowerCase())
+            excluded.push(batch[index])
+        }
+      }
+
+      return excluded
+    },
+  })
+  const filtering = !!excludeResolver && candidates.length > 0 && exclusions.isPending
+  const excludedNames = excludeResolver ? (exclusions.data ?? []) : []
+  const available = [...options.values()].filter((option) => !excludedNames.includes(option.name))
+
   return {
     search,
     setSearch,
     names,
-    options: [...options.values()],
-    searching: search.trim() !== debouncedSearch || names.isFetching || exact.isFetching,
+    exclusions,
+    excludedNames,
+    filtering,
+    options: excludeResolver && !exclusions.data ? [] : available,
+    searching: search.trim() !== debouncedSearch || names.isFetching || exact.isFetching || filtering,
   }
 }

@@ -54,14 +54,14 @@ export const usePermissionedResolver = () => {
     })
   }
 
-  const getResolverData = (version: bigint) => {
-    if (!address) throw new Error('No wallet detected. Connect your wallet!')
+  const getResolverData = (version: bigint, owner = address) => {
+    if (!owner) throw new Error('No wallet detected. Connect your wallet!')
 
     const resolverSalt = BigInt(
       keccak256(
         encodeAbiParameters(
           [{ type: 'bytes32' }, { type: 'address' }, { type: 'uint256' }],
-          [keccak256(stringToHex('OwnedResolver')), address, version]
+          [keccak256(stringToHex('OwnedResolver')), owner, version]
         )
       )
     )
@@ -69,7 +69,7 @@ export const usePermissionedResolver = () => {
     const resolverInitData = encodeFunctionData({
       abi: PERMISSIONED_RESOLVER_ABI,
       functionName: 'initialize',
-      args: [[{ account: address, roleBitmap: ALL_ROLES }], []],
+      args: [[{ account: owner, roleBitmap: ALL_ROLES }], []],
     })
 
     return {
@@ -78,8 +78,8 @@ export const usePermissionedResolver = () => {
     }
   }
 
-  const isUserResolverDeployed = async (version: number = 0): Promise<Address | false> => {
-    const resolverData = getResolverData(BigInt(version))
+  const isUserResolverDeployed = async (version: number = 0, owner = address): Promise<Address | false> => {
+    const resolverData = getResolverData(BigInt(version), owner)
 
     const proxyLogic = await publicClient.readContract({
       address: config.ensV2VerifiableFactory,
@@ -87,10 +87,10 @@ export const usePermissionedResolver = () => {
       functionName: 'proxyLogic',
     })
 
-    if (!(resolverData && proxyLogic && address)) return false
+    if (!(resolverData && proxyLogic && owner)) return false
 
     const proxyAddress = predictProxyAddress({
-      deployer: address,
+      deployer: owner,
       factoryAddress: config.ensV2VerifiableFactory,
       proxyLogic,
       salt: resolverData.resolverSalt,

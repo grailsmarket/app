@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Check } from 'ethereum-identity-kit'
 import Input from '@/components/ui/input'
 import Textarea from '@/components/ui/textarea'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -17,9 +16,9 @@ import { useBulkEditRecords } from '@/hooks/records/useBulkEditRecords'
 import { ADDRESS_RECORD_KEYS } from '@/constants/ens/records'
 import ImageUploadModal from './components/imageUploadModal'
 import { ADDRESS_LABELS, SOCIAL_RECORDS } from '@/constants/ens/records'
-import TransactionStatusRow from './components/TransactionStatusRow'
 import TabSelector from '@/components/ui/tabSelector'
-import { activeChain } from '@/constants/web3/chain'
+import { TxScreenPanel } from './components/txScreen'
+import { getBulkScreen } from './components/recordsTxScreens'
 
 interface BulkEditRecordsModalProps {
   names: string[]
@@ -56,6 +55,7 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
     step,
     hasChanges,
     errorMessage,
+    errorDetails,
     transactionStatuses,
     saveRecords,
     retryTransaction,
@@ -104,10 +104,32 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
     })
   }
 
+  // A row's Retry runs while the step stays 'error', so a running transaction locks the modal too.
+  const isRetrying = transactionStatuses.some(
+    (status) => status.status === 'confirming' || status.status === 'processing'
+  )
+
   const handleClose = () => {
-    if (step === 'confirming' || step === 'processing') return
+    if (step === 'confirming' || step === 'processing' || isRetrying) return
     onClose()
   }
+
+  const screen = getBulkScreen({
+    names: managedNames,
+    step,
+    statuses: transactionStatuses,
+    error: errorMessage,
+    errorDetails,
+    onRetryTransaction: retryTransaction,
+    onTryAgain: resetToEditing,
+    onClose:
+      step === 'success'
+        ? () => {
+            onClose()
+            resetToEditing()
+          }
+        : handleClose,
+  })
 
   return (
     <>
@@ -131,86 +153,8 @@ const BulkEditRecordsModal: React.FC<BulkEditRecordsModalProps> = ({ names, onCl
             </div>
           )}
 
-          {/* Confirming / Processing state */}
-          {(step === 'confirming' || step === 'processing') && (
-            <div className='flex flex-col gap-4 p-6'>
-              <h2 className='text-2xl font-bold'>Saving Changes</h2>
-              <p className='text-neutral text-lg'>
-                {transactionStatuses.length > 1
-                  ? `Processing ${transactionStatuses.length} transactions...`
-                  : step === 'confirming'
-                    ? 'Confirm in Wallet'
-                    : 'Processing Transaction'}
-              </p>
-              <div className='flex flex-col gap-2'>
-                {transactionStatuses.map((status, i) => (
-                  <TransactionStatusRow key={i} status={status} index={i} onRetry={retryTransaction} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Success state */}
-          {step === 'success' && (
-            <div className='flex flex-col items-center gap-8 p-6'>
-              <h2 className='text-2xl font-bold'>Edit Records</h2>
-              <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <div className='flex w-full flex-col items-center gap-4'>
-                <p className='text-xl font-bold'>Records Updated Successfully!</p>
-                <p className='text-neutral text-lg'>
-                  Updated {managedNames.length} name{managedNames.length !== 1 ? 's' : ''}
-                </p>
-                {transactionStatuses
-                  .filter((s) => s.txHash)
-                  .map((s, i) => (
-                    <a
-                      key={i}
-                      href={`${activeChain.blockExplorers.default.url}/tx/${s.txHash}`}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                    >
-                      View Transaction {transactionStatuses.length > 1 ? i + 1 : ''} on Etherscan
-                    </a>
-                  ))}
-                <SecondaryButton
-                  className='w-full'
-                  onClick={() => {
-                    onClose()
-                    resetToEditing()
-                    // dispatch(clearBulkSelect())
-                  }}
-                >
-                  Close
-                </SecondaryButton>
-              </div>
-            </div>
-          )}
-
-          {/* Error state */}
-          {step === 'error' && (
-            <div className='flex flex-col gap-4 p-6'>
-              <h2 className='text-2xl font-bold'>Edit Records</h2>
-              <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-                <p className='text-red-400'>{errorMessage || 'One or more transactions failed'}</p>
-              </div>
-              <div className='flex flex-col gap-2'>
-                {transactionStatuses.map((status, i) => (
-                  <TransactionStatusRow key={i} status={status} index={i} onRetry={retryTransaction} />
-                ))}
-              </div>
-              <div className='flex w-full flex-col gap-2'>
-                <PrimaryButton onClick={resetToEditing} className='w-full'>
-                  Try Again
-                </PrimaryButton>
-                <SecondaryButton onClick={onClose} className='w-full'>
-                  Close
-                </SecondaryButton>
-              </div>
-            </div>
-          )}
+          {/* In-progress, success and error screens; the frame locks while a transaction runs (handleClose). */}
+          {screen && <TxScreenPanel screen={screen} title='Edit Records' onClose={handleClose} />}
 
           {/* Editing state */}
           {step === 'editing' && (

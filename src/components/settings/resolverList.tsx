@@ -26,7 +26,7 @@ import { VERIFIABLE_FACTORY_ABI as abi } from '@/constants/web3/abi/VerifiableFa
 import { activeChain } from '@/constants/web3/chain'
 import { formatTimeAgo } from '@/utils/time/formatTimeAgo'
 import { config } from '@/lib/config'
-import { useSettingsDirty } from './navigationGuard'
+import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import {
   QueryError,
   SettingsNotice,
@@ -133,13 +133,14 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
           aria-label={`Open resolver ${resolver.name || resolver.address}`}
           className='focus-visible:outline-primary absolute inset-0 focus-visible:outline-2 focus-visible:-outline-offset-2'
         />
-        {resolver.name && <p className='mb-1 font-semibold'>{resolver.name}</p>}
         <ResolverAddress
           address={resolver.address}
+          name={resolver.name}
+          preferred={resolver.isDefault}
           truncate={(width || 0) < 1024}
           canCopy={false}
           etherscan={false}
-          textColor='text-foreground!'
+          textColor={resolver.name ? 'text-neutral!' : 'text-foreground!'}
         />
       </td>
       <td className={tdClass}>
@@ -213,7 +214,12 @@ export const ResolverLookup = () => {
 
 const ResolverList = () => {
   const directory = useResolverDirectory()
-  const transaction = useSettingsTransaction()
+  const transaction = useSettingsTransaction({
+    title: 'Deploy Resolver',
+    successTitle: 'Resolver Deployed',
+    successMessage: 'Your resolver is ready.',
+    errorTitle: 'Deployment Failed',
+  })
   const { getResolverData } = usePermissionedResolver()
   const [deployed, setDeployed] = useState<Address>()
 
@@ -224,7 +230,8 @@ const ResolverList = () => {
 
     void transaction.run([
       {
-        label: 'Deploy resolver',
+        label: 'Deploy Resolver',
+        pendingLabel: 'Deploying Resolver',
         prepare: async () => {
           const { resolverSalt, resolverInitData } = getResolverData(BigInt(version))
 
@@ -270,10 +277,18 @@ const ResolverList = () => {
         </Link>
       )}
       <ResolverLookup />
-      {/* <p className='text-neutral text-lg'>
-        Deployed resolvers and delegated access are discovered onchain. You can also open a resolver by address.
-        Personal labels and saved registration defaults are not available yet.
-      </p> */}
+      <p className='text-neutral text-lg'>
+        Your preferred resolver is prefilled when registering names for your wallet.
+      </p>
+      {directory.preferred && !directory.preferred.hasRoles && (
+        <SettingsNotice>
+          You no longer have record-management access to your preferred resolver. It will still be prefilled during
+          registration until you change or clear this preference.
+        </SettingsNotice>
+      )}
+      {directory.preferences.isError && (
+        <QueryError error={directory.preferences.error} retry={() => directory.preferences.refetch()} />
+      )}
       {directory.owned.isError && <QueryError error={directory.owned.error} retry={() => directory.owned.refetch()} />}
       {directory.delegated.isLoading && <p className='text-neutral text-lg'>Checking shared resolvers…</p>}
       {directory.delegated.isError && (

@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Address, isAddress, zeroAddress } from 'viem'
+import { Address, Hex, isAddress, zeroAddress } from 'viem'
 import { fetchAccount } from 'ethereum-identity-kit'
 import { useAppDispatch, useAppSelector } from '@/state/hooks'
 import { setTransferModalDomains, TransferDomainType } from '@/state/reducers/modals/transferModal'
@@ -18,7 +18,34 @@ import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TransferBatch, TransferStep, TransferTransaction } from '@/types/transfer'
 import { config } from '@/lib/config'
 
-type PendingTransaction = TransferTransaction & ({ kind: 'approval' } | { kind: 'transfer'; batch: TransferBatch })
+type PendingTransaction = TransferTransaction &
+  ({ kind: 'approval'; contractName: string } | { kind: 'transfer'; batch: TransferBatch })
+
+/** What the transaction being confirmed onchain is for. */
+export type TransferProcessingKind = PendingTransaction['kind']
+
+/** An operator approval sent in this run, in order. `hash` is null until the wallet returns it. */
+export interface TransferApproval {
+  contractName: string
+  hash: Hex | null
+}
+
+/** The batch being signed or confirmed onchain. */
+export interface TransferActiveBatch {
+  version: 1 | 2
+  names: string[]
+}
+
+/** Transfer transactions planned per name version, counting the ones finished in earlier runs. */
+export type TransferBatchTotals = Record<1 | 2, number>
+
+const UNCONFIRMED_MESSAGE =
+  'The transaction was submitted, but confirmation is unavailable. Check the transaction to continue without submitting it again.'
+
+const toActiveBatch = (batch: TransferBatch): TransferActiveBatch => ({
+  version: batch.version,
+  names: batch.entries.map((entry) => entry.domain.name),
+})
 
 export const useTransferModal = (domains: TransferDomainType[], onClose: () => void) => {
   const dispatch = useAppDispatch()
@@ -28,6 +55,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
   const { prepareBatches, getRequiredApprovals, approve, simulate, transfer, publicClient } = useTransferDomains()
   const [step, setStep] = useState<TransferStep>('review')
   const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [recipientInput, setRecipientInput] = useState('')
   const input = recipientInput.trim()
   const debouncedInput = useDebounce(input, 200)
@@ -39,6 +67,10 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
   const [currentBatch, setCurrentBatch] = useState(1)
   const [totalBatches, setTotalBatches] = useState(1)
   const [hasPendingTransaction, setHasPendingTransaction] = useState(false)
+  const [processingKind, setProcessingKind] = useState<TransferProcessingKind | null>(null)
+  const [approvals, setApprovals] = useState<TransferApproval[]>([])
+  const [activeBatch, setActiveBatch] = useState<TransferActiveBatch | null>(null)
+  const [batchTotals, setBatchTotals] = useState<TransferBatchTotals | null>(null)
   const pending = useRef<PendingTransaction | null>(null)
   const submitting = useRef(false)
 
@@ -80,14 +112,24 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     setTarget(transferTarget)
     setStep('preparing')
     setError(null)
+    setErrorDetails(null)
 
     const succeeded = new Set(completedNames)
+    // Finished transfer transactions per version, including earlier runs, for the batch counters.
+    const finished: TransferBatchTotals = {
+      1: completedTransactions.filter((transaction) => transaction.version === 1).length,
+      2: completedTransactions.filter((transaction) => transaction.version === 2).length,
+    }
+    const resumed = pending.current
+    setApprovals(resumed?.kind === 'approval' ? [{ contractName: resumed.contractName, hash: resumed.hash }] : [])
 
     const confirmPending = async () => {
       const current = pending.current
       if (!current) return
 
       setTransaction(current)
+      setProcessingKind(current.kind)
+      if (current.kind === 'transfer') setActiveBatch(toActiveBatch(current.batch))
       setStep('processing')
 
       const receipt = await waitForTransaction(publicClient, current.hash)
@@ -100,6 +142,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
       }
 
       if (current.kind === 'transfer') {
+        finished[current.version] += 1
         refreshEnsQueries(queryClient, receipt)
         setCompletedTransactions((transactions) => [
           ...transactions,
@@ -118,9 +161,15 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
 
     try {
       await confirmPending()
+      // A resumed transaction has confirmed; the names are read and simulated again from here.
+      setStep('preparing')
       const remaining = domains.filter((domain) => !succeeded.has(getTransferDomainKey(domain)))
       const batches = await prepareBatches(remaining, transferTarget.sender)
       setTotalBatches(batches.length)
+      setBatchTotals({
+        1: finished[1] + batches.filter((batch) => batch.version === 1).length,
+        2: finished[2] + batches.filter((batch) => batch.version === 2).length,
+      })
 
       await Promise.all(batches.map((batch) => simulate(batch, transferTarget.sender, transferTarget.recipient)))
 
@@ -129,15 +178,18 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
 
         setCurrentBatch(index + 1)
 
-        const approvals = await getRequiredApprovals(batch, transferTarget.sender)
+        const requiredApprovals = await getRequiredApprovals(batch, transferTarget.sender)
 
-        for (const contract of approvals) {
-          setApprovingContract(contract === config.ensNameWrapper ? 'Name Wrapper' : 'ENS Registrar')
+        for (const contract of requiredApprovals) {
+          const contractName = contract === config.ensNameWrapper ? 'Name Wrapper' : 'ENS Registrar'
+          setApprovingContract(contractName)
+          setApprovals((list) => [...list, { contractName, hash: null }])
           setTransaction(null)
           setStep('approving')
 
           const hash = await approve(contract, transferTarget.sender)
-          pending.current = { kind: 'approval', version: 1, hash }
+          pending.current = { kind: 'approval', version: 1, hash, contractName }
+          setApprovals((list) => list.map((item, i) => (i === list.length - 1 ? { ...item, hash } : item)))
 
           setHasPendingTransaction(true)
           await confirmPending()
@@ -148,6 +200,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
         }
 
         setTransaction(null)
+        setActiveBatch(toActiveBatch(batch))
         setStep('confirming')
 
         const hash = await transfer(batch, transferTarget.sender, transferTarget.recipient)
@@ -158,11 +211,10 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
       }
       setStep('success')
     } catch (error) {
-      setError(
-        pending.current
-          ? 'The transaction was submitted, but confirmation is unavailable. Check the transaction to continue without submitting it again.'
-          : getTransferError(error)
-      )
+      const message = pending.current ? UNCONFIRMED_MESSAGE : getTransferError(error)
+      const raw = error instanceof Error ? error.message : null
+      setError(message)
+      setErrorDetails(!pending.current && raw && raw !== message ? raw : null)
       if (!pending.current && succeeded.size === 0) setTarget(null)
       setStep('error')
     } finally {
@@ -180,6 +232,7 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
   return {
     step,
     error,
+    errorDetails,
     account,
     recipient,
     recipientInput,
@@ -199,10 +252,15 @@ export const useTransferModal = (domains: TransferDomainType[], onClose: () => v
     currentBatch,
     totalBatches,
     hasPendingTransaction,
+    processingKind,
+    approvals,
+    activeBatch,
+    batchTotals,
     handleTransfer,
     handleClose,
     handleRetry: () => {
       setError(null)
+      setErrorDetails(null)
       setTransaction(null)
       setStep('review')
     },

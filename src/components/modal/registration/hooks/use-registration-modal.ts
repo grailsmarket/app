@@ -50,6 +50,7 @@ import { accountQueryKey } from '@/utils/queryKeys'
 import { activeChain } from '@/constants/web3/chain'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
 import { calculateDurationDiscount } from '@/utils/registrationPricing'
+import { useRegistrationResolver } from './use-registration-resolver'
 
 const useRegistrationModal = () => {
   const isClient = useIsClient()
@@ -92,7 +93,7 @@ const useRegistrationModal = () => {
   const setCustomOwner = (value: string) => {
     if (address) setOwnerInput({ wallet: address, value })
   }
-  const [resolverInput, setResolverInput] = useState<{ wallet: Address; value: string } | null>(null)
+  const [resolverInput, setResolverInput] = useState<{ wallet: Address; owner?: Address; value: string } | null>(null)
   const [isDeployingResolver, setIsDeployingResolver] = useState(false)
   const [resolverDeploymentHash, setResolverDeploymentHash] = useState<Hex | null>(null)
   const commitInFlight = useRef(false)
@@ -101,26 +102,6 @@ const useRegistrationModal = () => {
   const [showPerNameDurations, setShowPerNameDurations] = useState(false)
   const [perNameDatePickerIndex, setPerNameDatePickerIndex] = useState<number | null>(null)
   const debouncedCustomOwner = useDebounce(customOwner, 500)
-
-  const resolverQueryKey = ['registration', 'resolver', activeChain.id, address]
-  const resolverQuery = useQuery({
-    queryKey: resolverQueryKey,
-    queryFn: () => isUserResolverDeployed(),
-    enabled: !!address && registrationState.isOpen && registrationState.flowState === 'review' && !parameters,
-    retry: false,
-    refetchOnWindowFocus: false,
-  })
-  const resolver =
-    parameters?.resolver ?? (resolverInput?.wallet === address ? resolverInput?.value : resolverQuery.data || '') ?? ''
-  const setResolver = (value: string) => {
-    if (address) setResolverInput({ wallet: address, value })
-  }
-  const resolverError =
-    resolver.trim() && !isAddress(resolver.trim())
-      ? 'Enter a valid resolver address.'
-      : !resolver.trim() && resolverQuery.isError
-        ? 'Could not check your resolver. Try again or enter an address.'
-        : null
 
   useEffect(() => {
     if (registrationState.entries.length > 0) return
@@ -139,6 +120,31 @@ const useRegistrationModal = () => {
     },
     enabled: !!customOwner,
   })
+
+  const getOwnerAddress = useCallback((): `0x${string}` | null => {
+    const value = customOwner.trim()
+    if (value) {
+      if (isAddress(value)) return value
+      if (value !== debouncedCustomOwner.trim()) return null
+      if (isAddress(account?.address ?? '')) return account!.address as `0x${string}`
+      return null
+    }
+    return address ?? null
+  }, [customOwner, debouncedCustomOwner, account, address])
+  const ownerAddress = getOwnerAddress() ?? undefined
+  const resolverSelection = useRegistrationResolver({
+    owner: ownerAddress,
+    input:
+      resolverInput && resolverInput.wallet === address && resolverInput.owner === ownerAddress
+        ? resolverInput.value
+        : null,
+    committedResolver: parameters?.resolver,
+    enabled: !!address && registrationState.isOpen && registrationState.flowState === 'review' && !parameters,
+  })
+  const { resolver, error: resolverError, getDefaultResolver } = resolverSelection
+  const setResolver = (value: string) => {
+    if (address) setResolverInput({ wallet: address, owner: ownerAddress, value })
+  }
 
   const entries = registrationState.entries
   const registrationNames = entries.map((entry) => entry.name).join(',')
@@ -484,17 +490,6 @@ const useRegistrationModal = () => {
     dispatch(reopenRegistrationModal())
   }, [dispatch])
 
-  const getOwnerAddress = useCallback((): `0x${string}` | null => {
-    const value = customOwner.trim()
-    if (value) {
-      if (isAddress(value)) return value
-      if (value !== debouncedCustomOwner.trim()) return null
-      if (isAddress(account?.address ?? '')) return account!.address as `0x${string}`
-      return null
-    }
-    return address ?? null
-  }, [customOwner, debouncedCustomOwner, account, address])
-
   const handleCommit = useCallback(
     async (chosenResolver?: Address) => {
       if (!address || entries.length === 0 || !calculationResults || commitInFlight.current) return
@@ -516,7 +511,7 @@ const useRegistrationModal = () => {
         dispatch(setRegistrationError('This saved registration has no resolver details. Close it and start again.'))
         return
       }
-      if (resolver.trim() && !isAddress(resolver.trim())) {
+      if (resolver.trim() && !isAddress(resolver.trim(), { strict: false })) {
         dispatch(setRegistrationError('Enter a valid resolver address.'))
         return
       }
@@ -529,7 +524,7 @@ const useRegistrationModal = () => {
         const selectedResolver =
           chosenResolver ??
           parameters?.resolver ??
-          (resolver.trim() ? (resolver.trim() as Address) : await isUserResolverDeployed())
+          (resolver.trim() ? (resolver.trim() as Address) : await getDefaultResolver())
         if (run !== registrationRun.current) return
 
         const commitmentParameters = {
@@ -634,7 +629,7 @@ const useRegistrationModal = () => {
       parameters,
       resolver,
       asset,
-      isUserResolverDeployed,
+      getDefaultResolver,
       secret,
       batches,
       entryDurations,
@@ -668,7 +663,7 @@ const useRegistrationModal = () => {
             if (run === registrationRun.current) dispatch(setResolverDeploymentTxHash(hash))
           }))
       if (run !== registrationRun.current) return
-      queryClient.setQueryData(resolverQueryKey, deployedResolver)
+      queryClient.setQueryData(['registration', 'resolver', activeChain.id, address], deployedResolver)
       setResolver(deployedResolver)
       setResolverDeploymentHash(deploymentHash)
       // Stays on the resolver step: it shows the deployment as done, and Register starts the commitment.
@@ -934,7 +929,9 @@ const useRegistrationModal = () => {
     resolver,
     setResolver,
     resolverError,
-    isCheckingResolver: resolverQuery.isLoading && !resolver.trim(),
+    isCheckingResolver: resolverSelection.isCheckingResolver,
+    resolverOptions: resolverSelection.options,
+    resolverWarning: resolverSelection.warning,
     isDeployingResolver,
     isResolverDeployed:
       registrationState.flowState === 'resolver' && !!parameters?.resolver && parameters.resolver !== zeroAddress,

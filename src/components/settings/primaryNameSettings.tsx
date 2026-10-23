@@ -10,8 +10,10 @@ import Input from '@/components/ui/input'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
-import { useSettingsDirty } from './navigationGuard'
+import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import { QueryError, SettingsNotice } from './shared'
+import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
+import { configurationName } from '@/utils/settings/labels'
 
 const PrimaryNameSettings = () => {
   const { userAddress } = useUserContext()
@@ -19,6 +21,7 @@ const PrimaryNameSettings = () => {
   const name = editor.primary.data
   const selected = editor.selected
   const review = editor.review.data
+  const preferences = useConfigurationPreferences(review?.resolver, selected?.version === 2 && !!review?.needsAddress)
 
   useSettingsDirty(editor.editing && editor.changed, editor.transaction.busy || editor.transaction.submitted)
 
@@ -146,8 +149,8 @@ const PrimaryNameSettings = () => {
                     {selected.version === 2 && (
                       <p>
                         {review.usesDefault
-                          ? 'This changes the resolver’s default configuration'
-                          : `This changes Configuration ${review.configurationId}`}{' '}
+                          ? `This changes the resolver’s ${configurationName(preferences.data, '0')}`
+                          : `This changes ${configurationName(preferences.data, review.configurationId ?? BigInt(0))}`}{' '}
                         and affects every name using it. Use the{' '}
                         <Link href={`/${encodeURIComponent(selected.name)}`} className='text-primary underline'>
                           record editor

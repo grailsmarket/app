@@ -12,8 +12,8 @@ import Price from '@/components/ui/price'
 import { DomainOfferType } from '@/types/domains'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import PrimaryButton from '@/components/ui/buttons/primary'
-import { Check } from 'ethereum-identity-kit'
-import { useQueryClient } from '@tanstack/react-query'
+import { fetchAccount, truncateAddress } from 'ethereum-identity-kit'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import User from '@/components/ui/user'
 import { acceptOffer as acceptOfferApi } from '@/api/offers/accept'
 import { activeChain } from '@/constants/web3/chain'
@@ -36,6 +36,19 @@ import { formatPrice } from '@/utils/formatPrice'
 import { AssetType } from '@/types/assets'
 import { track } from '@/lib/analytics'
 import { config } from '@/lib/config'
+import { accountQueryKey } from '@/utils/queryKeys'
+import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import { MARKETPLACE_NAMES, getErrorParts } from '../listing/seaport-progress'
+import {
+  BusyView,
+  CloseFooter,
+  ErrorView,
+  NameSubject,
+  RetryFooter,
+  SuccessView,
+  getBusyHint,
+} from '../listing/seaport-views'
+import { getAcceptOfferBusyScreen, type AcceptOfferStep } from './offer-screens'
 
 interface AcceptOfferModalProps {
   offer: DomainOfferType | null
@@ -43,7 +56,7 @@ interface AcceptOfferModalProps {
   onClose: () => void
 }
 
-type TransactionStep = 'review' | 'approving' | 'confirming' | 'processing' | 'success' | 'error'
+type TransactionStep = AcceptOfferStep
 
 const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onClose }) => {
   const { address } = useAccount()
@@ -53,6 +66,7 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const [step, setStep] = useState<TransactionStep>('review')
   const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [gasEstimate, setGasEstimate] = useState<bigint | null>(null)
   const [gasPrice, setGasPrice] = useState<bigint | null>(null)
@@ -60,6 +74,16 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const [approveTxHash, setApproveTxHash] = useState<string | null>(null)
 
   const orderBuilder = new SeaportOrderBuilder()
+
+  // The buyer's name for the subject; shares its cache with the User chip on the review
+  const { data: buyerAccount } = useQuery({
+    queryKey: accountQueryKey(offer?.buyer_address),
+    queryFn: async () => {
+      if (!offer?.buyer_address) return null
+      return await fetchAccount(offer.buyer_address)
+    },
+    enabled: !!offer?.buyer_address,
+  })
 
   useEffect(() => {
     // Estimate gas and check approval when modal opens
@@ -74,6 +98,13 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const ensName = beautifyName(domain.name)
   // ENSv2 names are ERC1155 tokens on the ETHRegistry
   const isV2 = isEnsV2Name(offer)
+
+  const showError = (err: unknown, fallback: string) => {
+    const { message, details } = getErrorParts(err, fallback)
+    setError(message)
+    setErrorDetails(details)
+    setStep('error')
+  }
 
   const estimateGas = async () => {
     try {
@@ -172,6 +203,8 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
   const handleApprove = async () => {
     try {
       setError(null)
+      setErrorDetails(null)
+      setApproveTxHash(null)
       setStep('approving')
 
       if (!address || !publicClient || !domain) {
@@ -231,14 +264,15 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       }
     } catch (err: any) {
       console.error('Approval failed:', err)
-      setError(err.message || 'Approval failed')
-      setStep('error')
+      showError(err, 'Approval failed')
     }
   }
 
   const handleAcceptOffer = async () => {
     try {
       setError(null)
+      setErrorDetails(null)
+      setTxHash(null)
       setStep('confirming')
 
       if (!address || !publicClient) {
@@ -388,197 +422,150 @@ const AcceptOfferModal: React.FC<AcceptOfferModalProps> = ({ offer, domain, onCl
       }
     } catch (err: any) {
       console.error('Accept offer failed:', err)
-      setError(err.message || 'Transaction failed')
-      setStep('error')
+      showError(err, 'Transaction failed')
     }
   }
 
+  const isBusy = step === 'approving' || step === 'confirming' || step === 'processing'
+  const showPoapClaim = step === 'success' && config.canClaimPoap && !poapClaimed
+  const currencySymbol = TOKENS[offer.currency_address as keyof typeof TOKENS] as AssetType
+  const buyerLabel = buyerAccount?.ens?.name
+    ? beautifyName(buyerAccount.ens.name)
+    : truncateAddress(offer.buyer_address)
+  const sourceLabel = MARKETPLACE_NAMES[offer.source as keyof typeof MARKETPLACE_NAMES] ?? offer.source
+  const busyScreen = isBusy ? getAcceptOfferBusyScreen({ step, needsApproval, approveTxHash, txHash }) : null
+
+  const renderReview = () => (
+    <>
+      <div className='mb-4 space-y-4'>
+        <div className='flex flex-row items-center justify-between rounded-lg'>
+          <p className='font-sedan-sc text-xl'>Name</p>
+          <p className='text-xl font-semibold'>{ensName || `Token #${domain.tokenId}`}</p>
+        </div>
+
+        <div className='flex flex-row items-center justify-between rounded-lg'>
+          <p className='font-sedan-sc text-xl'>From</p>
+          <div className='max-w-2/3 text-xl'>
+            <User address={offer.buyer_address} wrapperClassName='justify-start!' />
+          </div>
+        </div>
+
+        <div className='flex flex-row items-center justify-between rounded-lg'>
+          <p className='font-sedan-sc text-xl'>Expires</p>
+          <p className='text-xl'>{new Date(offer.expires_at).toLocaleDateString()}</p>
+        </div>
+
+        {gasEstimate && gasPrice && (
+          <div className='flex flex-row items-center justify-between rounded-lg'>
+            <p className='font-sedan-sc text-xl'>Estimated Gas</p>
+            <div className='text-right'>
+              <p className='text-xl font-semibold'>
+                ~
+                {((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
+                  ? '<0.001'
+                  : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)}{' '}
+                ETH
+              </p>
+              <p className='text-sm text-gray-400'>
+                {gasEstimate.toString()} units @ {(Number(gasPrice) / 10 ** 9).toFixed(2)} gwei
+              </p>
+            </div>
+          </div>
+        )}
+        <PriceBreakdown offer={offer} />
+      </div>
+
+      {needsApproval && (
+        <div className='text-md p-sm mb-2 rounded-lg text-center'>
+          You need to approve Seaport to transfer your NFT. This is a one time approval.
+        </div>
+      )}
+    </>
+  )
+
   const getModalContent = () => {
+    if (busyScreen) return <BusyView screen={busyScreen} />
+
+    switch (step) {
+      case 'success':
+        if (showPoapClaim) return <ClaimPoap />
+
+        return (
+          <SuccessView
+            title='Offer Accepted'
+            message={`You sold ${ensName} for ${formatPrice(offer.offer_amount_wei, currencySymbol)} ${currencySymbol}.`}
+            links={txHash ? [{ key: 'sale', label: 'View on Etherscan', hash: txHash }] : undefined}
+          />
+        )
+
+      case 'error':
+        return <ErrorView title='Transaction Failed' error={error} details={errorDetails} />
+
+      default:
+        return renderReview()
+    }
+  }
+
+  const getFooter = () => {
     switch (step) {
       case 'review':
         return (
           <>
-            <div className='mb-4 space-y-4'>
-              <div className='flex flex-row items-center justify-between rounded-lg'>
-                <p className='font-sedan-sc text-xl'>Name</p>
-                <p className='text-xl font-semibold'>{ensName || `Token #${domain.tokenId}`}</p>
-              </div>
-
-              <div className='flex flex-row items-center justify-between rounded-lg'>
-                <p className='font-sedan-sc text-xl'>From</p>
-                <div className='max-w-2/3 text-xl'>
-                  <User address={offer.buyer_address} wrapperClassName='justify-start!' />
-                </div>
-              </div>
-
-              <div className='flex flex-row items-center justify-between rounded-lg'>
-                <p className='font-sedan-sc text-xl'>Expires</p>
-                <p className='text-xl'>{new Date(offer.expires_at).toLocaleDateString()}</p>
-              </div>
-
-              {gasEstimate && gasPrice && (
-                <div className='flex flex-row items-center justify-between rounded-lg'>
-                  <p className='font-sedan-sc text-xl'>Estimated Gas</p>
-                  <div className='text-right'>
-                    <p className='text-xl font-semibold'>
-                      ~
-                      {((gasEstimate * gasPrice) / BigInt(10 ** 18)).toString() === '0'
-                        ? '<0.001'
-                        : (Number(gasEstimate * gasPrice) / 10 ** 18).toFixed(6)}{' '}
-                      ETH
-                    </p>
-                    <p className='text-sm text-gray-400'>
-                      {gasEstimate.toString()} units @ {(Number(gasPrice) / 10 ** 9).toFixed(2)} gwei
-                    </p>
-                  </div>
-                </div>
-              )}
-              <PriceBreakdown offer={offer} />
-            </div>
-
-            {needsApproval && (
-              <div className='text-md p-sm mb-2 rounded-lg text-center'>
-                You need to approve Seaport to transfer your NFT. This is a one time approval.
-              </div>
-            )}
-
-            <div className='flex w-full flex-col gap-2'>
-              <PrimaryButton
-                onClick={needsApproval ? handleApprove : handleAcceptOffer}
-                className='w-full'
-                // disabled={isCorrectChain ? needsApproval : false}
-              >
-                {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}
-              </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
-                Close
-              </SecondaryButton>
-            </div>
-          </>
-        )
-
-      case 'approving':
-        return (
-          <>
-            <h2 className='mt-4 text-center text-xl font-bold'>Approving NFT Transfer</h2>
-            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Approving Seaport to transfer your Name</p>
-              {approveTxHash && (
-                <a
-                  href={`${activeChain.blockExplorers.default.url}/tx/${approveTxHash}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                >
-                  View on Etherscan
-                </a>
-              )}
-            </div>
-          </>
-        )
-
-      case 'confirming':
-        return (
-          <>
-            <h2 className='mt-4 text-center text-xl font-bold'>Confirm in Wallet</h2>
-            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Please confirm the transaction in your wallet</p>
-            </div>
-          </>
-        )
-
-      case 'processing':
-        return (
-          <>
-            <h2 className='mt-4 text-center text-xl font-bold'>Processing Transaction</h2>
-            <div className='flex flex-col items-center justify-center gap-8 pt-8 pb-4 text-center'>
-              <div className='border-primary inline-block h-12 w-12 animate-spin rounded-full border-b-2'></div>
-              <p className='text-neutral text-lg'>Transaction submitted</p>
-              {txHash && (
-                <a
-                  href={`${activeChain.blockExplorers.default.url}/tx/${txHash}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-primary hover:text-primary/80 text-lg underline transition-colors'
-                >
-                  View on Etherscan
-                </a>
-              )}{' '}
-            </div>
-          </>
-        )
-
-      case 'success':
-        return (
-          <>
-            <div className='flex flex-col items-center justify-between gap-2 py-4 text-center'>
-              <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <div className='mb-2 text-xl font-bold'>Offer Accepted!</div>
-              <p className='flex flex-row items-center gap-1 text-gray-400'>
-                You have successfully sold {ensName} for
-                <Price
-                  price={offer.offer_amount_wei}
-                  currencyAddress={offer.currency_address}
-                  fontSize='text-base'
-                  iconSize='14px'
-                />
-              </p>
-            </div>
-            <SecondaryButton onClick={onClose} className='w-full'>
-              <p className='text-label text-lg font-bold'>Close</p>
+            <PrimaryButton
+              onClick={needsApproval ? handleApprove : handleAcceptOffer}
+              className={modalPrimaryActionClassName}
+              // disabled={isCorrectChain ? needsApproval : false}
+            >
+              {needsApproval ? 'Approve NFT Transfer' : 'Accept Offer'}
+            </PrimaryButton>
+            <SecondaryButton onClick={onClose} className={modalActionClassName}>
+              Close
             </SecondaryButton>
           </>
         )
 
+      case 'success':
+        return showPoapClaim ? null : <CloseFooter onClose={onClose} />
+
       case 'error':
-        return (
-          <>
-            <div className='mb-4 rounded-lg border border-red-500/20 bg-red-900/20 p-4'>
-              <h2 className='mb-4 text-2xl font-bold text-red-400'>Transaction Failed</h2>
-              <p className='line-clamp-6 text-red-400'>{error || 'An unknown error occurred'}</p>
-            </div>
-            <div className='flex w-full flex-col gap-2'>
-              <PrimaryButton onClick={() => setStep('review')} className='w-full'>
-                Try Again
-              </PrimaryButton>
-              <SecondaryButton onClick={onClose} className='w-full'>
-                Close
-              </SecondaryButton>
-            </div>
-          </>
-        )
+        return <RetryFooter onRetry={() => setStep('review')} onClose={onClose} />
+
+      default:
+        return null
     }
   }
 
   return (
-    <div
-      onClick={() => {
-        if (step === 'review' || step === 'error') {
-          onClose()
-        }
-      }}
-      className='fixed inset-0 z-50 flex h-dvh w-screen items-end justify-end bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:p-4'
+    <ModalShell
+      title={showPoapClaim ? undefined : 'Accept Offer'}
+      onClose={onClose}
+      locked={isBusy}
+      // As today: the scrim closes the review and the error
+      dismissible={step === 'review' || step === 'error'}
+      stageKey={isBusy ? 'progress' : showPoapClaim ? 'poap' : step}
+      subject={
+        showPoapClaim || step === 'review' ? null : (
+          <NameSubject
+            names={[{ name: domain.name, tokenId: domain.tokenId, version: offer.version }]}
+            compact={isBusy || step === 'error'}
+            meta={step === 'success' ? `Sold to ${buyerLabel}` : `Offer from ${buyerLabel} · ${sourceLabel}`}
+            price={
+              <Price
+                price={offer.offer_amount_wei}
+                currencyAddress={offer.currency_address}
+                fontSize='text-xl font-bold'
+                iconSize='16px'
+                alignTooltip='right'
+              />
+            }
+          />
+        )
+      }
+      footer={getFooter()}
+      footerHint={busyScreen ? getBusyHint(busyScreen) : undefined}
     >
-      <div
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className='border-tertiary bg-background relative flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-y-auto border-t p-6 transition-all duration-300 md:max-w-md md:rounded-md md:border-2 starting:translate-y-full md:starting:translate-y-0'
-      >
-        {step === 'success' && config.canClaimPoap && !poapClaimed ? (
-          <ClaimPoap />
-        ) : (
-          <>
-            <h2 className='font-sedan-sc mb-6 min-h-6 text-center text-3xl'>Accept Offer</h2>
-            {getModalContent()}
-          </>
-        )}
-      </div>
-    </div>
+      {getModalContent()}
+    </ModalShell>
   )
 }
 

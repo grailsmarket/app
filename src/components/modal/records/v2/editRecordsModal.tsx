@@ -6,15 +6,19 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import TabSelector from '@/components/ui/tabSelector'
 import Dropdown from '@/components/ui/dropdown'
-import { activeChain } from '@/constants/web3/chain'
 import { cn } from '@/utils/tailwind'
+import { beautifyName } from '@/lib/ens'
 import RecordForm from './recordForm'
 import Input from '@/components/ui/input'
-import { Check, Cross, ShortArrow } from 'ethereum-identity-kit'
+import { Cross, ShortArrow } from 'ethereum-identity-kit'
 import { useV2RoleEditor, useV2RoleTransaction } from '@/hooks/records/useV2Roles'
 import RolesEditor from './rolesEditor'
 import DiscardChangesModal from '../components/discardChangesModal'
 import { buildRoleTransactions } from '@/utils/records/v2RoleDrafts'
+import { TxScreenPanel, plural, shortAddress } from '../components/txScreen'
+import { getRolesScreen, getV2EditorScreen } from '../components/recordsTxScreens'
+import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
+import { configurationName, resolverDefaultName } from '@/utils/settings/labels'
 
 const V2EditRecordsModal = ({
   name,
@@ -27,12 +31,16 @@ const V2EditRecordsModal = ({
 }) => {
   const [tab, setTab] = useState<string>(defaultTab)
   const editor = useV2EditRecords(name, tab !== 'roles')
+  const preferences = useConfigurationPreferences(editor.binding?.resolver, editor.resolverExists && tab === 'records')
   const roles = useV2RoleEditor(name, tab === 'roles')
   const roleTransaction = useV2RoleTransaction(name, roles.onConfirmed)
   const [rolesOpened, setRolesOpened] = useState(defaultTab === 'roles')
   const [discardAction, setDiscardAction] = useState<'close' | 'resolver' | null>(null)
   const [resolverFocused, setResolverFocused] = useState(false)
   const [configExpanded, setConfigExpanded] = useState(false)
+  // What the running save changes, captured on click: the drafts are cleared once it succeeds.
+  const [recordsRun, setRecordsRun] = useState<{ meta?: string; message?: string }>({})
+  const [roleChangeCount, setRoleChangeCount] = useState(0)
   const contentRef = useRef<HTMLDivElement>(null)
   const busy = editor.isBusy || roleTransaction.busy
   const hasRecordChanges = editor.step !== 'success' && editor.hasChanges
@@ -77,15 +85,82 @@ const V2EditRecordsModal = ({
       resolver.address.toLowerCase().includes(editor.resolverInput.toLowerCase()) ||
       resolver.name?.toLowerCase().includes(editor.resolverInput.toLowerCase())
   )
+  const resolverLabel = editor.resolvers.find(
+    (resolver) => resolver.address.toLowerCase() === editor.resolverInput.toLowerCase()
+  )?.name
   const configurationLabel =
     editor.selectedId === BigInt(0)
-      ? `Resolver default${catalog?.defaultRecordId ? ` · ID ${catalog.defaultRecordId}` : ' · empty'}`
-      : `Configuration ${editor.selectedId}`
-  const transactionLink = editor.explorerUrl && (
-    <a className='text-primary text-sm underline' href={editor.explorerUrl} target='_blank' rel='noreferrer'>
-      View transaction on {activeChain.blockExplorers.default.name}
-    </a>
-  )
+      ? resolverDefaultName(preferences.data, catalog?.defaultRecordId)
+      : configurationName(preferences.data, editor.selectedId)
+  const saveRecords = () => {
+    const display = beautifyName(name)
+    const changed = editor.records.filter((row) => row.value !== row.initialValue).length
+    const isDefault = editor.selectedId === BigInt(0)
+    const relinks = !!catalog && editor.mode === 'shared' && editor.selectedId !== catalog.linkedRecordId
+    setRecordsRun({
+      meta: [
+        changed > 0 && plural(changed, 'record change'),
+        editor.mode !== 'shared' ? 'New configuration' : isDefault ? 'Resolver default' : configurationLabel,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      message:
+        editor.mode !== 'shared'
+          ? `${display} is linked to its new configuration.`
+          : relinks
+            ? `${display} now uses ${isDefault ? 'the resolver default' : configurationLabel}.`
+            : isDefault
+              ? 'Every unlinked name on this resolver now uses these records.'
+              : `Every name linked to ${configurationLabel} now uses these records.`,
+    })
+    void editor.save()
+  }
+  const saveRoles = () => {
+    setRoleChangeCount(roles.changes.length)
+    void roleTransaction.submit(roles.changes)
+  }
+  const recordsScreen = getV2EditorScreen({
+    name,
+    step: editor.step,
+    phase: editor.phase,
+    operation: editor.operation,
+    txHash: editor.txHash,
+    pending: !!editor.pending,
+    error: editor.error,
+    errorDetails: editor.errorDetails,
+    meta:
+      editor.operation === 'records'
+        ? recordsRun.meta
+        : editor.operation === 'resolver'
+          ? `${resolverLabel ? `${resolverLabel} · ` : ''}Resolver ${shortAddress(editor.resolverInput)}`
+          : 'New resolver',
+    successMessage: recordsRun.message,
+    draftsRemain: roles.hasChanges || editor.hasResolverChanges,
+    onBack: editor.retry,
+    onCheck: editor.retry,
+    onReload: async () => {
+      await editor.refresh()
+      editor.retry()
+    },
+    onClose: close,
+  })
+  const rolesScreen = getRolesScreen({
+    name,
+    step: roleTransaction.step,
+    phase: roleTransaction.phase,
+    runTotal: roleTransaction.runTotal,
+    hashes: roleTransaction.runHashes,
+    submittedHash: roleTransaction.pending?.hash ?? null,
+    pending: !!roleTransaction.pending,
+    changeCount: roleChangeCount,
+    error: roleTransaction.error,
+    errorDetails: roleTransaction.errorDetails,
+    onBack: roleTransaction.reset,
+    onCheck: saveRoles,
+    onClose: close,
+  })
+  // The busy flow first; otherwise a records result, then a permissions result.
+  const screen = roleTransaction.busy ? rolesScreen : (recordsScreen ?? rolesScreen)
 
   return (
     <>
@@ -112,90 +187,19 @@ const V2EditRecordsModal = ({
             <button
               type='button'
               aria-label='Close record editor'
-              disabled={editor.isBusy || roleTransaction.busy}
+              disabled={busy}
               onClick={close}
-              className='hover:bg-secondary rounded-md text-xl disabled:opacity-50'
+              className={cn(
+                'hover:bg-secondary rounded-md text-xl disabled:opacity-50',
+                busy && 'pointer-events-none disabled:opacity-0'
+              )}
             >
               <Cross className='h-3.5 w-3.5' />
             </button>
           </div>
-          {busy ? (
-            <div className='flex min-h-0 flex-1 flex-col items-center justify-center-safe gap-5 overflow-y-auto overscroll-contain p-8'>
-              <div className='border-primary h-10 w-10 animate-spin rounded-full border-b-2' />
-              <h3 className='text-xl font-bold'>
-                {roleTransaction.busy
-                  ? 'Saving permissions'
-                  : editor.operation === 'deploy'
-                    ? 'Deploying resolver'
-                    : 'Saving changes'}
-              </h3>
-              <p className='text-lg'>
-                {(roleTransaction.busy ? roleTransaction.step : editor.step) === 'confirming'
-                  ? 'Confirm in your wallet'
-                  : 'Waiting for confirmation'}
-              </p>
-              {roleTransaction.busy && roleTransaction.progress.total > 1 && (
-                <p className='text-neutral text-lg'>
-                  Transaction {roleTransaction.progress.current} of {roleTransaction.progress.total}
-                </p>
-              )}
-              {roleTransaction.busy
-                ? roleTransaction.explorerUrl && (
-                    <a
-                      className='text-primary text-lg underline'
-                      href={roleTransaction.explorerUrl}
-                      target='_blank'
-                      rel='noreferrer'
-                    >
-                      View transaction
-                    </a>
-                  )
-                : transactionLink}
-            </div>
-          ) : editor.step === 'success' ? (
-            <div className='flex min-h-0 flex-1 flex-col items-center justify-center-safe gap-5 overflow-y-auto overscroll-contain p-6'>
-              <div className='bg-primary mx-auto flex w-fit items-center justify-center rounded-full p-2'>
-                <Check className='text-background h-6 w-6' />
-              </div>
-              <p className='text-xl font-semibold'>Changes saved</p>
-              {transactionLink}
-              {(roles.hasChanges || editor.hasResolverChanges) && (
-                <SecondaryButton className='w-full' onClick={editor.retry}>
-                  Back to editor
-                </SecondaryButton>
-              )}
-              <SecondaryButton className='w-full' onClick={close}>
-                Close
-              </SecondaryButton>
-            </div>
-          ) : editor.step === 'error' ? (
-            <div className='flex min-h-0 flex-1 flex-col justify-center-safe gap-4 overflow-y-auto overscroll-contain p-6'>
-              <p className='text-red-400' role='alert'>
-                {editor.error}
-              </p>
-              {editor.pending && (
-                <p className='text-neutral text-sm'>
-                  Your transaction was submitted. Check its confirmation before sending another transaction.
-                </p>
-              )}
-              {transactionLink}
-              <PrimaryButton onClick={editor.retry}>
-                {editor.pending ? 'Check transaction' : 'Back to editor'}
-              </PrimaryButton>
-              {!editor.pending && (
-                <SecondaryButton
-                  onClick={async () => {
-                    await editor.refresh()
-                    editor.retry()
-                  }}
-                >
-                  Reload records
-                </SecondaryButton>
-              )}
-              <SecondaryButton className='w-full' onClick={close}>
-                Close
-              </SecondaryButton>
-            </div>
+          {screen ? (
+            // In-progress, success and error screens inside the editor's own frame, which stays locked while busy.
+            <TxScreenPanel screen={screen} center />
           ) : (
             <>
               <div className='shrink-0 px-4 pt-4 sm:px-6'>
@@ -238,6 +242,7 @@ const V2EditRecordsModal = ({
                       disabled={!editor.binding?.canSetResolver}
                       placeholder='0x…'
                     />
+                    {resolverLabel && <p className='text-neutral text-lg'>{resolverLabel}</p>}
                     {resolverFocused && options.length > 0 && (
                       <div className='border-tertiary max-h-36 overflow-y-auto rounded-md border'>
                         {options.map((resolver) => (
@@ -312,22 +317,20 @@ const V2EditRecordsModal = ({
                           {editor.mode === 'shared'
                             ? configurationLabel
                             : editor.mode === 'copy'
-                              ? `New configuration · copy (configuration ${editor.selected})`
+                              ? `New configuration · copy (${configurationName(preferences.data, editor.selected)})`
                               : 'New configuration · empty'}
                         </span>
                         <ShortArrow className={cn('h-3 w-3 transition-transform', !configExpanded && 'rotate-180')} />
                       </button>
                       {configExpanded && (
                         <div className='mt-3 flex flex-col gap-3'>
-                          <div className='bg-secondary border-tertiary rounded-md border p-2'>
-                            <p className='text-neutral text-md font-medium'>
-                              {editor.mode === 'shared'
-                                ? editor.selectedId === BigInt(0)
-                                  ? 'Editing these defaults affects every unlinked name using this resolver.'
-                                  : 'Editing this configuration affects every name linked to it.'
-                                : 'Saving creates a separate configuration and links this name to it.'}
-                            </p>
-                          </div>
+                          {editor.mode !== 'shared' && (
+                            <div className='bg-secondary border-tertiary rounded-md border p-2'>
+                              <p className='text-neutral text-md font-medium'>
+                                Saving creates a separate configuration and links this name to it.
+                              </p>
+                            </div>
+                          )}
                           <div className='flex flex-col gap-2'>
                             <Dropdown
                               label='Configuration'
@@ -336,10 +339,13 @@ const V2EditRecordsModal = ({
                               disabled={!catalog.canLink}
                               onSelect={(value) => editor.changeView('shared', String(value))}
                               options={[
-                                { value: '0', label: 'Use resolver default' },
+                                {
+                                  value: '0',
+                                  label: `Use ${resolverDefaultName(preferences.data, catalog.defaultRecordId)}`,
+                                },
                                 ...ids.map((id) => ({
                                   value: id,
-                                  label: `Configuration ${id}${id === catalog.defaultRecordId.toString() ? ' (resolver default)' : ''}`,
+                                  label: `${configurationName(preferences.data, id)}${id === catalog.defaultRecordId.toString() ? ' (resolver default)' : ''}`,
                                 })),
                               ]}
                             />
@@ -435,9 +441,22 @@ const V2EditRecordsModal = ({
               </div>
               <div className='border-tertiary flex shrink-0 flex-col gap-2 border-t p-4 sm:px-6'>
                 {tab === 'records' && editor.resolverExists && (
-                  <PrimaryButton className='w-full' onClick={editor.save} disabled={!editor.canSave}>
-                    {editor.mode === 'shared' ? 'Save changes' : 'Create configuration'}
-                  </PrimaryButton>
+                  <>
+                    {editor.mode === 'shared' &&
+                      !editor.isLoading &&
+                      !editor.loadError &&
+                      (editor.configurationNameCount ?? 0) > 1 && (
+                        <p
+                          className='bg-secondary border-tertiary text-grace text-md rounded-md border p-3'
+                          role='status'
+                        >
+                          Updating these records affects all names using this configuration.
+                        </p>
+                      )}
+                    <PrimaryButton className='w-full' onClick={saveRecords} disabled={!editor.canSave}>
+                      {editor.mode === 'shared' ? 'Save changes' : 'Create configuration'}
+                    </PrimaryButton>
+                  </>
                 )}
                 {tab === 'roles' && (
                   <>
@@ -448,7 +467,7 @@ const V2EditRecordsModal = ({
                     )}
                     <PrimaryButton
                       className='w-full'
-                      onClick={() => roleTransaction.submit(roles.changes)}
+                      onClick={saveRoles}
                       disabled={busy || roles.walletChanged || (!roles.hasChanges && !roleTransaction.pending)}
                     >
                       {roleTransaction.pending ? 'Check transaction' : 'Save changes'}

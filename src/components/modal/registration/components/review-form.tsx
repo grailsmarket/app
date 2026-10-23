@@ -18,6 +18,7 @@ import CustomOwnerSection from './custom-owner-section'
 import ResolverSection from './resolver-section'
 import CostSummary from './cost-summary'
 import { registrationAssets } from '@/constants/web3/tokens'
+import type { Resolver } from '@/types/ens'
 
 interface ReviewFormProps {
   isBulk: boolean
@@ -43,6 +44,8 @@ interface ReviewFormProps {
   resolver: string
   setResolver: (value: string) => void
   resolverError: string | null
+  resolverOptions: Resolver[]
+  resolverWarning: string | null
   isCheckingResolver: boolean
   hasRegistrationParameters: boolean
   calculationResults: CalculationResults | null
@@ -83,6 +86,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   resolver,
   setResolver,
   resolverError,
+  resolverOptions,
+  resolverWarning,
   isCheckingResolver,
   hasRegistrationParameters,
   calculationResults,
@@ -158,6 +163,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           setResolver={setResolver}
           isLoading={isCheckingResolver}
           error={resolverError}
+          options={resolverOptions}
+          warning={resolverWarning}
         />
       </fieldset>
       <CostSummary

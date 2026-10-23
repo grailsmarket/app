@@ -29,10 +29,10 @@ export const getConfigurationNames = async ({
 }: GetConfigurationNamesParams) => {
   if (!details || !configurations) throw new Error('The resolver API is unavailable.')
 
-  // The API only accepts positive IDs. Unlinked names without a default have no names route yet.
   const defaultId = BigInt(details.default_record_id ?? 0)
-  if ((id === undefined || id === BigInt(0)) && defaultId === BigInt(0) && details.unlinked_name_count !== 0)
-    throw new Error('The API cannot list names using an unset resolver default.')
+  // Unlinked names without a default have no API route yet. Still load every supported configuration.
+  const unlinkedNamesUnavailable =
+    (id === undefined || id === BigInt(0)) && defaultId === BigInt(0) && details.unlinked_name_count !== 0
 
   const ids =
     id === undefined
@@ -58,11 +58,15 @@ export const getConfigurationNames = async ({
 
       skipped += page.limit
       if (skipped >= page.total) break
-      if (!page.names.length) throw new Error('The names API returned an incomplete page.')
+      if (!page.names.length || page.limit <= 0) throw new Error('The names API returned an incomplete page.')
     }
   }
 
-  return [...names.values()].sort((left, right) => left.name.localeCompare(right.name))
+  return {
+    names: [...names.values()].sort((left, right) => left.name.localeCompare(right.name)),
+    total: names.size,
+    unlinkedNamesUnavailable,
+  }
 }
 
 interface GetConfigurationNamePageParams extends GetConfigurationNamesParams {
@@ -75,9 +79,9 @@ export const getConfigurationNamePage = async (params: GetConfigurationNamePageP
 
   if (id !== undefined && id > BigInt(0)) {
     const page = await getResolverRecordNames({ resolver, id, q, offset, limit, signal })
-    return { names: configurationNames(page), total: page.total }
+    return { names: configurationNames(page), total: page.total, unlinkedNamesUnavailable: false }
   }
 
-  const matches = await getConfigurationNames(params)
-  return { names: matches.slice(offset, offset + limit), total: matches.length }
+  const result = await getConfigurationNames(params)
+  return { ...result, names: result.names.slice(offset, offset + limit) }
 }

@@ -11,7 +11,7 @@ import {
   getAbiItem,
 } from 'viem'
 import { usePermissionedResolver } from '@/hooks/resolver/usePermissionedResolver'
-import { getUserResolvers } from '@/api/resolvers/getResolvers'
+import { getUserResolvers, toResolver } from '@/api/resolvers/getResolvers'
 import { activeChain } from '@/constants/web3/chain'
 import { config } from '@/lib/config'
 import { VERIFIABLE_FACTORY_ABI } from '@/constants/web3/abi/VerifiableFactory'
@@ -20,38 +20,57 @@ import { createV2RecordsClient } from '@/utils/records/client'
 import { findDeploymentBlock, readLogs } from '@/utils/records/v2Resolver'
 import { loadResolverCatalog, loadResolverState } from '@/utils/records/loadResolver'
 import type { SettingsResolver } from '@/types/ens'
+import { useResolverPreferences } from './useResolverPreferences'
+import { resolverLabel } from '@/utils/settings/labels'
 
 const deploymentEvent = getAbiItem({ abi: VERIFIABLE_FACTORY_ABI, name: 'ProxyDeployed' })
 
 const accessEvent = getAbiItem({ abi: PERMISSIONED_RESOLVER_ABI, name: 'EACRolesChanged' })
 
-export const useResolverDirectory = (includeDeployments = true) => {
+export const useResolverDirectory = (includeDeployments = true, enabled = true) => {
   const { address } = useAccount()
   const queries = useQueryClient()
   const client: PublicClient = useMemo(createV2RecordsClient, [])
   const { isUserResolverDeployed } = usePermissionedResolver()
+  const preferences = useResolverPreferences(enabled)
   const key = ['settings', 'discovered-resolvers', activeChain.id, address]
   const remembered = useQuery<SettingsResolver[]>({ queryKey: key, queryFn: () => [], enabled: false, initialData: [] })
 
-  const resolverData = useQuery({
+  const resolverQuery = useQuery({
     queryKey: ['user', 'resolvers', activeChain.id, address],
     queryFn: ({ signal }) => getUserResolvers({ userAddress: address!, signal }),
-    enabled: !!address,
+    enabled:
+      enabled && !!address && preferences.authStatus !== 'loading' && (!preferences.account || preferences.isError),
     retry: false,
     staleTime: 60_000,
   })
 
+  const resolverData =
+    preferences.data && !preferences.isError
+      ? {
+          ...resolverQuery,
+          isError: false,
+          isLoading: false,
+          data: preferences.data.resolvers.map((item) => ({
+            ...toResolver(item.resolver),
+            address: item.address,
+            name: item.label,
+            isDefault: item.isPreferred,
+          })),
+        }
+      : resolverQuery
+
   const predicted = useQuery({
     queryKey: ['registration', 'resolver', activeChain.id, address],
     queryFn: () => isUserResolverDeployed(),
-    enabled: !!address && includeDeployments,
+    enabled: enabled && !!address && includeDeployments,
     retry: false,
   })
 
   // The account endpoint lists current roles, but not past deployments after all roles were given away.
   const owned = useQuery({
     queryKey: ['settings', 'owned-resolvers', activeChain.id, address],
-    enabled: !!address && includeDeployments,
+    enabled: enabled && !!address && includeDeployments,
     retry: false,
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
@@ -91,7 +110,7 @@ export const useResolverDirectory = (includeDeployments = true) => {
   const entries = new Map<string, SettingsResolver>()
   const delegated = useQuery({
     queryKey: ['settings', 'delegated-resolvers', activeChain.id, address],
-    enabled: !!address && resolverData.isError,
+    enabled: enabled && !!address && resolverData.isError,
     retry: false,
     staleTime: 60_000,
     queryFn: async ({ signal }) => {
@@ -170,8 +189,21 @@ export const useResolverDirectory = (includeDeployments = true) => {
     entries.set(item.address.toLowerCase(), { ...entries.get(item.address.toLowerCase()), ...item })
   }
 
-  if (predicted.data && entries.has(predicted.data.toLowerCase()))
-    entries.get(predicted.data.toLowerCase())!.isDefault = true
+  const preferred = preferences.data?.preferred
+
+  if (preferred && !entries.has(preferred.address.toLowerCase()))
+    entries.set(preferred.address.toLowerCase(), {
+      address: preferred.address,
+      nameCount: null,
+      roles: [],
+      isDefault: true,
+      managesRecords: preferred.hasRoles,
+    })
+
+  for (const item of entries.values()) {
+    item.name = resolverLabel(preferences.data, item.address) ?? item.name
+    item.isDefault = item.address.toLowerCase() === preferred?.address.toLowerCase()
+  }
 
   const remember = (resolver: Address, deployed = false) =>
     queries.setQueryData<SettingsResolver[]>(key, (previous) => [
@@ -180,13 +212,21 @@ export const useResolverDirectory = (includeDeployments = true) => {
     ])
 
   return {
-    resolvers: [...entries.values()],
+    resolvers: [...entries.values()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault)),
+    preferences,
+    preferred,
     remember,
     resolverData,
     owned,
     delegated,
     predicted,
-    loading: !entries.size && (resolverData.isLoading || owned.isLoading || delegated.isLoading || predicted.isLoading),
+    loading:
+      !entries.size &&
+      (preferences.isLoading ||
+        resolverData.isLoading ||
+        owned.isLoading ||
+        delegated.isLoading ||
+        predicted.isLoading),
   }
 }
 

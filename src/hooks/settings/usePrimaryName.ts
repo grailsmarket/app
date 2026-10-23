@@ -151,7 +151,8 @@ export const usePrimaryName = () => {
 
     if (reviewed.needsAddress) {
       steps.push({
-        label: 'Update Ethereum address',
+        label: 'Update Ethereum Address',
+        pendingLabel: 'Updating Ethereum Address',
         prepare: async (account) => {
           assertAccount(account)
 
@@ -161,7 +162,8 @@ export const usePrimaryName = () => {
     }
 
     steps.push({
-      label: 'Set primary name',
+      label: 'Set Primary Name',
+      pendingLabel: 'Setting Primary Name',
       prepare: async (account) => {
         assertAccount(account)
 
@@ -178,7 +180,11 @@ export const usePrimaryName = () => {
       },
     })
 
-    void transaction.run(steps)
+    void transaction.run(steps, {
+      title: 'Set Primary Name',
+      successTitle: 'Primary Name Set',
+      successMessage: `${option.name} is now your primary name.`,
+    })
   }
 
   return {

@@ -26,9 +26,30 @@ import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TimeUnit } from '@/types/registration'
 import type { RenewalBatch, RenewalEntry, RenewalStage, RenewalTransaction } from '@/types/renewal'
 
+/** One batch of the run in flight, as the progress screen lists it. */
+export interface RenewalRunBatch {
+  version: 1 | 2
+  names: string[]
+}
+
+export interface RenewalTotals {
+  totalPriceETH: number
+  totalPriceAsset: number
+}
+
+const PENDING_TRANSACTION_ERROR =
+  'The renewal was submitted, but confirmation is unavailable. Check the transaction to continue without submitting it again.'
+
+// Thrown from the progress callback when the renewal was cancelled, so no further wallet request is made.
+class RenewalCancelledError extends Error {}
+
 export const useRenewalModal = (onClose: () => void) => {
   const dispatch = useAppDispatch()
-  const { domains: selectedDomains } = useAppSelector(selectBulkRenewalModal)
+  const { domains: storeDomains } = useAppSelector(selectBulkRenewalModal)
+  // Closing clears the selection in the store while the modal is still animating out; keep the last
+  // selection so the closing modal keeps its content instead of rendering nothing.
+  const [selectedDomains, setSelectedDomains] = useState(storeDomains)
+  if (storeDomains.length > 0 && storeDomains !== selectedDomains) setSelectedDomains(storeDomains)
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { address } = useAccount()
@@ -45,6 +66,7 @@ export const useRenewalModal = (onClose: () => void) => {
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [stage, setStage] = useState<RenewalStage>('confirming')
   const [transaction, setTransaction] = useState<RenewalTransaction | null>(null)
   const [currentBatch, setCurrentBatch] = useState(1)
@@ -53,8 +75,17 @@ export const useRenewalModal = (onClose: () => void) => {
   const [completedNames, setCompletedNames] = useState<Set<string>>(new Set())
   const [lockedEntries, setLockedEntries] = useState<RenewalEntry[] | null>(null)
   const [hasPendingTransaction, setHasPendingTransaction] = useState(false)
+  // What the progress screen shows for the run in flight: its batches, each batch's hash once sent,
+  // the token approvals it needed, and the totals it started with.
+  const [runBatches, setRunBatches] = useState<RenewalRunBatch[]>([])
+  const [runHashes, setRunHashes] = useState<(Hex | undefined)[]>([])
+  const [approvalHashes, setApprovalHashes] = useState<Hex[]>([])
+  const [runTotals, setRunTotals] = useState<RenewalTotals | null>(null)
+  const [showCancelWarning, setShowCancelWarning] = useState(false)
   const pendingBatch = useRef<{ batch: RenewalBatch; hash: Hex } | null>(null)
   const submitting = useRef(false)
+  // Set by "Cancel Renewal": the batch loop stops before its next wallet request.
+  const cancelRequested = useRef(false)
 
   const prepared = useMemo(() => {
     if (lockedEntries) return { entries: lockedEntries, error: null }
@@ -220,16 +251,34 @@ export const useRenewalModal = (onClose: () => void) => {
       return
 
     submitting.current = true
+    cancelRequested.current = false
 
     setIsLoading(true)
     setError(null)
+    setErrorDetails(null)
     setLockedEntries(prepared.entries)
     setProcessingBatches(batches.length)
+    // The loop below sends the pending batch in place of the first one.
+    setRunBatches(
+      batches.map((batch, index) => {
+        const runBatch = index === 0 && pendingBatch.current ? pendingBatch.current.batch : batch
+        return { version: runBatch.version, names: runBatch.entries.map((entry) => entry.domain.name) }
+      })
+    )
+    setRunHashes(pendingBatch.current ? [pendingBatch.current.hash] : [])
+    setApprovalHashes([])
+    setRunTotals(
+      calculationResults
+        ? { totalPriceETH: calculationResults.totalPriceETH, totalPriceAsset: calculationResults.totalPriceAsset }
+        : null
+    )
 
     const succeeded = new Set(completedNames)
 
     try {
       for (let index = 0; index < batches.length; index++) {
+        if (cancelRequested.current) break
+
         const batch = pendingBatch.current?.batch ?? batches[index]
 
         setCurrentBatch(index + 1)
@@ -240,13 +289,23 @@ export const useRenewalModal = (onClose: () => void) => {
           setTransaction(null)
           setStage('confirming')
           hash = await extend(batch, asset, (stage, hash) => {
+            // Every wallet request is announced without a hash first; after a cancel, none is made.
+            if (!hash && cancelRequested.current) throw new RenewalCancelledError()
+
             setStage(stage)
             setTransaction(hash ? { hash, version: batch.version } : null)
+            if (stage === 'approving' && hash) setApprovalHashes((hashes) => [...hashes, hash])
           })
           pendingBatch.current = { batch, hash }
           setHasPendingTransaction(true)
         }
 
+        const sentHash = hash
+        setRunHashes((hashes) => {
+          const next = [...hashes]
+          next[index] = sentHash
+          return next
+        })
         setStage('processing')
         setTransaction({ hash, version: batch.version })
 
@@ -284,14 +343,19 @@ export const useRenewalModal = (onClose: () => void) => {
         }
       }
 
-      setSuccess(true)
+      // A cancelled run has already closed the modal.
+      if (!cancelRequested.current) setSuccess(true)
     } catch (error) {
+      // The modal closed on cancel; a wallet rejection that follows ends the run quietly.
+      if (cancelRequested.current) return
+
       const message = error instanceof Error ? error.message : 'Renewal failed.'
-      setError(
-        pendingBatch.current
-          ? 'The renewal was submitted, but confirmation is unavailable. Check the transaction to continue without submitting it again.'
-          : message
-      )
+      // viem errors carry a one-line shortMessage; the full message goes behind "Error details".
+      const shortMessage = (error as { shortMessage?: unknown })?.shortMessage
+      const readable = typeof shortMessage === 'string' && shortMessage ? shortMessage : message
+
+      setError(pendingBatch.current ? PENDING_TRANSACTION_ERROR : readable)
+      setErrorDetails(pendingBatch.current || readable === message ? null : message)
 
       if (!pendingBatch.current && succeeded.size === 0) setLockedEntries(null)
     } finally {
@@ -312,6 +376,25 @@ export const useRenewalModal = (onClose: () => void) => {
     onClose()
   }
 
+  // Nothing went through: back to the form, where duration and currency can still change.
+  const handleBackToReview = () => {
+    setError(null)
+    setErrorDetails(null)
+  }
+
+  // "Cancel Renewal": no further batch or wallet request, and the modal closes now. A transaction
+  // already sent keeps confirming in the background and still removes its names from the bulk selection.
+  const handleCancelRenewal = () => {
+    setShowCancelWarning(false)
+
+    // The run ended while the warning was open: close as usual.
+    if (!submitting.current) return handleClose()
+
+    cancelRequested.current = true
+    dispatch(setBulkRenewalModalDomains([]))
+    onClose()
+  }
+
   return {
     domains,
     poapClaimed,
@@ -328,9 +411,19 @@ export const useRenewalModal = (onClose: () => void) => {
     success,
     isLoading,
     error,
+    errorDetails,
     quoteError,
     stage,
     transaction,
+    entries: prepared.entries,
+    runBatches,
+    runHashes,
+    approvalHashes,
+    runTotals,
+    showCancelWarning,
+    setShowCancelWarning,
+    handleCancelRenewal,
+    handleBackToReview,
     currentNetwork: activeChain.name,
     currentBatch,
     totalBatches: isLoading ? processingBatches : batches.length,

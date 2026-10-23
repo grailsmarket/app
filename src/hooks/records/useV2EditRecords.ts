@@ -28,6 +28,7 @@ import { markImageForRefresh } from '@/state/reducers/imageRefresh'
 import { config } from '@/lib/config'
 import { createV2RecordsClient } from '@/utils/records/client'
 import { newResolverVersion } from '@/utils/records/resolverDeployment'
+import { readConfigurationNames } from '@/utils/settings/configurations'
 
 type PendingWrite = { hash: Hex; kind: 'records' | 'resolver' | 'deploy'; sender: Address }
 
@@ -35,6 +36,13 @@ const errorText = (error: unknown) => {
   if (error instanceof BaseError) return error.shortMessage
   return error instanceof Error ? error.message : 'Could not save these changes.'
 }
+
+/** The raw error text behind errorText, for the error screen's details, when it says more. */
+const errorDetailsText = (error: unknown) =>
+  error instanceof BaseError && error.message !== error.shortMessage ? error.message : null
+
+/** While `confirming`: still checking before any prompt, or the wallet prompt is open. */
+export type V2EditPhase = 'checking' | 'wallet' | null
 
 export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const { address } = useAccount()
@@ -46,11 +54,13 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const dispatch = useAppDispatch()
   const [step, setStep] = useState<EditStep>('editing')
   const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
+  const [phase, setPhase] = useState<V2EditPhase>(null)
   const [txHash, setTxHash] = useState<Hex | null>(null)
   const [pending, setPending] = useState<PendingWrite | null>(null)
   const pendingRef = useRef<PendingWrite | null>(null)
   const busy = useRef(false)
-  const [mode, setMode] = useState<V2RecordMode>('shared')
+  const [selectedMode, setMode] = useState<V2RecordMode | null>(null)
   const [selection, setSelection] = useState<string | null>(null)
   const [draft, setDraft] = useState<{ key: string; rows: V2Record[] } | null>(null)
   const [resolverInput, setResolverInput] = useState<string | null>(null)
@@ -86,6 +96,9 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   })
 
   const catalog = { data: history.data ?? snapshot.data }
+  const mode =
+    selectedMode ??
+    (catalog.data?.linkedRecordId === BigInt(0) && catalog.data.defaultRecordId === BigInt(0) ? 'new' : 'shared')
   const selected = selection ?? catalog.data?.linkedRecordId.toString() ?? '0'
   let selectedId = BigInt(0)
   let selectionError: string | null = null
@@ -96,6 +109,49 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   } catch (error) {
     selectionError = errorText(error)
   }
+
+  const effectiveRecordId = selectedId === BigInt(0) ? catalog.data?.defaultRecordId : selectedId
+  const configurationNameCount =
+    effectiveRecordId === BigInt(0)
+      ? catalog.data?.permissions?.unlinked_name_count
+      : catalog.data?.configurations?.find((configuration) => configuration.record_id === effectiveRecordId?.toString())
+          ?.name_count
+  const configurationNames = useQuery({
+    queryKey: [
+      'v2-records',
+      'configuration-name-count',
+      activeChain.id,
+      resolver,
+      name,
+      effectiveRecordId?.toString(),
+      catalog.data?.blockNumber.toString(),
+      catalog.data?.historyComplete,
+    ],
+    queryFn: async ({ signal }) => {
+      const result = await readConfigurationNames(
+        client,
+        resolver!,
+        catalog.data!,
+        config.ensV2Registry,
+        undefined,
+        [name],
+        signal
+      )
+
+      return result.names.filter((entry) => entry.effectiveId === effectiveRecordId).length
+    },
+    enabled:
+      recordsEnabled &&
+      mode === 'shared' &&
+      resolverExists &&
+      !!catalog.data &&
+      (catalog.data.historyComplete || history.isError) &&
+      !selectionError &&
+      configurationNameCount === undefined,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  })
 
   const recordQuery = useQuery({
     queryKey: [
@@ -264,6 +320,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     setPending(write)
     if (write) {
       setTxHash(write.hash)
+      setPhase(null)
       setStep('processing')
     }
   }
@@ -271,7 +328,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
   const discardChanges = () => {
     setDraft(null)
     setSelection(null)
-    setMode('shared')
+    setMode(null)
   }
 
   const refresh = async () => {
@@ -327,6 +384,9 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
 
     busy.current = true
     setError(null)
+    setErrorDetails(null)
+    // The checks before the wallet prompt (wallet, network, resolver, simulation) report as `checking`.
+    setPhase('checking')
     setStep('confirming')
 
     try {
@@ -336,9 +396,11 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
       } else await action()
     } catch (error) {
       setError(errorText(error))
+      setErrorDetails(errorDetailsText(error))
       setStep('error')
     } finally {
       busy.current = false
+      setPhase(null)
     }
   }
 
@@ -385,6 +447,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
         chain: activeChain,
       } as const
       await client.simulateContract(request)
+      setPhase('wallet')
       const hash = await wallet.writeContract(request)
       track({ hash, kind: 'records', sender: wallet.account.address })
       await confirmPending()
@@ -421,6 +484,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
         chain: activeChain,
       } as const
       await client.simulateContract(request)
+      setPhase('wallet')
       const hash = await wallet.writeContract(request)
       track({ hash, kind: 'resolver', sender: wallet.account.address })
       await confirmPending()
@@ -430,6 +494,8 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     run(async () => {
       setOperation('deploy')
       if (!address) throw new Error('Connect your wallet before deploying a resolver.')
+      // deployResolver opens the wallet prompt right after connecting, with no checks this hook can report.
+      setPhase('wallet')
       const deployedAddress = await deployResolver(newResolverVersion(), (hash) =>
         track({ hash, kind: 'deploy', sender: address })
       )
@@ -449,6 +515,7 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     selectedId,
     binding: binding.data,
     catalog: catalog.data,
+    configurationNameCount: configurationNameCount ?? configurationNames.data,
     resolvers:
       resolverExists && !directory.resolvers.some((item) => item.address.toLowerCase() === resolver.toLowerCase())
         ? [{ address: resolver, name: null }, ...directory.resolvers]
@@ -472,7 +539,9 @@ export const useV2EditRecords = (name: string, recordsEnabled = true) => {
     canSave,
     save,
     step,
+    phase,
     error,
+    errorDetails,
     txHash,
     pending,
     isBusy,

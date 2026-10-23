@@ -23,7 +23,7 @@ export interface TxStep {
   /** A small control at the end of the row, such as Retry. */
   action?: React.ReactNode
   /** One pill per finished batch, under the label. */
-  links?: { key: string; hash: string; label?: React.ReactNode }[]
+  links?: { key: string; hash: string; href?: string; label?: React.ReactNode }[]
 }
 
 interface TxStepsProps {
@@ -86,10 +86,11 @@ const TxSteps: React.FC<TxStepsProps> = ({ steps, title, className }) => {
                 )}
               </span>
 
-              <div className='flex min-w-0 flex-1 flex-row items-center justify-between gap-0.5 pt-0.5'>
+              {/* The label keeps its width; hash pills that don't fit beside it wrap to their own line, right-aligned. */}
+              <div className='flex min-w-0 flex-1 flex-row flex-wrap items-center justify-between gap-x-2 gap-y-1 pt-0.5'>
                 <span
                   className={cn(
-                    'text-lg transition-colors duration-300',
+                    'max-w-full shrink-0 text-lg transition-colors duration-300',
                     step.status === 'upcoming' && 'text-neutral',
                     step.status === 'active' && 'font-semibold',
                     step.status === 'failed' && 'font-semibold text-red-400'
@@ -100,9 +101,9 @@ const TxSteps: React.FC<TxStepsProps> = ({ steps, title, className }) => {
                 </span>
                 {/* {showDetail && <span className='text-neutral text-md'>{step.detail}</span>} */}
                 {step.links && step.links.length > 0 && (
-                  <div className='flex flex-wrap gap-1.5'>
+                  <div className='ml-auto flex flex-wrap justify-end gap-1.5'>
                     {step.links.map((link) => (
-                      <TxLink key={link.key} hash={link.hash} />
+                      <TxLink key={link.key} hash={link.hash} href={link.href} />
                     ))}
                   </div>
                 )}

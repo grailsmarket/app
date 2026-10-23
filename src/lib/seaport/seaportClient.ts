@@ -35,6 +35,37 @@ import { checkEnsV2Transferable, isEnsV2Name, isEnsV2OperatorApproved } from './
 
 export type MarketplaceType = 'grails' | 'opensea'
 
+/**
+ * What a listing or offer run is doing right now, so a modal can show each step. Reporting only:
+ * the callback never changes which calls are made.
+ * - `checking`: reading ownership, approvals or allowances for one marketplace
+ * - `approvals`: how many approval transactions that marketplace needs (0 when already approved)
+ * - `approval-prompt` / `approval-sent`: one approval's wallet prompt, then its hash while it confirms
+ * - `signing` / `signed`: the order signature for that marketplace
+ * - `publishing` / `published`: saving the signed orders to the APIs, and each marketplace's outcome
+ */
+export type SeaportProgressEvent =
+  | { type: 'checking'; marketplace: MarketplaceType }
+  | { type: 'approvals'; marketplace: MarketplaceType; count: number }
+  | { type: 'approval-prompt'; marketplace: MarketplaceType; index: number }
+  | { type: 'approval-sent'; marketplace: MarketplaceType; index: number; hash: string }
+  | { type: 'signing'; marketplace: MarketplaceType }
+  | { type: 'signed'; marketplace: MarketplaceType }
+  | { type: 'publishing' }
+  | { type: 'published'; marketplace: MarketplaceType; ok: boolean }
+
+/**
+ * Progress of a listing or offer cancellation:
+ * - `cancel-api`: the API call that cancels Grails listings and returns the OpenSea orders to cancel
+ * - `cancel-prompt` / `cancel-sent`: the onchain Seaport cancel, then its hash once broadcast
+ * - `cancel-update`: the API update after the onchain cancel (for offers, the only step on Grails)
+ */
+export type SeaportCancelEvent =
+  | { type: 'cancel-api' }
+  | { type: 'cancel-prompt' }
+  | { type: 'cancel-sent'; hash: string | null }
+  | { type: 'cancel-update' }
+
 // Type definitions for ethers compatibility
 interface EthersTransaction {
   to?: Address
@@ -726,6 +757,7 @@ export class SeaportClient {
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
+    onProgress?: (event: SeaportProgressEvent) => void
   }): Promise<OrderWithCounter[] | { opensea: OrderWithCounter[]; grails: OrderWithCounter[] }> {
     if (!this.seaport) {
       throw new Error('Seaport client not initialized')
@@ -780,10 +812,14 @@ export class SeaportClient {
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
+    onProgress?: (event: SeaportProgressEvent) => void
   }): Promise<OrderWithCounter[]> {
     if (!this.seaport || !this.publicClient || !this.walletClient) {
       throw new Error('Seaport client not initialized')
     }
+
+    const { marketplace, onProgress } = params
+    onProgress?.({ type: 'checking', marketplace })
 
     // ENSv2 names are ERC1155 tokens on the ETHRegistry; v1 names are on the BaseRegistrar or NameWrapper
     const v2Names = params.domains.filter((domain) => isEnsV2Name(domain))
@@ -956,6 +992,13 @@ export class SeaportClient {
         }
       }
 
+      // Reporting only: one approval transaction per contract still missing the operator
+      const approvalCount = [v2NamesApproved, wrappedNamesApproved, unwrappedNamesApproved].filter(
+        (approved) => !approved
+      ).length
+      let approvalIndex = 0
+      onProgress?.({ type: 'approvals', marketplace, count: approvalCount })
+
       if (!wrappedNamesApproved || !unwrappedNamesApproved || !v2NamesApproved) {
         params.setStatus?.('approving')
 
@@ -964,6 +1007,7 @@ export class SeaportClient {
         }
 
         if (!v2NamesApproved) {
+          onProgress?.({ type: 'approval-prompt', marketplace, index: approvalIndex })
           const approvalHash = await this.walletClient.writeContract({
             account: this.walletClient.account,
             chain: this.publicClient.chain,
@@ -974,6 +1018,7 @@ export class SeaportClient {
           })
 
           params.setApproveTxHash?.(approvalHash)
+          onProgress?.({ type: 'approval-sent', marketplace, index: approvalIndex++, hash: approvalHash })
           // The listing is refused until the approval is on-chain, so wait for it
           await waitForTransaction(this.publicClient, approvalHash, undefined, {
             confirmations: 1,
@@ -982,6 +1027,7 @@ export class SeaportClient {
         }
 
         if (!wrappedNamesApproved) {
+          onProgress?.({ type: 'approval-prompt', marketplace, index: approvalIndex })
           const approvalHash = await this.walletClient.writeContract({
             account: this.walletClient.account,
             chain: this.publicClient.chain,
@@ -992,6 +1038,7 @@ export class SeaportClient {
           })
 
           params.setApproveTxHash?.(approvalHash)
+          onProgress?.({ type: 'approval-sent', marketplace, index: approvalIndex++, hash: approvalHash })
           // Wait for approval transaction to be confirmed
           // console.log('Waiting for approval transaction for wrapped names...', approvalHash)
           await waitForTransaction(this.publicClient, approvalHash, undefined, {
@@ -1001,6 +1048,7 @@ export class SeaportClient {
         }
 
         if (!unwrappedNamesApproved) {
+          onProgress?.({ type: 'approval-prompt', marketplace, index: approvalIndex })
           const approvalHash = await this.walletClient.writeContract({
             account: this.walletClient.account,
             chain: this.publicClient.chain,
@@ -1011,6 +1059,7 @@ export class SeaportClient {
           })
 
           params.setApproveTxHash?.(approvalHash)
+          onProgress?.({ type: 'approval-sent', marketplace, index: approvalIndex++, hash: approvalHash })
           // Wait for approval transaction to be confirmed
           // console.log('Waiting for approval transaction for unwrapped names...', approvalHash)
           await waitForTransaction(this.publicClient, approvalHash, undefined, {
@@ -1263,9 +1312,11 @@ export class SeaportClient {
     }
 
     params.setStatus?.('submitting')
+    onProgress?.({ type: 'signing', marketplace })
 
     // Execute all actions onchain (including getting the signature)
     const orders = await executeAllActions()
+    onProgress?.({ type: 'signed', marketplace })
     const orderArray = Array.isArray(orders) ? orders : [orders]
 
     // Add metadata to order
@@ -1721,6 +1772,7 @@ export class SeaportClient {
     expiryDate: number
     offererAddress: string
     marketplace: ('opensea' | 'grails')[]
+    onProgress?: (event: SeaportProgressEvent) => void
   }): Promise<Record<'opensea' | 'grails', OrderWithCounter>> {
     if (!this.seaport) {
       throw new Error('Seaport client not initialized')
@@ -1767,12 +1819,14 @@ export class SeaportClient {
     offererAddress: string
     marketplace: 'opensea' | 'grails'
     currency?: 'WETH' | 'USDC'
+    onProgress?: (event: SeaportProgressEvent) => void
   }): Promise<OrderWithCounter> {
     if (!this.seaport || !this.publicClient || !this.walletClient) {
       throw new Error('Seaport client not initialized')
     }
 
-    const { tokenId, price, expiryDate, offererAddress, marketplace, ensName } = params
+    const { tokenId, price, expiryDate, offererAddress, marketplace, ensName, onProgress } = params
+    onProgress?.({ type: 'checking', marketplace })
 
     // ENSv2 names: ask for the ETHRegistry ERC1155 at the name's current token ID
     const isV2 = isEnsV2Name(params)
@@ -1905,6 +1959,8 @@ export class SeaportClient {
       args: [offererAddress as `0x${string}`, approvalTarget as `0x${string}`],
     })) as bigint
 
+    onProgress?.({ type: 'approvals', marketplace, count: tokenAllowance < priceInSmallestUnit ? 1 : 0 })
+
     // If allowance is insufficient, request approval
     if (tokenAllowance < priceInSmallestUnit) {
       console.log(
@@ -1915,6 +1971,7 @@ export class SeaportClient {
         throw new Error('No account connected')
       }
 
+      onProgress?.({ type: 'approval-prompt', marketplace, index: 0 })
       const approvalHash = await this.walletClient.writeContract({
         account: this.walletClient.account,
         chain: this.publicClient.chain,
@@ -1936,6 +1993,7 @@ export class SeaportClient {
       })
 
       console.log(`${currencyName} approval transaction sent:`, approvalHash)
+      onProgress?.({ type: 'approval-sent', marketplace, index: 0, hash: approvalHash })
       await waitForTransaction(this.publicClient, approvalHash)
       console.log(`${currencyName} approval confirmed`)
     } else {
@@ -1968,7 +2026,9 @@ export class SeaportClient {
     )
 
     // Execute all actions (approval + signing)
+    onProgress?.({ type: 'signing', marketplace })
     const order = await executeAllActions()
+    onProgress?.({ type: 'signed', marketplace })
 
     console.log('Offer created:', {
       hasParameters: !!order.parameters,

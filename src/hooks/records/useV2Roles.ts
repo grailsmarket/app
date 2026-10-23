@@ -227,6 +227,9 @@ export type V2RoleEditor = ReturnType<typeof useV2RoleEditor>
 export type RoleDraftEditor = ReturnType<typeof useRoleDraftEditor>
 export type RoleSectionData = ReturnType<typeof useRoleSection>
 
+/** While `confirming`: checking the batches before a prompt, or the wallet prompt is open. */
+export type RoleTransactionPhase = 'checking' | 'wallet' | null
+
 export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes: RoleChange[]) => void) => {
   const { address } = useAccount()
   const getWalletClient = useGetWalletClient()
@@ -240,6 +243,11 @@ export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes:
   const [progress, setProgress] = useState({ current: 0, total: 0 })
   const [step, setStep] = useState<'editing' | 'confirming' | 'processing' | 'success' | 'error'>('editing')
   const [error, setError] = useState<string | null>(null)
+  // Reported for the progress, success and error screens of one submit.
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
+  const [phase, setPhase] = useState<RoleTransactionPhase>(null)
+  const [runHashes, setRunHashes] = useState<Hex[]>([])
+  const [runTotal, setRunTotal] = useState(0)
 
   const confirm = async () => {
     const write = pendingRef.current
@@ -251,6 +259,7 @@ export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes:
     if (receipt.status !== 'success')
       throw new Error('The transaction reverted. Its permission changes have not been saved.')
     setHash(receipt.transactionHash)
+    setRunHashes((previous) => [...previous, receipt.transactionHash])
     refreshEnsQueries(queryClient, receipt)
     onConfirmed(write.batch.changes)
     return write.batch.changes
@@ -260,34 +269,44 @@ export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes:
     if (locked.current) return
     locked.current = true
     setError(null)
+    setErrorDetails(null)
+    setRunHashes([])
+    setRunTotal(0)
     try {
       let remaining = changes
+      let confirmedBefore = 0
       if (pendingRef.current) {
+        setRunTotal(1)
         const completed = new Set((await confirm()).map(roleChangeKey))
         remaining = remaining.filter((change) => !completed.has(roleChangeKey(change)))
+        confirmedBefore = 1
       }
       if (!remaining.length) {
         setStep('success')
         return
       }
       setHash(null)
+      setPhase('checking')
       setStep('confirming')
       const wallet = await getWalletClient()
       if (!address || wallet.account.address.toLowerCase() !== address.toLowerCase())
         throw new Error('The connected wallet changed. Reopen the role editor.')
       await ensureChain(wallet, activeChain.id)
       const batches = buildRoleTransactions(remaining, address)
+      setRunTotal(confirmedBefore + batches.length)
       // Fail invalid drafts before sending the first transaction. Each batch is checked again immediately before signing.
       await Promise.all(
         remaining.map((change) => prepareRoleChange(client, name, config.ensV2Registry, address, change))
       )
       for (const [index, batch] of batches.entries()) {
         setProgress({ current: index + 1, total: batches.length })
+        setPhase('checking')
         setStep('confirming')
         await Promise.all(
           batch.changes.map((change) => prepareRoleChange(client, name, config.ensV2Registry, address, change))
         )
         await client.call({ account: address, to: batch.contract, data: batch.data })
+        setPhase('wallet')
         const submitted = await wallet.sendTransaction({
           account: wallet.account,
           to: batch.contract,
@@ -296,24 +315,42 @@ export const useV2RoleTransaction = (name: string | null, onConfirmed: (changes:
         })
         pendingRef.current = { hash: submitted, batch }
         setPending(pendingRef.current)
+        setPhase(null)
         setHash(submitted)
         await confirm()
       }
       setStep('success')
     } catch (error) {
       setError(roleErrorText(error))
+      setErrorDetails(error instanceof BaseError && error.message !== error.shortMessage ? error.message : null)
       setStep('error')
     } finally {
       locked.current = false
+      setPhase(null)
     }
+  }
+
+  // Leaves the success or error screen for the editor. Unsaved drafts stay queued; a pending batch stays pending.
+  const reset = () => {
+    if (locked.current) return
+    setStep('editing')
+    setError(null)
+    setErrorDetails(null)
   }
 
   return {
     submit,
+    reset,
     step,
+    phase,
     error,
+    errorDetails,
     pending,
     progress,
+    /** Hashes confirmed by the latest submit, in order. */
+    runHashes,
+    /** Transactions the latest submit sends, including a pending one it confirmed first. */
+    runTotal,
     busy: step === 'confirming' || step === 'processing',
     explorerUrl: hash ? `${activeChain.blockExplorers.default.url}/tx/${hash}` : null,
   }

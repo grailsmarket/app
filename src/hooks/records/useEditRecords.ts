@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress } from 'viem'
+import { namehash, labelhash, hexToBigInt, encodeFunctionData, toHex, isAddress, BaseError } from 'viem'
 import { useAccount, usePublicClient } from 'wagmi'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,6 +15,16 @@ import { config } from '@/lib/config'
 import { activeChain } from '@/constants/web3/chain'
 
 export type EditStep = 'editing' | 'confirming' | 'processing' | 'success' | 'error'
+
+/** The transactions a V1 save can send, in the order they are sent. */
+export type V1TxKind = 'records' | 'manager' | 'owner'
+
+/** A readable line for the error screen, plus the raw text for its details when the two differ. */
+export const describeTxError = (err: unknown, fallback = 'Transaction failed') => {
+  const message = err instanceof Error ? err.message : fallback
+  const short = err instanceof BaseError ? err.shortMessage : message
+  return { message: short, details: short !== message ? message : null }
+}
 
 export function useEditRecords(name: string | null, metadata: Record<string, string> | null) {
   const { address } = useAccount()
@@ -80,7 +90,14 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const [step, setStep] = useState<EditStep>('editing')
   const [imageUploadTarget, setImageUploadTarget] = useState<'avatar' | 'header' | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
+  // Reported for the progress screens: what this save sends, each transaction's hash and which ones confirmed.
+  const [txPlan, setTxPlan] = useState<V1TxKind[]>([])
+  const [currentTx, setCurrentTx] = useState<V1TxKind | null>(null)
+  const [txHashes, setTxHashes] = useState<Partial<Record<V1TxKind, string>>>({})
+  const [confirmedTxs, setConfirmedTxs] = useState<V1TxKind[]>([])
+  const [recordChangeCount, setRecordChangeCount] = useState(0)
 
   // Initialize state from metadata
   useEffect(() => {
@@ -315,11 +332,12 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const saveRecords = useCallback(async () => {
     if (!name || !resolverAddress || !publicClient) return
 
-    const walletClient = await getWalletClient()
-
     setStep('confirming')
     setErrorMessage(null)
+    setErrorDetails(null)
     setTxHash(null)
+    setTxHashes({})
+    setConfirmedTxs([])
 
     // Helper: resolve an input value to an effective address
     const resolveRole = (value: string, resolved: string | null): `0x${string}` | null => {
@@ -398,6 +416,21 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         )
       }
 
+      const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
+      const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
+
+      // Report the whole run up front so the progress screen can list every transaction it sends.
+      const plan: V1TxKind[] = []
+      if (calls.length > 0) plan.push('records')
+      if (managerChanged && roleManager) plan.push('manager')
+      if (ownerChanged && roleOwner && ownerAddress) plan.push('owner')
+      setTxPlan(plan)
+      setCurrentTx(plan[0] ?? null)
+      setRecordChangeCount(calls.length)
+
+      // Inside the try, so a missing or locked wallet shows the error screen instead of being swallowed.
+      const walletClient = await getWalletClient()
+
       // Submit multicall if there are resolver changes
       if (calls.length > 0) {
         const hash = await walletClient.writeContract({
@@ -409,15 +442,17 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         })
 
         setTxHash(hash)
+        setTxHashes((previous) => ({ ...previous, records: hash }))
         setStep('processing')
         const receipt = await waitForTransaction(publicClient, hash)
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
         refreshEnsQueries(queryClient, receipt)
+        setConfirmedTxs((previous) => [...previous, 'records'])
       }
 
       // --- Step 2: Manager change (setOwner on Registry, or reclaim on BaseRegistrar) ---
-      const managerChanged = roleManager.toLowerCase() !== managerAddress.toLowerCase()
       if (managerChanged && roleManager) {
+        setCurrentTx('manager')
         const effectiveManager = resolveRole(roleManager, resolvedRoleManager)
         if (!effectiveManager) {
           throw new Error(`Could not resolve "${roleManager}" to an address`)
@@ -449,15 +484,17 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         }
 
         setTxHash(hash)
+        setTxHashes((previous) => ({ ...previous, manager: hash }))
         setStep('processing')
         const receipt = await waitForTransaction(publicClient, hash)
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
         refreshEnsQueries(queryClient, receipt)
+        setConfirmedTxs((previous) => [...previous, 'manager'])
       }
 
       // --- Step 3: Owner transfer (safeTransferFrom on BaseRegistrar) ---
-      const ownerChanged = roleOwner.toLowerCase() !== ownerAddress.toLowerCase()
       if (ownerChanged && roleOwner && ownerAddress) {
+        setCurrentTx('owner')
         const effectiveOwner = resolveRole(roleOwner, resolvedRoleOwner)
         if (!effectiveOwner) {
           throw new Error(`Could not resolve "${roleOwner}" to an address`)
@@ -476,16 +513,20 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
         })
 
         setTxHash(hash)
+        setTxHashes((previous) => ({ ...previous, owner: hash }))
         setStep('processing')
         const receipt = await waitForTransaction(publicClient, hash)
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
         refreshEnsQueries(queryClient, receipt)
+        setConfirmedTxs((previous) => [...previous, 'owner'])
       }
 
       setStep('success')
     } catch (err: unknown) {
+      const { message, details } = describeTxError(err)
       setStep('error')
-      setErrorMessage(err instanceof Error ? err.message : 'Transaction failed')
+      setErrorMessage(message)
+      setErrorDetails(details)
     }
   }, [
     name,
@@ -515,6 +556,7 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
   const resetToEditing = useCallback(() => {
     setStep('editing')
     setErrorMessage(null)
+    setErrorDetails(null)
     setTxHash(null)
   }, [])
 
@@ -552,7 +594,13 @@ export function useEditRecords(name: string | null, metadata: Record<string, str
     saveRecords,
     resetToEditing,
     errorMessage,
+    errorDetails,
     txHash,
+    txPlan,
+    currentTx,
+    txHashes,
+    confirmedTxs,
+    recordChangeCount,
     resolverAddress,
     address,
     isManager,

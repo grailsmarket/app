@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { type Address, type PublicClient, labelhash, namehash, zeroAddress } from 'viem'
 import { configurationsQueryOptions, ensNameQueryOptions, resolverQueryOptions } from '@/api/resolvers/queries'
+import { configurationPreferencesQueryOptions, configurationRecords } from '@/api/resolvers/preferences'
 import { config } from '@/lib/config'
 import { REGISTRY_V2_ABI } from '@/constants/web3/abi/RegistryV2'
 import { PERMISSIONED_RESOLVER_ABI } from '@/constants/web3/abi/PermissionedResolver'
@@ -116,7 +117,21 @@ export const loadResolverCatalog = async (
   signal?: AbortSignal
 ) => {
   signal?.throwIfAborted()
+
   if (state.permissions) {
+    if (account && queries.getQueryData(['auth', 'status', account]) === 'authenticated') {
+      try {
+        const preferences = await queries.fetchQuery(configurationPreferencesQueryOptions(resolver, account))
+        signal?.throwIfAborted()
+        return {
+          ...resolverCatalog(state.permissions, account, configurationRecords(preferences)),
+          linkedRecordId: state.linkedRecordId,
+        }
+      } catch {
+        signal?.throwIfAborted()
+      }
+    }
+
     try {
       const records = await queries.fetchQuery(configurationsQueryOptions(resolver))
       signal?.throwIfAborted()
@@ -129,6 +144,7 @@ export const loadResolverCatalog = async (
   const fresh = state.permissions
     ? await readResolverState(client, resolver, 'grails-settings.invalid', account)
     : state
+
   return { ...(await readResolverHistory(client, resolver, fresh, signal)), linkedRecordId: state.linkedRecordId }
 }
 

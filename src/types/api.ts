@@ -24,6 +24,7 @@ export type APIResponseType<T> = {
 export type AuthUserType = {
   id: number
   address: string
+  preferredResolver?: Address | null
   email: string | null
   emailVerified: boolean
   telegram: string | null

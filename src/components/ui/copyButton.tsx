@@ -5,7 +5,12 @@ import Image from 'next/image'
 import CopyIcon from 'public/icons/copy.svg'
 import CheckIcon from 'public/icons/check.svg'
 
-export default function CopyButton({ value }: { value: string }) {
+interface CopyButtonProps {
+  value: string
+  size?: number
+}
+
+const CopyButton: React.FC<CopyButtonProps> = ({ value, size = 16 }) => {
   const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   useEffect(() => {
     if (status === 'idle') return
@@ -18,7 +23,7 @@ export default function CopyButton({ value }: { value: string }) {
       type='button'
       aria-label={status === 'copied' ? 'Copied to clipboard' : `Copy ${value}`}
       title={status === 'error' ? 'Could not copy. Please try again.' : status === 'copied' ? 'Copied' : 'Copy address'}
-      className='flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center opacity-70 transition-opacity hover:opacity-100'
+      className='flex h-fit w-fit shrink-0 cursor-pointer items-center justify-center opacity-70 transition-opacity hover:opacity-100'
       onClick={async (event) => {
         event.stopPropagation()
         try {
@@ -29,10 +34,9 @@ export default function CopyButton({ value }: { value: string }) {
         }
       }}
     >
-      <Image src={status === 'copied' ? CheckIcon : CopyIcon} alt='' width={16} height={16} />
-      <span className='sr-only' role='status'>
-        {status === 'copied' ? 'Copied to clipboard' : status === 'error' ? 'Could not copy. Please try again.' : ''}
-      </span>
+      <Image src={status === 'copied' ? CheckIcon : CopyIcon} alt='' width={size} height={size} />
     </button>
   )
 }
+
+export default CopyButton

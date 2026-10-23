@@ -5,7 +5,7 @@ import Input from '@/components/ui/input'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { cn } from '@/utils/tailwind'
-import { useSettingsDirty } from './navigationGuard'
+import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import PrimaryNameSettings from './primaryNameSettings'
 import { QueryError, SettingsNotice } from './shared'
 

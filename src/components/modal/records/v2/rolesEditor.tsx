@@ -274,19 +274,9 @@ const RolesEditor = ({ editor, transaction }: { editor: V2RoleEditor; transactio
           Reset role changes
         </button>
       )}
-      {transaction.step === 'success' && !editor.hasChanges && <p className='text-lg'>Permission changes saved.</p>}
-      {transaction.error && (
-        <p role='alert' className='text-lg text-red-400'>
-          {transaction.error} Unsaved edits remain queued. Any confirmed changes have already been saved.
-        </p>
-      )}
+      {/* Success and errors have their own screens in the editor ("Permissions Saved", "Permissions Partly Saved"). */}
       {transaction.pending && !transaction.busy && (
         <p className='text-neutral text-lg'>A transaction was submitted. Check its confirmation before continuing.</p>
-      )}
-      {transaction.explorerUrl && (
-        <a className='text-primary text-lg underline' href={transaction.explorerUrl} target='_blank' rel='noreferrer'>
-          View transaction
-        </a>
       )}
     </div>
   )

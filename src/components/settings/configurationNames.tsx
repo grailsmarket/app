@@ -12,6 +12,7 @@ import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import Textarea from '@/components/ui/textarea'
 import Input from '@/components/ui/input'
+import Dropdown from '@/components/ui/dropdown'
 import { useConfigurationNamePage } from '@/hooks/settings/useConfigurationNamePage'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useSettingsTransaction } from '@/hooks/settings/useSettingsTransaction'
@@ -27,8 +28,11 @@ import { config } from '@/lib/config'
 import { matchesConfigurationName } from '@/utils/settings/resolverData'
 import { cn } from '@/utils/tailwind'
 import OwnedNamePicker from './ownedNamePicker'
-import { useSettingsDirty } from './navigationGuard'
+import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import { QueryError, SettingsNotice, tableClass, tdClass, thClass, trClass } from './shared'
+import { listNames } from './transactionScreens'
+import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
+import { configurationName, resolverDefaultName } from '@/utils/settings/labels'
 
 interface ConfigurationNamesProps {
   resolver: Address
@@ -36,6 +40,7 @@ interface ConfigurationNamesProps {
 }
 
 const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id }) => {
+  const preferences = useConfigurationPreferences(resolver)
   const { address } = useAccount()
   const queries = useQueryClient()
   const [search, setSearch] = useState('')
@@ -62,7 +67,7 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
 
   useSettingsDirty(!!input.trim() || changes.length > 0, transaction.busy || transaction.submitted, changes.length)
 
-  const queue = async (names: string[], target: bigint, clearInput = false) => {
+  const queue = async (names: string[], target: bigint, clearInput = false, action: 'add' | 'unlink' = 'add') => {
     if (!address || !data.catalog || checkingNames.current || locked) return false
 
     checkingNames.current = true
@@ -71,7 +76,7 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
 
     try {
       if (target < BigInt(0) || target > data.catalog.recordCount)
-        throw new Error('Enter an existing configuration ID, or 0 to use the resolver default.')
+        throw new Error('Select an available configuration, or use the resolver default.')
 
       const added: NameAssignment[] = []
       const uniqueNames = [...new Set(names)]
@@ -86,6 +91,14 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
         )
 
         added.push(...batch)
+      }
+
+      if (id === undefined && action === 'add') {
+        const assigned = added.find(
+          (assignment) => assignment.binding.resolver.toLowerCase() === resolver.toLowerCase()
+        )
+
+        if (assigned) throw new Error(`${assigned.name} already uses this resolver.`)
       }
 
       data.rememberNames(added.map((item) => item.name))
@@ -112,7 +125,16 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
   const save = async () => {
     const steps = nameAssignmentSteps(data.client, resolver, config.ensV2Registry, changes)
     steps[steps.length - 1].confirmed = () => setChanges([])
-    if (await transaction.run(steps)) setChanges([])
+    const names = changes.map((change) => change.name)
+    const done = await transaction.run(steps, {
+      title: 'Name Assignments',
+      successMessage:
+        names.length === 1
+          ? `${names[0]} now uses this resolver and its configuration.`
+          : `${listNames(names)} now use this resolver and their configurations.`,
+    })
+
+    if (done) setChanges([])
   }
 
   if (data.state.isError) return <QueryError error={data.state.error} retry={() => data.state.refetch()} />
@@ -134,22 +156,29 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
     return data.items.some((name) => name.name === change.name) || (page === 0 && !wasAssigned)
   })
   const preview = previewNameAssignments(data.items, pageChanges, data.catalog.defaultRecordId)
-  const assignedNames = [
-    ...preview.filter((name) => name.recordId.toString() === targetId).map((name) => name.name),
-    ...changes.filter((change) => change.id.toString() === targetId).map((change) => change.name),
-  ]
+  const assignedNames =
+    id === undefined
+      ? [...data.allNames.map((name) => name.name), ...changes.map((change) => change.name)]
+      : [
+          ...preview.filter((name) => name.recordId.toString() === targetId).map((name) => name.name),
+          ...changes.filter((change) => change.id.toString() === targetId).map((change) => change.name),
+        ]
   const visible = preview.filter((name) => matchesConfigurationName(name, id, q))
+  const configurationOptions = [
+    { value: '0', label: `Use ${resolverDefaultName(preferences.data, data.catalog.defaultRecordId)}` },
+  ]
+
+  if (id === undefined) {
+    for (let recordId = BigInt(1); recordId <= data.catalog.recordCount; recordId++) {
+      configurationOptions.push({
+        value: recordId.toString(),
+        label: `${configurationName(preferences.data, recordId)}${recordId === data.catalog.defaultRecordId ? ' (resolver default)' : ''}`,
+      })
+    }
+  }
 
   return (
     <div className='flex flex-col'>
-      {data.fallback && (
-        <SettingsNotice>
-          The names API is unavailable. Showing names found onchain; some inherited names may be missing.{' '}
-          <button className='text-primary cursor-pointer underline' onClick={data.retry}>
-            Retry
-          </button>
-        </SettingsNotice>
-      )}
       {data.fallback && data.names.isError && <QueryError error={data.names.error} retry={data.retry} />}
       {data.fallback && !!data.names.data?.failed && (
         <SettingsNotice>
@@ -239,7 +268,7 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
                       onClick={() => {
                         if (changes.some((change) => change.name === name.name))
                           setChanges((previous) => previous.filter((change) => change.name !== name.name))
-                        else void queue([name.name], BigInt(0))
+                        else void queue([name.name], BigInt(0), false, 'unlink')
                       }}
                     >
                       <Image src={TrashIcon} alt='' width={16} height={18} />
@@ -292,15 +321,12 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
               ))}
             </div>
             {id === undefined && (
-              <Input
-                label='Configuration ID'
-                labelClassName='min-w-36'
+              <Dropdown
+                label='Configuration'
                 value={resolverTargetId}
-                onChange={(event) => {
-                  if (/^\d*$/.test(event.target.value)) setResolverTargetId(event.target.value)
-                }}
+                options={configurationOptions}
+                onSelect={(value) => setResolverTargetId(String(value))}
                 disabled={locked || checking}
-                placeholder='0 for resolver default'
               />
             )}
             {address && (
@@ -308,7 +334,9 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
                 <OwnedNamePicker
                   address={address}
                   assignedNames={assignedNames}
-                  disabled={locked || checking || !targetId}
+                  hideAssigned={id === undefined}
+                  excludeResolver={id === undefined && data.fallback ? resolver : undefined}
+                  disabled={locked || checking || !targetId || (id === undefined && data.loading)}
                   checking={checking}
                   onAdd={(names) => queue(names, BigInt(targetId))}
                 />

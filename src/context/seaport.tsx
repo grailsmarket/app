@@ -5,14 +5,15 @@ import { OrderStatus, OrderWithCounter } from '@opensea/seaport-js/lib/types'
 import React, { createContext, useContext, ReactNode } from 'react'
 import { DomainOfferType, MarketplaceDomainType } from '@/types/domains'
 import { ListingStatus } from '@/components/modal/listing/createListingModal'
+import type { SeaportCancelEvent, SeaportProgressEvent } from '@/lib/seaport/seaportClient'
 
 type FulfillOrderFn = ReturnType<typeof useSeaportClient>['fulfillOrder']
 
 type SeaportContextValue = {
   isInitialized: boolean
   reinitializeSeaport: () => Promise<void>
-  cancelListings: (listingIds: number[]) => Promise<void>
-  cancelOffer: (offer: DomainOfferType) => Promise<void>
+  cancelListings: (listingIds: number[], onProgress?: (event: SeaportCancelEvent) => void) => Promise<void>
+  cancelOffer: (offer: DomainOfferType, onProgress?: (event: SeaportCancelEvent) => void) => Promise<void>
   validateOrder: (order: OrderWithCounter) => Promise<boolean>
   getOrderStatus: (orderHash: string) => Promise<OrderStatus | null>
   createListing: (params: {
@@ -29,6 +30,7 @@ type SeaportContextValue = {
     setApproveTxHash?: (txHash: string | null) => void
     setCreateListingTxHash?: (txHash: string | null) => void
     setError?: (error: string | null) => void
+    onProgress?: (event: SeaportProgressEvent) => void
   }) => Promise<{ success: boolean; error?: string; result?: any }>
   createOffer: (params: {
     tokenId: string
@@ -40,6 +42,7 @@ type SeaportContextValue = {
     expiryDate: number
     currentOwner?: string
     marketplace: ('opensea' | 'grails')[]
+    onProgress?: (event: SeaportProgressEvent) => void
   }) => Promise<any>
   fulfillOrder: FulfillOrderFn
   isLoading: boolean

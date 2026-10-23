@@ -572,6 +572,8 @@ const RegistrationModal: React.FC = () => {
           resolver={modal.resolver}
           setResolver={modal.setResolver}
           resolverError={modal.resolverError}
+          resolverOptions={modal.resolverOptions}
+          resolverWarning={modal.resolverWarning}
           isCheckingResolver={modal.isCheckingResolver}
           hasRegistrationParameters={modal.hasRegistrationParameters}
           calculationResults={modal.calculationResults}

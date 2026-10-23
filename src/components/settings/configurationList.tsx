@@ -22,21 +22,20 @@ import {
   tdClass,
   thClass,
   primaryLinkClass,
-  trClass,
 } from './shared'
 import { ResolverLookup } from './resolverList'
 import { cn } from '@/utils/tailwind'
 import Label from '../ui/label'
 import { useRouter } from 'next/navigation'
+import { configurationName } from '@/utils/settings/labels'
+import { PlusIcon } from '../ui/modal/icons'
 
 interface ConfigurationRowProps {
   resolver: Address
   id: bigint
-  index: number
-  list: any[]
 }
 
-const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index, list }) => {
+const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id }) => {
   const { address } = useAccount()
   const router = useRouter()
   const { client, catalog } = useResolverCatalog(resolver)
@@ -81,11 +80,11 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id, index
   const knownNames = names.data?.names.filter((name) =>
     defaultEntry ? name.recordId === BigInt(0) : name.effectiveId === id
   )
-  const label = defaultEntry ? 'Default configuration' : `Configuration ${id}`
+  const label = configurationName(resolverData.preferences.data, id)
 
   return (
     <tr
-      className={cn(trClass(index, list), 'group hover:bg-secondary transition-colors')}
+      className={cn('group hover:bg-secondary border-tertiary border-b transition-colors')}
       onClick={() => router.push(configurationPath(resolver, id))}
     >
       <td className={cn(tdClass, 'flew-wrap flex gap-2')}>
@@ -144,13 +143,7 @@ export const ConfigurationTable = ({ resolver }: { resolver: Address }) => {
   for (let id = start; id <= catalog.recordCount && id < start + BigInt(10); id++) ids.push(id)
 
   return (
-    <div className='flex flex-col gap-4'>
-      <div className='flex flex-wrap items-center justify-between gap-3 p-3 pb-0'>
-        <p className='text-neutral text-lg'>{catalog.recordCount.toString()} configurations</p>
-        <Link href={configurationPath(resolver, 'new')} className={primaryLinkClass}>
-          Add New +
-        </Link>
-      </div>
+    <div>
       {history.isError && (
         <SettingsNotice>
           Additional record discovery is unavailable. Known configurations remain accessible.{' '}
@@ -171,27 +164,35 @@ export const ConfigurationTable = ({ resolver }: { resolver: Address }) => {
             </tr>
           </thead>
           <tbody>
-            {page === BigInt(0) && <ConfigurationRow resolver={resolver} id={BigInt(0)} index={-1} list={ids} />}
-            {ids.map((id, index) => (
-              <ConfigurationRow key={id.toString()} resolver={resolver} id={id} index={index} list={ids} />
+            {page === BigInt(0) && <ConfigurationRow resolver={resolver} id={BigInt(0)} />}
+            {ids.map((id) => (
+              <ConfigurationRow key={id.toString()} resolver={resolver} id={id} />
             ))}
           </tbody>
         </table>
       </div>
-      {(page > BigInt(0) || catalog.recordCount >= start + BigInt(10)) && (
-        <div className='flex items-center justify-end gap-3'>
-          <SecondaryButton disabled={page === BigInt(0)} onClick={() => setPage(page - BigInt(1))}>
-            Previous
-          </SecondaryButton>
-          <span className='text-neutral'>Page {(page + BigInt(1)).toString()}</span>
-          <SecondaryButton
-            disabled={catalog.recordCount < start + BigInt(10)}
-            onClick={() => setPage(page + BigInt(1))}
-          >
-            Next
-          </SecondaryButton>
-        </div>
-      )}
+      <div className='flex justify-between p-4'>
+        {(page > BigInt(0) || catalog.recordCount >= start + BigInt(10)) && (
+          <div className='flex items-center justify-end gap-3'>
+            <SecondaryButton disabled={page === BigInt(0)} onClick={() => setPage(page - BigInt(1))}>
+              Previous
+            </SecondaryButton>
+            <span className='text-neutral'>Page {(page + BigInt(1)).toString()}</span>
+            <SecondaryButton
+              disabled={catalog.recordCount < start + BigInt(10)}
+              onClick={() => setPage(page + BigInt(1))}
+            >
+              Next
+            </SecondaryButton>
+          </div>
+        )}
+        <Link
+          href={configurationPath(resolver, 'new')}
+          className={cn(primaryLinkClass, 'flex items-center gap-0.5 px-3!')}
+        >
+          New <PlusIcon className='h-5 w-5 pt-px' strokeWidth={3} />
+        </Link>
+      </div>
     </div>
   )
 }
@@ -202,7 +203,10 @@ const ResolverConfigurations = ({ resolver }: { resolver: Address }) => {
   return (
     <section className='border-tertiary rounded-md border'>
       <div
-        className='bg-secondary flex cursor-pointer items-center justify-between gap-3 rounded-t-md px-4 py-3'
+        className={cn(
+          'bg-secondary flex cursor-pointer items-center justify-between gap-3 rounded-t-md px-4 py-3',
+          open && 'mb-3'
+        )}
         onClick={() => setOpen(!open)}
       >
         <ResolverAddress address={resolver} truncate={false} textColor='text-foreground!' />
@@ -217,7 +221,7 @@ export default function ConfigurationList() {
   const directory = useResolverDirectory()
 
   return (
-    <div className='flex flex-col gap-4 md:gap-6'>
+    <div className='flex flex-col gap-4 md:gap-5'>
       <div className='flex flex-col gap-1'>
         <h2 className='hidden text-2xl font-semibold md:block'>Records</h2>
         <p className='text-neutral text-lg font-medium'>
@@ -235,9 +239,11 @@ export default function ConfigurationList() {
       {directory.loading ? (
         <SettingsNotice>Finding your configurations…</SettingsNotice>
       ) : directory.resolvers.length ? (
-        directory.resolvers.map((resolver) => (
-          <ResolverConfigurations key={resolver.address} resolver={resolver.address} />
-        ))
+        <div className='flex flex-col gap-3'>
+          {directory.resolvers.map((resolver) => (
+            <ResolverConfigurations key={resolver.address} resolver={resolver.address} />
+          ))}
+        </div>
       ) : (
         <SettingsNotice>
           No resolvers found.{' '}

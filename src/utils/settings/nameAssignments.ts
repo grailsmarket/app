@@ -79,7 +79,7 @@ export const prepareNameAssignment = async (
   return { name, id, binding, initialId }
 }
 
-export const nameAssignmentSteps = (
+export const nameResolverSteps = (
   client: PublicClient,
   resolver: Address,
   registry: Address,
@@ -89,7 +89,7 @@ export const nameAssignmentSteps = (
   for (const assignment of assignments) {
     if (assignment.binding.resolver.toLowerCase() === resolver.toLowerCase()) continue
     steps.push({
-      label: `Set resolver for ${assignment.name}`,
+      label: `Set Resolver for ${assignment.name}`,
       prepare: async (account) => {
         if (
           !(await client.readContract({
@@ -121,8 +121,20 @@ export const nameAssignmentSteps = (
       },
     })
   }
+
+  return steps
+}
+
+export const nameAssignmentSteps = (
+  client: PublicClient,
+  resolver: Address,
+  registry: Address,
+  assignments: NameAssignment[]
+): SettingsTransactionStep[] => {
+  const steps = nameResolverSteps(client, resolver, registry, assignments)
+
   steps.push({
-    label: 'Link names to configurations',
+    label: 'Link Names to Configurations',
     prepare: async (account) => {
       const canLink = await client.readContract({
         address: resolver,

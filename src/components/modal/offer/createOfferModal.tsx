@@ -14,7 +14,6 @@ import GrailsIcon from 'public/logo.svg'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
 import { DAY_IN_SECONDS } from '@/constants/time'
-import { Check } from 'ethereum-identity-kit'
 import useModifyCart from '@/hooks/useModifyCart'
 import { useSeaportContext } from '@/context/seaport'
 import { activeChain } from '@/constants/web3/chain'
@@ -29,16 +28,43 @@ import { selectMarketplaceDomains } from '@/state/reducers/domains/marketplaceDo
 import Calendar from 'public/icons/calendar.svg'
 import { track } from '@/lib/analytics'
 import { config } from '@/lib/config'
+import useETHPrice from '@/hooks/useETHPrice'
+import { cn } from '@/utils/tailwind'
+import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import type { SeaportProgressEvent } from '@/lib/seaport/seaportClient'
+import {
+  EMPTY_RUN,
+  applySeaportProgress,
+  formatDaysUntil,
+  getErrorParts,
+  getRunOrder,
+  marketplaceLabel,
+  type SeaportRun,
+} from '../listing/seaport-progress'
+import {
+  BusyView,
+  CloseFooter,
+  ErrorView,
+  NameSubject,
+  RetryFooter,
+  SubjectAmount,
+  SuccessView,
+  getBusyHint,
+} from '../listing/seaport-views'
+import { getMakeOfferBusyScreen, getMakeOfferPartial } from './offer-screens'
 
 interface CreateOfferModalProps {
   onClose: () => void
   domain: MarketplaceDomainType | null
 }
 
+type OfferStatus = 'review' | 'submitting' | 'success' | 'error'
+
 const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) => {
   const { modifyCart } = useModifyCart()
   const { createOffer, isLoading } = useSeaportContext()
   const { address } = useAccount()
+  const { ethPrice } = useETHPrice()
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { cartRegisteredDomains, cartUnregisteredDomains } = useAppSelector(selectMarketplaceDomains)
 
@@ -46,7 +72,11 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const [selectedMarketplace, setSelectedMarketplace] = useState<('opensea' | 'grails')[]>(['grails'])
   const [currency, setCurrency] = useState<'WETH' | 'USDC'>('WETH')
   const [price, setPrice] = useState<number | ''>('')
-  const [success, setSuccess] = useState(false)
+  const [status, setStatus] = useState<OfferStatus>('review')
+  const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<string | null>(null)
+  // What the Seaport client reported: per-marketplace approval and signature, then each API save
+  const [run, setRun] = useState<SeaportRun>(EMPTY_RUN)
 
   const currentTimestamp = useMemo(() => Math.floor(Date.now() / 1000), [])
   const [expiryDate, setExpiryDate] = useState<number>(currentTimestamp + DAY_IN_SECONDS * 7)
@@ -103,29 +133,44 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
   const ensName = beautifyName(domain.name)
   const { id: domainId, token_id: tokenId, owner: currentOwner } = domain
 
+  const showError = (err: unknown, fallback: string) => {
+    const { message, details } = getErrorParts(err, fallback)
+    setError(message)
+    setErrorDetails(details)
+    setStatus('error')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSuccess(false)
+    setError(null)
+    setErrorDetails(null)
+    setRun(EMPTY_RUN)
 
     if (!currentOwner) {
       console.error('Domain is not registered')
+      showError('Domain is not registered', 'Domain is not registered')
       return
     }
 
     if (!price) {
       console.error('Price is required')
+      showError('Price is required', 'Price is required')
       return
     }
 
     if (expiryDate === 0) {
       console.error('Expiry date is required')
+      showError('Expiry date is required', 'Expiry date is required')
       return
     }
 
     if (selectedMarketplace.length === 0) {
       console.error('Please select a marketplace')
+      showError('Please select a marketplace', 'Please select a marketplace')
       return
     }
+
+    setStatus('submitting')
 
     try {
       await createOffer({
@@ -138,9 +183,11 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
         currentOwner,
         ensNameId: domainId,
         marketplace: selectedMarketplace,
+        onProgress: (event: SeaportProgressEvent) => setRun((current) => applySeaportProgress(current, event)),
       })
 
-      setSuccess(true)
+      setRun((current) => ({ ...current, publish: 'done' }))
+      setStatus('success')
 
       track('offer_created', {
         name: ensName,
@@ -158,203 +205,259 @@ const CreateOfferModal: React.FC<CreateOfferModalProps> = ({ onClose, domain }) 
       }
     } catch (err) {
       console.error('Failed to create offer:', err)
+      showError(err, 'Failed to create offer')
+    }
+  }
+
+  const isBusy = status === 'submitting'
+  const showPoapClaim = status === 'success' && config.canClaimPoap && !poapClaimed
+  const isDatePickerOpen = status === 'review' && expiryDate === 0 && showDatePicker
+  const runOrder = getRunOrder(selectedMarketplace)
+  const label = selectedMarketplace.length > 0 ? marketplaceLabel(selectedMarketplace) : null
+  const durationText = expiryDate > 0 ? formatDaysUntil(expiryDate) : null
+  const amountLabel = price ? `${Number(price).toLocaleString('en-US', { maximumFractionDigits: 6 })} ${currency}` : ''
+  const usdValue = price ? (currency === 'USDC' ? Number(price) : Number(price) * ethPrice) : null
+
+  const busyScreen = isBusy ? getMakeOfferBusyScreen({ run, marketplaces: runOrder, currency, amountLabel }) : null
+
+  const renderReviewForm = () => (
+    <div className='space-y-3'>
+      <div className='flex w-full items-center justify-between gap-2'>
+        <p className='font-sedan-sc text-2xl'>Name</p>
+        <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
+      </div>
+      <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
+        <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
+        <div className='flex flex-col gap-0.5'>
+          <div
+            onClick={() => {
+              setSelectedMarketplace(
+                selectedMarketplace.includes('grails')
+                  ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
+                  : [...selectedMarketplace, 'grails']
+              )
+            }}
+            className='p-md hover:bg-secondary flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
+          >
+            <div className='flex items-center gap-2'>
+              <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
+              <p className='font-sedan-sc text-2xl'>Grails</p>
+            </div>
+            <FilterSelector
+              onClick={() =>
+                setSelectedMarketplace(
+                  selectedMarketplace.includes('grails')
+                    ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
+                    : [...selectedMarketplace, 'grails']
+                )
+              }
+              isActive={selectedMarketplace.includes('grails')}
+            />
+          </div>
+          <div
+            onClick={() => {
+              setSelectedMarketplace(
+                selectedMarketplace.includes('opensea')
+                  ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
+                  : [...selectedMarketplace, 'opensea']
+              )
+            }}
+            className='hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md p-2 transition-colors'
+          >
+            <div className='flex items-center gap-2'>
+              <Image src={OpenSeaIcon} alt='OpenSea' width={24} height={24} />
+              <p className='text-xl font-bold'>OpenSea</p>
+            </div>
+            <FilterSelector
+              onClick={() =>
+                setSelectedMarketplace(
+                  selectedMarketplace.includes('opensea')
+                    ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
+                    : [...selectedMarketplace, 'opensea']
+                )
+              }
+              isActive={selectedMarketplace.includes('opensea')}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className='z-20 flex flex-col gap-2'>
+        <Dropdown
+          label='Duration'
+          placeholder='Select a duration'
+          options={durationOptions}
+          value={expiryDate}
+          onSelect={(value) => {
+            setExpiryDate(Number(value))
+            if (Number(value) === 0) setShowDatePicker(true)
+          }}
+        />
+        <button
+          onClick={() => {
+            setExpiryDate(0)
+            setShowDatePicker(true)
+          }}
+          className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
+        >
+          <p>Select a custom date</p>
+          <Image src={Calendar} alt='calendar' width={18} height={18} />
+        </button>
+      </div>
+
+      <div className='z-0'>
+        <Dropdown
+          label='Currency'
+          options={currencyOptions}
+          value={currency}
+          onSelect={(value) => setCurrency(value as 'WETH' | 'USDC')}
+        />
+      </div>
+
+      <div>
+        <Input
+          type='number'
+          label='Price'
+          value={price}
+          onChange={(e) => {
+            const value = e.target.value
+            if (value === '') setPrice('')
+            else if (Number(value) > parseFloat(currentBalanceFormatted)) setPrice(parseFloat(currentBalanceFormatted))
+            else setPrice(Number(value))
+          }}
+          placeholder='0.1'
+          min={0}
+          step={0.001}
+          max={parseFloat(currentBalanceFormatted)}
+        />
+        <div className='py-sm px-md mt-1 flex items-center justify-between'>
+          <p className='text-md text-gray-400'>
+            Balance: {currentBalanceFormatted} {currency}
+          </p>
+          <button
+            className='flex items-center justify-center text-sm font-bold'
+            onClick={() => setPrice(parseFloat(currentBalanceFormatted))}
+          >
+            Max Offer
+          </button>
+        </div>
+      </div>
+
+      <div className='text-center text-sm text-gray-400'>
+        By making an offer, you&apos;re committing to purchase this NFT if the seller accepts. The offer will be signed
+        with your wallet.
+      </div>
+    </div>
+  )
+
+  const getModalContent = () => {
+    if (busyScreen) return <BusyView screen={busyScreen} />
+
+    switch (status) {
+      case 'success':
+        if (showPoapClaim) return <ClaimPoap />
+        return <SuccessView title='Offer Created' message={`Your offer for ${ensName} is live on ${label}.`} />
+
+      case 'error': {
+        const partial = getMakeOfferPartial(run, runOrder)
+        if (partial) {
+          return (
+            <ErrorView
+              title={partial.title}
+              message={partial.message}
+              warning={partial.warning}
+              error={error}
+              details={errorDetails}
+            />
+          )
+        }
+
+        return <ErrorView title='Offer Failed' error={error} details={errorDetails} />
+      }
+
+      default:
+        return renderReviewForm()
+    }
+  }
+
+  const getFooter = () => {
+    switch (status) {
+      case 'review':
+        return (
+          <>
+            <PrimaryButton
+              disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
+              onClick={handleSubmit}
+              className={modalPrimaryActionClassName}
+            >
+              {!hasSufficientBalance
+                ? `Insufficient ${currency} Balance`
+                : isLoading
+                  ? 'Submitting Offer...'
+                  : 'Make Offer'}
+            </PrimaryButton>
+            <SecondaryButton onClick={onClose} className={modalActionClassName}>
+              Close
+            </SecondaryButton>
+          </>
+        )
+
+      case 'success':
+        return showPoapClaim ? null : <CloseFooter onClose={onClose} />
+
+      case 'error':
+        return <RetryFooter onRetry={() => setStatus('review')} onClose={onClose} />
+
+      default:
+        return null
     }
   }
 
   return (
-    <div
-      onClick={() => {
-        if (success || isLoading) return
-        onClose()
-      }}
-      className='fixed inset-0 z-50 flex min-h-dvh w-screen items-end justify-center bg-black/40 backdrop-blur-sm md:items-start md:overflow-y-auto md:p-4 md:py-[5vh]'
+    <ModalShell
+      title={showPoapClaim ? undefined : 'Make Offer'}
+      onClose={onClose}
+      locked={isBusy}
+      // As today: the scrim closes the form, not the success
+      dismissible={(status === 'review' && !isLoading && !isDatePickerOpen) || status === 'error'}
+      stageKey={isBusy ? 'progress' : showPoapClaim ? 'poap' : status}
+      subject={
+        showPoapClaim || status === 'review' ? null : (
+          <NameSubject
+            names={[
+              { name: domain.name, tokenId: domain.token_id, version: domain.version, expiryDate: domain.expiry_date },
+            ]}
+            compact={isBusy || status === 'error'}
+            meta={
+              [status === 'success' && label ? `Offer on ${label}` : label, durationText].filter(Boolean).join(' · ') ||
+              undefined
+            }
+            price={price ? <SubjectAmount>{amountLabel}</SubjectAmount> : undefined}
+            priceSub={
+              usdValue !== null
+                ? `≈ $${usdValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : undefined
+            }
+          />
+        )
+      }
+      footer={getFooter()}
+      footerHint={busyScreen ? getBusyHint(busyScreen) : undefined}
+      overlay={
+        isDatePickerOpen ? (
+          <DatePicker
+            onSelect={(timestamp) => setExpiryDate(timestamp)}
+            onClose={() => {
+              setShowDatePicker(false)
+            }}
+            className='w-full'
+          />
+        ) : null
+      }
+      className={cn(isDatePickerOpen && 'min-h-120')}
     >
-      <div
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
-        className='border-tertiary bg-background relative mx-auto flex max-h-[calc(100dvh-80px)] w-full flex-col gap-2 overflow-y-auto border-t p-4 transition-all duration-300 md:max-h-none md:max-w-md md:rounded-md md:border-2 md:p-6 starting:translate-y-full md:starting:translate-y-0'
-      >
-        {success && config.canClaimPoap && !poapClaimed ? (
-          <ClaimPoap />
-        ) : (
-          <>
-            <h2 className='font-sedan-sc min-h-6 pb-2 text-center text-3xl'>Make Offer</h2>
-
-            {success ? (
-              <>
-                <div className='flex flex-col items-center justify-between gap-2 py-4 text-center'>
-                  <div className='bg-primary mx-auto mb-2 flex w-fit items-center justify-center rounded-full p-2'>
-                    <Check className='text-background h-6 w-6' />
-                  </div>
-                  <div className='mb-2 text-xl font-bold'>Offer Created Successfully!</div>
-                </div>
-                <SecondaryButton onClick={onClose} disabled={isLoading} className='w-full'>
-                  <p className='text-label text-lg font-bold'>Close</p>
-                </SecondaryButton>
-              </>
-            ) : (
-              <div className='space-y-3'>
-                <div className='flex w-full items-center justify-between gap-2'>
-                  <p className='font-sedan-sc text-2xl'>Name</p>
-                  <p className='max-w-2/3 truncate font-semibold'>{ensName}</p>
-                </div>
-                <div className='border-tertiary p-md flex flex-col gap-1 rounded-md border'>
-                  <label className='p-md mb-2 block pb-0 text-xl font-medium'>Marketplace</label>
-                  <div className='flex flex-col gap-0.5'>
-                    <div
-                      onClick={() => {
-                        setSelectedMarketplace(
-                          selectedMarketplace.includes('grails')
-                            ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
-                            : [...selectedMarketplace, 'grails']
-                        )
-                      }}
-                      className='p-md hover:bg-secondary flex w-full cursor-pointer items-center justify-between rounded-md transition-colors'
-                    >
-                      <div className='flex items-center gap-2'>
-                        <Image src={GrailsIcon} alt='Grails' width={24} height={24} />
-                        <p className='font-sedan-sc text-2xl'>Grails</p>
-                      </div>
-                      <FilterSelector
-                        onClick={() =>
-                          setSelectedMarketplace(
-                            selectedMarketplace.includes('grails')
-                              ? selectedMarketplace.filter((marketplace) => marketplace !== 'grails')
-                              : [...selectedMarketplace, 'grails']
-                          )
-                        }
-                        isActive={selectedMarketplace.includes('grails')}
-                      />
-                    </div>
-                    <div
-                      onClick={() => {
-                        setSelectedMarketplace(
-                          selectedMarketplace.includes('opensea')
-                            ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
-                            : [...selectedMarketplace, 'opensea']
-                        )
-                      }}
-                      className='hover:bg-primary/10 flex w-full cursor-pointer items-center justify-between rounded-md p-2 transition-colors'
-                    >
-                      <div className='flex items-center gap-2'>
-                        <Image src={OpenSeaIcon} alt='OpenSea' width={24} height={24} />
-                        <p className='text-xl font-bold'>OpenSea</p>
-                      </div>
-                      <FilterSelector
-                        onClick={() =>
-                          setSelectedMarketplace(
-                            selectedMarketplace.includes('opensea')
-                              ? selectedMarketplace.filter((marketplace) => marketplace !== 'opensea')
-                              : [...selectedMarketplace, 'opensea']
-                          )
-                        }
-                        isActive={selectedMarketplace.includes('opensea')}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className='z-20 flex flex-col gap-2'>
-                  <Dropdown
-                    label='Duration'
-                    placeholder='Select a duration'
-                    options={durationOptions}
-                    value={expiryDate}
-                    onSelect={(value) => {
-                      setExpiryDate(Number(value))
-                      if (Number(value) === 0) setShowDatePicker(true)
-                    }}
-                  />
-                  {expiryDate === 0 && showDatePicker && (
-                    <div className='xs:p-4 absolute top-0 right-0 z-10 flex h-full w-full items-start justify-start bg-black/40 p-3 backdrop-blur-sm md:p-6'>
-                      <DatePicker
-                        onSelect={(timestamp) => setExpiryDate(timestamp)}
-                        onClose={() => {
-                          setShowDatePicker(false)
-                        }}
-                        className='w-full'
-                      />
-                    </div>
-                  )}
-                  <button
-                    onClick={() => {
-                      setExpiryDate(0)
-                      setShowDatePicker(true)
-                    }}
-                    className='text-primary mx-auto flex cursor-pointer flex-row items-center gap-2 transition-opacity hover:opacity-80'
-                  >
-                    <p>Select a custom date</p>
-                    <Image src={Calendar} alt='calendar' width={18} height={18} />
-                  </button>
-                </div>
-
-                <div className='z-0'>
-                  <Dropdown
-                    label='Currency'
-                    options={currencyOptions}
-                    value={currency}
-                    onSelect={(value) => setCurrency(value as 'WETH' | 'USDC')}
-                  />
-                </div>
-
-                <div>
-                  <Input
-                    type='number'
-                    label='Price'
-                    value={price}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      if (value === '') setPrice('')
-                      else if (Number(value) > parseFloat(currentBalanceFormatted))
-                        setPrice(parseFloat(currentBalanceFormatted))
-                      else setPrice(Number(value))
-                    }}
-                    placeholder='0.1'
-                    min={0}
-                    step={0.001}
-                    max={parseFloat(currentBalanceFormatted)}
-                  />
-                  <div className='py-sm px-md mt-1 flex items-center justify-between'>
-                    <p className='text-md text-gray-400'>
-                      Balance: {currentBalanceFormatted} {currency}
-                    </p>
-                    <button
-                      className='flex items-center justify-center text-sm font-bold'
-                      onClick={() => setPrice(parseFloat(currentBalanceFormatted))}
-                    >
-                      Max Offer
-                    </button>
-                  </div>
-                </div>
-
-                <div className='text-center text-sm text-gray-400'>
-                  By making an offer, you&apos;re committing to purchase this NFT if the seller accepts. The offer will
-                  be signed with your wallet.
-                </div>
-
-                <div className='flex flex-col gap-2'>
-                  <PrimaryButton
-                    disabled={isLoading || !price || selectedMarketplace.length === 0 || !hasSufficientBalance}
-                    onClick={handleSubmit}
-                    className='h-10 w-full'
-                  >
-                    {!hasSufficientBalance
-                      ? `Insufficient ${currency} Balance`
-                      : isLoading
-                        ? 'Submitting Offer...'
-                        : 'Make Offer'}
-                  </PrimaryButton>
-                  <SecondaryButton onClick={onClose} className='h-10 w-full'>
-                    Close
-                  </SecondaryButton>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+      {getModalContent()}
+    </ModalShell>
   )
 }
 

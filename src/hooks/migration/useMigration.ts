@@ -134,7 +134,8 @@ export const useMigration = (name: string) => {
       const version = directory.predicted.data === false ? 0 : newResolverVersion()
 
       steps.push({
-        label: 'Deploy resolver',
+        label: 'Deploy Resolver',
+        pendingLabel: 'Deploying Resolver',
         prepare: async (account) => {
           await recheck(account)
           const { resolverSalt, resolverInitData } = getResolverData(BigInt(version))
@@ -170,10 +171,16 @@ export const useMigration = (name: string) => {
       steps.push({
         label:
           selectedMode === 'copy'
-            ? 'Copy records to V2'
+            ? 'Copy Records to V2'
             : selectedMode === 'empty'
-              ? 'Create empty configuration'
-              : 'Link record configuration',
+              ? 'Create Empty Configuration'
+              : 'Link Record Configuration',
+        pendingLabel:
+          selectedMode === 'copy'
+            ? 'Copying Records to V2'
+            : selectedMode === 'empty'
+              ? 'Creating Empty Configuration'
+              : 'Linking Record Configuration',
         prepare: async (account) => {
           await recheck(account)
           if (!target) throw new Error('The resolver deployment has not completed.')
@@ -249,6 +256,8 @@ export const useMigration = (name: string) => {
 
     steps.push({
       label: 'Migrate to ENS V2',
+      pendingLabel: `Migrating ${name}`,
+      note: 'Migration is permanent.',
       prepare: async (account) => {
         const current = await recheck(account)
         if (!target) throw new Error('Select a resolver before migrating.')
@@ -280,7 +289,9 @@ export const useMigration = (name: string) => {
       info.replacesResolver && selectedMode === 'copy' && captured.length
         ? [
             {
-              label: 'Restore records in PublicResolverV2',
+              label: 'Restore Records',
+              pendingLabel: 'Restoring Records',
+              note: 'Copies your records into PublicResolverV2.',
               prepare: async (account) => {
                 const state = await client.readContract({
                   address: snapshot.registry,

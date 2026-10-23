@@ -1,46 +1,128 @@
 'use client'
 
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Check } from 'ethereum-identity-kit'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
+import ModalShell, { modalActionClassName, modalPrimaryActionClassName } from '@/components/ui/modal/modalShell'
+import TxStatus from '@/components/ui/modal/txStatus'
+import {
+  KEEP_OPEN_HINT,
+  TransactionFailure,
+  TransactionLinks,
+  TransactionProgress,
+  TransactionUnconfirmed,
+  confirmedTransactions,
+  currentStepLabel,
+  isTransactionBusy,
+  isWalletPrompt,
+  sentTransactionCount,
+  type SettingsTransactionView,
+} from './transactionScreens'
 
-export interface SettingsTransactionModalProps {
-  phase: 'preparing' | 'confirming' | 'processing' | 'success' | 'error'
+export interface SettingsTransactionModalProps extends SettingsTransactionView {
+  /** Names the whole action and stays constant, e.g. "Set Primary Name". The step is the TxStatus title. */
   title: string
   networkName?: string
-  status?: string
-  error?: string | null
-  explorerUrl?: string | null
-  progress?: { current: number; total: number }
-  submitted: boolean
+  /** Defaults to "Changes Saved". */
+  successTitle?: string
+  successMessage?: string
+  /** Defaults to "Transaction Failed". */
+  errorTitle?: string
   onRetry: () => void
   onClose: () => void
 }
 
-const SettingsTransactionModal: React.FC<SettingsTransactionModalProps> = ({
-  phase,
-  title,
-  status,
-  error,
-  explorerUrl,
-  progress,
-  submitted,
-  onRetry,
-  onClose,
-}) => {
-  const titleId = useId()
-  const dialog = useRef<HTMLDivElement>(null)
-  const busy = phase === 'preparing' || phase === 'confirming' || phase === 'processing'
-  const canClose = !busy && !submitted
+interface SettingsTransactionScreen {
+  key: string
+  content: React.ReactNode
+  footer?: React.ReactNode
+  footerHint?: React.ReactNode
+}
+
+/** The stage and footer for one phase of the queue. Pure, so the preview can render it from mock props. */
+export const settingsTransactionScreen = (props: SettingsTransactionModalProps): SettingsTransactionScreen => {
+  const { title, networkName, submitted, onRetry, onClose } = props
+
+  if (isTransactionBusy(props))
+    return {
+      key: 'progress',
+      content: <TransactionProgress view={props} title={title} networkName={networkName} />,
+      footerHint: isWalletPrompt(props) ? undefined : KEEP_OPEN_HINT,
+    }
+
+  if (props.phase === 'success')
+    return {
+      key: 'success',
+      content: (
+        <TxStatus state='success' title={props.successTitle ?? 'Changes Saved'} message={props.successMessage}>
+          <TransactionLinks links={confirmedTransactions(props)} />
+        </TxStatus>
+      ),
+      footer: (
+        <SecondaryButton className={modalActionClassName} onClick={onClose}>
+          Close
+        </SecondaryButton>
+      ),
+    }
+
+  if (submitted)
+    return {
+      key: 'unconfirmed',
+      content: <TransactionUnconfirmed view={props} />,
+      footer: (
+        <>
+          <PrimaryButton className={modalPrimaryActionClassName} onClick={onRetry}>
+            Check Transaction
+          </PrimaryButton>
+          <SecondaryButton className={modalActionClassName} disabled>
+            Close
+          </SecondaryButton>
+        </>
+      ),
+    }
+
+  const single = sentTransactionCount(props) <= 1
+
+  return {
+    key: 'error',
+    content: (
+      <TransactionFailure
+        view={props}
+        title={props.errorTitle ?? 'Transaction Failed'}
+        message={
+          single
+            ? 'Review the details below and try again.'
+            : `${currentStepLabel(props, title)} could not be completed.`
+        }
+      />
+    ),
+    footer: (
+      <>
+        <PrimaryButton className={modalPrimaryActionClassName} onClick={onRetry}>
+          {single ? 'Try Again' : 'Retry Remaining Steps'}
+        </PrimaryButton>
+        <SecondaryButton className={modalActionClassName} onClick={onClose}>
+          Back to Editing
+        </SecondaryButton>
+      </>
+    ),
+  }
+}
+
+// Portaled above the Settings page, which SettingsTransactionProvider makes inert meanwhile. The z-120 layer keeps it
+// over the page's own dialogs (the navigation guard is z-110); it also takes focus and keeps Tab inside the modal.
+const SettingsTransactionModal: React.FC<SettingsTransactionModalProps> = (props) => {
+  const layer = useRef<HTMLDivElement>(null)
+  const canClose = !isTransactionBusy(props) && !props.submitted
+  const screen = settingsTransactionScreen(props)
 
   useEffect(() => {
     const previousFocus = document.activeElement
     const overflow = document.body.style.overflow
 
     document.body.style.overflow = 'hidden'
-    dialog.current?.focus()
+    layer.current?.focus()
 
     return () => {
       document.body.style.overflow = overflow
@@ -50,107 +132,44 @@ const SettingsTransactionModal: React.FC<SettingsTransactionModalProps> = ({
   }, [])
 
   useEffect(() => {
-    if (document.activeElement === document.body) dialog.current?.focus()
-  }, [phase])
+    if (document.activeElement === document.body) layer.current?.focus()
+  }, [props.phase])
 
   return createPortal(
     <div
-      className='fixed inset-0 z-120 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm'
-      onClick={(event) => {
-        if (event.target === event.currentTarget && canClose) onClose()
+      ref={layer}
+      tabIndex={-1}
+      className='relative z-120 outline-none'
+      onKeyDown={(event) => {
+        if (event.key !== 'Tab') return
+
+        const elements = layer.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]')
+        const first = elements?.[0]
+        const last = elements?.[elements.length - 1]
+
+        if (!first || !last) {
+          event.preventDefault()
+        } else if (event.shiftKey && (document.activeElement === first || document.activeElement === layer.current)) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === layer.current)) {
+          event.preventDefault()
+          first.focus()
+        }
       }}
     >
-      <div
-        ref={dialog}
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        className='bg-background border-tertiary flex max-h-[90dvh] w-full max-w-md flex-col gap-6 overflow-y-auto rounded-md border-2 p-6 outline-none'
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault()
-            event.stopPropagation()
-
-            if (canClose) onClose()
-          }
-
-          if (event.key !== 'Tab') return
-
-          const elements = dialog.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]')
-          const first = elements?.[0]
-          const last = elements?.[elements.length - 1]
-
-          if (!first || !last) {
-            event.preventDefault()
-          } else if (
-            event.shiftKey &&
-            (document.activeElement === first || document.activeElement === dialog.current)
-          ) {
-            event.preventDefault()
-            last.focus()
-          } else if (
-            !event.shiftKey &&
-            (document.activeElement === last || document.activeElement === dialog.current)
-          ) {
-            event.preventDefault()
-            first.focus()
-          }
+      <ModalShell
+        title={props.title}
+        onClose={() => {
+          if (canClose) props.onClose()
         }}
+        locked={!canClose}
+        stageKey={screen.key}
+        footer={screen.footer}
+        footerHint={screen.footerHint}
       >
-        <h2 id={titleId} className='text-center text-xl font-bold'>
-          {title}
-        </h2>
-        <div className='flex flex-col items-center gap-4 text-center' aria-live='polite'>
-          {busy && <div className='border-primary my-2 h-12 w-12 animate-spin rounded-full border-b-2' />}
-          {phase === 'success' && (
-            <div className='bg-primary flex w-fit items-center justify-center rounded-full p-2'>
-              <Check className='text-background h-6 w-6' />
-            </div>
-          )}
-          <p className='text-lg'>
-            {phase === 'preparing'
-              ? status || 'Preparing transaction…'
-              : phase === 'confirming'
-                ? 'Confirm in your wallet'
-                : phase === 'processing'
-                  ? 'Waiting for confirmation'
-                  : phase === 'success'
-                    ? 'Transaction complete'
-                    : 'Transaction could not be completed'}
-          </p>
-          {busy && progress && progress.total > 1 && (
-            <p className='text-neutral text-md'>
-              Transaction {progress.current} of {progress.total}
-            </p>
-          )}
-          {phase === 'error' && (
-            <div role='alert' className='w-full rounded-lg border border-red-500/20 bg-red-900/20 p-4 text-left'>
-              <p className='wrap-break-word text-red-400'>{error}</p>
-              <p className='text-neutral mt-2 text-sm'>
-                {submitted
-                  ? 'This transaction has already been submitted. Check its status before continuing.'
-                  : 'Confirmed transactions are saved. Your remaining changes are kept for retry.'}
-              </p>
-            </div>
-          )}
-          {explorerUrl && (
-            <a className='text-primary text-lg underline' href={explorerUrl} target='_blank' rel='noreferrer'>
-              View transaction
-            </a>
-          )}
-        </div>
-        <div className='flex flex-col gap-2'>
-          {phase === 'error' && (
-            <PrimaryButton className='w-full' onClick={onRetry}>
-              {submitted ? 'Check transaction' : 'Retry remaining steps'}
-            </PrimaryButton>
-          )}
-          <SecondaryButton className='w-full' disabled={!canClose} onClick={onClose}>
-            {phase === 'error' && !submitted ? 'Back to editing' : 'Close'}
-          </SecondaryButton>
-        </div>
-      </div>
+        {screen.content}
+      </ModalShell>
     </div>,
     document.body
   )

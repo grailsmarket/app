@@ -38,6 +38,8 @@ const isApiQuery = (query: Query) => {
       'resolver',
       'configurations',
       'configuration-name-page',
+      'resolver-preferences',
+      'configuration-preferences',
       'ens-name',
     ].includes(String(detail))
   if (section === 'marketplace' || section === 'categoriesPage') return detail === 'domains' || detail === 'listings'

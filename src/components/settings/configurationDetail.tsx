@@ -15,7 +15,7 @@ import { useResolverCatalog } from '@/hooks/settings/useResolverDirectory'
 import { PERMISSIONED_RESOLVER_ABI as abi } from '@/constants/web3/abi/PermissionedResolver'
 import { cn } from '@/utils/tailwind'
 import CheckCircle from 'public/icons/check-circle.svg'
-import { useSettingsDirty } from './navigationGuard'
+import { useSettingsDirty } from '@/hooks/settings/useSettingsDirty'
 import {
   QueryError,
   ResolverAddress,
@@ -25,7 +25,11 @@ import {
   secondaryLinkClass,
 } from './shared'
 import ConfigurationNames from './configurationNames'
+import ConfigurationNamePicker from './configurationNamePicker'
 import { ROOT_NAME } from '@/constants/ens/resolver'
+import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
+import { configurationLabel, configurationName } from '@/utils/settings/labels'
+import PreferenceLabel from './preferenceLabel'
 
 interface ConfigurationRecordsProps {
   resolver: Address
@@ -39,7 +43,7 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
   const busy = transaction.busy || transaction.pending
 
   useSettingsDirty(
-    editor.changed || (mode === 'copy' && editor.createdId === undefined),
+    editor.createdId === undefined && (editor.changed || mode === 'copy'),
     transaction.busy || transaction.submitted
   )
 
@@ -83,10 +87,27 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
       ) : (
         <SettingsNotice>
           {mode === 'copy'
-            ? 'Create an independent copy in this resolver. Name assignments stay with the original configuration.'
-            : 'Create a configuration now and link names to it later.'}
+            ? 'Create an independent copy in this resolver. Choose which names, if any, should move to the copy.'
+            : 'Create a configuration and optionally assign names to it.'}
         </SettingsNotice>
       )}
+      {mode !== 'edit' &&
+        editor.address &&
+        (editor.catalog.canLink ? (
+          <ConfigurationNamePicker
+            address={editor.address}
+            resolver={resolver}
+            names={editor.names}
+            disabled={busy || editor.checkingNames}
+            checking={editor.checkingNames}
+            onAdd={editor.addNames}
+            onRemove={editor.removeName}
+          />
+        ) : (
+          <SettingsNotice>
+            You need Link permission to assign names. You can still create an unassigned configuration.
+          </SettingsNotice>
+        ))}
       {mode !== 'edit' && empty && <p className='text-grace text-lg'>You are creating an empty configuration.</p>}
       {!editor.catalog.historyComplete && (
         <SettingsNotice>
@@ -119,12 +140,23 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
       <div className='border-tertiary flex items-center gap-3'>
         <PrimaryButton
           className='w-1/2'
-          disabled={busy || editor.adding || !editable || copyBlocked || (mode === 'edit' && !editor.changed)}
+          disabled={
+            busy ||
+            editor.checkingNames ||
+            editor.adding ||
+            !editable ||
+            copyBlocked ||
+            (mode === 'edit' && !editor.changed)
+          }
           onClick={editor.save}
         >
           {transaction.busy ? 'Saving records…' : mode === 'edit' ? 'Save changes' : 'Create configuration'}
         </PrimaryButton>
-        <SecondaryButton className='w-1/2' disabled={busy || !editor.changed} onClick={editor.reset}>
+        <SecondaryButton
+          className='w-1/2'
+          disabled={busy || editor.checkingNames || !editor.changed}
+          onClick={editor.reset}
+        >
           Reset changes
         </SecondaryButton>
         {transaction.phase === 'success' && !editor.changed && (
@@ -135,62 +167,78 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
   )
 }
 
-interface SetDefaultProps {
-  resolver: Address
+interface DefaultConfigurationChange {
   id: bigint
-  review: boolean
-  setReview: (review: boolean) => void
+  previousId: bigint
 }
 
-const SetDefault: React.FC<SetDefaultProps> = ({ resolver, id, review, setReview }) => {
+interface SetDefaultProps {
+  resolver: Address
+  change: DefaultConfigurationChange | null
+  onCancel: () => void
+}
+
+const SetDefault: React.FC<SetDefaultProps> = ({ resolver, change, onCancel }) => {
   const { catalog, client } = useResolverCatalog(resolver)
+  const preferences = useConfigurationPreferences(resolver)
   const transaction = useSettingsTransaction()
 
-  useSettingsDirty(review, transaction.busy || transaction.submitted)
+  useSettingsDirty(!!change, transaction.busy || transaction.submitted)
 
-  if (!catalog?.canLink || id === BigInt(0) || id === catalog.defaultRecordId) return null
-  if (!review && transaction.phase === 'idle') return null
+  if (!change) return null
+
+  const unset = change.id === BigInt(0)
+  const title = unset ? 'Unset Default Configuration' : 'Set Default Configuration'
 
   const save = () =>
-    transaction.run([
-      {
-        label: 'Set default configuration',
-        prepare: async () => {
-          const current = await client.readContract({
-            address: resolver,
-            abi,
-            functionName: 'getRecordId',
-            args: [zeroHash],
-          })
-          if (current !== catalog.defaultRecordId)
-            throw new Error('The resolver default changed. Reload before continuing.')
-          return {
-            to: resolver,
-            data: encodeFunctionData({ abi, functionName: 'linkToRecord', args: [ROOT_NAME, id] }),
-          }
+    transaction.run(
+      [
+        {
+          label: title,
+          pendingLabel: unset ? 'Unsetting Default Configuration' : 'Setting Default Configuration',
+          prepare: async () => {
+            const current = await client.readContract({
+              address: resolver,
+              abi,
+              functionName: 'getRecordId',
+              args: [zeroHash],
+            })
+            if (current !== change.previousId)
+              throw new Error('The resolver default changed. Reload before continuing.')
+            return {
+              to: resolver,
+              data: encodeFunctionData({ abi, functionName: 'linkToRecord', args: [ROOT_NAME, change.id] }),
+            }
+          },
+          confirmed: onCancel,
         },
-        confirmed: () => setReview(false),
-      },
-    ])
+      ],
+      {
+        title,
+        successTitle: unset ? 'Default Configuration Unset' : 'Default Configuration Set',
+        successMessage: unset
+          ? 'The resolver no longer has a default configuration. The configuration and explicit name links are unchanged.'
+          : `Names using the resolver default now use ${configurationName(preferences.data, change.id)}.`,
+      }
+    )
 
   return (
     <div className='flex flex-col gap-3'>
-      {review && (
-        <SettingsNotice>
-          <p>
-            All names using the resolver default will now use Configuration {id.toString()}. Explicit links stay
-            unchanged.
-          </p>
-          <div className='mt-4 flex flex-wrap gap-3'>
-            <PrimaryButton disabled={transaction.busy || transaction.pending} onClick={save}>
-              Confirm default
-            </PrimaryButton>
-            <SecondaryButton disabled={transaction.busy || transaction.submitted} onClick={() => setReview(false)}>
-              Cancel
-            </SecondaryButton>
-          </div>
-        </SettingsNotice>
-      )}
+      <SettingsNotice>
+        <p>
+          {unset
+            ? 'Names using the resolver default will stop using these records. The configuration and explicitly linked names stay unchanged.'
+            : `All names using the resolver default will now use ${configurationName(preferences.data, change.id)}. Explicit links stay unchanged.`}
+        </p>
+        <div className='mt-4 flex flex-wrap gap-3'>
+          <PrimaryButton disabled={!catalog?.canLink || transaction.busy || transaction.pending} onClick={save}>
+            {unset ? 'Confirm unset' : 'Confirm default'}
+          </PrimaryButton>
+          <SecondaryButton disabled={transaction.busy || transaction.submitted} onClick={onCancel}>
+            Cancel
+          </SecondaryButton>
+        </div>
+      </SettingsNotice>
     </div>
   )
 }
@@ -203,18 +251,19 @@ interface ConfigurationDetailProps {
 }
 
 const ConfigurationDetail: React.FC<ConfigurationDetailProps> = ({ resolver, id, mode = 'edit', tab = 'records' }) => {
-  const [reviewDefault, setReviewDefault] = useState(false)
+  const [reviewDefault, setReviewDefault] = useState<DefaultConfigurationChange | null>(null)
 
   const { catalog } = useResolverCatalog(resolver)
+  const preferences = useConfigurationPreferences(resolver)
+  const actualId = id === BigInt(0) ? catalog?.defaultRecordId : id
+  const isDefault = id === BigInt(0) || id === catalog?.defaultRecordId
   const base = configurationPath(resolver, id)
   const title =
     mode === 'new'
       ? 'New configuration'
       : mode === 'copy'
-        ? `Duplicate ${id === BigInt(0) ? 'default configuration' : `Configuration ${id}`}`
-        : id === BigInt(0)
-          ? 'Default configuration'
-          : `Configuration ${id}`
+        ? `Duplicate ${configurationName(preferences.data, id)}`
+        : configurationName(preferences.data, id)
 
   return (
     <div className='flex flex-col gap-4'>
@@ -228,7 +277,18 @@ const ConfigurationDetail: React.FC<ConfigurationDetailProps> = ({ resolver, id,
         {mode === 'edit' && (
           <div className='flex w-full flex-wrap items-center justify-between gap-3'>
             <div className='flex flex-col gap-1'>
-              <h2 className='text-2xl font-semibold'>{title}</h2>
+              <PreferenceLabel
+                key={`${preferences.account}:${resolver}:${actualId}`}
+                resolver={resolver}
+                id={actualId ?? BigInt(0)}
+                label={actualId ? configurationLabel(preferences.data, actualId) : null}
+                title={title}
+                available={
+                  preferences.isSuccess &&
+                  !!actualId &&
+                  preferences.data.records.some((record) => record.recordId === actualId.toString())
+                }
+              />
               <div className='flex gap-1'>
                 <p className='text-neutral text-lg font-medium'>Resolver:</p>
                 <ResolverAddress address={resolver} />
@@ -238,17 +298,25 @@ const ConfigurationDetail: React.FC<ConfigurationDetailProps> = ({ resolver, id,
               <Link className={secondaryLinkClass} href={`${base}/duplicate`}>
                 New Copy
               </Link>
-              {catalog?.canLink && id > BigInt(0) && id <= catalog.recordCount && id !== catalog.defaultRecordId && (
-                <SecondaryButton disabled={reviewDefault} onClick={() => setReviewDefault(true)}>
-                  Set Default
-                </SecondaryButton>
-              )}
+              {catalog?.canLink &&
+                id <= catalog.recordCount &&
+                (id > BigInt(0) || catalog.defaultRecordId > BigInt(0)) && (
+                  <SecondaryButton
+                    disabled={!!reviewDefault}
+                    onClick={() =>
+                      setReviewDefault({ id: isDefault ? BigInt(0) : id, previousId: catalog.defaultRecordId })
+                    }
+                  >
+                    {isDefault ? 'Unset as Default' : 'Set Default'}
+                  </SecondaryButton>
+                )}
             </div>
           </div>
         )}
       </div>
+      {preferences.isError && <QueryError error={preferences.error} retry={() => preferences.refetch()} />}
       {mode === 'edit' && (
-        <SetDefault resolver={resolver} id={id} review={reviewDefault} setReview={setReviewDefault} />
+        <SetDefault resolver={resolver} change={reviewDefault} onCancel={() => setReviewDefault(null)} />
       )}
       {id === BigInt(0) && mode === 'edit' && (
         <p className='text-neutral text-lg'>

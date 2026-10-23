@@ -5,49 +5,125 @@ import type { Address, Hex } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
 import { roleErrorText } from '@/hooks/records/useV2Roles'
 import { createV2RecordsClient } from '@/utils/records/client'
-import { prepareSettingsTransaction, type SettingsTransactionStep } from '@/utils/settings/transaction'
+import {
+  prepareSettingsTransaction,
+  type SettingsTransactionStep as PreparedSettingsTransactionStep,
+} from '@/utils/settings/transaction'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { activeChain } from '@/constants/web3/chain'
 import { useSettingsTransactionDialog } from '@/context/settingsTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
-export type { SettingsTransactionStep } from '@/utils/settings/transaction'
+/** A queued transaction. `pendingLabel` and `note` only change what the transaction screens say. */
+export interface SettingsTransactionStep extends PreparedSettingsTransactionStep {
+  /** The status title while its transaction confirms, e.g. "Deploying Resolver". Defaults to the label. */
+  pendingLabel?: string
+  /** One sentence added to its wallet prompt, e.g. "Migration is permanent." */
+  note?: string
+}
 
-export const useSettingsTransaction = () => {
+/** What the transaction modal says around the queue. Every field is optional. */
+export interface SettingsTransactionCopy {
+  /** Names the whole action in the modal header, e.g. "Set Primary Name". Defaults to the first step's label. */
+  title?: string
+  /** Defaults to "Changes Saved". */
+  successTitle?: string
+  successMessage?: string
+  /** Defaults to "Transaction Failed". */
+  errorTitle?: string
+}
+
+/** A queued step as the transaction screens show it. */
+export interface SettingsTransactionStepState {
+  label: string
+  pendingLabel?: string
+  note?: string
+  /** The transaction sent for this step. It is confirmed once the queue has moved past the step. */
+  hash?: Hex
+  /** Its prepare() found nothing to send, so the queue moved on without a transaction. */
+  skipped?: boolean
+}
+
+type StepResult = { hash?: Hex; skipped?: boolean }
+
+const describeSteps = (steps: SettingsTransactionStep[], results: StepResult[] = []): SettingsTransactionStepState[] =>
+  steps.map((step, index) => ({
+    label: step.label,
+    pendingLabel: step.pendingLabel,
+    note: step.note,
+    hash: results[index]?.hash,
+    skipped: results[index]?.skipped,
+  }))
+
+/** `copy` is what the modal says for every run of this hook; a run can override it with its own copy. */
+export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
   const { address } = useAccount()
   const getWallet = useGetWalletClient()
   const client = useMemo(createV2RecordsClient, [])
   const queries = useQueryClient()
   const locked = useRef(false)
   const requestedSteps = useRef<SettingsTransactionStep[]>([])
+  const requestedCopy = useRef<SettingsTransactionCopy>({})
   const queue = useRef<{
     steps: SettingsTransactionStep[]
     index: number
     account: Address
     hash?: Hex
+    /** Reporting only: the hash or skip of every step the queue has reached. */
+    results: StepResult[]
   } | null>(null)
   const [state, setState] = useState<{
     phase: 'idle' | 'preparing' | 'confirming' | 'processing' | 'success' | 'error'
     status?: string
     label?: string
     error?: string
+    /** The raw error text when it says more than `error`. */
+    details?: string
     hash?: Hex
     progress?: { current: number; total: number }
+    steps?: SettingsTransactionStepState[]
+    /** The step running now, or `steps.length` once every step is done. */
+    index?: number
+    copy?: SettingsTransactionCopy
   }>({ phase: 'idle' })
 
-  const run = async (steps: SettingsTransactionStep[] = []) => {
+  const run = async (steps: SettingsTransactionStep[] = [], runCopy?: SettingsTransactionCopy) => {
     if (locked.current) return false
 
     locked.current = true
-    if (steps.length) requestedSteps.current = steps
+    if (steps.length) {
+      requestedSteps.current = steps
+      requestedCopy.current = runCopy ?? {}
+    }
 
-    setState((previous) => ({ ...previous, phase: 'preparing', status: 'Preparing transaction…', error: undefined }))
+    const reportCopy = requestedCopy.current
+    const queued = queue.current
+    const preview = {
+      copy: reportCopy,
+      label: (queued?.steps ?? requestedSteps.current)[queued?.index ?? 0]?.label,
+      steps: queued ? describeSteps(queued.steps, queued.results) : describeSteps(requestedSteps.current),
+      index: queued?.index ?? 0,
+    }
+    setState((previous) => ({
+      ...previous,
+      ...preview,
+      label: preview.label ?? previous.label,
+      phase: 'preparing',
+      status: 'Preparing transaction…',
+      error: undefined,
+      details: undefined,
+    }))
 
     try {
       if (!address) throw new Error('Connect your wallet before continuing.')
-      if (!queue.current) queue.current = { steps: requestedSteps.current, index: 0, account: address }
+      if (!queue.current) queue.current = { steps: requestedSteps.current, index: 0, account: address, results: [] }
 
       const work = queue.current
+      const report = () => ({
+        copy: reportCopy,
+        steps: describeSteps(work.steps, work.results),
+        index: work.index,
+      })
       if (work.account.toLowerCase() !== address.toLowerCase())
         throw new Error('Reconnect the wallet that started this transaction.')
 
@@ -62,20 +138,22 @@ export const useSettingsTransaction = () => {
             client,
             chain: activeChain,
             getWallet,
-            onStatus: (status) => setState({ phase: 'preparing', status, label: step.label, progress }),
+            onStatus: (status) => setState({ phase: 'preparing', status, label: step.label, progress, ...report() }),
           })
 
           if (!prepared) {
+            work.results[work.index] = { skipped: true }
             work.index++
             continue
           }
 
           const { request, wallet } = prepared
-          setState({ phase: 'confirming', label: step.label, progress })
+          setState({ phase: 'confirming', label: step.label, progress, ...report() })
           work.hash = await wallet.sendTransaction({ ...request, account: wallet.account!, chain: activeChain })
+          work.results[work.index] = { hash: work.hash }
         }
 
-        setState({ phase: 'processing', label: step.label, hash: work.hash, progress })
+        setState({ phase: 'processing', label: step.label, hash: work.hash, progress, ...report() })
         const receipt = await waitForTransaction(client, work.hash)
         work.hash = undefined
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
@@ -86,14 +164,20 @@ export const useSettingsTransaction = () => {
       }
 
       queue.current = null
-      setState((previous) => ({ ...previous, phase: 'success', error: undefined }))
+      const done = report()
+      setState((previous) => ({ ...previous, ...done, phase: 'success', error: undefined }))
       return true
     } catch (error) {
+      const message = roleErrorText(error)
+      const work = queue.current
+      const reached = work ? { steps: describeSteps(work.steps, work.results), index: work.index } : {}
       setState((previous) => ({
         ...previous,
+        ...reached,
         phase: 'error',
-        error: roleErrorText(error),
-        hash: queue.current?.hash ?? previous.hash,
+        error: message,
+        details: error instanceof Error && error.message !== message ? error.message : undefined,
+        hash: work?.hash ?? previous.hash,
       }))
       return false
     } finally {
@@ -110,16 +194,25 @@ export const useSettingsTransaction = () => {
   }
 
   const explorerUrl = state.hash ? `${activeChain.blockExplorers.default.url}/tx/${state.hash}` : null
+  const shown = { ...copy, ...state.copy }
 
   useSettingsTransactionDialog({
     open: state.phase !== 'idle',
     phase: state.phase === 'idle' ? 'confirming' : state.phase,
-    title: state.label ?? 'Save changes',
+    title: shown.title ?? state.steps?.[0]?.label ?? 'Save Changes',
+    label: state.label,
     networkName: activeChain.name,
     status: state.status,
     error: state.error,
+    details: state.details,
+    hash: state.hash,
     explorerUrl,
     progress: state.progress,
+    steps: state.steps,
+    index: state.index,
+    successTitle: shown.successTitle,
+    successMessage: shown.successMessage,
+    errorTitle: shown.errorTitle,
     submitted: !!queue.current?.hash,
     onRetry: () => void run(),
     onClose: reset,

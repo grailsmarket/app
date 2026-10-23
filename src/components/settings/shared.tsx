@@ -9,15 +9,27 @@ import CopyButton from '@/components/ui/copyButton'
 import EtherscanLogo from 'public/logos/etherscan.svg'
 import { roleErrorText } from '@/hooks/records/useV2Roles'
 import { cn } from '@/utils/tailwind'
+import { useResolverPreferences } from '@/hooks/settings/useResolverPreferences'
+import { resolverLabel } from '@/utils/settings/labels'
 
 export const resolverPath = (address: string) => `/settings/resolvers/${address}`
 export const configurationPath = (address: string, id: string | bigint) => `/settings/records/${address}/${id}`
 export const shortAddress = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`
 
-export const SettingsNotice = ({ children, error = false }: { children: React.ReactNode; error?: boolean }) => (
+interface SettingsNoticeProps {
+  children: React.ReactNode
+  error?: boolean
+  className?: string
+}
+
+export const SettingsNotice = ({ children, error = false, className }: SettingsNoticeProps) => (
   <div
     role={error ? 'alert' : 'status'}
-    className={`bg-secondary border-tertiary rounded-md border p-3 text-lg ${error ? 'text-red-400' : 'text-neutral'}`}
+    className={cn(
+      'bg-secondary border-tertiary rounded-md border p-3 text-lg',
+      error ? 'text-red-400' : 'text-neutral',
+      className
+    )}
   >
     {children}
   </div>
@@ -31,6 +43,8 @@ interface ResolverAddressProps {
   canCopy?: boolean
   etherscan?: boolean
   textColor?: string
+  showLabel?: boolean
+  preferred?: boolean
 }
 
 export const ResolverAddress: React.FC<ResolverAddressProps> = ({
@@ -41,29 +55,49 @@ export const ResolverAddress: React.FC<ResolverAddressProps> = ({
   canCopy = true,
   etherscan = true,
   textColor,
+  showLabel = true,
+  preferred = false,
 }) => {
+  const addressValue = truncate ? shortAddress(address) : address
+  const preferences = useResolverPreferences(showLabel)
+  const label = showLabel ? (name ?? resolverLabel(preferences.data, address)) : null
+  const addressText = label ? '(' + addressValue + ')' : addressValue
+  const iconSize = label ? 14 : 16
+
   return (
-    <div className='flex min-w-0 flex-col gap-1'>
-      {name &&
+    <div className='flex min-w-0 items-center gap-1.5'>
+      {label &&
         (link ? (
           <Link className='hover:text-primary truncate text-lg font-semibold' href={resolverPath(address)}>
-            {name}
+            {label}
           </Link>
         ) : (
-          <p className='truncate text-lg font-semibold'>{name}</p>
+          <p className='truncate text-lg font-semibold'>{label}</p>
         ))}
-      <div className='flex items-center gap-1 text-lg'>
+      <div className={cn('flex items-center gap-1.5', label ? 'text-md' : 'text-lg')}>
         <Link
           href={resolverPath(address)}
           title={address}
           onClick={(e) => {
             if (!link) e.preventDefault()
           }}
-          className={cn('text-neutral truncate', textColor, link && 'hover:text-foreground')}
+          className={cn('text-neutral truncate', textColor, link && 'hover:text-foreground', label && 'pt-0.5')}
         >
-          {truncate ? shortAddress(address) : address}
+          {addressText}
         </Link>
-        {canCopy && <CopyButton value={address} />}
+        {preferred && (
+          <svg
+            viewBox='0 0 24 24'
+            fill='currentColor'
+            className='text-primary h-4.5 w-4.5'
+            role='img'
+            aria-label='Preferred resolver'
+          >
+            <title>Preferred resolver</title>
+            <path d='m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z' />
+          </svg>
+        )}
+        {canCopy && <CopyButton value={address} size={iconSize} />}
         {etherscan && (
           <a
             href={`${activeChain.blockExplorers.default.url}/address/${address}`}
@@ -71,9 +105,9 @@ export const ResolverAddress: React.FC<ResolverAddressProps> = ({
             rel='noreferrer'
             onClick={(e) => e.stopPropagation()}
             aria-label={`View ${address} on explorer`}
-            className='flex h-6 w-6 shrink-0 items-center justify-center opacity-70 transition-opacity hover:opacity-100'
+            className='flex shrink-0 items-center justify-center opacity-70 transition-opacity hover:opacity-100'
           >
-            <Image src={EtherscanLogo} alt='' width={16} height={16} />
+            <Image src={EtherscanLogo} alt='' width={iconSize} height={iconSize} />
           </a>
         )}
       </div>

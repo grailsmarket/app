@@ -43,7 +43,8 @@ export const configurationWrite = async ({
   id,
   records,
   mode,
-  placeholder,
+  name,
+  names = [],
 }: {
   client: PublicClient
   resolver: Address
@@ -51,32 +52,68 @@ export const configurationWrite = async ({
   id: bigint
   records: V2Record[]
   mode: 'edit' | 'new' | 'copy'
-  placeholder: string
+  name: string
+  names?: { name: string; initialId: bigint }[]
 }) => {
   const creating = mode !== 'edit'
+
   if (mode === 'copy' && !catalog.historyComplete)
     throw new Error('Load all records before duplicating this configuration.')
+
   if (id < BigInt(0) || id > catalog.recordCount) throw new Error('This configuration does not exist.')
+
+  if (creating && names.length && !catalog.canLink)
+    throw new Error('Link permission is required to assign names to configurations.')
+
   const anchor = [...catalog.names.entries()].find(([, link]) => link.recordId === id)
   const usesRoot = id === BigInt(0) || id === catalog.defaultRecordId
-  let dnsName = creating ? dnsEncodeName(placeholder) : usesRoot ? ROOT_NAME : anchor?.[1].dnsName
+  const creationName = names[0]?.name ?? name
+  let dnsName = creating ? dnsEncodeName(creationName) : usesRoot ? ROOT_NAME : anchor?.[1].dnsName
   const temporaryLink = !dnsName
+
   if (temporaryLink) {
     if (!catalog.canLink) throw new Error('This unused configuration requires Link permission before it can be edited.')
-    dnsName = dnsEncodeName(placeholder)
+    dnsName = dnsEncodeName(name)
   }
-  const node = creating || temporaryLink ? namehash(placeholder) : usesRoot ? zeroHash : anchor![0]
+
+  const node = creating ? namehash(creationName) : temporaryLink ? namehash(name) : usesRoot ? zeroHash : anchor![0]
   const current = await client.readContract({ address: resolver, abi, functionName: 'getRecordId', args: [node] })
-  const expected = creating || temporaryLink ? BigInt(0) : id === BigInt(0) ? catalog.defaultRecordId : id
+  const expected = creating
+    ? (names[0]?.initialId ?? BigInt(0))
+    : temporaryLink
+      ? BigInt(0)
+      : id === BigInt(0)
+        ? catalog.defaultRecordId
+        : id
   if (current !== expected) throw new Error('The configuration link changed. Reload before saving.')
+
   const calls = buildRecordCalls({
     records,
     mode: creating ? mode : 'shared',
     selectedId: id,
-    linkedId: creating || temporaryLink ? BigInt(0) : id,
+    linkedId: creating ? current : temporaryLink ? BigInt(0) : id,
     dnsName: dnsName!,
   })
+
+  if (creating) {
+    for (const assignment of names.slice(1)) {
+      const linkedId = await client.readContract({
+        address: resolver,
+        abi,
+        functionName: 'getRecordId',
+        args: [namehash(assignment.name)],
+      })
+
+      if (linkedId !== assignment.initialId)
+        throw new Error(`The configuration for ${assignment.name} changed. Reload before saving.`)
+
+      // The first setter allocates the ID. Link to its name in the same multicall instead of predicting the ID.
+      calls.push(encodeFunctionData({ abi, functionName: 'linkToNode', args: [dnsEncodeName(assignment.name), node] }))
+    }
+  }
+
   if (temporaryLink) calls.push(encodeFunctionData({ abi, functionName: 'linkToRecord', args: [dnsName!, BigInt(0)] }))
+
   return { calls, node, creating }
 }
 

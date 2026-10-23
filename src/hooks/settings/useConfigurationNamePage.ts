@@ -26,10 +26,11 @@ export const useConfigurationNamePage = ({ resolver, id, q, offset, limit }: Use
       activeChain.id,
       resolver,
       id?.toString(),
-      q,
+      aggregate ? undefined : q,
       aggregate ? undefined : offset,
       aggregate ? undefined : limit,
       aggregate ? resolverData.details.data?.default_record_id : undefined,
+      aggregate ? resolverData.details.data?.unlinked_name_count : undefined,
       aggregate ? resolverData.configurations.data?.record_count : undefined,
     ],
     queryFn: async ({ signal }) => {
@@ -46,34 +47,51 @@ export const useConfigurationNamePage = ({ resolver, id, q, offset, limit }: Use
 
       if (!aggregate) return getConfigurationNamePage(params)
 
-      const names = await getConfigurationNames(params)
-      return { names, total: names.length }
+      // Keep the full membership list so picker exclusions do not depend on the table's search or page.
+      return getConfigurationNames({ ...params, q: '' })
     },
     enabled: !aggregate || (!!resolverData.details.data && !!resolverData.configurations.data),
     retry: false,
     staleTime: 30_000,
   })
 
-  const fallback = metadataFailed || page.isError
+  const apiFailed = metadataFailed || page.isError
+  const unlinkedNamesUnavailable = !apiFailed && !!page.data?.unlinkedNamesUnavailable
+  const fallback = apiFailed || unlinkedNamesUnavailable
   const data = useConfigurationNames(resolver, fallback)
-  const known = data.names.data?.names.filter((name) => matchesConfigurationName(name, id, q)) ?? []
-  const availableNames = page.data?.names ?? []
+  const apiNames = page.data?.names ?? []
+  const onchainNames = data.names.data?.names ?? []
+  const allNames = apiFailed
+    ? onchainNames
+    : unlinkedNamesUnavailable
+      ? [
+          ...new Map(
+            [...onchainNames.filter((name) => name.recordId === BigInt(0)), ...apiNames].map((name) => [
+              name.name,
+              name,
+            ])
+          ).values(),
+        ].sort((left, right) => left.name.localeCompare(right.name))
+      : apiNames
+  const availableNames = allNames.filter((name) => matchesConfigurationName(name, id, q))
   const names = fallback
-    ? known.slice(offset, offset + limit)
+    ? availableNames.slice(offset, offset + limit)
     : aggregate
       ? availableNames.slice(offset, offset + limit)
       : availableNames
-  const total = fallback ? known.length : (page.data?.total ?? 0)
-  const loading = fallback ? data.names.isLoading || data.history.isLoading : page.isPending
+  const total = fallback || aggregate ? availableNames.length : (page.data?.total ?? 0)
+  const loading = (!apiFailed && page.isPending) || (fallback && (data.names.isLoading || data.history.isLoading))
 
   const retry = () => {
-    if (metadataFailed) {
+    if (metadataFailed || unlinkedNamesUnavailable) {
       void resolverData.details.refetch()
       void resolverData.configurations.refetch()
-    } else void page.refetch()
+    }
+
+    if (!metadataFailed) void page.refetch()
 
     if (fallback) void data.names.refetch()
   }
 
-  return { ...data, items: names, total, loading, fallback, retry }
+  return { ...data, items: names, allNames, total, loading, fallback, unlinkedNamesUnavailable, retry }
 }

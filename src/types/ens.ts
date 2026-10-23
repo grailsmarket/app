@@ -21,6 +21,41 @@ export type Resolver = {
 
 export type SettingsResolver = Resolver & { deployedBy?: Address; delegated?: boolean }
 
+export interface PreferredResolver {
+  address: Address
+  label: string | null
+  hasRoles: boolean
+}
+
+export interface LabeledResolver {
+  address: Address
+  label: string | null
+  isPreferred: boolean
+  resolver: AccountResolver
+}
+
+export interface ResolverPreferences {
+  preferred: PreferredResolver | null
+  total: number
+  resolvers: LabeledResolver[]
+}
+
+export interface LabeledConfiguration {
+  recordId: string
+  label: string | null
+  record: RecordConfiguration | null
+}
+
+export interface ConfigurationPreferences {
+  resolver: Address
+  recordCount: number
+  defaultRecordId: string | null
+  total: number
+  limit: number
+  offset: number
+  records: LabeledConfiguration[]
+}
+
 export type ResolverRoleName =
   | 'set_address'
   | 'set_text'

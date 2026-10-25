@@ -37,7 +37,7 @@ import { useQuery } from '@tanstack/react-query'
 import { DAY_IN_SECONDS } from '@/constants/time'
 import { getCategoryDetails } from '@/utils/getCategoryDetails'
 import { localizeNumber } from '@/utils/localizeNumber'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2 } from '@/constants/ens'
+import { DOMAIN_IMAGE_URL, localNameImagePath } from '@/constants/ens'
 
 const formatCategoryName = (category: string) =>
   category
@@ -219,7 +219,11 @@ const Card: React.FC<CardProps> = ({
       <div className='relative flex max-h-85 w-full flex-col justify-between rounded-t-md @[26.25rem]/app:max-h-51.5'>
         {isHomeCarousel ? (
           <Image
-            src={`${domain.version === 2 ? DOMAIN_IMAGE_URL_V2 : DOMAIN_IMAGE_URL}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`}
+            src={
+              domain.version === 2
+                ? localNameImagePath(domain.name, domain.expiry_date)
+                : `${DOMAIN_IMAGE_URL}/${hexToBigInt(labelhash(domain.name.replace('.eth', ''))).toString()}/image`
+            }
             alt={domain.name}
             unoptimized
             width={500}

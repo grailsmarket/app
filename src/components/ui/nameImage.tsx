@@ -113,12 +113,23 @@ const NameImage = ({
 
   useEffect(() => {
     if (version === 2) {
+      // v1 contracts don't hold v2 names. The metadata services don't support ENSv2 yet, so on
+      // any failure go straight to the locally generated PNG (attempt 2).
+      if (attempt > 1) return
+      let cancelledV2 = false
       ;(async () => {
-        const res = await fetch(v2Src, refreshKey !== undefined ? { cache: 'reload' } : undefined)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const text = await res.text()
-        setSvg(applyStateGradient(text, status))
+        try {
+          const res = await fetch(v2Src, refreshKey !== undefined ? { cache: 'reload' } : undefined)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const text = await res.text()
+          if (!cancelledV2) setSvg(applyStateGradient(text, status))
+        } catch {
+          if (!cancelledV2) setAttempt(2)
+        }
       })()
+      return () => {
+        cancelledV2 = true
+      }
     }
 
     if (attempt > 1) return
@@ -160,7 +171,7 @@ const NameImage = ({
     return () => {
       cancelled = true
     }
-  }, [attempt, wrappedSrc, unwrappedSrc, status, refreshKey])
+  }, [attempt, wrappedSrc, unwrappedSrc, v2Src, version, status, refreshKey])
 
   // Wrap the fetched SVG markup in a same-origin blob URL so we can render it
   // through an <img> element. That way the browser exposes the normal image

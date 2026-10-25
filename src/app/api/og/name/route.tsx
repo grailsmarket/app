@@ -1,4 +1,4 @@
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
+import { DOMAIN_IMAGE_URL, WRAPPED_DOMAIN_IMAGE_URL, localNameImagePath } from '@/constants/ens'
 import { ImageResponse } from 'next/og'
 import { NextRequest, NextResponse } from 'next/server'
 import { labelhash, namehash } from 'viem'
@@ -23,7 +23,9 @@ export async function GET(req: NextRequest) {
   const nameHash = namehash(name)
   const labelHash = labelhash(name.replace('.eth', ''))
 
-  const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${labelHash}/image/png`
+  // Bottom layer: our own generated image, which also covers ENSv2 names (the metadata
+  // services don't support ENSv2 contracts yet)
+  const localImageUrl = new URL(localNameImagePath(name), req.url).toString()
   const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
   const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
@@ -90,7 +92,7 @@ export async function GET(req: NextRequest) {
             }}
           />
           <img
-            src={v2ImageUrl}
+            src={localImageUrl}
             alt='ens'
             width={281}
             height={281}

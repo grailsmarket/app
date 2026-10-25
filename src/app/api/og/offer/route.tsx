@@ -10,7 +10,7 @@ import { APIResponseType } from '@/types/api'
 import { DomainOfferType } from '@/types/domains'
 import { getInterFonts } from '../_lib/inter'
 import { config } from '@/lib/config'
-import { DOMAIN_IMAGE_URL, DOMAIN_IMAGE_URL_V2, WRAPPED_DOMAIN_IMAGE_URL } from '@/constants/ens'
+import { DOMAIN_IMAGE_URL, WRAPPED_DOMAIN_IMAGE_URL, localNameImagePath } from '@/constants/ens'
 
 const size = {
   width: 1600,
@@ -156,11 +156,10 @@ export async function GET(req: NextRequest) {
         const nameHash = namehash(displayName)
         const labelHash = labelhash(displayName.replace('.eth', ''))
 
-        const v2ImageUrl = `${DOMAIN_IMAGE_URL_V2}/${nameHash}/image/png`
         const wrappedImageUrl = `${WRAPPED_DOMAIN_IMAGE_URL}/${nameHash}/image/png`
         const unwrappedImageUrl = `${DOMAIN_IMAGE_URL}/${labelHash}/image/png`
 
-        if (version === 2) return v2ImageUrl
+        if (version === 2) return new URL(localNameImagePath(displayName), req.url).toString()
 
         const wrappedResult = await fetch(wrappedImageUrl)
           .then((res) => res.ok)

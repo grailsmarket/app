@@ -9,7 +9,6 @@ const configSchema = z.object({
   grailsApiUrl: z.string(),
   ensV2ApiUrl: z.url({ protocol: /^https?$/ }).transform((url) => url.replace(/\/+$/, '')),
   ensMetadataUrl: z.string(),
-  metadataCacheInvalidationToken: z.string(),
 
   quicknodeId: z.string(),
   alchemy: z.object({
@@ -69,7 +68,6 @@ export const config = configSchema.parse({
   grailsApiUrl: process.env.NEXT_PUBLIC_GRAILS_API_URL,
   ensV2ApiUrl: process.env.NEXT_PUBLIC_ENS_V2_API_URL,
   ensMetadataUrl: process.env.NEXT_PUBLIC_ENS_METADATA_URL,
-  metadataCacheInvalidationToken: process.env.NEXT_PUBLIC_METADATA_CACHE_INVALIDATION_TOKEN,
 
   quicknodeId: process.env.NEXT_PUBLIC_QUICKNODE_ID,
   alchemy: {

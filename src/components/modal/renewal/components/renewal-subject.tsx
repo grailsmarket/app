@@ -15,8 +15,10 @@ interface RenewalSubjectProps {
   durationLabel: string | null
   totals: RenewalTotals | null
   tokenLabel: string
-  hasV1: boolean
-  hasV2: boolean
+  /** Some names pay in ETH (V1 names before the ENSv2 activation proposal executes). */
+  paysInEth: boolean
+  /** Some names pay in the selected token. */
+  paysInToken: boolean
   compact?: boolean
 }
 
@@ -26,21 +28,21 @@ export const VersionBadge: React.FC<{ version: number }> = ({ version }) => (
 
 // The names being renewed, on top of the progress and error screens: one name with its version and
 // current expiry, or a stack with the transaction count and duration. The price is the token total,
-// with the ETH part for V1 names as its caption when both versions are in.
+// with the ETH part as its caption when some names still pay in ETH.
 const RenewalSubject: React.FC<RenewalSubjectProps> = ({
   domains,
   transactionCount,
   durationLabel,
   totals,
   tokenLabel,
-  hasV1,
-  hasV2,
+  paysInEth,
+  paysInToken,
   compact,
 }) => {
   const ethLabel = totals ? `${Number(totals.totalPriceETH.toFixed(4))} ETH` : null
   const assetLabel = totals ? `${totals.totalPriceAsset.toFixed(2)} ${tokenLabel}` : null
-  const price = totals ? <p className='text-xl font-bold'>{hasV2 ? assetLabel : ethLabel}</p> : undefined
-  const priceSub = totals && hasV1 && hasV2 ? `+ ${ethLabel}` : undefined
+  const price = totals ? <p className='text-xl font-bold'>{paysInToken ? assetLabel : ethLabel}</p> : undefined
+  const priceSub = totals && paysInEth && paysInToken ? `+ ${ethLabel}` : undefined
   const imageSize = compact ? 40 : 48
 
   if (domains.length === 1) {

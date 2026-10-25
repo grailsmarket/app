@@ -78,7 +78,8 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     hasSufficientEth,
     hasSufficientAssets,
     hasV1,
-    hasV2,
+    paysInEth,
+    paysInToken,
     hasDifferentV1Durations,
     hasPendingTransaction,
     isLoadingQuote,
@@ -109,8 +110,8 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       durationLabel={formatRenewalDuration(quantity, timeUnit, customDate)}
       totals={runTotals ?? calculationResults}
       tokenLabel={tokenLabel}
-      hasV1={hasV1}
-      hasV2={hasV2}
+      paysInEth={paysInEth}
+      paysInToken={paysInToken}
     />
   )
 
@@ -414,9 +415,9 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             <p>Select a custom date</p>
             <Image src={Calendar} alt='calendar' width={18} height={18} />
           </button>
-          {hasV2 && (
+          {paysInToken && (
             <Dropdown
-              label={hasV1 ? 'V2 currency' : 'Currency'}
+              label={paysInEth ? 'V2 currency' : 'Currency'}
               options={registrationAssets}
               value={asset}
               onSelect={(value) => setAsset(value as Address)}
@@ -434,16 +435,16 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           {calculationResults && (
             <div className='bg-secondary border-tertiary rounded-lg border p-3'>
               <div className='text-md space-y-2'>
-                {hasV1 && (
+                {paysInEth && (
                   <div className='flex items-center justify-between'>
-                    <p>{hasV2 ? 'V1 renewal cost:' : 'Renewal cost:'}</p>
+                    <p>{paysInToken ? 'V1 renewal cost:' : 'Renewal cost:'}</p>
                     <div className='flex flex-col items-end'>
                       <p className='font-medium'>{calculationResults.totalPriceETH.toFixed(6)} ETH</p>
                       <p className='text-neutral text-xs'>(${calculationResults.totalPriceUSD.toFixed(2)})</p>
                     </div>
                   </div>
                 )}
-                {hasV2 && (
+                {paysInToken && (
                   <>
                     {!!calculationResults.durationDiscount?.amount && (
                       <div className='flex items-center justify-between gap-2 text-green-400'>
@@ -455,7 +456,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
                       </div>
                     )}
                     <div className='flex items-center justify-between'>
-                      <p>{hasV1 ? 'V2 renewal cost:' : 'Renewal cost:'}</p>
+                      <p>{paysInEth ? 'V2 renewal cost:' : 'Renewal cost:'}</p>
                       <p className='font-medium'>
                         {calculationResults.totalPriceAsset.toFixed(2)} {TOKENS[asset]}
                       </p>
@@ -480,7 +481,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
               <p className='text-md text-red-400'>
                 {!hasSufficientEth && `Insufficient ETH on ${currentNetwork} for renewal costs and network fees. `}
-                {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for V2 renewals.`}
+                {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for ${paysInEth ? 'V2 renewals' : 'renewals'}.`}
               </p>
             </div>
           )}

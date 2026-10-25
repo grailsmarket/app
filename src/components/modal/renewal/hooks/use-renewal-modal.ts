@@ -24,11 +24,12 @@ import { createRenewalBatches, getFailedRenewalIndices } from '@/utils/renewal'
 import { waitForTransaction } from '@/utils/web3/safeTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 import type { TimeUnit } from '@/types/registration'
-import type { RenewalBatch, RenewalEntry, RenewalStage, RenewalTransaction } from '@/types/renewal'
+import type { RenewalBatch, RenewalEntry, RenewalPayment, RenewalStage, RenewalTransaction } from '@/types/renewal'
 
 /** One batch of the run in flight, as the progress screen lists it. */
 export interface RenewalRunBatch {
   version: 1 | 2
+  payment: RenewalPayment
   names: string[]
 }
 
@@ -53,7 +54,7 @@ export const useRenewalModal = (onClose: () => void) => {
   const { isSelecting } = useAppSelector(selectBulkSelect)
   const { poapClaimed } = useAppSelector(selectUserProfile)
   const { address } = useAccount()
-  const { extend, getRenewalQuote, publicClient } = useExtendDomains()
+  const { extend, getRenewalQuote, getV1Payment, publicClient } = useExtendDomains()
   const getPricing = useRentPriceOracle()
   const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
@@ -128,9 +129,26 @@ export const useRenewalModal = (onClose: () => void) => {
     [prepared.entries, completedNames]
   )
   const remainingDomains = remainingEntries.map((entry) => entry.domain)
-  const batches = useMemo(() => createRenewalBatches(remainingEntries), [remainingEntries])
   const v1Entries = remainingEntries.filter((entry) => entry.version === 1)
   const v2Entries = remainingEntries.filter((entry) => entry.version === 2)
+
+  // V1 names pay in ETH until the ENSv2 activation proposal executes, then in the selected token.
+  const v1PaymentQuery = useQuery({
+    queryKey: ['v1RenewalPayment', activeChain.id],
+    queryFn: getV1Payment,
+    enabled: v1Entries.length > 0 && !isLoading && !success,
+    refetchInterval: isLoading || success ? false : 30000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  })
+  const v1Payment = v1PaymentQuery.data
+  const v1PaymentPending = v1Entries.length > 0 && !v1Payment
+  const batches = useMemo(
+    () => (v1PaymentPending ? [] : createRenewalBatches(remainingEntries, v1Payment ?? 'token')),
+    [remainingEntries, v1Payment, v1PaymentPending]
+  )
+  const ethEntries = v1Payment === 'eth' ? v1Entries : []
+  const tokenEntries = v1Payment === 'eth' ? v2Entries : remainingEntries
   const hasV1 = domains.some((domain) => domain.version === 1)
   const hasV2 = domains.some((domain) => domain.version === 2)
   const longestExpirationDate = Math.max(
@@ -143,19 +161,20 @@ export const useRenewalModal = (onClose: () => void) => {
       'renewalQuotes',
       activeChain.id,
       asset,
+      v1Payment,
       remainingEntries.map((entry) => [entry.label, entry.version, entry.duration.toString()]),
     ],
     queryFn: async () => {
       const results = await Promise.all(
-        batches.map(async (batch) => ({ version: batch.version, ...(await getRenewalQuote(batch, asset)) }))
+        batches.map(async (batch) => ({ payment: batch.payment, ...(await getRenewalQuote(batch, asset)) }))
       )
 
       return results.reduce(
         (totals, result) => ({
-          v1: totals.v1 + (result.version === 1 ? result.total : BigInt(0)),
-          v2: totals.v2 + (result.version === 2 ? result.total : BigInt(0)),
+          eth: totals.eth + (result.payment === 'eth' ? result.total : BigInt(0)),
+          token: totals.token + (result.payment === 'token' ? result.total : BigInt(0)),
         }),
-        { v1: BigInt(0), v2: BigInt(0) }
+        { eth: BigInt(0), token: BigInt(0) }
       )
     },
     enabled: batches.length > 0 && !prepared.error && !isLoading && !success,
@@ -196,7 +215,7 @@ export const useRenewalModal = (onClose: () => void) => {
         args: [address],
       })
     },
-    enabled: !!address && v2Entries.length > 0 && !isLoading && !success,
+    enabled: !!address && tokenEntries.length > 0 && !isLoading && !success,
     refetchInterval: isLoading || success ? false : 10000,
     retry: false,
   })
@@ -213,9 +232,9 @@ export const useRenewalModal = (onClose: () => void) => {
   const calculationResults =
     quotes.data && !quotes.isError && !prepared.error
       ? {
-          totalPriceETH: Number(formatEther(quotes.data.v1)),
-          totalPriceUSD: Number(formatEther(quotes.data.v1)) * (ethPrice || 0),
-          totalPriceAsset: tokenAmount(quotes.data.v2),
+          totalPriceETH: Number(formatEther(quotes.data.eth)),
+          totalPriceUSD: Number(formatEther(quotes.data.eth)) * (ethPrice || 0),
+          totalPriceAsset: tokenAmount(quotes.data.token),
           durationDiscount: discount ? { amount: tokenAmount(discount.amount), percentage: discount.percentage } : null,
         }
       : null
@@ -229,15 +248,19 @@ export const useRenewalModal = (onClose: () => void) => {
     !networkFunds.isError &&
     networkFunds.data !== undefined &&
     gasCost !== undefined &&
-    networkFunds.data.balance >= quotes.data.v1 + gasCost
+    networkFunds.data.balance >= quotes.data.eth + gasCost
   const hasSufficientAssets =
-    v2Entries.length === 0 ||
-    (!assetBalance.isError && assetBalance.data !== undefined && !!quotes.data && assetBalance.data >= quotes.data.v2)
+    tokenEntries.length === 0 ||
+    (!assetBalance.isError &&
+      assetBalance.data !== undefined &&
+      !!quotes.data &&
+      assetBalance.data >= quotes.data.token)
   const hasSufficientBalance = hasSufficientEth && hasSufficientAssets
   const isLoadingFunds = networkFunds.isLoading || assetBalance.isLoading
   const fundingError = networkFunds.error || assetBalance.error
   const quoteError =
     prepared.error ||
+    (v1PaymentQuery.error ? `Could not check how V1 names renew: ${v1PaymentQuery.error.message}` : null) ||
     (quotes.error ? `Could not quote renewals: ${quotes.error.message}` : null) ||
     (fundingError ? `Could not check renewal balances and fees: ${fundingError.message}` : null)
 
@@ -262,7 +285,11 @@ export const useRenewalModal = (onClose: () => void) => {
     setRunBatches(
       batches.map((batch, index) => {
         const runBatch = index === 0 && pendingBatch.current ? pendingBatch.current.batch : batch
-        return { version: runBatch.version, names: runBatch.entries.map((entry) => entry.domain.name) }
+        return {
+          version: runBatch.version,
+          payment: runBatch.payment,
+          names: runBatch.entries.map((entry) => entry.domain.name),
+        }
       })
     )
     setRunHashes(pendingBatch.current ? [pendingBatch.current.hash] : [])
@@ -323,7 +350,7 @@ export const useRenewalModal = (onClose: () => void) => {
           { hash: receipt.transactionHash, version: batch.version },
         ])
 
-        const failedIndices = batch.version === 2 ? getFailedRenewalIndices(receipt) : new Set<number>()
+        const failedIndices = batch.payment === 'token' ? getFailedRenewalIndices(receipt) : new Set<number>()
         const renewed = batch.entries.filter((_, index) => !failedIndices.has(index))
         renewed.forEach(({ domain }) => {
           succeeded.add(domain.name)
@@ -439,9 +466,11 @@ export const useRenewalModal = (onClose: () => void) => {
     hasSufficientAssets,
     hasV1,
     hasV2,
-    hasDifferentV1Durations: new Set(v1Entries.map((entry) => entry.duration)).size > 1,
+    paysInEth: ethEntries.length > 0,
+    paysInToken: tokenEntries.length > 0,
+    hasDifferentV1Durations: new Set(ethEntries.map((entry) => entry.duration)).size > 1,
     hasPendingTransaction,
-    isLoadingQuote: quotes.isLoading,
+    isLoadingQuote: quotes.isLoading || (v1PaymentPending && !v1PaymentQuery.error),
     isLoadingFunds,
     parametersLocked: !!lockedEntries,
     handleSubmit,

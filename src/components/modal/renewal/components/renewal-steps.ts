@@ -1,10 +1,10 @@
 import type { TxStep } from '@/components/ui/modal/txSteps'
-import type { RenewalStage } from '@/types/renewal'
+import type { RenewalPayment, RenewalStage } from '@/types/renewal'
 
 interface RenewalStepsInput {
   stage: RenewalStage
   /** The run's batches in order: V1 first, then V2. */
-  batches: { version: 1 | 2 }[]
+  batches: { version: 1 | 2; payment: RenewalPayment }[]
   /** 1-based index of the batch in flight. */
   currentBatch: number
   /** Each batch's hash once it was sent, by batch index. */
@@ -102,5 +102,11 @@ export const getRenewalSteps = ({
       }
     : null
 
-  return [versionRow(1), approvalRow, versionRow(2)].filter((step): step is TxStep => !!step)
+  // The approval comes before the first batch paid in the token: V2 names, or V1 names too once they
+  // renew through ETHRenewerV1.
+  const rows =
+    batches[0]?.payment === 'token'
+      ? [approvalRow, versionRow(1), versionRow(2)]
+      : [versionRow(1), approvalRow, versionRow(2)]
+  return rows.filter((step): step is TxStep => !!step)
 }

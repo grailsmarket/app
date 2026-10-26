@@ -61,7 +61,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
     entries,
     runBatches,
     runHashes,
-    approvalHashes,
+    approvals,
     runTotals,
     showCancelWarning,
     setShowCancelWarning,
@@ -112,8 +112,6 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       durationLabel={formatRenewalDuration(quantity, timeUnit, customDate)}
       totals={runTotals ?? calculationResults}
       tokenLabel={tokenLabel}
-      hasV1={hasV1}
-      hasV2={hasV2}
     />
   )
 
@@ -180,16 +178,18 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
       tokenLabel,
       network: currentNetwork,
       currentBatch,
+      runBatches,
       totalBatches,
       namesProcessed,
       totalNames: domains.length,
     }
+
     const steps = getRenewalSteps({
       stage,
       batches: runBatches,
       currentBatch,
       hashes: runHashes,
-      approvalHashes,
+      approvals,
       tokenLabel,
       href: (hash, version) => transactionUrl({ hash: hash as Hex, version }),
     })
@@ -437,34 +437,21 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           {calculationResults && (
             <div className='bg-secondary border-tertiary rounded-lg border p-3'>
               <div className='text-md space-y-2'>
-                {hasV1 && (
-                  <div className='flex items-center justify-between'>
-                    <p>{hasV2 ? 'V1 renewal cost:' : 'Renewal cost:'}</p>
-                    <div className='flex flex-col items-end'>
-                      <p className='font-medium'>{calculationResults.totalPriceETH.toFixed(6)} ETH</p>
-                      <p className='text-neutral text-xs'>(${calculationResults.totalPriceUSD.toFixed(2)})</p>
-                    </div>
+                {!!calculationResults.durationDiscount?.amount && (
+                  <div className='flex items-center justify-between gap-2 text-green-400'>
+                    <p>{hasV1 ? 'V2 duration discount:' : 'Duration discount:'}</p>
+                    <p className='text-right font-medium'>
+                      -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[asset]} (
+                      {Number(calculationResults.durationDiscount.percentage.toFixed(2))}%)
+                    </p>
                   </div>
                 )}
-                {hasV2 && (
-                  <>
-                    {!!calculationResults.durationDiscount?.amount && (
-                      <div className='flex items-center justify-between gap-2 text-green-400'>
-                        <p>{hasV1 ? 'V2 duration discount:' : 'Duration discount:'}</p>
-                        <p className='text-right font-medium'>
-                          -{calculationResults.durationDiscount.amount.toFixed(2)} {TOKENS[asset]} (
-                          {Number(calculationResults.durationDiscount.percentage.toFixed(2))}%)
-                        </p>
-                      </div>
-                    )}
-                    <div className='flex items-center justify-between'>
-                      <p>{hasV1 ? 'V2 renewal cost:' : 'Renewal cost:'}</p>
-                      <p className='font-medium'>
-                        {calculationResults.totalPriceAsset.toFixed(2)} {TOKENS[asset]}
-                      </p>
-                    </div>
-                  </>
-                )}
+                <div className='flex items-center justify-between'>
+                  <p>{hasV1 ? 'V2 renewal cost:' : 'Renewal cost:'}</p>
+                  <p className='font-medium'>
+                    {calculationResults.totalPriceAsset.toFixed(2)} {TOKENS[asset]}
+                  </p>
+                </div>
                 {estimatedGasCost !== null && (
                   <div className='flex justify-between gap-2'>
                     <span>Estimated gas:</span>
@@ -487,7 +474,7 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
           {calculationResults && !isLoadingFunds && !quoteError && !hasSufficientBalance && !hasPendingTransaction && (
             <div className='rounded-lg border border-red-500/20 bg-red-900/20 p-3'>
               <p className='text-md text-red-400'>
-                {!hasSufficientEth && `Insufficient ETH on ${currentNetwork} for renewal costs and network fees. `}
+                {!hasSufficientEth && `Insufficient ETH on ${currentNetwork} for network fees. `}
                 {!hasSufficientAssets && `Insufficient ${TOKENS[asset]} for V2 renewals.`}
               </p>
             </div>

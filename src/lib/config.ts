@@ -40,7 +40,6 @@ const configSchema = z.object({
   ensPublicResolver: address(),
   ensNameWrapper: address(),
   ensBulkRegistrar: address(),
-  bulkRenewalContract: address(),
   bulkTransferContract: address(),
 
   ensReferrerAddress: address(),
@@ -98,7 +97,6 @@ export const config = configSchema.parse({
   ensPublicResolver: process.env.NEXT_PUBLIC_ENS_PUBLIC_RESOLVER,
   ensNameWrapper: process.env.NEXT_PUBLIC_ENS_NAME_WRAPPER,
   ensBulkRegistrar: process.env.NEXT_PUBLIC_ENS_BULK_REGISTRAR,
-  bulkRenewalContract: process.env.NEXT_PUBLIC_BULK_RENEWAL_CONTRACT,
   bulkTransferContract: process.env.NEXT_PUBLIC_BULK_TRANSFER_CONTRACT,
 
   ensReferrerAddress: process.env.NEXT_PUBLIC_REFERRER_ADDRESS,

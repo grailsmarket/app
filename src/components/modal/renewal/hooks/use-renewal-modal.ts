@@ -14,7 +14,6 @@ import { clearBulkSelect, selectBulkSelect, removeBulkSelectDomain } from '@/sta
 import { selectUserProfile } from '@/state/reducers/portfolio/profile'
 import useExtendDomains from '@/hooks/registrar/useExtendDomains'
 import { useRentPriceOracle } from '@/hooks/registrar/useRentPriceOracle'
-import useETHPrice from '@/hooks/useETHPrice'
 import { activeChain } from '@/constants/web3/chain'
 import { TOKEN_ADDRESSES, TOKEN_DECIMALS, TOKENS } from '@/constants/web3/tokens'
 import { normalizeName } from '@/lib/ens'
@@ -33,7 +32,6 @@ export interface RenewalRunBatch {
 }
 
 export interface RenewalTotals {
-  totalPriceETH: number
   totalPriceAsset: number
 }
 
@@ -55,7 +53,6 @@ export const useRenewalModal = (onClose: () => void) => {
   const { address } = useAccount()
   const { extend, getRenewalQuote, publicClient } = useExtendDomains()
   const getPricing = useRentPriceOracle()
-  const { ethPrice } = useETHPrice()
   const queryClient = useQueryClient()
 
   const [quantity, setQuantity] = useState(1)
@@ -79,7 +76,7 @@ export const useRenewalModal = (onClose: () => void) => {
   // the token approvals it needed, and the totals it started with.
   const [runBatches, setRunBatches] = useState<RenewalRunBatch[]>([])
   const [runHashes, setRunHashes] = useState<(Hex | undefined)[]>([])
-  const [approvalHashes, setApprovalHashes] = useState<Hex[]>([])
+  const [approvals, setApprovals] = useState<{ version: 1 | 2; hash: Hex }[]>([])
   const [runTotals, setRunTotals] = useState<RenewalTotals | null>(null)
   const [showCancelWarning, setShowCancelWarning] = useState(false)
   const pendingBatch = useRef<{ batch: RenewalBatch; hash: Hex } | null>(null)
@@ -89,8 +86,10 @@ export const useRenewalModal = (onClose: () => void) => {
 
   const prepared = useMemo(() => {
     if (lockedEntries) return { entries: lockedEntries, error: null }
+
     try {
       const entries = new Map<string, RenewalEntry>()
+
       for (const domain of selectedDomains) {
         const name = normalizeName(domain.name)
 
@@ -129,6 +128,7 @@ export const useRenewalModal = (onClose: () => void) => {
   )
   const remainingDomains = remainingEntries.map((entry) => entry.domain)
   const batches = useMemo(() => createRenewalBatches(remainingEntries), [remainingEntries])
+  const allEntries = batches.flatMap((entry) => entry.entries)
   const v1Entries = remainingEntries.filter((entry) => entry.version === 1)
   const v2Entries = remainingEntries.filter((entry) => entry.version === 2)
   const hasV1 = domains.some((domain) => domain.version === 1)
@@ -167,7 +167,7 @@ export const useRenewalModal = (onClose: () => void) => {
   const pricing = useQuery({
     queryKey: ['registrationPricing', activeChain.id, asset],
     queryFn: () => getPricing(asset),
-    enabled: v2Entries.length > 0 && !isLoading && !success,
+    enabled: batches.length > 0 && !isLoading && !success,
     refetchInterval: isLoading || success ? false : 10000,
     refetchOnWindowFocus: false,
     staleTime: 5000,
@@ -196,7 +196,7 @@ export const useRenewalModal = (onClose: () => void) => {
         args: [address],
       })
     },
-    enabled: !!address && v2Entries.length > 0 && !isLoading && !success,
+    enabled: !!address && batches.length > 0 && !isLoading && !success,
     refetchInterval: isLoading || success ? false : 10000,
     retry: false,
   })
@@ -204,8 +204,8 @@ export const useRenewalModal = (onClose: () => void) => {
   const discount =
     pricing.data && quotes.data && !quotes.isError
       ? calculateDurationDiscount(
-          v2Entries.map((entry) => entry.label),
-          v2Entries.map((entry) => entry.duration),
+          allEntries.map((entry) => entry.label),
+          allEntries.map((entry) => entry.duration),
           pricing.data
         )
       : null
@@ -213,9 +213,7 @@ export const useRenewalModal = (onClose: () => void) => {
   const calculationResults =
     quotes.data && !quotes.isError && !prepared.error
       ? {
-          totalPriceETH: Number(formatEther(quotes.data.v1)),
-          totalPriceUSD: Number(formatEther(quotes.data.v1)) * (ethPrice || 0),
-          totalPriceAsset: tokenAmount(quotes.data.v2),
+          totalPriceAsset: tokenAmount(quotes.data.v2 + quotes.data.v1),
           durationDiscount: discount ? { amount: tokenAmount(discount.amount), percentage: discount.percentage } : null,
         }
       : null
@@ -229,10 +227,9 @@ export const useRenewalModal = (onClose: () => void) => {
     !networkFunds.isError &&
     networkFunds.data !== undefined &&
     gasCost !== undefined &&
-    networkFunds.data.balance >= quotes.data.v1 + gasCost
+    networkFunds.data.balance >= gasCost
   const hasSufficientAssets =
-    v2Entries.length === 0 ||
-    (!assetBalance.isError && assetBalance.data !== undefined && !!quotes.data && assetBalance.data >= quotes.data.v2)
+    !assetBalance.isError && assetBalance.data !== undefined && !!quotes.data && assetBalance.data >= quotes.data.v2
   const hasSufficientBalance = hasSufficientEth && hasSufficientAssets
   const isLoadingFunds = networkFunds.isLoading || assetBalance.isLoading
   const fundingError = networkFunds.error || assetBalance.error
@@ -243,6 +240,7 @@ export const useRenewalModal = (onClose: () => void) => {
 
   const handleSubmit = async (event: React.MouseEvent) => {
     event.preventDefault()
+
     if (
       submitting.current ||
       !address ||
@@ -266,12 +264,7 @@ export const useRenewalModal = (onClose: () => void) => {
       })
     )
     setRunHashes(pendingBatch.current ? [pendingBatch.current.hash] : [])
-    setApprovalHashes([])
-    setRunTotals(
-      calculationResults
-        ? { totalPriceETH: calculationResults.totalPriceETH, totalPriceAsset: calculationResults.totalPriceAsset }
-        : null
-    )
+    setRunTotals(calculationResults ? { totalPriceAsset: calculationResults.totalPriceAsset } : null)
 
     const succeeded = new Set(completedNames)
 
@@ -293,8 +286,9 @@ export const useRenewalModal = (onClose: () => void) => {
             if (!hash && cancelRequested.current) throw new RenewalCancelledError()
 
             setStage(stage)
-            setTransaction(hash ? { hash, version: batch.version } : null)
-            if (stage === 'approving' && hash) setApprovalHashes((hashes) => [...hashes, hash])
+            const approval = hash ? { hash, version: batch.version } : null
+            setTransaction(approval)
+            if (stage === 'approving' && approval) setApprovals((hashes) => [...hashes, approval])
           })
           pendingBatch.current = { batch, hash }
           setHasPendingTransaction(true)
@@ -418,7 +412,7 @@ export const useRenewalModal = (onClose: () => void) => {
     entries: prepared.entries,
     runBatches,
     runHashes,
-    approvalHashes,
+    approvals,
     runTotals,
     showCancelWarning,
     setShowCancelWarning,

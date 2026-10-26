@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
-import { Address, createPublicClient, erc20Abi, Hex, http, labelhash } from 'viem'
+import { Address, createPublicClient, erc20Abi, Hex, http, labelhash, pad } from 'viem'
 import { useGetWalletClient } from '@/hooks/useGetWalletClient'
-import { BulkRenewalAbi } from '@/constants/web3/abi/BulkRenewalAbi'
+import { RENEWER_V1_ABI } from '@/constants/web3/abi/ensRenewerV1'
 import { BaseRegistrarAbi } from '@/constants/web3/abi/BaseRegistrar'
 import { BULK_REGISTRAR_ABI } from '@/constants/web3/abi/BulkRegistrar'
 import { activeChain } from '@/constants/web3/chain'
@@ -49,12 +49,22 @@ const useExtendDomains = () => {
           )
         }
 
-        const total = await publicClient.readContract({
-          address: config.bulkRenewalContract,
-          abi: BulkRenewalAbi,
-          functionName: 'rentPrice',
-          args: [labels, durations[0]],
-        })
+        // @ts-expect-error/ignore-auto-reduce-type
+        const total = (await Promise.resolve(
+          // @ts-expect-error/ignore-auto-reduce-type
+          labels.reduce(async (acc, label, i) => {
+            const cost = await publicClient.readContract({
+              address: config.ensV2RenewerV1,
+              abi: RENEWER_V1_ABI,
+              functionName: 'getRenewPrice',
+              args: [label, durations[i], asset],
+            })
+            const total = await acc
+
+            return total + cost
+          }, BigInt(0))
+        )) as bigint
+
         if (total <= BigInt(0)) throw new Error('These V1 names could not be quoted for renewal.')
 
         return { total, v1Bitmap: [] as readonly bigint[] }
@@ -96,19 +106,51 @@ const useExtendDomains = () => {
     await ensureChain(walletClient, activeChain.id)
 
     if (batch.version === 1) {
+      const allowanceArgs = {
+        address: asset,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [walletClient.account.address, config.ensV2RenewerV1],
+      } as const
+
+      if ((await publicClient.readContract(allowanceArgs)) < quote.total) {
+        onProgress('approving', null)
+
+        const approvalHash = await walletClient.writeContract({
+          address: asset,
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: [config.ensV2RenewerV1, quote.total],
+          chain: activeChain,
+        })
+
+        onProgress('approving', approvalHash)
+        const receipt = await waitForTransaction(publicClient, approvalHash)
+
+        if (receipt.status !== 'success') throw new Error('Payment token approval failed.')
+        if ((await publicClient.readContract(allowanceArgs)) < quote.total) {
+          throw new Error('Payment token allowance is insufficient.')
+        }
+      }
+
+      const items = labels.map((label, i) => ({
+        label,
+        duration: durations[i],
+        referrer: pad(config.ensReferrerAddress),
+      }))
+
       onProgress('confirming', null)
+
       const request = {
-        address: config.bulkRenewalContract,
-        abi: BulkRenewalAbi,
-        functionName: 'renewAll',
-        args: [labels, durations[0]],
-        value: quote.total,
+        address: config.ensV2RenewerV1,
+        abi: RENEWER_V1_ABI,
+        functionName: 'renewBatch',
+        args: [items, asset],
         account: walletClient.account,
         chain: activeChain,
       } as const
 
       const gas = await publicClient.estimateContractGas(request)
-      console.log(gas)
       return walletClient.writeContract({ ...request, gas: withGasBuffer(gas) })
     }
 
@@ -140,6 +182,7 @@ const useExtendDomains = () => {
     }
 
     onProgress('confirming', null)
+
     const request = {
       address: config.ensBulkRegistrar,
       abi: BULK_REGISTRAR_ABI,

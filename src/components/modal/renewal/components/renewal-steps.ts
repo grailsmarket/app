@@ -1,45 +1,38 @@
 import type { TxStep } from '@/components/ui/modal/txSteps'
 import type { RenewalStage } from '@/types/renewal'
+import { Hex } from 'viem'
 
 interface RenewalStepsInput {
   stage: RenewalStage
-  /** The run's batches in order: V1 first, then V2. */
   batches: { version: 1 | 2 }[]
-  /** 1-based index of the batch in flight. */
   currentBatch: number
-  /** Each batch's hash once it was sent, by batch index. */
   hashes: (string | undefined)[]
-  /** Token approvals sent during this run. */
-  approvalHashes: string[]
+  approvals: { version: 1 | 2; hash: Hex }[]
   tokenLabel: string
   href: (hash: string, version: 1 | 2) => string
 }
 
-// The steps of a renewal in flight. One transaction: Approve (when it happens), Confirm Renewal, Onchain
-// Confirmation. Several: a row per name version with a batch counter and one hash pill per sent batch,
-// and the token approval between them. The approval row shows up once the allowance turns out too low.
 export const getRenewalSteps = ({
   stage,
   batches,
   currentBatch,
   hashes,
-  approvalHashes,
+  approvals,
   tokenLabel,
   href,
 }: RenewalStepsInput): TxStep[] => {
   const current = currentBatch - 1
   const currentVersion = batches[current]?.version ?? 2
   const isApproving = stage === 'approving'
-  const hasApproval = isApproving || approvalHashes.length > 0
-  const approvalLinks = approvalHashes.map((hash, index) => ({
-    key: `approve-${index}`,
-    hash,
-    href: href(hash, 2),
-  }))
+  const isV1Approving = isApproving && currentVersion === 1
+  const v1Approval = approvals.find((approval) => approval.version === 1)
+  const isV2Approving = isApproving && currentVersion === 2
+  const v2Approval = approvals.find((approval) => approval.version === 2)
+  const hasApproval = isApproving || approvals.length > 0
 
   if (batches.length <= 1) {
     const steps: TxStep[] = []
-    const approvalHash = approvalHashes[approvalHashes.length - 1]
+    const approval = approvals[approvals.length - 1]
     const hash = hashes[0]
 
     if (hasApproval) {
@@ -47,8 +40,8 @@ export const getRenewalSteps = ({
         key: 'approve',
         label: `Approve ${tokenLabel}`,
         status: isApproving ? 'active' : 'done',
-        hash: approvalHash,
-        href: approvalHash ? href(approvalHash, 2) : undefined,
+        hash: approval.hash,
+        href: approval ? href(approval.hash, currentVersion) : undefined,
       })
     }
 
@@ -82,7 +75,6 @@ export const getRenewalSteps = ({
       key: `v${version}`,
       label: `Extend V${version} Names`,
       status: current > last ? 'done' : isCurrent && !isApproving ? 'active' : 'upcoming',
-      batch: isCurrent && indices.length > 1 ? `${current - first + 1} / ${indices.length}` : undefined,
       links: indices.flatMap((index) => {
         const hash = hashes[index]
         return hash ? [{ key: `v${version}-${index}`, hash, href: href(hash, version) }] : []
@@ -90,17 +82,27 @@ export const getRenewalSteps = ({
     }
   }
 
-  const approvalRow: TxStep | null = hasApproval
-    ? {
-        key: 'approve',
-        label: `Approve ${tokenLabel}`,
-        status: isApproving ? 'active' : 'done',
-        // One approval is a single pill at the end of the row; several get one pill each.
-        hash: approvalLinks.length === 1 ? approvalLinks[0].hash : undefined,
-        href: approvalLinks.length === 1 ? approvalLinks[0].href : undefined,
-        links: approvalLinks.length > 1 ? approvalLinks : undefined,
-      }
-    : null
+  const approvalV1Row: TxStep | null =
+    isV1Approving || v1Approval
+      ? {
+          key: 'approve',
+          label: `Approve ${tokenLabel} • V1`,
+          status: isV1Approving ? 'active' : 'done',
+          hash: v1Approval?.hash,
+          href: v1Approval && href(v1Approval?.hash, 1),
+        }
+      : null
 
-  return [versionRow(1), approvalRow, versionRow(2)].filter((step): step is TxStep => !!step)
+  const approvalV2Row: TxStep | null =
+    isV2Approving || v2Approval
+      ? {
+          key: 'approve',
+          label: `Approve ${tokenLabel} • V2`,
+          status: isV2Approving ? 'active' : v2Approval ? 'done' : 'upcoming',
+          hash: v2Approval?.hash,
+          href: v2Approval && href(v2Approval?.hash, 1),
+        }
+      : null
+
+  return [approvalV1Row, versionRow(1), approvalV2Row, versionRow(2)].filter((step): step is TxStep => !!step)
 }

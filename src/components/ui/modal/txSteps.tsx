@@ -13,16 +13,12 @@ export interface TxStep {
   key: string
   label: React.ReactNode
   status: TxStepStatus
-  /** Shown under the active or failed step. */
   detail?: React.ReactNode
   hash?: string | null
   href?: string
   linkLabel?: React.ReactNode
-  /** Batch counter, e.g. "2 / 3". */
   batch?: React.ReactNode
-  /** A small control at the end of the row, such as Retry. */
   action?: React.ReactNode
-  /** One pill per finished batch, under the label. */
   links?: { key: string; hash: string; href?: string; label?: React.ReactNode }[]
 }
 

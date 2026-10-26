@@ -23,6 +23,7 @@ export const createRenewalBatches = (entries: RenewalEntry[], batchSize = 100): 
       }
     }
   }
+
   return batches
 }
 

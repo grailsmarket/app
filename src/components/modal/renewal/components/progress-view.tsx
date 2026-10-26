@@ -4,6 +4,7 @@ import NameChips from '@/components/ui/modal/nameChips'
 import type { TxState } from '@/components/ui/modal/statusOrb'
 import { beautifyName } from '@/lib/ens'
 import type { RenewalStage } from '@/types/renewal'
+import { RenewalRunBatch } from '../hooks/use-renewal-modal'
 
 interface ProgressStatusInput {
   stage: RenewalStage
@@ -15,6 +16,7 @@ interface ProgressStatusInput {
   totalBatches: number
   namesProcessed: number
   totalNames: number
+  runBatches: RenewalRunBatch[]
 }
 
 // approving: wallet, then pending once the approval is sent; confirming: wallet; processing: pending.
@@ -27,8 +29,10 @@ export const getProgressStatus = ({
   totalBatches,
   namesProcessed,
   totalNames,
+  runBatches,
 }: ProgressStatusInput): { state: TxState; title: string; message: string } => {
-  const progress = `${network} · Extending ${namesProcessed}/${totalNames} names...`
+  const currBatchNames = runBatches[currentBatch - 1]?.names.length || 0
+  const progress = `${network} · Extending ${namesProcessed + currBatchNames}/${totalNames} names...`
 
   if (stage === 'approving') {
     return isApprovalPending

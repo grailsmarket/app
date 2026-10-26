@@ -9,14 +9,10 @@ export type RenewalSubjectDomain = Pick<MarketplaceDomainType, 'name' | 'token_i
 
 interface RenewalSubjectProps {
   domains: RenewalSubjectDomain[]
-  /** The run's transaction count. */
   transactionCount: number
-  /** "1 year" or "Until Mar 3, 2029". */
   durationLabel: string | null
   totals: RenewalTotals | null
   tokenLabel: string
-  hasV1: boolean
-  hasV2: boolean
   compact?: boolean
 }
 
@@ -33,14 +29,10 @@ const RenewalSubject: React.FC<RenewalSubjectProps> = ({
   durationLabel,
   totals,
   tokenLabel,
-  hasV1,
-  hasV2,
   compact,
 }) => {
-  const ethLabel = totals ? `${Number(totals.totalPriceETH.toFixed(4))} ETH` : null
   const assetLabel = totals ? `${totals.totalPriceAsset.toFixed(2)} ${tokenLabel}` : null
-  const price = totals ? <p className='text-xl font-bold'>{hasV2 ? assetLabel : ethLabel}</p> : undefined
-  const priceSub = totals && hasV1 && hasV2 ? `+ ${ethLabel}` : undefined
+  const price = totals ? <p className='text-xl font-bold'>{assetLabel}</p> : undefined
   const imageSize = compact ? 40 : 48
 
   if (domains.length === 1) {
@@ -64,7 +56,6 @@ const RenewalSubject: React.FC<RenewalSubjectProps> = ({
           />
         }
         price={price}
-        priceSub={priceSub}
       />
     )
   }
@@ -87,7 +78,6 @@ const RenewalSubject: React.FC<RenewalSubjectProps> = ({
       ))}
       meta={[pluralize(transactionCount, 'transaction'), durationLabel].filter(Boolean).join(' · ')}
       price={price}
-      priceSub={priceSub}
     />
   )
 }

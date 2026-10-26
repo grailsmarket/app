@@ -1,5 +1,7 @@
 'use client'
 
+import { ProfileSkeleton, SettingsSkeleton } from '@/components/ui/ensSkeletons'
+
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { isAddress, zeroAddress } from 'viem'
@@ -32,7 +34,7 @@ const Content: React.FC<SettingsPageProps> = ({ section }) => {
 
   if ((root === 'profile' || root === 'notifications') && section.length <= 1)
     return profileIsLoading ? (
-      <SettingsNotice>Loading your profile…</SettingsNotice>
+      <ProfileSkeleton notifications={root === 'notifications'} />
     ) : (
       <ProfileSettings notifications={root === 'notifications'} />
     )
@@ -86,7 +88,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ section }) => {
   return (
     <main className='mx-auto w-full max-w-7xl px-3 py-3 md:px-8 md:py-8'>
       {authStatusIsLoading ? (
-        <SettingsNotice>Checking your wallet…</SettingsNotice>
+        <SettingsSkeleton section={selected} />
       ) : !userAddress || authStatus !== 'authenticated' ? (
         <div className='flex flex-col items-start gap-5'>
           <p className='text-neutral text-lg'>Sign in to manage settings for your wallet.</p>

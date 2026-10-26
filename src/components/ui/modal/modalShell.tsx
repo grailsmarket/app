@@ -112,7 +112,7 @@ const ModalShell: React.FC<ModalShellProps> = ({
       onClick={() => {
         if (canDismiss) onClose()
       }}
-      className='bg-scrim fixed inset-0 z-50 flex h-dvh w-screen items-end justify-center backdrop-blur-[6px] md:items-center md:p-4'
+      className='bg-scrim fixed inset-0 z-1000 flex h-dvh w-screen items-end justify-center backdrop-blur-[6px] md:items-center md:p-4'
     >
       <motion.div
         role='dialog'

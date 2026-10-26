@@ -1,5 +1,7 @@
 'use client'
 
+import { NamesSkeleton, TableRowsSkeleton } from '@/components/ui/ensSkeletons'
+
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -138,7 +140,7 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
   }
 
   if (data.state.isError) return <QueryError error={data.state.error} retry={() => data.state.refetch()} />
-  if (!data.catalog) return <SettingsNotice>Loading name links…</SettingsNotice>
+  if (!data.catalog) return <NamesSkeleton />
 
   const pageChanges = changes.filter((change) => {
     const wasAssigned =
@@ -199,7 +201,6 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
         placeholder={`Search names using this ${id === undefined ? 'resolver' : 'configuration'}`}
         className='mb-3'
       />
-      {loading && <p className='text-neutral text-lg'>Checking current name assignments…</p>}
       {/* {loading ? (
         <p className='text-neutral text-lg'>Checking current name assignments…</p>
       ) : (
@@ -211,7 +212,8 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
         </p>
       )} */}
       <div className='overflow-x-auto'>
-        <table className={tableClass}>
+        <table className={tableClass} aria-busy={loading}>
+          {loading && <caption className='sr-only'>Loading name assignments…</caption>}
           <thead>
             <tr>
               {['Name', 'Configuration', ''].map((label) => (
@@ -277,6 +279,7 @@ const ConfigurationNames: React.FC<ConfigurationNamesProps> = ({ resolver, id })
                 </td>
               </tr>
             ))}
+            {loading && <TableRowsSkeleton columns={3} nameImage actionColumn rows={visible.length ? 1 : 4} />}
           </tbody>
         </table>
       </div>

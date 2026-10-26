@@ -1,5 +1,8 @@
 'use client'
 
+import { CostSkeleton } from '@/components/ui/ensSkeletons'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import { Check } from 'ethereum-identity-kit'
 import PrimaryButton from '@/components/ui/buttons/primary'
 import SecondaryButton from '@/components/ui/buttons/secondary'
@@ -472,7 +475,12 @@ const ExtendModal: React.FC<ExtendModalProps> = ({ onClose }) => {
             </div>
           )}
 
-          {isLoadingQuote && <p className='text-neutral text-sm'>Loading renewal costs...</p>}
+          {isLoadingQuote &&
+            (calculationResults ? (
+              <SkeletonText label='Updating renewal costs…' className='w-32' />
+            ) : (
+              <CostSkeleton label='Loading renewal costs…' />
+            ))}
           {quoteError && <p className='text-sm text-red-400'>{quoteError}</p>}
 
           {/* Insufficient balance warning */}

@@ -105,7 +105,7 @@ export const ResolverAddress: React.FC<ResolverAddressProps> = ({
             rel='noreferrer'
             onClick={(e) => e.stopPropagation()}
             aria-label={`View ${address} on explorer`}
-            className='flex shrink-0 items-center justify-center opacity-70 transition-opacity hover:opacity-100'
+            className='flex shrink-0 items-center justify-center pl-0.5 opacity-70 transition-opacity hover:opacity-100'
           >
             <Image src={EtherscanLogo} alt='' width={iconSize} height={iconSize} />
           </a>

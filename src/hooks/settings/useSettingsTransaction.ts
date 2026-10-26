@@ -14,33 +14,23 @@ import { activeChain } from '@/constants/web3/chain'
 import { useSettingsTransactionDialog } from '@/context/settingsTransaction'
 import { refreshEnsQueries } from '@/utils/refreshEnsQueries'
 
-/** A queued transaction. `pendingLabel` and `note` only change what the transaction screens say. */
 export interface SettingsTransactionStep extends PreparedSettingsTransactionStep {
-  /** The status title while its transaction confirms, e.g. "Deploying Resolver". Defaults to the label. */
   pendingLabel?: string
-  /** One sentence added to its wallet prompt, e.g. "Migration is permanent." */
   note?: string
 }
 
-/** What the transaction modal says around the queue. Every field is optional. */
 export interface SettingsTransactionCopy {
-  /** Names the whole action in the modal header, e.g. "Set Primary Name". Defaults to the first step's label. */
   title?: string
-  /** Defaults to "Changes Saved". */
   successTitle?: string
   successMessage?: string
-  /** Defaults to "Transaction Failed". */
   errorTitle?: string
 }
 
-/** A queued step as the transaction screens show it. */
 export interface SettingsTransactionStepState {
   label: string
   pendingLabel?: string
   note?: string
-  /** The transaction sent for this step. It is confirmed once the queue has moved past the step. */
   hash?: Hex
-  /** Its prepare() found nothing to send, so the queue moved on without a transaction. */
   skipped?: boolean
 }
 
@@ -55,13 +45,14 @@ const describeSteps = (steps: SettingsTransactionStep[], results: StepResult[] =
     skipped: results[index]?.skipped,
   }))
 
-/** `copy` is what the modal says for every run of this hook; a run can override it with its own copy. */
-export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
+export const useSettingsTransaction = (
+  copy: SettingsTransactionCopy = {},
+  onClose?: (txCompleted?: boolean) => void
+) => {
   const { address } = useAccount()
   const getWallet = useGetWalletClient()
   const client = useMemo(createV2RecordsClient, [])
   const queries = useQueryClient()
-  const locked = useRef(false)
   const requestedSteps = useRef<SettingsTransactionStep[]>([])
   const requestedCopy = useRef<SettingsTransactionCopy>({})
   const queue = useRef<{
@@ -69,28 +60,23 @@ export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
     index: number
     account: Address
     hash?: Hex
-    /** Reporting only: the hash or skip of every step the queue has reached. */
     results: StepResult[]
   } | null>(null)
+
   const [state, setState] = useState<{
     phase: 'idle' | 'preparing' | 'confirming' | 'processing' | 'success' | 'error'
     status?: string
     label?: string
     error?: string
-    /** The raw error text when it says more than `error`. */
     details?: string
     hash?: Hex
     progress?: { current: number; total: number }
     steps?: SettingsTransactionStepState[]
-    /** The step running now, or `steps.length` once every step is done. */
     index?: number
     copy?: SettingsTransactionCopy
   }>({ phase: 'idle' })
 
   const run = async (steps: SettingsTransactionStep[] = [], runCopy?: SettingsTransactionCopy) => {
-    if (locked.current) return false
-
-    locked.current = true
     if (steps.length) {
       requestedSteps.current = steps
       requestedCopy.current = runCopy ?? {}
@@ -104,6 +90,7 @@ export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
       steps: queued ? describeSteps(queued.steps, queued.results) : describeSteps(requestedSteps.current),
       index: queued?.index ?? 0,
     }
+
     setState((previous) => ({
       ...previous,
       ...preview,
@@ -124,6 +111,7 @@ export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
         steps: describeSteps(work.steps, work.results),
         index: work.index,
       })
+
       if (work.account.toLowerCase() !== address.toLowerCase())
         throw new Error('Reconnect the wallet that started this transaction.')
 
@@ -156,7 +144,9 @@ export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
         setState({ phase: 'processing', label: step.label, hash: work.hash, progress, ...report() })
         const receipt = await waitForTransaction(client, work.hash)
         work.hash = undefined
+
         if (receipt.status !== 'success') throw new Error('The transaction reverted. Its changes were not saved.')
+
         work.index++
         // Receipt callbacks update local UI only; indexing and preference failures must never resubmit a confirmed write.
         refreshEnsQueries(queries, receipt)
@@ -180,17 +170,14 @@ export const useSettingsTransaction = (copy: SettingsTransactionCopy = {}) => {
         hash: work?.hash ?? previous.hash,
       }))
       return false
-    } finally {
-      locked.current = false
     }
   }
 
   const reset = () => {
-    if (locked.current || queue.current?.hash) return
-
     queue.current = null
     requestedSteps.current = []
     setState({ phase: 'idle' })
+    onClose?.(state.phase === 'success')
   }
 
   const explorerUrl = state.hash ? `${activeChain.blockExplorers.default.url}/tx/${state.hash}` : null

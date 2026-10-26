@@ -12,20 +12,12 @@ import { cn } from '@/utils/tailwind'
 import PencilIcon from 'public/icons/pencil-primary.svg'
 
 export const KEEP_OPEN_HINT = 'Keep this window open until the transaction confirms.'
-
-/**
- * One in-progress, success or error screen of a records flow. It maps one to one onto ModalShell's props,
- * so the same screen renders in a ModalShell or, for the wide tabbed editors that keep their own frame,
- * in TxScreenPanel.
- */
 export interface TxScreen {
-  /** Stage key: the stage cross-fades when it changes. Busy screens of one flow share 'progress'. */
   key: string
   subject?: React.ReactNode
   body: React.ReactNode
   footer?: React.ReactNode
   footerHint?: React.ReactNode
-  /** A wallet prompt or transaction is in flight: no close button, no dismissing. */
   locked: boolean
 }
 
@@ -34,18 +26,11 @@ const headerButtonClassName =
 
 interface TxScreenPanelProps {
   screen: TxScreen
-  /** Draws ModalShell's header row. Leave it out when the frame already has a header. */
   title?: React.ReactNode
-  /** The header's close button, hidden while the screen is locked. */
   onClose?: () => void
-  /** Centres the stage in a frame taller than its content. */
   center?: boolean
 }
 
-/**
- * ModalShell's header, subject, stage and footer, for a frame that cannot be a ModalShell
- * (the V1, V2 and bulk editors are wider and tabbed). The frame itself mirrors the shell's locking.
- */
 export const TxScreenPanel: React.FC<TxScreenPanelProps> = ({ screen, title, onClose, center }) => {
   const reduceMotion = useReducedMotion()
   const contentRef = useRef<HTMLDivElement>(null)
@@ -125,7 +110,6 @@ export const TxScreenShell: React.FC<{
   screen: TxScreen
   title?: React.ReactNode
   onClose: () => void
-  /** Whether a scrim click or Escape closes the modal. Defaults to the opposite of `locked`. */
   dismissible?: boolean
 }> = ({ screen, title, onClose, dismissible }) => (
   <ModalShell

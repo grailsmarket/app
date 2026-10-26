@@ -1,5 +1,7 @@
 'use client'
 
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -301,7 +303,13 @@ const RegistrationModal: React.FC = () => {
             width={48}
           />
         }
-        meta={entries[0]?.isAvailable === null ? 'Checking availability...' : 'Available'}
+        meta={
+          entries[0]?.isAvailable === null ? (
+            <SkeletonText label='Checking availability…' className='w-24' />
+          ) : (
+            'Available'
+          )
+        }
         price={
           modal.calculationResults ? (
             <p className='text-xl font-bold'>

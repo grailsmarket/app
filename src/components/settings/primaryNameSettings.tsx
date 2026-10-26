@@ -1,5 +1,8 @@
 'use client'
 
+import { NameListSkeleton, ReviewSkeleton } from '@/components/ui/ensSkeletons'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import Link from 'next/link'
 import { Avatar, Check, ShortArrow, truncateAddress } from 'ethereum-identity-kit'
 import { useUserContext } from '@/context/user'
@@ -32,11 +35,13 @@ const PrimaryNameSettings = () => {
           <Avatar address={userAddress} style={{ width: 48, height: 48, minWidth: 48 }} />
           <div className='min-w-0'>
             <p className='truncate text-xl font-semibold'>
-              {editor.primary.isLoading
-                ? 'Loading primary name…'
-                : name
-                  ? beautifyName(name)
-                  : truncateAddress(userAddress!)}
+              {editor.primary.isLoading ? (
+                <SkeletonText label='Loading primary name…' className='w-40' />
+              ) : name ? (
+                beautifyName(name)
+              ) : (
+                truncateAddress(userAddress!)
+              )}
             </p>
             <p className='text-neutral text-lg'>Primary ENS name · {editor.chain.name}</p>
           </div>
@@ -88,7 +93,7 @@ const PrimaryNameSettings = () => {
               </button>
             ))}
             {editor.searching ? (
-              <p className='text-neutral p-3 text-lg'>Loading your names…</p>
+              <NameListSkeleton rows={editor.options.length ? 1 : 3} />
             ) : (
               !editor.options.length && (
                 <p className='text-neutral p-3 text-lg'>No names found. Try searching for a full ENS name.</p>
@@ -121,8 +126,8 @@ const PrimaryNameSettings = () => {
                 <span className='truncate font-semibold'>{beautifyName(selected.name)}</span>
                 <span className='text-neutral shrink-0'>· {editor.chain.name}</span>
               </div>
-              {editor.review.isFetching ? (
-                <p className='text-neutral text-lg'>Checking ownership and address record…</p>
+              {editor.review.isFetching && !review ? (
+                <ReviewSkeleton label='Checking ownership and address record…' />
               ) : editor.review.isError ? (
                 <QueryError error={editor.review.error} retry={() => editor.review.refetch()} />
               ) : review?.blocked ? (
@@ -178,6 +183,9 @@ const PrimaryNameSettings = () => {
                       : 'This is already your primary name.'}
                   </p>
                 )
+              )}
+              {editor.review.isFetching && review && (
+                <SkeletonText label='Checking ownership and address record…' className='w-48' />
               )}
             </div>
           )}

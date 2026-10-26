@@ -1,5 +1,7 @@
 'use client'
 
+import { RecordsSkeleton, ReviewSkeleton, RecordListSkeleton } from '@/components/ui/ensSkeletons'
+
 import { useEffect, useRef, useState } from 'react'
 import { useV2EditRecords } from '@/hooks/records/useV2EditRecords'
 import PrimaryButton from '@/components/ui/buttons/primary'
@@ -19,6 +21,7 @@ import { TxScreenPanel, plural, shortAddress } from '../components/txScreen'
 import { getRolesScreen, getV2EditorScreen } from '../components/recordsTxScreens'
 import { useConfigurationPreferences } from '@/hooks/settings/useResolverPreferences'
 import { configurationName, resolverDefaultName } from '@/utils/settings/labels'
+import { ResolverAddress } from '@/components/settings/shared'
 
 const V2EditRecordsModal = ({
   name,
@@ -46,14 +49,17 @@ const V2EditRecordsModal = ({
   const hasRecordChanges = editor.step !== 'success' && editor.hasChanges
   const hasChanges =
     hasRecordChanges || editor.hasResolverChanges || roles.hasChanges || !!editor.pending || !!roleTransaction.pending
+
   const close = () => {
     if (busy) return
     if (hasChanges) setDiscardAction('close')
     else onClose()
   }
+
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0 })
   }, [tab])
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !event.defaultPrevented && !discardAction) {
@@ -64,16 +70,19 @@ const V2EditRecordsModal = ({
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   })
+
   let roleTransactionCount = 0
   try {
     if (roles.data.address) roleTransactionCount = buildRoleTransactions(roles.changes, roles.data.address).length
   } catch {
     /* Validation is reported before saving. */
   }
+
   const changeResolver = () => {
     if (hasRecordChanges || roles.hasChanges) setDiscardAction('resolver')
     else void editor.useResolver()
   }
+
   const catalog = editor.catalog
   // IDs are sequential onchain; discovering the list does not require indexed events.
   const count = catalog?.recordCount ?? BigInt(0)
@@ -92,6 +101,7 @@ const V2EditRecordsModal = ({
     editor.selectedId === BigInt(0)
       ? resolverDefaultName(preferences.data, catalog?.defaultRecordId)
       : configurationName(preferences.data, editor.selectedId)
+
   const saveRecords = () => {
     const display = beautifyName(name)
     const changed = editor.records.filter((row) => row.value !== row.initialValue).length
@@ -115,10 +125,12 @@ const V2EditRecordsModal = ({
     })
     void editor.save()
   }
+
   const saveRoles = () => {
     setRoleChangeCount(roles.changes.length)
     void roleTransaction.submit(roles.changes)
   }
+
   const recordsScreen = getV2EditorScreen({
     name,
     step: editor.step,
@@ -144,6 +156,7 @@ const V2EditRecordsModal = ({
     },
     onClose: close,
   })
+
   const rolesScreen = getRolesScreen({
     name,
     step: roleTransaction.step,
@@ -178,7 +191,7 @@ const V2EditRecordsModal = ({
           className='bg-background border-tertiary flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden rounded-md border-t shadow-lg md:max-h-200 md:max-w-xl md:border-2'
           onClick={(event) => event.stopPropagation()}
         >
-          <div className='border-tertiary flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6'>
+          <div className='border-tertiary flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 sm:pl-6'>
             <div className='min-w-0'>
               <h2 id='v2-records-title' className='text-xl font-bold'>
                 Edit {name}
@@ -190,7 +203,7 @@ const V2EditRecordsModal = ({
               disabled={busy}
               onClick={close}
               className={cn(
-                'hover:bg-secondary rounded-md text-xl disabled:opacity-50',
+                'hover:bg-secondary p-md cursor-pointer rounded-md text-xl disabled:opacity-50',
                 busy && 'pointer-events-none disabled:opacity-0'
               )}
             >
@@ -199,7 +212,7 @@ const V2EditRecordsModal = ({
           </div>
           {screen ? (
             // In-progress, success and error screens inside the editor's own frame, which stays locked while busy.
-            <TxScreenPanel screen={screen} center />
+            <TxScreenPanel screen={screen} center onClose={onClose} />
           ) : (
             <>
               <div className='shrink-0 px-4 pt-4 sm:px-6'>
@@ -242,22 +255,30 @@ const V2EditRecordsModal = ({
                       disabled={!editor.binding?.canSetResolver}
                       placeholder='0x…'
                     />
-                    {resolverLabel && <p className='text-neutral text-lg'>{resolverLabel}</p>}
                     {resolverFocused && options.length > 0 && (
                       <div className='border-tertiary max-h-36 overflow-y-auto rounded-md border'>
-                        {options.map((resolver) => (
+                        {options.map((resolver, index) => (
                           <button
                             type='button'
                             key={resolver.address}
-                            className='hover:bg-secondary flex w-full flex-col px-2 py-1.5 text-left text-sm'
+                            className={cn(
+                              'hover:bg-secondary flex w-full cursor-pointer flex-col px-3 py-2 text-left text-sm',
+                              index > 0 && 'border-tertiary border-t'
+                            )}
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={() => {
                               editor.setResolverInput(resolver.address)
                               setResolverFocused(false)
                             }}
                           >
-                            {resolver.name && <span>{resolver.name}</span>}
-                            <span className='text-neutral break-all'>{resolver.address}</span>
+                            <ResolverAddress
+                              address={resolver.address}
+                              name={resolver.name}
+                              showLabel
+                              canCopy={false}
+                              etherscan={false}
+                              truncate={false}
+                            />
                           </button>
                         ))}
                       </div>
@@ -279,9 +300,13 @@ const V2EditRecordsModal = ({
                     )}
                   </div>
                 )}
-                {tab !== 'roles' && editor.isLoading && (
-                  <p className='text-neutral py-6 text-center'>Loading configurations and permissions…</p>
-                )}
+                {tab !== 'roles' &&
+                  editor.isLoading &&
+                  (tab === 'records' ? (
+                    <RecordsSkeleton configuration label='Loading configurations and permissions…' />
+                  ) : (
+                    <ReviewSkeleton label='Loading resolver and permissions…' />
+                  ))}
                 {tab !== 'roles' && editor.loadError && (
                   <div className='flex flex-col gap-2'>
                     <p className='wrap-break-word text-red-400' role='alert'>
@@ -405,18 +430,18 @@ const V2EditRecordsModal = ({
                         </p>
                       )}
                     </div>
-                    {!editor.hasCompleteRecords && (
+                    {!editor.hasCompleteRecords && !editor.discoveryError && (
+                      <RecordListSkeleton label='Loading additional records…' rows={1} />
+                    )}
+                    {!editor.hasCompleteRecords && editor.discoveryError && (
                       <div className='text-neutral flex flex-col gap-2 text-sm' role='status'>
                         <p>
-                          {editor.discoveryError
-                            ? 'Additional records could not be loaded. You can edit the records below or add a key to load its current value. Copying is unavailable until all records are loaded.'
-                            : 'You can edit these records now. Loading additional records before copying is available…'}
+                          Additional records could not be loaded. You can edit the records below or add a key to load
+                          its current value. Copying is unavailable until all records are loaded.
                         </p>
-                        {editor.discoveryError && (
-                          <SecondaryButton onClick={editor.retryDiscovery} disabled={editor.isDiscovering}>
-                            {editor.isDiscovering ? 'Loading additional records…' : 'Retry additional records'}
-                          </SecondaryButton>
-                        )}
+                        <SecondaryButton onClick={editor.retryDiscovery} disabled={editor.isDiscovering}>
+                          {editor.isDiscovering ? 'Loading additional records…' : 'Retry additional records'}
+                        </SecondaryButton>
                       </div>
                     )}
                     <RecordForm

@@ -21,13 +21,10 @@ import {
 } from './transactionScreens'
 
 export interface SettingsTransactionModalProps extends SettingsTransactionView {
-  /** Names the whole action and stays constant, e.g. "Set Primary Name". The step is the TxStatus title. */
   title: string
   networkName?: string
-  /** Defaults to "Changes Saved". */
   successTitle?: string
   successMessage?: string
-  /** Defaults to "Transaction Failed". */
   errorTitle?: string
   onRetry: () => void
   onClose: () => void
@@ -40,7 +37,6 @@ interface SettingsTransactionScreen {
   footerHint?: React.ReactNode
 }
 
-/** The stage and footer for one phase of the queue. Pure, so the preview can render it from mock props. */
 export const settingsTransactionScreen = (props: SettingsTransactionModalProps): SettingsTransactionScreen => {
   const { title, networkName, submitted, onRetry, onClose } = props
 
@@ -49,6 +45,11 @@ export const settingsTransactionScreen = (props: SettingsTransactionModalProps):
       key: 'progress',
       content: <TransactionProgress view={props} title={title} networkName={networkName} />,
       footerHint: isWalletPrompt(props) ? undefined : KEEP_OPEN_HINT,
+      footer: props.phase !== 'processing' && (
+        <SecondaryButton className={modalActionClassName} onClick={onClose}>
+          Back to editing
+        </SecondaryButton>
+      ),
     }
 
   if (props.phase === 'success')
@@ -114,19 +115,14 @@ export const settingsTransactionScreen = (props: SettingsTransactionModalProps):
 // over the page's own dialogs (the navigation guard is z-110); it also takes focus and keeps Tab inside the modal.
 const SettingsTransactionModal: React.FC<SettingsTransactionModalProps> = (props) => {
   const layer = useRef<HTMLDivElement>(null)
-  const canClose = !isTransactionBusy(props) && !props.submitted
+  const canClose = props.phase === 'processing' && !props.submitted
   const screen = settingsTransactionScreen(props)
 
   useEffect(() => {
     const previousFocus = document.activeElement
-    const overflow = document.body.style.overflow
-
-    document.body.style.overflow = 'hidden'
     layer.current?.focus()
 
     return () => {
-      document.body.style.overflow = overflow
-
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus()
     }
   }, [])

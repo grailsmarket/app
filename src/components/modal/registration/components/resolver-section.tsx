@@ -1,3 +1,5 @@
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import { useId, useState } from 'react'
 import Disclosure from '@/components/ui/modal/disclosure'
 import TextInput from '@/components/ui/modal/textInput'
@@ -41,7 +43,11 @@ const ResolverSection: React.FC<ResolverSectionProps> = ({
     <>
       <Disclosure
         title='Resolver'
-        preview={selected?.name ? `${selected.name} · ${resolver}` : resolver || (isLoading ? 'Checking…' : 'Not set')}
+        preview={
+          selected?.name
+            ? `${selected.name} · ${resolver}`
+            : resolver || (isLoading ? <SkeletonText label='Checking resolver…' className='w-40' /> : 'Not set')
+        }
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
         description='Stores your name’s addresses and records.'

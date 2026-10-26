@@ -38,7 +38,7 @@ const AssetSummary: React.FC<AssetSummaryProps> = ({
   return (
     <div
       className={cn(
-        'bg-secondary flex shrink-0 items-center gap-3 rounded-lg p-3 transition-[padding] duration-300 ease-out',
+        'bg-secondary flex shrink-0 items-center gap-2 rounded-lg p-3 transition-[padding] duration-300 ease-out',
         compact && 'py-2 pl-2',
         className
       )}

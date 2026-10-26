@@ -2,7 +2,7 @@ import type { MarketplaceType, SeaportCancelEvent, SeaportProgressEvent } from '
 
 // Shared by the listing and offer modals: what the Seaport client reported so far, folded into state.
 
-export const KEEP_OPEN_HINT = 'Keep this window open until the transaction confirms.'
+export const KEEP_OPEN_HINT = 'Keep this window open until the transaction is confirmed.'
 export const SIGN_FREE_MESSAGE = 'Please sign in your wallet. Signing costs no gas.'
 
 export const MARKETPLACE_NAMES: Record<MarketplaceType, string> = { grails: 'Grails', opensea: 'OpenSea' }
@@ -23,13 +23,9 @@ export type MarketplacePhase = 'upcoming' | 'checking' | 'approving' | 'signing'
 
 export interface MarketplaceProgress {
   phase: MarketplacePhase
-  /** Approval transactions this marketplace needs; null until the client has checked. */
   approvals: number | null
-  /** The approval being prompted or confirmed. */
   approvalIndex: number
-  /** One hash per approval sent so far. */
   approvalHashes: string[]
-  /** The current approval has a hash and is waiting for its block. */
   approvalSent: boolean
 }
 

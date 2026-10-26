@@ -19,10 +19,6 @@ interface SettingsTransactionContextValue {
 }
 
 interface SettingsTransactionProviderProps {
-  /**
-   * The host modal renders the transaction screens itself from useSettingsTransaction's state (the migration modal),
-   * so the provider neither stacks its own modal on top nor makes the host inert.
-   */
   inline?: boolean
   children: React.ReactNode
 }
@@ -91,7 +87,6 @@ export const useSettingsTransactionDialog = ({
     callbacks.current = { onRetry, onClose }
   })
 
-  // `steps` must keep its identity between renders (it comes from state), or every render would publish again.
   useLayoutEffect(() => {
     publish(
       id,

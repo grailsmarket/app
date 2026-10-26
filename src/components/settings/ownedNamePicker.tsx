@@ -1,5 +1,7 @@
 'use client'
 
+import { NameListSkeleton } from '@/components/ui/ensSkeletons'
+
 import { useState } from 'react'
 import type { Address } from 'viem'
 import { useOwnedNameOptions } from '@/hooks/settings/useOwnedNameOptions'
@@ -95,7 +97,7 @@ const OwnedNamePicker: React.FC<OwnedNamePickerProps> = ({
           )
         })}
         {picker.searching ? (
-          <p className='text-neutral p-3 text-lg'>Loading your names…</p>
+          <NameListSkeleton checkboxes rows={options.length ? 1 : 3} />
         ) : (
           !options.length && (
             <p className='text-neutral p-3 text-lg'>

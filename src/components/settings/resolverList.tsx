@@ -1,5 +1,8 @@
 'use client'
 
+import { TableSkeleton } from '@/components/ui/ensSkeletons'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -48,7 +51,7 @@ export const ResolverAccess: React.FC<ResolverAccessProps> = ({ resolver, access
   const { address } = useAccount()
   const section = useRoleSection('resolver', resolver)
 
-  if (section.snapshot.isLoading) return <span className='text-neutral'>Loading…</span>
+  if (section.snapshot.isLoading) return <SkeletonText label='Loading permissions…' className='w-24' />
 
   if (!section.snapshot.data) return <span className='text-neutral'>Unavailable</span>
 
@@ -65,17 +68,19 @@ export const ResolverAccess: React.FC<ResolverAccessProps> = ({ resolver, access
 
   return (
     <span>
-      {hasRole(root, all)
-        ? 'Full control'
-        : hasRole(root, setters)
-          ? 'Record editor'
-          : root || scoped
-            ? 'Limited access'
-            : section.history.isLoading
-              ? 'Checking access…'
-              : section.history.isError
-                ? 'Access incomplete'
-                : 'Read only'}
+      {hasRole(root, all) ? (
+        'Full control'
+      ) : hasRole(root, setters) ? (
+        'Record editor'
+      ) : root || scoped ? (
+        'Limited access'
+      ) : section.history.isLoading ? (
+        <SkeletonText label='Checking access…' className='w-24' />
+      ) : section.history.isError ? (
+        'Access incomplete'
+      ) : (
+        'Read only'
+      )}
     </span>
   )
 }
@@ -88,7 +93,7 @@ interface ResolverRowProps {
 
 const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
   const { width } = useWindowSize()
-  const { catalog, client } = useResolverCatalog(resolver.address)
+  const { catalog, client, state } = useResolverCatalog(resolver.address)
   const resolverData = useResolverData(resolver.address)
   const nameCount = resolverNameCount(resolverData.details.data, resolverData.configurations.data)
   const createdAt = resolverData.details.data?.created_at ?? resolver.createdAt
@@ -146,7 +151,15 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
       <td className={tdClass}>
         <ResolverAccess resolver={resolver.address} access={resolver} />
       </td>
-      <td className={tdClass}>{catalog?.recordCount.toString() ?? resolverData.details.data?.record_count ?? '—'}</td>
+      <td className={tdClass}>
+        {catalog?.recordCount.toString() ??
+          resolverData.details.data?.record_count ??
+          (state.isLoading || resolverData.details.isLoading ? (
+            <SkeletonText label='Loading configuration count…' className='w-8' />
+          ) : (
+            '—'
+          ))}
+      </td>
       <td
         className={tdClass}
         title={
@@ -155,10 +168,22 @@ const ResolverRow: React.FC<ResolverRowProps> = ({ resolver, index, list }) => {
             : 'Names assigned to this resolver, including names using its default configuration. Subnames inheriting an ancestor’s resolver may not be included.'
         }
       >
-        {nameCount ?? names.data?.names.length ?? '—'}
+        {nameCount ??
+          names.data?.names.length ??
+          (resolverData.configurations.isLoading || resolverData.details.isLoading || names.isLoading ? (
+            <SkeletonText label='Loading name count…' className='w-8' />
+          ) : (
+            '—'
+          ))}
       </td>
       <td className={`${tdClass} text-neutral`} title={updatedAt ? new Date(updatedAt).toLocaleString() : undefined}>
-        {updatedAt ? formatTimeAgo(updatedAt) : '—'}
+        {updatedAt ? (
+          formatTimeAgo(updatedAt)
+        ) : activity.isLoading || resolverData.details.isLoading ? (
+          <SkeletonText label='Loading last activity…' className='w-20' />
+        ) : (
+          '—'
+        )}
       </td>
       <td className='px-2 opacity-0 transition-opacity group-hover/resolver:opacity-100'>
         <ShortArrow className='h-3.5 w-3.5 rotate-90' />
@@ -290,7 +315,9 @@ const ResolverList = () => {
         <QueryError error={directory.preferences.error} retry={() => directory.preferences.refetch()} />
       )}
       {directory.owned.isError && <QueryError error={directory.owned.error} retry={() => directory.owned.refetch()} />}
-      {directory.delegated.isLoading && <p className='text-neutral text-lg'>Checking shared resolvers…</p>}
+      {!directory.loading && directory.delegated.isLoading && (
+        <SkeletonText label='Checking shared resolvers…' className='w-48' />
+      )}
       {directory.delegated.isError && (
         <SettingsNotice>
           Some shared resolvers could not be discovered. Open them by address, or{' '}
@@ -301,7 +328,10 @@ const ResolverList = () => {
         </SettingsNotice>
       )}
       {directory.loading ? (
-        <SettingsNotice>Finding your resolvers…</SettingsNotice>
+        <TableSkeleton
+          columns={['Resolver', 'Your access', 'Configs.', 'Names', 'Updated', '']}
+          label='Finding your resolvers…'
+        />
       ) : directory.resolvers.length ? (
         <div className='overflow-x-auto'>
           <table className={tableClass}>

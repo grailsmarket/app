@@ -81,7 +81,7 @@ const EditRecordsModal = ({ name, version, metadata, defaultTab, onClose }: Edit
       onClick={onClose}
     >
       <div
-        className='bg-background border-tertiary flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden rounded-md border-t shadow-lg md:max-h-[800px] md:max-w-xl md:border-2'
+        className='bg-background border-tertiary flex h-[calc(100dvh-56px)] w-full flex-col overflow-hidden rounded-md border-t shadow-lg md:max-h-[90dvh] md:max-w-xl md:border-2'
         onClick={(event) => event.stopPropagation()}
       >
         <div className='border-tertiary shrink-0 border-b px-4 py-3 sm:px-6'>

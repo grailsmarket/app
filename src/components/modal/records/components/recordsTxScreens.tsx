@@ -47,8 +47,8 @@ const NameTile: React.FC<{ name: string; version: number }> = ({ name, version }
     expiryDate={null}
     forceRegStatus={REGISTERED}
     className='h-full w-full'
-    height={48}
-    width={48}
+    height={40}
+    width={40}
   />
 )
 
@@ -603,6 +603,7 @@ export const getBulkScreen = (input: BulkScreenInput): TxScreen | null => {
   const resolverCount = groupByResolver(statuses).length
   const meta =
     statuses.length > 0 ? `${plural(resolverCount, 'resolver')} · ${plural(statuses.length, 'transaction')}` : undefined
+
   const subject =
     nameTotal === 1 ? (
       <AssetSummary
@@ -657,6 +658,16 @@ export const getBulkScreen = (input: BulkScreenInput): TxScreen | null => {
         </>
       ),
       footerHint: active?.status === 'confirming' ? undefined : KEEP_OPEN_HINT,
+      footer: (
+        <div className='flex flex-col gap-2'>
+          {step === 'confirming' && (
+            <SecondaryButton className='w-full' onClick={onTryAgain}>
+              Cancel
+            </SecondaryButton>
+          )}
+          {closeButton(onClose)}
+        </div>
+      ),
     }
   }
 

@@ -240,7 +240,7 @@ const BulkSelect: React.FC<BulkSelectProps> = ({ isMyProfile = false, pageType =
   }
 
   const handleEditRecordsAction = () => {
-    dispatch(setBulkEditRecordsModalNames(namesTransfer.map((d) => d.name)))
+    dispatch(setBulkEditRecordsModalNames(namesTransfer.map(({ name, version }) => ({ name, version }))))
     dispatch(setBulkEditRecordsModalOpen(true))
   }
 

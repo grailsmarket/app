@@ -1,5 +1,7 @@
 'use client'
 
+import { RecordsSkeleton, RecordListSkeleton } from '@/components/ui/ensSkeletons'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -52,8 +54,7 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
     return <SettingsNotice error>This configuration does not exist.</SettingsNotice>
   if (editor.recordsQuery.isError)
     return <QueryError error={editor.recordsQuery.error} retry={() => editor.recordsQuery.refetch()} />
-  if (!editor.recordsQuery.data || !editor.catalog)
-    return <SettingsNotice>Loading records and permissions…</SettingsNotice>
+  if (!editor.recordsQuery.data || !editor.catalog) return <RecordsSkeleton />
   if (editor.createdId !== undefined)
     return (
       <div className='flex flex-col items-center gap-4 py-8'>
@@ -109,18 +110,19 @@ const ConfigurationRecords: React.FC<ConfigurationRecordsProps> = ({ resolver, i
           </SettingsNotice>
         ))}
       {mode !== 'edit' && empty && <p className='text-grace text-lg'>You are creating an empty configuration.</p>}
-      {!editor.catalog.historyComplete && (
-        <SettingsNotice>
-          {editor.history.isLoading
-            ? 'Discovering additional records… Standard records are available below.'
-            : 'Additional record discovery is unavailable. Add a known record key to load it.'}
-          {editor.history.isError && (
-            <button className='text-primary ml-2 cursor-pointer underline' onClick={() => editor.history.refetch()}>
-              Retry discovery
-            </button>
-          )}
-        </SettingsNotice>
-      )}
+      {!editor.catalog.historyComplete &&
+        (editor.history.isLoading ? (
+          <RecordListSkeleton label='Discovering additional records… Standard records are available below.' rows={1} />
+        ) : (
+          <SettingsNotice>
+            Additional record discovery is unavailable. Add a known record key to load it.
+            {editor.history.isError && (
+              <button className='text-primary ml-2 cursor-pointer underline' onClick={() => editor.history.refetch()}>
+                Retry discovery
+              </button>
+            )}
+          </SettingsNotice>
+        ))}
       {copyBlocked && (
         <SettingsNotice>
           Duplicating requires complete record discovery and permission to write every populated field.
@@ -203,8 +205,10 @@ const SetDefault: React.FC<SetDefaultProps> = ({ resolver, change, onCancel }) =
               functionName: 'getRecordId',
               args: [zeroHash],
             })
+
             if (current !== change.previousId)
               throw new Error('The resolver default changed. Reload before continuing.')
+
             return {
               to: resolver,
               data: encodeFunctionData({ abi, functionName: 'linkToRecord', args: [ROOT_NAME, change.id] }),

@@ -1,5 +1,7 @@
 'use client'
 
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import React from 'react'
 import { cn } from '@/utils/tailwind'
 import { AlertIcon, ChevronIcon } from './icons'
@@ -64,9 +66,7 @@ const NameList: React.FC<NameListProps> = ({ items, openKey, onToggle }) => {
                     </span>
                   )}
                   {item.status === 'checking' && (
-                    <span className='bg-tertiary text-neutral shrink-0 rounded-sm px-1.5 py-0.5 text-sm font-bold'>
-                      Checking...
-                    </span>
+                    <SkeletonText label={`Checking availability for ${item.name}…`} className='w-16 shrink-0' />
                   )}
                 </span>
                 {!isUnavailable && item.price && (

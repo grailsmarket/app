@@ -7,7 +7,7 @@ import { ChevronIcon } from './icons'
 interface DisclosureProps {
   title: React.ReactNode
   /** The current value, shown while closed: "Connected wallet", "Not set". */
-  preview?: string
+  preview?: React.ReactNode
   isOpen: boolean
   onToggle: () => void
   description?: React.ReactNode
@@ -33,7 +33,10 @@ const Disclosure: React.FC<DisclosureProps> = ({ title, preview, isOpen, onToggl
         className='hover:bg-secondary focus-visible:outline-primary flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed'
       >
         <span className='shrink-0 text-lg font-semibold'>{title}</span>
-        <span className='text-neutral text-md min-w-0 flex-1 truncate text-right' title={preview}>
+        <span
+          className='text-neutral text-md min-w-0 flex-1 truncate text-right'
+          title={typeof preview === 'string' ? preview : undefined}
+        >
           {preview}
         </span>
         <ChevronIcon

@@ -1,5 +1,7 @@
 'use client'
 
+import { PermissionsSkeleton } from '@/components/ui/ensSkeletons'
+
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchAccount } from 'ethereum-identity-kit'
@@ -211,7 +213,7 @@ export const AddRoleAccount = ({
 const RolesEditor = ({ editor, transaction }: { editor: V2RoleEditor; transaction: V2RoleTransaction }) => {
   const { data } = editor
   const disabled = transaction.busy || !!transaction.pending
-  if (data.binding.isPending) return <p className='text-neutral py-6 text-center text-lg'>Loading permissions…</p>
+  if (data.binding.isPending) return <PermissionsSkeleton expanded />
   if (data.binding.isError)
     return (
       <div className='flex flex-col gap-3'>

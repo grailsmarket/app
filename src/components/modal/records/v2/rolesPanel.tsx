@@ -1,5 +1,7 @@
 'use client'
 
+import { PermissionsSkeleton } from '@/components/ui/ensSkeletons'
+
 import { type Address, hexToString, zeroAddress } from 'viem'
 import { useQuery } from '@tanstack/react-query'
 import { Avatar, fetchAccount, ShortArrow } from 'ethereum-identity-kit'
@@ -304,7 +306,7 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
       ) : kind === 'resolver' && data?.binding.data?.resolver === zeroAddress ? (
         <p className='text-neutral text-lg'>No resolver is assigned.</p>
       ) : section.snapshot.isPending ? (
-        <p className='text-neutral text-lg'>Loading permissions…</p>
+        <PermissionsSkeleton expanded={kind === 'name'} />
       ) : section.snapshot.isError ? (
         <div className='flex flex-col gap-3'>
           <p role='alert' className='text-lg text-red-400'>
@@ -341,7 +343,7 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
                 </SecondaryButton>
               </div>
             ) : !section.history.data ? (
-              <p className='text-neutral text-lg'>Loading other accounts…</p>
+              <PermissionsSkeleton label='Loading other accounts…' accounts={1} />
             ) : (
               visible.length === 0 && <p className='text-neutral text-lg'>No assigned permissions.</p>
             )}
@@ -353,7 +355,7 @@ export const RoleSection: React.FC<RoleSectionProps> = ({
 }
 
 const RolesPanel = ({ data }: { data: V2RolesData }) => {
-  if (data.binding.isPending) return <p className='text-neutral text-lg'>Loading permissions…</p>
+  if (data.binding.isPending) return <PermissionsSkeleton expanded />
 
   if (data.binding.isError)
     return (

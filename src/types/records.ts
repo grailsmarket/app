@@ -42,3 +42,28 @@ export type V2ResolverCatalog = {
 }
 
 export type V2RecordMode = 'shared' | 'new' | 'copy'
+
+export interface BulkRecordName {
+  name: string
+  version: number | null
+}
+
+export interface BulkV2Name {
+  name: string
+  binding: V2NameResolver
+  linkedId: bigint
+}
+
+export interface BulkV2Resolver {
+  address: Address
+  catalog: V2ResolverCatalog
+  names: BulkV2Name[]
+}
+
+export interface BulkV2Configuration {
+  key: string
+  resolver: Address
+  id: bigint
+  mode: V2RecordMode
+  names: BulkV2Name[]
+}

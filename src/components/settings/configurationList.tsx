@@ -1,5 +1,8 @@
 'use client'
 
+import { ConfigurationTableSkeleton, ConfigurationGroupsSkeleton } from '@/components/ui/ensSkeletons'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
@@ -97,11 +100,15 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id }) => 
         className={tdClass}
         title={catalog?.historyComplete ? undefined : 'Additional keys are still being discovered.'}
       >
-        {recordCount !== undefined
-          ? recordCount
-          : records.data
-            ? `${records.data.filter((row) => row.value !== '').length}${catalog?.historyComplete ? '' : '+'}`
-            : '—'}
+        {recordCount !== undefined ? (
+          recordCount
+        ) : records.data ? (
+          `${records.data.filter((row) => row.value !== '').length}${catalog?.historyComplete ? '' : '+'}`
+        ) : records.isLoading || resolverData.configurations.isLoading ? (
+          <SkeletonText label='Loading record count…' className='w-8' />
+        ) : (
+          '—'
+        )}
       </td>
       <td className={tdClass}>
         <Link
@@ -114,7 +121,13 @@ const ConfigurationRow: React.FC<ConfigurationRowProps> = ({ resolver, id }) => 
                 : 'Explicit links and names inheriting this configuration.'
           }
         >
-          {nameCount ?? knownNames?.length ?? '—'}
+          {nameCount ??
+            knownNames?.length ??
+            (names.isLoading || resolverData.configurations.isLoading || resolverData.details.isLoading ? (
+              <SkeletonText label='Loading name count…' className='w-8' />
+            ) : (
+              '—'
+            ))}
         </Link>
       </td>
       <td className={`${tdClass} text-neutral`}>{actualId === BigInt(0) ? '-' : (actualId?.toString() ?? '—')}</td>
@@ -136,7 +149,7 @@ export const ConfigurationTable = ({ resolver }: { resolver: Address }) => {
   const [page, setPage] = useState(BigInt(0))
 
   if (state.isError) return <QueryError error={state.error} retry={() => state.refetch()} />
-  if (!catalog) return <SettingsNotice>Loading configurations…</SettingsNotice>
+  if (!catalog) return <ConfigurationTableSkeleton />
 
   const start = page * BigInt(10) + BigInt(1)
   const ids: bigint[] = []
@@ -230,14 +243,16 @@ export default function ConfigurationList() {
       </div>
       <ResolverLookup />
       {directory.owned.isError && <QueryError error={directory.owned.error} retry={() => directory.owned.refetch()} />}
-      {directory.delegated.isLoading && <p className='text-neutral text-lg'>Checking shared resolvers…</p>}
+      {!directory.loading && directory.delegated.isLoading && (
+        <SkeletonText label='Checking shared resolvers…' className='w-48' />
+      )}
       {directory.delegated.isError && (
         <SettingsNotice>
           Shared resolver discovery is incomplete. Open a resolver by address to view its configurations.
         </SettingsNotice>
       )}
       {directory.loading ? (
-        <SettingsNotice>Finding your configurations…</SettingsNotice>
+        <ConfigurationGroupsSkeleton />
       ) : directory.resolvers.length ? (
         <div className='flex flex-col gap-3'>
           {directory.resolvers.map((resolver) => (

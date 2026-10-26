@@ -1,5 +1,8 @@
 'use client'
 
+import { ReviewSkeleton, RecordListSkeleton } from '@/components/ui/ensSkeletons'
+import { SkeletonText } from '@/components/ui/loadingSkeleton'
+
 import { useEffect, useRef, useState } from 'react'
 import { activeChain } from '@/constants/web3/chain'
 import { SettingsTransactionProvider } from '@/context/settingsTransaction'
@@ -119,7 +122,7 @@ export const MigrationReview: React.FC<MigrationReviewProps> = ({ name, onBack, 
   const review = (
     <>
       {busy ? (
-        <p className='text-neutral py-6 text-center text-lg'>Checking ownership and migration requirements…</p>
+        <ReviewSkeleton label='Checking ownership and migration requirements…' />
       ) : !migration.address ? (
         <p className='text-neutral text-lg'>Connect the wallet that owns this name to check migration.</p>
       ) : error ? (
@@ -222,7 +225,9 @@ export const MigrationReview: React.FC<MigrationReviewProps> = ({ name, onBack, 
                     ? 'Choose a resolver and configuration you can link. Future edits to that configuration also affect this name.'
                     : 'A new configuration will use this resolver’s permissions. Leave the resolver empty to deploy one first.'}
                 </p>
-                {migration.catalog.isLoading && <p className='text-neutral text-sm'>Checking resolver permissions…</p>}
+                {migration.catalog.isLoading && (
+                  <SkeletonText label='Checking resolver permissions…' className='w-48' />
+                )}
                 {migration.catalog.isError && (
                   <p className='text-sm text-red-400'>{roleErrorText(migration.catalog.error)}</p>
                 )}
@@ -265,7 +270,7 @@ export const MigrationReview: React.FC<MigrationReviewProps> = ({ name, onBack, 
                   )}
                 </div>
                 {migration.source.isLoading && (
-                  <p className='text-neutral text-sm'>Discovering record keys and reading their current values…</p>
+                  <RecordListSkeleton label='Discovering record keys and reading their current values…' />
                 )}
                 {migration.source.isError && (
                   <div role='alert' className='flex flex-col gap-2'>
